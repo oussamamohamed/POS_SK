@@ -1,0 +1,40 @@
+using System;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+using RestaurantPos.Application.Common.Interfaces;
+using RestaurantPos.Application.DTOs;
+
+namespace RestaurantPos.Api.Endpoints;
+
+public static class FiscalEndpoints
+{
+    public static void MapFiscalEndpoints(this IEndpointRouteBuilder app)
+    {
+        var group = app.MapGroup("/api/fiscal")
+                       .WithTags("Fiscal & NF525")
+                       .RequireAuthorization();
+
+        group.MapPost("/z-closure", async (ZClosureRequest req, INF525FiscalAuditService fiscal) =>
+        {
+            if (string.IsNullOrWhiteSpace(req.TerminalId))
+            {
+                return Results.BadRequest(new { Message = "TerminalId est obligatoire pour la clôture Z." });
+            }
+
+            if (req.ManagerId == Guid.Empty || string.IsNullOrWhiteSpace(req.ManagerName))
+            {
+                return Results.BadRequest(new { Message = "ManagerId et ManagerName sont obligatoires pour la clôture Z." });
+            }
+
+            var closure = await fiscal.ExecuteDailyZClosureAsync(req.TerminalId, req.ManagerId, req.ManagerName);
+            return Results.Ok(new
+            {
+                closure.ClosureSequence,
+                TotalSalesTtc = closure.TotalSalesTtcCents / 100.0m,
+                closure.SignatureHash,
+                closure.ClosedAtUtc
+            });
+        });
+    }
+}

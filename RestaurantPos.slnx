@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/RestaurantPos.Api/RestaurantPos.Api.csproj" />
+    <Project Path="src/RestaurantPos.Application/RestaurantPos.Application.csproj" />
+    <Project Path="src/RestaurantPos.Client.Maui/RestaurantPos.Client.Maui.csproj" />
+    <Project Path="src/RestaurantPos.Domain/RestaurantPos.Domain.csproj" />
+    <Project Path="src/RestaurantPos.Infrastructure/RestaurantPos.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/RestaurantPos.Client.Maui.Tests/RestaurantPos.Client.Maui.Tests.csproj" />
+    <Project Path="tests/RestaurantPos.Domain.Tests/RestaurantPos.Domain.Tests.csproj" />
+    <Project Path="tests/RestaurantPos.Infrastructure.Tests/RestaurantPos.Infrastructure.Tests.csproj" />
+  </Folder>
+</Solution>

@@ -1,0 +1,133 @@
+openapi: 3.0.3
+info:
+  title: Restaurant POS Backend Authentication & Authorization API
+  version: 1.0.0
+  description: Authentication, session management, and role-based access control contracts for the restaurant POS backend.
+paths:
+  /api/auth/login:
+    post:
+      summary: Operator PIN Login
+      description: Validates an operator's numeric PIN and returns a cryptographically signed JWT token with role claims.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - pin
+              properties:
+                pin:
+                  type: string
+                  example: "1234"
+                  description: 4 to 6 digit operator PIN
+      responses:
+        '200':
+          description: Authentication successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  operatorId:
+                    type: string
+                    format: uuid
+                    example: "01a067d9-b861-7259-8471-73a4ce48d469"
+                  operatorName:
+                    type: string
+                    example: "Alexandre Dupont (Manager)"
+                  role:
+                    type: string
+                    enum: [Admin, FloorManager, Waiter, KitchenStaff]
+                    example: "FloorManager"
+                  token:
+                    type: string
+                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        '401':
+          description: Invalid PIN or inactive operator
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "Code PIN invalide"
+
+  /api/auth/me:
+    get:
+      summary: Get Current Operator Profile
+      description: Retrieves identity and permissions for the currently authenticated session.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Active session profile
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  operatorId:
+                    type: string
+                    format: uuid
+                  operatorName:
+                    type: string
+                  role:
+                    type: string
+        '401':
+          description: Unauthenticated session
+
+  /api/auth/override:
+    post:
+      summary: Supervisor Privilege Override
+      description: Validates a supervisor PIN to authorize a restricted action (e.g. void or discount).
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - supervisorPin
+                - action
+              properties:
+                supervisorPin:
+                  type: string
+                  example: "1234"
+                action:
+                  type: string
+                  example: "VOID_RECEIPT"
+      responses:
+        '200':
+          description: Override approved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  authorized:
+                    type: boolean
+                    example: true
+                  supervisorId:
+                    type: string
+                    format: uuid
+                  supervisorName:
+                    type: string
+        '403':
+          description: PIN does not belong to a supervisor or is invalid
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

@@ -1,0 +1,211 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "RestaurantPos - Grid Management API",
+    "description": "API pour la gestion des grilles tactiles d'articles avec pagination multi-pages et personnalisation visuelle",
+    "version": "1.1.0"
+  },
+  "paths": {
+    "/api/grid-layouts": {
+      "get": {
+        "summary": "Récupérer toutes les grilles configurées",
+        "responses": {
+          "200": {
+            "description": "Liste de tous les layouts de grille",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/GridLayoutDto" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Créer ou mettre à jour une page de grille",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UpdateGridLayoutRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Layout mis à jour",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/GridLayoutDto" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/grid-layouts/{categoryId}": {
+      "get": {
+        "summary": "Récupérer la grille d'une catégorie pour une page donnée",
+        "parameters": [
+          {
+            "name": "categoryId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "description": "Index de la page (0 pour la première page)",
+            "schema": { "type": "integer", "default": 0 }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Layout de la page de la catégorie demandée",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/GridLayoutDto" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/grid-layouts/{categoryId}/pages": {
+      "get": {
+        "summary": "Récupérer toutes les pages de grille pour une catégorie donnée",
+        "parameters": [
+          {
+            "name": "categoryId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Toutes les pages de grille de la catégorie",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/GridLayoutDto" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/grid-layouts/swap": {
+      "post": {
+        "summary": "Permuter deux emplacements sur un layout",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SwapGridSlotsRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Layout après permutation",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/GridLayoutDto" }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "GridLayoutDto": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "categoryId": { "type": "string" },
+          "name": { "type": "string", "nullable": true },
+          "columnsCount": { "type": "integer" },
+          "rowsCount": { "type": "integer" },
+          "pageIndex": { "type": "integer" },
+          "totalPages": { "type": "integer" },
+          "version": { "type": "integer" },
+          "updatedAtUtc": { "type": "string", "format": "date-time" },
+          "slots": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/GridSlotDto" }
+          }
+        }
+      },
+      "GridSlotDto": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "gridLayoutId": { "type": "string", "format": "uuid" },
+          "productId": { "type": "string", "format": "uuid", "nullable": true },
+          "rowIndex": { "type": "integer" },
+          "columnIndex": { "type": "integer" },
+          "slotIndex": { "type": "integer" },
+          "customLabel": { "type": "string", "nullable": true },
+          "customColorHex": { "type": "string", "nullable": true },
+          "isDisabled": { "type": "boolean" },
+          "product": { "$ref": "#/components/schemas/ProductSummaryDto", "nullable": true }
+        }
+      },
+      "ProductSummaryDto": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "name": { "type": "string" },
+          "price": { "type": "number", "format": "decimal" },
+          "preparationStationId": { "type": "string", "nullable": true },
+          "colorHex": { "type": "string", "nullable": true }
+        }
+      },
+      "UpdateGridLayoutRequest": {
+        "type": "object",
+        "properties": {
+          "categoryId": { "type": "string" },
+          "columnsCount": { "type": "integer" },
+          "rowsCount": { "type": "integer" },
+          "pageIndex": { "type": "integer" },
+          "slots": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/UpdateGridSlotItem" }
+          }
+        },
+        "required": ["categoryId", "columnsCount", "rowsCount", "slots"]
+      },
+      "UpdateGridSlotItem": {
+        "type": "object",
+        "properties": {
+          "rowIndex": { "type": "integer" },
+          "columnIndex": { "type": "integer" },
+          "productId": { "type": "string", "format": "uuid", "nullable": true },
+          "customLabel": { "type": "string", "nullable": true },
+          "customColorHex": { "type": "string", "nullable": true }
+        },
+        "required": ["rowIndex", "columnIndex"]
+      },
+      "SwapGridSlotsRequest": {
+        "type": "object",
+        "properties": {
+          "layoutId": { "type": "string", "format": "uuid" },
+          "sourceRow": { "type": "integer" },
+          "sourceCol": { "type": "integer" },
+          "targetRow": { "type": "integer" },
+          "targetCol": { "type": "integer" }
+        },
+        "required": ["layoutId", "sourceRow", "sourceCol", "targetRow", "targetCol"]
+      }
+    }
+  }
+}

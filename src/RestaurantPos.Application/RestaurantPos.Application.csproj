@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <RootNamespace>RestaurantPos.Application</RootNamespace>
+    <AssemblyName>RestaurantPos.Application</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\RestaurantPos.Domain\RestaurantPos.Domain.csproj" />
+  </ItemGroup>
+</Project>

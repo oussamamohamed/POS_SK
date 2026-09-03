@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "EditConfigurationEntities",
+  "type": "object",
+  "definitions": {
+    "UpdateProductPayload": {
+      "type": "object",
+      "required": ["name", "categoryId", "price", "taxRatePercent"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "categoryId": { "type": "string" },
+        "price": { "type": "number", "minimum": 0.01 },
+        "taxRatePercent": { "type": "number", "minimum": 0 },
+        "description": { "type": "string" },
+        "colorHex": { "type": "string" },
+        "displayOrder": { "type": "integer" },
+        "isQuickKey": { "type": "boolean" },
+        "stationId": { "type": "string" }
+      }
+    },
+    "UpdateCategoryPayload": {
+      "type": "object",
+      "required": ["name"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "colorHex": { "type": "string" },
+        "displayOrder": { "type": "integer" },
+        "iconName": { "type": "string" }
+      }
+    },
+    "UpdateStaffPayload": {
+      "type": "object",
+      "required": ["name", "role"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "role": { "type": "string" },
+        "pin": { "type": "string", "pattern": "^[0-9]{4,6}$" },
+        "isActive": { "type": "boolean" }
+      }
+    },
+    "UpdatePrinterPayload": {
+      "type": "object",
+      "required": ["name", "ipAddress", "port"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "ipAddress": { "type": "string" },
+        "port": { "type": "integer", "default": 9100 },
+        "paperWidthMm": { "type": "integer", "enum": [58, 80] },
+        "hasCashDrawer": { "type": "boolean" },
+        "targetStations": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    }
+  }
+}

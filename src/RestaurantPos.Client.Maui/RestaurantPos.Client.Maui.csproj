@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks Condition="'$(BuildingForMaui)' == 'true'">net9.0-android;net9.0-ios;net9.0-windows10.0.19041.0</TargetFrameworks>
+    <TargetFramework Condition="'$(BuildingForMaui)' != 'true'">net9.0</TargetFramework>
+    <OutputType>Library</OutputType>
+    <RootNamespace>RestaurantPos.Client.Maui</RootNamespace>
+    <UseMaui Condition="'$(BuildingForMaui)' == 'true'">true</UseMaui>
+    <SingleProject>true</SingleProject>
+    <EnableDefaultCssItems>false</EnableDefaultCssItems>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <!-- Define MAUI_UI symbol when building with MAUI SDK so Views can use conditional compilation -->
+  <PropertyGroup Condition="'$(UseMaui)' == 'true'">
+    <DefineConstants>$(DefineConstants);MAUI_UI</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="9.0.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.2" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\RestaurantPos.Domain\RestaurantPos.Domain.csproj" />
+    <ProjectReference Include="..\RestaurantPos.Application\RestaurantPos.Application.csproj" />
+  </ItemGroup>
+</Project>

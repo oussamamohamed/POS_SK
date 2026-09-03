@@ -1,0 +1,27 @@
+# Visual Studio & .NET build artifacts
+bin/
+obj/
+*.user
+*.userosscache
+*.suo
+*.userprefs
+*.sln.docstates
+.vs/
+packages/
+
+# .NET MAUI / iOS / Android / Windows build outputs
+*.appx
+*.appxbundle
+*.msix
+*.msixbundle
+*.apk
+*.aab
+*.ipa
+.build/
+DerivedData/
+
+# Logs & Temporary Files
+*.log
+*.tmp
+Thumbs.db
+.DS_Store

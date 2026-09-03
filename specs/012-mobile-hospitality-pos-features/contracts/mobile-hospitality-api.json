@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "MobileHospitalityApiContracts",
+  "description": "Contracts for Mobile Hospitality POS endpoints (Table Transfer, Discounts, Course Fire, Tips, Room Billing)",
+  "endpoints": [
+    {
+      "path": "/api/tables/{tableNumber}/transfer",
+      "method": "POST",
+      "summary": "Transfer active order from source table to target table",
+      "requestBody": {
+        "targetTableNumber": "string",
+        "operatorId": "uuid"
+      },
+      "responses": {
+        "200": { "description": "Table successfully transferred" },
+        "400": { "description": "Target table is not free or invalid source" }
+      }
+    },
+    {
+      "path": "/api/tables/{tableNumber}/merge",
+      "method": "POST",
+      "summary": "Merge source table order items into target table order",
+      "requestBody": {
+        "targetTableNumber": "string",
+        "operatorId": "uuid"
+      },
+      "responses": {
+        "200": { "description": "Tables merged successfully" },
+        "400": { "description": "One of the tables is not occupied" }
+      }
+    },
+    {
+      "path": "/api/orders/{orderId}/discount",
+      "method": "POST",
+      "summary": "Apply global discount to order",
+      "requestBody": {
+        "discountType": "Percentage | FixedAmount",
+        "value": "number",
+        "reason": "string",
+        "operatorId": "uuid"
+      },
+      "responses": {
+        "200": { "description": "Discount applied and total recalculated" }
+      }
+    },
+    {
+      "path": "/api/orders/{orderId}/items/{itemId}/comp",
+      "method": "POST",
+      "summary": "Mark item as comp / on the house (0.00 EUR)",
+      "requestBody": {
+        "reason": "string",
+        "operatorId": "uuid"
+      },
+      "responses": {
+        "200": { "description": "Item marked as comp" }
+      }
+    },
+    {
+      "path": "/api/tables/{tableNumber}/fire-suite",
+      "method": "POST",
+      "summary": "Send instant kitchen fire notification for main courses (Suite)",
+      "responses": {
+        "200": { "description": "Kitchen fire signal broadcasted to KDS and printers" }
+      }
+    },
+    {
+      "path": "/api/hotel/rooms/{roomNumber}",
+      "method": "GET",
+      "summary": "Lookup hotel room occupant and status",
+      "responses": {
+        "200": {
+          "roomNumber": "string",
+          "guestName": "string",
+          "isOccupied": "boolean",
+          "currentBalance": "number",
+          "maxCreditLimit": "number"
+        },
+        "404": { "description": "Room not found or not occupied" }
+      }
+    },
+    {
+      "path": "/api/hotel/room-charge",
+      "method": "POST",
+      "summary": "Charge restaurant order directly to hotel room folio",
+      "requestBody": {
+        "orderId": "uuid",
+        "tableNumber": "string",
+        "roomNumber": "string",
+        "guestName": "string",
+        "amount": "number",
+        "tipAmount": "number",
+        "signatureDataUrl": "string"
+      },
+      "responses": {
+        "200": { "description": "Order charged to room and receipt closed" }
+      }
+    }
+  ]
+}

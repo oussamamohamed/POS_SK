@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CartDeltaClearAndDispatchRules",
+  "type": "object",
+  "properties": {
+    "tableNumber": {
+      "type": "string"
+    },
+    "dispatchedItemsCount": {
+      "type": "integer"
+    },
+    "undispatchedItemsCount": {
+      "type": "integer"
+    },
+    "clearActionOutcome": {
+      "type": "string",
+      "enum": [
+        "FullClear",
+        "SelectiveClearUndispatchedOnly",
+        "ClearBlockedProtectedDispatched"
+      ]
+    },
+    "postDispatchScreenAction": {
+      "type": "string",
+      "enum": [
+        "ClearAndSwitchToFloorPlan",
+        "StayInTerminal"
+      ]
+    }
+  }
+}

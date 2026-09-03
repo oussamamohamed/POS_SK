@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Restaurant POS — Système Tactile & Local-First</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles.css?v=20260902_8">
+</head>
+
+<body class="pos-dark">
+    <!-- Top Global App Bar -->
+    <header class="app-header">
+        <div class="brand-section">
+            <div class="brand-logo">
+                <span class="logo-icon">🍽️</span>
+                <span class="brand-name">POS <strong>Antigravity</strong></span>
+            </div>
+            <div class="status-badge online" id="connectionBadge">
+                <span class="pulse-dot"></span>
+                <span class="status-text">Local-First (En Ligne)</span>
+            </div>
+        </div>
+
+        <nav class="nav-tabs">
+            <button class="nav-btn active" data-view="posView" id="btnNavPos">
+                <span class="nav-icon">🛒</span>
+                <span>Caisse</span>
+            </button>
+            <button class="nav-btn" data-view="floorPlanView" id="btnNavFloor">
+                <span class="nav-icon">🗺️</span>
+                <span>Plan de Salle</span>
+            </button>
+            <button class="nav-btn" data-view="kdsView" id="btnNavKds">
+                <span class="nav-icon">👨‍🍳</span>
+                <span>Cuisine KDS</span>
+            </button>
+            <button class="nav-btn" data-view="adminView" id="btnNavAdmin">
+                <span class="nav-icon">⚙️</span>
+                <span>Paramétrage</span>
+            </button>
+            <button class="nav-btn" data-view="fiscalView" id="btnNavFiscal">
+                <span class="nav-icon">📜</span>
+                <span>Fiscalité NF525</span>
+            </button>
+        </nav>
+
+        <div class="user-section">
+            <div class="operator-pill" id="operatorPill">
+                <span class="operator-avatar">👤</span>
+                <div class="operator-details">
+                    <span class="operator-name" id="currentOperatorName">Alexandre Dupont</span>
+                    <span class="operator-role" id="currentOperatorRole">FloorManager</span>
+                </div>
+            </div>
+            <button class="btn-lock" id="btnLockTerminal" title="Verrouiller la caisse">
+                <span class="lock-icon">🔒</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Dynamic Workspace -->
+    <main class="workspace">
+
+        <!-- ==================== VIEW 1: POS TERMINAL ==================== -->
+        <section class="view-panel active" id="posView">
+            <div class="pos-layout">
+                <!-- Left: Ticket / Cart Section -->
+                <div class="pos-cart-panel">
+                    <div class="cart-header">
+                        <div class="table-info">
+                            <span class="table-badge" id="activeTableBadge">Table T2</span>
+                            <span class="covers-badge" id="activeCoversBadge">👥 3 Couverts</span>
+                        </div>
+                        <button class="btn-clear-cart" id="btnClearCart" title="Vider le panier">🗑️</button>
+                    </div>
+
+                    <div class="cart-items-list" id="cartItemsList">
+                        <!-- Populated by JS -->
+                    </div>
+
+                    <div class="cart-summary">
+                        <div class="summary-line">
+                            <span>Total HT :</span>
+                            <span id="summaryHt">0.00 €</span>
+                        </div>
+                        <div class="summary-line">
+                            <span>TVA (10% / 20%) :</span>
+                            <span id="summaryVat">0.00 €</span>
+                        </div>
+                        <div class="summary-total">
+                            <span>TOTAL TTC</span>
+                            <span class="total-amount" id="summaryTtc">0.00 €</span>
+                        </div>
+
+                        <div class="cart-action-buttons">
+                            <button class="btn-action btn-send-kitchen" id="btnSendKitchen" title="Envoyer en cuisine">
+                                <span>📤</span> Cuisine
+                            </button>
+                            <button class="btn-action btn-fire-suite" id="btnFireSuite" title="Réclamer la suite des plats">
+                                <span>🔔</span> Suite
+                            </button>
+                            <button class="btn-action btn-discount" id="btnDiscountModal" title="Appliquer une remise ou offrir un article">
+                                <span>🏷️</span> Remise
+                            </button>
+                            <button class="btn-action btn-transfer" id="btnTransferModal" title="Transférer ou fusionner la table">
+                                <span>🔄</span> Transférer
+                            </button>
+                            <button class="btn-action btn-split-bill" id="btnSplitBill" title="Partager la note">
+                                <span>➗</span> Split
+                            </button>
+                            <button class="btn-action btn-pay" id="btnPayModal" title="Régler l'addition">
+                                <span>💳</span> Encaisser
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Product Catalog Grid & Quick-Keys -->
+                <div class="pos-catalog-panel">
+                    <!-- Quick Keys Rush Bar -->
+                    <div class="quick-keys-bar" id="quickKeysBar">
+                        <!-- Populated dynamically -->
+                    </div>
+
+                    <!-- Category Tabs -->
+                    <div class="category-tabs-bar" id="categoryTabsBar">
+                        <!-- Populated dynamically -->
+                    </div>
+
+                    <!-- Products Grid & Tactile Pagination Bar (US1 & US4) -->
+                    <div class="products-grid-wrapper">
+                        <div class="products-grid" id="productsGrid">
+                            <!-- Populated dynamically -->
+                        </div>
+                        <div class="grid-pagination-bar" id="gridPaginationBar" style="display:none;">
+                            <button type="button" class="btn-grid-page-nav" id="btnPrevGridPage" title="Page précédente">◀ Précédent</button>
+                            <div class="grid-page-indicator-container">
+                                <span class="grid-page-label" id="gridPageLabel">Page 1 / 1</span>
+                                <div class="grid-page-dots" id="gridPageDots"></div>
+                            </div>
+                            <button type="button" class="btn-grid-page-nav" id="btnNextGridPage" title="Page suivante">Suivant ▶</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== VIEW 2: FLOOR PLAN ==================== -->
+        <section class="view-panel" id="floorPlanView">
+            <div class="floor-plan-container">
+                <div class="floor-header">
+                    <div style="display: flex; align-items: center; gap: 16px;">
+                        <h2>Plan de Salle Interactif 2D</h2>
+                        <button id="btnOpenAddTableModal" class="btn-primary" style="padding: 7px 16px; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 6px; border-radius: 2px; font-weight: 600; cursor: pointer;">
+                            <span>➕</span> Nouvelle Table
+                        </button>
+                    </div>
+                    <div class="legend">
+                        <span class="legend-item"><span class="dot dot-free"></span> Libre</span>
+                        <span class="legend-item"><span class="dot dot-occupied"></span> Occupée</span>
+                        <span class="legend-item"><span class="dot dot-bill"></span> Addition</span>
+                        <span class="legend-item"><span class="dot dot-paid"></span> Encaissée</span>
+                    </div>
+                </div>
+                <div class="tables-grid" id="floorTablesGrid">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== VIEW 3: KITCHEN KDS ==================== -->
+        <section class="view-panel" id="kdsView">
+            <div class="kds-container">
+                <div class="kds-header">
+                    <h2>Écran de Cuisine KDS (Temps Réel)</h2>
+                    <div class="kds-filters">
+                        <button class="kds-filter-btn active" data-station="ALL">Toutes Stations</button>
+                        <button class="kds-filter-btn" data-station="HOT_KITCHEN">Chaud / Grill</button>
+                        <button class="kds-filter-btn" data-station="COLD">Froid / Entrées</button>
+                        <button class="kds-filter-btn" data-station="BAR">Bar & Boissons</button>
+                    </div>
+                </div>
+
+                <div class="kds-kanban-board">
+                    <div class="kds-column" id="colPending">
+                        <div class="column-header">
+                            <span class="col-title">En Attente</span>
+                            <span class="col-count" id="countPending">0</span>
+                        </div>
+                        <div class="ticket-cards-container" id="kdsPendingCards"></div>
+                    </div>
+
+                    <div class="kds-column" id="colInPrep">
+                        <div class="column-header">
+                            <span class="col-title">En Préparation</span>
+                            <span class="col-count" id="countInPrep">0</span>
+                        </div>
+                        <div class="ticket-cards-container" id="kdsInPrepCards"></div>
+                    </div>
+
+                    <div class="kds-column" id="colReady">
+                        <div class="column-header">
+                            <span class="col-title">Prêt à Servir</span>
+                            <span class="col-count" id="countReady">0</span>
+                        </div>
+                        <div class="ticket-cards-container" id="kdsReadyCards"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== VIEW 4: ADMIN & CONFIGURATION ==================== -->
+        <section class="view-panel" id="adminView">
+            <div class="admin-container">
+                <div class="admin-sidebar">
+                    <h3>⚙️ Paramétrage POS</h3>
+                    <button class="admin-tab-btn active" data-admin-tab="tabCatalog">
+                        <span>🏷️</span> Familles & Articles
+                    </button>
+                    <button class="admin-tab-btn" data-admin-tab="tabStaff">
+                        <span>👥</span> Serveurs & Codes PIN
+                    </button>
+                    <button class="admin-tab-btn" data-admin-tab="tabPrinters">
+                        <span>🖨️</span> Imprimantes Réseau
+                    </button>
+                    <button class="admin-tab-btn" data-admin-tab="tabLayout">
+                        <span>📱</span> Disposition de l'Écran
+                    </button>
+                    <button class="admin-tab-btn" data-admin-tab="tabNetworkSync">
+                        <span>🌐</span> Réseau & Synchronisation
+                    </button>
+                </div>
+
+                <div class="admin-content">
+                    <!-- Tab 1: Catalog -->
+                    <div class="admin-tab-pane active" id="tabCatalog">
+                        <div class="admin-split">
+                            <div class="admin-card">
+                                <h4>➕ Ajouter une Famille / Catégorie</h4>
+                                <form id="formAddCategory" class="admin-form">
+                                    <div class="form-group">
+                                        <label>Nom de la Famille :</label>
+                                        <input type="text" id="inputCatName" placeholder="Ex: Vins Rouges, Burgers"
+                                            required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Couleur du Badge :</label>
+                                        <input type="color" id="inputCatColor" value="#E74C3C">
+                                    </div>
+                                    <button type="submit" class="btn-primary">Créer la Famille</button>
+                                </form>
+
+                                <hr class="divider">
+
+                                <h4>➕ Ajouter un Article</h4>
+                                <form id="formAddProduct" class="admin-form">
+                                    <div class="form-group">
+                                        <label>Famille parente :</label>
+                                        <select id="selectProductCat" required></select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Nom de l'article :</label>
+                                        <input type="text" id="inputProdName" placeholder="Ex: Côte de Bœuf 500g"
+                                            required>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label>Prix TTC (€) :</label>
+                                            <input type="number" step="0.10" id="inputProdPrice" value="15.00" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>TVA (%) :</label>
+                                            <select id="selectProdVat">
+                                                <option value="10.0">10.0 % (Restauration)</option>
+                                                <option value="20.0">20.0 % (Alcools)</option>
+                                                <option value="5.5">5.5 % (Emporté)</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Poste de préparation :</label>
+                                        <select id="selectProdStation">
+                                            <option value="HOT_KITCHEN">Cuisine Chaude / Grill</option>
+                                            <option value="COLD">Cuisine Froide / Entrées</option>
+                                            <option value="DESSERT">Pâtisserie / Desserts</option>
+                                            <option value="BAR">Bar & Boissons</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group checkbox-group">
+                                        <label>
+                                            <input type="checkbox" id="checkQuickKey"> Épingler dans les Touches Rapides
+                                            ("Coup de feu")
+                                        </label>
+                                    </div>
+                                    <button type="submit" class="btn-primary">Ajouter au Catalogue</button>
+                                </form>
+                            </div>
+
+                            <div class="admin-card">
+                                <h4>Catalogue Actif</h4>
+                                <div class="catalog-list-view" id="adminCatalogList">
+                                    <!-- Populated dynamically -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab 2: Staff -->
+                    <div class="admin-tab-pane" id="tabStaff">
+                        <div class="admin-split">
+                            <div class="admin-card">
+                                <h4>➕ Nouvel Employé / Serveur</h4>
+                                <form id="formAddStaff" class="admin-form">
+                                    <div class="form-group">
+                                        <label>Nom complet :</label>
+                                        <input type="text" id="inputStaffName" placeholder="Ex: Claire Dufour" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Rôle :</label>
+                                        <select id="selectStaffRole">
+                                            <option value="Waiter">Serveur / Salle</option>
+                                            <option value="Cashier">Caissier</option>
+                                            <option value="KitchenStaff">Cuisinier / Chef</option>
+                                            <option value="FloorManager">Manager de Salle</option>
+                                            <option value="Admin">Administrateur</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Code PIN (4 à 6 chiffres) :</label>
+                                        <input type="password" maxlength="6" id="inputStaffPin" placeholder="1357"
+                                            required>
+                                    </div>
+                                    <button type="submit" class="btn-primary">Créer l'Accès Employé</button>
+                                </form>
+                            </div>
+                            <div class="admin-card">
+                                <h4>Équipe & Accès PIN Déclarés</h4>
+                                <div class="staff-list-view" id="adminStaffList"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab 3: Printers -->
+                    <div class="admin-tab-pane" id="tabPrinters">
+                        <div class="admin-split">
+                            <div class="admin-card">
+                                <h4>➕ Déclarer une Imprimante Réseau</h4>
+                                <form id="formAddPrinter" class="admin-form">
+                                    <div class="form-group">
+                                        <label>Nom de l'imprimante :</label>
+                                        <input type="text" id="inputPrinterName"
+                                            placeholder="Ex: Imprimante Passe Cuisine" required>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label>Adresse IP :</label>
+                                            <input type="text" id="inputPrinterIp" placeholder="192.168.1.150" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Port :</label>
+                                            <input type="number" id="inputPrinterPort" value="9100">
+                                        </div>
+                                    </div>
+                                    <div class="form-group checkbox-group">
+                                        <label>
+                                            <input type="checkbox" id="checkPrinterDrawer"> Déclencher le tiroir-caisse
+                                            (RJ11)
+                                        </label>
+                                    </div>
+                                    <button type="submit" class="btn-primary">Enregistrer l'Imprimante</button>
+                                </form>
+                            </div>
+                            <div class="admin-card">
+                                <h4>Imprimantes Configurées</h4>
+                                <div class="printers-list-view" id="adminPrintersList"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab 4: Screen Layout & Matrix Grid Editor -->
+                    <div class="admin-tab-pane" id="tabLayout">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:12px;">
+                            <div>
+                                <h3>🔲 Éditeur de Grille Tactile & Dimensions d'Écran</h3>
+                                <p style="color:var(--text-muted); font-size:0.85rem; margin-top:2px;">
+                                    Configurez les dimensions sur-mesure (Colonnes × Lignes) et organisez vos tuiles par glisser-déposer.
+                                </p>
+                            </div>
+                            <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                                <label style="font-weight:700; font-size:0.88rem;">Famille :</label>
+                                <select id="selectAdminGridCat" style="padding:8px 14px; border-radius:var(--radius-sm); background:var(--bg-card); color:white; border:1px solid var(--border-color); font-size:0.9rem;"></select>
+                                <button type="button" id="btnResetGridLayout" class="btn-archive" style="padding:8px 14px; font-size:0.82rem;">↺ Réinitialiser</button>
+                            </div>
+                        </div>
+
+                        <!-- Dimensions Toolbar (Customizable Matrix Screen Size) -->
+                        <div class="grid-dimensions-toolbar" style="display:flex; align-items:center; justify-content:space-between; background:rgba(30,41,59,0.7); border:1px solid var(--border-color); border-radius:var(--radius-sm); padding:10px 16px; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
+                            <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                                <span style="font-weight:700; font-size:0.88rem; color:var(--text-main);">📐 Format / Écran :</span>
+                                <select id="selectGridDimensionsPreset" style="padding:6px 12px; border-radius:var(--radius-sm); background:var(--bg-panel); color:white; border:1px solid var(--border-color); font-size:0.85rem;">
+                                    <option value="3x3">3 × 3 (9 touches — Grandes touches / 8"-10")</option>
+                                    <option value="4x4" selected>4 × 4 (16 touches — Standard recommandé)</option>
+                                    <option value="5x4">5 × 4 (20 touches — Format équilibré)</option>
+                                    <option value="5x5">5 × 5 (25 touches — Haute densité / 12.9")</option>
+                                    <option value="6x4">6 × 4 (24 touches — Écran large 16:9)</option>
+                                    <option value="6x5">6 × 5 (30 touches — Grand écran 15.6"-21")</option>
+                                    <option value="custom">⚙️ Personnalisé...</option>
+                                </select>
+
+                                <div id="customDimensionsInputs" style="display:none; align-items:center; gap:8px;">
+                                    <label style="font-size:0.82rem; color:var(--text-muted);">Colonnes :</label>
+                                    <input type="number" id="inputGridCols" min="2" max="8" value="4" style="width:54px; padding:5px 8px; border-radius:var(--radius-sm); background:var(--bg-panel); color:white; border:1px solid var(--border-color); font-size:0.85rem; text-align:center;">
+                                    <label style="font-size:0.82rem; color:var(--text-muted);">Lignes :</label>
+                                    <input type="number" id="inputGridRows" min="2" max="8" value="4" style="width:54px; padding:5px 8px; border-radius:var(--radius-sm); background:var(--bg-panel); color:white; border:1px solid var(--border-color); font-size:0.85rem; text-align:center;">
+                                </div>
+                            </div>
+
+                            <div style="display:flex; align-items:center; gap:12px;">
+                                <label style="font-size:0.82rem; color:var(--text-muted); display:flex; align-items:center; gap:6px; cursor:pointer;">
+                                    <input type="checkbox" id="checkApplyAllGridDimensions"> Appliquer à tout le menu
+                                </label>
+                                <button type="button" id="btnApplyGridDimensions" class="btn-primary" style="padding:6px 14px; font-size:0.82rem;">Appliquer le Format</button>
+                            </div>
+                        </div>
+
+                        <div style="display:flex; gap:20px; min-height:520px;">
+                            <!-- Left: Interactive Mirror Matrix Grid -->
+                            <div style="flex:1; display:flex; flex-direction:column; background:var(--bg-panel); border:1px solid var(--border-color); border-radius:var(--radius-sm); padding:16px;">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                                    <div style="display:flex; align-items:center; gap:12px;">
+                                        <h4 style="font-size:0.95rem; font-weight:700;">Matrice Tactile de Caisse (4 × 4)</h4>
+                                        <!-- Multi-Page Tabs (US2) -->
+                                        <div class="admin-grid-page-tabs" id="adminGridPageTabs" style="display:flex; gap:6px;">
+                                            <!-- Dynamically populated page buttons -->
+                                        </div>
+                                    </div>
+                                    <span id="adminGridLayoutVersion" style="font-size:0.75rem; color:var(--text-muted); font-family:var(--font-mono);">Version: 1</span>
+                                </div>
+                                <div id="adminMatrixGrid" style="flex:1; display:grid; grid-template-columns:repeat(4, 1fr); grid-auto-rows:1fr; gap:10px; background:rgba(15,23,42,0.45); padding:10px; border:1px dashed var(--border-color); border-radius:var(--radius-sm);">
+                                    <!-- Dynamic Slots Rendered Here -->
+                                </div>
+                            </div>
+
+                            <!-- Right: Category Catalog Items List -->
+                            <div style="width:280px; display:flex; flex-direction:column; background:var(--bg-panel); border:1px solid var(--border-color); border-radius:var(--radius-sm); padding:16px;">
+                                <h4 style="font-size:0.92rem; font-weight:700; margin-bottom:4px;">Catalogue de la Famille</h4>
+                                <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:12px;">
+                                    Glissez un article vers une case vide ou cliquez sur une case vide pour l'assigner.
+                                </p>
+                                <div id="adminCatalogListForGrid" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:8px;">
+                                    <!-- Draggable Catalog Items Rendered Here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab 5: Network & Sync -->
+                    <div class="admin-tab-pane" id="tabNetworkSync">
+                        <div class="admin-split">
+                            <div class="admin-card">
+                                <h4>🔍 Découverte Automatique (Zero-Config)</h4>
+                                <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:12px;">
+                                    Scannez le réseau local Wi-Fi / Ethernet pour détecter automatiquement le serveur de caisse maître et les imprimantes réseau.
+                                </p>
+                                <button type="button" class="btn-primary" id="btnScanNetwork" style="display:flex; align-items:center; justify-content:center; gap:8px;">
+                                    <span>🔍</span> Lancer la Découverte Réseau
+                                </button>
+                                <div id="discoveredServersList" style="margin-top:14px; display:flex; flex-direction:column; gap:8px;">
+                                    <!-- Discovered servers rendered dynamically -->
+                                </div>
+
+                                <hr class="divider" style="margin:16px 0;">
+
+                                <h4>⚙️ Configuration Manuelle du Serveur</h4>
+                                <form id="formManualServerConfig" class="admin-form">
+                                    <div class="form-group">
+                                        <label>Adresse URL du Serveur Maître :</label>
+                                        <input type="text" id="inputManualServerUrl" value="http://127.0.0.1:5000" placeholder="Ex: http://192.168.1.50:5000" required style="width:100%; padding:10px; border-radius: 2px; background:rgba(255,255,255,0.05); border:1px solid var(--border-color); color:white;">
+                                    </div>
+                                    <div style="display:flex; gap:10px;">
+                                        <button type="button" class="btn-archive" id="btnTestServerConn" style="flex:1; padding:10px; font-weight:700;">📡 Tester Connexion</button>
+                                        <button type="submit" class="btn-primary" style="flex:1; padding:10px; font-weight:700;">Enregistrer</button>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <div class="admin-card">
+                                <h4>📊 État de la Synchronisation (Offline-First)</h4>
+                                <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:14px;">
+                                    <div style="background:var(--bg-main); padding:12px; border-radius: 2px; border:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
+                                        <span>Mode de fonctionnement :</span>
+                                        <strong style="color:#10b981;" id="syncEngineMode">Connecté au Réseau (Edge)</strong>
+                                    </div>
+                                    <div style="background:var(--bg-main); padding:12px; border-radius: 2px; border:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
+                                        <span>Messages en attente (Outbox) :</span>
+                                        <strong style="color:#f59e0b;" id="syncPendingCount">0 message</strong>
+                                    </div>
+                                    <div style="background:var(--bg-main); padding:12px; border-radius: 2px; border:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
+                                        <span>Transactions synchronisées :</span>
+                                        <strong style="color:#38bdf8;" id="syncCompletedCount">0 transaction</strong>
+                                    </div>
+                                    <div style="background:var(--bg-main); padding:12px; border-radius: 2px; border:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
+                                        <span>Dernière synchronisation :</span>
+                                        <strong style="color:var(--text-muted); font-size:0.85rem;" id="syncLastTime">-</strong>
+                                    </div>
+                                </div>
+
+                                <button type="button" class="btn-primary" id="btnForceSyncNow" style="background:#10b981; box-shadow:0 4px 14px rgba(16, 185, 129, 0.4); display:flex; align-items:center; justify-content:center; gap:8px;">
+                                    <span>⚡</span> Forcer la Synchronisation Immédiate
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== VIEW 5: FISCAL NF525 ==================== -->
+        <section class="view-panel" id="fiscalView">
+            <div class="fiscal-container">
+                <div class="fiscal-card">
+                    <h2>📜 Traçabilité Fiscale NF525 & Clôtures</h2>
+                    <p class="text-muted">Chaînage cryptographique inaltérable SHA-256 des règlements et scellement
+                        journalier.</p>
+
+                    <div class="fiscal-actions">
+                        <button class="btn-fiscal" id="btnExecuteZ">
+                            <span>🔒</span> Exécuter la Clôture Journalière (Rapport Z)
+                        </button>
+                    </div>
+
+                    <div class="fiscal-report-display" id="fiscalReportDisplay">
+                        <div class="ticket-slip">
+                            <div class="slip-header">
+                                <h3>*** CLÔTURE JOURNALIÈRE DU JOUR (RAPPORT Z) ***</h3>
+                                <p>Norme NF525 — Traçabilité Fiscale Inaltérable</p>
+                                <p id="slipDate">Date: 2026-08-30 23:00 UTC</p>
+                                <p>Terminal: POS_MAIN_TERM</p>
+                            </div>
+                            <div class="slip-body" id="slipBody">
+                                <div class="slip-row"><span>Total Ventes TTC :</span><strong id="slipTotalTtc">142.50
+                                        €</strong></div>
+                                <div class="slip-row"><span>Total Ventes HT :</span><span id="slipTotalHt">129.55
+                                        €</span></div>
+                                <div class="slip-row"><span>TVA 10% :</span><span>11.45 €</span></div>
+                                <div class="slip-row"><span>TVA 20% :</span><span>1.50 €</span></div>
+                                <div class="slip-row"><span>Nombre de Tickets :</span><span id="slipCount">6</span>
+                                </div>
+                            </div>
+                            <div class="slip-footer">
+                                <p class="hash-label">Signature Cryptographique SHA-256 :</p>
+                                <code class="sha256-hash"
+                                    id="slipHash">e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855</code>
+                                <p class="verified-tag">✓ Chaîne d'Audit Fiscale Scellée & Valide</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modals -->
+
+    <!-- PIN Lock Overlay Modal -->
+    <div class="modal-overlay" id="pinLockModal">
+        <div class="pin-modal-card">
+            <div class="pin-header">
+                <span class="pin-lock-icon">🔒</span>
+                <h3>Caisse Verrouillée</h3>
+                <p>Composez votre code PIN (4-6 chiffres) :</p>
+            </div>
+            <div class="pin-display">
+                <span class="pin-bullet" id="pinDot0"></span>
+                <span class="pin-bullet" id="pinDot1"></span>
+                <span class="pin-bullet" id="pinDot2"></span>
+                <span class="pin-bullet" id="pinDot3"></span>
+                <span class="pin-bullet" id="pinDot4"></span>
+                <span class="pin-bullet" id="pinDot5"></span>
+            </div>
+            <div class="pin-keypad">
+                <button class="btn-num" data-val="1">1</button>
+                <button class="btn-num" data-val="2">2</button>
+                <button class="btn-num" data-val="3">3</button>
+                <button class="btn-num" data-val="4">4</button>
+                <button class="btn-num" data-val="5">5</button>
+                <button class="btn-num" data-val="6">6</button>
+                <button class="btn-num" data-val="7">7</button>
+                <button class="btn-num" data-val="8">8</button>
+                <button class="btn-num" data-val="9">9</button>
+                <button class="btn-num btn-clear" id="btnPinClear">C</button>
+                <button class="btn-num" data-val="0">0</button>
+                <button class="btn-num btn-back" id="btnPinDel">⌫</button>
+            </div>
+            <div class="pin-quick-hints">
+                <small>Comptes démo : Alexandre (<code>1234</code>) | Sophie (<code>2468</code>) | Admin
+                    (<code>9999</code>)</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Modal -->
+    <div class="modal-overlay" id="paymentModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Règlement & Encaissement</h3>
+                <button class="btn-close-modal" id="btnClosePayModal">✕</button>
+            </div>
+            <div class="payment-body">
+                <div class="pay-amount-box">
+                    <span class="label">Total Note :</span>
+                    <span class="amount" id="payRemainingAmount">0.00 €</span>
+                </div>
+
+                <!-- Tip Suggestions (US4) -->
+                <div class="tip-section" style="margin-top: 10px;">
+                    <span style="font-size:0.85rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:6px;">✨ Pourboire au serveur :</span>
+                    <div class="tip-pills-bar" style="display:flex; gap:8px;">
+                        <button type="button" class="btn-tip-pill active" data-tip-percent="0">0% (0.00 €)</button>
+                        <button type="button" class="btn-tip-pill" data-tip-percent="5">5%</button>
+                        <button type="button" class="btn-tip-pill" data-tip-percent="10">10%</button>
+                        <button type="button" class="btn-tip-pill" data-tip-percent="15">15%</button>
+                        <button type="button" class="btn-tip-pill" id="btnTipCustom">Libre €</button>
+                    </div>
+                    <div id="tipCustomInputRow" style="display:none; margin-top:8px;">
+                        <input type="number" step="0.50" id="inputCustomTip" placeholder="Montant du pourboire (€)" style="width:100%; padding:8px; border-radius: 2px; background:var(--bg-main); border:1px solid var(--border-color); color:white;" />
+                    </div>
+                    <div class="tip-summary-row" style="display:flex; justify-content:space-between; margin-top:8px; font-weight:700; font-size:0.9rem; color:#a7f3d0;">
+                        <span>Total avec pourboire :</span>
+                        <span id="payTotalWithTip">0.00 €</span>
+                    </div>
+                </div>
+
+                <div class="fast-cash-buttons">
+                    <button class="btn-cash-bill" data-cash="10">10 €</button>
+                    <button class="btn-cash-bill" data-cash="20">20 €</button>
+                    <button class="btn-cash-bill" data-cash="50">50 €</button>
+                    <button class="btn-cash-bill" data-cash="100">100 €</button>
+                </div>
+                <div class="tender-types-grid">
+                    <button class="btn-tender" data-tender="Card">💳 Carte Bancaire</button>
+                    <button class="btn-tender" data-tender="Cash">💶 Espèces</button>
+                    <button class="btn-tender" data-tender="MealVoucher">🍽️ Titre Restaurant</button>
+                    <button class="btn-tender btn-tender-hotel" id="btnOpenRoomChargeModal" style="border-color:#38bdf8; background:rgba(56, 189, 248, 0.15); color:#bae6fd;">🏨 Imputer sur Chambre Hôtel (PMS)</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table Transfer / Merge Modal (US1) -->
+    <div class="modal-overlay" id="transferTableModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>🔄 Transférer ou Fusionner la Table</h3>
+                <button class="btn-close-modal" id="btnCloseTransferModal">✕</button>
+            </div>
+            <form id="formTransferTable" class="admin-form" style="display:flex; flex-direction:column; gap:14px;">
+                <div class="form-group">
+                    <label>Table Source Actuelle :</label>
+                    <input type="text" id="transferSourceTable" readonly style="background:rgba(255,255,255,0.05); font-weight:700; color:#fbbf24;" />
+                </div>
+                <div class="form-group">
+                    <label>Table Cible :</label>
+                    <select id="selectTargetTable" required style="width:100%; padding:10px; border-radius: 2px; background:var(--bg-card); border:1px solid var(--border-color); color:white; font-size:1rem;"></select>
+                </div>
+                <div class="form-group">
+                    <label>Type d'opération :</label>
+                    <div style="display:flex; gap:16px; margin-top:4px;">
+                        <label style="cursor:pointer; display:flex; align-items:center; gap:6px;">
+                            <input type="radio" name="transferMode" value="transfer" checked />
+                            <span>Déplacement (Table Libre)</span>
+                        </label>
+                        <label style="cursor:pointer; display:flex; align-items:center; gap:6px;">
+                            <input type="radio" name="transferMode" value="merge" />
+                            <span>Fusionner les Couverts</span>
+                        </label>
+                    </div>
+                </div>
+                <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:10px;">
+                    <button type="button" class="btn-archive" id="btnCancelTransfer">Annuler</button>
+                    <button type="submit" class="btn-primary" style="padding:10px 20px; font-weight:700;">Confirmer l'opération</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Discount / Comp Modal (US2) -->
+    <div class="modal-overlay" id="discountModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>🏷️ Remises & Articles Offerts</h3>
+                <button class="btn-close-modal" id="btnCloseDiscountModal">✕</button>
+            </div>
+            <form id="formApplyDiscount" class="admin-form" style="display:flex; flex-direction:column; gap:14px;">
+                <div class="form-group">
+                    <label>Cible de la Remise :</label>
+                    <select id="selectDiscountTarget" style="width:100%; padding:10px; border-radius: 2px; background:var(--bg-card); border:1px solid var(--border-color); color:white;">
+                        <option value="global">Remise Globale sur la Note</option>
+                        <!-- Populated with item comps dynamically -->
+                    </select>
+                </div>
+                <div id="groupDiscountType" class="form-group">
+                    <label>Type de Remise :</label>
+                    <div style="display:flex; gap:12px; margin-top:4px;">
+                        <button type="button" class="btn-cap-quick active" data-disc-type="Percent" data-disc-val="10">10%</button>
+                        <button type="button" class="btn-cap-quick" data-disc-type="Percent" data-disc-val="20">20%</button>
+                        <button type="button" class="btn-cap-quick" data-disc-type="Percent" data-disc-val="50">50%</button>
+                        <button type="button" class="btn-cap-quick" data-disc-type="Fixed" data-disc-val="5">5.00 €</button>
+                        <button type="button" class="btn-cap-quick" data-disc-type="Fixed" data-disc-val="10">10.00 €</button>
+                    </div>
+                </div>
+                <div id="groupDiscountValue" class="form-row" style="display:flex; gap:12px;">
+                    <div class="form-group" style="flex:1;">
+                        <label>Valeur :</label>
+                        <input type="number" step="0.5" id="inputDiscountVal" value="10" required style="width:100%; padding:10px; border-radius: 2px; background:rgba(255,255,255,0.05); border:1px solid var(--border-color); color:white;" />
+                    </div>
+                    <div class="form-group" style="flex:1;">
+                        <label>Unité :</label>
+                        <select id="selectDiscountUnit" style="width:100%; padding:10px; border-radius: 2px; background:var(--bg-card); border:1px solid var(--border-color); color:white;">
+                            <option value="Percentage">Pourcentage (%)</option>
+                            <option value="FixedAmount">Montant (€)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Motif obligatoire (Audit Fiscal NF525) * :</label>
+                    <select id="selectDiscountReason" style="width:100%; padding:10px; border-radius: 2px; background:var(--bg-card); border:1px solid var(--border-color); color:white;">
+                        <option value="Geste commercial / Retard cuisine">Geste commercial / Retard cuisine</option>
+                        <option value="Guide Touristique / Partenaire">Guide Touristique / Partenaire</option>
+                        <option value="Remise Personnel / Équipe">Remise Personnel / Équipe</option>
+                        <option value="VIP / Direction">VIP / Direction</option>
+                        <option value="Autre motif">Autre motif (préciser ci-dessous)</option>
+                    </select>
+                    <input type="text" id="inputDiscountCustomReason" placeholder="Préciser le motif..." style="margin-top:6px; display:none; width:100%; padding:8px; border-radius: 2px; background:rgba(255,255,255,0.05); border:1px solid var(--border-color); color:white;" />
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
+                    <button type="button" class="btn-archive" id="btnResetDiscount">Supprimer Remise</button>
+                    <div style="display:flex; gap:10px;">
+                        <button type="button" class="btn-archive" id="btnCancelDiscount">Annuler</button>
+                        <button type="submit" class="btn-primary" style="padding:10px 20px; font-weight:700;">Valider</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Hotel Room Charge PMS Modal (US5) -->
+    <div class="modal-overlay" id="roomChargeModal">
+        <div class="modal-card" style="width:480px;">
+            <div class="modal-header">
+                <h3>🏨 Facturation sur Chambre Hôtel</h3>
+                <button class="btn-close-modal" id="btnCloseRoomChargeModal">✕</button>
+            </div>
+            <form id="formRoomCharge" class="admin-form" style="display:flex; flex-direction:column; gap:14px;">
+                <div class="form-group">
+                    <label>Sélectionner la Chambre :</label>
+                    <select id="selectHotelRoom" required style="width:100%; padding:10px; border-radius: 2px; background:var(--bg-card); border:1px solid var(--border-color); color:white; font-size:1rem;"></select>
+                </div>
+                <div class="room-guest-card" id="roomGuestInfoCard" style="background:rgba(56, 189, 248, 0.1); border:1px solid rgba(56, 189, 248, 0.3); border-radius: 2px; padding:12px; display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <div style="font-weight:700; color:#bae6fd; font-size:1.05rem;" id="roomGuestName">-</div>
+                        <div style="font-size:0.8rem; color:var(--text-muted);">Résident en séjour actif</div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div style="font-size:0.8rem; color:var(--text-muted);">Plafond disponible :</div>
+                        <div style="font-weight:700; color:#34d399; font-family:var(--font-mono);" id="roomCreditAvailable">- €</div>
+                    </div>
+                </div>
+                <div class="pay-amount-box" style="padding:10px;">
+                    <span class="label">Montant Total à imputer (avec pourboire) :</span>
+                    <span class="amount" id="roomChargeTotalAmount" style="font-size:1.6rem; color:#38bdf8;">0.00 €</span>
+                </div>
+                <div class="form-group">
+                    <label>Signature du Résident (Tactile / Écran) * :</label>
+                    <div style="border:1px dashed var(--border-color); border-radius: 2px; background:rgba(0,0,0,0.3); position:relative; overflow:hidden;">
+                        <canvas id="signatureCanvas" width="430" height="130" style="touch-action:none; width:100%; height:130px; cursor:crosshair;"></canvas>
+                        <button type="button" id="btnClearSignature" style="position:absolute; top:6px; right:6px; background:rgba(255,255,255,0.1); border:none; color:var(--text-muted); font-size:0.75rem; padding:4px 8px; border-radius: 2px; cursor:pointer;">Effacer</button>
+                    </div>
+                </div>
+                <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:6px;">
+                    <button type="button" class="btn-archive" id="btnCancelRoomCharge">Annuler</button>
+                    <button type="submit" class="btn-primary" style="background:#0284c7; box-shadow:0 4px 14px rgba(2, 132, 199, 0.4); padding:10px 20px; font-weight:700;">Enregistrer la Note Folio</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Split Bill Modal -->
+    <div class="modal-overlay" id="splitBillModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Partage d'Addition (Split Bill)</h3>
+                <button class="btn-close-modal" id="btnCloseSplitModal">✕</button>
+            </div>
+            <div class="split-body">
+                <p>Division équitable sans perte de centimes :</p>
+                <div class="stepper-box">
+                    <button class="btn-stepper" id="btnSplitMinus">-</button>
+                    <span class="stepper-val" id="splitGuestsCount">2 Convives</span>
+                    <button class="btn-stepper" id="btnSplitPlus">+</button>
+                </div>
+                <div class="split-partitions-list" id="splitPartitionsList"></div>
+                <button class="btn-primary btn-confirm-split" id="btnConfirmSplit">Encaisser la part</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Table Modal -->
+    <div class="modal-overlay" id="addTableModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>➕ Créer une Nouvelle Table</h3>
+                <button class="btn-close-modal" id="btnCloseAddTableModal">✕</button>
+            </div>
+            <form id="formAddNewTable" class="admin-form" style="display:flex; flex-direction:column; gap:16px; padding:20px;">
+                <div class="form-group">
+                    <label for="inputNewTableNum">Numéro / Nom de la Table * :</label>
+                    <input type="text" id="inputNewTableNum" placeholder="Ex: T9, T10, Terrasse 1, Bar 2" required style="width:100%; padding:10px; border-radius: 2px; background:rgba(255,255,255,0.05); border:1px solid var(--border-color); color:white; font-size:1rem;" />
+                </div>
+                <div class="form-group">
+                    <label for="inputNewTableCap">Capacité (nombre de places) :</label>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <input type="number" id="inputNewTableCap" value="4" min="1" max="30" required style="width:100px; padding:10px; border-radius: 2px; background:rgba(255,255,255,0.05); border:1px solid var(--border-color); color:white; font-size:1rem;" />
+                        <div style="display:flex; gap:6px;">
+                            <button type="button" class="btn-cap-quick" data-cap="2">2p</button>
+                            <button type="button" class="btn-cap-quick" data-cap="4">4p</button>
+                            <button type="button" class="btn-cap-quick" data-cap="6">6p</button>
+                            <button type="button" class="btn-cap-quick" data-cap="8">8p</button>
+                        </div>
+                    </div>
+                </div>
+                <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:10px;">
+                    <button type="button" class="btn-archive" id="btnCancelAddTable">Annuler</button>
+                    <button type="submit" class="btn-primary" style="padding:10px 20px; font-weight:700;">Créer la Table</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Product Modal -->
+    <div class="modal-overlay" id="editProductModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>✏️ Modifier l'Article</h3>
+                <button class="btn-close-modal" id="btnCloseEditProductModal">✕</button>
+            </div>
+            <form id="formEditProduct" class="admin-form" style="display:flex; flex-direction:column; gap:14px; padding:20px;">
+                <input type="hidden" id="editProdId" />
+                <div class="form-group">
+                    <label for="editProdName">Nom de l'article * :</label>
+                    <input type="text" id="editProdName" required style="width:100%; padding:10px; border-radius: 2px; background:rgba(255,255,255,0.05); border:1px solid var(--border-color); color:white;" />
+                </div>
+                <div class="form-row" style="display:flex; gap:12px;">
+                    <div class="form-group" style="flex:1;">
+                        <label for="editProdCat">Famille :</label>
+                        <select id="editProdCat" style="width:100%; padding:10px; border-radius: 2px; background:var(--bg-card); border:1px solid var(--border-color); color:white;"></select>
+                    </div>
+                    <div class="form-group" style="flex:1;">
+                        <label for="editProdPrice">Prix TTC (€) * :</label>
+                        <input type="number" step="0.10" id="editProdPrice" required style="width:100%; padding:10px; border-radius: 2px; background:rgba(255,255,255,0.05); border:1px solid var(--border-color); color:white;" />
+                    </div>
+                </div>
+                <div class="form-row" style="display:flex; gap:12px;">
+                    <div class="form-group" style="flex:1;">
+                        <label for="editProdTax">TVA (%) :</label>
+                        <select id="editProdTax" style="width:100%; padding:10px; border-radius: 2px; background:var(--bg-card); border:1px solid var(--border-color); color:white;">
+                            <option value="10">10.0% (Restauration)</option>
+                            <option value="20">20.0% (Alcools)</option>
+                            <option value="5.5">5.5% (À emporter)</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="flex:1;">
+                        <label for="editProdStation">Poste de Cuisine :</label>
+                        <select id="editProdStation" style="width:100%; padding:10px; border-radius: 2px; background:var(--bg-card); border:1px solid var(--border-color); color:white;">
+                            <option value="HOT_KITCHEN">Chaud / Grill</option>
+                            <option value="COLD">Froid / Entrées</option>
+                            <option value="BAR">Bar & Boissons</option>
+                            <option value="DESSERT">Dessert</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group checkbox-group" style="display:flex; align-items:center; gap:8px;">
+                    <label style="cursor:pointer; display:flex; align-items:center; gap:8px;">
+                        <input type="checkbox" id="editProdQuickKey" style="width:18px; height:18px;" />
+                        <span>Épingler dans les Touches Rapides ("Coup de feu")</span>
+                    </label>
+                </div>
+                <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:10px;">
+                    <button type="button" class="btn-archive" id="btnCancelEditProduct">Annuler</button>
+                    <button type="submit" class="btn-primary" style="padding:10px 20px; font-weight:700;">Enregistrer les Modifications</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Category Modal -->
+    <div class="modal-overlay" id="editCategoryModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>✏️ Modifier la Famille</h3>
+                <button class="btn-close-modal" id="btnCloseEditCatModal">✕</button>
+            </div>
+            <form id="formEditCategory" class="admin-form" style="display:flex; flex-direction:column; gap:14px; padding:20px;">
+                <input type="hidden" id="editCatId" />
+                <div class="form-group">
+                    <label for="editCatName">Nom de la famille * :</label>
+                    <input type="text" id="editCatName" required style="width:100%; padding:10px; border-radius: 2px; background:rgba(255,255,255,0.05); border:1px solid var(--border-color); color:white;" />
+                </div>
+                <div class="form-group">
+                    <label for="editCatColor">Couleur du Badge :</label>
+                    <input type="color" id="editCatColor" value="#4A90E2" style="width:100%; height:42px; border-radius: 2px; background:transparent; border:1px solid var(--border-color); cursor:pointer;" />
+                </div>
+                <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:10px;">
+                    <button type="button" class="btn-archive" id="btnCancelEditCat">Annuler</button>
+                    <button type="submit" class="btn-primary" style="padding:10px 20px; font-weight:700;">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Staff Modal -->
+    <div class="modal-overlay" id="editStaffModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>✏️ Modifier l'Employé</h3>
+                <button class="btn-close-modal" id="btnCloseEditStaffModal">✕</button>
+            </div>
+            <form id="formEditStaff" class="admin-form" style="display:flex; flex-direction:column; gap:14px; padding:20px;">
+                <input type="hidden" id="editStaffId" />
+                <div class="form-group">
+                    <label for="editStaffName">Nom de l'employé * :</label>
+                    <input type="text" id="editStaffName" required style="width:100%; padding:10px; border-radius: 2px; background:rgba(255,255,255,0.05); border:1px solid var(--border-color); color:white;" />
+                </div>
+                <div class="form-group">
+                    <label for="editStaffRole">Rôle / Profil :</label>
+                    <select id="editStaffRole" style="width:100%; padding:10px; border-radius: 2px; background:var(--bg-card); border:1px solid var(--border-color); color:white;">
+                        <option value="Waiter">Serveur / Serveuse</option>
+                        <option value="FloorManager">Responsable de Salle</option>
+                        <option value="Admin">Administrateur / Gérant</option>
+                        <option value="KitchenChef">Chef Cuisinier</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="editStaffPin">Nouveau Code PIN (4 à 6 chiffres, laisser vide pour conserver l'actuel) :</label>
+                    <input type="password" maxlength="6" id="editStaffPin" placeholder="Ex: 5678" style="width:100%; padding:10px; border-radius: 2px; background:rgba(255,255,255,0.05); border:1px solid var(--border-color); color:white;" />
+                </div>
+                <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:10px;">
+                    <button type="button" class="btn-archive" id="btnCancelEditStaff">Annuler</button>
+                    <button type="submit" class="btn-primary" style="padding:10px 20px; font-weight:700;">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Printer Modal -->
+    <div class="modal-overlay" id="editPrinterModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>✏️ Modifier l'Imprimante Réseau</h3>
+                <button class="btn-close-modal" id="btnCloseEditPrinterModal">✕</button>
+            </div>
+            <form id="formEditPrinter" class="admin-form" style="display:flex; flex-direction:column; gap:14px; padding:20px;">
+                <input type="hidden" id="editPrinterId" />
+                <div class="form-group">
+                    <label for="editPrinterName">Nom de l'imprimante * :</label>
+                    <input type="text" id="editPrinterName" required style="width:100%; padding:10px; border-radius: 2px; background:rgba(255,255,255,0.05); border:1px solid var(--border-color); color:white;" />
+                </div>
+                <div class="form-row" style="display:flex; gap:12px;">
+                    <div class="form-group" style="flex:2;">
+                        <label for="editPrinterIp">Adresse IP Réseau * :</label>
+                        <input type="text" id="editPrinterIp" required style="width:100%; padding:10px; border-radius: 2px; background:rgba(255,255,255,0.05); border:1px solid var(--border-color); color:white;" />
+                    </div>
+                    <div class="form-group" style="flex:1;">
+                        <label for="editPrinterPort">Port TCP :</label>
+                        <input type="number" id="editPrinterPort" value="9100" style="width:100%; padding:10px; border-radius: 2px; background:rgba(255,255,255,0.05); border:1px solid var(--border-color); color:white;" />
+                    </div>
+                </div>
+                <div class="form-group checkbox-group" style="display:flex; align-items:center; gap:8px;">
+                    <label style="cursor:pointer; display:flex; align-items:center; gap:8px;">
+                        <input type="checkbox" id="editPrinterDrawer" style="width:18px; height:18px;" />
+                        <span>Déclencher le tiroir-caisse (RJ11)</span>
+                    </label>
+                </div>
+                <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:10px;">
+                    <button type="button" class="btn-archive" id="btnCancelEditPrinter">Annuler</button>
+                    <button type="submit" class="btn-primary" style="padding:10px 20px; font-weight:700;">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Grid Slot Modal -->
+    <div class="modal-overlay" id="editSlotModal">
+        <div class="modal-card" style="width:440px;">
+            <div class="modal-header">
+                <h3 id="editSlotModalTitle">🔲 Éditer l'Emplacement</h3>
+                <button class="btn-close-modal" id="btnCloseEditSlotModal">✕</button>
+            </div>
+            <form id="formEditSlot" class="admin-form" style="display:flex; flex-direction:column; gap:14px; padding:16px;">
+                <input type="hidden" id="editSlotRow" />
+                <input type="hidden" id="editSlotCol" />
+                
+                <div class="form-group">
+                    <label for="selectSlotProduct">Article Assigné :</label>
+                    <select id="selectSlotProduct" style="width:100%; padding:10px; border-radius:var(--radius-sm); background:var(--bg-card); color:white; border:1px solid var(--border-color); font-size:0.95rem;"></select>
+                </div>
+
+                <div class="form-group">
+                    <label for="inputSlotCustomLabel">Libellé Court Personnalisé (Optionnel) :</label>
+                    <input type="text" id="inputSlotCustomLabel" placeholder="Ex: MARGHERITA" style="width:100%; padding:10px; border-radius:var(--radius-sm); background:rgba(255,255,255,0.05); color:white; border:1px solid var(--border-color);" />
+                </div>
+
+                <div class="form-group">
+                    <label for="inputSlotCustomColor">Couleur d'accentuation (Optionnel) :</label>
+                    <input type="color" id="inputSlotCustomColor" value="#3b82f6" style="width:100%; height:40px; border-radius:var(--radius-sm); background:transparent; border:1px solid var(--border-color); cursor:pointer;" />
+                </div>
+
+                <div style="display:flex; gap:10px; margin-top:10px;">
+                    <button type="submit" class="btn-primary" style="flex:1; padding:12px; font-weight:700;">Enregistrer</button>
+                    <button type="button" id="btnUnassignSlot" class="btn-archive" style="padding:12px 16px; font-size:0.85rem;">Libérer la case</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+    <script src="app.js?v=20260902_9"></script>
+</body>
+</html>
+
+</html>
