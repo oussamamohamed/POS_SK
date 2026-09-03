@@ -600,41 +600,39 @@
 
         <!-- ==================== VIEW 5: FISCAL NF525 ==================== -->
         <section class="view-panel" id="fiscalView">
-            <div class="fiscal-container">
                 <div class="fiscal-card">
                     <h2>📜 Traçabilité Fiscale NF525 & Clôtures</h2>
-                    <p class="text-muted">Chaînage cryptographique inaltérable SHA-256 des règlements et scellement
-                        journalier.</p>
+                    <p class="text-muted">Chaînage cryptographique inaltérable SHA-256 des règlements et scellement journalier.</p>
 
-                    <div class="fiscal-actions">
-                        <button class="btn-fiscal" id="btnExecuteZ">
+                    <div class="fiscal-actions" style="display:flex; gap:12px; margin-bottom:16px; flex-wrap:wrap;">
+                        <button class="btn-fiscal" id="btnExecuteZ" style="background:#10b981; color:#fff;">
                             <span>🔒</span> Exécuter la Clôture Journalière (Rapport Z)
+                        </button>
+                        <button class="btn-fiscal" id="btnPreviewX" style="background:rgba(255,255,255,0.1); color:#fff; border:1px solid rgba(255,255,255,0.2);">
+                            <span>👁️</span> Aperçu du Rapport X (En cours)
                         </button>
                     </div>
 
                     <div class="fiscal-report-display" id="fiscalReportDisplay">
                         <div class="ticket-slip">
                             <div class="slip-header">
-                                <h3>*** CLÔTURE JOURNALIÈRE DU JOUR (RAPPORT Z) ***</h3>
+                                <h3 id="slipTitle">*** RAPPORT FISCAL NF525 ***</h3>
                                 <p>Norme NF525 — Traçabilité Fiscale Inaltérable</p>
-                                <p id="slipDate">Date: 2026-08-30 23:00 UTC</p>
-                                <p>Terminal: POS_MAIN_TERM</p>
+                                <p id="slipDate">Date: En attente</p>
+                                <p id="slipTerminal">Terminal: POS_MAIN_TERM</p>
                             </div>
                             <div class="slip-body" id="slipBody">
-                                <div class="slip-row"><span>Total Ventes TTC :</span><strong id="slipTotalTtc">142.50
-                                        €</strong></div>
-                                <div class="slip-row"><span>Total Ventes HT :</span><span id="slipTotalHt">129.55
-                                        €</span></div>
-                                <div class="slip-row"><span>TVA 10% :</span><span>11.45 €</span></div>
-                                <div class="slip-row"><span>TVA 20% :</span><span>1.50 €</span></div>
-                                <div class="slip-row"><span>Nombre de Tickets :</span><span id="slipCount">6</span>
-                                </div>
+                                <div class="slip-row"><span>Total Ventes TTC :</span><strong id="slipTotalTtc">0.00 €</strong></div>
+                                <div class="slip-row"><span>Total Ventes HT :</span><span id="slipTotalHt">0.00 €</span></div>
+                                <div id="slipVatBreakdown"></div>
+                                <div id="slipPaymentBreakdown"></div>
+                                <div class="slip-row"><span>Nombre de Tickets :</span><span id="slipCount">0</span></div>
+                                <div class="slip-row" id="rowPerpetual" style="border-top:1px dashed #444; margin-top:6px; padding-top:6px;"><span>Grand Total Perpétuel :</span><strong id="slipPerpetual">0.00 €</strong></div>
                             </div>
                             <div class="slip-footer">
                                 <p class="hash-label">Signature Cryptographique SHA-256 :</p>
-                                <code class="sha256-hash"
-                                    id="slipHash">e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855</code>
-                                <p class="verified-tag">✓ Chaîne d'Audit Fiscale Scellée & Valide</p>
+                                <code class="sha256-hash" id="slipHash">En attente de scellement</code>
+                                <p class="verified-tag" id="slipTag">✓ Chaîne d'Audit Fiscale Prête</p>
                             </div>
                         </div>
                     </div>

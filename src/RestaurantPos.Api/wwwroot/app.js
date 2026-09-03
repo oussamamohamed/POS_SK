@@ -124,11 +124,18 @@ document.addEventListener('DOMContentLoaded', () => {
         adminPrinterList: document.getElementById('adminPrinterList'),
         selectProductCat: document.getElementById('selectProductCat'),
         btnExecuteZ: document.getElementById('btnExecuteZ'),
+        btnPreviewX: document.getElementById('btnPreviewX'),
+        slipTitle: document.getElementById('slipTitle'),
+        slipTerminal: document.getElementById('slipTerminal'),
         slipTotalTtc: document.getElementById('slipTotalTtc'),
         slipTotalHt: document.getElementById('slipTotalHt'),
+        slipVatBreakdown: document.getElementById('slipVatBreakdown'),
+        slipPaymentBreakdown: document.getElementById('slipPaymentBreakdown'),
+        slipPerpetual: document.getElementById('slipPerpetual'),
         slipCount: document.getElementById('slipCount'),
         slipHash: document.getElementById('slipHash'),
         slipDate: document.getElementById('slipDate'),
+        slipTag: document.getElementById('slipTag'),
 
         // FEC Export
         btnExportFec: document.getElementById('btnExportFec'),
@@ -298,6 +305,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (viewId === 'floorPlanView') loadFloorPlanData();
         if (viewId === 'kdsView') loadKdsData();
         if (viewId === 'adminView') loadAdminData();
+        if (viewId === 'fiscalView') loadFiscalViewData();
     }
 
     // ==================== CATALOG & QUICK-KEYS ====================
@@ -1932,35 +1940,42 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // Fiscal Closure Z
-        elements.btnExecuteZ.addEventListener('click', async () => {
-            const managerId = state.operator?.id || '01a067d9-b8b9-7b6a-8b3c-d272e6128c35';
-            const managerName = state.operator?.name || 'Alexandre Dupont (Manager)';
-            const res = await fetch('/api/fiscal/z-closure', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    terminalId: 'POS_MAIN_TERM',
-                    managerId: managerId,
-                    managerName: managerName
-                })
+        // Fiscal Reports (NF525)
+        if (elements.btnPreviewX) {
+            elements.btnPreviewX.addEventListener('click', async () => {
+                await previewXReport();
+                showToast('Aperçu du Rapport X actualisé en direct ! 👁️', 'info');
             });
-            if (res.ok) {
-                const closure = await res.json();
-                elements.slipTotalTtc.textContent = `${closure.totalSalesTtc.toFixed(2)} €`;
-                elements.slipCount.textContent = closure.receiptCount || '1';
-                elements.slipHash.textContent = closure.signatureHash;
-                elements.slipDate.textContent = `Date: ${new Date().toISOString().replace('T', ' ').substring(0, 19)} UTC`;
-                showToast('Clôture journalière Rapport Z exécutée & scellée ! 📜', 'success');
-            } else {
+        }
+
+        if (elements.btnExecuteZ) {
+            elements.btnExecuteZ.addEventListener('click', async () => {
+                const managerId = state.operator?.id || '01a067d9-b8b9-7b6a-8b3c-d272e6128c35';
+                const managerName = state.operator?.name || 'Alexandre Dupont (Manager)';
                 try {
-                    const err = await res.json();
-                    showToast(err.message || 'Erreur clôture Z', 'error');
-                } catch {
-                    showToast('Erreur clôture Z', 'error');
+                    const res = await fetch('/api/fiscal/z-closure', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            terminalId: 'POS_MAIN_TERM',
+                            managerId: managerId,
+                            managerName: managerName
+                        })
+                    });
+                    if (res.ok) {
+                        const closure = await res.json();
+                        renderFiscalSlip(closure, true);
+                        showToast('Clôture journalière Rapport Z exécutée & scellée ! 📜', 'success');
+                    } else {
+                        const err = await res.json().catch(() => ({ message: 'Erreur clôture Z' }));
+                        showToast(err.message || 'Erreur clôture Z', 'error');
+                    }
+                } catch (err) {
+                    console.error('Erreur clôture Z:', err);
+                    showToast('Erreur communication clôture Z', 'error');
                 }
-            }
-        });
+            });
+        }
 
         // FEC Export Handler
         if (elements.btnExportFec) {
@@ -2042,6 +2057,107 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Network Sync Handlers
         setupNetworkSyncHandlers();
+    }
+
+    // ==================== FISCAL TRAIL & NF525 REPORTS ====================
+    async function loadFiscalViewData() {
+        try {
+            const res = await fetch('/api/fiscal/latest-closure');
+            if (res.ok) {
+                const closure = await res.json();
+                renderFiscalSlip(closure, true);
+            } else {
+                await previewXReport();
+            }
+        } catch {
+            await previewXReport();
+        }
+    }
+
+    async function previewXReport() {
+        try {
+            const res = await fetch('/api/fiscal/x-report?terminalId=POS_MAIN_TERM');
+            if (res.ok) {
+                const data = await res.json();
+                renderFiscalSlip(data, false);
+            }
+        } catch (err) {
+            console.error('Erreur chargement Rapport X:', err);
+        }
+    }
+
+    function renderFiscalSlip(data, isZClosure = true) {
+        if (!data) return;
+
+        if (elements.slipTitle) {
+            elements.slipTitle.textContent = isZClosure
+                ? `*** CLÔTURE JOURNALIÈRE DU JOUR (RAPPORT Z #${data.closureSequence || 1}) ***`
+                : `*** RAPPORT FINANCIER EN COURS (RAPPORT X) ***`;
+        }
+
+        if (elements.slipDate) {
+            const d = data.closedAtUtc || data.periodEndUtc || new Date().toISOString();
+            elements.slipDate.textContent = `Date: ${d.replace('T', ' ').substring(0, 19)} UTC`;
+        }
+
+        if (elements.slipTerminal) {
+            elements.slipTerminal.textContent = `Terminal: ${data.terminalId || 'POS_MAIN_TERM'}`;
+        }
+
+        if (elements.slipTotalTtc) {
+            elements.slipTotalTtc.textContent = `${(data.totalSalesTtc || 0).toFixed(2)} €`;
+        }
+
+        if (elements.slipTotalHt) {
+            elements.slipTotalHt.textContent = `${(data.totalSalesHt || 0).toFixed(2)} €`;
+        }
+
+        if (elements.slipCount) {
+            elements.slipCount.textContent = data.receiptCount !== undefined ? data.receiptCount : '0';
+        }
+
+        if (elements.slipPerpetual) {
+            elements.slipPerpetual.textContent = `${(data.perpetualGrandTotal || 0).toFixed(2)} €`;
+        }
+
+        if (elements.slipHash) {
+            elements.slipHash.textContent = data.signatureHash || 'GÉNÉRÉ À LA CLÔTURE Z';
+        }
+
+        if (elements.slipTag) {
+            elements.slipTag.textContent = isZClosure
+                ? '✓ Chaîne d\'Audit Fiscale Scellée & Valide (NF525)'
+                : 'ℹ️ Données en direct du service en cours (Non scellé)';
+            elements.slipTag.style.color = isZClosure ? '#10b981' : '#38bdf8';
+        }
+
+        // Dynamic VAT rows
+        if (elements.slipVatBreakdown) {
+            if (data.vatBreakdown && Object.keys(data.vatBreakdown).length > 0) {
+                elements.slipVatBreakdown.innerHTML = Object.entries(data.vatBreakdown).map(([rate, amount]) => `
+                    <div class="slip-row" style="font-size:0.85rem; color:#94a3b8;">
+                        <span>TVA ${rate}% :</span>
+                        <span>${Number(amount).toFixed(2)} €</span>
+                    </div>
+                `).join('');
+            } else {
+                elements.slipVatBreakdown.innerHTML = '';
+            }
+        }
+
+        // Dynamic Payment tenders rows
+        if (elements.slipPaymentBreakdown) {
+            if (data.paymentTotals && Object.keys(data.paymentTotals).length > 0) {
+                elements.slipPaymentBreakdown.innerHTML = Object.entries(data.paymentTotals).map(([method, amount]) => `
+                    <div class="slip-row" style="font-size:0.85rem; color:#94a3b8;">
+                        <span>${method} :</span>
+                        <span>${Number(amount).toFixed(2)} €</span>
+                    </div>
+                `).join('');
+            } else {
+                elements.slipPaymentBreakdown.innerHTML = '';
+            }
+        }
     }
 
     async function loadNetworkSyncData() {

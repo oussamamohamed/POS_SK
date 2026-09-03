@@ -12,6 +12,7 @@ public record FiscalSummaryDto(
     DateTimeOffset PeriodEndUtc,
     long TotalSalesTtcCents,
     long TotalSalesHtCents,
+    int ReceiptCount,
     IReadOnlyDictionary<decimal, long> VatBreakdownCents,
     IReadOnlyDictionary<PaymentMethod, long> PaymentTotalsCents,
     long PerpetualGrandTotalCents);
@@ -21,6 +22,10 @@ public record DailyFiscalClosureDto(
     string TerminalId,
     long ClosureSequence,
     long TotalSalesTtcCents,
+    long TotalSalesHtCents,
+    int ReceiptCount,
+    IReadOnlyDictionary<decimal, long> VatBreakdownCents,
+    IReadOnlyDictionary<PaymentMethod, long> PaymentTotalsCents,
     long PerpetualGrandTotalCents,
     string SignatureHash,
     DateTimeOffset ClosedAtUtc);
@@ -49,6 +54,10 @@ public interface INF525FiscalAuditService
         string terminalId,
         Guid managerId,
         string managerName,
+        CancellationToken cancellationToken = default);
+
+    Task<DailyFiscalClosureDto?> GetLatestZClosureAsync(
+        string terminalId,
         CancellationToken cancellationToken = default);
 
     Task<AuditValidationResult> ValidateAuditChainIntegrityAsync(

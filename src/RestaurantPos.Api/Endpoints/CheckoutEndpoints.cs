@@ -26,7 +26,7 @@ public static class CheckoutEndpoints
 
             var terminalId = !string.IsNullOrWhiteSpace(req.TerminalId)
                 ? req.TerminalId
-                : (!string.IsNullOrWhiteSpace(req.TableNumber) ? $"TERM_{req.TableNumber}" : "POS_MAIN_TERM");
+                : "POS_MAIN_TERM";
 
             var result = await checkout.ProcessPaymentTendersAsync(req.OrderId, terminalId, tenderRequests);
 

@@ -42,24 +42,38 @@ public class NF525FiscalAuditService : INF525FiscalAuditService
 
     public async Task<FiscalSummaryDto> GenerateXReportAsync(string terminalId, CancellationToken cancellationToken = default)
     {
-        var lastClosure = await _dbContext.DailyFiscalClosures
-            .Where(c => c.TerminalId == terminalId)
-            .OrderByDescending(c => c.ClosureSequence)
-            .FirstOrDefaultAsync(cancellationToken)
+        var isMainTerminal = string.IsNullOrWhiteSpace(terminalId) || terminalId == "POS_MAIN_TERM";
+
+        var closures = await _dbContext.DailyFiscalClosures
+            .Where(c => isMainTerminal ? (c.TerminalId == terminalId || c.TerminalId == "POS_MAIN_TERM" || c.TerminalId == "POS01") : c.TerminalId == terminalId)
+            .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
+
+        var lastClosure = closures
+            .Where(c => c.TotalSalesTtc.AmountInCents > 0)
+            .OrderByDescending(c => c.ClosureSequence)
+            .FirstOrDefault()
+            ?? closures.OrderByDescending(c => c.ClosureSequence).FirstOrDefault();
 
         var periodStart = lastClosure?.PeriodEndUtc ?? DateTimeOffset.UtcNow.Date;
         var periodEnd = DateTimeOffset.UtcNow;
 
         var allReceipts = await _dbContext.FiscalReceipts
             .Include(r => r.Tenders)
-            .Where(r => r.TerminalId == terminalId)
+            .Where(r => isMainTerminal || r.TerminalId == terminalId)
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 
         var receipts = allReceipts
             .Where(r => r.CreatedAtUtc >= periodStart && r.CreatedAtUtc <= periodEnd)
             .ToList();
+
+        // If no receipts found starting from lastClosure, but there are unclosed receipts today:
+        if (receipts.Count == 0 && allReceipts.Count > 0 && lastClosure != null && lastClosure.TotalSalesTtc.AmountInCents == 0)
+        {
+            periodStart = DateTimeOffset.UtcNow.Date;
+            receipts = allReceipts.Where(r => r.CreatedAtUtc >= periodStart && r.CreatedAtUtc <= periodEnd).ToList();
+        }
 
         long totalTtc = receipts.Sum(r => r.TotalTtcAmount.AmountInCents);
         long totalHt = receipts.Sum(r => r.TotalHtAmount.AmountInCents);
@@ -101,6 +115,7 @@ public class NF525FiscalAuditService : INF525FiscalAuditService
             periodEnd,
             totalTtc,
             totalHt,
+            receipts.Count,
             vatMap,
             tenderMap,
             perpetualTotal
@@ -163,6 +178,10 @@ public class NF525FiscalAuditService : INF525FiscalAuditService
                     closure.TerminalId,
                     closure.ClosureSequence,
                     closure.TotalSalesTtc.AmountInCents,
+                    closure.TotalSalesHt.AmountInCents,
+                    xSummary.ReceiptCount,
+                    xSummary.VatBreakdownCents,
+                    xSummary.PaymentTotalsCents,
                     closure.PerpetualGrandTotalCents,
                     closure.SignatureHash,
                     closure.PeriodEndUtc
@@ -170,6 +189,79 @@ public class NF525FiscalAuditService : INF525FiscalAuditService
             },
             System.Data.IsolationLevel.Serializable,
             cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task<DailyFiscalClosureDto?> GetLatestZClosureAsync(string terminalId, CancellationToken cancellationToken = default)
+    {
+        var isMainTerminal = string.IsNullOrWhiteSpace(terminalId) || terminalId == "POS_MAIN_TERM";
+        var closures = await _dbContext.DailyFiscalClosures
+            .Where(c => isMainTerminal ? (c.TerminalId == terminalId || c.TerminalId == "POS_MAIN_TERM" || c.TerminalId == "POS01") : c.TerminalId == terminalId)
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        var closure = closures.OrderByDescending(c => c.ClosureSequence).FirstOrDefault();
+        if (closure is null) return null;
+
+        var vatMap = new Dictionary<decimal, long>();
+        if (!string.IsNullOrWhiteSpace(closure.TaxesSummaryJson))
+        {
+            try
+            {
+                var dict = JsonSerializer.Deserialize<Dictionary<string, long>>(closure.TaxesSummaryJson);
+                if (dict != null)
+                {
+                    foreach (var kvp in dict)
+                    {
+                        if (decimal.TryParse(kvp.Key, NumberStyles.Any, CultureInfo.InvariantCulture, out decimal rate))
+                        {
+                            vatMap[rate] = kvp.Value;
+                        }
+                    }
+                }
+            }
+            catch { }
+        }
+
+        var tenderMap = new Dictionary<PaymentMethod, long>();
+        if (!string.IsNullOrWhiteSpace(closure.TenderTotalsJson))
+        {
+            try
+            {
+                var dict = JsonSerializer.Deserialize<Dictionary<string, long>>(closure.TenderTotalsJson);
+                if (dict != null)
+                {
+                    foreach (var kvp in dict)
+                    {
+                        if (Enum.TryParse<PaymentMethod>(kvp.Key, out var method))
+                        {
+                            tenderMap[method] = kvp.Value;
+                        }
+                    }
+                }
+            }
+            catch { }
+        }
+
+        var receipts = await _dbContext.FiscalReceipts
+            .Where(r => isMainTerminal || r.TerminalId == terminalId)
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        int count = receipts.Count(r => r.CreatedAtUtc >= closure.PeriodStartUtc && r.CreatedAtUtc <= closure.PeriodEndUtc);
+
+        return new DailyFiscalClosureDto(
+            closure.Id,
+            closure.TerminalId,
+            closure.ClosureSequence,
+            closure.TotalSalesTtc.AmountInCents,
+            closure.TotalSalesHt.AmountInCents,
+            count,
+            vatMap,
+            tenderMap,
+            closure.PerpetualGrandTotalCents,
+            closure.SignatureHash,
+            closure.PeriodEndUtc
+        );
     }
 
     public async Task<AuditValidationResult> ValidateAuditChainIntegrityAsync(string terminalId, CancellationToken cancellationToken = default)

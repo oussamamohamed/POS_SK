@@ -17,23 +17,66 @@ public static class FiscalEndpoints
 
         group.MapPost("/z-closure", async (ZClosureRequest req, INF525FiscalAuditService fiscal) =>
         {
-            if (string.IsNullOrWhiteSpace(req.TerminalId))
-            {
-                return Results.BadRequest(new { Message = "TerminalId est obligatoire pour la clôture Z." });
-            }
+            var terminalId = string.IsNullOrWhiteSpace(req.TerminalId) ? "POS_MAIN_TERM" : req.TerminalId;
 
             if (req.ManagerId == Guid.Empty || string.IsNullOrWhiteSpace(req.ManagerName))
             {
                 return Results.BadRequest(new { Message = "ManagerId et ManagerName sont obligatoires pour la clôture Z." });
             }
 
-            var closure = await fiscal.ExecuteDailyZClosureAsync(req.TerminalId, req.ManagerId, req.ManagerName);
+            var closure = await fiscal.ExecuteDailyZClosureAsync(terminalId, req.ManagerId, req.ManagerName);
             return Results.Ok(new
             {
                 closure.ClosureSequence,
                 TotalSalesTtc = closure.TotalSalesTtcCents / 100.0m,
+                TotalSalesHt = closure.TotalSalesHtCents / 100.0m,
+                closure.ReceiptCount,
+                VatBreakdown = closure.VatBreakdownCents.ToDictionary(k => k.Key.ToString(System.Globalization.CultureInfo.InvariantCulture), v => v.Value / 100.0m),
+                PaymentTotals = closure.PaymentTotalsCents.ToDictionary(k => k.Key.ToString(), v => v.Value / 100.0m),
+                PerpetualGrandTotal = closure.PerpetualGrandTotalCents / 100.0m,
                 closure.SignatureHash,
                 closure.ClosedAtUtc
+            });
+        });
+
+        group.MapGet("/latest-closure", async (string? terminalId, INF525FiscalAuditService fiscal) =>
+        {
+            var term = string.IsNullOrWhiteSpace(terminalId) ? "POS_MAIN_TERM" : terminalId;
+            var closure = await fiscal.GetLatestZClosureAsync(term);
+            if (closure is null)
+            {
+                return Results.NotFound(new { Message = "Aucune clôture trouvée." });
+            }
+
+            return Results.Ok(new
+            {
+                closure.ClosureSequence,
+                TotalSalesTtc = closure.TotalSalesTtcCents / 100.0m,
+                TotalSalesHt = closure.TotalSalesHtCents / 100.0m,
+                closure.ReceiptCount,
+                VatBreakdown = closure.VatBreakdownCents.ToDictionary(k => k.Key.ToString(System.Globalization.CultureInfo.InvariantCulture), v => v.Value / 100.0m),
+                PaymentTotals = closure.PaymentTotalsCents.ToDictionary(k => k.Key.ToString(), v => v.Value / 100.0m),
+                PerpetualGrandTotal = closure.PerpetualGrandTotalCents / 100.0m,
+                closure.SignatureHash,
+                closure.ClosedAtUtc
+            });
+        });
+
+        group.MapGet("/x-report", async (string? terminalId, INF525FiscalAuditService fiscal) =>
+        {
+            var term = string.IsNullOrWhiteSpace(terminalId) ? "POS_MAIN_TERM" : terminalId;
+            var summary = await fiscal.GenerateXReportAsync(term);
+            return Results.Ok(new
+            {
+                summary.TerminalId,
+                TotalSalesTtc = summary.TotalSalesTtcCents / 100.0m,
+                TotalSalesHt = summary.TotalSalesHtCents / 100.0m,
+                summary.ReceiptCount,
+                VatBreakdown = summary.VatBreakdownCents.ToDictionary(k => k.Key.ToString(System.Globalization.CultureInfo.InvariantCulture), v => v.Value / 100.0m),
+                PaymentTotals = summary.PaymentTotalsCents.ToDictionary(k => k.Key.ToString(), v => v.Value / 100.0m),
+                PerpetualGrandTotal = summary.PerpetualGrandTotalCents / 100.0m,
+                summary.PeriodStartUtc,
+                summary.PeriodEndUtc
             });
         });
 
