@@ -115,25 +115,26 @@ Phase 6 : Back-Office, Reporting Financier & Déploiement App Store / MDMObjecti
 | **Routeur/Switch** | Switch Gigabit PoE 24 ports avec gestion VLAN | Réseau local professionnel sécurisé | 1 | Pour séparer réseau invités et réseau caisse |
 | **Connectique** | Câbles Ethernet Cat 6, supports iPad, protections IP55 | Installation physique | |
 
-##6 Matrice des taches pour Speckit
-Task ID	Phase	Couche / Fichier Cible	Responsabilité Technique	Dépendances	Statut
-[T001]	Phase 1	RestaurantPos.Domain/Entities/	Définition des entités C# partagées (Product, Category, TaxRate, User)	-	[ ] À faire
-[T002]	Phase 1	RestaurantPos.Infrastructure/Persistence/	Setup EF Core multi-provider (AppDbContext, SQLite / Postgres)	[T001]	[ ] À faire
-[T003]	Phase 1	RestaurantPos.Client.Maui/Platforms/iOS/	Configuration Info.plist, entitlements réseau local et orientation iPad	-	[ ] À faire
-[T004]	Phase 1	RestaurantPos.Client.Maui/Views/PinLockPage.xaml	Écran tactile de verrouillage et authentification express par PIN	[T003]	[ ] À faire
-[T005]	Phase 2	RestaurantPos.Domain/ValueObjects/	Implémentation des Value Objects Money (centimes) et TaxBreakdown	[T001]	[ ] À faire
-[T006]	Phase 2	RestaurantPos.Application/Features/Orders/	Handlers MediatR CreateOrderCommand, AddOrderItemCommand	[T005]	[ ] À faire
-[T007]	Phase 2	RestaurantPos.Client.Maui/Views/PosTerminalPage.xaml	Vue principale de vente tactile avec pavé numérique intégré pour iPad	[T004], [T006]	[ ] À faire
-[T008]	Phase 3	RestaurantPos.Domain/Entities/DiningTable.cs	Modélisation des tables et transitions d'états de salle	[T001]	[ ] À faire
-[T009]	Phase 3	RestaurantPos.Api/Hubs/TableHub.cs	Hub SignalR pour la synchro temps réel du plan de salle	[T008]	[ ] À faire
-[T010]	Phase 3	RestaurantPos.Client.Maui/Views/FloorPlanPage.xaml	Vue graphique 2D du plan de salle interactive avec MAUI Graphics	[T008], [T009]	[ ] À faire
-[T011]	Phase 3	RestaurantPos.Client.Maui/Views/KitchenKdsPage.xaml	Écran KDS tactile pour la cuisine avec dispatching par station	[T009]	[ ] À faire
-[T012]	Phase 4	RestaurantPos.Application/Features/Payments/	Logique CQRS de paiement et fractionnement de note (égale, article, montant)	[T006]	[ ] À faire
-[T013]	Phase 4	RestaurantPos.Client.Maui/Views/SplitBillModal.xaml	Interface tactile iPad pour le partage d'addition à l'article ou parts égales	[T012]	[ ] À faire
-[T014]	Phase 4	RestaurantPos.Infrastructure/Fiscal/	Intercepteur EF Core de chaînage cryptographique SHA-256 (Norme NF525)	[T012]	[ ] À faire
-[T015]	Phase 4	RestaurantPos.Application/Features/FiscalReports/	Moteur de génération du Rapport X et de clôture journalière Z	[T014]	[ ] À faire
-[T016]	Phase 5	RestaurantPos.Client.Maui/Services/IosNetworkPrinterService.cs	Service socket TCP brut (port 9100) pour impression thermique depuis iPad	[T003], [T012]	[ ] À faire
-[T017]	Phase 5	RestaurantPos.Infrastructure/Discovery/	Service de découverte mDNS / Bonjour pour appairage automatique des iPads	[T003]	[ ] À faire
-[T018]	Phase 6	RestaurantPos.Api/Controllers/ReportsController.cs	Endpoints de statistiques financières, tableaux de bord et export comptable FEC	[T015]	[ ] À faire
-[T019]	Phase 6	deploy/apple-mdm-config.mobileconfig	Profil de configuration MDM pour verrouillage en mode kiosque (Single App Mode)	[T003]	[ ] À faire
-[T020]	Phase 6	tests/RestaurantPos.IntegrationTests/	Tests d'intégration automatisés du cycle complet (Prise de commande ➔ KDS ➔ Split ➔ Z)
+## 6. Matrice des tâches & Statut d'Exécution
+
+| Task ID | Phase | Couche / Fichier Cible | Responsabilité Technique | Dépendances | Statut |
+| :--- | :--- | :--- | :--- | :--- | :---: |
+| **[T001]** | Phase 1 | `RestaurantPos.Domain/Entities/` | Définition des entités C# partagées (Product, Category, TaxRate, User) | - | **[X] Terminé** |
+| **[T002]** | Phase 1 | `RestaurantPos.Infrastructure/Persistence/` | Setup EF Core multi-provider (AppDbContext, SQLite / Postgres) | [T001] | **[X] Terminé** |
+| **[T003]** | Phase 1 | `RestaurantPos.Client.Maui/Platforms/iOS/` | Configuration Info.plist, entitlements réseau local et orientation iPad | - | **[X] Terminé** |
+| **[T004]** | Phase 1 | `RestaurantPos.Client.Maui/Views/PinLockPage.xaml` | Écran tactile de verrouillage et authentification express par PIN | [T003] | **[X] Terminé** |
+| **[T005]** | Phase 2 | `RestaurantPos.Domain/ValueObjects/` | Implémentation des Value Objects Money (centimes) et TaxBreakdown | [T001] | **[X] Terminé** |
+| **[T006]** | Phase 2 | `RestaurantPos.Application/Features/Orders/` | Handlers MediatR CreateOrderCommand, AddOrderItemCommand | [T005] | **[X] Terminé** |
+| **[T007]** | Phase 2 | `RestaurantPos.Client.Maui/Views/PosTerminalPage.xaml` | Vue principale de vente tactile avec pavé numérique intégré pour iPad | [T004], [T006] | **[X] Terminé** |
+| **[T008]** | Phase 3 | `RestaurantPos.Domain/Entities/DiningTable.cs` | Modélisation des tables et transitions d'états de salle | [T001] | **[X] Terminé** |
+| **[T009]** | Phase 3 | `RestaurantPos.Api/Hubs/PosHub.cs` | Hub SignalR pour la synchro temps réel du plan de salle et KDS | [T008] | **[X] Terminé** |
+| **[T010]** | Phase 3 | `RestaurantPos.Client.Maui/Views/FloorPlanPage.xaml` | Vue graphique 2D du plan de salle interactive avec MAUI Graphics | [T008], [T009] | **[X] Terminé** |
+| **[T011]** | Phase 3 | `RestaurantPos.Client.Maui/Views/KitchenKdsPage.xaml` | Écran KDS tactile pour la cuisine avec dispatching par station | [T009] | **[X] Terminé** |
+| **[T012]** | Phase 4 | `RestaurantPos.Application/Features/Payments/` | Logique CQRS de paiement et fractionnement de note (égale, article, montant) | [T006] | **[X] Terminé** |
+| **[T013]** | Phase 4 | `RestaurantPos.Client.Maui/Views/SplitBillModal.xaml` | Interface tactile iPad pour le partage d'addition à l'article ou parts égales | [T012] | **[X] Terminé** |
+| **[T014]** | Phase 4 | `RestaurantPos.Infrastructure/Fiscal/` | Intercepteur EF Core de chaînage cryptographique SHA-256 (Norme NF525) | [T012] | **[X] Terminé** |
+| **[T015]** | Phase 4 | `RestaurantPos.Application/Features/FiscalReports/` | Moteur de génération du Rapport X et de clôture journalière Z | [T014] | **[X] Terminé** |
+| **[T016]** | Phase 5 | `RestaurantPos.Client.Maui/Services/IosNetworkPrinterService.cs` | Service socket TCP brut (port 9100) pour impression thermique depuis iPad | [T003], [T012] | **[X] Terminé** |
+| **[T017]** | Phase 5 | `RestaurantPos.Infrastructure/Discovery/` | Service de découverte mDNS / Bonjour pour appairage automatique des iPads | [T003] | **[X] Terminé** |
+| **[T018]** | Feature 014 | `RestaurantPos.Api/Endpoints/AuthEndpoints.cs` | Authentification JWT, RBAC multi-rôles, TestAuthHandler et limitation de débit | [T001] | **[X] Terminé** |
+| **[T019]** | Tests | `tests/` | Suite complète de tests unitaires & d'intégration (112 tests réussis, 0 échec) | - | **[X] Terminé** |

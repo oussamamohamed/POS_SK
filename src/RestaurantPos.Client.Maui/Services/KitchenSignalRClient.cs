@@ -12,7 +12,7 @@ public interface IKitchenSignalRClient
     event Action<Guid, TicketStatus>? OnTicketStatusChanged;
     event Action<Guid, TicketStatus>? OnTicketRecalled;
 
-    Task ConnectAsync(string hubUrl, string stationId);
+    Task ConnectAsync(string hubUrl, string stationId, string? accessToken = null);
     Task DisconnectAsync();
     Task BumpTicketAsync(Guid ticketId);
     Task RecallTicketAsync(Guid ticketId);
@@ -26,7 +26,7 @@ public class KitchenSignalRClient : IKitchenSignalRClient, IAsyncDisposable
     public event Action<Guid, TicketStatus>? OnTicketStatusChanged;
     public event Action<Guid, TicketStatus>? OnTicketRecalled;
 
-    public async Task ConnectAsync(string hubUrl, string stationId)
+    public async Task ConnectAsync(string hubUrl, string stationId, string? accessToken = null)
     {
         if (_hubConnection != null)
         {
@@ -34,7 +34,13 @@ public class KitchenSignalRClient : IKitchenSignalRClient, IAsyncDisposable
         }
 
         _hubConnection = new HubConnectionBuilder()
-            .WithUrl($"{hubUrl}/hubs/pos")
+            .WithUrl($"{hubUrl}/hubs/pos", options =>
+            {
+                if (!string.IsNullOrWhiteSpace(accessToken))
+                {
+                    options.AccessTokenProvider = () => Task.FromResult<string?>(accessToken);
+                }
+            })
             .WithAutomaticReconnect()
             .Build();
 

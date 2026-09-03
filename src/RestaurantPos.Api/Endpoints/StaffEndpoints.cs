@@ -51,7 +51,7 @@ public static class StaffEndpoints
             }
             var user = await staff.CreateStaffMemberAsync(req.Name, role, req.Pin);
             return Results.Ok(new { user.Id, user.Name, Role = user.Role.ToString(), user.IsActive });
-        });
+        }).RequireAuthorization("RequireManagerOrAdmin");
 
         group.MapPut("/{id:guid}", async (Guid id, UpdateStaffRequest req, IStaffManagementService staff) =>
         {
@@ -65,24 +65,24 @@ public static class StaffEndpoints
                 await staff.ResetStaffPinAsync(id, req.Pin);
             }
             return Results.Ok(new { user.Id, user.Name, Role = user.Role.ToString(), user.IsActive });
-        });
+        }).RequireAuthorization("RequireManagerOrAdmin");
 
         group.MapDelete("/{id:guid}", async (Guid id, IStaffManagementService staff) =>
         {
             var ok = await staff.DeactivateStaffMemberAsync(id);
             return ok ? Results.Ok(new { Success = true }) : Results.NotFound();
-        });
+        }).RequireAuthorization("RequireManagerOrAdmin");
 
         group.MapDelete("/operators/{id:guid}", async (Guid id, IStaffManagementService staff) =>
         {
             var ok = await staff.DeactivateStaffMemberAsync(id);
             return ok ? Results.Ok(new { Success = true }) : Results.NotFound();
-        });
+        }).RequireAuthorization("RequireManagerOrAdmin");
 
         group.MapPost("/{id:guid}/deactivate", async (Guid id, IStaffManagementService staff) =>
         {
             var ok = await staff.DeactivateStaffMemberAsync(id);
             return ok ? Results.Ok(new { Success = true }) : Results.NotFound();
-        });
+        }).RequireAuthorization("RequireManagerOrAdmin");
     }
 }

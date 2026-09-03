@@ -58,6 +58,6 @@ public static class CheckoutEndpoints
                 result.FiscalSignature,
                 FiscalTimestampUtc = DateTimeOffset.UtcNow
             });
-        });
+        }).RequireAuthorization("RequireManagerOrAdmin");
     }
 }

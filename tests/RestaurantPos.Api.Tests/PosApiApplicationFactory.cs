@@ -38,6 +38,15 @@ public class PosApiApplicationFactory : WebApplicationFactory<Program>
             {
                 options.UseInMemoryDatabase(_dbName);
             });
+
+            // Configure TestAuthHandler for testing environment
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = TestAuthHandler.SchemeName;
+                options.DefaultChallengeScheme = TestAuthHandler.SchemeName;
+            })
+            .AddScheme<Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions, TestAuthHandler>(
+                TestAuthHandler.SchemeName, options => { });
         });
 
         // Use a test environment

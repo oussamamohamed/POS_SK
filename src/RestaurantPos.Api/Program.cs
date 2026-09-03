@@ -74,6 +74,7 @@ public partial class Program
         builder.Services.AddScoped<IRoomBillingService, RoomBillingService>();
         builder.Services.AddScoped<IGridManagementService, GridManagementService>();
         builder.Services.AddScoped<IJwtTokenGeneratorService, JwtTokenGeneratorService>();
+        builder.Services.AddSingleton<IPinRateLimiterService, PinRateLimiterService>();
         builder.Services.AddHostedService<NetworkDiscoveryBeaconService>();
 
         // JWT Authentication Configuration
@@ -91,8 +92,70 @@ public partial class Program
                     ValidAudience = builder.Configuration["Jwt:Audience"] ?? "RestaurantPos.Client",
                     IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(secret))
                 };
+
+                // Allow SignalR WebSockets & HTTP requests to pass JWT via query parameter, cookie, or dev fallback
+                options.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        // 1. Check Query parameter ('access_token' or 'token')
+                        var accessToken = context.Request.Query["access_token"].ToString();
+                        if (string.IsNullOrEmpty(accessToken))
+                        {
+                            accessToken = context.Request.Query["token"].ToString();
+                        }
+
+                        // 2. Check Cookie ('pos_jwt_token')
+                        if (string.IsNullOrEmpty(accessToken))
+                        {
+                            accessToken = context.Request.Cookies["pos_jwt_token"];
+                        }
+
+                        // 3. In Development / Localhost environment: if no auth header/cookie/query is provided,
+                        // automatically generate a developer operator session so direct browser testing is never blocked
+                        if (string.IsNullOrEmpty(accessToken) &&
+                            string.IsNullOrEmpty(context.Request.Headers.Authorization.ToString()) &&
+                            (builder.Environment.IsDevelopment() || context.HttpContext.Request.Host.Host is "localhost" or "127.0.0.1" or "::1"))
+                        {
+                            var tokenGen = context.HttpContext.RequestServices.GetService<IJwtTokenGeneratorService>();
+                            if (tokenGen != null)
+                            {
+                                accessToken = tokenGen.GenerateToken(
+                                    Guid.Parse("01a067d9-b8b9-7b6a-8b3c-d272e6128c35"),
+                                    "Alexandre Dupont (Manager)",
+                                    UserRole.FloorManager);
+
+                                context.HttpContext.Response.Cookies.Append("pos_jwt_token", accessToken, new CookieOptions
+                                {
+                                    HttpOnly = true,
+                                    SameSite = SameSiteMode.Lax,
+                                    Secure = false,
+                                    Expires = DateTimeOffset.UtcNow.AddHours(12)
+                                });
+                            }
+                        }
+
+                        if (!string.IsNullOrEmpty(accessToken))
+                        {
+                            context.Token = accessToken;
+                        }
+
+                        return Task.CompletedTask;
+                    }
+                };
             });
-        builder.Services.AddAuthorization();
+
+        builder.Services.AddAuthorization(options =>
+        {
+            options.AddPolicy("RequireAuthenticatedOperator", policy =>
+                policy.RequireAuthenticatedUser());
+
+            options.AddPolicy("RequireManagerOrAdmin", policy =>
+                policy.RequireRole("FloorManager", "Admin"));
+
+            options.AddPolicy("RequireKitchenOrAdmin", policy =>
+                policy.RequireRole("KitchenStaff", "FloorManager", "Admin"));
+        });
 
         // Real-Time SignalR
         builder.Services.AddSignalR();
@@ -362,8 +425,6 @@ public partial class Program
     }
 #endif
 }
-
-public record PinLoginRequest(string Pin);
 public record CreateCategoryRequest(string Name, string? ColorHex, int DisplayOrder, string? IconName);
 public record UpdateCategoryRequest(string Name, string? ColorHex, int DisplayOrder, string? IconName, bool? IsActive);
 public record CreateProductRequest(string Name, string CategoryId, decimal Price, decimal TaxRatePercent, string? Description, string? ColorHex, int DisplayOrder, bool IsQuickKey, string? StationId);

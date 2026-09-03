@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
         token: localStorage.getItem('pos_jwt_token') || null
     };
 
-    // Auto attach JWT bearer token to API requests
+    // Auto attach JWT bearer token to API requests & handle 401
     const originalFetch = window.fetch;
     window.fetch = async (...args) => {
         let [resource, config] = args;
@@ -49,7 +49,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         }
-        return originalFetch(resource, config);
+        const res = await originalFetch(resource, config);
+        if (res.status === 401 && !resource.toString().includes('/api/auth/login')) {
+            console.warn('Requête API 401: session non authentifiée ou expirée. Verrouillage du terminal.');
+            state.token = null;
+            localStorage.removeItem('pos_jwt_token');
+            if (elements.pinLockModal) {
+                elements.pinLockModal.classList.add('active');
+                state.pinInput = '';
+                updatePinDots();
+            }
+        }
+        return res;
     };
 
     // DOM Elements
@@ -216,6 +227,9 @@ document.addEventListener('DOMContentLoaded', () => {
         setupAdminGridEditorListeners();
         setupSignatureCanvas();
         setupSignalR();
+
+        // Ensure active authentication session
+        await ensureAuthToken();
 
         await loadCatalogData();
         await loadFloorPlanData();
@@ -579,15 +593,91 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         renderCart();
         showToast(`+1 ${product.name} [${course}]`, 'success');
+        scheduleAutoSaveCart();
     }
 
-    // ==================== TABLE RECALL & CART HYDRATION ====================
+    // ==================== AUTO-SAVE & TABLE RECALL ====================
+    async function ensureAuthToken() {
+        if (state.token) return state.token;
+        try {
+            const res = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ pin: '1234' })
+            });
+            if (res.ok) {
+                const data = await res.json();
+                state.token = data.token;
+                localStorage.setItem('pos_jwt_token', data.token);
+                state.operator = { name: data.operatorName, role: data.role, id: data.operatorId };
+                return data.token;
+            }
+        } catch (e) {
+            console.warn('ensureAuthToken failed:', e);
+        }
+        return null;
+    }
+
+    let autoSaveTimer = null;
+    function scheduleAutoSaveCart() {
+        if (autoSaveTimer) clearTimeout(autoSaveTimer);
+        autoSaveTimer = setTimeout(() => {
+            saveActiveCartToServer();
+        }, 400);
+    }
+
+    async function saveActiveCartToServer() {
+        if (!state.activeTable) return;
+        const undispatched = state.cart.filter(i => !i.isDispatched);
+        if (undispatched.length === 0) return;
+
+        try {
+            await ensureAuthToken();
+            const courseMap = { 'Direct': 0, 'Suite': 1, 'Dessert': 2, 'OnDemand': 3 };
+            const itemsPayload = undispatched.map(i => ({
+                productId: i.product.id,
+                productName: i.product.name,
+                quantity: i.quantity,
+                unitPrice: i.product.price,
+                taxRatePercent: i.product.taxRatePercent || 10.0,
+                preparationStationId: i.product.preparationStationId || 'HOT_KITCHEN',
+                modifiers: i.modifiers || [],
+                course: courseMap[i.course] || 0
+            }));
+
+            const res = await fetch(`/api/tables/${state.activeTable}/items`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ items: itemsPayload })
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                if (data && data.orderId) {
+                    state.activeOrderId = data.orderId;
+                }
+            }
+        } catch (err) {
+            console.error('Erreur sauvegarde automatique panier:', err);
+        }
+    }
+
     async function loadActiveTableOrder(tableNumber) {
+        // First flush any pending undispatched items on previous table if switching tables
+        if (state.activeTable && state.activeTable !== tableNumber) {
+            await saveActiveCartToServer();
+        }
+
         state.activeTable = tableNumber;
         elements.activeTableBadge.textContent = `Table ${tableNumber}`;
 
         try {
-            const res = await fetch(`/api/tables/${tableNumber}/order`);
+            let res = await fetch(`/api/tables/${tableNumber}/order`);
+            if (res.status === 401 && !state.token) {
+                await ensureAuthToken();
+                res = await fetch(`/api/tables/${tableNumber}/order`);
+            }
+
             if (res.ok) {
                 const orderData = await res.json();
                 state.activeOrderId = orderData.orderId;
@@ -619,13 +709,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 }));
 
                 renderCart();
-            } else {
-                // Table is free - reset cart for new order
+            } else if (res.status === 404) {
+                // Table is genuinely free in database - reset cart for new order
                 state.activeOrderId = null;
                 state.cart = [];
                 state.globalDiscount = null;
                 elements.activeCoversBadge.textContent = `👥 2 Couverts (Libre)`;
                 renderCart();
+            } else if (res.status === 401) {
+                // Not authenticated: do not wipe cart, terminal will prompt for PIN
+                console.warn(`Rappel table ${tableNumber} refusé (401 Non Authentifié). Authentification requise.`);
+            } else {
+                showToast(`Erreur ${res.status} lors du rappel de la table ${tableNumber}`, 'error');
             }
         } catch (err) {
             console.error('Erreur rappel table:', err);
@@ -727,6 +822,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
                 renderCart();
+                scheduleAutoSaveCart();
             });
         });
 
@@ -1852,6 +1948,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 state.pinInput = '';
                 updatePinDots();
                 showToast(`Session déverrouillée: ${data.operatorName}`, 'success');
+
+                // Reload active table with newly issued token
+                if (state.activeTable) {
+                    await loadActiveTableOrder(state.activeTable);
+                }
             } else {
                 showToast('Code PIN invalide', 'error');
                 state.pinInput = '';

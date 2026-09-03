@@ -9,7 +9,7 @@ public interface ITableSignalRClient
 {
     event Action<string, TableStatus>? OnTableStatusChanged;
 
-    Task ConnectAsync(string hubUrl);
+    Task ConnectAsync(string hubUrl, string? accessToken = null);
     Task DisconnectAsync();
     Task UpdateTableStatusAsync(string tableNumber, TableStatus newStatus);
 }
@@ -20,7 +20,7 @@ public class TableSignalRClient : ITableSignalRClient, IAsyncDisposable
 
     public event Action<string, TableStatus>? OnTableStatusChanged;
 
-    public async Task ConnectAsync(string hubUrl)
+    public async Task ConnectAsync(string hubUrl, string? accessToken = null)
     {
         if (_hubConnection != null)
         {
@@ -28,7 +28,13 @@ public class TableSignalRClient : ITableSignalRClient, IAsyncDisposable
         }
 
         _hubConnection = new HubConnectionBuilder()
-            .WithUrl($"{hubUrl}/hubs/pos")
+            .WithUrl($"{hubUrl}/hubs/pos", options =>
+            {
+                if (!string.IsNullOrWhiteSpace(accessToken))
+                {
+                    options.AccessTokenProvider = () => Task.FromResult<string?>(accessToken);
+                }
+            })
             .WithAutomaticReconnect()
             .Build();
 

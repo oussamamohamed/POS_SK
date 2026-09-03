@@ -19,11 +19,12 @@ public static class KitchenEndpoints
 
         group.MapGet("/tickets", async (AppDbContext db) =>
         {
-            var tickets = await db.KitchenTickets
+            var tickets = (await db.KitchenTickets
                 .Include(t => t.Items)
+                .ToListAsync())
                 .OrderByDescending(t => t.DispatchedAtUtc)
                 .Take(50)
-                .ToListAsync();
+                .ToList();
             return Results.Ok(tickets);
         }).AllowAnonymous();
 
@@ -31,6 +32,6 @@ public static class KitchenEndpoints
         {
             var updated = await kds.BumpTicketStateAsync(id);
             return updated is not null ? Results.Ok(updated) : Results.NotFound();
-        });
+        }).RequireAuthorization("RequireKitchenOrAdmin");
     }
 }

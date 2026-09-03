@@ -13,7 +13,7 @@ public static class FiscalEndpoints
     {
         var group = app.MapGroup("/api/fiscal")
                        .WithTags("Fiscal & NF525")
-                       .RequireAuthorization();
+                       .RequireAuthorization("RequireManagerOrAdmin");
 
         group.MapPost("/z-closure", async (ZClosureRequest req, INF525FiscalAuditService fiscal) =>
         {

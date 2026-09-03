@@ -6,4 +6,12 @@ public class VoidReceiptRequest
 {
     public string TerminalId { get; set; } = string.Empty;
     public Guid OperatorId { get; set; }
+
+    public VoidReceiptRequest() { }
+
+    public VoidReceiptRequest(string terminalId, Guid operatorId)
+    {
+        TerminalId = terminalId;
+        OperatorId = operatorId;
+    }
 }

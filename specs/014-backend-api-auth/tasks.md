@@ -15,8 +15,8 @@
 
 **Purpose**: Core security configuration and authorization policy registration
 
-- [ ] T001 Configure named authorization policies (`RequireAuthenticatedOperator`, `RequireManagerOrAdmin`, `RequireKitchenOrAdmin`) in `src/RestaurantPos.Api/Program.cs`
-- [ ] T002 [P] Register JWT Bearer validation parameters and secret key configuration in `src/RestaurantPos.Api/Program.cs`
+- [X] T001 Configure named authorization policies (`RequireAuthenticatedOperator`, `RequireManagerOrAdmin`, `RequireKitchenOrAdmin`) in `src/RestaurantPos.Api/Program.cs`
+- [X] T002 [P] Register JWT Bearer validation parameters and secret key configuration in `src/RestaurantPos.Api/Program.cs`
 
 ---
 
@@ -24,9 +24,9 @@
 
 **Purpose**: Testing authentication infrastructure that MUST be complete before user story testing and endpoint locking
 
-- [ ] T003 [P] Create `TestAuthHandler.cs` supporting `X-Test-Role` header claims in `tests/RestaurantPos.Api.Tests/TestAuthHandler.cs`
-- [ ] T004 Update `PosApiApplicationFactory.cs` in `tests/RestaurantPos.Api.Tests/PosApiApplicationFactory.cs` to configure `TestAuthHandler` under `Testing` environment
-- [ ] T005 [P] Add authorization extension helpers in `src/RestaurantPos.Api/Endpoints/AuthEndpoints.cs`
+- [X] T003 [P] Create `TestAuthHandler.cs` supporting `X-Test-Role` header claims in `tests/RestaurantPos.Api.Tests/TestAuthHandler.cs`
+- [X] T004 Update `PosApiApplicationFactory.cs` in `tests/RestaurantPos.Api.Tests/PosApiApplicationFactory.cs` to configure `TestAuthHandler` under `Testing` environment
+- [X] T005 [P] Add authorization extension helpers in `src/RestaurantPos.Api/Endpoints/AuthEndpoints.cs`
 
 **Checkpoint**: Foundation ready - testing harness can assert any role without database login dependencies.
 
@@ -38,12 +38,12 @@
 
 **Independent Test**: Send valid/invalid PIN requests to `/api/auth/login`. Verify valid login yields token within 50ms, while unauthenticated calls to table/checkout endpoints return 401 Unauthorized.
 
-- [ ] T006 [P] [US1] Write integration test for successful PIN login and token retrieval in `tests/RestaurantPos.Api.Tests/AuthEndpointsTests.cs`
-- [ ] T007 [P] [US1] Write integration test verifying invalid PIN returns 401 in `tests/RestaurantPos.Api.Tests/AuthEndpointsTests.cs`
-- [ ] T008 [US1] Implement `GET /api/auth/me` endpoint returning current operator profile in `src/RestaurantPos.Api/Endpoints/AuthEndpoints.cs`
-- [ ] T009 [US1] Protect table mutation endpoints with `RequireAuthorization()` in `src/RestaurantPos.Api/Endpoints/TableEndpoints.cs`
-- [ ] T010 [US1] Protect payment & checkout endpoints with `RequireAuthorization()` in `src/RestaurantPos.Api/Endpoints/CheckoutEndpoints.cs`
-- [ ] T011 [US1] Update `app.js` in `src/RestaurantPos.Api/wwwroot/app.js` to attach token on all mutating requests and refresh session on login
+- [X] T006 [P] [US1] Write integration test for successful PIN login and token retrieval in `tests/RestaurantPos.Api.Tests/AuthEndpointsTests.cs`
+- [X] T007 [P] [US1] Write integration test verifying invalid PIN returns 401 in `tests/RestaurantPos.Api.Tests/AuthEndpointsTests.cs`
+- [X] T008 [US1] Implement `GET /api/auth/me` endpoint returning current operator profile in `src/RestaurantPos.Api/Endpoints/AuthEndpoints.cs`
+- [X] T009 [US1] Protect table mutation endpoints with `RequireAuthorization()` in `src/RestaurantPos.Api/Endpoints/TableEndpoints.cs`
+- [X] T010 [US1] Protect payment & checkout endpoints with `RequireAuthorization()` in `src/RestaurantPos.Api/Endpoints/CheckoutEndpoints.cs`
+- [X] T011 [US1] Update `app.js` in `src/RestaurantPos.Api/wwwroot/app.js` to attach token on all mutating requests and refresh session on login
 
 **Checkpoint**: User Story 1 is functional and verifiable independently.
 
@@ -55,12 +55,12 @@
 
 **Independent Test**: Authenticate as `Waiter` and attempt a receipt void (verify 403 Forbidden). Authenticate as `FloorManager` and attempt the same void (verify 200 OK).
 
-- [ ] T012 [P] [US2] Write integration test verifying Waiter role is rejected on receipt void in `tests/RestaurantPos.Api.Tests/AuthEndpointsTests.cs`
-- [ ] T013 [P] [US2] Write integration test verifying Manager/Admin role is permitted on receipt void in `tests/RestaurantPos.Api.Tests/AuthEndpointsTests.cs`
-- [ ] T014 [US2] Enforce `RequireAuthorization("RequireManagerOrAdmin")` on void endpoint in `src/RestaurantPos.Api/Endpoints/CheckoutEndpoints.cs`
-- [ ] T015 [US2] Enforce `RequireAuthorization("RequireManagerOrAdmin")` on daily fiscal Z-closure in `src/RestaurantPos.Api/Endpoints/FiscalEndpoints.cs`
-- [ ] T016 [US2] Enforce `RequireAuthorization("RequireManagerOrAdmin")` on staff mutation endpoints in `src/RestaurantPos.Api/Endpoints/StaffEndpoints.cs`
-- [ ] T017 [US2] Implement supervisor override endpoint `POST /api/auth/override` in `src/RestaurantPos.Api/Endpoints/AuthEndpoints.cs`
+- [X] T012 [P] [US2] Write integration test verifying Waiter role is rejected on receipt void in `tests/RestaurantPos.Api.Tests/AuthEndpointsTests.cs`
+- [X] T013 [P] [US2] Write integration test verifying Manager/Admin role is permitted on receipt void in `tests/RestaurantPos.Api.Tests/AuthEndpointsTests.cs`
+- [X] T014 [US2] Enforce `RequireAuthorization("RequireManagerOrAdmin")` on void endpoint in `src/RestaurantPos.Api/Endpoints/CheckoutEndpoints.cs`
+- [X] T015 [US2] Enforce `RequireAuthorization("RequireManagerOrAdmin")` on daily fiscal Z-closure in `src/RestaurantPos.Api/Endpoints/FiscalEndpoints.cs`
+- [X] T016 [US2] Enforce `RequireAuthorization("RequireManagerOrAdmin")` on staff mutation endpoints in `src/RestaurantPos.Api/Endpoints/StaffEndpoints.cs`
+- [X] T017 [US2] Implement supervisor override endpoint `POST /api/auth/override` in `src/RestaurantPos.Api/Endpoints/AuthEndpoints.cs`
 
 **Checkpoint**: User Story 2 is functional and verifiable independently.
 
@@ -72,10 +72,10 @@
 
 **Independent Test**: Run `dotnet test` across all 4 test projects and verify 100% pass rate with zero manual authentication required.
 
-- [ ] T018 [P] [US3] Add unit tests for `TestAuthHandler` role claims synthesis in `tests/RestaurantPos.Api.Tests/TestAuthHandlerTests.cs`
-- [ ] T019 [US3] Conditionally register `TestAuthHandler` in `src/RestaurantPos.Api/Program.cs` only when running in `Testing` environment
-- [ ] T020 [US3] Ensure default test seed accounts (`1234` Manager, `2468` Waiter, `5678` Chef, `9999` Admin) are loaded in `src/RestaurantPos.Api/Program.cs`
-- [ ] T021 [US3] Run full solution test suite `dotnet test` and verify all 101 tests pass cleanly
+- [X] T018 [P] [US3] Add unit tests for `TestAuthHandler` role claims synthesis in `tests/RestaurantPos.Api.Tests/TestAuthHandlerTests.cs`
+- [X] T019 [US3] Conditionally register `TestAuthHandler` in `src/RestaurantPos.Api/Program.cs` only when running in `Testing` environment
+- [X] T020 [US3] Ensure default test seed accounts (`1234` Manager, `2468` Waiter, `5678` Chef, `9999` Admin) are loaded in `src/RestaurantPos.Api/Program.cs`
+- [X] T021 [US3] Run full solution test suite `dotnet test` and verify all 101 tests pass cleanly
 
 **Checkpoint**: User Story 3 is complete and CI/CD test suite is 100% green.
 
@@ -87,9 +87,9 @@
 
 **Independent Test**: Connect to `/hubs/pos` with valid token (verify accepted). Connect with invalid/missing token (verify unauthorized in production).
 
-- [ ] T022 [P] [US4] Configure `JwtBearerEvents.OnMessageReceived` in `src/RestaurantPos.Api/Program.cs` to read `access_token` query string for `/hubs/pos`
-- [ ] T023 [US4] Update `PosHub.cs` in `src/RestaurantPos.Api/Hubs/PosHub.cs` to validate client authorization and map operator context
-- [ ] T024 [US4] Update `KitchenSignalRClient.cs` and `TableSignalRClient.cs` in `src/RestaurantPos.Client.Maui/Services/` to supply bearer token on hub connection
+- [X] T022 [P] [US4] Configure `JwtBearerEvents.OnMessageReceived` in `src/RestaurantPos.Api/Program.cs` to read `access_token` query string for `/hubs/pos`
+- [X] T023 [US4] Update `PosHub.cs` in `src/RestaurantPos.Api/Hubs/PosHub.cs` to validate client authorization and map operator context
+- [X] T024 [US4] Update `KitchenSignalRClient.cs` and `TableSignalRClient.cs` in `src/RestaurantPos.Client.Maui/Services/` to supply bearer token on hub connection
 
 **Checkpoint**: User Story 4 is functional and verified.
 
@@ -101,9 +101,9 @@
 
 **Independent Test**: Dispatch 5 consecutive wrong PINs; verify 6th attempt is rate-limited with backoff delay.
 
-- [ ] T025 [P] [US5] Implement `PinRateLimiterService` sliding window limiter in `src/RestaurantPos.Infrastructure/Security/PinRateLimiterService.cs`
-- [ ] T026 [US5] Wire rate limiter into `POST /api/auth/login` in `src/RestaurantPos.Api/Endpoints/AuthEndpoints.cs`
-- [ ] T027 [US5] Add structured `ILogger` security event logs for authentication successes, failures, and overrides in `src/RestaurantPos.Api/Endpoints/AuthEndpoints.cs`
+- [X] T025 [P] [US5] Implement `PinRateLimiterService` sliding window limiter in `src/RestaurantPos.Infrastructure/Security/PinRateLimiterService.cs`
+- [X] T026 [US5] Wire rate limiter into `POST /api/auth/login` in `src/RestaurantPos.Api/Endpoints/AuthEndpoints.cs`
+- [X] T027 [US5] Add structured `ILogger` security event logs for authentication successes, failures, and overrides in `src/RestaurantPos.Api/Endpoints/AuthEndpoints.cs`
 
 **Checkpoint**: User Story 5 is functional and verified.
 
@@ -113,9 +113,9 @@
 
 **Purpose**: Final verification, OpenAPI compliance, and clean build checks
 
-- [ ] T028 [P] Update OpenAPI Swagger documentation with `BearerAuth` security scheme in `src/RestaurantPos.Api/Program.cs`
-- [ ] T029 Execute full quickstart validation scenarios from `specs/014-backend-api-auth/quickstart.md`
-- [ ] T030 Verify zero compiler warnings across all projects with `dotnet build` (`TreatWarningsAsErrors=true`)
+- [X] T028 [P] Update OpenAPI Swagger documentation with `BearerAuth` security scheme in `src/RestaurantPos.Api/Program.cs`
+- [X] T029 Execute full quickstart validation scenarios from `specs/014-backend-api-auth/quickstart.md`
+- [X] T030 Verify zero compiler warnings across all projects with `dotnet build` (`TreatWarningsAsErrors=true`)
 
 ---
 

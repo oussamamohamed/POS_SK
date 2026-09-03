@@ -27,13 +27,13 @@ public static class CatalogEndpoints
         {
             var created = await catalog.CreateCategoryAsync(req.Name, req.ColorHex, req.DisplayOrder, req.IconName);
             return Results.Ok(created);
-        });
+        }).RequireAuthorization("RequireManagerOrAdmin");
 
         group.MapPut("/categories/{id}", async (string id, UpdateCategoryRequest req, IBackOfficeCatalogService catalog) =>
         {
             var updated = await catalog.UpdateCategoryAsync(id, req.Name, req.ColorHex, req.DisplayOrder, req.IconName, req.IsActive ?? true);
             return Results.Ok(updated);
-        });
+        }).RequireAuthorization("RequireManagerOrAdmin");
 
         // Products
         group.MapGet("/products", async (string? categoryId, IBackOfficeCatalogService catalog) =>
@@ -82,7 +82,7 @@ public static class CatalogEndpoints
                 created.TaxRatePercent,
                 created.IsQuickKey
             });
-        });
+        }).RequireAuthorization("RequireManagerOrAdmin");
 
         group.MapPut("/products/{id:guid}", async (Guid id, UpdateProductRequest req, IBackOfficeCatalogService catalog) =>
         {
@@ -111,12 +111,12 @@ public static class CatalogEndpoints
                 updated.PreparationStationId,
                 updated.IsActive
             });
-        });
+        }).RequireAuthorization("RequireManagerOrAdmin");
 
         group.MapDelete("/products/{id:guid}", async (Guid id, IBackOfficeCatalogService catalog) =>
         {
             var ok = await catalog.ArchiveProductAsync(id);
             return ok ? Results.Ok(new { Success = true }) : Results.NotFound();
-        });
+        }).RequireAuthorization("RequireManagerOrAdmin");
     }
 }

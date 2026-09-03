@@ -7,6 +7,7 @@
     <Project Path="src/RestaurantPos.Infrastructure/RestaurantPos.Infrastructure.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/RestaurantPos.Api.Tests/RestaurantPos.Api.Tests.csproj" />
     <Project Path="tests/RestaurantPos.Client.Maui.Tests/RestaurantPos.Client.Maui.Tests.csproj" />
     <Project Path="tests/RestaurantPos.Domain.Tests/RestaurantPos.Domain.Tests.csproj" />
     <Project Path="tests/RestaurantPos.Infrastructure.Tests/RestaurantPos.Infrastructure.Tests.csproj" />

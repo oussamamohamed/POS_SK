@@ -1,8 +1,9 @@
+using System;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using RestaurantPos.Application.Common.Interfaces;
 using RestaurantPos.Domain.Entities;
-using System;
-using System.Threading.Tasks;
 
 namespace RestaurantPos.Api.Hubs;
 
@@ -13,21 +14,26 @@ public interface IPosHubClient : IKitchenHubClient
 
 public class PosHub : Hub<IPosHubClient>
 {
-    // Clients can call these methods to broadcast to others
+    public override async Task OnConnectedAsync()
+    {
+        await base.OnConnectedAsync();
+    }
+
+    [Authorize]
     public async Task UpdateTableStatus(string tableNumber, TableStatus newStatus)
     {
         await Clients.Others.OnTableStatusChanged(tableNumber, newStatus);
     }
 
+    [Authorize]
     public async Task DispatchKitchenTicket(KitchenTicketDto ticket)
     {
         await Clients.All.OnNewTicketReceived(ticket);
     }
 
+    [Authorize]
     public async Task BumpTicket(Guid ticketId)
     {
-        // Typically, bumping a ticket changes it to InPreparation or Ready
-        // Let's assume InPreparation for simplicity when bumped from pending
         await Clients.All.OnTicketStatusChanged(ticketId, TicketStatus.InPreparation);
     }
 }
