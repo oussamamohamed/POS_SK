@@ -24,7 +24,11 @@ public static class CheckoutEndpoints
                 (long)Math.Round(t.Tendered * 100)
             )).ToList();
 
-            var result = await checkout.ProcessPaymentTendersAsync(req.OrderId, req.TableNumber, tenderRequests);
+            var terminalId = !string.IsNullOrWhiteSpace(req.TerminalId)
+                ? req.TerminalId
+                : (!string.IsNullOrWhiteSpace(req.TableNumber) ? $"TERM_{req.TableNumber}" : "POS_MAIN_TERM");
+
+            var result = await checkout.ProcessPaymentTendersAsync(req.OrderId, terminalId, tenderRequests);
 
             return Results.Ok(new
             {

@@ -235,6 +235,9 @@
                     <button class="admin-tab-btn" data-admin-tab="tabNetworkSync">
                         <span>🌐</span> Réseau & Synchronisation
                     </button>
+                    <button class="admin-tab-btn" data-admin-tab="tabDashboard">
+                        <span>📊</span> Tableaux de Bord & KPIs
+                    </button>
                 </div>
 
                 <div class="admin-content">
@@ -517,6 +520,80 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Tab 6: Financial Dashboard & KPIs -->
+                    <div class="admin-tab-pane" id="tabDashboard">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:12px;">
+                            <div>
+                                <h3 style="margin:0; font-size:1.4rem;">📊 Tableaux de Bord & KPIs Financiers</h3>
+                                <p class="text-muted" style="margin:4px 0 0 0; font-size:0.85rem;">Analyse temps réel de la rentabilité, des services et des ventes.</p>
+                            </div>
+                            <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                                <button class="btn-ghost dash-filter-btn active" data-range="today">Aujourd'hui</button>
+                                <button class="btn-ghost dash-filter-btn" data-range="yesterday">Hier</button>
+                                <button class="btn-ghost dash-filter-btn" data-range="week">7 jours</button>
+                                <button class="btn-ghost dash-filter-btn" data-range="month">30 jours</button>
+                                <button class="btn-primary" id="btnRefreshDashboard" style="padding:6px 14px; font-size:0.85rem;">
+                                    <span>🔄</span> Actualiser
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 3 KPI Metric Cards -->
+                        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:16px; margin-bottom:24px;">
+                            <div class="admin-card" style="background:linear-gradient(135deg, rgba(16,185,129,0.15), rgba(16,185,129,0.05)); border:1px solid rgba(16,185,129,0.3); padding:16px; border-radius:12px;">
+                                <div style="font-size:0.8rem; color:#94a3b8; text-transform:uppercase; letter-spacing:0.5px;">Chiffre d'Affaires TTC</div>
+                                <div style="font-size:1.8rem; font-weight:700; color:#10b981; margin:8px 0 4px 0;" id="kpiSalesTtc">0.00 €</div>
+                                <div style="font-size:0.75rem; color:#64748b;" id="kpiSalesHt">HT : 0.00 €</div>
+                            </div>
+
+                            <div class="admin-card" style="background:linear-gradient(135deg, rgba(56,189,248,0.15), rgba(56,189,248,0.05)); border:1px solid rgba(56,189,248,0.3); padding:16px; border-radius:12px;">
+                                <div style="font-size:0.8rem; color:#94a3b8; text-transform:uppercase; letter-spacing:0.5px;">Panier Moyen / Couvert</div>
+                                <div style="font-size:1.8rem; font-weight:700; color:#38bdf8; margin:8px 0 4px 0;" id="kpiAvgCover">0.00 €</div>
+                                <div style="font-size:0.75rem; color:#64748b;" id="kpiTotalCovers">0 couverts servis</div>
+                            </div>
+
+                            <div class="admin-card" style="background:linear-gradient(135deg, rgba(168,85,247,0.15), rgba(168,85,247,0.05)); border:1px solid rgba(168,85,247,0.3); padding:16px; border-radius:12px;">
+                                <div style="font-size:0.8rem; color:#94a3b8; text-transform:uppercase; letter-spacing:0.5px;">Panier Moyen / Commande</div>
+                                <div style="font-size:1.8rem; font-weight:700; color:#c084fc; margin:8px 0 4px 0;" id="kpiAvgOrder">0.00 €</div>
+                                <div style="font-size:0.75rem; color:#64748b;" id="kpiTotalOrders">0 commande(s)</div>
+                            </div>
+                        </div>
+
+                        <!-- 2-column Grid: Services & Payments -->
+                        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:20px; margin-bottom:24px;">
+                            <div class="admin-card">
+                                <h4>☀️ Comparatif par Service</h4>
+                                <div id="dashServicesList" style="display:flex; flex-direction:column; gap:12px; margin-top:14px;">
+                                    <p class="text-muted">Chargement des données...</p>
+                                </div>
+                            </div>
+
+                            <div class="admin-card">
+                                <h4>💳 Ventilation des Règlements</h4>
+                                <div id="dashPaymentsList" style="display:flex; flex-direction:column; gap:12px; margin-top:14px;">
+                                    <p class="text-muted">Chargement des données...</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 2-column Grid: Top Products & Staff Productivity -->
+                        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:20px;">
+                            <div class="admin-card">
+                                <h4>🏆 Palmarès des Ventes (Top Articles)</h4>
+                                <div id="dashTopProductsList" style="display:flex; flex-direction:column; gap:10px; margin-top:14px;">
+                                    <p class="text-muted">Chargement des données...</p>
+                                </div>
+                            </div>
+
+                            <div class="admin-card">
+                                <h4>👥 Productivité par Serveur</h4>
+                                <div id="dashStaffList" style="display:flex; flex-direction:column; gap:10px; margin-top:14px;">
+                                    <p class="text-muted">Chargement des données...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -561,6 +638,33 @@
                             </div>
                         </div>
                     </div>
+                </div>
+
+                <div class="fiscal-card" style="margin-top: 24px;">
+                    <h2>📂 Export Comptable FEC (Article A.47 A-1 LPF)</h2>
+                    <p class="text-muted">Génération du Fichier des Écritures Comptables normalisé (18 colonnes DGFIP) pour l'administration fiscale et l'expert-comptable.</p>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin: 16px 0; background: rgba(255,255,255,0.03); padding: 16px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.08);">
+                        <div>
+                            <label style="display:block; font-size: 0.82rem; color: #94a3b8; margin-bottom: 6px;">Date de début</label>
+                            <input type="date" id="fecStartDate" class="form-input" style="width: 100%; padding: 8px 12px; border-radius: 6px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); color: #fff;">
+                        </div>
+                        <div>
+                            <label style="display:block; font-size: 0.82rem; color: #94a3b8; margin-bottom: 6px;">Date de fin</label>
+                            <input type="date" id="fecEndDate" class="form-input" style="width: 100%; padding: 8px 12px; border-radius: 6px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); color: #fff;">
+                        </div>
+                        <div>
+                            <label style="display:block; font-size: 0.82rem; color: #94a3b8; margin-bottom: 6px;">Numéro SIREN (9 chiffres)</label>
+                            <input type="text" id="fecSiren" maxlength="9" placeholder="123456789" value="123456789" class="form-input" style="width: 100%; padding: 8px 12px; border-radius: 6px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); color: #fff;">
+                        </div>
+                    </div>
+
+                    <div class="fiscal-actions" style="margin-top: 12px;">
+                        <button class="btn-fiscal" id="btnExportFec" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                            <span>📥</span> Télécharger le Fichier FEC (.txt)
+                        </button>
+                    </div>
+                    <div id="fecStatusMessage" style="margin-top: 12px; font-size: 0.85rem; color: #94a3b8;"></div>
                 </div>
             </div>
         </section>

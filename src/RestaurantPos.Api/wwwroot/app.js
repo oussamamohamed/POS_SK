@@ -130,6 +130,27 @@ document.addEventListener('DOMContentLoaded', () => {
         slipHash: document.getElementById('slipHash'),
         slipDate: document.getElementById('slipDate'),
 
+        // FEC Export
+        btnExportFec: document.getElementById('btnExportFec'),
+        fecStartDate: document.getElementById('fecStartDate'),
+        fecEndDate: document.getElementById('fecEndDate'),
+        fecSiren: document.getElementById('fecSiren'),
+        fecStatusMessage: document.getElementById('fecStatusMessage'),
+
+        // Financial Dashboard
+        kpiSalesTtc: document.getElementById('kpiSalesTtc'),
+        kpiSalesHt: document.getElementById('kpiSalesHt'),
+        kpiAvgCover: document.getElementById('kpiAvgCover'),
+        kpiTotalCovers: document.getElementById('kpiTotalCovers'),
+        kpiAvgOrder: document.getElementById('kpiAvgOrder'),
+        kpiTotalOrders: document.getElementById('kpiTotalOrders'),
+        dashServicesList: document.getElementById('dashServicesList'),
+        dashPaymentsList: document.getElementById('dashPaymentsList'),
+        dashTopProductsList: document.getElementById('dashTopProductsList'),
+        dashStaffList: document.getElementById('dashStaffList'),
+        btnRefreshDashboard: document.getElementById('btnRefreshDashboard'),
+        dashFilterBtns: document.querySelectorAll('.dash-filter-btn'),
+
         // Admin Grid Editor
         selectAdminGridCat: document.getElementById('selectAdminGridCat'),
         adminMatrixGrid: document.getElementById('adminMatrixGrid'),
@@ -221,6 +242,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setupNavListeners();
         setupPinKeypad();
         setupAdminTabs();
+        setupDashboardHandlers();
         setupModals();
         setupForms();
         setupSalesGridPaginationListeners();
@@ -1520,6 +1542,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (targetTab === 'tabLayout') {
                     loadAdminGridEditor();
+                } else if (targetTab === 'tabDashboard') {
+                    loadFinancialDashboard('today');
                 }
             });
         });
@@ -1531,8 +1555,166 @@ document.addEventListener('DOMContentLoaded', () => {
             loadAdminStaff(),
             loadAdminPrinters(),
             loadAdminGridEditor(),
-            loadNetworkSyncData()
+            loadNetworkSyncData(),
+            loadFinancialDashboard('today')
         ]);
+    }
+
+    // ==================== FINANCIAL DASHBOARD & KPIS ====================
+    let currentDashboardRange = 'today';
+
+    function setupDashboardHandlers() {
+        const filterBtns = document.querySelectorAll('.dash-filter-btn');
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                filterBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentDashboardRange = btn.getAttribute('data-range') || 'today';
+                loadFinancialDashboard(currentDashboardRange);
+            });
+        });
+
+        const refreshBtn = document.getElementById('btnRefreshDashboard');
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', () => {
+                loadFinancialDashboard(currentDashboardRange);
+            });
+        }
+    }
+
+    async function loadFinancialDashboard(range = 'today') {
+        const now = new Date();
+        let fromDate = new Date();
+        let toDate = new Date();
+
+        if (range === 'today') {
+            fromDate.setHours(0, 0, 0, 0);
+        } else if (range === 'yesterday') {
+            fromDate.setDate(now.getDate() - 1);
+            fromDate.setHours(0, 0, 0, 0);
+            toDate.setDate(now.getDate() - 1);
+            toDate.setHours(23, 59, 59, 999);
+        } else if (range === 'week') {
+            fromDate.setDate(now.getDate() - 7);
+            fromDate.setHours(0, 0, 0, 0);
+        } else if (range === 'month') {
+            fromDate.setDate(now.getDate() - 30);
+            fromDate.setHours(0, 0, 0, 0);
+        }
+
+        try {
+            const url = `/api/dashboard/financial?from=${encodeURIComponent(fromDate.toISOString())}&to=${encodeURIComponent(toDate.toISOString())}`;
+            const res = await fetch(url);
+            if (!res.ok) {
+                console.error('Erreur chargement dashboard financier:', res.status);
+                return;
+            }
+
+            const data = await res.json();
+            renderFinancialDashboard(data);
+        } catch (err) {
+            console.error('Erreur communication dashboard:', err);
+        }
+    }
+
+    function renderFinancialDashboard(data) {
+        if (!data || !data.kpis) return;
+
+        // 1. KPIs
+        const elSalesTtc = document.getElementById('kpiSalesTtc');
+        const elSalesHt = document.getElementById('kpiSalesHt');
+        const elAvgCover = document.getElementById('kpiAvgCover');
+        const elTotalCovers = document.getElementById('kpiTotalCovers');
+        const elAvgOrder = document.getElementById('kpiAvgOrder');
+        const elTotalOrders = document.getElementById('kpiTotalOrders');
+
+        if (elSalesTtc) elSalesTtc.textContent = `${data.kpis.totalSalesTtc.toFixed(2)} €`;
+        if (elSalesHt) elSalesHt.textContent = `HT : ${data.kpis.totalSalesHt.toFixed(2)} €`;
+        if (elAvgCover) elAvgCover.textContent = `${data.kpis.averageCoverTtc.toFixed(2)} €`;
+        if (elTotalCovers) elTotalCovers.textContent = `${data.kpis.totalCoversCount} couverts servis`;
+        if (elAvgOrder) elAvgOrder.textContent = `${data.kpis.averageOrderTtc.toFixed(2)} €`;
+        if (elTotalOrders) elTotalOrders.textContent = `${data.kpis.totalOrdersCount} commande(s)`;
+
+        // 2. Services
+        const elServices = document.getElementById('dashServicesList');
+        if (elServices) {
+            if (!data.services || data.services.length === 0) {
+                elServices.innerHTML = '<p class="text-muted">Aucune donnée de service pour la période.</p>';
+            } else {
+                elServices.innerHTML = data.services.map(s => `
+                    <div style="background:rgba(255,255,255,0.03); padding:12px; border-radius:8px; border:1px solid rgba(255,255,255,0.06);">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                            <strong>${s.serviceName}</strong>
+                            <strong style="color:#10b981;">${s.salesTtc.toFixed(2)} €</strong>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:#94a3b8;">
+                            <span>${s.ordersCount} commande(s) • ${s.coversCount} couvert(s)</span>
+                            <span>Moy/couvert : ${s.averageCoverTtc.toFixed(2)} €</span>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // 3. Payment Methods
+        const elPayments = document.getElementById('dashPaymentsList');
+        if (elPayments) {
+            if (!data.paymentMethods || data.paymentMethods.length === 0) {
+                elPayments.innerHTML = '<p class="text-muted">Aucun encaissement sur la période.</p>';
+            } else {
+                elPayments.innerHTML = data.paymentMethods.map(p => `
+                    <div style="background:rgba(255,255,255,0.03); padding:10px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.06);">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:0.88rem;">
+                            <span>${p.methodName} <span style="color:#94a3b8; font-size:0.78rem;">(${p.transactionsCount} tx)</span></span>
+                            <strong>${p.totalAmount.toFixed(2)} € <span style="color:#38bdf8; font-size:0.8rem;">(${p.percentageOfTotal}%)</span></strong>
+                        </div>
+                        <div style="background:rgba(255,255,255,0.08); height:6px; border-radius:3px; overflow:hidden;">
+                            <div style="background:#38bdf8; height:100%; width:${Math.min(100, Math.max(0, p.percentageOfTotal))}%;"></div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // 4. Top Products
+        const elTopProds = document.getElementById('dashTopProductsList');
+        if (elTopProds) {
+            if (!data.topProducts || data.topProducts.length === 0) {
+                elTopProds.innerHTML = '<p class="text-muted">Aucune vente enregistrée.</p>';
+            } else {
+                elTopProds.innerHTML = data.topProducts.map((prod, idx) => `
+                    <div style="background:rgba(255,255,255,0.03); padding:10px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.06);">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:4px; font-size:0.88rem;">
+                            <span><strong style="color:#fbbf24; margin-right:6px;">#${idx + 1}</strong> ${prod.productName} <span style="color:#94a3b8; font-size:0.8rem;">(x${prod.quantitySold})</span></span>
+                            <strong style="color:#10b981;">${prod.totalSalesTtc.toFixed(2)} € <span style="color:#94a3b8; font-size:0.75rem;">(${prod.percentageOfTotal}%)</span></strong>
+                        </div>
+                        <div style="background:rgba(255,255,255,0.08); height:6px; border-radius:3px; overflow:hidden;">
+                            <div style="background:#10b981; height:100%; width:${Math.min(100, Math.max(0, prod.percentageOfTotal))}%;"></div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // 5. Staff Productivity
+        const elStaff = document.getElementById('dashStaffList');
+        if (elStaff) {
+            if (!data.staffPerformance || data.staffPerformance.length === 0) {
+                elStaff.innerHTML = '<p class="text-muted">Aucune activité serveur enregistrée.</p>';
+            } else {
+                elStaff.innerHTML = data.staffPerformance.map(s => `
+                    <div style="background:rgba(255,255,255,0.03); padding:10px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.06); display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <strong>👤 ${s.serverName}</strong>
+                            <div style="font-size:0.78rem; color:#94a3b8; margin-top:2px;">${s.tablesServedCount} table(s) • Moy/table: ${s.averageTableTtc.toFixed(2)} €</div>
+                        </div>
+                        <div style="text-align:right;">
+                            <strong style="color:#c084fc; font-size:1.05rem;">${s.totalSalesTtc.toFixed(2)} €</strong>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
     }
 
     async function loadAdminCatalog() {
@@ -1752,16 +1934,111 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Fiscal Closure Z
         elements.btnExecuteZ.addEventListener('click', async () => {
-            const res = await fetch('/api/fiscal/z-closure', { method: 'POST' });
+            const managerId = state.operator?.id || '01a067d9-b8b9-7b6a-8b3c-d272e6128c35';
+            const managerName = state.operator?.name || 'Alexandre Dupont (Manager)';
+            const res = await fetch('/api/fiscal/z-closure', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    terminalId: 'POS_MAIN_TERM',
+                    managerId: managerId,
+                    managerName: managerName
+                })
+            });
             if (res.ok) {
                 const closure = await res.json();
                 elements.slipTotalTtc.textContent = `${closure.totalSalesTtc.toFixed(2)} €`;
-                elements.slipCount.textContent = closure.receiptCount;
+                elements.slipCount.textContent = closure.receiptCount || '1';
                 elements.slipHash.textContent = closure.signatureHash;
                 elements.slipDate.textContent = `Date: ${new Date().toISOString().replace('T', ' ').substring(0, 19)} UTC`;
                 showToast('Clôture journalière Rapport Z exécutée & scellée ! 📜', 'success');
+            } else {
+                try {
+                    const err = await res.json();
+                    showToast(err.message || 'Erreur clôture Z', 'error');
+                } catch {
+                    showToast('Erreur clôture Z', 'error');
+                }
             }
         });
+
+        // FEC Export Handler
+        if (elements.btnExportFec) {
+            const now = new Date();
+            const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+            if (elements.fecStartDate && !elements.fecStartDate.value) {
+                elements.fecStartDate.value = firstDay.toISOString().split('T')[0];
+            }
+            if (elements.fecEndDate && !elements.fecEndDate.value) {
+                elements.fecEndDate.value = now.toISOString().split('T')[0];
+            }
+
+            elements.btnExportFec.addEventListener('click', async () => {
+                const startDate = elements.fecStartDate ? elements.fecStartDate.value : '';
+                const endDate = elements.fecEndDate ? elements.fecEndDate.value : '';
+                const siren = elements.fecSiren ? elements.fecSiren.value.trim() : '123456789';
+
+                if (elements.fecStatusMessage) {
+                    elements.fecStatusMessage.textContent = 'Génération du fichier FEC en cours...';
+                    elements.fecStatusMessage.style.color = '#38bdf8';
+                }
+
+                try {
+                    let url = `/api/fiscal/fec?siren=${encodeURIComponent(siren)}`;
+                    if (startDate) url += `&from=${encodeURIComponent(startDate + 'T00:00:00Z')}`;
+                    if (endDate) url += `&to=${encodeURIComponent(endDate + 'T23:59:59Z')}`;
+
+                    const res = await fetch(url);
+                    if (res.ok) {
+                        const blob = await res.blob();
+                        const downloadUrl = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.style.display = 'none';
+                        a.href = downloadUrl;
+
+                        let filename = `${siren}FEC${endDate ? endDate.replace(/-/g, '') : '20261231'}.txt`;
+                        const disposition = res.headers.get('content-disposition');
+                        if (disposition && disposition.includes('filename=')) {
+                            const match = disposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+                            if (match && match[1]) {
+                                filename = match[1].replace(/['"]/g, '');
+                            }
+                        }
+
+                        a.download = filename;
+                        document.body.appendChild(a);
+                        a.click();
+                        window.URL.revokeObjectURL(downloadUrl);
+                        a.remove();
+
+                        if (elements.fecStatusMessage) {
+                            elements.fecStatusMessage.textContent = `✓ Fichier ${filename} généré avec succès !`;
+                            elements.fecStatusMessage.style.color = '#10b981';
+                        }
+                        showToast(`Fichier FEC ${filename} téléchargé ! 📜`, 'success');
+                    } else if (res.status === 401 || res.status === 403) {
+                        if (elements.fecStatusMessage) {
+                            elements.fecStatusMessage.textContent = '❌ Privilèges insuffisants (Rôle Manager ou Admin requis).';
+                            elements.fecStatusMessage.style.color = '#ef4444';
+                        }
+                        showToast('Export FEC refusé : privilèges insuffisants', 'error');
+                    } else {
+                        if (elements.fecStatusMessage) {
+                            elements.fecStatusMessage.textContent = `❌ Erreur ${res.status} lors de la génération du FEC.`;
+                            elements.fecStatusMessage.style.color = '#ef4444';
+                        }
+                        showToast('Erreur génération FEC', 'error');
+                    }
+                } catch (err) {
+                    console.error('Erreur export FEC:', err);
+                    if (elements.fecStatusMessage) {
+                        elements.fecStatusMessage.textContent = '❌ Erreur de communication avec le serveur.';
+                        elements.fecStatusMessage.style.color = '#ef4444';
+                    }
+                    showToast('Erreur téléchargement FEC', 'error');
+                }
+            });
+        }
 
         // Network Sync Handlers
         setupNetworkSyncHandlers();

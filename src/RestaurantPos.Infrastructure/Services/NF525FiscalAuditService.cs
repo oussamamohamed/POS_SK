@@ -51,11 +51,15 @@ public class NF525FiscalAuditService : INF525FiscalAuditService
         var periodStart = lastClosure?.PeriodEndUtc ?? DateTimeOffset.UtcNow.Date;
         var periodEnd = DateTimeOffset.UtcNow;
 
-        var receipts = await _dbContext.FiscalReceipts
+        var allReceipts = await _dbContext.FiscalReceipts
             .Include(r => r.Tenders)
-            .Where(r => r.TerminalId == terminalId && r.CreatedAtUtc >= periodStart && r.CreatedAtUtc <= periodEnd)
+            .Where(r => r.TerminalId == terminalId)
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
+
+        var receipts = allReceipts
+            .Where(r => r.CreatedAtUtc >= periodStart && r.CreatedAtUtc <= periodEnd)
+            .ToList();
 
         long totalTtc = receipts.Sum(r => r.TotalTtcAmount.AmountInCents);
         long totalHt = receipts.Sum(r => r.TotalHtAmount.AmountInCents);

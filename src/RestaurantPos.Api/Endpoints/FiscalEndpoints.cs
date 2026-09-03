@@ -36,5 +36,30 @@ public static class FiscalEndpoints
                 closure.ClosedAtUtc
             });
         });
+
+        group.MapGet("/fec", async (
+            DateTimeOffset? from,
+            DateTimeOffset? to,
+            string? siren,
+            string? company,
+            IFecExportService fecService,
+            CancellationToken ct) =>
+        {
+            var fromDate = from ?? DateTimeOffset.UtcNow.Date.AddDays(-30);
+            var toDate = to ?? DateTimeOffset.UtcNow;
+
+            var result = await fecService.GenerateFecAsync(new FecExportRequest(
+                StartDateUtc: fromDate,
+                EndDateUtc: toDate,
+                SirenNumber: siren,
+                CompanyName: company
+            ), ct);
+
+            return Results.File(
+                result.FileBytes,
+                contentType: "text/plain; charset=utf-8",
+                fileDownloadName: result.FileName
+            );
+        });
     }
 }

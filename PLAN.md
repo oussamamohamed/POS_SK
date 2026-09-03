@@ -138,3 +138,5 @@ Phase 6 : Back-Office, Reporting Financier & Déploiement App Store / MDMObjecti
 | **[T017]** | Phase 5 | `RestaurantPos.Infrastructure/Discovery/` | Service de découverte mDNS / Bonjour pour appairage automatique des iPads | [T003] | **[X] Terminé** |
 | **[T018]** | Feature 014 | `RestaurantPos.Api/Endpoints/AuthEndpoints.cs` | Authentification JWT, RBAC multi-rôles, TestAuthHandler et limitation de débit | [T001] | **[X] Terminé** |
 | **[T019]** | Tests | `tests/` | Suite complète de tests unitaires & d'intégration (112 tests réussis, 0 échec) | - | **[X] Terminé** |
+| **[T020]** | Phase 6 | `RestaurantPos.Infrastructure/Services/FecExportService.cs` | Export comptable officiel FEC (Art. A.47 A-1 LPF), 18 colonnes DGFIP et équilibre Débit/Crédit | [T015] | **[X] Terminé** |
+| **[T021]** | Phase 6 | `RestaurantPos.Infrastructure/Services/FinancialDashboardService.cs` | Tableaux de bord financiers, KPIs temps réel, services Midi/Soir et palmarès des ventes | [T020] | **[X] Terminé** |

@@ -70,6 +70,8 @@ public partial class Program
         builder.Services.AddScoped<ITerminalLayoutService, TerminalLayoutService>();
         builder.Services.AddScoped<ICheckoutPaymentService, CheckoutPaymentService>();
         builder.Services.AddScoped<INF525FiscalAuditService, NF525FiscalAuditService>();
+        builder.Services.AddScoped<IFecExportService, FecExportService>();
+        builder.Services.AddScoped<IFinancialDashboardService, FinancialDashboardService>();
         builder.Services.AddScoped<IOrderDiscountService, OrderDiscountService>();
         builder.Services.AddScoped<IRoomBillingService, RoomBillingService>();
         builder.Services.AddScoped<IGridManagementService, GridManagementService>();
@@ -242,6 +244,7 @@ public partial class Program
         // 8. Checkout, Payments & Fiscal Z
         app.MapCheckoutEndpoints();
         app.MapFiscalEndpoints();
+        app.MapDashboardEndpoints();
 
         // 9. Hospitality Features (Table Transfer, Merge, Discounts, Course Fire, Hotel PMS)
         app.MapHospitalityEndpoints();
@@ -436,7 +439,7 @@ public record UpdatePrinterRequest(string Name, string IpAddress, int Port, int 
 public record OpenTableRequest(string? WaiterName, int CoversCount, Guid? OperatorId);
 public record ZClosureRequest(string TerminalId, Guid ManagerId, string ManagerName);
 public record AddOrderItemsRequest(List<OrderItemInputDto> Items);
-public record PaymentSettlementRequest(Guid OrderId, string TableNumber, Guid OperatorId, List<TenderItemRequest> Tenders);
+public record PaymentSettlementRequest(Guid OrderId, string? TableNumber, Guid? OperatorId, List<TenderItemRequest> Tenders, string? TerminalId = null);
 public record TenderItemRequest(PaymentMethod Method, decimal Amount, decimal Tendered, decimal ChangeGiven);
 public record TransferTableRequest(string TargetTableNumber);
 public record MergeTablesRequest(string TargetTableNumber);
