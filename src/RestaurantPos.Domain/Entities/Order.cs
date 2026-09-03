@@ -78,6 +78,7 @@ public class OrderItem
     public string? PreparationStationId { get; set; }
     public bool IsDispatched { get; set; }
     public List<string> SelectedModifiers { get; init; } = [];
+    public Money ModifiersPriceExtra { get; set; } = Money.Zero();
     public string? KitchenComment { get; set; }
 
     // Course & Discounts
@@ -92,12 +93,13 @@ public class OrderItem
     public Money CalculateTotalTtc()
     {
         if (IsComp) return Money.Zero();
+        Money effectiveUnitPrice = UnitPrice + ModifiersPriceExtra;
         if (DiscountPercent > 0)
         {
-            long baseCents = (UnitPrice * Quantity).AmountInCents;
+            long baseCents = (effectiveUnitPrice * Quantity).AmountInCents;
             long discountedCents = (long)Math.Round(baseCents * (1.0m - (DiscountPercent / 100.0m)), MidpointRounding.AwayFromZero);
             return Money.FromCents(Math.Max(0, discountedCents));
         }
-        return UnitPrice * Quantity;
+        return effectiveUnitPrice * Quantity;
     }
 }

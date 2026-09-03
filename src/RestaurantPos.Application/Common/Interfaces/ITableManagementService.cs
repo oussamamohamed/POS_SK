@@ -45,7 +45,8 @@ public record ActiveOrderLineDto(
     IReadOnlyList<string> ModifiersSummary,
     CourseType Course = CourseType.Direct,
     bool IsComp = false,
-    decimal DiscountPercent = 0.0m
+    decimal DiscountPercent = 0.0m,
+    decimal ModifiersPriceExtra = 0.0m
 );
 
 public record OrderItemInputDto(
@@ -56,7 +57,8 @@ public record OrderItemInputDto(
     decimal TaxRatePercent,
     string? PreparationStationId,
     IReadOnlyList<string>? Modifiers,
-    CourseType Course = CourseType.Direct
+    CourseType Course = CourseType.Direct,
+    decimal ModifiersPriceExtra = 0.0m
 );
 
 public interface ITableManagementService

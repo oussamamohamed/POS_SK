@@ -150,6 +150,8 @@ public class LocalAppDbContext : DbContext
             entity.Property(i => i.TaxRatePercent).HasPrecision(5, 2);
             entity.Property(i => i.UnitPrice)
                   .HasConversion(m => m.AmountInCents, cents => new Money(cents, "EUR"));
+            entity.Property(i => i.ModifiersPriceExtra)
+                  .HasConversion(m => m.AmountInCents, cents => new Money(cents, "EUR"));
         });
 
         modelBuilder.Entity<TransactionJournalEntry>(entity =>

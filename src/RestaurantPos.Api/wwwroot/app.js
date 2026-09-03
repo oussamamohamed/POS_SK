@@ -173,6 +173,16 @@ document.addEventListener('DOMContentLoaded', () => {
         btnApplyGridDimensions: document.getElementById('btnApplyGridDimensions'),
 
         // Modals
+        modifiersModal: document.getElementById('modifiersModal'),
+        modifiersModalTitle: document.getElementById('modifiersModalTitle'),
+        modifiersModalSubtitle: document.getElementById('modifiersModalSubtitle'),
+        modifiersGroupsContainer: document.getElementById('modifiersGroupsContainer'),
+        inputModifiersComment: document.getElementById('inputModifiersComment'),
+        lblModifiersExtraTotal: document.getElementById('lblModifiersExtraTotal'),
+        lblModifiersEffectivePrice: document.getElementById('lblModifiersEffectivePrice'),
+        btnCloseModifiersModal: document.getElementById('btnCloseModifiersModal'),
+        btnCancelModifiers: document.getElementById('btnCancelModifiers'),
+        btnConfirmModifiers: document.getElementById('btnConfirmModifiers'),
         pinLockModal: document.getElementById('pinLockModal'),
         paymentModal: document.getElementById('paymentModal'),
         btnClosePayModal: document.getElementById('btnClosePayModal'),
@@ -385,7 +395,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const btn = document.createElement('button');
             btn.className = 'btn-quick-key';
             btn.innerHTML = `<span>⚡</span> <span>${prod.name} (${Number(prod.price).toFixed(2)} €)</span>`;
-            btn.addEventListener('click', () => addToCart(prod));
+            btn.addEventListener('click', () => handleProductClick(prod));
             elements.quickKeysBar.appendChild(btn);
         });
     }
@@ -583,9 +593,11 @@ document.addEventListener('DOMContentLoaded', () => {
             card.style.borderTop = `4px solid ${color}`;
         }
         const displayName = (slot && slot.customLabel) ? slot.customLabel : prod.name;
+        const hasOptions = prod.modifierGroups && prod.modifierGroups.length > 0;
         card.innerHTML = `
             <div class="product-card-top">
                 <span class="product-badge-station">${prod.preparationStationId || 'HOT'}</span>
+                ${hasOptions ? `<span style="font-size:0.68rem; background:rgba(14, 165, 233, 0.9); color:white; padding:2px 6px; border-radius:4px; font-weight:700; box-shadow:0 2px 4px rgba(0,0,0,0.3);">⚙️ Options</span>` : ''}
             </div>
             <div class="product-name">${displayName}</div>
             <div class="product-price">${Number(prod.price).toFixed(2)} €</div>
@@ -596,12 +608,154 @@ document.addEventListener('DOMContentLoaded', () => {
         card.addEventListener('pointerup', () => {
             card.style.transform = '';
         });
-        card.addEventListener('click', () => addToCart(prod));
+        card.addEventListener('click', () => handleProductClick(prod));
         return card;
     }
 
-    function addToCart(product, course = 'Direct') {
-        const existing = state.cart.find(item => item.product.id === product.id && !item.isDispatched && item.course === course);
+    // ==================== MODIFIERS & PAID EXTRAS (NF525 COMPLIANT) ====================
+    let currentModifierProduct = null;
+    let currentModifierCourse = 'Direct';
+    let currentSelectedModifiers = [];
+
+    function handleProductClick(prod, course = 'Direct') {
+        if (prod.modifierGroups && prod.modifierGroups.length > 0) {
+            openModifiersModal(prod, course);
+        } else {
+            addToCart(prod, course);
+        }
+    }
+
+    function openModifiersModal(prod, course = 'Direct') {
+        currentModifierProduct = prod;
+        currentModifierCourse = course;
+        currentSelectedModifiers = [];
+
+        elements.modifiersModalTitle.textContent = prod.name;
+        elements.modifiersModalSubtitle.textContent = `Prix de base : ${Number(prod.price).toFixed(2)} € | TVA ${prod.taxRatePercent || 10}%`;
+        elements.inputModifiersComment.value = '';
+        elements.modifiersGroupsContainer.innerHTML = '';
+
+        prod.modifierGroups.forEach(group => {
+            const groupCard = document.createElement('div');
+            groupCard.className = 'modifier-group-card';
+            groupCard.style.cssText = 'background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:14px;';
+
+            const header = document.createElement('div');
+            header.style.cssText = 'display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;';
+            header.innerHTML = `
+                <div style="font-weight:700; color:#f1f5f9; font-size:0.95rem;">${group.groupName}</div>
+                <span style="font-size:0.75rem; font-weight:600; padding:2px 8px; border-radius:4px; ${group.isMandatory ? 'background:rgba(245, 158, 11, 0.15); color:#fbbf24; border:1px solid rgba(245, 158, 11, 0.3);' : 'background:rgba(148, 163, 184, 0.1); color:#94a3b8;'}">
+                    ${group.isSingleChoice ? (group.isMandatory ? '1 choix obligatoire' : '1 choix max') : (group.minSelections > 0 ? `Min. ${group.minSelections}` : 'Optionnel')}
+                </span>
+            `;
+            groupCard.appendChild(header);
+
+            const optionsGrid = document.createElement('div');
+            optionsGrid.style.cssText = 'display:grid; grid-template-columns:repeat(auto-fill, minmax(140px, 1fr)); gap:10px;';
+
+            group.options.forEach(opt => {
+                const isPreSelected = opt.isDefault || false;
+                if (isPreSelected) {
+                    currentSelectedModifiers.push({
+                        groupId: group.id,
+                        optionId: opt.id,
+                        optionName: opt.name,
+                        extraPrice: Number(opt.extraPrice) || 0
+                    });
+                }
+
+                const optBtn = document.createElement('button');
+                optBtn.type = 'button';
+                optBtn.className = `btn-modifier-option ${isPreSelected ? 'selected' : ''}`;
+                optBtn.setAttribute('data-group-id', group.id);
+                optBtn.setAttribute('data-option-id', opt.id);
+                optBtn.style.cssText = `
+                    display:flex; flex-direction:column; align-items:flex-start; justify-content:center;
+                    padding:10px 12px; border-radius:8px; cursor:pointer; text-align:left; transition:all 0.15s ease;
+                    border: 1px solid ${isPreSelected ? '#38bdf8' : 'rgba(255,255,255,0.1)'};
+                    background: ${isPreSelected ? 'rgba(56, 189, 248, 0.15)' : 'rgba(15, 23, 42, 0.6)'};
+                    color: ${isPreSelected ? '#38bdf8' : '#e2e8f0'};
+                `;
+
+                optBtn.innerHTML = `
+                    <span style="font-weight:600; font-size:0.85rem; line-height:1.2;">${opt.name}</span>
+                    ${Number(opt.extraPrice) > 0 ? `<span style="font-size:0.75rem; color:#10b981; font-weight:700; margin-top:4px;">+${Number(opt.extraPrice).toFixed(2)} €</span>` : '<span style="font-size:0.7rem; color:#64748b; margin-top:4px;">Inclus</span>'}
+                `;
+
+                optBtn.addEventListener('click', () => {
+                    const isAlreadySelected = currentSelectedModifiers.some(m => m.optionId === opt.id);
+                    if (group.isSingleChoice) {
+                        currentSelectedModifiers = currentSelectedModifiers.filter(m => m.groupId !== group.id);
+                        if (!isAlreadySelected || group.isMandatory) {
+                            currentSelectedModifiers.push({
+                                groupId: group.id,
+                                optionId: opt.id,
+                                optionName: opt.name,
+                                extraPrice: Number(opt.extraPrice) || 0
+                            });
+                        }
+                    } else {
+                        if (isAlreadySelected) {
+                            currentSelectedModifiers = currentSelectedModifiers.filter(m => m.optionId !== opt.id);
+                        } else {
+                            const currentCount = currentSelectedModifiers.filter(m => m.groupId === group.id).length;
+                            if (group.maxSelections > 0 && currentCount >= group.maxSelections) {
+                                showToast(`Maximum ${group.maxSelections} option(s) pour ${group.groupName}`, 'warning');
+                                return;
+                            }
+                            currentSelectedModifiers.push({
+                                groupId: group.id,
+                                optionId: opt.id,
+                                optionName: opt.name,
+                                extraPrice: Number(opt.extraPrice) || 0
+                            });
+                        }
+                    }
+
+                    optionsGrid.querySelectorAll('.btn-modifier-option').forEach(b => {
+                        const bOptId = b.getAttribute('data-option-id');
+                        const sel = currentSelectedModifiers.some(m => m.optionId === bOptId);
+                        b.style.border = `1px solid ${sel ? '#38bdf8' : 'rgba(255,255,255,0.1)'}`;
+                        b.style.background = sel ? 'rgba(56, 189, 248, 0.15)' : 'rgba(15, 23, 42, 0.6)';
+                        b.style.color = sel ? '#38bdf8' : '#e2e8f0';
+                    });
+
+                    updateModifiersModalTotals();
+                });
+
+                optionsGrid.appendChild(optBtn);
+            });
+
+            groupCard.appendChild(optionsGrid);
+            elements.modifiersGroupsContainer.appendChild(groupCard);
+        });
+
+        updateModifiersModalTotals();
+        elements.modifiersModal.classList.add('active');
+    }
+
+    function updateModifiersModalTotals() {
+        if (!currentModifierProduct) return;
+        const totalExtra = currentSelectedModifiers.reduce((sum, m) => sum + m.extraPrice, 0);
+        const effectivePrice = Number(currentModifierProduct.price) + totalExtra;
+
+        elements.lblModifiersExtraTotal.textContent = `+${totalExtra.toFixed(2)} €`;
+        elements.lblModifiersEffectivePrice.textContent = `${effectivePrice.toFixed(2)} €`;
+    }
+
+    function addToCart(product, course = 'Direct', selectedModifiers = [], modifiersPriceExtra = 0, kitchenComment = '') {
+        const modStrings = selectedModifiers.map(m => m.extraPrice > 0 ? `${m.optionName} (+${m.extraPrice.toFixed(2)} €)` : m.optionName);
+        const modKey = modStrings.slice().sort().join('|');
+
+        const existing = state.cart.find(item => 
+            item.product.id === product.id && 
+            !item.isDispatched && 
+            item.course === course &&
+            (item.modifiersPriceExtra || 0) === modifiersPriceExtra &&
+            (item.modifiers || []).slice().sort().join('|') === modKey &&
+            (item.kitchenComment || '') === kitchenComment
+        );
+
         if (existing) {
             existing.quantity += 1;
         } else {
@@ -618,7 +772,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 isDispatched: false,
                 isComp: false,
                 discountPercent: 0,
-                modifiers: []
+                modifiers: modStrings,
+                modifiersPriceExtra: modifiersPriceExtra,
+                kitchenComment: kitchenComment
             });
         }
         renderCart();
@@ -672,6 +828,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 taxRatePercent: i.product.taxRatePercent || 10.0,
                 preparationStationId: i.product.preparationStationId || 'HOT_KITCHEN',
                 modifiers: i.modifiers || [],
+                modifiersPriceExtra: i.modifiersPriceExtra || 0,
                 course: courseMap[i.course] || 0
             }));
 
@@ -735,7 +892,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     isDispatched: line.isDispatched,
                     isComp: line.isComp || false,
                     discountPercent: line.discountPercent || 0,
-                    modifiers: line.modifiersSummary || []
+                    modifiers: line.modifiersSummary || [],
+                    modifiersPriceExtra: Number(line.modifiersPriceExtra) || 0
                 }));
 
                 renderCart();
@@ -786,7 +944,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         state.cart.forEach((item, index) => {
-            let lineTtc = item.isComp ? 0 : (item.product.price * item.quantity);
+            const unitPrice = Number(item.product.price || 0) + Number(item.modifiersPriceExtra || 0);
+            let lineTtc = item.isComp ? 0 : (unitPrice * item.quantity);
             if (item.discountPercent > 0 && !item.isComp) {
                 lineTtc = lineTtc * (1.0 - (item.discountPercent / 100.0));
             }
@@ -811,8 +970,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         ${item.isComp ? '<span class="comp-badge">🎁 Offert</span>' : ''}
                         ${item.isDispatched ? '<span class="badge-dispatched" title="Déjà transmis en préparation">👨‍🍳 Cuisine</span>' : '<span class="badge-pending" title="Nouvel article à envoyer">➕ Nouveau</span>'}
                     </div>
-                    <span class="cart-item-meta">${item.product.price.toFixed(2)} € × ${item.quantity} (TVA ${item.product.taxRatePercent || 10}%)</span>
-                    ${item.modifiers && item.modifiers.length > 0 ? `<div style="font-size:0.72rem;color:#f59e0b;">${item.modifiers.join(', ')}</div>` : ''}
+                    <span class="cart-item-meta">${unitPrice.toFixed(2)} € × ${item.quantity} ${item.modifiersPriceExtra ? `<span style="color:#10b981; font-weight:600;">(+${Number(item.modifiersPriceExtra).toFixed(2)}€ options)</span>` : ''} (TVA ${item.product.taxRatePercent || 10}%)</span>
+                    ${item.modifiers && item.modifiers.length > 0 ? `<div style="font-size:0.75rem;color:#f59e0b;margin-top:2px;">↳ ${item.modifiers.join(', ')}</div>` : ''}
+                    ${item.kitchenComment ? `<div style="font-size:0.72rem;color:#94a3b8;font-style:italic;margin-top:1px;">💬 ${item.kitchenComment}</div>` : ''}
                 </div>
                 <div class="cart-item-controls">
                     <button class="btn-qty" data-action="minus" data-idx="${index}">-</button>
@@ -907,6 +1067,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     taxRatePercent: i.product.taxRatePercent || 10.0,
                     preparationStationId: i.product.preparationStationId || 'HOT_KITCHEN',
                     modifiers: i.modifiers || [],
+                    modifiersPriceExtra: i.modifiersPriceExtra || 0,
                     course: courseMap[i.course] || 0
                 }));
 
@@ -951,6 +1112,50 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ==================== MODALS & PAYMENTS ====================
     function setupModals() {
+        // Modifiers & Extras Modal
+        if (elements.btnCloseModifiersModal) {
+            elements.btnCloseModifiersModal.addEventListener('click', () => {
+                elements.modifiersModal.classList.remove('active');
+                currentModifierProduct = null;
+            });
+        }
+        if (elements.btnCancelModifiers) {
+            elements.btnCancelModifiers.addEventListener('click', () => {
+                elements.modifiersModal.classList.remove('active');
+                currentModifierProduct = null;
+            });
+        }
+        if (elements.btnConfirmModifiers) {
+            elements.btnConfirmModifiers.addEventListener('click', () => {
+                if (!currentModifierProduct) return;
+
+                // Validate mandatory groups
+                for (const group of (currentModifierProduct.modifierGroups || [])) {
+                    if (group.isMandatory) {
+                        const count = currentSelectedModifiers.filter(m => m.groupId === group.id).length;
+                        if (count < (group.minSelections || 1)) {
+                            showToast(`Veuillez sélectionner au moins ${group.minSelections || 1} option pour "${group.groupName}"`, 'warning');
+                            return;
+                        }
+                    }
+                }
+
+                const totalExtra = currentSelectedModifiers.reduce((sum, m) => sum + m.extraPrice, 0);
+                const comment = elements.inputModifiersComment.value.trim();
+
+                addToCart(
+                    currentModifierProduct,
+                    currentModifierCourse,
+                    currentSelectedModifiers,
+                    totalExtra,
+                    comment
+                );
+
+                elements.modifiersModal.classList.remove('active');
+                currentModifierProduct = null;
+            });
+        }
+
         // Transfer Modal (US1)
         elements.btnTransferModal.addEventListener('click', () => {
             elements.transferSourceTable.value = state.activeTable;
@@ -1373,7 +1578,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function calculateTotalTtc() {
         let total = state.cart.reduce((sum, item) => {
             if (item.isComp) return sum;
-            let line = item.product.price * item.quantity;
+            const effectiveUnitPrice = Number(item.product.price || 0) + Number(item.modifiersPriceExtra || 0);
+            let line = effectiveUnitPrice * item.quantity;
             if (item.discountPercent > 0) line *= (1.0 - item.discountPercent / 100.0);
             return sum + line;
         }, 0);

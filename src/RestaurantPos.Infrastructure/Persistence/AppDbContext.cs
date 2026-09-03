@@ -198,6 +198,12 @@ public class AppDbContext : DbContext
                       m => m.AmountInCents,
                       cents => new Money(cents, "EUR")
                   );
+
+            entity.Property(i => i.ModifiersPriceExtra)
+                  .HasConversion(
+                      m => m.AmountInCents,
+                      cents => new Money(cents, "EUR")
+                  );
         });
 
         modelBuilder.Entity<HotelRoomResident>(entity =>

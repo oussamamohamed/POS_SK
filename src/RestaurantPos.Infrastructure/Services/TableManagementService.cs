@@ -192,7 +192,8 @@ public class TableManagementService : ITableManagementService
             item.SelectedModifiers,
             item.Course,
             item.IsComp,
-            item.DiscountPercent
+            item.DiscountPercent,
+            item.ModifiersPriceExtra.ToDecimal()
         )).ToList();
 
         decimal totalTtc = order.TotalTtc.ToDecimal();
@@ -229,27 +230,18 @@ public class TableManagementService : ITableManagementService
 
                 if (table is null)
                 {
-                    table = new DiningTable
-                    {
-                        TableNumber = tableNumber,
-                        Capacity = 4,
-                        Status = TableStatus.Occupied,
-                        CoversCount = 2,
-                        OpenedAtUtc = DateTimeOffset.UtcNow
-                    };
-                    _dbContext.DiningTables.Add(table);
+                    throw new KeyNotFoundException($"Table {tableNumber} introuvable.");
                 }
 
-                Order? order = null;
-                if (table.ActiveOrderId is not null)
+                Order order;
+                if (table.ActiveOrderId.HasValue)
                 {
-                    order = await _dbContext.Orders
+                    order = (await _dbContext.Orders
                         .Include(o => o.Items)
                         .FirstOrDefaultAsync(o => o.Id == table.ActiveOrderId.Value, ct)
-                        .ConfigureAwait(false);
+                        .ConfigureAwait(false))!;
                 }
-
-                if (order is null)
+                else
                 {
                     order = new Order
                     {
@@ -266,7 +258,14 @@ public class TableManagementService : ITableManagementService
 
                 foreach (var input in items)
                 {
-                    var existing = order.Items.FirstOrDefault(i => i.ProductId == input.ProductId && !i.IsDispatched && i.Course == input.Course);
+                    var existing = order.Items.FirstOrDefault(i =>
+                        !i.IsDispatched &&
+                        i.ProductId == input.ProductId &&
+                        i.Course == input.Course &&
+                        i.UnitPrice.ToDecimal() == input.UnitPrice &&
+                        i.ModifiersPriceExtra.ToDecimal() == input.ModifiersPriceExtra &&
+                        string.Join(",", i.SelectedModifiers) == string.Join(",", input.Modifiers ?? []));
+
                     if (existing is not null)
                     {
                         existing.Quantity += input.Quantity;
@@ -284,6 +283,7 @@ public class TableManagementService : ITableManagementService
                             TaxRatePercent = input.TaxRatePercent,
                             PreparationStationId = input.PreparationStationId,
                             SelectedModifiers = input.Modifiers?.ToList() ?? [],
+                            ModifiersPriceExtra = Money.FromDecimal(input.ModifiersPriceExtra, "EUR"),
                             Course = input.Course
                         };
                         _dbContext.OrderItems.Add(newItem);

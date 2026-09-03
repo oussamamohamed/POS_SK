@@ -3,6 +3,7 @@ using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.EntityFrameworkCore;
 using RestaurantPos.Application.Common.Interfaces;
 using RestaurantPos.Application.DTOs;
 
@@ -36,28 +37,85 @@ public static class CatalogEndpoints
         }).RequireAuthorization("RequireManagerOrAdmin");
 
         // Products
-        group.MapGet("/products", async (string? categoryId, IBackOfficeCatalogService catalog) =>
+        group.MapGet("/products", async (string? categoryId, IBackOfficeCatalogService catalog, RestaurantPos.Infrastructure.Persistence.AppDbContext db) =>
         {
             var products = string.IsNullOrWhiteSpace(categoryId)
                 ? await catalog.GetProductsByCategoryAsync(string.Empty)
                 : await catalog.GetProductsByCategoryAsync(categoryId);
 
-            var dtos = products.Select(p => new
+            var productIds = products.Select(p => p.Id).ToList();
+            var modifierGroups = await db.ModifierGroups
+                .Include(g => g.Options)
+                .Where(g => productIds.Contains(g.ProductId))
+                .OrderBy(g => g.DisplayOrder)
+                .ToListAsync();
+
+            var dtos = products.Select(p =>
             {
-                p.Id,
-                p.Name,
-                p.CategoryId,
-                p.Description,
-                Price = p.Price.ToDecimal(),
-                p.TaxRatePercent,
-                p.ColorHex,
-                p.DisplayOrder,
-                p.IsQuickKey,
-                p.PreparationStationId,
-                p.IsAvailable,
-                p.IsActive
+                var groups = modifierGroups.Where(g => g.ProductId == p.Id).Select(g => new
+                {
+                    g.Id,
+                    g.GroupName,
+                    g.MinSelections,
+                    g.MaxSelections,
+                    g.IsMandatory,
+                    g.IsSingleChoice,
+                    Options = g.Options.OrderBy(o => o.DisplayOrder).Select(o => new
+                    {
+                        o.Id,
+                        o.Name,
+                        ExtraPrice = o.ExtraPrice.ToDecimal(),
+                        o.IsDefault
+                    })
+                }).ToList();
+
+                return new
+                {
+                    p.Id,
+                    p.Name,
+                    p.CategoryId,
+                    p.Description,
+                    Price = p.Price.ToDecimal(),
+                    p.TaxRatePercent,
+                    p.ColorHex,
+                    p.DisplayOrder,
+                    p.IsQuickKey,
+                    p.PreparationStationId,
+                    p.IsAvailable,
+                    p.IsActive,
+                    HasModifiers = groups.Count > 0,
+                    ModifierGroups = groups
+                };
             });
             return Results.Ok(dtos);
+        }).AllowAnonymous();
+
+        group.MapGet("/products/{id:guid}/modifier-groups", async (Guid id, RestaurantPos.Infrastructure.Persistence.AppDbContext db) =>
+        {
+            var groups = await db.ModifierGroups
+                .Include(g => g.Options)
+                .Where(g => g.ProductId == id)
+                .OrderBy(g => g.DisplayOrder)
+                .Select(g => new
+                {
+                    g.Id,
+                    g.ProductId,
+                    g.GroupName,
+                    g.MinSelections,
+                    g.MaxSelections,
+                    g.IsMandatory,
+                    g.IsSingleChoice,
+                    Options = g.Options.OrderBy(o => o.DisplayOrder).Select(o => new
+                    {
+                        o.Id,
+                        o.Name,
+                        ExtraPrice = o.ExtraPrice.ToDecimal(),
+                        o.IsDefault
+                    })
+                })
+                .ToListAsync();
+
+            return Results.Ok(groups);
         }).AllowAnonymous();
 
         group.MapPost("/products", async (CreateProductRequest req, IBackOfficeCatalogService catalog) =>

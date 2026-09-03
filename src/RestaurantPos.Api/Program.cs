@@ -306,6 +306,79 @@ public partial class Program
             await catalogService.CreateProductAsync("Expresso Pur Arabica", catBoissons.Id, 2.50m, 10.0m, "Café torréfaction artisanale", "#1F618D", 3, true, "BAR");
         }
 
+        // Seed Modifier Groups
+        if (!await db.ModifierGroups.AnyAsync())
+        {
+            var burger = await db.Products.FirstOrDefaultAsync(p => p.Name.Contains("Burger"));
+            if (burger is not null)
+            {
+                var groupCuisson = new ProductModifierGroup
+                {
+                    Id = UuidV7.NewGuid(),
+                    ProductId = burger.Id,
+                    GroupName = "Cuisson de la Viande",
+                    MinSelections = 1,
+                    MaxSelections = 1,
+                    DisplayOrder = 1,
+                    Options =
+                    [
+                        new ProductModifierOption { GroupId = Guid.Empty, Name = "Bleu", ExtraPrice = Money.Zero(), DisplayOrder = 1 },
+                        new ProductModifierOption { GroupId = Guid.Empty, Name = "Saignant", ExtraPrice = Money.Zero(), DisplayOrder = 2 },
+                        new ProductModifierOption { GroupId = Guid.Empty, Name = "À Point", ExtraPrice = Money.Zero(), IsDefault = true, DisplayOrder = 3 },
+                        new ProductModifierOption { GroupId = Guid.Empty, Name = "Bien Cuit", ExtraPrice = Money.Zero(), DisplayOrder = 4 }
+                    ]
+                };
+                foreach (var opt in groupCuisson.Options) opt.GroupId = groupCuisson.Id;
+
+                var groupSupplements = new ProductModifierGroup
+                {
+                    Id = UuidV7.NewGuid(),
+                    ProductId = burger.Id,
+                    GroupName = "Suppléments Gourmands",
+                    MinSelections = 0,
+                    MaxSelections = 5,
+                    DisplayOrder = 2,
+                    Options =
+                    [
+                        new ProductModifierOption { GroupId = Guid.Empty, Name = "Double Cheddar Fondu", ExtraPrice = Money.FromCents(200), DisplayOrder = 1 },
+                        new ProductModifierOption { GroupId = Guid.Empty, Name = "Bacon Fumé Croustillant", ExtraPrice = Money.FromCents(150), DisplayOrder = 2 },
+                        new ProductModifierOption { GroupId = Guid.Empty, Name = "Foie Gras Poêlé Extra", ExtraPrice = Money.FromCents(450), DisplayOrder = 3 },
+                        new ProductModifierOption { GroupId = Guid.Empty, Name = "Sauce Poivre Vert Maison", ExtraPrice = Money.FromCents(100), DisplayOrder = 4 },
+                        new ProductModifierOption { GroupId = Guid.Empty, Name = "Frites Rustiques Maison", ExtraPrice = Money.FromCents(250), DisplayOrder = 5 }
+                    ]
+                };
+                foreach (var opt in groupSupplements.Options) opt.GroupId = groupSupplements.Id;
+
+                db.ModifierGroups.AddRange(groupCuisson, groupSupplements);
+            }
+
+            var pizza = await db.Products.FirstOrDefaultAsync(p => p.Name.Contains("Pizza Margherita"));
+            if (pizza is not null)
+            {
+                var groupPizza = new ProductModifierGroup
+                {
+                    Id = UuidV7.NewGuid(),
+                    ProductId = pizza.Id,
+                    GroupName = "Suppléments Pizza",
+                    MinSelections = 0,
+                    MaxSelections = 4,
+                    DisplayOrder = 1,
+                    Options =
+                    [
+                        new ProductModifierOption { GroupId = Guid.Empty, Name = "Double Mozzarella di Bufala", ExtraPrice = Money.FromCents(250), DisplayOrder = 1 },
+                        new ProductModifierOption { GroupId = Guid.Empty, Name = "Jambon de Parme AOP", ExtraPrice = Money.FromCents(300), DisplayOrder = 2 },
+                        new ProductModifierOption { GroupId = Guid.Empty, Name = "Roquette & Huile de Truffe", ExtraPrice = Money.FromCents(200), DisplayOrder = 3 },
+                        new ProductModifierOption { GroupId = Guid.Empty, Name = "Piment Frais Émincé", ExtraPrice = Money.FromCents(50), DisplayOrder = 4 }
+                    ]
+                };
+                foreach (var opt in groupPizza.Options) opt.GroupId = groupPizza.Id;
+
+                db.ModifierGroups.Add(groupPizza);
+            }
+
+            await db.SaveChangesAsync();
+        }
+
         // Seed Tables with Active Orders for Instant Recall Demo
         if (!await db.DiningTables.AnyAsync())
         {

@@ -707,6 +707,40 @@
         </div>
     </div>
 
+    <!-- Modifiers & Extras Modal -->
+    <div class="modal-overlay" id="modifiersModal">
+        <div class="modal-card" style="width: 540px; max-width: 95vw; background: #1e293b; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);">
+            <div class="modal-header" style="border-bottom: 1px solid rgba(255,255,255,0.08); padding: 16px 20px; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h3 id="modifiersModalTitle" style="margin:0; font-size:1.2rem; color:#f8fafc; font-weight:700;">Personnalisation & Options</h3>
+                    <div id="modifiersModalSubtitle" style="font-size:0.85rem; color:#94a3b8; margin-top:2px;">Burger Gourmet Rossini — 19.50 €</div>
+                </div>
+                <button class="btn-close-modal" id="btnCloseModifiersModal" style="background:none; border:none; color:#94a3b8; font-size:1.4rem; cursor:pointer;">✕</button>
+            </div>
+            <div class="modal-body" style="padding: 20px; max-height: 60vh; overflow-y: auto;">
+                <div id="modifiersGroupsContainer" style="display: flex; flex-direction: column; gap: 20px;">
+                    <!-- Dynamically populated modifier groups -->
+                </div>
+                <div style="margin-top: 18px; padding-top: 16px; border-top: 1px dashed rgba(255,255,255,0.1);">
+                    <label style="font-size:0.85rem; font-weight:600; color:#cbd5e1; display:block; margin-bottom:6px;">💬 Remarque spéciale cuisine :</label>
+                    <input type="text" id="inputModifiersComment" placeholder="Ex: Sans sel, bien chaud, sauce à part..." style="width:100%; padding:10px 14px; background:#0f172a; border:1px solid #334155; color:#f8fafc; border-radius:8px; font-size:0.9rem;" />
+                </div>
+            </div>
+            <div class="modal-footer" style="padding: 16px 20px; border-top: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: space-between; align-items: center; background: rgba(15, 23, 42, 0.4); border-bottom-left-radius: 12px; border-bottom-right-radius: 12px;">
+                <div>
+                    <div style="font-size:0.8rem; color:#94a3b8;">Suppléments : <strong id="lblModifiersExtraTotal" style="color:#10b981; font-size:0.95rem;">+0.00 €</strong></div>
+                    <div style="font-size:1.15rem; font-weight:700; color:#f8fafc;">Prix final : <span id="lblModifiersEffectivePrice" style="color:#38bdf8;">19.50 €</span></div>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button type="button" class="btn-secondary" id="btnCancelModifiers" style="padding:10px 16px; border-radius:6px; background:#334155; color:#cbd5e1; border:none; cursor:pointer; font-weight:600;">Annuler</button>
+                    <button type="button" class="btn-primary" id="btnConfirmModifiers" style="padding:10px 22px; border-radius:6px; background:linear-gradient(135deg, #0284c7, #2563eb); color:white; border:none; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:8px; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.4);">
+                        <span>✓ Ajouter au Panier</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Payment Modal -->
     <div class="modal-overlay" id="paymentModal">
         <div class="modal-card">
