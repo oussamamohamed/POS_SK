@@ -12,6 +12,7 @@ public partial class PosTerminalViewModel : ObservableObject
 {
     private readonly IPlatformEnvironmentService _environmentService;
     private readonly ILocalJournalService _journalService;
+    private readonly IOrderDiscountService? _discountService;
 
     [ObservableProperty]
     private Order _activeOrder = new();
@@ -37,10 +38,12 @@ public partial class PosTerminalViewModel : ObservableObject
 
     public PosTerminalViewModel(
         IPlatformEnvironmentService environmentService,
-        ILocalJournalService journalService)
+        ILocalJournalService journalService,
+        IOrderDiscountService? discountService = null)
     {
         _environmentService = environmentService;
         _journalService = journalService;
+        _discountService = discountService;
 
         LoadSampleCatalog();
     }
@@ -212,6 +215,15 @@ public partial class PosTerminalViewModel : ObservableObject
             var orderDto = await tableService.GetActiveOrderForTableAsync(tableNumber);
             if (orderDto is not null)
             {
+                ActiveOrder = new Order
+                {
+                    Id = orderDto.OrderId,
+                    TableNumber = tableNumber,
+                    GlobalDiscountType = orderDto.GlobalDiscountType,
+                    GlobalDiscountValue = orderDto.GlobalDiscountValue,
+                    GlobalDiscountReason = orderDto.GlobalDiscountReason
+                };
+
                 foreach (var line in orderDto.Lines)
                 {
                     CartItems.Add(new OrderItem
@@ -224,7 +236,11 @@ public partial class PosTerminalViewModel : ObservableObject
                         TaxRatePercent = line.TaxRatePercent,
                         PreparationStationId = line.PreparationStationId,
                         IsDispatched = line.IsDispatched,
-                        SelectedModifiers = line.ModifiersSummary.ToList()
+                        SelectedModifiers = line.ModifiersSummary.ToList(),
+                        IsComp = line.IsComp,
+                        DiscountPercent = line.DiscountPercent,
+                        Course = line.Course,
+                        ModifiersPriceExtra = Money.FromDecimal(line.ModifiersPriceExtra, "EUR")
                     });
                 }
             }
@@ -234,9 +250,64 @@ public partial class PosTerminalViewModel : ObservableObject
         _environmentService.TriggerHapticFeedback(HapticFeedbackType.LightTap);
     }
 
+    public async Task ApplyGlobalDiscountAsync(DiscountType type, decimal value, string reason, Guid? operatorId = null)
+    {
+        ActiveOrder.GlobalDiscountType = type;
+        ActiveOrder.GlobalDiscountValue = value;
+        ActiveOrder.GlobalDiscountReason = reason;
+
+        if (_discountService is not null)
+        {
+            await _discountService.ApplyGlobalDiscountAsync(
+                ActiveOrder.Id,
+                type,
+                value,
+                reason,
+                operatorId ?? Guid.Empty
+            ).ConfigureAwait(false);
+        }
+
+        RecalculateTotals();
+        _environmentService.TriggerHapticFeedback(HapticFeedbackType.LightTap);
+    }
+
+    public async Task CompItemAsync(OrderItem item, string reason, Guid? operatorId = null)
+    {
+        item.IsComp = true;
+        item.CompReason = reason;
+
+        if (_discountService is not null)
+        {
+            await _discountService.CompOrderItemAsync(
+                ActiveOrder.Id,
+                item.Id,
+                reason,
+                operatorId ?? Guid.Empty
+            ).ConfigureAwait(false);
+        }
+
+        RecalculateTotals();
+        _environmentService.TriggerHapticFeedback(HapticFeedbackType.LightTap);
+    }
+
     public void RecalculateTotals()
     {
+        ActiveOrder.Items.Clear();
+        ActiveOrder.Items.AddRange(CartItems);
+
         long totalCents = CartItems.Sum(i => i.CalculateTotalTtc().AmountInCents);
+
+        if (ActiveOrder.GlobalDiscountType == DiscountType.Percentage && ActiveOrder.GlobalDiscountValue > 0)
+        {
+            long discountedCents = (long)Math.Round(totalCents * (1.0m - (ActiveOrder.GlobalDiscountValue / 100.0m)), MidpointRounding.AwayFromZero);
+            totalCents = Math.Max(0, discountedCents);
+        }
+        else if (ActiveOrder.GlobalDiscountType == DiscountType.FixedAmount && ActiveOrder.GlobalDiscountValue > 0)
+        {
+            long discountCents = (long)Math.Round(ActiveOrder.GlobalDiscountValue * 100m, MidpointRounding.AwayFromZero);
+            totalCents = Math.Max(0, totalCents - discountCents);
+        }
+
         TotalTtc = new Money(totalCents);
     }
 

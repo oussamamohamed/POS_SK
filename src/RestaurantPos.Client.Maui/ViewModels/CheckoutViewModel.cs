@@ -24,6 +24,7 @@ public partial class CheckoutViewModel : ObservableObject
 {
     private readonly IPlatformEnvironmentService _environmentService;
     private readonly ICheckoutPaymentService? _checkoutService;
+    private readonly IRoomBillingService? _roomBillingService;
 
     [ObservableProperty]
     private Guid _orderId;
@@ -44,6 +45,12 @@ public partial class CheckoutViewModel : ObservableObject
     private PaymentMethod _selectedMethod = PaymentMethod.CreditCard;
 
     [ObservableProperty]
+    private string _roomNumber = string.Empty;
+
+    [ObservableProperty]
+    private string _guestName = string.Empty;
+
+    [ObservableProperty]
     private bool _isCompleted;
 
     [ObservableProperty]
@@ -53,10 +60,12 @@ public partial class CheckoutViewModel : ObservableObject
 
     public CheckoutViewModel(
         IPlatformEnvironmentService environmentService,
-        ICheckoutPaymentService? checkoutService = null)
+        ICheckoutPaymentService? checkoutService = null,
+        IRoomBillingService? roomBillingService = null)
     {
         _environmentService = environmentService;
         _checkoutService = checkoutService;
+        _roomBillingService = roomBillingService;
     }
 
     public void Initialize(Guid orderId, long totalAmountCents)
@@ -120,6 +129,19 @@ public partial class CheckoutViewModel : ObservableObject
             var result = await _checkoutService.ProcessPaymentTendersAsync(OrderId, TerminalId, tenderRequests).ConfigureAwait(false);
             if (result.IsSuccess)
             {
+                if (SelectedMethod == PaymentMethod.RoomCharge && _roomBillingService is not null && !string.IsNullOrWhiteSpace(RoomNumber))
+                {
+                    await _roomBillingService.PostRoomChargeAsync(
+                        OrderId,
+                        tableNumber: "T01",
+                        roomNumber: RoomNumber,
+                        guestName: string.IsNullOrWhiteSpace(GuestName) ? "Client Chambre" : GuestName,
+                        amount: Money.FromCents(TotalDueCents),
+                        tipAmount: Money.Zero(),
+                        signatureDataUrl: null
+                    ).ConfigureAwait(false);
+                }
+
                 ReceiptNumber = result.ReceiptNumber;
                 ChangeDueCents = result.ChangeGivenCents;
                 IsCompleted = true;
@@ -128,6 +150,19 @@ public partial class CheckoutViewModel : ObservableObject
         }
         else
         {
+            if (SelectedMethod == PaymentMethod.RoomCharge && _roomBillingService is not null && !string.IsNullOrWhiteSpace(RoomNumber))
+            {
+                await _roomBillingService.PostRoomChargeAsync(
+                    OrderId,
+                    tableNumber: "T01",
+                    roomNumber: RoomNumber,
+                    guestName: string.IsNullOrWhiteSpace(GuestName) ? "Client Chambre" : GuestName,
+                    amount: Money.FromCents(TotalDueCents),
+                    tipAmount: Money.Zero(),
+                    signatureDataUrl: null
+                ).ConfigureAwait(false);
+            }
+
             ReceiptNumber = $"{TerminalId}-000001";
             IsCompleted = true;
             _environmentService.TriggerHapticFeedback(HapticFeedbackType.Success);

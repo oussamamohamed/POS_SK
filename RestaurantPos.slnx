@@ -11,5 +11,6 @@
     <Project Path="tests/RestaurantPos.Client.Maui.Tests/RestaurantPos.Client.Maui.Tests.csproj" />
     <Project Path="tests/RestaurantPos.Domain.Tests/RestaurantPos.Domain.Tests.csproj" />
     <Project Path="tests/RestaurantPos.Infrastructure.Tests/RestaurantPos.Infrastructure.Tests.csproj" />
+    <Project Path="tests/RestaurantPos.Client.Maui.ProfileSimulations/RestaurantPos.Client.Maui.ProfileSimulations.csproj" />
   </Folder>
 </Solution>

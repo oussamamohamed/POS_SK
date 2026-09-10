@@ -79,6 +79,11 @@ public partial class PinLockViewModel : ObservableObject
                 _environmentService.TriggerHapticFeedback(HapticFeedbackType.Success);
                 return true;
             }
+            
+            ErrorMessage = result.ErrorMessage ?? "Code PIN invalide";
+            _environmentService.TriggerHapticFeedback(HapticFeedbackType.Error);
+            PinInput = string.Empty;
+            return false;
         }
         else
         {
@@ -92,11 +97,11 @@ public partial class PinLockViewModel : ObservableObject
                 _environmentService.TriggerHapticFeedback(HapticFeedbackType.Success);
                 return true;
             }
-        }
 
-        ErrorMessage = "Code PIN invalide";
-        _environmentService.TriggerHapticFeedback(HapticFeedbackType.Error);
-        PinInput = string.Empty;
-        return false;
+            ErrorMessage = "Code PIN invalide";
+            _environmentService.TriggerHapticFeedback(HapticFeedbackType.Error);
+            PinInput = string.Empty;
+            return false;
+        }
     }
 }
