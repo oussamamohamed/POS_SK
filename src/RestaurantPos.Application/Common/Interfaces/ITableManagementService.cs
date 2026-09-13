@@ -53,7 +53,10 @@ public record ActiveOrderLineDto(
     decimal DiscountPercent = 0.0m,
     decimal ModifiersPriceExtra = 0.0m,
     decimal? TaxRateTakeawayPercent = null,
-    bool IsFoodVoucherEligible = true
+    bool IsFoodVoucherEligible = true,
+    bool IsHappyHourApplied = false,
+    decimal? OriginalUnitPrice = null,
+    Guid? AppliedHappyHourScheduleId = null
 );
 
 public record OrderItemInputDto(
@@ -67,7 +70,10 @@ public record OrderItemInputDto(
     CourseType Course = CourseType.Direct,
     decimal ModifiersPriceExtra = 0.0m,
     decimal? TaxRateTakeawayPercent = null,
-    bool IsFoodVoucherEligible = true
+    bool IsFoodVoucherEligible = true,
+    bool IsHappyHourApplied = false,
+    decimal? OriginalUnitPrice = null,
+    Guid? AppliedHappyHourScheduleId = null
 );
 
 public interface ITableManagementService

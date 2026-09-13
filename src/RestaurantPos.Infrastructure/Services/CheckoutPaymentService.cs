@@ -63,7 +63,7 @@ public class CheckoutPaymentService : ICheckoutPaymentService
                     return new CheckoutResult(false, 0, 0, 0, string.Empty, null);
                 }
 
-                long totalDueCents = order.TotalTtc.AmountInCents;
+                long totalDueCents = order.TotalTtc.AmountInCents + order.TipAmount.AmountInCents;
                 long totalPaidCents = tenders.Sum(t => t.AmountInCents);
                 long totalTenderedCents = tenders.Sum(t => t.TenderedInCents);
 

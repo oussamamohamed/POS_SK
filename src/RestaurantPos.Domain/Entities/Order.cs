@@ -103,6 +103,12 @@ public class OrderItem
     public bool IsComp { get; set; }
     public string? CompReason { get; set; }
 
+    // Happy Hour Traceability (NF525 compliant)
+    public bool IsHappyHourApplied { get; set; }
+    public Money? OriginalUnitPrice { get; set; }
+    public Guid? AppliedHappyHourScheduleId { get; set; }
+    public DateTimeOffset OrderedAtUtc { get; set; } = DateTimeOffset.UtcNow;
+
     public Money TotalTtc => CalculateTotalTtc();
     public Money TaxAmount => Money.FromCents(TaxBreakdownItem.Calculate(TaxRatePercent, CalculateTotalTtc().AmountInCents).TaxAmountCents);
 

@@ -152,6 +152,11 @@ public class LocalAppDbContext : DbContext
                   .HasConversion(m => m.AmountInCents, cents => new Money(cents, "EUR"));
             entity.Property(i => i.ModifiersPriceExtra)
                   .HasConversion(m => m.AmountInCents, cents => new Money(cents, "EUR"));
+            entity.Property(i => i.OriginalUnitPrice)
+                  .HasConversion(
+                      m => m.HasValue ? (long?)m.Value.AmountInCents : null,
+                      cents => cents.HasValue ? new Money(cents.Value, "EUR") : null
+                  );
         });
 
         modelBuilder.Entity<TransactionJournalEntry>(entity =>

@@ -195,7 +195,10 @@ public class TableManagementService : ITableManagementService
             item.DiscountPercent,
             item.ModifiersPriceExtra.ToDecimal(),
             item.TaxRateTakeawayPercent,
-            item.IsFoodVoucherEligible
+            item.IsFoodVoucherEligible,
+            item.IsHappyHourApplied,
+            item.OriginalUnitPrice?.ToDecimal(),
+            item.AppliedHappyHourScheduleId
         )).ToList();
 
         decimal totalTtc = order.TotalTtc.ToDecimal();
@@ -268,6 +271,7 @@ public class TableManagementService : ITableManagementService
                         i.ProductId == input.ProductId &&
                         i.Course == input.Course &&
                         i.UnitPrice.ToDecimal() == input.UnitPrice &&
+                        i.IsHappyHourApplied == input.IsHappyHourApplied &&
                         i.ModifiersPriceExtra.ToDecimal() == input.ModifiersPriceExtra &&
                         string.Join(",", i.SelectedModifiers) == string.Join(",", input.Modifiers ?? []));
 
@@ -291,7 +295,11 @@ public class TableManagementService : ITableManagementService
                             PreparationStationId = input.PreparationStationId,
                             SelectedModifiers = input.Modifiers?.ToList() ?? [],
                             ModifiersPriceExtra = Money.FromDecimal(input.ModifiersPriceExtra, "EUR"),
-                            Course = input.Course
+                            Course = input.Course,
+                            IsHappyHourApplied = input.IsHappyHourApplied,
+                            OriginalUnitPrice = input.OriginalUnitPrice.HasValue ? Money.FromDecimal(input.OriginalUnitPrice.Value, "EUR") : null,
+                            AppliedHappyHourScheduleId = input.AppliedHappyHourScheduleId,
+                            OrderedAtUtc = DateTimeOffset.UtcNow
                         };
                         _dbContext.OrderItems.Add(newItem);
                         order.Items.Add(newItem);

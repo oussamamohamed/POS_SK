@@ -29,6 +29,14 @@ document.addEventListener('DOMContentLoaded', () => {
         selectedTipPercent: 0,
         customTipAmount: 0,
         globalDiscount: null,
+        happyHour: {
+            isActive: false,
+            isOverride: false,
+            activeScheduleName: null,
+            remainingMinutes: 0,
+            pricingTable: {}, // productId -> { happyHourPrice, standardPrice, ruleType }
+            countdownInterval: null
+        },
         token: localStorage.getItem('pos_jwt_token') || null
     };
 
@@ -125,6 +133,20 @@ document.addEventListener('DOMContentLoaded', () => {
         btnAgecYes: document.getElementById('btnAgecYes'),
         btnAgecNo: document.getElementById('btnAgecNo'),
         agecCountdown: document.getElementById('agecCountdown'),
+
+        // Happy Hour Elements (Feature 019)
+        happyHourBanner: document.getElementById('happyHourBanner'),
+        hhBannerTitle: document.getElementById('hhBannerTitle'),
+        hhBannerSubtitle: document.getElementById('hhBannerSubtitle'),
+        hhCountdownTime: document.getElementById('hhCountdownTime'),
+        btnHhOverrideQuickAction: document.getElementById('btnHhOverrideQuickAction'),
+        hhOverrideModal: document.getElementById('hhOverrideModal'),
+        btnCloseHhOverrideModal: document.getElementById('btnCloseHhOverrideModal'),
+        inputHhPin: document.getElementById('inputHhPin'),
+        inputHhReason: document.getElementById('inputHhReason'),
+        btnHhExtend30: document.getElementById('btnHhExtend30'),
+        btnHhForce60: document.getElementById('btnHhForce60'),
+        btnHhForceStop: document.getElementById('btnHhForceStop'),
 
         // Catalog
         quickKeysBar: document.getElementById('quickKeysBar'),
@@ -318,6 +340,10 @@ document.addEventListener('DOMContentLoaded', () => {
         await loadNetworkSyncData();
 
         setupTakeawayListeners();
+        setupHappyHourControls();
+
+        // Check Happy Hour status on startup
+        await checkHappyHourStatus();
 
         // Automatically open default direct takeaway counter cart (Feature 018 US1)
         await openDirectCounterOrder('Takeaway');
@@ -638,13 +664,27 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         const displayName = (slot && slot.customLabel) ? slot.customLabel : prod.name;
         const hasOptions = prod.modifierGroups && prod.modifierGroups.length > 0;
+
+        // Check if Happy Hour is active for this product
+        const hhItem = state.happyHour && state.happyHour.isActive ? state.happyHour.pricingTable[prod.id] : null;
+
+        let priceHtml = `<div class="product-price">${Number(prod.price).toFixed(2)} €</div>`;
+        if (hhItem && hhItem.happyHourPrice < hhItem.standardPrice) {
+            priceHtml = `
+                <div class="product-price-hh-container">
+                    <span class="product-price-strike">${Number(hhItem.standardPrice).toFixed(2)} €</span>
+                    <span class="product-price-hh">🍻 ${Number(hhItem.happyHourPrice).toFixed(2)} €</span>
+                </div>
+            `;
+        }
+
         card.innerHTML = `
             <div class="product-card-top">
                 <span class="product-badge-station">${prod.preparationStationId || 'HOT'}</span>
                 ${hasOptions ? `<span style="font-size:0.68rem; background:rgba(14, 165, 233, 0.9); color:white; padding:2px 6px; border-radius:4px; font-weight:700; box-shadow:0 2px 4px rgba(0,0,0,0.3);">⚙️ Options</span>` : ''}
             </div>
             <div class="product-name">${displayName}</div>
-            <div class="product-price">${Number(prod.price).toFixed(2)} €</div>
+            ${priceHtml}
         `;
         card.addEventListener('pointerdown', () => {
             card.style.transform = 'scale(0.95)';
@@ -791,10 +831,31 @@ document.addEventListener('DOMContentLoaded', () => {
         const modStrings = selectedModifiers.map(m => m.extraPrice > 0 ? `${m.optionName} (+${m.extraPrice.toFixed(2)} €)` : m.optionName);
         const modKey = modStrings.slice().sort().join('|');
 
+        // Resolve Happy Hour price for product if active
+        let effectiveUnitPrice = Number(product.price);
+        let isHhApplied = false;
+        let originalUnitPrice = null;
+        let scheduleId = null;
+
+        const isTakeaway = state.destination === 'Takeaway' || state.destination === 1;
+        const hhAllowed = !isTakeaway || (state.happyHour && state.happyHour.appliesToTakeaway);
+
+        if (state.happyHour && state.happyHour.isActive && hhAllowed) {
+            const hhItem = state.happyHour.pricingTable[product.id];
+            if (hhItem && hhItem.happyHourPrice < hhItem.standardPrice) {
+                effectiveUnitPrice = hhItem.happyHourPrice;
+                isHhApplied = true;
+                originalUnitPrice = hhItem.standardPrice;
+                scheduleId = state.happyHour.activeScheduleId;
+            }
+        }
+
         const existing = state.cart.find(item => 
             item.product.id === product.id && 
             !item.isDispatched && 
             item.course === course &&
+            item.isHappyHourApplied === isHhApplied &&
+            (item.product.price === effectiveUnitPrice) &&
             (item.modifiersPriceExtra || 0) === modifiersPriceExtra &&
             (item.modifiers || []).slice().sort().join('|') === modKey &&
             (item.kitchenComment || '') === kitchenComment
@@ -807,7 +868,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 product: {
                     id: product.id,
                     name: product.name,
-                    price: product.price,
+                    price: effectiveUnitPrice,
                     taxRatePercent: product.taxRatePercent || 10.0,
                     preparationStationId: product.preparationStationId || 'HOT_KITCHEN'
                 },
@@ -816,6 +877,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 isDispatched: false,
                 isComp: false,
                 discountPercent: 0,
+                isHappyHourApplied: isHhApplied,
+                originalUnitPrice: originalUnitPrice,
+                appliedHappyHourScheduleId: scheduleId,
                 modifiers: modStrings,
                 modifiersPriceExtra: modifiersPriceExtra,
                 kitchenComment: kitchenComment
@@ -858,13 +922,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function saveActiveCartToServer() {
         if (!state.activeTable) return;
-        const undispatched = state.cart.filter(i => !i.isDispatched);
-        if (undispatched.length === 0) return;
+        const unsaved = state.cart.filter(i => !i.lineId && !i.isDispatched);
+        if (unsaved.length === 0) return;
 
         try {
             await ensureAuthToken();
             const courseMap = { 'Direct': 0, 'Suite': 1, 'Dessert': 2, 'OnDemand': 3 };
-            const itemsPayload = undispatched.map(i => ({
+            const itemsPayload = unsaved.map(i => ({
                 productId: i.product.id,
                 productName: i.product.name,
                 quantity: i.quantity,
@@ -873,7 +937,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 preparationStationId: i.product.preparationStationId || 'HOT_KITCHEN',
                 modifiers: i.modifiers || [],
                 modifiersPriceExtra: i.modifiersPriceExtra || 0,
-                course: courseMap[i.course] || 0
+                course: courseMap[i.course] || 0,
+                isHappyHourApplied: !!i.isHappyHourApplied,
+                originalUnitPrice: i.originalUnitPrice || null,
+                appliedHappyHourScheduleId: i.appliedHappyHourScheduleId || null
             }));
 
             const res = await fetch(`/api/tables/${state.activeTable}/items`, {
@@ -886,6 +953,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = await res.json();
                 if (data && data.orderId) {
                     state.activeOrderId = data.orderId;
+                }
+                if (data && Array.isArray(data.lines)) {
+                    data.lines.forEach((line, idx) => {
+                        if (state.cart[idx]) {
+                            state.cart[idx].lineId = line.lineId;
+                            state.cart[idx].isDispatched = line.isDispatched;
+                        }
+                    });
                 }
             }
         } catch (err) {
@@ -936,6 +1011,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     isDispatched: line.isDispatched,
                     isComp: line.isComp || false,
                     discountPercent: line.discountPercent || 0,
+                    isHappyHourApplied: line.isHappyHourApplied || false,
+                    originalUnitPrice: line.originalUnitPrice || null,
+                    appliedHappyHourScheduleId: line.appliedHappyHourScheduleId || null,
                     modifiers: line.modifiersSummary || [],
                     modifiersPriceExtra: Number(line.modifiersPriceExtra) || 0
                 }));
@@ -1015,11 +1093,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="cart-item-info">
                     <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
                         <span class="cart-item-title">${item.product.name}</span>
+                        ${item.isHappyHourApplied ? '<span class="cart-item-badge-hh" title="Tarif Happy Hour appliqué">🍻 [HH]</span>' : ''}
                         <span class="course-badge ${courseClass}" data-idx="${index}" title="Cliquer pour changer de service (Direct / Suite / Dessert)">${item.course || 'Direct'}</span>
                         ${item.isComp ? '<span class="comp-badge">🎁 Offert</span>' : ''}
                         ${item.isDispatched ? '<span class="badge-dispatched" title="Déjà transmis en préparation">👨‍🍳 Cuisine</span>' : '<span class="badge-pending" title="Nouvel article à envoyer">➕ Nouveau</span>'}
                     </div>
-                    <span class="cart-item-meta">${unitPrice.toFixed(2)} € × ${item.quantity} ${item.modifiersPriceExtra ? `<span style="color:#10b981; font-weight:600;">(+${Number(item.modifiersPriceExtra).toFixed(2)}€ options)</span>` : ''} (TVA ${effectiveVatPercent}%)</span>
+                    <span class="cart-item-meta">${unitPrice.toFixed(2)} € × ${item.quantity} ${item.originalUnitPrice ? `<span style="text-decoration:line-through; color:#94a3b8; margin-left:4px;">(${Number(item.originalUnitPrice).toFixed(2)} €)</span>` : ''} ${item.modifiersPriceExtra ? `<span style="color:#10b981; font-weight:600;">(+${Number(item.modifiersPriceExtra).toFixed(2)}€ options)</span>` : ''} (TVA ${effectiveVatPercent}%)</span>
                     ${item.modifiers && item.modifiers.length > 0 ? `<div style="font-size:0.75rem;color:#f59e0b;margin-top:2px;">↳ ${item.modifiers.join(', ')}</div>` : ''}
                     ${item.kitchenComment ? `<div style="font-size:0.72rem;color:#94a3b8;font-style:italic;margin-top:1px;">💬 ${item.kitchenComment}</div>` : ''}
                 </div>
@@ -1262,7 +1341,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Discount Modal (US2)
         elements.btnDiscountModal.addEventListener('click', async () => {
-            if (!state.activeOrderId && state.cart.length > 0) {
+            if (state.cart.length > 0) {
                 await saveActiveCartToServer();
             }
             elements.selectDiscountTarget.innerHTML = '<option value="global">Remise Globale sur la Note</option>';
@@ -1313,7 +1392,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         elements.formApplyDiscount.addEventListener('submit', async (e) => {
             e.preventDefault();
-            if (!state.activeOrderId && state.cart.length > 0) {
+            if (state.cart.length > 0) {
                 await saveActiveCartToServer();
             }
             if (!state.activeOrderId) {
@@ -2159,14 +2238,14 @@ document.addEventListener('DOMContentLoaded', () => {
             elements.cartFastCashBar.querySelectorAll('.btn-quick-cash').forEach(btn => {
                 btn.addEventListener('click', async () => {
                     const cashVal = btn.getAttribute('data-cash');
-                    const totalTtc = calculateTotalTtc();
-                    if (totalTtc <= 0) {
+                    const finalTotal = getFinalPayTotal();
+                    if (finalTotal <= 0) {
                         showToast('Panier vide', 'warning');
                         return;
                     }
-                    const amount = cashVal === 'exact' ? totalTtc : parseFloat(cashVal);
-                    if (amount < totalTtc && cashVal !== 'exact') {
-                        showToast(`Montant insuffisant (${amount.toFixed(2)} € pour ${totalTtc.toFixed(2)} €)`, 'warning');
+                    const amount = cashVal === 'exact' ? finalTotal : parseFloat(cashVal);
+                    if (amount < finalTotal && cashVal !== 'exact') {
+                        showToast(`Montant insuffisant (${amount.toFixed(2)} € pour ${finalTotal.toFixed(2)} €)`, 'warning');
                         return;
                     }
                     await executeCounterCheckout(0, amount);
@@ -2292,7 +2371,8 @@ document.addEventListener('DOMContentLoaded', () => {
             loadAdminPrinters(),
             loadAdminGridEditor(),
             loadNetworkSyncData(),
-            loadFinancialDashboard('today')
+            loadFinancialDashboard('today'),
+            loadAdminHappyHour()
         ]);
     }
 
@@ -2567,7 +2647,111 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    async function loadAdminHappyHour() {
+        const listEl = document.getElementById('adminHappyHourList');
+        const selectProd = document.getElementById('selectHhProduct');
+        if (!listEl) return;
+
+        // Populate product select for promo
+        if (selectProd && state.products) {
+            selectProd.innerHTML = state.products.map(p => `<option value="${p.id}">${p.name} (Std: ${p.price.toFixed(2)} €)</option>`).join('');
+        }
+
+        try {
+            const res = await fetch('/api/happy-hour/schedules');
+            if (res.ok) {
+                const schedules = await res.json();
+                if (!schedules || schedules.length === 0) {
+                    listEl.innerHTML = '<p class="text-muted">Aucune plage Happy Hour configurée.</p>';
+                    return;
+                }
+
+                listEl.innerHTML = schedules.map(s => {
+                    const daysMap = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+                    const dayLabels = (s.daysOfWeek || []).map(d => daysMap[d] || d).join(', ');
+                    const rulesText = (s.priceRules || []).map(r => `${r.targetName} ➔ ${r.fixedPrice ? r.fixedPrice.toFixed(2) + ' €' : '-' + r.discountPercent + '%'}`).join(' | ');
+
+                    return `
+                        <div style="background:rgba(255,255,255,0.03); padding:12px; border-radius:8px; border:1px solid rgba(255,255,255,0.06); display:flex; justify-content:space-between; align-items:center;">
+                            <div>
+                                <strong>🍻 ${s.name}</strong> <span style="font-size:0.75rem; color:#f59e0b; margin-left:6px;">${s.startTime} - ${s.endTime}</span>
+                                <div style="font-size:0.8rem; color:#94a3b8; margin-top:2px;">Jours : ${dayLabels} ${s.appliesToTakeaway ? '• Emporté inclus' : '• Sur place uniquement'}</div>
+                                <div style="font-size:0.78rem; color:#38bdf8; margin-top:2px;">Règles : ${rulesText || 'Aucune règle'}</div>
+                            </div>
+                            <button class="btn-archive btn-del-hh-sched" data-id="${s.id}" style="color:#f87171; border-color:rgba(239,68,68,0.3);">🗑️ Supprimer</button>
+                        </div>
+                    `;
+                }).join('');
+
+                listEl.querySelectorAll('.btn-del-hh-sched').forEach(btn => {
+                    btn.addEventListener('click', async () => {
+                        const schedId = btn.getAttribute('data-id');
+                        await fetch(`/api/happy-hour/schedules/${schedId}`, { method: 'DELETE' });
+                        showToast('Plage Happy Hour supprimée', 'info');
+                        await loadAdminHappyHour();
+                        await checkHappyHourStatus();
+                    });
+                });
+            }
+        } catch (err) {
+            console.error('Erreur chargement plannings Happy Hour:', err);
+        }
+    }
+
     function setupForms() {
+        // Happy Hour Add Schedule Form
+        const formHh = document.getElementById('formAddHappyHourSchedule');
+        if (formHh) {
+            formHh.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const name = document.getElementById('inputHhScheduleName').value.trim();
+                const startTime = document.getElementById('inputHhStartTime').value;
+                const endTime = document.getElementById('inputHhEndTime').value;
+                const takeaway = document.getElementById('checkHhTakeaway').checked;
+                const prodId = document.getElementById('selectHhProduct').value;
+                const specialPrice = parseFloat(document.getElementById('inputHhSpecialPrice').value);
+
+                const checkedDays = Array.from(document.querySelectorAll('input[name="hhDays"]:checked')).map(cb => parseInt(cb.value, 10));
+
+                const selProd = state.products.find(p => p.id === prodId);
+
+                const payload = {
+                    name: name,
+                    daysOfWeek: checkedDays,
+                    startTime: startTime,
+                    endTime: endTime,
+                    isActive: true,
+                    appliesToTakeaway: takeaway,
+                    priority: 2,
+                    priceRules: [
+                        {
+                            targetType: 0,
+                            targetId: prodId,
+                            targetName: selProd ? selProd.name : 'Article',
+                            pricingMode: 0,
+                            fixedPrice: specialPrice,
+                            discountPercent: null
+                        }
+                    ]
+                };
+
+                const res = await fetch('/api/happy-hour/schedules', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.ok) {
+                    showToast('Plage Happy Hour ajoutée !', 'success');
+                    formHh.reset();
+                    await loadAdminHappyHour();
+                    await checkHappyHourStatus();
+                } else {
+                    showToast('Erreur création plage Happy Hour', 'error');
+                }
+            });
+        }
+
         // Add Category Form
         elements.formAddCategory.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -3644,11 +3828,216 @@ document.addEventListener('DOMContentLoaded', () => {
                 loadKdsData();
             });
 
+            // Feature 019: Happy Hour Real-time Broadcast
+            connection.on('OnHappyHourStatusChanged', (status) => {
+                applyHappyHourStatus(status);
+            });
+
             connection.start().catch(err => {
                 console.log('SignalR hub non connecté (mode standalone):', err);
             });
         } catch (e) {
             console.warn('SignalR initialisation passée:', e);
+        }
+    }
+
+    // ==================== HAPPY HOUR LOGIC (FEATURE 019) ====================
+    async function checkHappyHourStatus() {
+        try {
+            const res = await fetch(`/api/happy-hour/status?terminalId=${encodeURIComponent(state.terminalId || 'POS_MAIN')}`);
+            if (res.ok) {
+                const status = await res.json();
+                await applyHappyHourStatus(status);
+            }
+        } catch (err) {
+            console.warn('Erreur vérification statut Happy Hour:', err);
+        }
+    }
+
+    async function applyHappyHourStatus(status) {
+        state.happyHour.isActive = !!status.isActive;
+        state.happyHour.isOverride = !!status.isOverride;
+        state.happyHour.activeScheduleName = status.activeScheduleName || 'Happy Hour';
+        state.happyHour.activeScheduleId = status.activeScheduleId || null;
+        state.happyHour.appliesToTakeaway = !!status.appliesToTakeaway;
+
+        if (status.isActive && status.currentWindow) {
+            state.happyHour.remainingMinutes = status.currentWindow.remainingMinutes;
+            showHappyHourBanner(status.activeScheduleName, status.currentWindow.remainingMinutes, status.isOverride);
+            await fetchHappyHourPricingTable();
+        } else {
+            hideHappyHourBanner();
+            state.happyHour.pricingTable = {};
+            if (state.happyHour.countdownInterval) {
+                clearInterval(state.happyHour.countdownInterval);
+                state.happyHour.countdownInterval = null;
+            }
+        }
+        renderProductsGrid();
+        renderCart();
+    }
+
+    async function fetchHappyHourPricingTable() {
+        try {
+            const res = await fetch(`/api/happy-hour/pricing-table?terminalId=${encodeURIComponent(state.terminalId || 'POS_MAIN')}`);
+            if (res.ok) {
+                const data = await res.json();
+                state.happyHour.pricingTable = {};
+                if (data.items && Array.isArray(data.items)) {
+                    data.items.forEach(item => {
+                        state.happyHour.pricingTable[item.productId] = item;
+                    });
+                }
+            }
+        } catch (err) {
+            console.warn('Erreur chargement grille tarifaire Happy Hour:', err);
+        }
+    }
+
+    function showHappyHourBanner(title, remainingMinutes, isOverride) {
+        if (!elements.happyHourBanner) return;
+        elements.happyHourBanner.style.display = 'block';
+        if (elements.hhBannerTitle) {
+            elements.hhBannerTitle.textContent = isOverride ? `⚡ DÉROGATION : ${title.toUpperCase()}` : `🍻 HAPPY HOUR : ${title.toUpperCase()}`;
+        }
+        if (elements.hhBannerSubtitle) {
+            elements.hhBannerSubtitle.textContent = isOverride ? 'Tarifs réduits forcés par superviseur' : 'Tarifs préférentiels actifs';
+        }
+
+        let secondsRemaining = Math.max(0, remainingMinutes * 60);
+        updateCountdownDisplay(secondsRemaining);
+
+        if (state.happyHour.countdownInterval) {
+            clearInterval(state.happyHour.countdownInterval);
+        }
+
+        state.happyHour.countdownInterval = setInterval(() => {
+            secondsRemaining--;
+            if (secondsRemaining <= 0) {
+                clearInterval(state.happyHour.countdownInterval);
+                state.happyHour.countdownInterval = null;
+                checkHappyHourStatus();
+            } else {
+                updateCountdownDisplay(secondsRemaining);
+            }
+        }, 1000);
+    }
+
+    function updateCountdownDisplay(totalSecs) {
+        if (!elements.hhCountdownTime) return;
+        const mins = Math.floor(totalSecs / 60);
+        const secs = totalSecs % 60;
+        elements.hhCountdownTime.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    }
+
+    function hideHappyHourBanner() {
+        if (elements.happyHourBanner) {
+            elements.happyHourBanner.style.display = 'none';
+        }
+    }
+
+    function setupHappyHourControls() {
+        if (elements.btnHhOverrideQuickAction) {
+            elements.btnHhOverrideQuickAction.addEventListener('click', () => {
+                if (elements.hhOverrideModal) {
+                    elements.inputHhPin.value = '';
+                    elements.hhOverrideModal.classList.add('active');
+                }
+            });
+        }
+
+        if (elements.btnCloseHhOverrideModal) {
+            elements.btnCloseHhOverrideModal.addEventListener('click', () => {
+                if (elements.hhOverrideModal) elements.hhOverrideModal.classList.remove('active');
+            });
+        }
+
+        if (elements.btnHhExtend30) {
+            elements.btnHhExtend30.addEventListener('click', async () => {
+                await handleHhOverride(30);
+            });
+        }
+
+        if (elements.btnHhForce60) {
+            elements.btnHhForce60.addEventListener('click', async () => {
+                await handleHhOverride(60);
+            });
+        }
+
+        if (elements.btnHhForceStop) {
+            elements.btnHhForceStop.addEventListener('click', async () => {
+                await handleHhStop();
+            });
+        }
+    }
+
+    async function handleHhOverride(durationMinutes) {
+        const pin = elements.inputHhPin ? elements.inputHhPin.value.trim() : '';
+        const reason = elements.inputHhReason ? elements.inputHhReason.value.trim() : 'Dérogation responsable';
+
+        if (!pin) {
+            showToast('Veuillez saisir votre code PIN superviseur', 'warning');
+            return;
+        }
+
+        try {
+            const res = await fetch('/api/happy-hour/override/activate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    terminalId: state.terminalId || 'POS_MAIN',
+                    supervisorPin: pin,
+                    durationMinutes: durationMinutes,
+                    reason: reason
+                })
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                showToast(data.message || `Happy Hour prolongé de ${durationMinutes} min`, 'success');
+                if (elements.hhOverrideModal) elements.hhOverrideModal.classList.remove('active');
+                await checkHappyHourStatus();
+            } else {
+                const err = await res.json();
+                showToast(err.message || 'Autorisation refusée : PIN superviseur invalide', 'error');
+            }
+        } catch (e) {
+            console.error('Erreur forçage Happy Hour:', e);
+            showToast('Erreur réseau lors de la dérogation Happy Hour', 'error');
+        }
+    }
+
+    async function handleHhStop() {
+        const pin = elements.inputHhPin ? elements.inputHhPin.value.trim() : '';
+        const reason = elements.inputHhReason ? elements.inputHhReason.value.trim() : 'Arrêt anticipé';
+
+        if (!pin) {
+            showToast('Veuillez saisir votre code PIN superviseur', 'warning');
+            return;
+        }
+
+        try {
+            const res = await fetch('/api/happy-hour/override/stop', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    terminalId: state.terminalId || 'POS_MAIN',
+                    supervisorPin: pin,
+                    reason: reason
+                })
+            });
+
+            if (res.ok) {
+                showToast('Happy Hour arrêté avec succès.', 'info');
+                if (elements.hhOverrideModal) elements.hhOverrideModal.classList.remove('active');
+                await checkHappyHourStatus();
+            } else {
+                const err = await res.json();
+                showToast(err.message || 'Autorisation refusée', 'error');
+            }
+        } catch (e) {
+            console.error('Erreur arrêt Happy Hour:', e);
+            showToast('Erreur réseau lors de l\'arrêt Happy Hour', 'error');
         }
     }
 

@@ -10,6 +10,7 @@ namespace RestaurantPos.Api.Hubs;
 public interface IPosHubClient : IKitchenHubClient
 {
     Task OnTableStatusChanged(string tableNumber, TableStatus newStatus);
+    Task OnHappyHourStatusChanged(object status);
 }
 
 public class PosHub : Hub<IPosHubClient>

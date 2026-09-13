@@ -64,6 +64,23 @@
         </div>
     </header>
 
+    <!-- Happy Hour Live Status Banner -->
+    <div class="happy-hour-banner" id="happyHourBanner" style="display:none;">
+        <div class="hh-banner-content">
+            <span class="hh-badge-icon">🍻</span>
+            <div class="hh-banner-info">
+                <strong class="hh-banner-title" id="hhBannerTitle">HAPPY HOUR EN COURS</strong>
+                <span class="hh-banner-subtitle" id="hhBannerSubtitle">Tarifs préférentiels actifs</span>
+            </div>
+            <div class="hh-countdown-pill" id="hhCountdownPill">
+                ⏱️ Fin dans <strong id="hhCountdownTime">--:--</strong>
+            </div>
+            <button type="button" class="btn-hh-override" id="btnHhOverrideQuickAction" title="Forçage / Prolongation Superviseur">
+                ⚙️ Dérogation
+            </button>
+        </div>
+    </div>
+
     <!-- Main Dynamic Workspace -->
     <main class="workspace">
 
@@ -254,6 +271,9 @@
                     </button>
                     <button class="admin-tab-btn" data-admin-tab="tabDashboard">
                         <span>📊</span> Tableaux de Bord & KPIs
+                    </button>
+                    <button class="admin-tab-btn" data-admin-tab="tabHappyHour">
+                        <span>🍻</span> Plages Happy Hour
                     </button>
                 </div>
 
@@ -607,6 +627,63 @@
                                 <h4>👥 Productivité par Serveur</h4>
                                 <div id="dashStaffList" style="display:flex; flex-direction:column; gap:10px; margin-top:14px;">
                                     <p class="text-muted">Chargement des données...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab 7: Happy Hour Schedule Configuration (Feature 019) -->
+                    <div class="admin-tab-pane" id="tabHappyHour">
+                        <div class="admin-split">
+                            <div class="admin-card">
+                                <h4>➕ Créer une Plage Happy Hour</h4>
+                                <form id="formAddHappyHourSchedule" class="admin-form">
+                                    <div class="form-group">
+                                        <label>Nom du créneau :</label>
+                                        <input type="text" id="inputHhScheduleName" placeholder="Ex: Afterwork Standard" required>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label>Heure de Début :</label>
+                                            <input type="time" id="inputHhStartTime" value="17:00" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Heure de Fin :</label>
+                                            <input type="time" id="inputHhEndTime" value="20:00" required>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Jours Applicables :</label>
+                                        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:6px;">
+                                            <label><input type="checkbox" name="hhDays" value="1" checked> Lun</label>
+                                            <label><input type="checkbox" name="hhDays" value="2" checked> Mar</label>
+                                            <label><input type="checkbox" name="hhDays" value="3" checked> Mer</label>
+                                            <label><input type="checkbox" name="hhDays" value="4" checked> Jeu</label>
+                                            <label><input type="checkbox" name="hhDays" value="5" checked> Ven</label>
+                                            <label><input type="checkbox" name="hhDays" value="6"> Sam</label>
+                                            <label><input type="checkbox" name="hhDays" value="0"> Dim</label>
+                                        </div>
+                                    </div>
+                                    <div class="form-group checkbox-group">
+                                        <label>
+                                            <input type="checkbox" id="checkHhTakeaway"> Valable aussi à emporter (Takeaway)
+                                        </label>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Article en promotion :</label>
+                                        <select id="selectHhProduct"></select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Prix Spécial Happy Hour TTC (€) :</label>
+                                        <input type="number" step="0.10" id="inputHhSpecialPrice" value="5.00" placeholder="Ex: 5.00">
+                                    </div>
+                                    <button type="submit" class="btn-primary" style="margin-top:10px;">Enregistrer le Créneau</button>
+                                </form>
+                            </div>
+                            <div class="admin-card">
+                                <h4>Plages Happy Hour Actives</h4>
+                                <div id="adminHappyHourList" style="display:flex; flex-direction:column; gap:10px;">
+                                    <p class="text-muted">Chargement des plannings...</p>
                                 </div>
                             </div>
                         </div>
@@ -1283,6 +1360,44 @@
                     <button type="button" id="btnUnassignSlot" class="btn-archive" style="padding:12px 16px; font-size:0.85rem;">Libérer la case</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Supervisor Happy Hour Override Modal -->
+    <div class="modal-overlay" id="hhOverrideModal">
+        <div class="modal-card" style="width:460px;">
+            <div class="modal-header">
+                <h3>🍻 Dérogation Happy Hour</h3>
+                <button class="btn-close-modal" id="btnCloseHhOverrideModal">✕</button>
+            </div>
+            <div style="padding:16px; display:flex; flex-direction:column; gap:16px;">
+                <p style="font-size:0.9rem; color:var(--text-secondary); margin:0;">
+                    Action réservée aux responsables (FloorManager / Admin). Dérogation tracée au journal NF525.
+                </p>
+
+                <div class="form-group">
+                    <label>Code PIN Superviseur :</label>
+                    <input type="password" id="inputHhPin" placeholder="••••" maxlength="6" style="width:100%; text-align:center; font-size:1.5rem; letter-spacing:6px; padding:10px; border-radius:var(--radius-sm); background:rgba(255,255,255,0.05); color:white; border:1px solid var(--border-color);" />
+                </div>
+
+                <div class="form-group">
+                    <label>Motif de dérogation :</label>
+                    <input type="text" id="inputHhReason" placeholder="Ex: Prolongation affluence match" value="Prolongation affluence" style="width:100%; padding:10px; border-radius:var(--radius-sm); background:rgba(255,255,255,0.05); color:white; border:1px solid var(--border-color);" />
+                </div>
+
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                    <button type="button" class="btn-primary" id="btnHhExtend30" style="background:#f59e0b; color:black; font-weight:700; padding:14px;">
+                        ➕ Prolonger +30 min
+                    </button>
+                    <button type="button" class="btn-primary" id="btnHhForce60" style="background:#d97706; color:white; font-weight:700; padding:14px;">
+                        ⚡ Forcer 1 heure
+                    </button>
+                </div>
+
+                <button type="button" class="btn-danger" id="btnHhForceStop" style="width:100%; padding:12px; font-weight:600;">
+                    ⏹️ Arrêter immédiatement l'Happy Hour
+                </button>
+            </div>
         </div>
     </div>
 

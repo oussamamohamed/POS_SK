@@ -78,6 +78,7 @@ public partial class Program
         builder.Services.AddScoped<IHeldOrderStorageService, HeldOrderStorageService>();
         builder.Services.AddSingleton<ITakeawayCounterService, TakeawayCounterService>();
         builder.Services.AddScoped<IMealVoucherPolicyService, MealVoucherPolicyService>();
+        builder.Services.AddScoped<IHappyHourPricingService, HappyHourPricingService>();
         builder.Services.AddScoped<IJwtTokenGeneratorService, JwtTokenGeneratorService>();
         builder.Services.AddSingleton<IPinRateLimiterService, PinRateLimiterService>();
         builder.Services.AddHostedService<NetworkDiscoveryBeaconService>();
@@ -210,19 +211,47 @@ public partial class Program
                 VoidedByStaffId TEXT
             );
             CREATE INDEX IF NOT EXISTS IX_HeldOrders_TerminalId_IsRecalled_IsVoided ON HeldOrders(TerminalId, IsRecalled, IsVoided);"); } catch { }
-            try { dbContext.Database.ExecuteSqlRaw(@"CREATE TABLE IF NOT EXISTS CustomerCreditVouchers (
+            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE OrderItems ADD COLUMN IsHappyHourApplied INTEGER NOT NULL DEFAULT 0;"); } catch { }
+            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE OrderItems ADD COLUMN OriginalUnitPrice INTEGER NULL;"); } catch { }
+            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE OrderItems ADD COLUMN AppliedHappyHourScheduleId TEXT NULL;"); } catch { }
+            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE OrderItems ADD COLUMN OrderedAtUtc TEXT NOT NULL DEFAULT '';"); } catch { }
+            try { dbContext.Database.ExecuteSqlRaw(@"CREATE TABLE IF NOT EXISTS HappyHourSchedules (
                 Id TEXT PRIMARY KEY,
-                VoucherCode TEXT NOT NULL UNIQUE,
-                OriginalOrderId TEXT NOT NULL,
-                Amount INTEGER NOT NULL,
-                IssuedAtUtc TEXT NOT NULL,
-                ExpiresAtUtc TEXT NOT NULL,
+                Name TEXT NOT NULL,
+                DaysOfWeek TEXT NOT NULL,
+                StartTime TEXT NOT NULL,
+                EndTime TEXT NOT NULL,
+                IsActive INTEGER NOT NULL DEFAULT 1,
+                AppliesToTakeaway INTEGER NOT NULL DEFAULT 0,
+                Priority INTEGER NOT NULL DEFAULT 1,
+                CreatedAtUtc TEXT NOT NULL,
+                UpdatedAtUtc TEXT
+            );"); } catch { }
+            try { dbContext.Database.ExecuteSqlRaw(@"CREATE TABLE IF NOT EXISTS HappyHourPriceRules (
+                Id TEXT PRIMARY KEY,
+                ScheduleId TEXT NOT NULL,
+                TargetType INTEGER NOT NULL,
+                TargetId TEXT NOT NULL,
+                TargetName TEXT NOT NULL,
+                PricingMode INTEGER NOT NULL,
+                FixedPrice INTEGER,
+                DiscountPercent TEXT,
+                CreatedAtUtc TEXT NOT NULL,
+                FOREIGN KEY(ScheduleId) REFERENCES HappyHourSchedules(Id) ON DELETE CASCADE
+            );"); } catch { }
+            try { dbContext.Database.ExecuteSqlRaw(@"CREATE TABLE IF NOT EXISTS HappyHourOverrideSessions (
+                Id TEXT PRIMARY KEY,
                 TerminalId TEXT NOT NULL,
-                IsRedeemed INTEGER NOT NULL DEFAULT 0,
-                RedeemedAtUtc TEXT,
-                RedeemedOrderId TEXT
+                OperatorId TEXT NOT NULL,
+                OperatorName TEXT NOT NULL,
+                OverrideType INTEGER NOT NULL,
+                StartsAtUtc TEXT NOT NULL,
+                ExpiresAtUtc TEXT NOT NULL,
+                Reason TEXT NOT NULL,
+                IsActive INTEGER NOT NULL DEFAULT 1,
+                CreatedAtUtc TEXT NOT NULL
             );
-            CREATE UNIQUE INDEX IF NOT EXISTS IX_CustomerCreditVouchers_VoucherCode ON CustomerCreditVouchers(VoucherCode);"); } catch { }
+            CREATE INDEX IF NOT EXISTS IX_HappyHourOverrideSessions_TerminalId_IsActive ON HappyHourOverrideSessions(TerminalId, IsActive);"); } catch { }
         }
 
         app.UseCors();
@@ -289,6 +318,7 @@ public partial class Program
         app.MapFiscalEndpoints();
         app.MapDashboardEndpoints();
         app.MapCounterSaleEndpoints();
+        app.MapHappyHourEndpoints();
 
         // 9. Hospitality Features (Table Transfer, Merge, Discounts, Course Fire, Hotel PMS)
         app.MapHospitalityEndpoints();
@@ -540,6 +570,51 @@ public partial class Program
                 new HotelRoomResident { RoomNumber = "204", GuestName = "Alexandre Dupont", CheckInDateUtc = DateTimeOffset.UtcNow.AddDays(-2), CheckOutDateUtc = DateTimeOffset.UtcNow.AddDays(3), IsOccupied = true, MaxCreditLimit = 600.0m },
                 new HotelRoomResident { RoomNumber = "305", GuestName = "Sophie Marceau", CheckInDateUtc = DateTimeOffset.UtcNow.AddDays(-1), CheckOutDateUtc = DateTimeOffset.UtcNow.AddDays(1), IsOccupied = true, MaxCreditLimit = 450.0m }
             );
+            await db.SaveChangesAsync();
+        }
+
+        // Seed Happy Hour Schedule
+        if (!await db.HappyHourSchedules.AnyAsync())
+        {
+            var beerProd = await db.Products.FirstOrDefaultAsync(p => EF.Functions.Like(p.Name, "%Bière%"));
+            var schedule = new HappyHourSchedule
+            {
+                Name = "Afterwork Standard",
+                DaysOfWeek = [DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday],
+                StartTime = new TimeOnly(17, 0),
+                EndTime = new TimeOnly(20, 0),
+                IsActive = true,
+                AppliesToTakeaway = false,
+                Priority = 1
+            };
+
+            if (beerProd != null)
+            {
+                schedule.PriceRules.Add(new HappyHourPriceRule
+                {
+                    TargetType = HappyHourTargetType.Product,
+                    TargetId = beerProd.Id.ToString(),
+                    TargetName = beerProd.Name,
+                    PricingMode = HappyHourPricingMode.FixedPrice,
+                    FixedPrice = Money.FromEuros(5.00m)
+                });
+            }
+
+            // Also add a 20% discount on "BAR" or "Boissons" category
+            var barCat = await db.Categories.FirstOrDefaultAsync(c => EF.Functions.Like(c.Name, "%Boisson%") || EF.Functions.Like(c.Name, "%Bar%"));
+            if (barCat != null)
+            {
+                schedule.PriceRules.Add(new HappyHourPriceRule
+                {
+                    TargetType = HappyHourTargetType.Category,
+                    TargetId = barCat.Id,
+                    TargetName = barCat.Name,
+                    PricingMode = HappyHourPricingMode.PercentageDiscount,
+                    DiscountPercent = 20.0m
+                });
+            }
+
+            db.HappyHourSchedules.Add(schedule);
             await db.SaveChangesAsync();
         }
     }

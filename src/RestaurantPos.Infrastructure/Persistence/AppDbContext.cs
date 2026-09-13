@@ -35,6 +35,11 @@ public class AppDbContext : DbContext
     public DbSet<HeldOrder> HeldOrders => Set<HeldOrder>();
     public DbSet<CustomerCreditVoucher> CustomerCreditVouchers => Set<CustomerCreditVoucher>();
 
+    // Happy Hour Pricing DbSets
+    public DbSet<HappyHourSchedule> HappyHourSchedules => Set<HappyHourSchedule>();
+    public DbSet<HappyHourPriceRule> HappyHourPriceRules => Set<HappyHourPriceRule>();
+    public DbSet<HappyHourOverrideSession> HappyHourOverrideSessions => Set<HappyHourOverrideSession>();
+
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
     {
     }
@@ -209,6 +214,45 @@ public class AppDbContext : DbContext
                       m => m.AmountInCents,
                       cents => new Money(cents, "EUR")
                   );
+
+            entity.Property(i => i.OriginalUnitPrice)
+                  .HasConversion(
+                      m => m.HasValue ? (long?)m.Value.AmountInCents : null,
+                      cents => cents.HasValue ? new Money(cents.Value, "EUR") : null
+                  );
+        });
+
+        modelBuilder.Entity<HappyHourSchedule>(entity =>
+        {
+            entity.HasKey(s => s.Id);
+            entity.Property(s => s.Name).HasMaxLength(100).IsRequired();
+            entity.Property(s => s.DaysOfWeek)
+                  .HasConversion(
+                      d => string.Join(',', d.Select(x => ((int)x).ToString(System.Globalization.CultureInfo.InvariantCulture))),
+                      s => string.IsNullOrEmpty(s) ? new List<DayOfWeek>() : s.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(x => (DayOfWeek)int.Parse(x, System.Globalization.CultureInfo.InvariantCulture)).ToList()
+                  );
+            entity.HasMany(s => s.PriceRules).WithOne().HasForeignKey(r => r.ScheduleId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<HappyHourPriceRule>(entity =>
+        {
+            entity.HasKey(r => r.Id);
+            entity.Property(r => r.TargetName).HasMaxLength(100);
+            entity.Property(r => r.DiscountPercent).HasPrecision(5, 2);
+            entity.Property(r => r.FixedPrice)
+                  .HasConversion(
+                      m => m.HasValue ? (long?)m.Value.AmountInCents : null,
+                      cents => cents.HasValue ? new Money(cents.Value, "EUR") : null
+                  );
+        });
+
+        modelBuilder.Entity<HappyHourOverrideSession>(entity =>
+        {
+            entity.HasKey(o => o.Id);
+            entity.Property(o => o.TerminalId).HasMaxLength(32).IsRequired();
+            entity.Property(o => o.OperatorName).HasMaxLength(64).IsRequired();
+            entity.Property(o => o.Reason).HasMaxLength(256).IsRequired();
+            entity.HasIndex(o => new { o.TerminalId, o.IsActive });
         });
 
         modelBuilder.Entity<HotelRoomResident>(entity =>

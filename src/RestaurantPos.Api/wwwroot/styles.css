@@ -834,6 +834,125 @@ body.pos-dark {
     text-align: center;
 }
 
+/* Happy Hour Price Strikethrough & Glowing Amber Tag */
+.product-price-hh-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    background: rgba(245, 158, 11, 0.15);
+    border: 1px solid rgba(245, 158, 11, 0.5);
+    border-radius: 4px;
+    padding: 2px 4px;
+}
+
+.product-price-strike {
+    font-size: 0.72rem;
+    color: rgba(255, 255, 255, 0.5);
+    text-decoration: line-through;
+    font-weight: 600;
+}
+
+.product-price-hh {
+    font-family: var(--font-mono);
+    font-size: clamp(0.85rem, 1.4vw, 1.2rem);
+    font-weight: 800;
+    color: #fbbf24;
+    text-shadow: 0 0 8px rgba(245, 158, 11, 0.4);
+}
+
+.cart-item-badge-hh {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: #000;
+    font-size: 0.68rem;
+    font-weight: 800;
+    padding: 2px 5px;
+    border-radius: 3px;
+    margin-left: 6px;
+    letter-spacing: 0.5px;
+    display: inline-block;
+}
+
+/* Happy Hour Top Banner */
+.happy-hour-banner {
+    width: 100%;
+    background: linear-gradient(90deg, #b45309, #f59e0b, #b45309);
+    background-size: 200% 100%;
+    animation: hhBannerGlow 4s ease infinite;
+    color: #000;
+    padding: 6px 16px;
+    box-shadow: 0 2px 12px rgba(245, 158, 11, 0.35);
+    z-index: 100;
+}
+
+@keyframes hhBannerGlow {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.hh-banner-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 1400px;
+    margin: 0 auto;
+    gap: 12px;
+}
+
+.hh-badge-icon {
+    font-size: 1.4rem;
+}
+
+.hh-banner-info {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.hh-banner-title {
+    font-size: 0.95rem;
+    font-weight: 900;
+    letter-spacing: 1px;
+}
+
+.hh-banner-subtitle {
+    font-size: 0.76rem;
+    font-weight: 700;
+    opacity: 0.9;
+}
+
+.hh-countdown-pill {
+    background: rgba(0, 0, 0, 0.3);
+    color: #fff;
+    font-family: var(--font-mono);
+    font-size: 0.88rem;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-hh-override {
+    background: #000;
+    color: #fbbf24;
+    border: 1px solid #fbbf24;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.btn-hh-override:hover {
+    background: #1f2937;
+    transform: translateY(-1px);
+}
+
 /* Slot vide de caisse (s'adapte à la cellule et préserve l'alignement absolu) */
 .product-card-empty {
     background: rgba(255, 255, 255, 0.02);
