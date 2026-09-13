@@ -78,11 +78,15 @@ public class KitchenRoutingService : IKitchenRoutingService
 
         foreach (var group in stationGroups)
         {
+            string displayTable = order.Destination == RestaurantPos.Domain.Enums.OrderDestination.Takeaway
+                ? $"[À EMPORTER] {(!string.IsNullOrWhiteSpace(order.PickupNumber) ? order.PickupNumber : order.TableNumber)}{(!string.IsNullOrWhiteSpace(order.PickupBuzzer) ? $" (Bip: {order.PickupBuzzer})" : "")}"
+                : order.TableNumber;
+
             var ticket = new KitchenTicket
             {
                 Id = UuidV7.NewGuid(),
                 OrderId = order.Id,
-                TableNumber = order.TableNumber,
+                TableNumber = displayTable,
                 // B9 FIX: Use real values from the DiningTable, not hardcoded constants
                 ServerName = serverName,
                 CoversCount = coversCount,

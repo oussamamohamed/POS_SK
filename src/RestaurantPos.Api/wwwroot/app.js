@@ -15,9 +15,14 @@ document.addEventListener('DOMContentLoaded', () => {
         draggedSlot: null,
         draggedCatalogItem: null,
         activeCategory: null,
-        activeTable: 'T2',
-        activeCovers: 3,
+        activeTable: 'Comptoir',
+        activeCovers: 1,
         activeOrderId: null,
+        destination: 'Takeaway',
+        terminalId: 'POS_A',
+        heldOrders: [],
+        supervisorPinInput: '',
+        pendingVoidHoldId: null,
         cart: [],
         pinInput: '',
         splitGuests: 2,
@@ -87,6 +92,39 @@ document.addEventListener('DOMContentLoaded', () => {
         btnPayModal: document.getElementById('btnPayModal'),
         activeTableBadge: document.getElementById('activeTableBadge'),
         activeCoversBadge: document.getElementById('activeCoversBadge'),
+
+        // Feature 018: Takeaway & Direct Sales
+        destinationToggleGroup: document.getElementById('destinationToggleGroup'),
+        btnDestTakeaway: document.getElementById('btnDestTakeaway'),
+        btnDestEatIn: document.getElementById('btnDestEatIn'),
+        btnHeldQueue: document.getElementById('btnHeldQueue'),
+        heldBadgeCount: document.getElementById('heldBadgeCount'),
+        btnHoldCart: document.getElementById('btnHoldCart'),
+        cartFastCashBar: document.getElementById('cartFastCashBar'),
+        inputPickupBuzzer: document.getElementById('inputPickupBuzzer'),
+        selectMealVoucherPolicy: document.getElementById('selectMealVoucherPolicy'),
+        chkPrintFiscalReceipt: document.getElementById('chkPrintFiscalReceipt'),
+        changeOverlayModal: document.getElementById('changeOverlayModal'),
+        changeOverlayAmount: document.getElementById('changeOverlayAmount'),
+        changeOverlayDetails: document.getElementById('changeOverlayDetails'),
+        changeOverlayPickupNumber: document.getElementById('changeOverlayPickupNumber'),
+        changeOverlayBuzzer: document.getElementById('changeOverlayBuzzer'),
+        changeOverlayBuzzerVal: document.getElementById('changeOverlayBuzzerVal'),
+        changeOverlayCreditVoucherBox: document.getElementById('changeOverlayCreditVoucherBox'),
+        changeOverlayCreditVoucherCode: document.getElementById('changeOverlayCreditVoucherCode'),
+        changeOverlayCreditVoucherAmount: document.getElementById('changeOverlayCreditVoucherAmount'),
+        btnChangeDone: document.getElementById('btnChangeDone'),
+        heldOrdersModal: document.getElementById('heldOrdersModal'),
+        btnCloseHeldModal: document.getElementById('btnCloseHeldModal'),
+        heldOrdersList: document.getElementById('heldOrdersList'),
+        supervisorPinModal: document.getElementById('supervisorPinModal'),
+        supervisorPinInput: document.getElementById('supervisorPinInput'),
+        btnCancelSupervisorPin: document.getElementById('btnCancelSupervisorPin'),
+        btnConfirmSupervisorPin: document.getElementById('btnConfirmSupervisorPin'),
+        agecPromptModal: document.getElementById('agecPromptModal'),
+        btnAgecYes: document.getElementById('btnAgecYes'),
+        btnAgecNo: document.getElementById('btnAgecNo'),
+        agecCountdown: document.getElementById('agecCountdown'),
 
         // Catalog
         quickKeysBar: document.getElementById('quickKeysBar'),
@@ -159,6 +197,9 @@ document.addEventListener('DOMContentLoaded', () => {
         dashFilterBtns: document.querySelectorAll('.dash-filter-btn'),
 
         // Admin Grid Editor
+        adminCatalogList: document.getElementById('adminCatalogList'),
+        adminStaffList: document.getElementById('adminStaffList'),
+        adminPrintersList: document.getElementById('adminPrintersList'),
         selectAdminGridCat: document.getElementById('selectAdminGridCat'),
         adminMatrixGrid: document.getElementById('adminMatrixGrid'),
         adminCatalogListForGrid: document.getElementById('adminCatalogListForGrid'),
@@ -276,8 +317,11 @@ document.addEventListener('DOMContentLoaded', () => {
         await loadAdminData();
         await loadNetworkSyncData();
 
-        // Automatically recall the active table (T2) order on startup
-        await loadActiveTableOrder(state.activeTable);
+        setupTakeawayListeners();
+
+        // Automatically open default direct takeaway counter cart (Feature 018 US1)
+        await openDirectCounterOrder('Takeaway');
+        await updateHeldQueueCount();
     }
 
     // ==================== NAVIGATION ====================
@@ -950,7 +994,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 lineTtc = lineTtc * (1.0 - (item.discountPercent / 100.0));
             }
 
-            const vatRate = (item.product.taxRatePercent || 10.0) / 100.0;
+            const isTakeaway = state.destination === 'Takeaway' || state.destination === 1;
+            const effectiveVatPercent = (isTakeaway && item.product.taxRateTakeawayPercent !== undefined && item.product.taxRateTakeawayPercent !== null)
+                ? Number(item.product.taxRateTakeawayPercent)
+                : Number(item.product.taxRatePercent || 10.0);
+
+            const vatRate = effectiveVatPercent / 100.0;
             const lineHt = lineTtc / (1.0 + vatRate);
             const lineVat = lineTtc - lineHt;
 
@@ -970,7 +1019,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         ${item.isComp ? '<span class="comp-badge">🎁 Offert</span>' : ''}
                         ${item.isDispatched ? '<span class="badge-dispatched" title="Déjà transmis en préparation">👨‍🍳 Cuisine</span>' : '<span class="badge-pending" title="Nouvel article à envoyer">➕ Nouveau</span>'}
                     </div>
-                    <span class="cart-item-meta">${unitPrice.toFixed(2)} € × ${item.quantity} ${item.modifiersPriceExtra ? `<span style="color:#10b981; font-weight:600;">(+${Number(item.modifiersPriceExtra).toFixed(2)}€ options)</span>` : ''} (TVA ${item.product.taxRatePercent || 10}%)</span>
+                    <span class="cart-item-meta">${unitPrice.toFixed(2)} € × ${item.quantity} ${item.modifiersPriceExtra ? `<span style="color:#10b981; font-weight:600;">(+${Number(item.modifiersPriceExtra).toFixed(2)}€ options)</span>` : ''} (TVA ${effectiveVatPercent}%)</span>
                     ${item.modifiers && item.modifiers.length > 0 ? `<div style="font-size:0.75rem;color:#f59e0b;margin-top:2px;">↳ ${item.modifiers.join(', ')}</div>` : ''}
                     ${item.kitchenComment ? `<div style="font-size:0.72rem;color:#94a3b8;font-style:italic;margin-top:1px;">💬 ${item.kitchenComment}</div>` : ''}
                 </div>
@@ -996,6 +1045,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         elements.summaryHt.textContent = `${totalHt.toFixed(2)} €`;
         elements.summaryVat.textContent = `${totalVat.toFixed(2)} €`;
+        if (document.getElementById('summaryVatLabel')) {
+            document.getElementById('summaryVatLabel').textContent = (state.destination === 'Takeaway' || state.destination === 1)
+                ? 'TVA (5.5% / 10% / 20%) :'
+                : 'TVA (10% / 20%) :';
+        }
         elements.summaryTtc.textContent = `${totalTtc.toFixed(2)} €`;
 
         // Attach quantity buttons
@@ -1095,20 +1149,22 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // 2. Fire Suite (US3)
-    elements.btnFireSuite.addEventListener('click', async () => {
-        if (!state.activeTable) return;
-        try {
-            const res = await fetch(`/api/tables/${state.activeTable}/fire-suite`, { method: 'POST' });
-            if (res.ok) {
-                showToast(`🔔 RÉCLAME SUITE envoyée en cuisine pour la table ${state.activeTable} !`, 'success');
-                await loadKdsData();
-            } else {
-                showToast('Échec de la réclame suite', 'error');
+    if (elements.btnFireSuite) {
+        elements.btnFireSuite.addEventListener('click', async () => {
+            if (!state.activeTable) return;
+            try {
+                const res = await fetch(`/api/tables/${state.activeTable}/fire-suite`, { method: 'POST' });
+                if (res.ok) {
+                    showToast(`🔔 RÉCLAME SUITE envoyée en cuisine pour la table ${state.activeTable} !`, 'success');
+                    await loadKdsData();
+                } else {
+                    showToast('Échec de la réclame suite', 'error');
+                }
+            } catch (err) {
+                showToast('Erreur réclame suite', 'error');
             }
-        } catch (err) {
-            showToast('Erreur réclame suite', 'error');
-        }
-    });
+        });
+    }
 
     // ==================== MODALS & PAYMENTS ====================
     function setupModals() {
@@ -1621,6 +1677,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function executePayment(tenderMethod, tendered) {
+        if (state.activeTable === 'Comptoir') {
+            await executeCounterCheckout(tenderMethod, tendered);
+            return;
+        }
+
         if (!state.activeOrderId && state.cart.length > 0) {
             await saveActiveCartToServer();
         }
@@ -1662,6 +1723,455 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (err) {
             console.error('Erreur paiement:', err);
             showToast('Erreur paiement', 'error');
+        }
+    }
+
+    // ==================== TAKEAWAY & DIRECT SALES (FEATURE 018) ====================
+    async function openDirectCounterOrder(destination = 'Takeaway') {
+        state.activeTable = 'Comptoir';
+        state.destination = destination;
+
+        if (elements.activeTableBadge) {
+            elements.activeTableBadge.textContent = 'Comptoir';
+        }
+
+        updateDestinationToggleUI();
+
+        try {
+            await ensureAuthToken();
+            const destEnum = destination === 'EatIn' ? 0 : 1;
+            const res = await fetch('/api/orders/counter/direct', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    terminalId: state.terminalId || 'POS_A',
+                    destination: destEnum
+                })
+            });
+
+            if (res.ok) {
+                const orderData = await res.json();
+                state.activeOrderId = orderData.orderId;
+                state.activeCovers = 1;
+                state.pickupNumber = orderData.pickupNumber || null;
+                state.pickupBuzzer = orderData.pickupBuzzer || null;
+
+                // Hydrate cart
+                state.cart = (orderData.lines || []).map(line => ({
+                    lineId: line.lineId,
+                    product: {
+                        id: line.productId,
+                        name: line.productName,
+                        price: line.unitPrice,
+                        taxRatePercent: line.taxRatePercent,
+                        taxRateTakeawayPercent: line.taxRateTakeawayPercent,
+                        preparationStationId: line.preparationStationId
+                    },
+                    quantity: line.quantity,
+                    course: typeof line.course === 'number' ? getCourseNameFromEnum(line.course) : (line.course || 'Direct'),
+                    isDispatched: line.isDispatched,
+                    isComp: line.isComp || false,
+                    discountPercent: line.discountPercent || 0,
+                    modifiers: line.modifiersSummary || [],
+                    modifiersPriceExtra: Number(line.modifiersPriceExtra) || 0
+                }));
+
+                renderCart();
+            }
+        } catch (err) {
+            console.error('Erreur openDirectCounterOrder:', err);
+        }
+    }
+
+    function updateDestinationToggleUI() {
+        const isTakeaway = state.destination === 'Takeaway' || state.destination === 1;
+        if (elements.btnDestTakeaway && elements.btnDestEatIn) {
+            elements.btnDestTakeaway.classList.toggle('active', isTakeaway);
+            elements.btnDestEatIn.classList.toggle('active', !isTakeaway);
+        }
+        if (elements.activeCoversBadge) {
+            elements.activeCoversBadge.style.display = 'none';
+        }
+    }
+
+    async function switchDestination(newDest) {
+        state.destination = newDest;
+        updateDestinationToggleUI();
+
+        if (state.activeOrderId) {
+            try {
+                await ensureAuthToken();
+                const destEnum = newDest === 'EatIn' ? 0 : 1;
+                await fetch(`/api/orders/${state.activeOrderId}/destination`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ destination: destEnum })
+                });
+            } catch (err) {
+                console.warn('Erreur switchDestination API:', err);
+            }
+        }
+
+        renderCart();
+        showToast(`Mode passé en ${newDest === 'Takeaway' ? 'À Emporter (TVA 5.5%/10%)' : 'Sur Place (TVA 10%)'}`, 'info');
+    }
+
+    async function updateHeldQueueCount() {
+        try {
+            await ensureAuthToken();
+            const res = await fetch(`/api/orders/counter/held?terminalId=${encodeURIComponent(state.terminalId || 'POS_A')}`);
+            if (res.ok) {
+                const list = await res.json();
+                state.heldOrders = list;
+                if (elements.heldBadgeCount) {
+                    elements.heldBadgeCount.textContent = list.length;
+                }
+            }
+        } catch (err) {
+            console.warn('Erreur updateHeldQueueCount:', err);
+        }
+    }
+
+    async function holdCurrentCart() {
+        if (state.cart.length === 0) {
+            showToast('Impossible de mettre en attente un panier vide', 'warning');
+            return;
+        }
+
+        await saveActiveCartToServer();
+
+        const label = prompt('Nom ou repère pour cette commande en attente :', `Client #${state.heldOrders.length + 1}`) || 'Client Comptoir';
+
+        try {
+            await ensureAuthToken();
+            const res = await fetch('/api/orders/counter/hold', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    orderId: state.activeOrderId,
+                    terminalId: state.terminalId || 'POS_A',
+                    customerLabel: label
+                })
+            });
+
+            if (res.ok) {
+                showToast(`Commande "${label}" mise en attente ! ⏸️`, 'success');
+                state.cart = [];
+                state.activeOrderId = null;
+                await updateHeldQueueCount();
+                await openDirectCounterOrder(state.destination);
+            } else {
+                const errData = await res.json().catch(() => ({}));
+                showToast(errData.message || 'Erreur mise en attente', 'error');
+            }
+        } catch (err) {
+            showToast('Erreur réseau mise en attente', 'error');
+        }
+    }
+
+    async function renderHeldOrdersModal() {
+        await updateHeldQueueCount();
+        if (!elements.heldOrdersList) return;
+        elements.heldOrdersList.innerHTML = '';
+
+        if (state.heldOrders.length === 0) {
+            elements.heldOrdersList.innerHTML = `
+                <div style="text-align:center; padding:30px; color:var(--text-muted);">
+                    <div style="font-size:2.5rem; margin-bottom:8px;">⏸️</div>
+                    <strong>Aucune commande en attente</strong>
+                    <div style="font-size:0.85rem; margin-top:4px;">Utilisez le bouton "Attente" pour parquer un panier actif.</div>
+                </div>
+            `;
+            elements.heldOrdersModal.classList.add('active');
+            return;
+        }
+
+        state.heldOrders.forEach(h => {
+            const card = document.createElement('div');
+            card.className = 'held-order-card';
+            const heldTime = new Date(h.heldAtUtc).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const holdId = h.id || h.holdId;
+            let totalAmount = 0;
+            if (typeof h.totalTtc === 'object' && h.totalTtc !== null) {
+                totalAmount = h.totalTtc.amountInCents !== undefined ? (h.totalTtc.amountInCents / 100) : Number(h.totalTtc.amount || 0);
+            } else {
+                totalAmount = Number(h.totalTtc || 0);
+            }
+            card.innerHTML = `
+                <div>
+                    <div style="font-weight:700; font-size:1rem; color:#f8fafc;">${h.customerLabel || 'Client'}</div>
+                    <div style="font-size:0.8rem; color:var(--text-muted); margin-top:2px;">
+                        ${h.itemCount} article(s) • <span style="color:#10b981; font-weight:700;">${totalAmount.toFixed(2)} €</span> • Parké à ${heldTime}
+                    </div>
+                </div>
+                <div class="held-card-actions">
+                    <button type="button" class="btn-action btn-pay btn-recall-held" data-id="${holdId}" style="padding:8px 14px; font-size:0.85rem;">
+                        Rappeler ↺
+                    </button>
+                    <button type="button" class="btn-secondary btn-void-held" data-id="${holdId}" style="padding:8px 12px; font-size:0.85rem; color:#ef4444; border-color:rgba(239,68,68,0.3);">
+                        Annuler ✕
+                    </button>
+                </div>
+            `;
+
+            card.querySelector('.btn-recall-held').addEventListener('click', async () => {
+                await recallHeldOrder(holdId);
+            });
+
+            card.querySelector('.btn-void-held').addEventListener('click', () => {
+                state.pendingVoidHoldId = holdId;
+                state.supervisorPinInput = '';
+                elements.supervisorPinInput.value = '';
+                elements.heldOrdersModal.classList.remove('active');
+                elements.supervisorPinModal.classList.add('active');
+            });
+
+            elements.heldOrdersList.appendChild(card);
+        });
+
+        elements.heldOrdersModal.classList.add('active');
+    }
+
+    async function recallHeldOrder(holdId) {
+        try {
+            await ensureAuthToken();
+            const res = await fetch(`/api/orders/counter/held/${holdId}/recall`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+
+            if (res.ok) {
+                const orderData = await res.json();
+                state.activeOrderId = orderData.orderId;
+                state.activeTable = 'Comptoir';
+                state.destination = orderData.destination === 0 ? 'EatIn' : 'Takeaway';
+                updateDestinationToggleUI();
+
+                state.cart = (orderData.lines || []).map(line => ({
+                    lineId: line.lineId,
+                    product: {
+                        id: line.productId,
+                        name: line.productName,
+                        price: line.unitPrice,
+                        taxRatePercent: line.taxRatePercent,
+                        taxRateTakeawayPercent: line.taxRateTakeawayPercent,
+                        preparationStationId: line.preparationStationId
+                    },
+                    quantity: line.quantity,
+                    course: typeof line.course === 'number' ? getCourseNameFromEnum(line.course) : (line.course || 'Direct'),
+                    isDispatched: line.isDispatched,
+                    isComp: line.isComp || false,
+                    discountPercent: line.discountPercent || 0,
+                    modifiers: line.modifiersSummary || [],
+                    modifiersPriceExtra: Number(line.modifiersPriceExtra) || 0
+                }));
+
+                elements.heldOrdersModal.classList.remove('active');
+                renderCart();
+                await updateHeldQueueCount();
+                showToast('Commande rappelée avec succès ! ↺', 'success');
+            } else {
+                showToast('Impossible de rappeler la commande', 'error');
+            }
+        } catch (err) {
+            showToast('Erreur rappel commande', 'error');
+        }
+    }
+
+    async function verifySupervisorPinAndVoid() {
+        if (!state.pendingVoidHoldId) return;
+        const pin = state.supervisorPinInput;
+        if (!pin) {
+            showToast('PIN superviseur requis', 'warning');
+            return;
+        }
+
+        try {
+            await ensureAuthToken();
+            const res = await fetch(`/api/orders/counter/held/${state.pendingVoidHoldId}/void`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    supervisorPin: pin,
+                    voidReason: 'Annulation au comptoir',
+                    terminalId: state.terminalId || 'POS_A'
+                })
+            });
+
+            if (res.ok) {
+                showToast('Commande en attente annulée (Audit JET journalisé) 🗑️', 'success');
+                elements.supervisorPinModal.classList.remove('active');
+                state.pendingVoidHoldId = null;
+                state.supervisorPinInput = '';
+                await updateHeldQueueCount();
+            } else {
+                const data = await res.json().catch(() => ({}));
+                showToast(data.message || 'Code PIN superviseur invalide ou non autorisé', 'error');
+                state.supervisorPinInput = '';
+                elements.supervisorPinInput.value = '';
+            }
+        } catch (err) {
+            showToast('Erreur annulation commande', 'error');
+        }
+    }
+
+    async function executeCounterCheckout(tenderMethod, tenderedAmount, facialValue = null, requestFiscalPrint = false) {
+        if (state.cart.length === 0) {
+            showToast('Panier vide', 'warning');
+            return;
+        }
+
+        await saveActiveCartToServer();
+
+        const total = getFinalPayTotal();
+        const policy = parseInt(elements.selectMealVoucherPolicy ? elements.selectMealVoucherPolicy.value : '0') || 0;
+        const buzzer = elements.inputPickupBuzzer ? elements.inputPickupBuzzer.value.trim() : null;
+
+        const payload = {
+            orderId: state.activeOrderId,
+            terminalId: state.terminalId || 'POS_A',
+            destination: state.destination === 'EatIn' ? 0 : 1,
+            pickupBuzzer: buzzer || null,
+            pickupScheduledAtUtc: null,
+            tipAmount: getTipAmount(),
+            requestFiscalReceiptPrint: requestFiscalPrint || (elements.chkPrintFiscalReceipt && elements.chkPrintFiscalReceipt.checked),
+            mealVoucherPolicy: policy,
+            tenders: [
+                {
+                    method: tenderMethod,
+                    amount: Math.min(tenderedAmount, total),
+                    tendered: tenderedAmount,
+                    facialValue: facialValue || (tenderMethod === 2 ? tenderedAmount : null)
+                }
+            ]
+        };
+
+        try {
+            await ensureAuthToken();
+            const res = await fetch('/api/orders/counter/checkout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await res.json();
+            if (res.ok) {
+                // Success: Close payment modal
+                if (elements.paymentModal) elements.paymentModal.classList.remove('active');
+
+                // Fill Change Overlay
+                elements.changeOverlayAmount.textContent = `${Number(data.changeGiven || 0).toFixed(2)} €`;
+                elements.changeOverlayDetails.textContent = `Reçu : ${tenderedAmount.toFixed(2)} € — Total : ${Number(data.totalPaid || 0).toFixed(2)} €`;
+                elements.changeOverlayPickupNumber.textContent = data.pickupNumber || '#A-01';
+
+                if (buzzer) {
+                    elements.changeOverlayBuzzer.style.display = 'block';
+                    elements.changeOverlayBuzzerVal.textContent = buzzer;
+                } else {
+                    elements.changeOverlayBuzzer.style.display = 'none';
+                }
+
+                if (data.issuedCreditVoucher) {
+                    elements.changeOverlayCreditVoucherBox.style.display = 'block';
+                    elements.changeOverlayCreditVoucherCode.textContent = data.issuedCreditVoucher.voucherCode;
+                    elements.changeOverlayCreditVoucherAmount.textContent = `Montant : ${Number(data.issuedCreditVoucher.amount).toFixed(2)} € (Valable 90 jours)`;
+                } else {
+                    elements.changeOverlayCreditVoucherBox.style.display = 'none';
+                }
+
+                // Show change overlay
+                elements.changeOverlayModal.style.display = 'flex';
+                elements.changeOverlayModal.classList.add('active');
+
+                // Clear active cart & prepare for next sale
+                state.cart = [];
+                state.activeOrderId = null;
+                renderCart();
+
+                showToast(`Vente validée ! Retrait ${data.pickupNumber} — Monnaie: ${Number(data.changeGiven || 0).toFixed(2)} €`, 'success');
+            } else {
+                showToast(data.message || 'Erreur lors du règlement comptoir', 'error');
+            }
+        } catch (err) {
+            console.error('Erreur executeCounterCheckout:', err);
+            showToast('Erreur réseau règlement comptoir', 'error');
+        }
+    }
+
+    function setupTakeawayListeners() {
+        // Destination toggle
+        if (elements.btnDestTakeaway) {
+            elements.btnDestTakeaway.addEventListener('click', () => switchDestination('Takeaway'));
+        }
+        if (elements.btnDestEatIn) {
+            elements.btnDestEatIn.addEventListener('click', () => switchDestination('EatIn'));
+        }
+
+        // Held queue badge and modal
+        if (elements.btnHeldQueue) {
+            elements.btnHeldQueue.addEventListener('click', () => renderHeldOrdersModal());
+        }
+        if (elements.btnCloseHeldModal) {
+            elements.btnCloseHeldModal.addEventListener('click', () => elements.heldOrdersModal.classList.remove('active'));
+        }
+        if (elements.btnHoldCart) {
+            elements.btnHoldCart.addEventListener('click', () => holdCurrentCart());
+        }
+
+        // Supervisor PIN keypad
+        document.querySelectorAll('.supervisor-pin-grid .btn-key').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const key = btn.getAttribute('data-key');
+                if (key === 'clear') {
+                    state.supervisorPinInput = '';
+                } else if (key === 'back') {
+                    state.supervisorPinInput = state.supervisorPinInput.slice(0, -1);
+                } else if (state.supervisorPinInput.length < 6) {
+                    state.supervisorPinInput += key;
+                }
+                elements.supervisorPinInput.value = state.supervisorPinInput;
+            });
+        });
+
+        if (elements.btnCancelSupervisorPin) {
+            elements.btnCancelSupervisorPin.addEventListener('click', () => {
+                elements.supervisorPinModal.classList.remove('active');
+                state.pendingVoidHoldId = null;
+                state.supervisorPinInput = '';
+            });
+        }
+
+        if (elements.btnConfirmSupervisorPin) {
+            elements.btnConfirmSupervisorPin.addEventListener('click', () => verifySupervisorPinAndVoid());
+        }
+
+        // Change overlay done button
+        if (elements.btnChangeDone) {
+            elements.btnChangeDone.addEventListener('click', async () => {
+                elements.changeOverlayModal.style.display = 'none';
+                elements.changeOverlayModal.classList.remove('active');
+                await openDirectCounterOrder('Takeaway');
+            });
+        }
+
+        // Fast Cash bar on cart
+        if (elements.cartFastCashBar) {
+            elements.cartFastCashBar.querySelectorAll('.btn-quick-cash').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const cashVal = btn.getAttribute('data-cash');
+                    const totalTtc = calculateTotalTtc();
+                    if (totalTtc <= 0) {
+                        showToast('Panier vide', 'warning');
+                        return;
+                    }
+                    const amount = cashVal === 'exact' ? totalTtc : parseFloat(cashVal);
+                    if (amount < totalTtc && cashVal !== 'exact') {
+                        showToast(`Montant insuffisant (${amount.toFixed(2)} € pour ${totalTtc.toFixed(2)} €)`, 'warning');
+                        return;
+                    }
+                    await executeCounterCheckout(0, amount);
+                });
+            });
         }
     }
 
@@ -1944,6 +2454,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function loadAdminCatalog() {
+        if (!elements.adminCatalogList) {
+            elements.adminCatalogList = document.getElementById('adminCatalogList');
+        }
+        if (!elements.adminCatalogList) return;
         elements.adminCatalogList.innerHTML = '';
         state.products.forEach(p => {
             const row = document.createElement('div');
@@ -1976,6 +2490,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function loadAdminStaff() {
+        if (!elements.adminStaffList) elements.adminStaffList = document.getElementById('adminStaffList');
+        if (!elements.adminStaffList) return;
         elements.adminStaffList.innerHTML = '';
         try {
             const res = await fetch('/api/staff/operators');
@@ -2012,6 +2528,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function loadAdminPrinters() {
+        if (!elements.adminPrintersList) elements.adminPrintersList = document.getElementById('adminPrintersList');
+        if (!elements.adminPrintersList) return;
         elements.adminPrintersList.innerHTML = '';
         try {
             const res = await fetch('/api/printers');
@@ -2561,7 +3079,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 showToast(`Session déverrouillée: ${data.operatorName}`, 'success');
 
                 // Reload active table with newly issued token
-                if (state.activeTable) {
+                if (state.activeTable === 'Comptoir') {
+                    await openDirectCounterOrder(state.destination || 'Takeaway');
+                } else if (state.activeTable) {
                     await loadActiveTableOrder(state.activeTable);
                 }
             } else {

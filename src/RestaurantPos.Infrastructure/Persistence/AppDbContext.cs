@@ -32,6 +32,8 @@ public class AppDbContext : DbContext
     public DbSet<OrderDiscountAudit> OrderDiscountAudits => Set<OrderDiscountAudit>();
     public DbSet<GridLayout> GridLayouts => Set<GridLayout>();
     public DbSet<GridSlot> GridSlots => Set<GridSlot>();
+    public DbSet<HeldOrder> HeldOrders => Set<HeldOrder>();
+    public DbSet<CustomerCreditVoucher> CustomerCreditVouchers => Set<CustomerCreditVoucher>();
 
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
     {
@@ -182,6 +184,8 @@ public class AppDbContext : DbContext
         {
             entity.HasKey(o => o.Id);
             entity.Property(o => o.TableNumber).HasMaxLength(16).IsRequired();
+            entity.Property(o => o.PickupNumber).HasMaxLength(16);
+            entity.Property(o => o.PickupBuzzer).HasMaxLength(16);
             entity.Property(o => o.TipAmount)
                   .HasConversion(m => m.AmountInCents, cents => new Money(cents, "EUR"));
             entity.HasMany(o => o.Items).WithOne().HasForeignKey(i => i.OrderId).OnDelete(DeleteBehavior.Cascade);
@@ -192,6 +196,7 @@ public class AppDbContext : DbContext
             entity.HasKey(i => i.Id);
             entity.Property(i => i.ProductName).HasMaxLength(100).IsRequired();
             entity.Property(i => i.TaxRatePercent).HasPrecision(5, 2);
+            entity.Property(i => i.TaxRateTakeawayPercent).HasPrecision(5, 2);
 
             entity.Property(i => i.UnitPrice)
                   .HasConversion(
@@ -238,6 +243,26 @@ public class AppDbContext : DbContext
             entity.Property(a => a.Reason).HasMaxLength(256).IsRequired();
             entity.Property(a => a.AmountSaved)
                   .HasConversion(m => m.AmountInCents, cents => new Money(cents, "EUR"));
+        });
+
+        modelBuilder.Entity<HeldOrder>(entity =>
+        {
+            entity.HasKey(h => h.Id);
+            entity.Property(h => h.TerminalId).HasMaxLength(16).IsRequired();
+            entity.Property(h => h.CustomerLabel).HasMaxLength(64);
+            entity.Property(h => h.TotalTtc)
+                  .HasConversion(m => m.AmountInCents, cents => new Money(cents, "EUR"));
+            entity.HasIndex(h => new { h.TerminalId, h.IsRecalled, h.IsVoided });
+        });
+
+        modelBuilder.Entity<CustomerCreditVoucher>(entity =>
+        {
+            entity.HasKey(c => c.Id);
+            entity.Property(c => c.VoucherCode).HasMaxLength(32).IsRequired();
+            entity.Property(c => c.TerminalId).HasMaxLength(16).IsRequired();
+            entity.Property(c => c.Amount)
+                  .HasConversion(m => m.AmountInCents, cents => new Money(cents, "EUR"));
+            entity.HasIndex(c => c.VoucherCode).IsUnique();
         });
     }
 }

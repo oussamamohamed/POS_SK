@@ -73,11 +73,20 @@
                 <!-- Left: Ticket / Cart Section -->
                 <div class="pos-cart-panel">
                     <div class="cart-header">
-                        <div class="table-info">
-                            <span class="table-badge" id="activeTableBadge">Table T2</span>
-                            <span class="covers-badge" id="activeCoversBadge">👥 3 Couverts</span>
+                        <div class="table-info" style="display:flex; align-items:center; gap:8px;">
+                            <span class="table-badge" id="activeTableBadge">Comptoir</span>
+                            <div class="destination-toggle-group" id="destinationToggleGroup">
+                                <button type="button" class="btn-dest active" id="btnDestTakeaway" data-dest="Takeaway" title="Passer en À Emporter (TVA 5.5%/10%)">🥡 À Emporter</button>
+                                <button type="button" class="btn-dest" id="btnDestEatIn" data-dest="EatIn" title="Passer en Sur Place (TVA 10%)">🍽️ Sur Place</button>
+                            </div>
+                            <span class="covers-badge" id="activeCoversBadge" style="display:none;">👥 1 Couvert</span>
                         </div>
-                        <button class="btn-clear-cart" id="btnClearCart" title="Vider le panier">🗑️</button>
+                        <div style="display:flex; align-items:center; gap:6px;">
+                            <button type="button" class="btn-held-badge" id="btnHeldQueue" title="File d'attente : voir les commandes en pause">
+                                ⏸️ <span id="heldBadgeCount">0</span>
+                            </button>
+                            <button class="btn-clear-cart" id="btnClearCart" title="Vider le panier">🗑️</button>
+                        </div>
                     </div>
 
                     <div class="cart-items-list" id="cartItemsList">
@@ -90,7 +99,7 @@
                             <span id="summaryHt">0.00 €</span>
                         </div>
                         <div class="summary-line">
-                            <span>TVA (10% / 20%) :</span>
+                            <span id="summaryVatLabel">TVA (5.5% / 10% / 20%) :</span>
                             <span id="summaryVat">0.00 €</span>
                         </div>
                         <div class="summary-total">
@@ -98,12 +107,20 @@
                             <span class="total-amount" id="summaryTtc">0.00 €</span>
                         </div>
 
+                        <!-- Fast Cash Shortcuts Bar (US1 Express Sale) -->
+                        <div class="cart-fast-cash-bar" id="cartFastCashBar">
+                            <button type="button" class="btn-quick-cash" data-cash="10">10 €</button>
+                            <button type="button" class="btn-quick-cash" data-cash="20">20 €</button>
+                            <button type="button" class="btn-quick-cash" data-cash="50">50 €</button>
+                            <button type="button" class="btn-quick-cash" data-cash="exact">Exact</button>
+                        </div>
+
                         <div class="cart-action-buttons">
                             <button class="btn-action btn-send-kitchen" id="btnSendKitchen" title="Envoyer en cuisine">
                                 <span>📤</span> Cuisine
                             </button>
-                            <button class="btn-action btn-fire-suite" id="btnFireSuite" title="Réclamer la suite des plats">
-                                <span>🔔</span> Suite
+                            <button class="btn-action btn-hold-cart" id="btnHoldCart" title="Mettre la commande en attente (Park)">
+                                <span>⏸️</span> Attente
                             </button>
                             <button class="btn-action btn-discount" id="btnDiscountModal" title="Appliquer une remise ou offrir un article">
                                 <span>🏷️</span> Remise
@@ -773,6 +790,28 @@
                     </div>
                 </div>
 
+                <!-- Pager / Buzzer (US5) -->
+                <div class="form-group" style="margin-top: 10px;">
+                    <label style="font-size:0.85rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">📟 N° Bipeur / Client (facultatif) :</label>
+                    <input type="text" id="inputPickupBuzzer" placeholder="Ex: BIP-12 ou Nom client" style="width:100%; padding:8px 12px; border-radius:4px; background:var(--bg-main); border:1px solid var(--border-color); color:white; font-size:0.95rem;" />
+                </div>
+
+                <!-- Meal Voucher Overpayment Policy (US3) -->
+                <div class="form-group" id="mealVoucherPolicyGroup" style="margin-top: 10px;">
+                    <label style="font-size:0.85rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">🍽️ Politique Titre-Restaurant (Surpaiement) :</label>
+                    <select id="selectMealVoucherPolicy" style="width:100%; padding:8px 12px; border-radius:4px; background:var(--bg-main); border:1px solid var(--border-color); color:white; font-size:0.9rem;">
+                        <option value="0" selected>Solution A (Défaut : Écrêtage au solde dû, Rendu 0.00 €)</option>
+                        <option value="1">Solution B (Rejet strict en cas de dépassement)</option>
+                        <option value="2">Solution C (Émission d'un Bon d'avoir pour le reliquat)</option>
+                    </select>
+                </div>
+
+                <!-- Anti-Waste AGEC Option (US5) -->
+                <div class="form-group" style="margin-top: 12px; display:flex; align-items:center; gap:8px;">
+                    <input type="checkbox" id="chkPrintFiscalReceipt" style="width:18px; height:18px; cursor:pointer;" />
+                    <label for="chkPrintFiscalReceipt" style="font-size:0.85rem; cursor:pointer; color:#e2e8f0;">🧾 Imprimer la facturette fiscale (Loi AGEC - Optionnel)</label>
+                </div>
+
                 <div class="fast-cash-buttons">
                     <button class="btn-cash-bill" data-cash="10">10 €</button>
                     <button class="btn-cash-bill" data-cash="20">20 €</button>
@@ -785,6 +824,88 @@
                     <button class="btn-tender" data-tender="MealVoucher">🍽️ Titre Restaurant</button>
                     <button class="btn-tender btn-tender-hotel" id="btnOpenRoomChargeModal" style="border-color:#38bdf8; background:rgba(56, 189, 248, 0.15); color:#bae6fd;">🏨 Imputer sur Chambre Hôtel (PMS)</button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Change Overlay Modal (US1 Express Sale) -->
+    <div class="modal-overlay" id="changeOverlayModal" style="z-index:9999;">
+        <div class="modal-card" style="max-width:440px; text-align:center; padding:30px; border:2px solid #10b981; box-shadow:0 10px 40px rgba(16,185,129,0.3);">
+            <div style="font-size:3rem; margin-bottom:10px;">✅</div>
+            <div style="font-size:1.1rem; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:1px;">Monnaie à rendre</div>
+            <div id="changeOverlayAmount" style="font-size:3.5rem; font-weight:900; color:#10b981; margin:10px 0; font-family:monospace;">0.00 €</div>
+            <div id="changeOverlayDetails" style="font-size:1rem; color:#cbd5e1; margin-bottom:16px;">Reçu : 20.00 € — Total : 12.50 €</div>
+            <div id="changeOverlayPickupBox" style="background:rgba(56,189,248,0.15); border:1px solid #38bdf8; border-radius:8px; padding:12px; margin-bottom:20px;">
+                <div style="font-size:0.8rem; color:#38bdf8; font-weight:700; text-transform:uppercase;">Numéro de retrait</div>
+                <div id="changeOverlayPickupNumber" style="font-size:2.2rem; font-weight:900; color:#ffffff;">#A-01</div>
+                <div id="changeOverlayBuzzer" style="font-size:0.9rem; color:#bae6fd; font-weight:600; display:none;">📟 Bipeur : <span id="changeOverlayBuzzerVal"></span></div>
+            </div>
+            <div id="changeOverlayCreditVoucherBox" style="display:none; background:rgba(245,158,11,0.15); border:1px solid #f59e0b; border-radius:8px; padding:12px; margin-bottom:20px;">
+                <div style="font-size:0.8rem; color:#f59e0b; font-weight:700;">🎁 BON D'AVOIR GÉNÉRÉ</div>
+                <div id="changeOverlayCreditVoucherCode" style="font-size:1.4rem; font-weight:800; color:#ffffff; font-family:monospace;">CR-XXXXXX</div>
+                <div id="changeOverlayCreditVoucherAmount" style="font-size:0.9rem; color:#fde68a;">Montant : 0.00 € (Valable 90 jours)</div>
+            </div>
+            <button type="button" class="btn-action btn-pay" id="btnChangeDone" style="width:100%; padding:16px; font-size:1.2rem; font-weight:800;">
+                OK — Nouvelle Vente
+            </button>
+        </div>
+    </div>
+
+    <!-- Held Orders List Modal (US4 Hold & Recall) -->
+    <div class="modal-overlay" id="heldOrdersModal" style="z-index:9990;">
+        <div class="modal-card" style="max-width:550px; width:90%; max-height:85vh; display:flex; flex-direction:column;">
+            <div class="modal-header">
+                <h3>⏸️ Commandes en attente (Hold)</h3>
+                <button class="btn-close-modal" id="btnCloseHeldModal">✕</button>
+            </div>
+            <div class="held-orders-list" id="heldOrdersList" style="flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:12px;">
+                <!-- Dynamically populated -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Supervisor PIN Verification Modal (US4 Hold Void Protection) -->
+    <div class="modal-overlay" id="supervisorPinModal" style="z-index:9995;">
+        <div class="modal-card" style="max-width:360px; text-align:center; padding:24px;">
+            <div class="modal-header" style="justify-content:center; margin-bottom:12px;">
+                <h3 style="color:#ef4444;">🔒 Autorisation Superviseur</h3>
+            </div>
+            <p style="font-size:0.9rem; color:var(--text-muted); margin-bottom:16px;">Entrez le code PIN manager (ex: 9999) pour valider l'annulation.</p>
+            <input type="password" id="supervisorPinInput" readonly style="width:100%; text-align:center; font-size:2rem; letter-spacing:8px; padding:10px; border-radius:6px; background:var(--bg-main); border:1px solid var(--border-color); color:white; margin-bottom:16px;" />
+            <div class="supervisor-pin-grid" style="display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; margin-bottom:16px;">
+                <button type="button" class="btn-key" data-key="1">1</button>
+                <button type="button" class="btn-key" data-key="2">2</button>
+                <button type="button" class="btn-key" data-key="3">3</button>
+                <button type="button" class="btn-key" data-key="4">4</button>
+                <button type="button" class="btn-key" data-key="5">5</button>
+                <button type="button" class="btn-key" data-key="6">6</button>
+                <button type="button" class="btn-key" data-key="7">7</button>
+                <button type="button" class="btn-key" data-key="8">8</button>
+                <button type="button" class="btn-key" data-key="9">9</button>
+                <button type="button" class="btn-key" data-key="clear" style="color:#ef4444;">C</button>
+                <button type="button" class="btn-key" data-key="0">0</button>
+                <button type="button" class="btn-key" data-key="back">⌫</button>
+            </div>
+            <div style="display:flex; gap:10px;">
+                <button type="button" class="btn-secondary" id="btnCancelSupervisorPin" style="flex:1; padding:12px;">Annuler</button>
+                <button type="button" class="btn-action btn-pay" id="btnConfirmSupervisorPin" style="flex:1; padding:12px; background:#ef4444;">Confirmer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Anti-Waste AGEC Prompt Dialog (US5) -->
+    <div class="modal-overlay" id="agecPromptModal" style="z-index:9998;">
+        <div class="modal-card" style="max-width:420px; text-align:center; padding:24px;">
+            <div style="font-size:2.5rem; margin-bottom:8px;">🧾</div>
+            <h3 style="margin-bottom:8px;">Demander la facturette ?</h3>
+            <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:20px;">Loi Anti-Gaspillage (AGEC) : l'impression du reçu fiscal n'est plus systématique.</p>
+            <div style="display:flex; flex-direction:column; gap:10px;">
+                <button type="button" class="btn-action btn-pay" id="btnAgecYes" style="padding:14px; font-size:1rem;">
+                    Oui — Facturette + Bon de retrait
+                </button>
+                <button type="button" class="btn-secondary" id="btnAgecNo" style="padding:14px; font-size:1rem;">
+                    Non — Bon de retrait seul (<span id="agecCountdown">3</span>s)
+                </button>
             </div>
         </div>
     </div>

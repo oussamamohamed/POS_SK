@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using RestaurantPos.Domain.Common;
+using RestaurantPos.Domain.Enums;
 using RestaurantPos.Domain.ValueObjects;
 
 namespace RestaurantPos.Domain.Entities;
@@ -21,6 +22,10 @@ public class Order
     public string TableNumber { get; set; } = "Comptoir";
     public Guid OperatorId { get; set; }
     public OrderStatus Status { get; set; } = OrderStatus.Open;
+    public OrderDestination Destination { get; set; } = OrderDestination.Takeaway;
+    public string? PickupNumber { get; set; }
+    public string? PickupBuzzer { get; set; }
+    public DateTimeOffset? PickupScheduledAtUtc { get; set; }
     public DateTimeOffset CreatedAtUtc { get; init; } = DateTimeOffset.UtcNow;
     public List<OrderItem> Items { get; init; } = [];
 
@@ -32,6 +37,15 @@ public class Order
 
     public Money TotalTtc => CalculateTotalTtc();
     public Money TotalHt => new(CalculateTaxBreakdown().Sum(t => t.TaxableBaseCents));
+
+    public decimal GetEffectiveTaxRate(OrderItem item)
+    {
+        if (Destination == OrderDestination.Takeaway && item.TaxRateTakeawayPercent.HasValue)
+        {
+            return item.TaxRateTakeawayPercent.Value;
+        }
+        return item.TaxRatePercent;
+    }
 
     public Money CalculateTotalTtc()
     {
@@ -52,7 +66,7 @@ public class Order
     public List<TaxBreakdownItem> CalculateTaxBreakdown()
     {
         return Items
-            .GroupBy(i => i.TaxRatePercent)
+            .GroupBy(GetEffectiveTaxRate)
             .Select(g =>
             {
                 long groupTtcCents = g.Sum(x => x.CalculateTotalTtc().AmountInCents);
@@ -75,6 +89,8 @@ public class OrderItem
     public int Quantity { get; set; } = 1;
     public Money UnitPrice { get; set; }
     public decimal TaxRatePercent { get; set; } = 10.0m;
+    public decimal? TaxRateTakeawayPercent { get; set; }
+    public bool IsFoodVoucherEligible { get; set; } = true;
     public string? PreparationStationId { get; set; }
     public bool IsDispatched { get; set; }
     public List<string> SelectedModifiers { get; init; } = [];

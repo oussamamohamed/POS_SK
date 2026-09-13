@@ -1,0 +1,271 @@
+openapi: 3.0.3
+info:
+  title: Direct Sales and Takeaway API Contract
+  description: Endpoints for direct counter sales, takeaway orders, hold/recall queue, differentiated VAT recalculation, and complex multi-tender checkout.
+  version: 1.0.0
+
+paths:
+  /api/orders/{orderId}/destination:
+    post:
+      summary: Switch consumption destination and recalculate VAT
+      description: Toggles between Takeaway (5.5% on sealed foods/drinks, 10% on prepared, 20% alcohol) and EatIn (10% standard, 20% alcohol) and recalculates exact taxes.
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [destination]
+              properties:
+                destination:
+                  type: string
+                  enum: [Takeaway, EatIn, Delivery]
+      responses:
+        '200':
+          description: Destination updated and tax lines recalculated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderSummaryResponse'
+
+  /api/orders/counter/checkout:
+    post:
+      summary: Execute complex multi-payment checkout for direct/takeaway sale
+      description: Finalizes order, seals NF525 transaction, generates sequential pickup ID (#A-XX), and returns printing instructions.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CounterCheckoutRequest'
+      responses:
+        '200':
+          description: Checkout successful, transaction signed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CounterCheckoutResponse'
+        '400':
+          description: Validation error (e.g. meal voucher cap exceeded or invalid split)
+        '403':
+          description: Supervisor authorization required
+
+  /api/orders/counter/hold:
+    post:
+      summary: Park an active cart on hold
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HoldOrderRequest'
+      responses:
+        '200':
+          description: Cart parked successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HeldOrderSummary'
+
+  /api/orders/counter/held:
+    get:
+      summary: List all currently parked orders for this register/location
+      responses:
+        '200':
+          description: List of held orders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/HeldOrderSummary'
+
+  /api/orders/counter/held/{holdId}/recall:
+    post:
+      summary: Recall a parked order to active cart
+      parameters:
+        - name: holdId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Order state restored
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderSummaryResponse'
+
+  /api/orders/counter/held/{holdId}/void:
+    post:
+      summary: Void a parked order (Requires Supervisor PIN)
+      parameters:
+        - name: holdId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [supervisorPin, voidReason]
+              properties:
+                supervisorPin:
+                  type: string
+                  example: "9999"
+                voidReason:
+                  type: string
+                  example: "Client parti sans régler"
+      responses:
+        '200':
+          description: Parked order voided and logged to JET
+
+components:
+  schemas:
+    CounterCheckoutRequest:
+      type: object
+      required: [orderId, destination, payments]
+      properties:
+        orderId:
+          type: string
+          format: uuid
+        destination:
+          type: string
+          enum: [Takeaway, EatIn]
+        pickupBuzzer:
+          type: string
+          nullable: true
+        pickupScheduledAtUtc:
+          type: string
+          format: date-time
+          nullable: true
+        requestFiscalReceiptPrint:
+          type: boolean
+          default: false
+        tipAmountCents:
+          type: integer
+          default: 0
+        payments:
+          type: array
+          items:
+            $ref: '#/components/schemas/PaymentTenderSplit'
+
+    PaymentTenderSplit:
+      type: object
+      required: [tenderType, amountCents]
+      properties:
+        tenderType:
+          type: string
+          enum: [Cash, CreditCard, MealVoucherPaper, MealVoucherDigital, CustomerCredit, Other]
+        amountCents:
+          type: integer
+        facialValueCents:
+          type: integer
+          nullable: true
+          description: Face value of paper meal vouchers when overpaying
+
+    CounterCheckoutResponse:
+      type: object
+      properties:
+        orderId:
+          type: string
+          format: uuid
+        pickupNumber:
+          type: string
+          example: "#A-14"
+        totalTtcCents:
+          type: integer
+        changeGivenCents:
+          type: integer
+        issuedCreditVoucher:
+          $ref: '#/components/schemas/CustomerCreditVoucherDto'
+        nf525ReceiptSignature:
+          type: string
+        printDirectives:
+          type: object
+          properties:
+            printPickupVoucher:
+              type: boolean
+            printFiscalReceipt:
+              type: boolean
+            openCashDrawer:
+              type: boolean
+
+    CustomerCreditVoucherDto:
+      type: object
+      properties:
+        voucherCode:
+          type: string
+        amountCents:
+          type: integer
+        expiresAtUtc:
+          type: string
+          format: date-time
+
+    HoldOrderRequest:
+      type: object
+      required: [orderId]
+      properties:
+        orderId:
+          type: string
+          format: uuid
+        customerLabel:
+          type: string
+          nullable: true
+
+    HeldOrderSummary:
+      type: object
+      properties:
+        holdId:
+          type: string
+          format: uuid
+        terminalId:
+          type: string
+        customerLabel:
+          type: string
+        itemCount:
+          type: integer
+        totalTtcCents:
+          type: integer
+        heldAtUtc:
+          type: string
+          format: date-time
+
+    OrderSummaryResponse:
+      type: object
+      properties:
+        orderId:
+          type: string
+          format: uuid
+        destination:
+          type: string
+        totalHtCents:
+          type: integer
+        totalVatCents:
+          type: integer
+        totalTtcCents:
+          type: integer
+        taxBreakdown:
+          type: array
+          items:
+            type: object
+            properties:
+              ratePercent:
+                type: number
+              baseHtCents:
+                type: integer
+              vatAmountCents:
+                type: integer

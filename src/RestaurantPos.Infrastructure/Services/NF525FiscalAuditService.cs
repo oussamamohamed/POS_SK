@@ -132,6 +132,15 @@ public class NF525FiscalAuditService : INF525FiscalAuditService
         return await _dbContext.ExecuteInTransactionAsync(
             async ct =>
             {
+                var pendingHeldCount = await _dbContext.HeldOrders
+                    .CountAsync(h => h.TerminalId == terminalId && !h.IsRecalled && !h.IsVoided, ct)
+                    .ConfigureAwait(false);
+
+                if (pendingHeldCount > 0)
+                {
+                    throw new InvalidOperationException($"Clôture Z impossible : {pendingHeldCount} commande(s) en attente subsistent sur la caisse {terminalId}. Veuillez les rappeler ou les annuler avec un code PIN superviseur avant la clôture.");
+                }
+
                 var xSummary = await GenerateXReportAsync(terminalId, ct).ConfigureAwait(false);
 
                 var lastClosure = await _dbContext.DailyFiscalClosures

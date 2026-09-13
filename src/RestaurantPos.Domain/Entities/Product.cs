@@ -13,6 +13,8 @@ public class Product
     public string? Description { get; set; }
     public Money Price { get; set; }
     public decimal TaxRatePercent { get; set; } = 10.0m;
+    public decimal? TaxRateTakeawayPercent { get; set; }
+    public bool IsFoodVoucherEligible { get; set; } = true;
     public string? ColorHex { get; set; }
     public int DisplayOrder { get; set; }
     public bool IsAvailable { get; set; } = true;

@@ -4,6 +4,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using RestaurantPos.Domain.Entities;
 
+using RestaurantPos.Domain.Enums;
+
 namespace RestaurantPos.Application.Common.Interfaces;
 
 public record DiningTableDto(
@@ -29,7 +31,10 @@ public record ActiveTableOrderDto(
     decimal TotalTtcAmount,
     DiscountType? GlobalDiscountType = null,
     decimal GlobalDiscountValue = 0.0m,
-    string? GlobalDiscountReason = null
+    string? GlobalDiscountReason = null,
+    OrderDestination Destination = OrderDestination.Takeaway,
+    string? PickupNumber = null,
+    string? PickupBuzzer = null
 );
 
 public record ActiveOrderLineDto(
@@ -46,7 +51,9 @@ public record ActiveOrderLineDto(
     CourseType Course = CourseType.Direct,
     bool IsComp = false,
     decimal DiscountPercent = 0.0m,
-    decimal ModifiersPriceExtra = 0.0m
+    decimal ModifiersPriceExtra = 0.0m,
+    decimal? TaxRateTakeawayPercent = null,
+    bool IsFoodVoucherEligible = true
 );
 
 public record OrderItemInputDto(
@@ -58,7 +65,9 @@ public record OrderItemInputDto(
     string? PreparationStationId,
     IReadOnlyList<string>? Modifiers,
     CourseType Course = CourseType.Direct,
-    decimal ModifiersPriceExtra = 0.0m
+    decimal ModifiersPriceExtra = 0.0m,
+    decimal? TaxRateTakeawayPercent = null,
+    bool IsFoodVoucherEligible = true
 );
 
 public interface ITableManagementService

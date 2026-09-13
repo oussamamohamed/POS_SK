@@ -193,7 +193,9 @@ public class TableManagementService : ITableManagementService
             item.Course,
             item.IsComp,
             item.DiscountPercent,
-            item.ModifiersPriceExtra.ToDecimal()
+            item.ModifiersPriceExtra.ToDecimal(),
+            item.TaxRateTakeawayPercent,
+            item.IsFoodVoucherEligible
         )).ToList();
 
         decimal totalTtc = order.TotalTtc.ToDecimal();
@@ -212,7 +214,10 @@ public class TableManagementService : ITableManagementService
             totalTtc,
             order.GlobalDiscountType,
             order.GlobalDiscountValue,
-            order.GlobalDiscountReason
+            order.GlobalDiscountReason,
+            order.Destination,
+            order.PickupNumber,
+            order.PickupBuzzer
         );
     }
 
@@ -281,6 +286,8 @@ public class TableManagementService : ITableManagementService
                             Quantity = input.Quantity,
                             UnitPrice = Money.FromDecimal(input.UnitPrice, "EUR"),
                             TaxRatePercent = input.TaxRatePercent,
+                            TaxRateTakeawayPercent = input.TaxRateTakeawayPercent,
+                            IsFoodVoucherEligible = input.IsFoodVoucherEligible,
                             PreparationStationId = input.PreparationStationId,
                             SelectedModifiers = input.Modifiers?.ToList() ?? [],
                             ModifiersPriceExtra = Money.FromDecimal(input.ModifiersPriceExtra, "EUR"),

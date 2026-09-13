@@ -75,6 +75,9 @@ public partial class Program
         builder.Services.AddScoped<IOrderDiscountService, OrderDiscountService>();
         builder.Services.AddScoped<IRoomBillingService, RoomBillingService>();
         builder.Services.AddScoped<IGridManagementService, GridManagementService>();
+        builder.Services.AddScoped<IHeldOrderStorageService, HeldOrderStorageService>();
+        builder.Services.AddSingleton<ITakeawayCounterService, TakeawayCounterService>();
+        builder.Services.AddScoped<IMealVoucherPolicyService, MealVoucherPolicyService>();
         builder.Services.AddScoped<IJwtTokenGeneratorService, JwtTokenGeneratorService>();
         builder.Services.AddSingleton<IPinRateLimiterService, PinRateLimiterService>();
         builder.Services.AddHostedService<NetworkDiscoveryBeaconService>();
@@ -180,6 +183,46 @@ public partial class Program
             using var schemaScope = app.Services.CreateScope();
             var dbContext = schemaScope.ServiceProvider.GetRequiredService<AppDbContext>();
             dbContext.Database.EnsureCreated();
+            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE Products ADD COLUMN IsFoodVoucherEligible INTEGER NOT NULL DEFAULT 1;"); } catch { }
+            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE Products ADD COLUMN TaxRateTakeawayPercent TEXT NULL;"); } catch { }
+            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE OrderItems ADD COLUMN IsFoodVoucherEligible INTEGER NOT NULL DEFAULT 1;"); } catch { }
+            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE OrderItems ADD COLUMN TaxRateTakeawayPercent TEXT NULL;"); } catch { }
+            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE Orders ADD COLUMN Destination INTEGER NOT NULL DEFAULT 0;"); } catch { }
+            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE Orders ADD COLUMN PickupNumber TEXT NULL;"); } catch { }
+            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE Orders ADD COLUMN PickupBuzzer TEXT NULL;"); } catch { }
+            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE Orders ADD COLUMN PickupScheduledAtUtc TEXT NULL;"); } catch { }
+            try { dbContext.Database.ExecuteSqlRaw(@"CREATE TABLE IF NOT EXISTS HeldOrders (
+                Id TEXT PRIMARY KEY,
+                TerminalId TEXT NOT NULL,
+                OrderId TEXT NOT NULL,
+                CustomerLabel TEXT,
+                Destination INTEGER NOT NULL DEFAULT 1,
+                ItemCount INTEGER NOT NULL DEFAULT 0,
+                TotalTtc INTEGER NOT NULL,
+                OrderSnapshotJson TEXT NOT NULL,
+                HeldAtUtc TEXT NOT NULL,
+                HeldByStaffId TEXT NOT NULL,
+                IsRecalled INTEGER NOT NULL DEFAULT 0,
+                RecalledAtUtc TEXT,
+                IsVoided INTEGER NOT NULL DEFAULT 0,
+                VoidedAtUtc TEXT,
+                VoidReason TEXT,
+                VoidedByStaffId TEXT
+            );
+            CREATE INDEX IF NOT EXISTS IX_HeldOrders_TerminalId_IsRecalled_IsVoided ON HeldOrders(TerminalId, IsRecalled, IsVoided);"); } catch { }
+            try { dbContext.Database.ExecuteSqlRaw(@"CREATE TABLE IF NOT EXISTS CustomerCreditVouchers (
+                Id TEXT PRIMARY KEY,
+                VoucherCode TEXT NOT NULL UNIQUE,
+                OriginalOrderId TEXT NOT NULL,
+                Amount INTEGER NOT NULL,
+                IssuedAtUtc TEXT NOT NULL,
+                ExpiresAtUtc TEXT NOT NULL,
+                TerminalId TEXT NOT NULL,
+                IsRedeemed INTEGER NOT NULL DEFAULT 0,
+                RedeemedAtUtc TEXT,
+                RedeemedOrderId TEXT
+            );
+            CREATE UNIQUE INDEX IF NOT EXISTS IX_CustomerCreditVouchers_VoucherCode ON CustomerCreditVouchers(VoucherCode);"); } catch { }
         }
 
         app.UseCors();
@@ -245,6 +288,7 @@ public partial class Program
         app.MapCheckoutEndpoints();
         app.MapFiscalEndpoints();
         app.MapDashboardEndpoints();
+        app.MapCounterSaleEndpoints();
 
         // 9. Hospitality Features (Table Transfer, Merge, Discounts, Course Fire, Hotel PMS)
         app.MapHospitalityEndpoints();
