@@ -9,6 +9,10 @@ using RestaurantPos.Client.Maui.Contracts;
 using RestaurantPos.Domain.Entities;
 using RestaurantPos.Domain.ValueObjects;
 
+#if MAUI_UI
+using Microsoft.Maui.ApplicationModel;
+#endif
+
 namespace RestaurantPos.Client.Maui.ViewModels;
 
 public class ActiveTenderItem : ObservableObject
@@ -70,6 +74,13 @@ public partial class CheckoutViewModel : ObservableObject
 
     public void Initialize(Guid orderId, long totalAmountCents)
     {
+#if MAUI_UI
+        if (!MainThread.IsMainThread)
+        {
+            MainThread.BeginInvokeOnMainThread(() => Initialize(orderId, totalAmountCents));
+            return;
+        }
+#endif
         OrderId = orderId;
         TotalDueCents = totalAmountCents;
         RemainingBalanceCents = totalAmountCents;
@@ -82,6 +93,13 @@ public partial class CheckoutViewModel : ObservableObject
     [RelayCommand]
     public void SelectPaymentMethod(PaymentMethod method)
     {
+#if MAUI_UI
+        if (!MainThread.IsMainThread)
+        {
+            MainThread.BeginInvokeOnMainThread(() => SelectPaymentMethod(method));
+            return;
+        }
+#endif
         SelectedMethod = method;
         _environmentService.TriggerHapticFeedback(HapticFeedbackType.LightTap);
     }
@@ -89,6 +107,13 @@ public partial class CheckoutViewModel : ObservableObject
     [RelayCommand]
     public void AddCashFastBill(long billAmountCents)
     {
+#if MAUI_UI
+        if (!MainThread.IsMainThread)
+        {
+            MainThread.BeginInvokeOnMainThread(() => AddCashFastBill(billAmountCents));
+            return;
+        }
+#endif
         if (RemainingBalanceCents <= 0) return;
 
         long tenderAmount = Math.Min(RemainingBalanceCents, billAmountCents);
@@ -109,6 +134,13 @@ public partial class CheckoutViewModel : ObservableObject
     [RelayCommand]
     public async Task FinalizeCheckoutAsync()
     {
+#if MAUI_UI
+        if (!MainThread.IsMainThread)
+        {
+            await MainThread.InvokeOnMainThreadAsync(FinalizeCheckoutAsync);
+            return;
+        }
+#endif
         if (RemainingBalanceCents > 0 && SelectedMethod != PaymentMethod.Cash)
         {
             // Settle remainder with currently selected non-cash method

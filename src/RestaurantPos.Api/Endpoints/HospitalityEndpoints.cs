@@ -43,9 +43,9 @@ public static class HospitalityEndpoints
                 var updated = await discountService.ApplyGlobalDiscountAsync(orderId, req.Type, req.Value, req.Reason, req.OperatorId ?? Guid.Empty);
                 return Results.Ok(new { Success = true, TotalTtc = updated.TotalTtc.ToDecimal() });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return Results.BadRequest(new { Success = false, Message = ex.Message });
+                return Results.BadRequest(new { Success = false, Message = "Opération de remise échouée." });
             }
         });
 
@@ -56,9 +56,9 @@ public static class HospitalityEndpoints
                 var updated = await discountService.CompOrderItemAsync(orderId, itemId, req.Reason, req.OperatorId ?? Guid.Empty);
                 return Results.Ok(new { Success = true, TotalTtc = updated.TotalTtc.ToDecimal() });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return Results.BadRequest(new { Success = false, Message = ex.Message });
+                return Results.BadRequest(new { Success = false, Message = "Opération de gratuité échouée." });
             }
         });
 
@@ -141,9 +141,9 @@ public static class HospitalityEndpoints
                     Message = $"Facturation de {(charge.Amount + charge.TipAmount).ToDecimal():F2} € enregistrée sur la chambre {charge.RoomNumber} ({charge.GuestName})"
                 });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return Results.BadRequest(new { Success = false, Message = ex.Message });
+                return Results.BadRequest(new { Success = false, Message = "Facturation chambre échouée." });
             }
         });
     }

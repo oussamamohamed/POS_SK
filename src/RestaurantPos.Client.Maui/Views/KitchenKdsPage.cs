@@ -1,9 +1,10 @@
-﻿#if MAUI_UI
+#if MAUI_UI
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using RestaurantPos.Client.Maui.ViewModels;
 using RestaurantPos.Domain.Entities;
+using RestaurantPos.Application.DTOs;
 
 namespace RestaurantPos.Client.Maui.Views;
 
@@ -154,7 +155,7 @@ public class KitchenKdsPage : ContentPage
             Children =
             {
                 AddToGrid(colHeader, 0),
-                AddToGrid(new ScrollView { Content = list }, 1)
+                AddToGrid(list, 1)
             }
         };
     }
@@ -176,8 +177,7 @@ public class KitchenKdsPage : ContentPage
             FontAttributes = FontAttributes.Bold,
             TextColor = Colors.White
         };
-        tableLabel.SetBinding(Label.TextProperty,
-            new Binding($"{nameof(KdsTicketItemViewModel.Ticket)}.{nameof(KitchenTicketDto.TableNumber)}"));
+        tableLabel.SetBinding(Label.TextProperty, new Binding("Ticket.TableNumber"));
 
         var timerLabel = new Label { FontSize = 14, FontAttributes = FontAttributes.Bold };
         timerLabel.SetBinding(Label.TextProperty, nameof(KdsTicketItemViewModel.ElapsedTimeText));
@@ -190,8 +190,34 @@ public class KitchenKdsPage : ContentPage
             nameof(KdsTicketItemViewModel.UrgencyColorHex),
             converter: new HexToColorConverter()));
 
-        var itemsList = new VerticalStackLayout { Spacing = 4 };
-        // Items du ticket seront ajoutes dynamiquement via binding dans une version enrichie
+        var itemsList = new VerticalStackLayout { Spacing = 4, Margin = new Thickness(0, 4) };
+        itemsList.SetBinding(BindableLayout.ItemsSourceProperty, "Ticket.Items");
+        BindableLayout.SetItemTemplate(itemsList, new DataTemplate(() =>
+        {
+            var row = new HorizontalStackLayout { Spacing = 8 };
+            var qty = new Label
+            {
+                FontSize = 15,
+                FontAttributes = FontAttributes.Bold,
+                TextColor = Color.FromArgb("#F59E0B"),
+                VerticalOptions = LayoutOptions.Center
+            };
+            qty.SetBinding(Label.TextProperty, new Binding("Quantity", stringFormat: "{0}x"));
+
+            var name = new Label
+            {
+                FontSize = 15,
+                FontAttributes = FontAttributes.Bold,
+                TextColor = Colors.White,
+                VerticalOptions = LayoutOptions.Center,
+                LineBreakMode = LineBreakMode.TailTruncation
+            };
+            name.SetBinding(Label.TextProperty, new Binding("ProductName"));
+
+            row.Add(qty);
+            row.Add(name);
+            return row;
+        }));
 
         var bumpBtn = new Button
         {
@@ -226,7 +252,7 @@ public class KitchenKdsPage : ContentPage
             {
                 new HorizontalStackLayout
                 {
-                    Children = { tableLabel, new BoxView { Width = GridLength.Star.Value }, timerLabel }
+                    Children = { tableLabel, new BoxView { HorizontalOptions = LayoutOptions.FillAndExpand }, timerLabel }
                 },
                 urgencyBar,
                 itemsList,

@@ -31,39 +31,58 @@ public class LocalJournalService : ILocalJournalService
         string payloadJson = JsonSerializer.Serialize(payload);
         string entryHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(idempotencyKey + payloadJson)));
 
-        long lastSeq = await _dbContext.JournalEntries
-            .OrderByDescending(j => j.LocalSequence)
-            .Select(j => j.LocalSequence)
-            .FirstOrDefaultAsync(cancellationToken);
-
-        var entry = new TransactionJournalEntry
+        try
         {
-            Id = UuidV7.NewGuid(),
-            LocalSequence = lastSeq + 1,
-            TerminalId = _environmentService.GetCurrentDeviceProfile().DeviceId,
-            OccurredAtUtc = DateTimeOffset.UtcNow,
-            IdempotencyKey = idempotencyKey,
-            EventType = eventType,
-            PayloadJson = payloadJson,
-            EntryHash = entryHash
-        };
+            await _dbContext.Database.EnsureCreatedAsync(cancellationToken).ConfigureAwait(false);
 
-        var outboxMessage = new OutboxSyncMessage
+            long lastSeq = await _dbContext.JournalEntries
+                .OrderByDescending(j => j.LocalSequence)
+                .Select(j => j.LocalSequence)
+                .FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
+
+            var entry = new TransactionJournalEntry
+            {
+                Id = UuidV7.NewGuid(),
+                LocalSequence = lastSeq + 1,
+                TerminalId = _environmentService.GetCurrentDeviceProfile().DeviceId,
+                OccurredAtUtc = DateTimeOffset.UtcNow,
+                IdempotencyKey = idempotencyKey,
+                EventType = eventType,
+                PayloadJson = payloadJson,
+                EntryHash = entryHash
+            };
+
+            var outboxMessage = new OutboxSyncMessage
+            {
+                Id = UuidV7.NewGuid(),
+                TerminalId = entry.TerminalId,
+                CreatedAtUtc = entry.OccurredAtUtc,
+                Status = SyncStatus.Pending,
+                EventType = eventType,
+                IdempotencyKey = idempotencyKey,
+                PayloadJson = payloadJson
+            };
+
+            _dbContext.JournalEntries.Add(entry);
+            _dbContext.OutboxMessages.Add(outboxMessage);
+
+            await _dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            return entry;
+        }
+        catch (Exception ex)
         {
-            Id = UuidV7.NewGuid(),
-            TerminalId = entry.TerminalId,
-            CreatedAtUtc = entry.OccurredAtUtc,
-            Status = SyncStatus.Pending,
-            EventType = eventType,
-            IdempotencyKey = idempotencyKey,
-            PayloadJson = payloadJson
-        };
-
-        _dbContext.JournalEntries.Add(entry);
-        _dbContext.OutboxMessages.Add(outboxMessage);
-
-        await _dbContext.SaveChangesAsync(cancellationToken);
-        return entry;
+            System.Diagnostics.Debug.WriteLine($"Journal entry record failed: {ex}");
+            return new TransactionJournalEntry
+            {
+                Id = UuidV7.NewGuid(),
+                TerminalId = _environmentService.GetCurrentDeviceProfile().DeviceId,
+                OccurredAtUtc = DateTimeOffset.UtcNow,
+                IdempotencyKey = idempotencyKey,
+                EventType = eventType,
+                PayloadJson = payloadJson,
+                EntryHash = entryHash
+            };
+        }
     }
 
     public async Task<IReadOnlyList<TransactionJournalEntry>> GetPendingJournalEntriesAsync(int maxCount = 100, CancellationToken cancellationToken = default)

@@ -440,7 +440,7 @@ public class HappyHourPricingServiceTests
         var service = new HappyHourPricingService(dbContext, authMock.Object);
 
         // Get current day of week and a wide time range covering the entire day
-        var today = DateTime.UtcNow.DayOfWeek;
+        var today = DateTime.Now.DayOfWeek;
         var lowPrioritySchedule = new HappyHourSchedule
         {
             Name = "Créneau Standard (Faible Priorité)",

@@ -54,18 +54,26 @@ Suite de tests automatisés de bout en bout pour l'interface tactile Web POS (`h
 
 ---
 
-## 🚀 Exécution des Tests
+## 🚀 Exécution des Tests sur Profil iPad
+
+La suite est configurée nativement pour émuler un **iPad Pro 11 (Landscape)** sous moteur **WebKit** (moteur natif Safari iOS avec support tactile complet et résolution 1194x834 @2x).
 
 ```bash
-# Se placer dans le dossier de test
+# 1. Via le script global intégrant la synchronisation simulateur iPad :
+./scripts/run_web_e2e_ipad.sh
+
+# 2. Ou directement depuis le dossier de tests E2E :
 cd tests/RestaurantPos.Web.E2ETests
 
-# Lancer tous les tests en mode headless
+# Lancer les 41 tests sous profil iPad Pro 11 WebKit (mode par défaut) :
 npm test
 
-# Lancer en mode interactif avec interface UI Playwright
+# Lancer avec fenêtre visible :
+npm run test:headed
+
+# Lancer sous interface interactive Playwright :
 npm run test:ui
 
-# Lancer avec navigateur visible (headed)
-npm run test:headed
+# Lancer avec moteur Chromium tactile :
+npm run test:chromium
 ```

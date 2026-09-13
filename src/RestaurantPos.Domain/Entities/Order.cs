@@ -80,14 +80,52 @@ public class Order
     }
 }
 
-public class OrderItem
+public class OrderItem : System.ComponentModel.INotifyPropertyChanged
 {
+    public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
+
+    protected void OnPropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string? propertyName = null)
+    {
+        PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
+    }
+
     public Guid Id { get; init; } = UuidV7.NewGuid();
     public Guid OrderId { get; set; }
     public Guid ProductId { get; set; }
     public required string ProductName { get; set; }
-    public int Quantity { get; set; } = 1;
-    public Money UnitPrice { get; set; }
+
+    private int _quantity = 1;
+    public int Quantity
+    {
+        get => _quantity;
+        set
+        {
+            if (_quantity != value)
+            {
+                _quantity = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(TotalTtc));
+                OnPropertyChanged(nameof(TaxAmount));
+            }
+        }
+    }
+
+    private Money _unitPrice;
+    public Money UnitPrice
+    {
+        get => _unitPrice;
+        set
+        {
+            if (_unitPrice != value)
+            {
+                _unitPrice = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(TotalTtc));
+                OnPropertyChanged(nameof(TaxAmount));
+            }
+        }
+    }
+
     public decimal TaxRatePercent { get; set; } = 10.0m;
     public decimal? TaxRateTakeawayPercent { get; set; }
     public bool IsFoodVoucherEligible { get; set; } = true;

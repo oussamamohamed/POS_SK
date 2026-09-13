@@ -386,6 +386,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (viewId === 'kdsView') loadKdsData();
         if (viewId === 'adminView') loadAdminData();
         if (viewId === 'fiscalView') loadFiscalViewData();
+        if (viewId === 'posView') loadActiveTableOrder(state.activeTable || 'Comptoir');
     }
 
     // ==================== CATALOG & QUICK-KEYS ====================
@@ -1189,38 +1190,22 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            const courseMap = { 'Direct': 0, 'Suite': 1, 'Dessert': 2, 'OnDemand': 3 };
-            const undispatched = state.cart.filter(i => !i.isDispatched);
-            if (undispatched.length > 0) {
-                const itemsPayload = undispatched.map(i => ({
-                    productId: i.product.id,
-                    productName: i.product.name,
-                    quantity: i.quantity,
-                    unitPrice: i.product.price,
-                    taxRatePercent: i.product.taxRatePercent || 10.0,
-                    preparationStationId: i.product.preparationStationId || 'HOT_KITCHEN',
-                    modifiers: i.modifiers || [],
-                    modifiersPriceExtra: i.modifiersPriceExtra || 0,
-                    course: courseMap[i.course] || 0
-                }));
-
-                await fetch(`/api/tables/${state.activeTable}/items`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ items: itemsPayload })
-                });
-            }
+            await saveActiveCartToServer();
 
             await fetch(`/api/tables/${state.activeTable}/dispatch`, { method: 'POST' });
             showToast(`Commande ${state.activeTable} envoyée en cuisine ! 👨‍🍳`, 'success');
             
-            state.cart = [];
-            state.activeOrderId = null;
-            renderCart();
-            switchView('floorPlanView');
+            if (state.activeTable === 'Comptoir') {
+                await loadActiveTableOrder('Comptoir');
+            } else {
+                state.cart = [];
+                state.activeOrderId = null;
+                renderCart();
+                switchView('floorPlanView');
+                await loadFloorPlanData();
+            }
             
             await loadKdsData();
-            await loadFloorPlanData();
         } catch (err) {
             console.error('Erreur envoi cuisine:', err);
             showToast('Erreur envoi cuisine', 'error');

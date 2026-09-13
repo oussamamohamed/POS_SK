@@ -1,4 +1,4 @@
-﻿#if MAUI_UI
+#if MAUI_UI
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
@@ -11,7 +11,7 @@ namespace RestaurantPos.Client.Maui.Views;
 /// Page d'encaissement multi-moyens de paiement.
 /// Gere CB, Especes (avec rendu monnaie), Tickets Restaurant, Chambre.
 /// </summary>
-public class CheckoutPage : ContentPage
+public class CheckoutPage : ContentPage, IQueryAttributable
 {
     private readonly CheckoutViewModel _vm;
 
@@ -25,21 +25,95 @@ public class CheckoutPage : ContentPage
         Build();
     }
 
+    public void ApplyQueryAttributes(IDictionary<string, object> query)
+    {
+        if (query.TryGetValue("totalCents", out var tc) && long.TryParse(tc?.ToString(), out var cents))
+        {
+            var orderId = query.TryGetValue("orderId", out var oid) && Guid.TryParse(oid?.ToString(), out var g) ? g : Guid.NewGuid();
+            _vm.Initialize(orderId, cents);
+        }
+    }
+
+    protected override void OnAppearing()
+    {
+        base.OnAppearing();
+        if (_vm.TotalDueCents == 0)
+        {
+            var posVm = Handler?.MauiContext?.Services.GetService<PosTerminalViewModel>();
+            if (posVm != null && posVm.TotalTtc.AmountInCents > 0)
+            {
+                _vm.Initialize(posVm.ActiveOrder.Id, posVm.TotalTtc.AmountInCents);
+            }
+        }
+    }
+
     private void Build()
     {
-        Content = new Grid
+        var topBar = new Grid
+        {
+            BackgroundColor = Color.FromArgb("#0F172A"),
+            Padding = new Thickness(16, 10),
+            ColumnDefinitions =
+            {
+                new ColumnDefinition { Width = GridLength.Auto },
+                new ColumnDefinition { Width = GridLength.Star }
+            }
+        };
+
+        var backBtn = new Button
+        {
+            Text = "← Retour Caisse",
+            BackgroundColor = Color.FromArgb("#334155"),
+            TextColor = Color.FromArgb("#94A3B8"),
+            FontSize = 14,
+            HeightRequest = 38,
+            CornerRadius = 8,
+            Command = new Command(async () => await Shell.Current.GoToAsync(".."))
+        };
+
+        var titleLabel = new Label
+        {
+            Text = "💳 Règlement Commande",
+            TextColor = Colors.White,
+            FontSize = 22,
+            FontAttributes = FontAttributes.Bold,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(16, 0, 0, 0)
+        };
+        Grid.SetColumn(titleLabel, 1);
+
+        topBar.Add(backBtn);
+        topBar.Add(titleLabel);
+
+        var body = new Grid
         {
             ColumnDefinitions =
             {
                 new ColumnDefinition { Width = GridLength.Star },
                 new ColumnDefinition { Width = new GridLength(320) }
             },
-            Padding = new Thickness(16),
+            Padding = new Thickness(16, 8, 16, 16),
             ColumnSpacing = 16
         };
 
-        ((Grid)Content).Add(BuildPaymentMethodsPanel(), 0, 0);
-        ((Grid)Content).Add(BuildSummaryPanel(), 1, 0);
+        body.Add(BuildPaymentMethodsPanel(), 0, 0);
+        body.Add(BuildSummaryPanel(), 1, 0);
+
+        Content = new Grid
+        {
+            RowDefinitions =
+            {
+                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Star }
+            },
+            Children =
+            {
+                topBar,
+                body
+            }
+        };
+        Grid.SetRow(topBar, 0);
+        Grid.SetRow(body, 1);
     }
 
     // ---- Panneau gauche : Moyens de paiement ----
@@ -96,7 +170,7 @@ public class CheckoutPage : ContentPage
             btn.SetBinding(BackgroundColorProperty, new Binding(
                 nameof(CheckoutViewModel.SelectedMethod),
                 converter: new MethodColorConverter(method, color)));
-            btn.SetBinding(Button.TextColorProperty, Colors.White);
+            btn.TextColor = Colors.White;
             Grid.SetRow(btn, i / 2);
             Grid.SetColumn(btn, i % 2);
             methodsGrid.Add(btn);
@@ -279,10 +353,13 @@ public class CheckoutPage : ContentPage
         {
             if (e.PropertyName == nameof(CheckoutViewModel.IsCompleted) && _vm.IsCompleted)
             {
-                await DisplayAlert(
-                    "✅ Paiement accepte",
-                    $"Ticket N° {_vm.ReceiptNumber}\nMontant encaisse. Bonne journee !",
-                    "OK");
+                if (Environment.GetEnvironmentVariable("POS_AUTO_TEST") != "1")
+                {
+                    await DisplayAlert(
+                        "✅ Paiement accepte",
+                        $"Ticket N° {_vm.ReceiptNumber}\nMontant encaisse. Bonne journee !",
+                        "OK");
+                }
                 await Shell.Current.GoToAsync("//floor");
             }
         };

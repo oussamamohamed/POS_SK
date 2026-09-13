@@ -3,9 +3,11 @@
   "version": "1.0.0",
   "description": "Playwright automated UI acceptance tests for Restaurant POS tactile web interface",
   "scripts": {
-    "test": "playwright test",
+    "test": "playwright test --project='iPad Pro 11'",
+    "test:all": "playwright test",
+    "test:chromium": "playwright test --project='iPad Pro 11 (Chromium)'",
     "test:ui": "playwright test --ui",
-    "test:headed": "playwright test --headed"
+    "test:headed": "playwright test --project='iPad Pro 11' --headed"
   },
   "devDependencies": {
     "@playwright/test": "^1.45.0",

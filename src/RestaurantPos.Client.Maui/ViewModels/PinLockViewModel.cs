@@ -44,7 +44,7 @@ public partial class PinLockViewModel : ObservableObject
 
             if (PinInput.Length >= 4)
             {
-                await ValidatePinAsync().ConfigureAwait(false);
+                await ValidatePinAsync();
             }
         }
     }

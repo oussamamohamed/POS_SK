@@ -13,6 +13,7 @@ public interface IPosHubClient : IKitchenHubClient
     Task OnHappyHourStatusChanged(object status);
 }
 
+[Authorize]
 public class PosHub : Hub<IPosHubClient>
 {
     public override async Task OnConnectedAsync()

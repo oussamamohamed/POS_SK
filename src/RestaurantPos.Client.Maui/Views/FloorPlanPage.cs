@@ -1,4 +1,4 @@
-﻿#if MAUI_UI
+#if MAUI_UI
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
@@ -27,21 +27,87 @@ public class FloorPlanPage : ContentPage
     protected override void OnAppearing()
     {
         base.OnAppearing();
-        Shell.SetNavBarIsVisible(this, true);
+        Shell.SetNavBarIsVisible(this, false);
     }
 
     private void Build()
     {
-        // Barre du haut
-        var header = new Grid
+        // Barre de navigation superieure
+        var topBar = new Grid
+        {
+            ColumnDefinitions =
+            {
+                new ColumnDefinition { Width = GridLength.Auto },
+                new ColumnDefinition { Width = GridLength.Star },
+                new ColumnDefinition { Width = GridLength.Auto }
+            },
+            Padding = new Thickness(20, 12),
+            BackgroundColor = Color.FromArgb("#1E293B"),
+            ColumnSpacing = 16
+        };
+
+        var logoStack = new HorizontalStackLayout
+        {
+            Spacing = 10,
+            VerticalOptions = LayoutOptions.Center,
+            Children =
+            {
+                new Label { Text = "🍽️", FontSize = 22, VerticalOptions = LayoutOptions.Center },
+                new Label { Text = "Restaurant POS", TextColor = Colors.White, FontSize = 18, FontAttributes = FontAttributes.Bold, VerticalOptions = LayoutOptions.Center }
+            }
+        };
+        Grid.SetColumn(logoStack, 0);
+
+        var navButtons = new HorizontalStackLayout
+        {
+            Spacing = 10,
+            VerticalOptions = LayoutOptions.Center,
+            Children =
+            {
+                MakeNavButton("🍽 Plan de Salle", true, null),
+                MakeNavButton("💳 Caisse", false, new Command(async () => await Shell.Current.GoToAsync("//pos"))),
+                MakeNavButton("👨‍🍳 Cuisine KDS", false, new Command(async () => await Shell.Current.GoToAsync("//kds"))),
+                MakeNavButton("⚙ Admin", false, new Command(async () => await Shell.Current.GoToAsync("//admin")))
+            }
+        };
+        Grid.SetColumn(navButtons, 1);
+
+        var userStack = new HorizontalStackLayout
+        {
+            Spacing = 12,
+            VerticalOptions = LayoutOptions.Center,
+            Children =
+            {
+                new Label { Text = "👤 Alexandre Dupont", TextColor = Color.FromArgb("#94A3B8"), FontSize = 14, VerticalOptions = LayoutOptions.Center },
+                new Button
+                {
+                    Text = "🔒 Verrouiller",
+                    BackgroundColor = Color.FromArgb("#334155"),
+                    TextColor = Colors.White,
+                    FontSize = 13,
+                    HeightRequest = 36,
+                    CornerRadius = 8,
+                    Padding = new Thickness(12, 0),
+                    Command = new Command(async () => await Shell.Current.GoToAsync("//pin"))
+                }
+            }
+        };
+        Grid.SetColumn(userStack, 2);
+
+        topBar.Add(logoStack);
+        topBar.Add(navButtons);
+        topBar.Add(userStack);
+
+        // Sous-barre : Section active + Legende des statuts
+        var subHeader = new Grid
         {
             ColumnDefinitions =
             {
                 new ColumnDefinition { Width = GridLength.Star },
                 new ColumnDefinition { Width = GridLength.Auto }
             },
-            Padding = new Thickness(20, 12),
-            BackgroundColor = Color.FromArgb("#1E293B")
+            Padding = new Thickness(24, 12),
+            BackgroundColor = Color.FromArgb("#0F172A")
         };
 
         var titleLabel = new Label
@@ -54,47 +120,33 @@ public class FloorPlanPage : ContentPage
         titleLabel.SetBinding(Label.TextProperty, nameof(FloorPlanViewModel.ActiveSection));
         Grid.SetColumn(titleLabel, 0);
 
-        var adminBtn = new Button
-        {
-            Text = "⚙ Back-Office",
-            BackgroundColor = Color.FromArgb("#334155"),
-            TextColor = Color.FromArgb("#94A3B8"),
-            FontSize = 14,
-            HeightRequest = 40,
-            CornerRadius = 8,
-            VerticalOptions = LayoutOptions.Center,
-            Command = new Command(async () => await Shell.Current.GoToAsync("admin"))
-        };
-        Grid.SetColumn(adminBtn, 1);
-
-        header.Add(titleLabel);
-        header.Add(adminBtn);
-
-        // Legende des statuts
         var legend = new HorizontalStackLayout
         {
-            Spacing = 20,
-            Padding = new Thickness(20, 8),
-            BackgroundColor = Color.FromArgb("#0F172A"),
+            Spacing = 18,
+            VerticalOptions = LayoutOptions.Center,
             Children =
             {
                 MakeLegendItem("#10B981", "Libre"),
-                MakeLegendItem("#F59E0B", "Occupee"),
+                MakeLegendItem("#F59E0B", "Occupée"),
                 MakeLegendItem("#EF4444", "Addition"),
-                MakeLegendItem("#6366F1", "Encaissee")
+                MakeLegendItem("#6366F1", "Encaissée")
             }
         };
+        Grid.SetColumn(legend, 1);
+
+        subHeader.Add(titleLabel);
+        subHeader.Add(legend);
 
         // Grille des tables
         var tablesGrid = new CollectionView
         {
-            ItemsLayout = new GridItemsLayout(3, ItemsLayoutOrientation.Vertical)
+            ItemsLayout = new GridItemsLayout(4, ItemsLayoutOrientation.Vertical)
             {
-                HorizontalItemSpacing = 12,
-                VerticalItemSpacing = 12
+                HorizontalItemSpacing = 16,
+                VerticalItemSpacing = 16
             },
             ItemTemplate = new DataTemplate(BuildTableCard),
-            Margin = new Thickness(16)
+            Margin = new Thickness(24, 8, 24, 24)
         };
         tablesGrid.SetBinding(CollectionView.ItemsSourceProperty, nameof(FloorPlanViewModel.Tables));
 
@@ -102,34 +154,19 @@ public class FloorPlanPage : ContentPage
         var openTablePopup = BuildOpenTablePopup();
         openTablePopup.SetBinding(IsVisibleProperty, nameof(FloorPlanViewModel.IsTablePromptOpen));
 
-        // Bouton KDS Cuisine
-        var kdsBtn = new Button
-        {
-            Text = "👨‍🍳 Ecran Cuisine (KDS)",
-            BackgroundColor = Color.FromArgb("#1D4ED8"),
-            TextColor = Colors.White,
-            FontSize = 16,
-            HeightRequest = 52,
-            CornerRadius = 10,
-            Margin = new Thickness(16, 0, 16, 16),
-            Command = new Command(async () => await Shell.Current.GoToAsync("kds"))
-        };
-
-        Content = new Grid
+        var mainLayout = new Grid
         {
             RowDefinitions =
             {
                 new RowDefinition { Height = GridLength.Auto },
                 new RowDefinition { Height = GridLength.Auto },
-                new RowDefinition { Height = GridLength.Star },
-                new RowDefinition { Height = GridLength.Auto }
+                new RowDefinition { Height = GridLength.Star }
             },
             Children =
             {
-                AddToGrid(header, 0),
-                AddToGrid(legend, 1),
-                AddToGrid(new ScrollView { Content = tablesGrid }, 2),
-                AddToGrid(kdsBtn, 3)
+                AddToGrid(topBar, 0),
+                AddToGrid(subHeader, 1),
+                AddToGrid(tablesGrid, 2)
             }
         };
 
@@ -138,19 +175,26 @@ public class FloorPlanPage : ContentPage
         {
             Children =
             {
-                Content!,
+                mainLayout,
                 openTablePopup
             }
         };
         Content = overlay;
     }
 
-    private static View BuildTableCard() => new Frame
+    private View BuildTableCard()
     {
-        Padding = new Thickness(12),
-        CornerRadius = 14,
-        HasShadow = false
-    };
+        var frame = new Frame
+        {
+            Padding = new Thickness(16),
+            CornerRadius = 14,
+            HasShadow = false,
+            HeightRequest = 115,
+            BackgroundColor = Color.FromArgb("#1E293B")
+        };
+        frame.BindingContextChanged += (s, _) => ConfigureTableCard((BindableObject)s!);
+        return frame;
+    }
 
     private void ConfigureTableCard(BindableObject bindable)
     {
@@ -218,7 +262,7 @@ public class FloorPlanPage : ContentPage
             await _vm.SelectTableAsync(table);
             if (table.Status != TableStatus.Free)
             {
-                await Shell.Current.GoToAsync($"pos?table={table.TableNumber}");
+                await Shell.Current.GoToAsync($"//pos?table={table.TableNumber}");
             }
         });
         frame.GestureRecognizers.Clear();
@@ -229,7 +273,7 @@ public class FloorPlanPage : ContentPage
     {
         var popup = new Grid
         {
-            BackgroundColor = Color.FromArgb("BB000000"),
+            BackgroundColor = Color.FromArgb("#BB000000"),
             IsVisible = false
         };
         popup.SetBinding(IsVisibleProperty, nameof(FloorPlanViewModel.IsTablePromptOpen));
@@ -270,7 +314,14 @@ public class FloorPlanPage : ContentPage
                         HeightRequest = 52,
                         CornerRadius = 12,
                         FontSize = 18,
-                        Command = _vm.ConfirmOpenTableCommand
+                        Command = new Command(async () =>
+                        {
+                            await _vm.ConfirmOpenTableAsync();
+                            if (_vm.SelectedTable is not null)
+                            {
+                                await Shell.Current.GoToAsync($"//pos?table={_vm.SelectedTable.TableNumber}");
+                            }
+                        })
                     },
                     new Button
                     {
@@ -289,7 +340,7 @@ public class FloorPlanPage : ContentPage
         var wrapper = new VerticalStackLayout
         {
             IsVisible = false,
-            BackgroundColor = Color.FromArgb("BB000000"),
+            BackgroundColor = Color.FromArgb("#BB000000"),
             VerticalOptions = LayoutOptions.Fill,
             HorizontalOptions = LayoutOptions.Fill,
             Children = { card }
@@ -385,6 +436,22 @@ public class FloorPlanPage : ContentPage
     {
         Grid.SetColumn(view, col);
         return view;
+    }
+
+    private static Button MakeNavButton(string text, bool isActive, Command? command)
+    {
+        return new Button
+        {
+            Text = text,
+            BackgroundColor = isActive ? Color.FromArgb("#3B82F6") : Color.FromArgb("#334155"),
+            TextColor = isActive ? Colors.White : Color.FromArgb("#94A3B8"),
+            FontSize = 13,
+            FontAttributes = isActive ? FontAttributes.Bold : FontAttributes.None,
+            HeightRequest = 38,
+            CornerRadius = 8,
+            Padding = new Thickness(14, 0),
+            Command = command
+        };
     }
 }
 #endif

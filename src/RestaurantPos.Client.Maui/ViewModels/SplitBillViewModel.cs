@@ -20,7 +20,7 @@ public class SplitPartitionItem : ObservableObject
 public partial class SplitBillViewModel : ObservableObject
 {
     private readonly IPlatformEnvironmentService _environmentService;
-    private readonly ICheckoutPaymentService _checkoutService;
+    private readonly ICheckoutPaymentService? _checkoutService;
 
     [ObservableProperty]
     private long _totalOrderAmountCents;
@@ -32,7 +32,7 @@ public partial class SplitBillViewModel : ObservableObject
 
     public SplitBillViewModel(
         IPlatformEnvironmentService environmentService,
-        ICheckoutPaymentService checkoutService)
+        ICheckoutPaymentService? checkoutService = null)
     {
         _environmentService = environmentService;
         _checkoutService = checkoutService;
@@ -66,7 +66,10 @@ public partial class SplitBillViewModel : ObservableObject
 
     public void RecalculatePartitions()
     {
-        var parts = _checkoutService.CalculateEqualSplitPartitions(TotalOrderAmountCents, GuestsCount);
+        var parts = _checkoutService != null
+            ? _checkoutService.CalculateEqualSplitPartitions(TotalOrderAmountCents, GuestsCount)
+            : CalculateEqualSplit(TotalOrderAmountCents, GuestsCount);
+
         Partitions.Clear();
 
         for (int i = 0; i < parts.Count; i++)
@@ -78,5 +81,18 @@ public partial class SplitBillViewModel : ObservableObject
                 IsPaid = false
             });
         }
+    }
+
+    private static IReadOnlyList<long> CalculateEqualSplit(long totalAmountCents, int numberOfGuests)
+    {
+        if (numberOfGuests <= 0) return [totalAmountCents];
+        long baseShare = totalAmountCents / numberOfGuests;
+        long remainder = totalAmountCents % numberOfGuests;
+        var result = new List<long>(numberOfGuests);
+        for (int i = 0; i < numberOfGuests; i++)
+        {
+            result.Add(baseShare + (i < remainder ? 1 : 0));
+        }
+        return result;
     }
 }

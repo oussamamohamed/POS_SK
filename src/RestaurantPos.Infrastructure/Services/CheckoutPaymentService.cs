@@ -181,7 +181,7 @@ public class CheckoutPaymentService : ICheckoutPaymentService
                     .FirstOrDefaultAsync(r => r.Id == originalReceiptId, ct)
                     .ConfigureAwait(false);
 
-                if (original is null || original.IsVoid)
+                if (original is null || original.IsVoid || original.TerminalId != terminalId)
                 {
                     return new CheckoutResult(false, 0, 0, 0, string.Empty, null);
                 }

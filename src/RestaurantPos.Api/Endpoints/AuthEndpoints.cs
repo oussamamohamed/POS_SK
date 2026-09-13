@@ -52,7 +52,7 @@ public static class AuthEndpoints
             {
                 HttpOnly = true,
                 SameSite = SameSiteMode.Lax,
-                Secure = false,
+                Secure = context.Request.IsHttps,
                 Expires = DateTimeOffset.UtcNow.AddHours(12)
             });
 
@@ -89,13 +89,23 @@ public static class AuthEndpoints
         group.MapPost("/override", async (
             SupervisorOverrideRequest req,
             IOperatorAuthenticationService authService,
+            IPinRateLimiterService rateLimiter,
+            HttpContext context,
             ILoggerFactory loggerFactory) =>
         {
             var logger = loggerFactory.CreateLogger("RestaurantPos.Api.Endpoints.AuthEndpoints");
+            var clientKey = $"override:{context.Connection.RemoteIpAddress?.ToString() ?? "unknown"}";
+
+            if (rateLimiter.IsLocked(clientKey))
+            {
+                var remaining = rateLimiter.GetRemainingLockout(clientKey);
+                return Results.Json(new { Authorized = false, Message = $"Trop de tentatives. Veuillez patienter {Math.Ceiling(remaining.TotalSeconds)} secondes." }, statusCode: StatusCodes.Status429TooManyRequests);
+            }
 
             var result = await authService.AuthenticatePinAsync(req.SupervisorPin);
             if (!result.IsSuccess)
             {
+                rateLimiter.RecordFailedAttempt(clientKey);
                 AuthLogMessages.SupervisorOverrideInvalidPin(logger);
                 return Results.Json(new { Authorized = false, Message = "Code PIN superviseur invalide." }, statusCode: StatusCodes.Status403Forbidden);
             }
@@ -103,10 +113,12 @@ public static class AuthEndpoints
             var role = result.Role.GetValueOrDefault();
             if (role != UserRole.FloorManager && role != UserRole.Admin)
             {
+                rateLimiter.RecordFailedAttempt(clientKey);
                 AuthLogMessages.SupervisorOverrideInsufficientRole(logger, result.OperatorName ?? "Inconnu", role);
                 return Results.Json(new { Authorized = false, Message = "Privilèges superviseur insuffisants." }, statusCode: StatusCodes.Status403Forbidden);
             }
 
+            rateLimiter.ResetAttempts(clientKey);
             AuthLogMessages.SupervisorOverrideGranted(logger, result.OperatorName ?? "Inconnu", role, req.Action);
 
             return Results.Ok(new

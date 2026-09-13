@@ -1,4 +1,4 @@
-﻿#if MAUI_UI
+#if MAUI_UI
 using Microsoft.Maui.Controls;
 using RestaurantPos.Client.Maui.Views;
 using RestaurantPos.Client.Maui.Views.Admin;
@@ -13,22 +13,56 @@ public class AppShell : Shell
 {
     public AppShell()
     {
-        // Routes nommees pour la navigation programmatique
-        Routing.RegisterRoute("pin",        typeof(PinLockPage));
-        Routing.RegisterRoute("floor",      typeof(FloorPlanPage));
-        Routing.RegisterRoute("pos",        typeof(PosTerminalPage));
-        Routing.RegisterRoute("modifiers",  typeof(ModifiersPopupPage));
-        Routing.RegisterRoute("checkout",   typeof(CheckoutPage));
-        Routing.RegisterRoute("split",      typeof(SplitBillPage));
-        Routing.RegisterRoute("kds",        typeof(KitchenKdsPage));
-        Routing.RegisterRoute("admin",      typeof(AdminShellPage));
+        FlyoutBehavior = FlyoutBehavior.Disabled;
+        Shell.SetNavBarIsVisible(this, false);
 
-        // Page de demarrage : ecran de verrouillage PIN
-        CurrentItem = new ShellContent
+        // Routes secondaires / modales
+        Routing.RegisterRoute("modifiers", typeof(ModifiersPopupPage));
+        Routing.RegisterRoute("checkout", typeof(CheckoutPage));
+        Routing.RegisterRoute("split", typeof(SplitBillPage));
+
+        var pinContent = new ShellContent
         {
-            Route = "pinroot",
+            Title = "PIN",
+            Route = "pin",
             ContentTemplate = new DataTemplate(typeof(PinLockPage))
         };
+
+        var floorContent = new ShellContent
+        {
+            Title = "Plan de Salle",
+            Route = "floor",
+            ContentTemplate = new DataTemplate(typeof(FloorPlanPage))
+        };
+
+        var posContent = new ShellContent
+        {
+            Title = "Caisse",
+            Route = "pos",
+            ContentTemplate = new DataTemplate(typeof(PosTerminalPage))
+        };
+
+        var kdsContent = new ShellContent
+        {
+            Title = "Cuisine KDS",
+            Route = "kds",
+            ContentTemplate = new DataTemplate(typeof(KitchenKdsPage))
+        };
+
+        var adminContent = new ShellContent
+        {
+            Title = "Administration",
+            Route = "admin",
+            ContentTemplate = new DataTemplate(typeof(AdminShellPage))
+        };
+
+        Items.Add(pinContent);
+        Items.Add(floorContent);
+        Items.Add(posContent);
+        Items.Add(kdsContent);
+        Items.Add(adminContent);
+
+        CurrentItem = pinContent;
     }
 }
 #endif

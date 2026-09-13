@@ -1,4 +1,4 @@
-﻿#if MAUI_UI
+#if MAUI_UI
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
@@ -13,10 +13,13 @@ namespace RestaurantPos.Client.Maui.Views;
 public class PinLockPage : ContentPage
 {
     private readonly PinLockViewModel _vm;
+    private readonly IServiceProvider _serviceProvider;
+    private Label? _testStatusLabel;
 
-    public PinLockPage(PinLockViewModel vm)
+    public PinLockPage(PinLockViewModel vm, IServiceProvider serviceProvider)
     {
         _vm = vm;
+        _serviceProvider = serviceProvider;
         BindingContext = vm;
         BackgroundColor = Color.FromArgb("#0F172A");
         Shell.SetNavBarIsVisible(this, false);
@@ -64,43 +67,73 @@ public class PinLockPage : ContentPage
         // Bouton effacer
         var clearBtn = new Button
         {
-            Text = "⌫",
-            BackgroundColor = Color.FromArgb("#1E293B"),
+            Text = "⌫ Effacer",
+            BackgroundColor = Color.FromArgb("#0F172A"),
             TextColor = Color.FromArgb("#94A3B8"),
-            FontSize = 28,
-            HeightRequest = 70,
+            FontSize = 16,
+            HeightRequest = 52,
             CornerRadius = 12,
             Command = new Command(() => _vm.DeleteDigit())
         };
 
-        Content = new Grid
+        _testStatusLabel = new Label
         {
-            RowDefinitions =
+            TextColor = Color.FromArgb("#38BDF8"),
+            FontSize = 14,
+            FontAttributes = FontAttributes.Bold,
+            HorizontalOptions = LayoutOptions.Center,
+            HorizontalTextAlignment = TextAlignment.Center,
+            IsVisible = false
+        };
+
+        var autoTestBtn = new Button
+        {
+            Text = "⚡ Lancer Tests Auto Simulateur",
+            BackgroundColor = Color.FromArgb("#1E1B4B"),
+            TextColor = Color.FromArgb("#818CF8"),
+            BorderColor = Color.FromArgb("#4338CA"),
+            BorderWidth = 1,
+            FontSize = 13,
+            HeightRequest = 42,
+            CornerRadius = 10,
+            Command = new Command(() =>
             {
-                new RowDefinition { Height = GridLength.Star },
-                new RowDefinition { Height = GridLength.Auto },
-                new RowDefinition { Height = GridLength.Auto },
-                new RowDefinition { Height = GridLength.Auto },
-                new RowDefinition { Height = GridLength.Auto },
-                new RowDefinition { Height = GridLength.Star }
-            },
-            Padding = new Thickness(40),
-            RowSpacing = 24,
+                Task.Run(async () =>
+                {
+                    await Services.SimulatorAutoTestRunner.RunAllTestsAsync(_serviceProvider);
+                });
+            })
+        };
+
+        Services.SimulatorAutoTestRunner.StatusChanged += (msg) =>
+        {
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                if (_testStatusLabel != null)
+                {
+                    _testStatusLabel.Text = msg;
+                    _testStatusLabel.IsVisible = true;
+                }
+            });
+        };
+
+        var card = new VerticalStackLayout
+        {
+            Spacing = 16,
+            HorizontalOptions = LayoutOptions.Center,
             Children =
             {
-                // Logo & Titre
-                AddToGrid(new VerticalStackLayout
+                new VerticalStackLayout
                 {
-                    Spacing = 8,
+                    Spacing = 6,
                     HorizontalOptions = LayoutOptions.Center,
-                    VerticalOptions = LayoutOptions.End,
                     Children =
                     {
                         new Label
                         {
-                            Text = "🍽️ RestaurantPos",
+                            Text = "🍽️ Restaurant POS",
                             TextColor = Colors.White,
-                            FontSize = 32,
+                            FontSize = 26,
                             FontAttributes = FontAttributes.Bold,
                             HorizontalOptions = LayoutOptions.Center
                         },
@@ -108,24 +141,56 @@ public class PinLockPage : ContentPage
                         {
                             Text = "Saisissez votre code PIN",
                             TextColor = Color.FromArgb("#94A3B8"),
-                            FontSize = 18,
+                            FontSize = 16,
                             HorizontalOptions = LayoutOptions.Center
                         }
                     }
-                }, 0),
-                AddToGrid(pinDotsRow, 1),
-                AddToGrid(errorLabel, 2),
-                AddToGrid(numPad, 3),
-                AddToGrid(clearBtn, 4)
+                },
+                _testStatusLabel,
+                pinDotsRow,
+                errorLabel,
+                numPad,
+                clearBtn,
+                autoTestBtn
+            }
+        };
+
+        Content = new Grid
+        {
+            BackgroundColor = Color.FromArgb("#0A0F1D"),
+            Padding = new Thickness(24),
+            Children =
+            {
+                new Frame
+                {
+                    BackgroundColor = Color.FromArgb("#1E293B"),
+                    CornerRadius = 24,
+                    Padding = new Thickness(36, 32),
+                    WidthRequest = 380,
+                    HasShadow = false,
+                    HorizontalOptions = LayoutOptions.Center,
+                    VerticalOptions = LayoutOptions.Center,
+                    Content = card
+                }
             }
         };
 
         // Navigation auto apres validation
-        _vm.PropertyChanged += async (_, e) =>
+        _vm.PropertyChanged += (_, e) =>
         {
             if (e.PropertyName == nameof(PinLockViewModel.IsAuthenticated) && _vm.IsAuthenticated)
             {
-                await Shell.Current.GoToAsync("//floor");
+                MainThread.BeginInvokeOnMainThread(async () =>
+                {
+                    try
+                    {
+                        await Shell.Current.GoToAsync("//floor");
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Navigation error: {ex}");
+                    }
+                });
             }
         };
     }

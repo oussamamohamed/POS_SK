@@ -13,6 +13,8 @@ public partial class PosTerminalViewModel : ObservableObject
     private readonly IPlatformEnvironmentService _environmentService;
     private readonly ILocalJournalService _journalService;
     private readonly IOrderDiscountService? _discountService;
+    private readonly KdsViewModel? _kdsViewModel;
+    private readonly ITableManagementService? _tableService;
 
     [ObservableProperty]
     private Order _activeOrder = new();
@@ -39,11 +41,15 @@ public partial class PosTerminalViewModel : ObservableObject
     public PosTerminalViewModel(
         IPlatformEnvironmentService environmentService,
         ILocalJournalService journalService,
-        IOrderDiscountService? discountService = null)
+        IOrderDiscountService? discountService = null,
+        KdsViewModel? kdsViewModel = null,
+        ITableManagementService? tableService = null)
     {
         _environmentService = environmentService;
         _journalService = journalService;
         _discountService = discountService;
+        _kdsViewModel = kdsViewModel;
+        _tableService = tableService;
 
         LoadSampleCatalog();
     }
@@ -80,11 +86,18 @@ public partial class PosTerminalViewModel : ObservableObject
         _environmentService.TriggerHapticFeedback(HapticFeedbackType.LightTap);
 
         // Record to local append-only journal
-        await _journalService.RecordTransactionAsync(
-            "OrderItemAdded",
-            $"ORD-{ActiveOrder.Id}-ITEM-{Guid.NewGuid():N}",
-            new { OrderId = ActiveOrder.Id, ProductId = product.Id, product.Name }
-        ).ConfigureAwait(false);
+        try
+        {
+            await _journalService.RecordTransactionAsync(
+                "OrderItemAdded",
+                $"ORD-{ActiveOrder.Id}-ITEM-{Guid.NewGuid():N}",
+                new { OrderId = ActiveOrder.Id, ProductId = product.Id, product.Name }
+            ).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error logging journal: {ex}");
+        }
     }
 
     [RelayCommand]
@@ -159,7 +172,8 @@ public partial class PosTerminalViewModel : ObservableObject
             return;
         }
 
-        if (tableService is not null && !string.IsNullOrWhiteSpace(ActiveTable))
+        var effTableService = tableService ?? _tableService;
+        if (effTableService is not null && !string.IsNullOrWhiteSpace(ActiveTable))
         {
             var undispatched = CartItems.Where(i => !i.IsDispatched).ToList();
             if (undispatched.Count > 0)
@@ -174,10 +188,37 @@ public partial class PosTerminalViewModel : ObservableObject
                     i.SelectedModifiers
                 )).ToList();
 
-                await tableService.AddOrUpdateTableOrderItemsAsync(ActiveTable, inputDtos).ConfigureAwait(false);
+                await effTableService.AddOrUpdateTableOrderItemsAsync(ActiveTable, inputDtos).ConfigureAwait(false);
             }
 
-            await tableService.DispatchOrderLinesAsync(ActiveTable).ConfigureAwait(false);
+            await effTableService.DispatchOrderLinesAsync(ActiveTable).ConfigureAwait(false);
+        }
+
+        if (_kdsViewModel is not null)
+        {
+            var ticketItems = CartItems.Select(i => new KitchenTicketItemDto(
+                i.Id,
+                i.ProductId,
+                i.ProductName,
+                i.Quantity,
+                i.SelectedModifiers.Count > 0 ? string.Join(", ", i.SelectedModifiers) : null,
+                i.KitchenComment,
+                TicketItemStatus.Pending
+            )).ToList();
+
+            var ticket = new KitchenTicketDto(
+                TicketId: Guid.NewGuid(),
+                OrderId: ActiveOrder.Id,
+                TableNumber: string.IsNullOrWhiteSpace(ActiveTable) ? "Comptoir" : ActiveTable,
+                ServerName: "Alexandre D.",
+                CoversCount: 2,
+                StationId: "STATION-ALL",
+                Status: TicketStatus.Pending,
+                DispatchedAtUtc: DateTimeOffset.UtcNow,
+                Items: ticketItems
+            );
+
+            _kdsViewModel.AddIncomingTicket(ticket);
         }
 
         CartItems.Clear();

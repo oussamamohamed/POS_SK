@@ -87,7 +87,13 @@ public partial class Program
         builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
             {
-                var secret = builder.Configuration["Jwt:Secret"] ?? "SuperSecretKeyForRestaurantPosSystemThatIsAtLeast32BytesLong!";
+                var secret = builder.Configuration["Jwt:Secret"];
+                if (string.IsNullOrWhiteSpace(secret))
+                {
+                    if (!builder.Environment.IsDevelopment())
+                        throw new InvalidOperationException("'Jwt:Secret' must be configured in non-development environments.");
+                    secret = "SuperSecretKeyForRestaurantPosSystemThatIsAtLeast32BytesLong!";
+                }
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = true,
@@ -117,11 +123,11 @@ public partial class Program
                             accessToken = context.Request.Cookies["pos_jwt_token"];
                         }
 
-                        // 3. In Development / Localhost environment: if no auth header/cookie/query is provided,
-                        // automatically generate a developer operator session so direct browser testing is never blocked
+                        // 3. Development-only: auto-generate a manager session for direct browser testing.
+                        // SECURITY: Only use IsDevelopment() — never the Host header (client-controlled, spoofable).
                         if (string.IsNullOrEmpty(accessToken) &&
                             string.IsNullOrEmpty(context.Request.Headers.Authorization.ToString()) &&
-                            (builder.Environment.IsDevelopment() || context.HttpContext.Request.Host.Host is "localhost" or "127.0.0.1" or "::1"))
+                            builder.Environment.IsDevelopment())
                         {
                             var tokenGen = context.HttpContext.RequestServices.GetService<IJwtTokenGeneratorService>();
                             if (tokenGen != null)
@@ -135,7 +141,7 @@ public partial class Program
                                 {
                                     HttpOnly = true,
                                     SameSite = SameSiteMode.Lax,
-                                    Secure = false,
+                                    Secure = !builder.Environment.IsDevelopment(),
                                     Expires = DateTimeOffset.UtcNow.AddHours(12)
                                 });
                             }
@@ -290,10 +296,36 @@ public partial class Program
         }
 #endif
 
+        if (args.Contains("--seed-prod-data") || args.Contains("--seed-test-data"))
+        {
+            using var scope = app.Services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var staffService = scope.ServiceProvider.GetRequiredService<IStaffManagementService>();
+            var catalogService = scope.ServiceProvider.GetRequiredService<IBackOfficeCatalogService>();
+            var printerService = scope.ServiceProvider.GetRequiredService<IPrinterConfigurationService>();
+            var layoutService = scope.ServiceProvider.GetRequiredService<ITerminalLayoutService>();
+
+            SeedDatabase(db, staffService, catalogService, printerService, layoutService, force: true).GetAwaiter().GetResult();
+            Console.WriteLine("[SEED] Production test data seeded successfully.");
+            return;
+        }
+
         // ==================== REST API ENDPOINTS ====================
 
         // 1. Health
         app.MapGet("/api/health", () => Results.Ok(new { Status = "Healthy", Version = "1.0.0", Timestamp = DateTimeOffset.UtcNow }));
+
+        // Admin Seed Endpoint for Production Verification
+        app.MapPost("/api/admin/seed-test-data", async (
+            AppDbContext db,
+            IStaffManagementService staffService,
+            IBackOfficeCatalogService catalogService,
+            IPrinterConfigurationService printerService,
+            ITerminalLayoutService layoutService) =>
+        {
+            await SeedDatabase(db, staffService, catalogService, printerService, layoutService, force: true);
+            return Results.Ok(new { Success = true, Message = "Données de test de production insérées avec succès dans la base de données." });
+        });
 
         // 2. Auth PIN Login
         app.MapAuthEndpoints();
@@ -332,21 +364,33 @@ public partial class Program
         app.Run();
     }
 
-#if DEBUG
-    private static async Task SeedDatabase(
+    public static async Task SeedDatabase(
         AppDbContext db,
         IStaffManagementService staffService,
         IBackOfficeCatalogService catalogService,
         IPrinterConfigurationService printerService,
-        ITerminalLayoutService layoutService)
+        ITerminalLayoutService layoutService,
+        bool force = false)
     {
         // Seed Staff
-        if (!await db.Users.AnyAsync())
+        if (!await db.Users.AnyAsync() || force)
         {
-            await staffService.CreateStaffMemberAsync("Alexandre Dupont (Manager)", UserRole.FloorManager, "1234");
-            await staffService.CreateStaffMemberAsync("Sophie Martin (Serveuse)", UserRole.Waiter, "2468");
-            await staffService.CreateStaffMemberAsync("Thomas Bernard (Chef)", UserRole.KitchenStaff, "5678");
-            await staffService.CreateStaffMemberAsync("Admin Système", UserRole.Admin, "9999");
+            if (!await db.Users.AnyAsync(u => u.Name.Contains("Alexandre Dupont")))
+            {
+                try { await staffService.CreateStaffMemberAsync("Alexandre Dupont (Manager)", UserRole.FloorManager, "1234"); } catch {}
+            }
+            if (!await db.Users.AnyAsync(u => u.Name.Contains("Sophie Martin")))
+            {
+                try { await staffService.CreateStaffMemberAsync("Sophie Martin (Serveuse)", UserRole.Waiter, "2468"); } catch {}
+            }
+            if (!await db.Users.AnyAsync(u => u.Name.Contains("Thomas Bernard")))
+            {
+                try { await staffService.CreateStaffMemberAsync("Thomas Bernard (Chef)", UserRole.KitchenStaff, "5678"); } catch {}
+            }
+            if (!await db.Users.AnyAsync(u => u.Name.Contains("Admin Système")))
+            {
+                try { await staffService.CreateStaffMemberAsync("Admin Système", UserRole.Admin, "9999"); } catch {}
+            }
         }
 
         // Seed Categories & Products
@@ -618,7 +662,6 @@ public partial class Program
             await db.SaveChangesAsync();
         }
     }
-#endif
 }
 public record CreateCategoryRequest(string Name, string? ColorHex, int DisplayOrder, string? IconName);
 public record UpdateCategoryRequest(string Name, string? ColorHex, int DisplayOrder, string? IconName, bool? IsActive);

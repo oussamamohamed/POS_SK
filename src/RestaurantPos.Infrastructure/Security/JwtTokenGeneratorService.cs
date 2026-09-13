@@ -20,7 +20,8 @@ public class JwtTokenGeneratorService : IJwtTokenGeneratorService
 
     public string GenerateToken(Guid operatorId, string operatorName, UserRole role)
     {
-        var secret = _configuration["Jwt:Secret"] ?? "SuperSecretKeyForRestaurantPosSystemThatIsAtLeast32BytesLong!";
+        var secret = _configuration["Jwt:Secret"]
+            ?? throw new InvalidOperationException("'Jwt:Secret' is not configured.");
         var issuer = _configuration["Jwt:Issuer"] ?? "RestaurantPos.Api";
         var audience = _configuration["Jwt:Audience"] ?? "RestaurantPos.Client";
         

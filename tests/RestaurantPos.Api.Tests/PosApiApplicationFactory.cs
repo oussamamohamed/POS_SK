@@ -49,7 +49,8 @@ public class PosApiApplicationFactory : WebApplicationFactory<Program>
                 TestAuthHandler.SchemeName, options => { });
         });
 
-        // Use a test environment
+        // Use a test environment & configure test JWT secret
+        builder.UseSetting("Jwt:Secret", "SuperSecretKeyForPOSRestaurant2026SecureDevKey!");
         builder.UseEnvironment("Testing");
     }
 }

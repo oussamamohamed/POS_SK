@@ -13,14 +13,19 @@ export default defineConfig({
     baseURL: 'http://localhost:5000',
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
-    viewport: { width: 1280, height: 800 },
-    channel: 'chrome',
   },
   projects: [
     {
-      name: 'Google Chrome',
+      name: 'iPad Pro 11',
       use: {
-        channel: 'chrome',
+        ...devices['iPad Pro 11 landscape'],
+      },
+    },
+    {
+      name: 'iPad Pro 11 (Chromium)',
+      use: {
+        ...devices['iPad Pro 11 landscape'],
+        browserName: 'chromium',
       },
     },
   ],

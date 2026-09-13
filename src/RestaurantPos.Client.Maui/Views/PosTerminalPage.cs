@@ -1,4 +1,4 @@
-﻿#if MAUI_UI
+#if MAUI_UI
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
@@ -12,7 +12,7 @@ namespace RestaurantPos.Client.Maui.Views;
 /// Terminal de caisse tactile principal.
 /// Disposition 3 colonnes : Categories | Grille Articles | Panier.
 /// </summary>
-public class PosTerminalPage : ContentPage
+public class PosTerminalPage : ContentPage, IQueryAttributable
 {
     private readonly PosTerminalViewModel _vm;
 
@@ -25,32 +25,144 @@ public class PosTerminalPage : ContentPage
         Build();
     }
 
-    protected override void OnAppearing()
+    public void ApplyQueryAttributes(IDictionary<string, object> query)
     {
-        base.OnAppearing();
-        // Recuperer le parametre de table de la navigation
-        if (Shell.Current?.CurrentState.Location.OriginalString.Contains("table=") == true)
+        if (query.TryGetValue("table", out var tableObj) && tableObj is string tableNumber && !string.IsNullOrWhiteSpace(tableNumber))
         {
-            // Table deja configuree par FloorPlanPage via LoadActiveTableOrderAsync
+            _vm.ActiveTable = tableNumber;
+            _ = _vm.LoadActiveTableOrderAsync(tableNumber);
         }
     }
 
     private void Build()
     {
-        Content = new Grid
+        var topBar = BuildTopBar();
+
+        var bodyGrid = new Grid
         {
             ColumnDefinitions =
             {
-                new ColumnDefinition { Width = new GridLength(220) },  // Colonne categ
+                new ColumnDefinition { Width = new GridLength(200) },  // Colonne categ
                 new ColumnDefinition { Width = GridLength.Star },       // Grille articles
-                new ColumnDefinition { Width = new GridLength(360) }   // Panier
+                new ColumnDefinition { Width = new GridLength(340) }   // Panier
             },
             ColumnSpacing = 0
         };
 
-        ((Grid)Content).Add(BuildCategoryPanel(), 0, 0);
-        ((Grid)Content).Add(BuildProductGrid(), 1, 0);
-        ((Grid)Content).Add(BuildCartPanel(), 2, 0);
+        var catPanel = BuildCategoryPanel();
+        Grid.SetColumn(catPanel, 0);
+        Grid.SetRow(catPanel, 0);
+
+        var prodGrid = BuildProductGrid();
+        Grid.SetColumn(prodGrid, 1);
+        Grid.SetRow(prodGrid, 0);
+
+        var cartPanel = BuildCartPanel();
+        Grid.SetColumn(cartPanel, 2);
+        Grid.SetRow(cartPanel, 0);
+
+        bodyGrid.Children.Add(catPanel);
+        bodyGrid.Children.Add(prodGrid);
+        bodyGrid.Children.Add(cartPanel);
+
+        Content = new Grid
+        {
+            RowDefinitions =
+            {
+                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Star }
+            },
+            Children =
+            {
+                AddToGrid(topBar, 0),
+                AddToGrid(bodyGrid, 1)
+            }
+        };
+    }
+
+    private View BuildTopBar()
+    {
+        var topBar = new Grid
+        {
+            ColumnDefinitions =
+            {
+                new ColumnDefinition { Width = GridLength.Auto },
+                new ColumnDefinition { Width = GridLength.Star },
+                new ColumnDefinition { Width = GridLength.Auto }
+            },
+            Padding = new Thickness(20, 12),
+            BackgroundColor = Color.FromArgb("#1E293B"),
+            ColumnSpacing = 16
+        };
+
+        var logoStack = new HorizontalStackLayout
+        {
+            Spacing = 10,
+            VerticalOptions = LayoutOptions.Center,
+            Children =
+            {
+                new Label { Text = "🍽️", FontSize = 22, VerticalOptions = LayoutOptions.Center },
+                new Label { Text = "Restaurant POS", TextColor = Colors.White, FontSize = 18, FontAttributes = FontAttributes.Bold, VerticalOptions = LayoutOptions.Center }
+            }
+        };
+        Grid.SetColumn(logoStack, 0);
+
+        var navButtons = new HorizontalStackLayout
+        {
+            Spacing = 10,
+            VerticalOptions = LayoutOptions.Center,
+            Children =
+            {
+                MakeNavButton("🍽 Plan de Salle", false, new Command(async () => await Shell.Current.GoToAsync("//floor"))),
+                MakeNavButton("💳 Caisse", true, null),
+                MakeNavButton("👨‍🍳 Cuisine KDS", false, new Command(async () => await Shell.Current.GoToAsync("//kds"))),
+                MakeNavButton("⚙ Admin", false, new Command(async () => await Shell.Current.GoToAsync("//admin")))
+            }
+        };
+        Grid.SetColumn(navButtons, 1);
+
+        var userStack = new HorizontalStackLayout
+        {
+            Spacing = 12,
+            VerticalOptions = LayoutOptions.Center,
+            Children =
+            {
+                new Label { Text = "👤 Alexandre Dupont", TextColor = Color.FromArgb("#94A3B8"), FontSize = 14, VerticalOptions = LayoutOptions.Center },
+                new Button
+                {
+                    Text = "🔒 Verrouiller",
+                    BackgroundColor = Color.FromArgb("#334155"),
+                    TextColor = Colors.White,
+                    FontSize = 13,
+                    HeightRequest = 36,
+                    CornerRadius = 8,
+                    Padding = new Thickness(12, 0),
+                    Command = new Command(async () => await Shell.Current.GoToAsync("//pin"))
+                }
+            }
+        };
+        Grid.SetColumn(userStack, 2);
+
+        topBar.Add(logoStack);
+        topBar.Add(navButtons);
+        topBar.Add(userStack);
+        return topBar;
+    }
+
+    private static Button MakeNavButton(string text, bool isActive, Command? command)
+    {
+        return new Button
+        {
+            Text = text,
+            BackgroundColor = isActive ? Color.FromArgb("#3B82F6") : Color.FromArgb("#334155"),
+            TextColor = isActive ? Colors.White : Color.FromArgb("#94A3B8"),
+            FontSize = 13,
+            FontAttributes = isActive ? FontAttributes.Bold : FontAttributes.None,
+            HeightRequest = 38,
+            CornerRadius = 8,
+            Padding = new Thickness(14, 0),
+            Command = command
+        };
     }
 
     // ---- PANNEAU CATEGORIES (colonne gauche) ----
@@ -62,7 +174,8 @@ public class PosTerminalPage : ContentPage
             RowDefinitions =
             {
                 new RowDefinition { Height = GridLength.Auto },
-                new RowDefinition { Height = GridLength.Star }
+                new RowDefinition { Height = GridLength.Star },
+                new RowDefinition { Height = GridLength.Auto }
             }
         };
 
@@ -127,23 +240,11 @@ public class PosTerminalPage : ContentPage
             CornerRadius = 0,
             Command = new Command(async () => await Shell.Current.GoToAsync("//floor"))
         };
+        Grid.SetRow(backBtn, 2);
 
         panel.Add(header);
         panel.Add(catList);
-        panel.Add(new Grid
-        {
-            RowDefinitions =
-            {
-                new RowDefinition { Height = GridLength.Star },
-                new RowDefinition { Height = GridLength.Auto }
-            },
-            Children =
-            {
-                AddToGrid(catList, 0),
-                AddToGrid(backBtn, 1)
-            }
-        });
-        Grid.SetRow(panel.Children[2], 1);
+        panel.Add(backBtn);
 
         return panel;
     }
@@ -227,7 +328,8 @@ public class PosTerminalPage : ContentPage
                 frame.Content = new VerticalStackLayout
                 {
                     Spacing = 4,
-                    Children = { name, price }
+                    Children = { name, price },
+                    InputTransparent = true
                 };
 
                 var tap = new TapGestureRecognizer();
@@ -409,11 +511,20 @@ public class PosTerminalPage : ContentPage
         };
         cartList.SetBinding(CollectionView.ItemsSourceProperty, nameof(PosTerminalViewModel.CartItems));
 
-        var cartScroll = new VerticalStackLayout
+        var cartContainer = new Grid
         {
-            Children = { conflictAlert, cartList }
+            RowDefinitions =
+            {
+                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Star }
+            },
+            Children =
+            {
+                AddToGrid(conflictAlert, 0),
+                AddToGrid(cartList, 1)
+            }
         };
-        Grid.SetRow(cartScroll, 1);
+        Grid.SetRow(cartContainer, 1);
 
         // Total TTC
         var totalRow = new Grid
@@ -477,7 +588,15 @@ public class PosTerminalPage : ContentPage
             FontSize = 15,
             HeightRequest = 56,
             CornerRadius = 12,
-            Command = new Command(async () => await Shell.Current.GoToAsync("checkout"))
+            Command = new Command(async () =>
+            {
+                var checkoutVm = Handler?.MauiContext?.Services.GetService<CheckoutViewModel>();
+                if (checkoutVm != null)
+                {
+                    checkoutVm.Initialize(_vm.ActiveOrder.Id, _vm.TotalTtc.AmountInCents);
+                }
+                await Shell.Current.GoToAsync($"checkout?orderId={_vm.ActiveOrder.Id}&totalCents={_vm.TotalTtc.AmountInCents}&tableNumber={_vm.ActiveTable}");
+            })
         };
         Grid.SetColumn(checkoutBtn, 1);
 
@@ -486,7 +605,7 @@ public class PosTerminalPage : ContentPage
         Grid.SetRow(actionRow, 3);
 
         panel.Add(header);
-        panel.Add(cartScroll);
+        panel.Add(cartContainer);
         panel.Add(totalRow);
         panel.Add(actionRow);
 

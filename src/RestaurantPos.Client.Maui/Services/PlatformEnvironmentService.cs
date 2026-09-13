@@ -48,7 +48,7 @@ public class PlatformEnvironmentService : IPlatformEnvironmentService
         return Path.Combine(_baseStorageDirectory, databaseName);
     }
 
-    public void TriggerHapticFeedback(HapticFeedbackType feedbackType)
+    public void TriggerHapticFeedback(Contracts.HapticFeedbackType feedbackType)
     {
         // On native devices, bridged to UIKit / Android HapticFeedback / Windows Vibration
         // In shared runtime, safely dispatches or logs without throwing

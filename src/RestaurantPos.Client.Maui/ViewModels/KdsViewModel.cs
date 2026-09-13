@@ -81,6 +81,53 @@ public partial class KdsViewModel : ObservableObject
             _signalRClient.OnTicketRecalled += HandleTicketStatusChanged; // Reuse for recall
             _ = ConnectSignalRAsync();
         }
+
+        SeedInitialTicketsIfEmpty();
+    }
+
+    public void SeedInitialTicketsIfEmpty()
+    {
+        if (PendingTickets.Count > 0 || InPrepTickets.Count > 0) return;
+
+        var sample1 = new KitchenTicketDto(
+            TicketId: Guid.NewGuid(),
+            OrderId: Guid.NewGuid(),
+            TableNumber: "T02",
+            ServerName: "Alexandre D.",
+            CoversCount: 2,
+            StationId: "STATION-ALL",
+            Status: TicketStatus.Pending,
+            DispatchedAtUtc: DateTimeOffset.UtcNow.AddMinutes(-3),
+            Items: new List<KitchenTicketItemDto>
+            {
+                new(Guid.NewGuid(), Guid.NewGuid(), "Burger Maison & Frites", 2, "Cuisse à point", null, TicketItemStatus.Pending),
+                new(Guid.NewGuid(), Guid.NewGuid(), "Bière Pression 33cl", 2, null, null, TicketItemStatus.Pending)
+            }
+        );
+
+        var sample2 = new KitchenTicketDto(
+            TicketId: Guid.NewGuid(),
+            OrderId: Guid.NewGuid(),
+            TableNumber: "T05",
+            ServerName: "Alexandre D.",
+            CoversCount: 1,
+            StationId: "STATION-ALL",
+            Status: TicketStatus.InPreparation,
+            DispatchedAtUtc: DateTimeOffset.UtcNow.AddMinutes(-8),
+            Items: new List<KitchenTicketItemDto>
+            {
+                new(Guid.NewGuid(), Guid.NewGuid(), "Entrecôte Grillée 250g", 1, "Saignant", "Sauce poivre", TicketItemStatus.InPrep),
+                new(Guid.NewGuid(), Guid.NewGuid(), "Café Espresso", 1, null, null, TicketItemStatus.InPrep)
+            }
+        );
+
+        var itemVm1 = new KdsTicketItemViewModel { Ticket = sample1 };
+        itemVm1.UpdateTimer();
+        PendingTickets.Add(itemVm1);
+
+        var itemVm2 = new KdsTicketItemViewModel { Ticket = sample2 };
+        itemVm2.UpdateTimer();
+        InPrepTickets.Add(itemVm2);
     }
 
     private async Task ConnectSignalRAsync()
@@ -89,7 +136,7 @@ public partial class KdsViewModel : ObservableObject
         {
             try
             {
-                var hubUrl = "http://localhost:5247";
+                var hubUrl = "http://127.0.0.1:5000/kitchenHub";
                 await _signalRClient.ConnectAsync(hubUrl, CurrentStationId);
             }
             catch (Exception ex)
@@ -154,6 +201,13 @@ public partial class KdsViewModel : ObservableObject
 
     public void AddIncomingTicket(KitchenTicketDto ticket)
     {
+#if MAUI_UI
+        if (!MainThread.IsMainThread)
+        {
+            MainThread.BeginInvokeOnMainThread(() => AddIncomingTicket(ticket));
+            return;
+        }
+#endif
         if (CurrentStationId != "STATION-ALL" && ticket.StationId != CurrentStationId)
         {
             return;

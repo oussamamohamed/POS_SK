@@ -30,12 +30,12 @@ public static class MauiProgram
         services.AddDbContext<LocalAppDbContext>();
 
         // ViewModels
-        services.AddTransient<PinLockViewModel>();
-        services.AddTransient<PosTerminalViewModel>();
-        services.AddTransient<FloorPlanViewModel>();
-        services.AddTransient<KdsViewModel>();
-        services.AddTransient<CheckoutViewModel>();
-        services.AddTransient<SplitBillViewModel>();
+        services.AddSingleton<PinLockViewModel>();
+        services.AddSingleton<PosTerminalViewModel>();
+        services.AddSingleton<FloorPlanViewModel>();
+        services.AddSingleton<KdsViewModel>();
+        services.AddSingleton<CheckoutViewModel>();
+        services.AddSingleton<SplitBillViewModel>();
         services.AddTransient<ModifiersViewModel>();
         services.AddTransient<PeripheralSetupViewModel>();
         services.AddTransient<CatalogAdminViewModel>();

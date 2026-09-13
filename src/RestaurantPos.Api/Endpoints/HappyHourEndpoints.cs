@@ -18,7 +18,8 @@ public static class HappyHourEndpoints
     public static void MapHappyHourEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/happy-hour")
-                       .WithTags("Happy Hour Pricing");
+                       .WithTags("Happy Hour Pricing")
+                       .RequireAuthorization();
 
         // 1. Status Check
         group.MapGet("/status", async (string? terminalId, IHappyHourPricingService hhService) =>
@@ -47,9 +48,7 @@ public static class HappyHourEndpoints
             var status = await hhService.GetCurrentStatusAsync(req.TerminalId);
             await hub.Clients.All.OnHappyHourStatusChanged(status);
             return Results.Ok(res);
-        }).AllowAnonymous();
-
-        // 4. Supervisor Override: Stop
+        });
         group.MapPost("/override/stop", async (StopOverrideRequest req, IHappyHourPricingService hhService, Microsoft.AspNetCore.SignalR.IHubContext<RestaurantPos.Api.Hubs.PosHub, RestaurantPos.Api.Hubs.IPosHubClient> hub) =>
         {
             var res = await hhService.StopOverrideAsync(req);
@@ -60,9 +59,7 @@ public static class HappyHourEndpoints
             var status = await hhService.GetCurrentStatusAsync(req.TerminalId);
             await hub.Clients.All.OnHappyHourStatusChanged(status);
             return Results.Ok(res);
-        }).AllowAnonymous();
-
-        // 5. Schedules CRUD (Management)
+        });
         group.MapGet("/schedules", async (AppDbContext db) =>
         {
             var schedules = await db.HappyHourSchedules
@@ -129,7 +126,7 @@ public static class HappyHourEndpoints
             await db.SaveChangesAsync();
 
             return Results.Ok(new { schedule.Id, Message = "Plage Happy Hour créée avec succès." });
-        }).AllowAnonymous();
+        }).RequireAuthorization("RequireManagerOrAdmin");
 
         group.MapDelete("/schedules/{id:guid}", async (Guid id, AppDbContext db) =>
         {
@@ -143,7 +140,7 @@ public static class HappyHourEndpoints
             await db.SaveChangesAsync();
 
             return Results.Ok(new { Message = "Plage horaire supprimée." });
-        }).AllowAnonymous();
+        }).RequireAuthorization("RequireManagerOrAdmin");
 
         // 6. Batch Apply Price Rules
         group.MapPost("/schedules/{scheduleId:guid}/rules/batch", async (
@@ -162,7 +159,7 @@ public static class HappyHourEndpoints
             await hub.Clients.All.OnHappyHourStatusChanged(status);
 
             return Results.Ok(res);
-        }).AllowAnonymous();
+        }).RequireAuthorization("RequireManagerOrAdmin");
 
         // 7. Batch Delete Price Rules
         group.MapDelete("/schedules/{scheduleId:guid}/rules/batch", async (
@@ -181,6 +178,6 @@ public static class HappyHourEndpoints
             await hub.Clients.All.OnHappyHourStatusChanged(status);
 
             return Results.Ok(res);
-        }).AllowAnonymous();
+        }).RequireAuthorization("RequireManagerOrAdmin");
     }
 }
