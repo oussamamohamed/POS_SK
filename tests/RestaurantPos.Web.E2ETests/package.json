@@ -1,0 +1,15 @@
+{
+  "name": "restaurant-pos-web-e2e-tests",
+  "version": "1.0.0",
+  "description": "Playwright automated UI acceptance tests for Restaurant POS tactile web interface",
+  "scripts": {
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:headed": "playwright test --headed"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.45.0",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.4.0"
+  }
+}

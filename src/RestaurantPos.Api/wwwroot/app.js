@@ -1299,11 +1299,14 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // Payment Modal & Tips (US4)
-        elements.btnPayModal.addEventListener('click', () => {
+        elements.btnPayModal.addEventListener('click', async () => {
             const totalTtc = calculateTotalTtc();
             if (totalTtc <= 0) {
                 showToast('Le montant est nul.', 'error');
                 return;
+            }
+            if (!state.activeOrderId) {
+                await saveActiveCartToServer();
             }
             state.selectedTipPercent = 0;
             state.customTipAmount = 0;
@@ -1612,6 +1615,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function executePayment(tenderMethod, tendered) {
+        if (!state.activeOrderId && state.cart.length > 0) {
+            await saveActiveCartToServer();
+        }
         const total = getFinalPayTotal();
         const change = Math.max(0, tendered - total);
 
