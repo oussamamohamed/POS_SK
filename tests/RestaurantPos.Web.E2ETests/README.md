@@ -25,11 +25,29 @@ Suite de tests automatisés de bout en bout pour l'interface tactile Web POS (`h
    - Règlement par Carte Bancaire (CB).
    - Validation fiscale et remise à zéro du panier.
 
-5. **Écran Cuisine KDS (`kds-workflow.spec.ts`)** :
+5. **Remises Commerciales & Articles Offerts (`discounts-comps.spec.ts`)** :
+   - Ouverture du modal Remise.
+   - Application d'une remise globale (10%) avec motif NF525.
+   - Calcul et réinitialisation de la remise.
+
+6. **Partage de l'Addition (`split-bill.spec.ts`)** :
+   - Découpage équitable selon le nombre de convives (stepper tactile 2 ➔ 3 ➔ 2).
+   - Calcul dynamique de la quote-part et bascule en encaissement fractionné.
+
+7. **Transfert & Fusion de Tables (`table-transfer.spec.ts`)** :
+   - Ouverture du modal de transfert.
+   - Sélection de la table cible et contrôle des options.
+
+8. **Facturation Chambre d'Hôtel PMS (`hotel-room-charge.spec.ts`)** :
+   - Sélection de la chambre résidente et plafond de crédit disponible.
+   - Signature tactile sur canvas avec effacement et ré-émission.
+   - Enregistrement de la note folio et vidage du panier.
+
+9. **Écran Cuisine KDS (`kds-workflow.spec.ts`)** :
    - Visualisation des trois colonnes de production (*En Attente*, *En Préparation*, *Prêt à Servir*).
    - Validation de l'affichage des bons.
 
-6. **Fiscalité NF525 & Clôture Z (`fiscal-zreport.spec.ts`)** :
+10. **Fiscalité NF525 & Clôture Z (`fiscal-zreport.spec.ts`)** :
    - Consultation du Rapport X en direct.
    - Présence des boutons de Clôture Journalière (Rapport Z) et du scellement SHA-256.
    - Formulaire et génération de l'Export Comptable FEC réglementaire (Article A.47 A-1 LPF).

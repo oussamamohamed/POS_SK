@@ -1205,12 +1205,15 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // Discount Modal (US2)
-        elements.btnDiscountModal.addEventListener('click', () => {
+        elements.btnDiscountModal.addEventListener('click', async () => {
+            if (!state.activeOrderId && state.cart.length > 0) {
+                await saveActiveCartToServer();
+            }
             elements.selectDiscountTarget.innerHTML = '<option value="global">Remise Globale sur la Note</option>';
             state.cart.forEach((item, idx) => {
                 const opt = document.createElement('option');
                 opt.value = item.lineId || `idx_${idx}`;
-                opt.textContent = `Article : ${item.product.name} (${item.product.price.toFixed(2)} €) -> Offrir 🎁`;
+                opt.textContent = `Offrir : 1x ${item.product.name} (${item.isComp ? 'Déjà offert' : Number(item.unitPrice || item.product.price).toFixed(2) + ' €'})`;
                 elements.selectDiscountTarget.appendChild(opt);
             });
             elements.discountModal.classList.add('active');
@@ -1254,6 +1257,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         elements.formApplyDiscount.addEventListener('submit', async (e) => {
             e.preventDefault();
+            if (!state.activeOrderId && state.cart.length > 0) {
+                await saveActiveCartToServer();
+            }
             if (!state.activeOrderId) {
                 showToast('Aucune commande active enregistrée sur cette table', 'error');
                 return;
