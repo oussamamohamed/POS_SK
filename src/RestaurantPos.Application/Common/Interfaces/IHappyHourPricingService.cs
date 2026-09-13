@@ -29,4 +29,14 @@ public interface IHappyHourPricingService
     Task<OverrideActionResponse> StopOverrideAsync(
         StopOverrideRequest request,
         CancellationToken cancellationToken = default);
+
+    Task<BatchPriceRulesResponseDto> ApplyBatchPriceRulesAsync(
+        Guid scheduleId,
+        BatchPriceRulesRequestDto request,
+        CancellationToken cancellationToken = default);
+
+    Task<BatchDeleteRulesResponseDto> DeleteBatchPriceRulesAsync(
+        Guid scheduleId,
+        BatchDeleteRulesRequestDto request,
+        CancellationToken cancellationToken = default);
 }

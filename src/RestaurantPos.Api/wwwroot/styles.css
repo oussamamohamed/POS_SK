@@ -1951,4 +1951,163 @@ body.pos-dark {
 .held-card-actions {
     display: flex;
     gap: 8px;
-}
+}
+
+/* ==========================================================================
+   Happy Hour Multi-Select (Feature 020)
+   ========================================================================== */
+
+.hh-subtabs-nav {
+    display: flex;
+    gap: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 8px;
+}
+
+.hh-subtab-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    color: var(--text-muted);
+    padding: 8px 16px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    min-height: 44px;
+}
+
+.hh-subtab-btn:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.hh-subtab-btn.active {
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+}
+
+.hh-pill-container {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.hh-pill-filter {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    color: var(--text-muted);
+    padding: 6px 14px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    min-height: 38px;
+}
+
+.hh-pill-filter:hover {
+    color: #fff;
+    border-color: #f59e0b;
+}
+
+.hh-pill-filter.active {
+    background: #f59e0b;
+    color: #1e293b;
+    border-color: #f59e0b;
+    font-weight: 700;
+}
+
+/* Multi-select Cards for Articles and Categories */
+.hh-select-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.15s ease;
+    min-height: 52px;
+}
+
+.hh-select-card:hover {
+    background: rgba(255, 255, 255, 0.07);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.hh-select-card.selected {
+    background: rgba(245, 158, 11, 0.12);
+    border-color: #f59e0b;
+}
+
+.hh-select-card input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    accent-color: #f59e0b;
+    cursor: pointer;
+}
+
+.hh-select-card-info {
+    flex: 1;
+    overflow: hidden;
+}
+
+.hh-select-card-title {
+    font-weight: 600;
+    font-size: 0.88rem;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.hh-select-card-sub {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+}
+
+.hh-batch-action-bar {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius-md);
+    padding: 14px 18px;
+}
+
+.hh-price-mode-toggle button {
+    font-size: 0.82rem;
+    font-weight: 600;
+    transition: all 0.15s ease;
+    min-height: 38px;
+}
+
+.hh-price-mode-toggle button.active {
+    background: var(--primary) !important;
+    color: #fff !important;
+}
+
+.hh-active-rule-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 6px;
+    padding: 10px 14px;
+    transition: all 0.15s ease;
+}
+
+.hh-active-rule-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.hh-active-rule-item input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: #38bdf8;
+    cursor: pointer;
+}
+

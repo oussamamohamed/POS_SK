@@ -87,3 +87,30 @@ public record HappyHourScheduleDto(
     int Priority,
     List<HappyHourRuleDto> PriceRules
 );
+
+public record BatchPriceRulesRequestDto(
+    HappyHourTargetType TargetType,
+    List<string> TargetIds,
+    HappyHourPricingMode PricingMode,
+    decimal? FixedPrice,
+    decimal? DiscountPercent
+);
+
+public record BatchPriceRulesResponseDto(
+    bool Success,
+    int AppliedCount,
+    Guid ScheduleId,
+    string Message
+);
+
+public record BatchDeleteRulesRequestDto(
+    List<Guid> RuleIds
+);
+
+public record BatchDeleteRulesResponseDto(
+    bool Success,
+    int DeletedCount,
+    Guid ScheduleId,
+    string Message
+);
+

@@ -2647,58 +2647,571 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    async function loadAdminHappyHour() {
-        const listEl = document.getElementById('adminHappyHourList');
-        const selectProd = document.getElementById('selectHhProduct');
-        if (!listEl) return;
+    // ==================== HAPPY HOUR MULTI-SELECT (Feature 020) ====================
+    const hhAdminState = {
+        schedules: [],
+        selectedScheduleId: null,
+        activeSubtab: 'hhSubtabArticles',
+        selectedArticleIds: new Set(),
+        selectedFamilyIds: new Set(),
+        selectedActiveRuleIds: new Set(),
+        articleFilterCatId: null,
+        articleSearchQuery: '',
+        priceMode: 'FixedPrice' // 'FixedPrice' or 'PercentageDiscount'
+    };
 
-        // Populate product select for promo
-        if (selectProd && state.products) {
-            selectProd.innerHTML = state.products.map(p => `<option value="${p.id}">${p.name} (Std: ${p.price.toFixed(2)} €)</option>`).join('');
-        }
+    async function loadAdminHappyHour() {
+        const selectSched = document.getElementById('selectHhActiveSchedule');
+        const listAllSched = document.getElementById('adminHappyHourList');
+        if (!selectSched && !listAllSched) return;
 
         try {
             const res = await fetch('/api/happy-hour/schedules');
             if (res.ok) {
-                const schedules = await res.json();
-                if (!schedules || schedules.length === 0) {
-                    listEl.innerHTML = '<p class="text-muted">Aucune plage Happy Hour configurée.</p>';
-                    return;
+                hhAdminState.schedules = await res.json() || [];
+                
+                // Populate schedule select dropdown
+                if (selectSched) {
+                    if (hhAdminState.schedules.length === 0) {
+                        selectSched.innerHTML = '<option value="">-- Aucun créneau --</option>';
+                        hhAdminState.selectedScheduleId = null;
+                    } else {
+                        selectSched.innerHTML = hhAdminState.schedules.map(s => 
+                            `<option value="${s.id}" ${s.id === hhAdminState.selectedScheduleId ? 'selected' : ''}>${s.name} (${s.startTime} - ${s.endTime})</option>`
+                        ).join('');
+                        if (!hhAdminState.selectedScheduleId || !hhAdminState.schedules.some(s => s.id === hhAdminState.selectedScheduleId)) {
+                            hhAdminState.selectedScheduleId = hhAdminState.schedules[0].id;
+                        }
+                    }
                 }
 
-                listEl.innerHTML = schedules.map(s => {
-                    const daysMap = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
-                    const dayLabels = (s.daysOfWeek || []).map(d => daysMap[d] || d).join(', ');
-                    const rulesText = (s.priceRules || []).map(r => `${r.targetName} ➔ ${r.fixedPrice ? r.fixedPrice.toFixed(2) + ' €' : '-' + r.discountPercent + '%'}`).join(' | ');
-
-                    return `
-                        <div style="background:rgba(255,255,255,0.03); padding:12px; border-radius:8px; border:1px solid rgba(255,255,255,0.06); display:flex; justify-content:space-between; align-items:center;">
-                            <div>
-                                <strong>🍻 ${s.name}</strong> <span style="font-size:0.75rem; color:#f59e0b; margin-left:6px;">${s.startTime} - ${s.endTime}</span>
-                                <div style="font-size:0.8rem; color:#94a3b8; margin-top:2px;">Jours : ${dayLabels} ${s.appliesToTakeaway ? '• Emporté inclus' : '• Sur place uniquement'}</div>
-                                <div style="font-size:0.78rem; color:#38bdf8; margin-top:2px;">Règles : ${rulesText || 'Aucune règle'}</div>
-                            </div>
-                            <button class="btn-archive btn-del-hh-sched" data-id="${s.id}" style="color:#f87171; border-color:rgba(239,68,68,0.3);">🗑️ Supprimer</button>
-                        </div>
-                    `;
-                }).join('');
-
-                listEl.querySelectorAll('.btn-del-hh-sched').forEach(btn => {
-                    btn.addEventListener('click', async () => {
-                        const schedId = btn.getAttribute('data-id');
-                        await fetch(`/api/happy-hour/schedules/${schedId}`, { method: 'DELETE' });
-                        showToast('Plage Happy Hour supprimée', 'info');
-                        await loadAdminHappyHour();
-                        await checkHappyHourStatus();
-                    });
-                });
+                // Render all sub-sections
+                renderHhArticleFilters();
+                renderHhArticlesGrid();
+                renderHhFamiliesGrid();
+                renderHhActiveRules();
+                renderHhAllSchedulesList();
             }
         } catch (err) {
             console.error('Erreur chargement plannings Happy Hour:', err);
         }
     }
 
+    function renderHhArticleFilters() {
+        const container = document.getElementById('hhArticleCategoryFilters');
+        if (!container) return;
+
+        let html = `<button type="button" class="hh-pill-filter ${hhAdminState.articleFilterCatId === null ? 'active' : ''}" data-cat-id="all">Toutes les catégories</button>`;
+        if (state.categories) {
+            html += state.categories.map(c => 
+                `<button type="button" class="hh-pill-filter ${hhAdminState.articleFilterCatId === c.id ? 'active' : ''}" data-cat-id="${c.id}">${c.name}</button>`
+            ).join('');
+        }
+        container.innerHTML = html;
+
+        container.querySelectorAll('.hh-pill-filter').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const catId = btn.getAttribute('data-cat-id');
+                hhAdminState.articleFilterCatId = catId === 'all' ? null : catId;
+                renderHhArticleFilters();
+                renderHhArticlesGrid();
+            });
+        });
+    }
+
+    function renderHhArticlesGrid() {
+        const grid = document.getElementById('hhArticlesGrid');
+        const countSpan = document.getElementById('hhSelectedArticlesCount');
+        if (!grid) return;
+
+        let filtered = state.products || [];
+        if (hhAdminState.articleFilterCatId) {
+            filtered = filtered.filter(p => p.categoryId === hhAdminState.articleFilterCatId);
+        }
+        if (hhAdminState.articleSearchQuery.trim()) {
+            const q = hhAdminState.articleSearchQuery.toLowerCase().trim();
+            filtered = filtered.filter(p => p.name.toLowerCase().includes(q));
+        }
+
+        if (countSpan) {
+            countSpan.textContent = hhAdminState.selectedArticleIds.size;
+        }
+
+        if (filtered.length === 0) {
+            grid.innerHTML = '<p class="text-muted" style="grid-column:1/-1; padding:20px; text-align:center;">Aucun article trouvé.</p>';
+            return;
+        }
+
+        grid.innerHTML = filtered.map(p => {
+            const isChecked = hhAdminState.selectedArticleIds.has(p.id);
+            return `
+                <div class="hh-select-card ${isChecked ? 'selected' : ''}" data-prod-id="${p.id}">
+                    <input type="checkbox" ${isChecked ? 'checked' : ''} data-prod-id="${p.id}">
+                    <div class="hh-select-card-info">
+                        <div class="hh-select-card-title">${p.name}</div>
+                        <div class="hh-select-card-sub">Std: ${p.price.toFixed(2)} €</div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        grid.querySelectorAll('.hh-select-card').forEach(card => {
+            card.addEventListener('click', (e) => {
+                const prodId = card.getAttribute('data-prod-id');
+                const cb = card.querySelector('input[type="checkbox"]');
+                if (e.target !== cb) {
+                    cb.checked = !cb.checked;
+                }
+                if (cb.checked) {
+                    hhAdminState.selectedArticleIds.add(prodId);
+                    card.classList.add('selected');
+                } else {
+                    hhAdminState.selectedArticleIds.delete(prodId);
+                    card.classList.remove('selected');
+                }
+                if (countSpan) countSpan.textContent = hhAdminState.selectedArticleIds.size;
+            });
+        });
+    }
+
+    function renderHhFamiliesGrid() {
+        const grid = document.getElementById('hhFamiliesGrid');
+        const countSpan = document.getElementById('hhSelectedFamiliesCount');
+        if (!grid) return;
+
+        if (countSpan) {
+            countSpan.textContent = hhAdminState.selectedFamilyIds.size;
+        }
+
+        const cats = state.categories || [];
+        if (cats.length === 0) {
+            grid.innerHTML = '<p class="text-muted" style="grid-column:1/-1; padding:20px; text-align:center;">Aucune famille définie dans le catalogue.</p>';
+            return;
+        }
+
+        grid.innerHTML = cats.map(c => {
+            const isChecked = hhAdminState.selectedFamilyIds.has(c.id);
+            const prodsInCat = (state.products || []).filter(p => p.categoryId === c.id);
+            return `
+                <div class="hh-select-card ${isChecked ? 'selected' : ''}" data-cat-id="${c.id}">
+                    <input type="checkbox" ${isChecked ? 'checked' : ''} data-cat-id="${c.id}">
+                    <div class="hh-select-card-info">
+                        <div class="hh-select-card-title">${c.name}</div>
+                        <div class="hh-select-card-sub">${prodsInCat.length} article(s) inclus</div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        grid.querySelectorAll('.hh-select-card').forEach(card => {
+            card.addEventListener('click', (e) => {
+                const catId = card.getAttribute('data-cat-id');
+                const cb = card.querySelector('input[type="checkbox"]');
+                if (e.target !== cb) {
+                    cb.checked = !cb.checked;
+                }
+                if (cb.checked) {
+                    hhAdminState.selectedFamilyIds.add(catId);
+                    card.classList.add('selected');
+                } else {
+                    hhAdminState.selectedFamilyIds.delete(catId);
+                    card.classList.remove('selected');
+                }
+                if (countSpan) countSpan.textContent = hhAdminState.selectedFamilyIds.size;
+            });
+        });
+    }
+
+    function renderHhActiveRules() {
+        const catList = document.getElementById('hhActiveCategoryRulesList');
+        const prodList = document.getElementById('hhActiveProductRulesList');
+        const badge = document.getElementById('hhRulesCountBadge');
+        if (!catList || !prodList) return;
+
+        const currentSched = hhAdminState.schedules.find(s => s.id === hhAdminState.selectedScheduleId);
+        const rules = currentSched ? (currentSched.priceRules || []) : [];
+        if (badge) badge.textContent = rules.length;
+
+        const catRules = rules.filter(r => r.targetType === 1 || r.targetType === 'Category');
+        const prodRules = rules.filter(r => r.targetType === 0 || r.targetType === 'Product');
+
+        if (catRules.length === 0) {
+            catList.innerHTML = '<p class="text-muted" style="font-size:0.85rem;">Aucune règle famille active.</p>';
+        } else {
+            catList.innerHTML = catRules.map(r => `
+                <div class="hh-active-rule-item">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <input type="checkbox" class="cb-active-rule" data-rule-id="${r.id}" ${hhAdminState.selectedActiveRuleIds.has(r.id) ? 'checked' : ''}>
+                        <div>
+                            <strong>🏷️ ${r.targetName || 'Famille'}</strong>
+                            <span style="color:#f59e0b; margin-left:6px; font-weight:bold;">-${r.discountPercent}%</span>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-archive btn-del-single-rule" data-rule-id="${r.id}" style="color:#f87171; border-color:rgba(239,68,68,0.3); padding:4px 8px; font-size:0.8rem;">🗑️</button>
+                </div>
+            `).join('');
+        }
+
+        if (prodRules.length === 0) {
+            prodList.innerHTML = '<p class="text-muted" style="font-size:0.85rem;">Aucune règle article active.</p>';
+        } else {
+            prodList.innerHTML = prodRules.map(r => `
+                <div class="hh-active-rule-item">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <input type="checkbox" class="cb-active-rule" data-rule-id="${r.id}" ${hhAdminState.selectedActiveRuleIds.has(r.id) ? 'checked' : ''}>
+                        <div>
+                            <strong>🍺 ${r.targetName || 'Article'}</strong>
+                            <span style="color:#38bdf8; margin-left:6px; font-weight:bold;">${r.fixedPrice ? r.fixedPrice.toFixed(2) + ' €' : '-' + r.discountPercent + '%'}</span>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-archive btn-del-single-rule" data-rule-id="${r.id}" style="color:#f87171; border-color:rgba(239,68,68,0.3); padding:4px 8px; font-size:0.8rem;">🗑️</button>
+                </div>
+            `).join('');
+        }
+
+        // Attach checkbox change handlers
+        document.querySelectorAll('.cb-active-rule').forEach(cb => {
+            cb.addEventListener('change', () => {
+                const rId = cb.getAttribute('data-rule-id');
+                if (cb.checked) hhAdminState.selectedActiveRuleIds.add(rId);
+                else hhAdminState.selectedActiveRuleIds.delete(rId);
+            });
+        });
+
+        // Attach single delete handlers
+        document.querySelectorAll('.btn-del-single-rule').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const ruleId = btn.getAttribute('data-rule-id');
+                await deleteRulesBatch([ruleId]);
+            });
+        });
+    }
+
+    function renderHhAllSchedulesList() {
+        const listEl = document.getElementById('adminHappyHourList');
+        if (!listEl) return;
+
+        if (hhAdminState.schedules.length === 0) {
+            listEl.innerHTML = '<p class="text-muted">Aucune plage Happy Hour configurée.</p>';
+            return;
+        }
+
+        listEl.innerHTML = hhAdminState.schedules.map(s => {
+            const daysMap = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+            const dayLabels = (s.daysOfWeek || []).map(d => daysMap[d] || d).join(', ');
+            const rulesCount = (s.priceRules || []).length;
+            const isSelected = s.id === hhAdminState.selectedScheduleId;
+
+            return `
+                <div style="background:rgba(255,255,255,0.03); padding:12px; border-radius:8px; border:1px solid ${isSelected ? 'var(--primary)' : 'rgba(255,255,255,0.06)'}; display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <strong>🍻 ${s.name}</strong> 
+                        <span style="font-size:0.75rem; color:#f59e0b; margin-left:6px;">${s.startTime} - ${s.endTime}</span>
+                        <span style="font-size:0.72rem; background:rgba(59,130,246,0.2); color:#60a5fa; border:1px solid rgba(59,130,246,0.3); padding:2px 6px; border-radius:10px; margin-left:6px;">Priorité: ${s.priority || 1}</span>
+                        <div style="font-size:0.8rem; color:#94a3b8; margin-top:2px;">Jours : ${dayLabels} ${s.appliesToTakeaway ? '• Emporté inclus' : '• Sur place uniquement'}</div>
+                        <div style="font-size:0.78rem; color:#38bdf8; margin-top:2px;">${rulesCount} règle(s) tarifaire(s) configurée(s)</div>
+                    </div>
+                    <div style="display:flex; gap:8px;">
+                        <button class="btn-primary btn-select-hh-sched" data-id="${s.id}" style="padding:6px 12px; font-size:0.8rem;">Gérer les tarifs</button>
+                        <button class="btn-archive btn-del-hh-sched" data-id="${s.id}" style="color:#f87171; border-color:rgba(239,68,68,0.3); padding:6px 10px; font-size:0.8rem;">🗑️</button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        listEl.querySelectorAll('.btn-select-hh-sched').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const sId = btn.getAttribute('data-id');
+                hhAdminState.selectedScheduleId = sId;
+                const select = document.getElementById('selectHhActiveSchedule');
+                if (select) select.value = sId;
+                switchHhSubtab('hhSubtabArticles');
+                renderHhActiveRules();
+            });
+        });
+
+        listEl.querySelectorAll('.btn-del-hh-sched').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const schedId = btn.getAttribute('data-id');
+                await fetch(`/api/happy-hour/schedules/${schedId}`, { method: 'DELETE' });
+                showToast('Plage Happy Hour supprimée', 'info');
+                await loadAdminHappyHour();
+                await checkHappyHourStatus();
+            });
+        });
+    }
+
+    function switchHhSubtab(subtabId) {
+        hhAdminState.activeSubtab = subtabId;
+        document.querySelectorAll('.hh-subtab-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.getAttribute('data-hh-subtab') === subtabId);
+        });
+        document.querySelectorAll('.hh-subtab-pane').forEach(pane => {
+            pane.style.display = pane.id === subtabId ? 'block' : 'none';
+        });
+    }
+
+    async function applyBatchArticles() {
+        if (!hhAdminState.selectedScheduleId) {
+            showToast('Veuillez sélectionner ou créer un créneau Happy Hour d\'abord', 'warning');
+            return;
+        }
+        if (hhAdminState.selectedArticleIds.size === 0) {
+            showToast('Veuillez sélectionner au moins un article', 'warning');
+            return;
+        }
+
+        const valInput = document.getElementById('inputHhBatchValue');
+        const value = parseFloat(valInput ? valInput.value : 0);
+        if (isNaN(value) || value <= 0) {
+            showToast('Veuillez saisir un tarif ou une remise valide (> 0)', 'error');
+            return;
+        }
+
+        const isFixed = hhAdminState.priceMode === 'FixedPrice';
+        const payload = {
+            targetType: 0, // Product = 0
+            targetIds: Array.from(hhAdminState.selectedArticleIds),
+            pricingMode: isFixed ? 0 : 1, // FixedPrice = 0, PercentageDiscount = 1
+            fixedPrice: isFixed ? value : null,
+            discountPercent: isFixed ? null : value
+        };
+
+        try {
+            const res = await fetch(`/api/happy-hour/schedules/${hhAdminState.selectedScheduleId}/rules/batch`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                showToast(`✓ ${data.appliedCount || payload.targetIds.length} règle(s) appliquée(s) avec succès !`, 'success');
+                hhAdminState.selectedArticleIds.clear();
+                await loadAdminHappyHour();
+                await checkHappyHourStatus();
+            } else {
+                const err = await res.json().catch(() => ({}));
+                showToast(err.message || 'Erreur lors de l\'application des règles groupées', 'error');
+            }
+        } catch (err) {
+            console.error('Erreur batch rules articles:', err);
+            showToast('Erreur réseau lors de l\'enregistrement', 'error');
+        }
+    }
+
+    async function applyBatchFamilies() {
+        if (!hhAdminState.selectedScheduleId) {
+            showToast('Veuillez sélectionner ou créer un créneau Happy Hour d\'abord', 'warning');
+            return;
+        }
+        if (hhAdminState.selectedFamilyIds.size === 0) {
+            showToast('Veuillez sélectionner au moins une famille', 'warning');
+            return;
+        }
+
+        const discountInput = document.getElementById('inputHhFamilyDiscount');
+        const discount = parseFloat(discountInput ? discountInput.value : 0);
+        if (isNaN(discount) || discount <= 0 || discount > 100) {
+            showToast('La remise doit être comprise entre 1% et 100%', 'error');
+            return;
+        }
+
+        const payload = {
+            targetType: 1, // Category = 1
+            targetIds: Array.from(hhAdminState.selectedFamilyIds),
+            pricingMode: 1, // PercentageDiscount = 1
+            fixedPrice: null,
+            discountPercent: discount
+        };
+
+        try {
+            const res = await fetch(`/api/happy-hour/schedules/${hhAdminState.selectedScheduleId}/rules/batch`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                showToast(`✓ ${data.appliedRulesCount || payload.targetIds.length} famille(s) configurée(s) à -${discount}% !`, 'success');
+                hhAdminState.selectedFamilyIds.clear();
+                await loadAdminHappyHour();
+                await checkHappyHourStatus();
+            } else {
+                const err = await res.json().catch(() => ({}));
+                showToast(err.message || 'Erreur lors de l\'application aux familles', 'error');
+            }
+        } catch (err) {
+            console.error('Erreur batch rules familles:', err);
+            showToast('Erreur réseau lors de l\'enregistrement', 'error');
+        }
+    }
+
+    async function deleteRulesBatch(ruleIds) {
+        if (!hhAdminState.selectedScheduleId) return;
+        if (!ruleIds || ruleIds.length === 0) {
+            showToast('Aucune règle sélectionnée pour la suppression', 'warning');
+            return;
+        }
+
+        try {
+            const res = await fetch(`/api/happy-hour/schedules/${hhAdminState.selectedScheduleId}/rules/batch`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ruleIds })
+            });
+
+            if (res.ok) {
+                showToast(`✓ ${ruleIds.length} règle(s) supprimée(s)`, 'info');
+                ruleIds.forEach(id => hhAdminState.selectedActiveRuleIds.delete(id));
+                await loadAdminHappyHour();
+                await checkHappyHourStatus();
+            } else {
+                showToast('Erreur lors de la suppression des règles', 'error');
+            }
+        } catch (err) {
+            console.error('Erreur suppression lot règles:', err);
+            showToast('Erreur réseau', 'error');
+        }
+    }
+
     function setupForms() {
+        // Schedule Selection Dropdown
+        const selectSched = document.getElementById('selectHhActiveSchedule');
+        if (selectSched) {
+            selectSched.addEventListener('change', () => {
+                hhAdminState.selectedScheduleId = selectSched.value;
+                renderHhActiveRules();
+                renderHhAllSchedulesList();
+            });
+        }
+
+        // Toggle New Schedule Form Collapsible
+        const btnToggleForm = document.getElementById('btnToggleNewScheduleForm');
+        const containerForm = document.getElementById('containerNewScheduleForm');
+        const btnCancelNewSched = document.getElementById('btnCancelNewSchedule');
+        if (btnToggleForm && containerForm) {
+            btnToggleForm.addEventListener('click', () => {
+                containerForm.style.display = containerForm.style.display === 'none' ? 'block' : 'none';
+            });
+            if (btnCancelNewSched) {
+                btnCancelNewSched.addEventListener('click', () => {
+                    containerForm.style.display = 'none';
+                });
+            }
+        }
+
+        // Subtabs Navigation
+        document.querySelectorAll('.hh-subtab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const subtab = btn.getAttribute('data-hh-subtab');
+                switchHhSubtab(subtab);
+            });
+        });
+
+        // Search Filter for Articles
+        const inputSearch = document.getElementById('inputHhArticleSearch');
+        if (inputSearch) {
+            inputSearch.addEventListener('input', (e) => {
+                hhAdminState.articleSearchQuery = e.target.value;
+                renderHhArticlesGrid();
+            });
+        }
+
+        // Articles Select All / Deselect All
+        const btnSelectAllArticles = document.getElementById('btnHhSelectAllArticles');
+        const btnDeselectAllArticles = document.getElementById('btnHhDeselectAllArticles');
+        if (btnSelectAllArticles) {
+            btnSelectAllArticles.addEventListener('click', () => {
+                let filtered = state.products || [];
+                if (hhAdminState.articleFilterCatId) {
+                    filtered = filtered.filter(p => p.categoryId === hhAdminState.articleFilterCatId);
+                }
+                if (hhAdminState.articleSearchQuery.trim()) {
+                    const q = hhAdminState.articleSearchQuery.toLowerCase().trim();
+                    filtered = filtered.filter(p => p.name.toLowerCase().includes(q));
+                }
+                filtered.forEach(p => hhAdminState.selectedArticleIds.add(p.id));
+                renderHhArticlesGrid();
+            });
+        }
+        if (btnDeselectAllArticles) {
+            btnDeselectAllArticles.addEventListener('click', () => {
+                hhAdminState.selectedArticleIds.clear();
+                renderHhArticlesGrid();
+            });
+        }
+
+        // Families Select All / Deselect All
+        const btnSelectAllFamilies = document.getElementById('btnHhSelectAllFamilies');
+        const btnDeselectAllFamilies = document.getElementById('btnHhDeselectAllFamilies');
+        if (btnSelectAllFamilies) {
+            btnSelectAllFamilies.addEventListener('click', () => {
+                (state.categories || []).forEach(c => hhAdminState.selectedFamilyIds.add(c.id));
+                renderHhFamiliesGrid();
+            });
+        }
+        if (btnDeselectAllFamilies) {
+            btnDeselectAllFamilies.addEventListener('click', () => {
+                hhAdminState.selectedFamilyIds.clear();
+                renderHhFamiliesGrid();
+            });
+        }
+
+        // Articles Price Mode Toggle (Fixed vs Discount)
+        const btnFixed = document.getElementById('btnHhModeFixed');
+        const btnPercent = document.getElementById('btnHhModePercent');
+        const valUnit = document.getElementById('hhBatchValueUnit');
+        const valInput = document.getElementById('inputHhBatchValue');
+        if (btnFixed && btnPercent) {
+            btnFixed.addEventListener('click', () => {
+                hhAdminState.priceMode = 'FixedPrice';
+                btnFixed.classList.add('active');
+                btnPercent.classList.remove('active');
+                if (valUnit) valUnit.textContent = '€';
+                if (valInput) { valInput.value = '5.00'; valInput.step = '0.10'; }
+            });
+            btnPercent.addEventListener('click', () => {
+                hhAdminState.priceMode = 'PercentageDiscount';
+                btnPercent.classList.add('active');
+                btnFixed.classList.remove('active');
+                if (valUnit) valUnit.textContent = '%';
+                if (valInput) { valInput.value = '25'; valInput.step = '1'; }
+            });
+        }
+
+        // Batch Apply Buttons
+        const btnApplyArticles = document.getElementById('btnApplyBatchArticles');
+        if (btnApplyArticles) {
+            btnApplyArticles.addEventListener('click', applyBatchArticles);
+        }
+        const btnApplyFamilies = document.getElementById('btnApplyBatchFamilies');
+        if (btnApplyFamilies) {
+            btnApplyFamilies.addEventListener('click', applyBatchFamilies);
+        }
+
+        // Active Rules Select All & Batch Delete
+        const btnSelectAllActive = document.getElementById('btnHhSelectAllActiveRules');
+        const btnDeleteSelected = document.getElementById('btnDeleteSelectedRules');
+        if (btnSelectAllActive) {
+            btnSelectAllActive.addEventListener('click', () => {
+                const currentSched = hhAdminState.schedules.find(s => s.id === hhAdminState.selectedScheduleId);
+                const rules = currentSched ? (currentSched.priceRules || []) : [];
+                rules.forEach(r => hhAdminState.selectedActiveRuleIds.add(r.id));
+                renderHhActiveRules();
+            });
+        }
+        if (btnDeleteSelected) {
+            btnDeleteSelected.addEventListener('click', async () => {
+                if (hhAdminState.selectedActiveRuleIds.size === 0) {
+                    showToast('Veuillez cocher au moins une règle à supprimer', 'warning');
+                    return;
+                }
+                await deleteRulesBatch(Array.from(hhAdminState.selectedActiveRuleIds));
+            });
+        }
+
         // Happy Hour Add Schedule Form
         const formHh = document.getElementById('formAddHappyHourSchedule');
         if (formHh) {
@@ -2708,12 +3221,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const startTime = document.getElementById('inputHhStartTime').value;
                 const endTime = document.getElementById('inputHhEndTime').value;
                 const takeaway = document.getElementById('checkHhTakeaway').checked;
-                const prodId = document.getElementById('selectHhProduct').value;
-                const specialPrice = parseFloat(document.getElementById('inputHhSpecialPrice').value);
-
+                const priorityEl = document.getElementById('inputHhPriority');
+                const priority = priorityEl ? (parseInt(priorityEl.value, 10) || 1) : 1;
                 const checkedDays = Array.from(document.querySelectorAll('input[name="hhDays"]:checked')).map(cb => parseInt(cb.value, 10));
-
-                const selProd = state.products.find(p => p.id === prodId);
 
                 const payload = {
                     name: name,
@@ -2722,17 +3232,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     endTime: endTime,
                     isActive: true,
                     appliesToTakeaway: takeaway,
-                    priority: 2,
-                    priceRules: [
-                        {
-                            targetType: 0,
-                            targetId: prodId,
-                            targetName: selProd ? selProd.name : 'Article',
-                            pricingMode: 0,
-                            fixedPrice: specialPrice,
-                            discountPercent: null
-                        }
-                    ]
+                    priority: priority,
+                    priceRules: []
                 };
 
                 const res = await fetch('/api/happy-hour/schedules', {
@@ -2742,8 +3243,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
 
                 if (res.ok) {
-                    showToast('Plage Happy Hour ajoutée !', 'success');
+                    const newSched = await res.json();
+                    showToast('Plage Happy Hour créée avec succès !', 'success');
                     formHh.reset();
+                    if (containerForm) containerForm.style.display = 'none';
+                    hhAdminState.selectedScheduleId = newSched.id;
                     await loadAdminHappyHour();
                     await checkHappyHourStatus();
                 } else {

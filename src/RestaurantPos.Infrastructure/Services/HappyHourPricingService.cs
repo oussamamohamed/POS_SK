@@ -360,6 +360,161 @@ public class HappyHourPricingService : IHappyHourPricingService
         );
     }
 
+    public async Task<BatchPriceRulesResponseDto> ApplyBatchPriceRulesAsync(
+        Guid scheduleId,
+        BatchPriceRulesRequestDto request,
+        CancellationToken cancellationToken = default)
+    {
+        var schedule = await _dbContext.HappyHourSchedules
+            .Include(s => s.PriceRules)
+            .FirstOrDefaultAsync(s => s.Id == scheduleId, cancellationToken)
+            .ConfigureAwait(false);
+
+        if (schedule == null)
+        {
+            return new BatchPriceRulesResponseDto(false, 0, scheduleId, "Planning Happy Hour introuvable.");
+        }
+
+        if (request.TargetIds == null || request.TargetIds.Count == 0)
+        {
+            return new BatchPriceRulesResponseDto(false, 0, scheduleId, "Aucun élément sélectionné.");
+        }
+
+        Money? fixedPriceMoney = null;
+        decimal? discountPct = null;
+
+        if (request.PricingMode == HappyHourPricingMode.FixedPrice)
+        {
+            if (!request.FixedPrice.HasValue || request.FixedPrice.Value <= 0)
+            {
+                return new BatchPriceRulesResponseDto(false, 0, scheduleId, "Le prix fixe doit être strictement supérieur à 0.");
+            }
+            fixedPriceMoney = Money.FromEuros(request.FixedPrice.Value);
+        }
+        else
+        {
+            if (!request.DiscountPercent.HasValue || request.DiscountPercent.Value <= 0 || request.DiscountPercent.Value > 100)
+            {
+                return new BatchPriceRulesResponseDto(false, 0, scheduleId, "Le pourcentage de remise doit être compris entre 0.01% et 100%.");
+            }
+            discountPct = request.DiscountPercent.Value;
+        }
+
+        Dictionary<string, string> targetNames = new(StringComparer.OrdinalIgnoreCase);
+        if (request.TargetType == HappyHourTargetType.Product)
+        {
+            var productGuids = request.TargetIds
+                .Select(id => Guid.TryParse(id, out var g) ? g : Guid.Empty)
+                .Where(g => g != Guid.Empty)
+                .ToList();
+
+            var prods = await _dbContext.Products
+                .Where(p => productGuids.Contains(p.Id))
+                .ToListAsync(cancellationToken)
+                .ConfigureAwait(false);
+
+            foreach (var p in prods)
+            {
+                targetNames[p.Id.ToString()] = p.Name;
+            }
+        }
+        else
+        {
+            var cats = await _dbContext.Categories
+                .Where(c => request.TargetIds.Contains(c.Id))
+                .ToListAsync(cancellationToken)
+                .ConfigureAwait(false);
+
+            foreach (var c in cats)
+            {
+                targetNames[c.Id] = c.Name;
+            }
+        }
+
+        int count = 0;
+        foreach (var targetId in request.TargetIds)
+        {
+            var existingRule = schedule.PriceRules.FirstOrDefault(r =>
+                r.TargetType == request.TargetType &&
+                string.Equals(r.TargetId, targetId, StringComparison.OrdinalIgnoreCase));
+
+            string name = targetNames.TryGetValue(targetId, out var resolvedName)
+                ? resolvedName
+                : targetId;
+
+            if (existingRule != null)
+            {
+                existingRule.TargetName = name;
+                existingRule.PricingMode = request.PricingMode;
+                existingRule.FixedPrice = fixedPriceMoney;
+                existingRule.DiscountPercent = discountPct;
+            }
+            else
+            {
+                var newRule = new HappyHourPriceRule
+                {
+                    ScheduleId = schedule.Id,
+                    TargetType = request.TargetType,
+                    TargetId = targetId,
+                    TargetName = name,
+                    PricingMode = request.PricingMode,
+                    FixedPrice = fixedPriceMoney,
+                    DiscountPercent = discountPct
+                };
+                _dbContext.HappyHourPriceRules.Add(newRule);
+            }
+            count++;
+        }
+
+        await _dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+
+        return new BatchPriceRulesResponseDto(
+            true,
+            count,
+            schedule.Id,
+            $"{count} règles appliquées avec succès au planning '{schedule.Name}'."
+        );
+    }
+
+    public async Task<BatchDeleteRulesResponseDto> DeleteBatchPriceRulesAsync(
+        Guid scheduleId,
+        BatchDeleteRulesRequestDto request,
+        CancellationToken cancellationToken = default)
+    {
+        var schedule = await _dbContext.HappyHourSchedules
+            .Include(s => s.PriceRules)
+            .FirstOrDefaultAsync(s => s.Id == scheduleId, cancellationToken)
+            .ConfigureAwait(false);
+
+        if (schedule == null)
+        {
+            return new BatchDeleteRulesResponseDto(false, 0, scheduleId, "Planning Happy Hour introuvable.");
+        }
+
+        if (request.RuleIds == null || request.RuleIds.Count == 0)
+        {
+            return new BatchDeleteRulesResponseDto(false, 0, scheduleId, "Aucune règle sélectionnée pour la suppression.");
+        }
+
+        var toRemove = schedule.PriceRules.Where(r => request.RuleIds.Contains(r.Id)).ToList();
+        int count = toRemove.Count;
+
+        foreach (var rule in toRemove)
+        {
+            schedule.PriceRules.Remove(rule);
+            _dbContext.HappyHourPriceRules.Remove(rule);
+        }
+
+        await _dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+
+        return new BatchDeleteRulesResponseDto(
+            true,
+            count,
+            schedule.Id,
+            $"{count} règles supprimées avec succès."
+        );
+    }
+
     public static (Money EffectivePrice, bool IsHappyHour, Money? OriginalPrice, Guid? ScheduleId) CalculatePriceForRule(
         Guid productId,
         string categoryId,

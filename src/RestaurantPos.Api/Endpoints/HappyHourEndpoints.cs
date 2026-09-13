@@ -144,5 +144,43 @@ public static class HappyHourEndpoints
 
             return Results.Ok(new { Message = "Plage horaire supprimée." });
         }).AllowAnonymous();
+
+        // 6. Batch Apply Price Rules
+        group.MapPost("/schedules/{scheduleId:guid}/rules/batch", async (
+            Guid scheduleId,
+            BatchPriceRulesRequestDto dto,
+            IHappyHourPricingService hhService,
+            Microsoft.AspNetCore.SignalR.IHubContext<RestaurantPos.Api.Hubs.PosHub, RestaurantPos.Api.Hubs.IPosHubClient> hub) =>
+        {
+            var res = await hhService.ApplyBatchPriceRulesAsync(scheduleId, dto);
+            if (!res.Success)
+            {
+                return Results.BadRequest(new { res.Message });
+            }
+
+            var status = await hhService.GetCurrentStatusAsync("POS_MAIN");
+            await hub.Clients.All.OnHappyHourStatusChanged(status);
+
+            return Results.Ok(res);
+        }).AllowAnonymous();
+
+        // 7. Batch Delete Price Rules
+        group.MapDelete("/schedules/{scheduleId:guid}/rules/batch", async (
+            Guid scheduleId,
+            [Microsoft.AspNetCore.Mvc.FromBody] BatchDeleteRulesRequestDto dto,
+            IHappyHourPricingService hhService,
+            Microsoft.AspNetCore.SignalR.IHubContext<RestaurantPos.Api.Hubs.PosHub, RestaurantPos.Api.Hubs.IPosHubClient> hub) =>
+        {
+            var res = await hhService.DeleteBatchPriceRulesAsync(scheduleId, dto);
+            if (!res.Success)
+            {
+                return Results.BadRequest(new { res.Message });
+            }
+
+            var status = await hhService.GetCurrentStatusAsync("POS_MAIN");
+            await hub.Clients.All.OnHappyHourStatusChanged(status);
+
+            return Results.Ok(res);
+        }).AllowAnonymous();
     }
 }

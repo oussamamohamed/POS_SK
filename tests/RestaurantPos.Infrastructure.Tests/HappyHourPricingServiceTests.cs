@@ -281,4 +281,196 @@ public class HappyHourPricingServiceTests
 
         updatedOrder.TotalTtcAmount.Should().Be(17.50m); // 10.00 + 7.50 = 17.50 EUR
     }
+
+    [Fact]
+    public async Task ApplyBatchPriceRulesAsync_ProductsWithFixedPrice_CreatesAndUpsertsRules()
+    {
+        // Arrange
+        using var dbContext = CreateInMemoryDb();
+        var authMock = new Mock<IOperatorAuthenticationService>();
+        var service = new HappyHourPricingService(dbContext, authMock.Object);
+
+        var schedule = new HappyHourSchedule
+        {
+            Name = "Soirée Batch",
+            DaysOfWeek = [DayOfWeek.Friday],
+            StartTime = new TimeOnly(18, 0),
+            EndTime = new TimeOnly(21, 0),
+            IsActive = true
+        };
+        dbContext.HappyHourSchedules.Add(schedule);
+
+        var p1 = new Product { Id = Guid.NewGuid(), Name = "Blonde 50cl", CategoryId = "BAR", Price = Money.FromEuros(7.00m) };
+        var p2 = new Product { Id = Guid.NewGuid(), Name = "IPA 50cl", CategoryId = "BAR", Price = Money.FromEuros(8.50m) };
+        dbContext.Products.AddRange(p1, p2);
+        await dbContext.SaveChangesAsync();
+
+        var batchReq = new BatchPriceRulesRequestDto(
+            HappyHourTargetType.Product,
+            [p1.Id.ToString(), p2.Id.ToString()],
+            HappyHourPricingMode.FixedPrice,
+            FixedPrice: 5.00m,
+            DiscountPercent: null
+        );
+
+        // Act
+        var result = await service.ApplyBatchPriceRulesAsync(schedule.Id, batchReq);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        result.AppliedCount.Should().Be(2);
+
+        var refreshedSchedule = await dbContext.HappyHourSchedules.Include(s => s.PriceRules).FirstAsync(s => s.Id == schedule.Id);
+        refreshedSchedule.PriceRules.Should().HaveCount(2);
+        refreshedSchedule.PriceRules.Should().AllSatisfy(r =>
+        {
+            r.PricingMode.Should().Be(HappyHourPricingMode.FixedPrice);
+            r.FixedPrice!.Value.ToDecimal().Should().Be(5.00m);
+        });
+
+        // Test Upsert: change price to 4.50 EUR
+        var updateReq = new BatchPriceRulesRequestDto(
+            HappyHourTargetType.Product,
+            [p1.Id.ToString()],
+            HappyHourPricingMode.FixedPrice,
+            FixedPrice: 4.50m,
+            DiscountPercent: null
+        );
+        var updateResult = await service.ApplyBatchPriceRulesAsync(schedule.Id, updateReq);
+        updateResult.Success.Should().BeTrue();
+
+        var reloadedRules = await dbContext.HappyHourPriceRules.Where(r => r.ScheduleId == schedule.Id).ToListAsync();
+        reloadedRules.Should().HaveCount(2); // No duplicates
+        var p1Rule = reloadedRules.First(r => r.TargetId == p1.Id.ToString());
+        p1Rule.FixedPrice!.Value.ToDecimal().Should().Be(4.50m);
+    }
+
+    [Fact]
+    public async Task ApplyBatchPriceRulesAsync_CategoriesWithPercentageDiscount_AppliesDiscountCorrectly()
+    {
+        // Arrange
+        using var dbContext = CreateInMemoryDb();
+        var authMock = new Mock<IOperatorAuthenticationService>();
+        var service = new HappyHourPricingService(dbContext, authMock.Object);
+
+        var schedule = new HappyHourSchedule
+        {
+            Name = "Soirée Familles",
+            DaysOfWeek = [DayOfWeek.Thursday],
+            StartTime = new TimeOnly(17, 0),
+            EndTime = new TimeOnly(20, 0),
+            IsActive = true
+        };
+        dbContext.HappyHourSchedules.Add(schedule);
+
+        var cat1 = new Category { Id = "CAT-BEER", Name = "Bières" };
+        var cat2 = new Category { Id = "CAT-COCKTAILS", Name = "Cocktails" };
+        dbContext.Categories.AddRange(cat1, cat2);
+        await dbContext.SaveChangesAsync();
+
+        var batchReq = new BatchPriceRulesRequestDto(
+            HappyHourTargetType.Category,
+            [cat1.Id, cat2.Id],
+            HappyHourPricingMode.PercentageDiscount,
+            FixedPrice: null,
+            DiscountPercent: 25.0m
+        );
+
+        // Act
+        var result = await service.ApplyBatchPriceRulesAsync(schedule.Id, batchReq);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        result.AppliedCount.Should().Be(2);
+
+        var rules = await dbContext.HappyHourPriceRules.Where(r => r.ScheduleId == schedule.Id).ToListAsync();
+        rules.Should().HaveCount(2);
+        rules.Should().AllSatisfy(r =>
+        {
+            r.TargetType.Should().Be(HappyHourTargetType.Category);
+            r.PricingMode.Should().Be(HappyHourPricingMode.PercentageDiscount);
+            r.DiscountPercent.Should().Be(25.0m);
+        });
+    }
+
+    [Fact]
+    public async Task DeleteBatchPriceRulesAsync_ValidRuleIds_RemovesSpecifiedRules()
+    {
+        // Arrange
+        using var dbContext = CreateInMemoryDb();
+        var authMock = new Mock<IOperatorAuthenticationService>();
+        var service = new HappyHourPricingService(dbContext, authMock.Object);
+
+        var schedule = new HappyHourSchedule
+        {
+            Name = "Soirée Cleanup",
+            DaysOfWeek = [DayOfWeek.Wednesday],
+            StartTime = new TimeOnly(17, 0),
+            EndTime = new TimeOnly(20, 0),
+            IsActive = true
+        };
+        dbContext.HappyHourSchedules.Add(schedule);
+
+        var rule1 = new HappyHourPriceRule { ScheduleId = schedule.Id, TargetType = HappyHourTargetType.Product, TargetId = "PROD-1", TargetName = "Item 1", PricingMode = HappyHourPricingMode.FixedPrice, FixedPrice = Money.FromEuros(5m) };
+        var rule2 = new HappyHourPriceRule { ScheduleId = schedule.Id, TargetType = HappyHourTargetType.Product, TargetId = "PROD-2", TargetName = "Item 2", PricingMode = HappyHourPricingMode.FixedPrice, FixedPrice = Money.FromEuros(6m) };
+        var rule3 = new HappyHourPriceRule { ScheduleId = schedule.Id, TargetType = HappyHourTargetType.Product, TargetId = "PROD-3", TargetName = "Item 3", PricingMode = HappyHourPricingMode.FixedPrice, FixedPrice = Money.FromEuros(7m) };
+        dbContext.HappyHourPriceRules.AddRange(rule1, rule2, rule3);
+        await dbContext.SaveChangesAsync();
+
+        var deleteReq = new BatchDeleteRulesRequestDto([rule1.Id, rule2.Id]);
+
+        // Act
+        var result = await service.DeleteBatchPriceRulesAsync(schedule.Id, deleteReq);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        result.DeletedCount.Should().Be(2);
+
+        var remaining = await dbContext.HappyHourPriceRules.Where(r => r.ScheduleId == schedule.Id).ToListAsync();
+        remaining.Should().HaveCount(1);
+        remaining[0].Id.Should().Be(rule3.Id);
+    }
+
+    [Fact]
+    public async Task GetCurrentStatusAsync_WhenSchedulesOverlap_SelectsHighestPrioritySchedule()
+    {
+        // Arrange
+        using var dbContext = CreateInMemoryDb();
+        var authMock = new Mock<IOperatorAuthenticationService>();
+        var service = new HappyHourPricingService(dbContext, authMock.Object);
+
+        // Get current day of week and a wide time range covering the entire day
+        var today = DateTime.UtcNow.DayOfWeek;
+        var lowPrioritySchedule = new HappyHourSchedule
+        {
+            Name = "Créneau Standard (Faible Priorité)",
+            DaysOfWeek = [today],
+            StartTime = new TimeOnly(0, 0),
+            EndTime = new TimeOnly(23, 59),
+            IsActive = true,
+            Priority = 1
+        };
+
+        var highPrioritySchedule = new HappyHourSchedule
+        {
+            Name = "Créneau VIP (Haute Priorité)",
+            DaysOfWeek = [today],
+            StartTime = new TimeOnly(0, 0),
+            EndTime = new TimeOnly(23, 59),
+            IsActive = true,
+            Priority = 10
+        };
+
+        dbContext.HappyHourSchedules.AddRange(lowPrioritySchedule, highPrioritySchedule);
+        await dbContext.SaveChangesAsync();
+
+        // Act
+        var status = await service.GetCurrentStatusAsync("POS_MAIN");
+
+        // Assert: highPrioritySchedule must win over lowPrioritySchedule
+        status.IsActive.Should().BeTrue();
+        status.ActiveScheduleId.Should().Be(highPrioritySchedule.Id);
+        status.ActiveScheduleName.Should().Be("Créneau VIP (Haute Priorité)");
+    }
 }
+

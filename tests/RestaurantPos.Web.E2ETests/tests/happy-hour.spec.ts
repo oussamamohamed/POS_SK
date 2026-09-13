@@ -31,6 +31,26 @@ test.describe('Happy Hour Pricing & Schedule Management', () => {
     });
     expect(overrideRes.ok()).toBeTruthy();
 
+    // S'assurer qu'un planning a une règle pour la Bière
+    const schedsRes = await request.get('/api/happy-hour/schedules');
+    const scheds = await schedsRes.json();
+    if (scheds && scheds.length > 0) {
+      const prodsRes = await request.get('/api/catalog/products');
+      const products = await prodsRes.json();
+      const beer = products.find((p: any) => p.name.includes('Bière'));
+      if (beer) {
+        await request.post(`/api/happy-hour/schedules/${scheds[0].id}/rules/batch`, {
+          data: {
+            targetType: 0,
+            targetIds: [beer.id],
+            pricingMode: 0,
+            fixedPrice: 5.00,
+            discountPercent: null
+          }
+        });
+      }
+    }
+
     // 2. Recharger la caisse tactile en attendant le statut
     await Promise.all([
       page.waitForResponse((resp: any) => resp.url().includes('/api/happy-hour/status') && resp.status() === 200),

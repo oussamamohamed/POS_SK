@@ -632,29 +632,43 @@
                         </div>
                     </div>
 
-                    <!-- Tab 7: Happy Hour Schedule Configuration (Feature 019) -->
+                    <!-- Tab 7: Happy Hour Schedule Configuration (Feature 019 & 020 Multi-Select) -->
                     <div class="admin-tab-pane" id="tabHappyHour">
-                        <div class="admin-split">
-                            <div class="admin-card">
-                                <h4>➕ Créer une Plage Happy Hour</h4>
-                                <form id="formAddHappyHourSchedule" class="admin-form">
-                                    <div class="form-group">
-                                        <label>Nom du créneau :</label>
-                                        <input type="text" id="inputHhScheduleName" placeholder="Ex: Afterwork Standard" required>
-                                    </div>
+                        <!-- Top Bar: Créer un planning ou sélectionner un planning existant à configurer -->
+                        <div class="admin-card" style="margin-bottom:16px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                                <div>
+                                    <h4 style="margin:0;">🍻 Configuration Plages & Tarifs Happy Hour</h4>
+                                    <p class="text-muted" style="margin:4px 0 0 0; font-size:0.85rem;">Définissez les créneaux et appliquez des remises par lots sur familles ou articles.</p>
+                                </div>
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <label style="font-size:0.85rem; font-weight:600; color:var(--text-muted);">Créneau actif :</label>
+                                    <select id="selectHhActiveSchedule" style="min-width:200px; padding:8px 12px; border-radius:6px; background:var(--bg-main); color:#fff; border:1px solid var(--border-color);"></select>
+                                    <button type="button" id="btnToggleNewScheduleForm" class="btn-primary" style="padding:8px 14px; font-size:0.85rem;">➕ Nouveau Créneau</button>
+                                </div>
+                            </div>
+
+                            <!-- Formulaire Collapsible de création de créneau -->
+                            <div id="containerNewScheduleForm" style="display:none; margin-top:16px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.08);">
+                                <h5>Nouveau Créneau Horaire</h5>
+                                <form id="formAddHappyHourSchedule" class="admin-form" style="margin-top:10px;">
                                     <div class="form-row">
-                                        <div class="form-group">
-                                            <label>Heure de Début :</label>
+                                        <div class="form-group" style="flex:2;">
+                                            <label>Nom du créneau :</label>
+                                            <input type="text" id="inputHhScheduleName" placeholder="Ex: Afterwork Standard" required>
+                                        </div>
+                                        <div class="form-group" style="flex:1;">
+                                            <label>Heure Début :</label>
                                             <input type="time" id="inputHhStartTime" value="17:00" required>
                                         </div>
-                                        <div class="form-group">
-                                            <label>Heure de Fin :</label>
+                                        <div class="form-group" style="flex:1;">
+                                            <label>Heure Fin :</label>
                                             <input type="time" id="inputHhEndTime" value="20:00" required>
                                         </div>
                                     </div>
                                     <div class="form-group">
                                         <label>Jours Applicables :</label>
-                                        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:6px;">
+                                        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:4px;">
                                             <label><input type="checkbox" name="hhDays" value="1" checked> Lun</label>
                                             <label><input type="checkbox" name="hhDays" value="2" checked> Mar</label>
                                             <label><input type="checkbox" name="hhDays" value="3" checked> Mer</label>
@@ -664,26 +678,150 @@
                                             <label><input type="checkbox" name="hhDays" value="0"> Dim</label>
                                         </div>
                                     </div>
-                                    <div class="form-group checkbox-group">
-                                        <label>
-                                            <input type="checkbox" id="checkHhTakeaway"> Valable aussi à emporter (Takeaway)
-                                        </label>
+                                    <div class="form-row" style="align-items:center;">
+                                        <div class="form-group checkbox-group" style="flex:2;">
+                                            <label>
+                                                <input type="checkbox" id="checkHhTakeaway"> Valable aussi à emporter (Takeaway)
+                                            </label>
+                                        </div>
+                                        <div class="form-group" style="flex:1;">
+                                            <label title="En cas de chevauchement d'horaires, la priorité la plus élevée l'emporte">Priorité (Conflit d'horaire) :</label>
+                                            <input type="number" id="inputHhPriority" value="1" min="1" max="100" style="width:100px;">
+                                        </div>
                                     </div>
-                                    <div class="form-group">
-                                        <label>Article en promotion :</label>
-                                        <select id="selectHhProduct"></select>
+                                    <div style="display:flex; gap:10px; justify-content:flex-end;">
+                                        <button type="button" id="btnCancelNewSchedule" class="btn-archive">Annuler</button>
+                                        <button type="submit" class="btn-primary">Créer le Créneau</button>
                                     </div>
-                                    <div class="form-group">
-                                        <label>Prix Spécial Happy Hour TTC (€) :</label>
-                                        <input type="number" step="0.10" id="inputHhSpecialPrice" value="5.00" placeholder="Ex: 5.00">
-                                    </div>
-                                    <button type="submit" class="btn-primary" style="margin-top:10px;">Enregistrer le Créneau</button>
                                 </form>
                             </div>
-                            <div class="admin-card">
-                                <h4>Plages Happy Hour Actives</h4>
-                                <div id="adminHappyHourList" style="display:flex; flex-direction:column; gap:10px;">
-                                    <p class="text-muted">Chargement des plannings...</p>
+                        </div>
+
+                        <!-- Configuration des Règles du créneau sélectionné -->
+                        <div id="hhRulesManagerSection">
+                            <!-- Sous-navigation onglets tactiles pour les règles -->
+                            <div class="hh-subtabs-nav" style="display:flex; gap:8px; margin-bottom:16px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:8px;">
+                                <button type="button" class="hh-subtab-btn active" id="btnSubtabHhArticles" data-hh-subtab="hhSubtabArticles">🍺 Articles spécifiques</button>
+                                <button type="button" class="hh-subtab-btn" id="btnSubtabHhFamilies" data-hh-subtab="hhSubtabFamilies">🏷️ Familles éligibles</button>
+                                <button type="button" class="hh-subtab-btn" id="btnSubtabHhActiveRules" data-hh-subtab="hhSubtabActiveRules">📋 Règles actives (<span id="hhRulesCountBadge">0</span>)</button>
+                                <button type="button" class="hh-subtab-btn" id="btnSubtabHhAllSchedules" data-hh-subtab="hhSubtabAllSchedules">📅 Tous les créneaux</button>
+                            </div>
+
+                            <!-- Sous-onglet 1 : Articles spécifiques (US2) -->
+                            <div class="hh-subtab-pane active" id="hhSubtabArticles">
+                                <div class="admin-card">
+                                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                                        <div style="display:flex; align-items:center; gap:8px; flex:1; min-width:240px;">
+                                            <input type="text" id="inputHhArticleSearch" placeholder="🔍 Rechercher un article..." style="padding:8px 12px; border-radius:6px; background:var(--bg-main); color:#fff; border:1px solid var(--border-color); width:100%; max-width:300px;">
+                                        </div>
+                                        <div style="display:flex; gap:8px;">
+                                            <button type="button" id="btnHhSelectAllArticles" class="btn-archive" style="padding:6px 12px; font-size:0.85rem;">Tout sélectionner</button>
+                                            <button type="button" id="btnHhDeselectAllArticles" class="btn-archive" style="padding:6px 12px; font-size:0.85rem;">Tout désélectionner</button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Category Filter Pills -->
+                                    <div id="hhArticleCategoryFilters" class="hh-pill-container" style="display:flex; gap:6px; flex-wrap:wrap; margin:10px 0;">
+                                        <!-- Dynamically generated -->
+                                    </div>
+
+                                    <!-- Grille des articles avec case à cocher -->
+                                    <div id="hhArticlesGrid" class="hh-articles-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(180px, 1fr)); gap:10px; max-height:360px; overflow-y:auto; padding:4px;">
+                                        <!-- Dynamically generated -->
+                                    </div>
+
+                                    <!-- Barre d'action groupée pour articles -->
+                                    <div class="hh-batch-action-bar" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; background:rgba(255,255,255,0.04); padding:12px 16px; border-radius:8px; border:1px solid rgba(255,255,255,0.08); margin-top:12px;">
+                                        <div style="font-weight:600; color:var(--primary);">
+                                            <span id="hhSelectedArticlesCount">0</span> article(s) sélectionné(s)
+                                        </div>
+                                        <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                                            <div class="hh-price-mode-toggle" style="display:flex; border-radius:6px; overflow:hidden; border:1px solid var(--border-color);">
+                                                <button type="button" id="btnHhModeFixed" class="btn-mode active" style="padding:6px 12px; border:none; background:var(--primary); color:#fff; cursor:pointer;">Prix Fixe (€)</button>
+                                                <button type="button" id="btnHhModePercent" class="btn-mode" style="padding:6px 12px; border:none; background:rgba(255,255,255,0.06); color:var(--text-muted); cursor:pointer;">Remise (%)</button>
+                                            </div>
+                                            <div style="display:flex; align-items:center; gap:6px;">
+                                                <input type="number" step="0.10" id="inputHhBatchValue" value="5.00" style="width:90px; padding:6px 10px; border-radius:6px; background:var(--bg-main); color:#fff; border:1px solid var(--border-color); text-align:right;">
+                                                <span id="hhBatchValueUnit" style="font-weight:bold;">€</span>
+                                            </div>
+                                            <button type="button" id="btnApplyBatchArticles" class="btn-primary" style="padding:8px 16px;">Appliquer aux articles sélectionnés</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Sous-onglet 2 : Familles éligibles (US1) -->
+                            <div class="hh-subtab-pane" id="hhSubtabFamilies" style="display:none;">
+                                <div class="admin-card">
+                                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
+                                        <div>
+                                            <h5 style="margin:0;">🏷️ Appliquer une remise globale sur des familles de produits</h5>
+                                            <p class="text-muted" style="margin:2px 0 0 0; font-size:0.8rem;">Tous les articles de la catégorie bénéficieront de ce pourcentage de réduction.</p>
+                                        </div>
+                                        <div style="display:flex; gap:8px;">
+                                            <button type="button" id="btnHhSelectAllFamilies" class="btn-archive" style="padding:6px 12px; font-size:0.85rem;">Tout sélectionner</button>
+                                            <button type="button" id="btnHhDeselectAllFamilies" class="btn-archive" style="padding:6px 12px; font-size:0.85rem;">Tout désélectionner</button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Grille des Familles / Catégories -->
+                                    <div id="hhFamiliesGrid" class="hh-families-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:12px; max-height:360px; overflow-y:auto; padding:4px;">
+                                        <!-- Dynamically generated -->
+                                    </div>
+
+                                    <!-- Barre d'action groupée pour familles -->
+                                    <div class="hh-batch-action-bar" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; background:rgba(255,255,255,0.04); padding:12px 16px; border-radius:8px; border:1px solid rgba(255,255,255,0.08); margin-top:12px;">
+                                        <div style="font-weight:600; color:var(--primary);">
+                                            <span id="hhSelectedFamiliesCount">0</span> famille(s) sélectionnée(s)
+                                        </div>
+                                        <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                                            <div style="display:flex; align-items:center; gap:6px;">
+                                                <label style="font-size:0.85rem; color:var(--text-muted);">Remise :</label>
+                                                <input type="number" step="1" min="1" max="100" id="inputHhFamilyDiscount" value="20" style="width:70px; padding:6px 10px; border-radius:6px; background:var(--bg-main); color:#fff; border:1px solid var(--border-color); text-align:right;">
+                                                <span style="font-weight:bold;">%</span>
+                                            </div>
+                                            <button type="button" id="btnApplyBatchFamilies" class="btn-primary" style="padding:8px 16px;">Appliquer à la sélection</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Sous-onglet 3 : Règles Actives & Suppression par lot (US3) -->
+                            <div class="hh-subtab-pane" id="hhSubtabActiveRules" style="display:none;">
+                                <div class="admin-card">
+                                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
+                                        <h5 style="margin:0;">📋 Règles actives sur le créneau</h5>
+                                        <div style="display:flex; gap:8px;">
+                                            <button type="button" id="btnHhSelectAllActiveRules" class="btn-archive" style="padding:6px 12px; font-size:0.85rem;">Tout cocher</button>
+                                            <button type="button" id="btnDeleteSelectedRules" class="btn-archive" style="color:#f87171; border-color:rgba(239,68,68,0.4); padding:6px 12px; font-size:0.85rem;">🗑️ Supprimer la sélection</button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Section Familles éligibles -->
+                                    <div style="margin-bottom:16px;">
+                                        <h6 style="color:#f59e0b; margin:0 0 8px 0; text-transform:uppercase; font-size:0.75rem; letter-spacing:0.05em;">🏷️ Familles en promotion</h6>
+                                        <div id="hhActiveCategoryRulesList" style="display:flex; flex-direction:column; gap:6px;">
+                                            <!-- Dynamically generated -->
+                                        </div>
+                                    </div>
+
+                                    <!-- Section Articles spécifiques -->
+                                    <div>
+                                        <h6 style="color:#38bdf8; margin:0 0 8px 0; text-transform:uppercase; font-size:0.75rem; letter-spacing:0.05em;">🍺 Articles spécifiques</h6>
+                                        <div id="hhActiveProductRulesList" style="display:flex; flex-direction:column; gap:6px;">
+                                            <!-- Dynamically generated -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Sous-onglet 4 : Tous les créneaux (Vue historique) -->
+                            <div class="hh-subtab-pane" id="hhSubtabAllSchedules" style="display:none;">
+                                <div class="admin-card">
+                                    <h5 style="margin:0 0 12px 0;">Plages Happy Hour Existantes</h5>
+                                    <div id="adminHappyHourList" style="display:flex; flex-direction:column; gap:10px;">
+                                        <p class="text-muted">Chargement des plannings...</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
