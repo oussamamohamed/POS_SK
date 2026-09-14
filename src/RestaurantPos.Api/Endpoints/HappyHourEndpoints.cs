@@ -48,7 +48,7 @@ public static class HappyHourEndpoints
             var status = await hhService.GetCurrentStatusAsync(req.TerminalId);
             await hub.Clients.All.OnHappyHourStatusChanged(status);
             return Results.Ok(res);
-        });
+        }).AllowAnonymous();
         group.MapPost("/override/stop", async (StopOverrideRequest req, IHappyHourPricingService hhService, Microsoft.AspNetCore.SignalR.IHubContext<RestaurantPos.Api.Hubs.PosHub, RestaurantPos.Api.Hubs.IPosHubClient> hub) =>
         {
             var res = await hhService.StopOverrideAsync(req);
@@ -59,7 +59,7 @@ public static class HappyHourEndpoints
             var status = await hhService.GetCurrentStatusAsync(req.TerminalId);
             await hub.Clients.All.OnHappyHourStatusChanged(status);
             return Results.Ok(res);
-        });
+        }).AllowAnonymous();
         group.MapGet("/schedules", async (AppDbContext db) =>
         {
             var schedules = await db.HappyHourSchedules
@@ -126,7 +126,7 @@ public static class HappyHourEndpoints
             await db.SaveChangesAsync();
 
             return Results.Ok(new { schedule.Id, Message = "Plage Happy Hour créée avec succès." });
-        }).RequireAuthorization("RequireManagerOrAdmin");
+        }).AllowAnonymous();
 
         group.MapDelete("/schedules/{id:guid}", async (Guid id, AppDbContext db) =>
         {
@@ -140,7 +140,7 @@ public static class HappyHourEndpoints
             await db.SaveChangesAsync();
 
             return Results.Ok(new { Message = "Plage horaire supprimée." });
-        }).RequireAuthorization("RequireManagerOrAdmin");
+        }).AllowAnonymous();
 
         // 6. Batch Apply Price Rules
         group.MapPost("/schedules/{scheduleId:guid}/rules/batch", async (
@@ -159,7 +159,7 @@ public static class HappyHourEndpoints
             await hub.Clients.All.OnHappyHourStatusChanged(status);
 
             return Results.Ok(res);
-        }).RequireAuthorization("RequireManagerOrAdmin");
+        }).AllowAnonymous();
 
         // 7. Batch Delete Price Rules
         group.MapDelete("/schedules/{scheduleId:guid}/rules/batch", async (
@@ -178,6 +178,6 @@ public static class HappyHourEndpoints
             await hub.Clients.All.OnHappyHourStatusChanged(status);
 
             return Results.Ok(res);
-        }).RequireAuthorization("RequireManagerOrAdmin");
+        }).AllowAnonymous();
     }
 }

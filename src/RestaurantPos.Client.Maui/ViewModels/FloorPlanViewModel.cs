@@ -166,6 +166,24 @@ public partial class FloorPlanViewModel : ObservableObject
         }
     }
 
+    public void SetTableStatus(string tableNumber, TableStatus status, int? covers = null)
+    {
+        var table = Tables.FirstOrDefault(t => string.Equals(t.TableNumber, tableNumber, StringComparison.OrdinalIgnoreCase));
+        if (table != null)
+        {
+            table.Status = status;
+            if (covers.HasValue && covers.Value > 0)
+            {
+                table.CoversCount = covers.Value;
+            }
+            var index = Tables.IndexOf(table);
+            if (index >= 0)
+            {
+                Tables[index] = table;
+            }
+        }
+    }
+
     private void LoadDefaultTables()
     {
         Tables.Add(new DiningTable { TableNumber = "T01", Capacity = 2, PositionX = 40, PositionY = 40, Status = TableStatus.Occupied, CoversCount = 2, AssignedWaiterName = "Alexandre" });

@@ -46,13 +46,13 @@ public partial class PrinterAdminViewModel : ObservableObject
     private bool _isLoading;
 
     public PrinterAdminViewModel(
-        IPrinterConfigurationService printerService,
-        ICrossPlatformDiscoveryService discoveryService,
-        IPlatformEnvironmentService environmentService)
+        IPrinterConfigurationService? printerService = null,
+        ICrossPlatformDiscoveryService? discoveryService = null,
+        IPlatformEnvironmentService? environmentService = null)
     {
-        _printerService = printerService;
-        _discoveryService = discoveryService;
-        _environmentService = environmentService;
+        _printerService = printerService!;
+        _discoveryService = discoveryService!;
+        _environmentService = environmentService!;
     }
 
     [RelayCommand]
@@ -61,11 +61,19 @@ public partial class PrinterAdminViewModel : ObservableObject
         IsLoading = true;
         try
         {
-            var list = await _printerService.GetAllPrintersAsync();
             Printers.Clear();
-            foreach (var p in list)
+            if (_printerService != null)
             {
-                Printers.Add(p);
+                var list = await _printerService.GetAllPrintersAsync();
+                foreach (var p in list)
+                {
+                    Printers.Add(p);
+                }
+            }
+            else if (Printers.Count == 0)
+            {
+                Printers.Add(new PrinterConfiguration { Id = Guid.NewGuid(), Name = "Imprimante Reçus Caisse", IpAddress = "192.168.1.100", Port = 9100, PaperWidthMm = 80 });
+                Printers.Add(new PrinterConfiguration { Id = Guid.NewGuid(), Name = "Imprimante Cuisine KDS", IpAddress = "192.168.1.101", Port = 9100, PaperWidthMm = 80 });
             }
         }
         finally

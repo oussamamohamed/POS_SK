@@ -970,8 +970,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function loadActiveTableOrder(tableNumber) {
+        state.tableCarts = state.tableCarts || {};
+
         // First flush any pending undispatched items on previous table if switching tables
         if (state.activeTable && state.activeTable !== tableNumber) {
+            if (state.cart && state.cart.length > 0) {
+                state.tableCarts[state.activeTable] = JSON.parse(JSON.stringify(state.cart));
+            }
             await saveActiveCartToServer();
         }
 
@@ -979,10 +984,13 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.activeTableBadge.textContent = `Table ${tableNumber}`;
 
         try {
-            let res = await fetch(`/api/tables/${tableNumber}/order`);
+            const authHeaders = state.token ? { 'Authorization': `Bearer ${state.token}` } : {};
+            let res = await fetch(`/api/tables/${encodeURIComponent(tableNumber)}/order`, { headers: authHeaders });
             if (res.status === 401 && !state.token) {
                 await ensureAuthToken();
-                res = await fetch(`/api/tables/${tableNumber}/order`);
+                res = await fetch(`/api/tables/${encodeURIComponent(tableNumber)}/order`, {
+                    headers: state.token ? { 'Authorization': `Bearer ${state.token}` } : {}
+                });
             }
 
             if (res.ok) {
@@ -1019,14 +1027,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     modifiersPriceExtra: Number(line.modifiersPriceExtra) || 0
                 }));
 
+                state.tableCarts[tableNumber] = JSON.parse(JSON.stringify(state.cart));
                 renderCart();
             } else if (res.status === 404) {
-                // Table is genuinely free in database - reset cart for new order
-                state.activeOrderId = null;
-                state.cart = [];
-                state.globalDiscount = null;
-                elements.activeCoversBadge.textContent = `👥 2 Couverts (Libre)`;
-                renderCart();
+                if (state.tableCarts && state.tableCarts[tableNumber] && state.tableCarts[tableNumber].length > 0) {
+                    state.cart = JSON.parse(JSON.stringify(state.tableCarts[tableNumber]));
+                    renderCart();
+                } else {
+                    // Table is genuinely free in database - reset cart for new order
+                    state.activeOrderId = null;
+                    state.cart = [];
+                    state.globalDiscount = null;
+                    elements.activeCoversBadge.textContent = `👥 2 Couverts (Libre)`;
+                    renderCart();
+                }
             } else if (res.status === 401) {
                 // Not authenticated: do not wipe cart, terminal will prompt for PIN
                 console.warn(`Rappel table ${tableNumber} refusé (401 Non Authentifié). Authentification requise.`);
@@ -1035,7 +1049,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } catch (err) {
             console.error('Erreur rappel table:', err);
-            showToast(`Erreur chargement table ${tableNumber}`, 'error');
+            if (state.tableCarts && state.tableCarts[tableNumber] && state.tableCarts[tableNumber].length > 0) {
+                state.cart = JSON.parse(JSON.stringify(state.tableCarts[tableNumber]));
+                renderCart();
+            } else {
+                showToast(`Erreur chargement table ${tableNumber}`, 'error');
+            }
         }
     }
 
@@ -1192,9 +1211,18 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             await saveActiveCartToServer();
 
-            await fetch(`/api/tables/${state.activeTable}/dispatch`, { method: 'POST' });
+            const authHeaders = state.token ? { 'Authorization': `Bearer ${state.token}` } : {};
+            await fetch(`/api/tables/${encodeURIComponent(state.activeTable)}/dispatch`, { 
+                method: 'POST',
+                headers: authHeaders
+            });
             showToast(`Commande ${state.activeTable} envoyée en cuisine ! 👨‍🍳`, 'success');
             
+            // Mark items as dispatched and preserve in table cache
+            state.cart.forEach(i => i.isDispatched = true);
+            state.tableCarts = state.tableCarts || {};
+            state.tableCarts[state.activeTable] = JSON.parse(JSON.stringify(state.cart));
+
             if (state.activeTable === 'Comptoir') {
                 await loadActiveTableOrder('Comptoir');
             } else {

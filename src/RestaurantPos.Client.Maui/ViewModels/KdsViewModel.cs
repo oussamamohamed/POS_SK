@@ -81,8 +81,6 @@ public partial class KdsViewModel : ObservableObject
             _signalRClient.OnTicketRecalled += HandleTicketStatusChanged; // Reuse for recall
             _ = ConnectSignalRAsync();
         }
-
-        SeedInitialTicketsIfEmpty();
     }
 
     public void SeedInitialTicketsIfEmpty()
@@ -177,6 +175,13 @@ public partial class KdsViewModel : ObservableObject
 
     private void MoveTicketToCorrectList(KdsTicketItemViewModel ticketItem)
     {
+#if MAUI_UI
+        if (!MainThread.IsMainThread)
+        {
+            MainThread.BeginInvokeOnMainThread(() => MoveTicketToCorrectList(ticketItem));
+            return;
+        }
+#endif
         PendingTickets.Remove(ticketItem);
         InPrepTickets.Remove(ticketItem);
         ReadyTickets.Remove(ticketItem);
@@ -224,6 +229,16 @@ public partial class KdsViewModel : ObservableObject
     public async Task BumpTicketAsync(KdsTicketItemViewModel ticketItem)
     {
         var currentStatus = ticketItem.Ticket.Status;
+        var nextStatus = currentStatus switch
+        {
+            TicketStatus.Pending => TicketStatus.InPreparation,
+            TicketStatus.InPreparation => TicketStatus.Ready,
+            TicketStatus.Ready => TicketStatus.Served,
+            _ => currentStatus
+        };
+
+        ticketItem.Ticket = ticketItem.Ticket with { Status = nextStatus };
+        MoveTicketToCorrectList(ticketItem);
 
         if (_routingService is not null)
         {
@@ -231,29 +246,13 @@ public partial class KdsViewModel : ObservableObject
             if (updated is not null)
             {
                 ticketItem.Ticket = updated;
+                MoveTicketToCorrectList(ticketItem);
             }
         }
         else if (_signalRClient is not null)
         {
-            await _signalRClient.BumpTicketAsync(ticketItem.Ticket.TicketId);
-            // Wait for SignalR to update status via event
-            _environmentService.TriggerHapticFeedback(HapticFeedbackType.LightTap);
-            return;
+            _ = _signalRClient.BumpTicketAsync(ticketItem.Ticket.TicketId);
         }
-        else
-        {
-            var nextStatus = currentStatus switch
-            {
-                TicketStatus.Pending => TicketStatus.InPreparation,
-                TicketStatus.InPreparation => TicketStatus.Ready,
-                TicketStatus.Ready => TicketStatus.Served,
-                _ => currentStatus
-            };
-
-            ticketItem.Ticket = ticketItem.Ticket with { Status = nextStatus };
-        }
-
-        MoveTicketToCorrectList(ticketItem);
 
         _environmentService.TriggerHapticFeedback(HapticFeedbackType.LightTap);
     }
@@ -261,26 +260,32 @@ public partial class KdsViewModel : ObservableObject
     [RelayCommand]
     public async Task RecallTicketAsync(KdsTicketItemViewModel ticketItem)
     {
+        var currentStatus = ticketItem.Ticket.Status;
+        var prevStatus = currentStatus switch
+        {
+            TicketStatus.InPreparation => TicketStatus.Pending,
+            TicketStatus.Ready => TicketStatus.InPreparation,
+            TicketStatus.Served => TicketStatus.Ready,
+            _ => TicketStatus.Pending
+        };
+
+        ticketItem.Ticket = ticketItem.Ticket with { Status = prevStatus };
+        MoveTicketToCorrectList(ticketItem);
+
         if (_routingService is not null)
         {
             var recalled = await _routingService.RecallTicketAsync(ticketItem.Ticket.TicketId).ConfigureAwait(false);
             if (recalled is not null)
             {
                 ticketItem.Ticket = recalled;
+                MoveTicketToCorrectList(ticketItem);
             }
         }
         else if (_signalRClient is not null)
         {
-            await _signalRClient.RecallTicketAsync(ticketItem.Ticket.TicketId);
-            _environmentService.TriggerHapticFeedback(HapticFeedbackType.Warning);
-            return;
-        }
-        else
-        {
-            ticketItem.Ticket = ticketItem.Ticket with { Status = TicketStatus.Pending };
+            _ = _signalRClient.RecallTicketAsync(ticketItem.Ticket.TicketId);
         }
 
-        MoveTicketToCorrectList(ticketItem);
         _environmentService.TriggerHapticFeedback(HapticFeedbackType.Warning);
     }
 

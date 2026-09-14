@@ -30,6 +30,7 @@ public class KitchenKdsPage : ContentPage
     protected override void OnAppearing()
     {
         base.OnAppearing();
+        _vm.SeedInitialTicketsIfEmpty();
         _clockTimer = new System.Timers.Timer(30_000);
         _clockTimer.Elapsed += (_, _) =>
             MainThread.BeginInvokeOnMainThread(() => _vm.RefreshTimers());
@@ -46,53 +47,45 @@ public class KitchenKdsPage : ContentPage
 
     private void Build()
     {
-        // Header KDS
+        var topBar = new Controls.GlobalHeaderView(Controls.PosActiveViewTab.Kds);
+
+        // Subheader KDS : Titre et filtres stations (matching kdsView)
         var header = new Grid
         {
             BackgroundColor = Color.FromArgb("#0F172A"),
-            Padding = new Thickness(16, 10),
+            Padding = new Thickness(20, 10),
             ColumnDefinitions =
             {
                 new ColumnDefinition { Width = GridLength.Star },
-                new ColumnDefinition { Width = GridLength.Auto },
                 new ColumnDefinition { Width = GridLength.Auto }
             }
         };
 
         var titleLabel = new Label
         {
-            Text = "👨‍🍳 Ecran Cuisine",
+            Text = "👨‍🍳 Écran de Cuisine KDS (Temps Réel)",
             TextColor = Colors.White,
-            FontSize = 22,
+            FontSize = 18,
             FontAttributes = FontAttributes.Bold,
             VerticalOptions = LayoutOptions.Center
         };
 
-        var stationLabel = new Label
+        var filterPills = new HorizontalStackLayout
         {
-            TextColor = Color.FromArgb("#F59E0B"),
-            FontSize = 14,
+            Spacing = 8,
             VerticalOptions = LayoutOptions.Center,
-            Margin = new Thickness(0, 0, 12, 0)
-        };
-        stationLabel.SetBinding(Label.TextProperty, nameof(KdsViewModel.CurrentStationId));
-
-        var backBtn = new Button
-        {
-            Text = "← Salle",
-            BackgroundColor = Color.FromArgb("#334155"),
-            TextColor = Color.FromArgb("#94A3B8"),
-            FontSize = 14,
-            HeightRequest = 36,
-            CornerRadius = 8,
-            Command = new Command(async () => await Shell.Current.GoToAsync("//floor"))
+            Children =
+            {
+                new Button { Text = "Toutes Stations", BackgroundColor = Color.FromArgb("#3B82F6"), TextColor = Colors.White, FontSize = 12, HeightRequest = 32, CornerRadius = 6 },
+                new Button { Text = "Chaud / Grill", BackgroundColor = Color.FromArgb("#334155"), TextColor = Color.FromArgb("#94A3B8"), FontSize = 12, HeightRequest = 32, CornerRadius = 6 },
+                new Button { Text = "Froid / Entrées", BackgroundColor = Color.FromArgb("#334155"), TextColor = Color.FromArgb("#94A3B8"), FontSize = 12, HeightRequest = 32, CornerRadius = 6 },
+                new Button { Text = "Bar & Boissons", BackgroundColor = Color.FromArgb("#334155"), TextColor = Color.FromArgb("#94A3B8"), FontSize = 12, HeightRequest = 32, CornerRadius = 6 }
+            }
         };
 
-        Grid.SetColumn(stationLabel, 1);
-        Grid.SetColumn(backBtn, 2);
+        Grid.SetColumn(filterPills, 1);
         header.Add(titleLabel);
-        header.Add(stationLabel);
-        header.Add(backBtn);
+        header.Add(filterPills);
 
         // Colonnes KDS
         var columns = new Grid
@@ -108,20 +101,22 @@ public class KitchenKdsPage : ContentPage
         };
 
         columns.Add(BuildKdsColumn("⏳ En Attente", "#F59E0B", _vm.PendingTickets), 0, 0);
-        columns.Add(BuildKdsColumn("🔥 En Preparation", "#3B82F6", _vm.InPrepTickets), 1, 0);
-        columns.Add(BuildKdsColumn("✅ Pret a Servir", "#10B981", _vm.ReadyTickets), 2, 0);
+        columns.Add(BuildKdsColumn("🔥 En Préparation", "#3B82F6", _vm.InPrepTickets), 1, 0);
+        columns.Add(BuildKdsColumn("✅ Prêt à Servir", "#10B981", _vm.ReadyTickets), 2, 0);
 
         Content = new Grid
         {
             RowDefinitions =
             {
                 new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Auto },
                 new RowDefinition { Height = GridLength.Star }
             },
             Children =
             {
-                AddToGrid(header, 0),
-                AddToGrid(columns, 1)
+                AddToGrid(topBar, 0),
+                AddToGrid(header, 1),
+                AddToGrid(columns, 2)
             }
         };
     }

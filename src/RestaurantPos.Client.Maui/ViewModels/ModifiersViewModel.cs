@@ -26,7 +26,7 @@ public class SelectableOptionItem : ObservableObject
 public partial class ModifiersViewModel : ObservableObject
 {
     private readonly IPlatformEnvironmentService _environmentService;
-    private readonly IModifierValidationService _validationService;
+    private readonly IModifierValidationService? _validationService;
 
     [ObservableProperty]
     private Product? _product;
@@ -47,7 +47,7 @@ public partial class ModifiersViewModel : ObservableObject
 
     public ModifiersViewModel(
         IPlatformEnvironmentService environmentService,
-        IModifierValidationService validationService)
+        IModifierValidationService? validationService = null)
     {
         _environmentService = environmentService;
         _validationService = validationService;
@@ -104,11 +104,29 @@ public partial class ModifiersViewModel : ObservableObject
             .Select(o => new SelectedModifier(o.Option.Id, o.Option.Name, o.Option.ExtraPrice.AmountInCents))
             .ToList();
 
-        if (!_validationService.ValidateSelection(Group.MinSelections, Group.MaxSelections, selected, out string? error))
+        if (_validationService != null)
         {
-            ValidationErrorMessage = error ?? "Sélection invalide";
-            _environmentService.TriggerHapticFeedback(HapticFeedbackType.Error);
-            return;
+            if (!_validationService.ValidateSelection(Group.MinSelections, Group.MaxSelections, selected, out string? error))
+            {
+                ValidationErrorMessage = error ?? "Sélection invalide";
+                _environmentService.TriggerHapticFeedback(HapticFeedbackType.Error);
+                return;
+            }
+        }
+        else
+        {
+            if (selected.Count < Group.MinSelections)
+            {
+                ValidationErrorMessage = $"Veuillez sélectionner au moins {Group.MinSelections} option(s).";
+                _environmentService.TriggerHapticFeedback(HapticFeedbackType.Error);
+                return;
+            }
+            if (selected.Count > Group.MaxSelections)
+            {
+                ValidationErrorMessage = $"Vous ne pouvez pas sélectionner plus de {Group.MaxSelections} option(s).";
+                _environmentService.TriggerHapticFeedback(HapticFeedbackType.Error);
+                return;
+            }
         }
 
         IsCompleted = true;

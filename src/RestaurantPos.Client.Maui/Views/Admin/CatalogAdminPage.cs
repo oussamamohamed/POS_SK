@@ -1,4 +1,4 @@
-﻿#if MAUI_UI
+#if MAUI_UI
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
@@ -8,10 +8,10 @@ using RestaurantPos.Domain.Entities;
 namespace RestaurantPos.Client.Maui.Views.Admin;
 
 /// <summary>
-/// Page d'administration du catalogue (categories et articles).
+/// Vue d'administration du catalogue (categories et articles).
 /// CRUD complet : creer, modifier, archiver produits et categories.
 /// </summary>
-public class CatalogAdminPage : ContentPage
+public class CatalogAdminPage : ContentView
 {
     private readonly CatalogAdminViewModel _vm;
 
@@ -19,6 +19,7 @@ public class CatalogAdminPage : ContentPage
     {
         _vm = vm;
         BindingContext = vm;
+        Content = BuildContent();
     }
 
     /// <summary>Construit le contenu pour integration dans AdminShellPage.</summary>
@@ -48,20 +49,28 @@ public class CatalogAdminPage : ContentPage
 
     private View BuildCategoryPanel()
     {
-        var panel = new VerticalStackLayout
+        var panel = new Grid
         {
             BackgroundColor = Color.FromArgb("#1E293B"),
-            Spacing = 0
+            RowDefinitions =
+            {
+                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Star }
+            }
         };
 
-        panel.Add(new Label
+        var titleLabel = new Label
         {
             Text = "Familles",
             TextColor = Colors.White,
             FontSize = 16,
             FontAttributes = FontAttributes.Bold,
             Padding = new Thickness(16, 14)
-        });
+        };
+        Grid.SetRow(titleLabel, 0);
 
         // Champ creation categorie
         var newCatEntry = new Entry
@@ -73,6 +82,7 @@ public class CatalogAdminPage : ContentPage
             Margin = new Thickness(8),
             HeightRequest = 44
         };
+        Grid.SetRow(newCatEntry, 1);
 
         var addCatBtn = new Button
         {
@@ -92,6 +102,10 @@ public class CatalogAdminPage : ContentPage
                 }
             })
         };
+        Grid.SetRow(addCatBtn, 2);
+
+        var separator = new BoxView { HeightRequest = 1, Color = Color.FromArgb("#334155") };
+        Grid.SetRow(separator, 3);
 
         var catList = new CollectionView
         {
@@ -126,10 +140,12 @@ public class CatalogAdminPage : ContentPage
         };
         catList.SetBinding(CollectionView.ItemsSourceProperty, nameof(CatalogAdminViewModel.Categories));
         catList.SetBinding(CollectionView.SelectedItemProperty, nameof(CatalogAdminViewModel.SelectedCategory));
+        Grid.SetRow(catList, 4);
 
+        panel.Add(titleLabel);
         panel.Add(newCatEntry);
         panel.Add(addCatBtn);
-        panel.Add(new BoxView { HeightRequest = 1, Color = Color.FromArgb("#334155") });
+        panel.Add(separator);
         panel.Add(catList);
 
         return panel;

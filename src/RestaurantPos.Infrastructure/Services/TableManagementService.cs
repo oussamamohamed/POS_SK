@@ -154,6 +154,21 @@ public class TableManagementService : ITableManagementService
             }, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
+    private static string? NormalizeAltTableNumber(string tableNumber)
+    {
+        if (string.IsNullOrWhiteSpace(tableNumber)) return null;
+        var trimmed = tableNumber.Trim();
+        if (trimmed.StartsWith("T0", StringComparison.OrdinalIgnoreCase) && trimmed.Length > 2)
+        {
+            return "T" + trimmed[2..];
+        }
+        if (trimmed.StartsWith("T", StringComparison.OrdinalIgnoreCase) && trimmed.Length == 2 && char.IsDigit(trimmed[1]))
+        {
+            return "T0" + trimmed[1];
+        }
+        return null;
+    }
+
     public async Task<ActiveTableOrderDto?> GetActiveOrderForTableAsync(
         string tableNumber,
         CancellationToken cancellationToken = default)
@@ -162,6 +177,18 @@ public class TableManagementService : ITableManagementService
             .AsNoTracking()
             .FirstOrDefaultAsync(t => t.TableNumber == tableNumber, cancellationToken)
             .ConfigureAwait(false);
+
+        if (table is null)
+        {
+            var alt = NormalizeAltTableNumber(tableNumber);
+            if (alt is not null)
+            {
+                table = await _dbContext.DiningTables
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(t => t.TableNumber == alt, cancellationToken)
+                    .ConfigureAwait(false);
+            }
+        }
 
         if (table is null || table.ActiveOrderId is null)
         {
@@ -238,7 +265,25 @@ public class TableManagementService : ITableManagementService
 
                 if (table is null)
                 {
-                    throw new KeyNotFoundException($"Table {tableNumber} introuvable.");
+                    var alt = NormalizeAltTableNumber(tableNumber);
+                    if (alt is not null)
+                    {
+                        table = await _dbContext.DiningTables
+                            .FirstOrDefaultAsync(t => t.TableNumber == alt, ct)
+                            .ConfigureAwait(false);
+                    }
+                }
+
+                if (table is null)
+                {
+                    table = new DiningTable
+                    {
+                        TableNumber = tableNumber,
+                        Capacity = 2,
+                        Status = TableStatus.Occupied,
+                        OpenedAtUtc = DateTimeOffset.UtcNow
+                    };
+                    _dbContext.DiningTables.Add(table);
                 }
 
                 Order order;
@@ -320,6 +365,17 @@ public class TableManagementService : ITableManagementService
         var table = await _dbContext.DiningTables
             .FirstOrDefaultAsync(t => t.TableNumber == tableNumber, cancellationToken)
             .ConfigureAwait(false);
+
+        if (table is null)
+        {
+            var alt = NormalizeAltTableNumber(tableNumber);
+            if (alt is not null)
+            {
+                table = await _dbContext.DiningTables
+                    .FirstOrDefaultAsync(t => t.TableNumber == alt, cancellationToken)
+                    .ConfigureAwait(false);
+            }
+        }
 
         if (table?.ActiveOrderId is null) return false;
 

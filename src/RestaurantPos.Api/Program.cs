@@ -268,8 +268,9 @@ public partial class Program
         app.UseAuthentication();
         app.UseAuthorization();
 
-        // SignalR Hub Endpoint
+        // SignalR Hub Endpoints
         app.MapHub<PosHub>("/hubs/pos");
+        app.MapHub<RestaurantPos.Api.Hubs.KitchenHub>("/hubs/kitchen");
 
 #if DEBUG
         // Seed Initial Master Data for Local Development & Testing only in Debug mode
@@ -291,7 +292,9 @@ public partial class Program
             var staffService = scope.ServiceProvider.GetRequiredService<IStaffManagementService>();
             if (!db.Users.Any())
             {
-                staffService.CreateStaffMemberAsync("Administrateur", UserRole.Admin, "9999").GetAwaiter().GetResult();
+                staffService.CreateStaffMemberAsync("Admin Système", UserRole.Admin, "9999").GetAwaiter().GetResult();
+                staffService.CreateStaffMemberAsync("Alexandre Dupont (Manager)", UserRole.FloorManager, "1234").GetAwaiter().GetResult();
+                staffService.CreateStaffMemberAsync("Sophie Martin (Serveuse)", UserRole.Waiter, "2468").GetAwaiter().GetResult();
             }
         }
 #endif

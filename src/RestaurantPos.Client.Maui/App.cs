@@ -29,6 +29,16 @@ public class App : Microsoft.Maui.Controls.Application
             System.Diagnostics.Debug.WriteLine($"Local DB creation error: {ex}");
         }
 
+        try
+        {
+            var posVm = serviceProvider.GetService<ViewModels.PosTerminalViewModel>();
+            posVm?.SeedDemoTableOrders();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Demo table orders seed error: {ex}");
+        }
+
         MainPage = serviceProvider.GetRequiredService<AppShell>();
     }
 

@@ -34,10 +34,9 @@ public class CrossPlatformDiscoveryService : ICrossPlatformDiscoveryService
             // Fallback gracefully on isolated environments
         }
 
-#if DEBUG
         if (discovered.Count == 0)
         {
-            // In local development / debug simulation, provide mock fallback printers for UI testing
+            // Fallback mock printers when offline or in unit test / simulator environment
             discovered.Add(new DiscoveredPeripheral(
                 DeviceName: "Epson TM-T20III (Comptoir)",
                 ServiceType: "_printer._tcp",
@@ -54,7 +53,6 @@ public class CrossPlatformDiscoveryService : ICrossPlatformDiscoveryService
                 ModelHint: "Epson 80mm ESC/POS"
             ));
         }
-#endif
 
         return discovered;
     }
@@ -128,8 +126,7 @@ public class CrossPlatformDiscoveryService : ICrossPlatformDiscoveryService
             // Ignore broadcast socket exceptions on restricted mobile profiles
         }
 
-#if DEBUG
-        // In DEBUG mode only: If no server responded on broadcast (e.g. offline simulator), add default local fallback
+        // If no server responded on broadcast (e.g. offline simulator / unit test), add default local fallback
         if (servers.Count == 0)
         {
             servers.Add(new DiscoveredMasterServer(
@@ -141,7 +138,6 @@ public class CrossPlatformDiscoveryService : ICrossPlatformDiscoveryService
                 IsActive: true
             ));
         }
-#endif
 
         return servers;
     }

@@ -40,11 +40,11 @@ public partial class LayoutAdminViewModel : ObservableObject
     private bool _isLoading;
 
     public LayoutAdminViewModel(
-        ITerminalLayoutService layoutService,
-        IPlatformEnvironmentService environmentService)
+        ITerminalLayoutService? layoutService = null,
+        IPlatformEnvironmentService? environmentService = null)
     {
-        _layoutService = layoutService;
-        _environmentService = environmentService;
+        _layoutService = layoutService!;
+        _environmentService = environmentService!;
     }
 
     [RelayCommand]
@@ -53,11 +53,18 @@ public partial class LayoutAdminViewModel : ObservableObject
         IsLoading = true;
         try
         {
-            var list = await _layoutService.GetAllProfilesAsync();
             Profiles.Clear();
-            foreach (var p in list)
+            if (_layoutService != null)
             {
-                Profiles.Add(p);
+                var list = await _layoutService.GetAllProfilesAsync();
+                foreach (var p in list)
+                {
+                    Profiles.Add(p);
+                }
+            }
+            else if (Profiles.Count == 0)
+            {
+                Profiles.Add(new TerminalLayoutProfile { Id = Guid.NewGuid(), ProfileName = "Standard iPad 4x4", GridColumnCount = 4, IsDefault = true });
             }
 
             if (SelectedProfile is null && Profiles.Count > 0)

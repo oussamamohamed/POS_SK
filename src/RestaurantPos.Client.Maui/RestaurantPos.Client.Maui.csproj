@@ -15,6 +15,10 @@
     <NoWarn>$(NoWarn);CS0618;CA1311;CA1304;CA1305;CA1031;CA2007;CA1822;CA1852;CA1861;CA1825;CA1001;CA1859;CA1812;CA1823;CA1805</NoWarn>
     <SkipValidateMauiImplicitPackageReferences>true</SkipValidateMauiImplicitPackageReferences>
     <ValidateXcodeVersion>false</ValidateXcodeVersion>
+    <UseInterpreter Condition="$(TargetFramework.Contains('-ios'))">true</UseInterpreter>
+    <MtouchUseLlvm Condition="$(TargetFramework.Contains('-ios'))">false</MtouchUseLlvm>
+    <MtouchLink Condition="$(TargetFramework.Contains('-ios'))">None</MtouchLink>
+    <XSAppIconAssets Condition="$(TargetFramework.Contains('-ios'))">Platforms/iOS/Assets.xcassets/AppIcon.appiconset</XSAppIconAssets>
   </PropertyGroup>
 
   <!-- Define MAUI_UI symbol when building with MAUI SDK so Views can use conditional compilation -->
@@ -24,6 +28,8 @@
 
   <ItemGroup Condition="'$(UseMaui)' == 'true'">
     <Using Include="RestaurantPos.Client.Maui.Contracts.HapticFeedbackType" Alias="HapticFeedbackType" />
+    <BundleResource Include="Platforms/iOS/AppIcon*.png" Link="%(Filename)%(Extension)" Condition="$(TargetFramework.Contains('-ios'))" />
+    <BundleResource Include="Platforms/iOS/iTunesArtwork*.png" Link="%(Filename)%(Extension)" Condition="$(TargetFramework.Contains('-ios'))" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(UseMaui)' != 'true'">

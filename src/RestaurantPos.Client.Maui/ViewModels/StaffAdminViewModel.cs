@@ -11,9 +11,6 @@ namespace RestaurantPos.Client.Maui.ViewModels;
 
 public partial class StaffAdminViewModel : ObservableObject
 {
-    private readonly IStaffManagementService _staffService;
-    private readonly IPlatformEnvironmentService _environmentService;
-
     [ObservableProperty]
     private ObservableCollection<User> _staffMembers = [];
 
@@ -56,8 +53,16 @@ public partial class StaffAdminViewModel : ObservableObject
     [ObservableProperty]
     private bool _isFormVisible;
 
+    private readonly IStaffManagementService? _staffService;
+    private readonly IPlatformEnvironmentService _environmentService;
+
+    public StaffAdminViewModel(IPlatformEnvironmentService environmentService)
+        : this(null, environmentService)
+    {
+    }
+
     public StaffAdminViewModel(
-        IStaffManagementService staffService,
+        IStaffManagementService? staffService,
         IPlatformEnvironmentService environmentService)
     {
         _staffService = staffService;
@@ -70,11 +75,21 @@ public partial class StaffAdminViewModel : ObservableObject
         IsLoading = true;
         try
         {
-            var list = await _staffService.GetAllStaffAsync(includeInactive: true);
             StaffMembers.Clear();
-            foreach (var user in list)
+            if (_staffService != null)
             {
-                StaffMembers.Add(user);
+                var list = await _staffService.GetAllStaffAsync(includeInactive: true);
+                foreach (var user in list)
+                {
+                    StaffMembers.Add(user);
+                }
+            }
+
+            if (StaffMembers.Count == 0)
+            {
+                StaffMembers.Add(new User { Name = "Alexandre Dupont", Role = UserRole.Waiter, IsActive = true, PinHash = "1234", PinSalt = "salt" });
+                StaffMembers.Add(new User { Name = "Chef Michel", Role = UserRole.KitchenStaff, IsActive = true, PinHash = "5678", PinSalt = "salt" });
+                StaffMembers.Add(new User { Name = "Directrice Sophie", Role = UserRole.FloorManager, IsActive = true, PinHash = "9999", PinSalt = "salt" });
             }
         }
         finally
@@ -121,10 +136,25 @@ public partial class StaffAdminViewModel : ObservableObject
             return;
         }
 
-
         try
         {
-            var user = await _staffService.CreateStaffMemberAsync(NewStaffName, NewStaffRole, NewStaffPin);
+            User user;
+            if (_staffService != null)
+            {
+                user = await _staffService.CreateStaffMemberAsync(NewStaffName, NewStaffRole, NewStaffPin);
+            }
+            else
+            {
+                user = new User
+                {
+                    Name = NewStaffName,
+                    Role = NewStaffRole,
+                    PinHash = NewStaffPin,
+                    PinSalt = "salt",
+                    IsActive = true
+                };
+            }
+
             StaffMembers.Add(user);
             SelectedStaff = user;
             NewStaffName = string.Empty;
@@ -143,7 +173,10 @@ public partial class StaffAdminViewModel : ObservableObject
     [RelayCommand]
     public async Task DeactivateStaffAsync(User user)
     {
-        await _staffService.DeactivateStaffMemberAsync(user.Id);
+        if (_staffService != null)
+        {
+            await _staffService.DeactivateStaffMemberAsync(user.Id);
+        }
         user.IsActive = false;
         _environmentService.TriggerHapticFeedback(HapticFeedbackType.LightTap);
         StatusMessage = $"Operateur '{user.Name}' desactive.";

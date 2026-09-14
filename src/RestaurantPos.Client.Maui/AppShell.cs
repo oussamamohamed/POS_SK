@@ -16,10 +16,11 @@ public class AppShell : Shell
         FlyoutBehavior = FlyoutBehavior.Disabled;
         Shell.SetNavBarIsVisible(this, false);
 
-        // Routes secondaires / modales
         Routing.RegisterRoute("modifiers", typeof(ModifiersPopupPage));
         Routing.RegisterRoute("checkout", typeof(CheckoutPage));
         Routing.RegisterRoute("split", typeof(SplitBillPage));
+        Routing.RegisterRoute("admin", typeof(AdminShellPage));
+        Routing.RegisterRoute("fiscal", typeof(FiscalPage));
 
         var pinContent = new ShellContent
         {
@@ -49,18 +50,18 @@ public class AppShell : Shell
             ContentTemplate = new DataTemplate(typeof(KitchenKdsPage))
         };
 
-        var adminContent = new ShellContent
+        var fiscalContent = new ShellContent
         {
-            Title = "Administration",
-            Route = "admin",
-            ContentTemplate = new DataTemplate(typeof(AdminShellPage))
+            Title = "Fiscalité NF525",
+            Route = "fiscal",
+            ContentTemplate = new DataTemplate(typeof(FiscalPage))
         };
 
         Items.Add(pinContent);
         Items.Add(floorContent);
         Items.Add(posContent);
         Items.Add(kdsContent);
-        Items.Add(adminContent);
+        Items.Add(fiscalContent);
 
         CurrentItem = pinContent;
     }

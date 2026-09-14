@@ -2,6 +2,7 @@
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
+using RestaurantPos.Client.Maui.Controls;
 using RestaurantPos.Client.Maui.ViewModels;
 using RestaurantPos.Domain.Entities;
 
@@ -32,73 +33,10 @@ public class FloorPlanPage : ContentPage
 
     private void Build()
     {
-        // Barre de navigation superieure
-        var topBar = new Grid
-        {
-            ColumnDefinitions =
-            {
-                new ColumnDefinition { Width = GridLength.Auto },
-                new ColumnDefinition { Width = GridLength.Star },
-                new ColumnDefinition { Width = GridLength.Auto }
-            },
-            Padding = new Thickness(20, 12),
-            BackgroundColor = Color.FromArgb("#1E293B"),
-            ColumnSpacing = 16
-        };
+        // Barre de navigation superieure globale
+        var topBar = new GlobalHeaderView(PosActiveViewTab.Floor);
 
-        var logoStack = new HorizontalStackLayout
-        {
-            Spacing = 10,
-            VerticalOptions = LayoutOptions.Center,
-            Children =
-            {
-                new Label { Text = "🍽️", FontSize = 22, VerticalOptions = LayoutOptions.Center },
-                new Label { Text = "Restaurant POS", TextColor = Colors.White, FontSize = 18, FontAttributes = FontAttributes.Bold, VerticalOptions = LayoutOptions.Center }
-            }
-        };
-        Grid.SetColumn(logoStack, 0);
-
-        var navButtons = new HorizontalStackLayout
-        {
-            Spacing = 10,
-            VerticalOptions = LayoutOptions.Center,
-            Children =
-            {
-                MakeNavButton("🍽 Plan de Salle", true, null),
-                MakeNavButton("💳 Caisse", false, new Command(async () => await Shell.Current.GoToAsync("//pos"))),
-                MakeNavButton("👨‍🍳 Cuisine KDS", false, new Command(async () => await Shell.Current.GoToAsync("//kds"))),
-                MakeNavButton("⚙ Admin", false, new Command(async () => await Shell.Current.GoToAsync("//admin")))
-            }
-        };
-        Grid.SetColumn(navButtons, 1);
-
-        var userStack = new HorizontalStackLayout
-        {
-            Spacing = 12,
-            VerticalOptions = LayoutOptions.Center,
-            Children =
-            {
-                new Label { Text = "👤 Alexandre Dupont", TextColor = Color.FromArgb("#94A3B8"), FontSize = 14, VerticalOptions = LayoutOptions.Center },
-                new Button
-                {
-                    Text = "🔒 Verrouiller",
-                    BackgroundColor = Color.FromArgb("#334155"),
-                    TextColor = Colors.White,
-                    FontSize = 13,
-                    HeightRequest = 36,
-                    CornerRadius = 8,
-                    Padding = new Thickness(12, 0),
-                    Command = new Command(async () => await Shell.Current.GoToAsync("//pin"))
-                }
-            }
-        };
-        Grid.SetColumn(userStack, 2);
-
-        topBar.Add(logoStack);
-        topBar.Add(navButtons);
-        topBar.Add(userStack);
-
-        // Sous-barre : Section active + Legende des statuts
+        // Sous-barre : Section active + Bouton Nouvelle Table + Legende des statuts
         var subHeader = new Grid
         {
             ColumnDefinitions =
@@ -110,15 +48,39 @@ public class FloorPlanPage : ContentPage
             BackgroundColor = Color.FromArgb("#0F172A")
         };
 
-        var titleLabel = new Label
+        var titleStack = new HorizontalStackLayout
         {
-            TextColor = Colors.White,
-            FontSize = 22,
-            FontAttributes = FontAttributes.Bold,
-            VerticalOptions = LayoutOptions.Center
+            Spacing = 16,
+            VerticalOptions = LayoutOptions.Center,
+            Children =
+            {
+                new Label
+                {
+                    TextColor = Colors.White,
+                    FontSize = 22,
+                    FontAttributes = FontAttributes.Bold,
+                    VerticalOptions = LayoutOptions.Center
+                }.Also(l => l.SetBinding(Label.TextProperty, nameof(FloorPlanViewModel.ActiveSection))),
+                new Button
+                {
+                    Text = "➕ Nouvelle Table",
+                    BackgroundColor = Color.FromArgb("#3B82F6"),
+                    TextColor = Colors.White,
+                    FontSize = 13,
+                    FontAttributes = FontAttributes.Bold,
+                    HeightRequest = 36,
+                    CornerRadius = 8,
+                    Padding = new Thickness(14, 0),
+                    Command = new Command(async () =>
+                    {
+                        var newTableNum = $"T{_vm.Tables.Count + 1:D2}";
+                        _vm.Tables.Add(new DiningTable { TableNumber = newTableNum, Capacity = 4, Status = TableStatus.Free });
+                        await DisplayAlert("Table Créée", $"Nouvelle table {newTableNum} ajoutée avec succès au plan de salle.", "OK");
+                    })
+                }
+            }
         };
-        titleLabel.SetBinding(Label.TextProperty, nameof(FloorPlanViewModel.ActiveSection));
-        Grid.SetColumn(titleLabel, 0);
+        Grid.SetColumn(titleStack, 0);
 
         var legend = new HorizontalStackLayout
         {
@@ -134,7 +96,7 @@ public class FloorPlanPage : ContentPage
         };
         Grid.SetColumn(legend, 1);
 
-        subHeader.Add(titleLabel);
+        subHeader.Add(titleStack);
         subHeader.Add(legend);
 
         // Grille des tables

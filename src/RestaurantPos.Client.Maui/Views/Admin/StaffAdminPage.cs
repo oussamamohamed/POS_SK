@@ -1,4 +1,4 @@
-﻿#if MAUI_UI
+#if MAUI_UI
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
@@ -8,10 +8,10 @@ using RestaurantPos.Domain.Entities;
 namespace RestaurantPos.Client.Maui.Views.Admin;
 
 /// <summary>
-/// Page d'administration du personnel.
+/// Vue d'administration du personnel.
 /// Cree, modifie et desactive les comptes operateurs avec code PIN.
 /// </summary>
-public class StaffAdminPage : ContentPage
+public class StaffAdminPage : ContentView
 {
     private readonly StaffAdminViewModel _vm;
 
@@ -19,6 +19,7 @@ public class StaffAdminPage : ContentPage
     {
         _vm = vm;
         BindingContext = vm;
+        Content = BuildContent();
     }
 
     /// <summary>Construit le contenu pour integration dans AdminShellPage.</summary>

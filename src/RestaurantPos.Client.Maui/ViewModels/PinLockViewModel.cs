@@ -88,7 +88,7 @@ public partial class PinLockViewModel : ObservableObject
         else
         {
             // Default demo/fallback offline PIN validation
-            if (PinInput == "1234" || PinInput == "0000")
+            if (PinInput == "1234")
             {
                 IsAuthenticated = true;
                 CurrentOperatorName = "Alexandre Dupont";

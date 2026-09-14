@@ -129,13 +129,49 @@ public class PinLockPage : ContentPage
                     HorizontalOptions = LayoutOptions.Center,
                     Children =
                     {
-                        new Label
+                        new HorizontalStackLayout
                         {
-                            Text = "🍽️ Restaurant POS",
-                            TextColor = Colors.White,
-                            FontSize = 26,
-                            FontAttributes = FontAttributes.Bold,
-                            HorizontalOptions = LayoutOptions.Center
+                            Spacing = 10,
+                            HorizontalOptions = LayoutOptions.Center,
+                            Children =
+                            {
+                                new Border
+                                {
+                                    Padding = 0,
+                                    StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = new CornerRadius(10) },
+                                    Stroke = new LinearGradientBrush
+                                    {
+                                        StartPoint = new Point(0, 0),
+                                        EndPoint = new Point(1, 1),
+                                        GradientStops =
+                                        {
+                                            new GradientStop { Color = Color.FromArgb("#38BDF8"), Offset = 0.0f },
+                                            new GradientStop { Color = Color.FromArgb("#818CF8"), Offset = 1.0f }
+                                        }
+                                    },
+                                    StrokeThickness = 2,
+                                    WidthRequest = 38,
+                                    HeightRequest = 38,
+                                    Background = Color.FromArgb("#0F172A"),
+                                    VerticalOptions = LayoutOptions.Center,
+                                    Content = new Label
+                                    {
+                                        Text = "⚡",
+                                        TextColor = Color.FromArgb("#38BDF8"),
+                                        FontSize = 22,
+                                        HorizontalOptions = LayoutOptions.Center,
+                                        VerticalOptions = LayoutOptions.Center
+                                    }
+                                },
+                                new Label
+                                {
+                                    Text = "AGY POS",
+                                    TextColor = Colors.White,
+                                    FontSize = 26,
+                                    FontAttributes = FontAttributes.Bold,
+                                    VerticalOptions = LayoutOptions.Center
+                                }
+                            }
                         },
                         new Label
                         {

@@ -36,13 +36,13 @@ public static class MauiProgram
         services.AddSingleton<KdsViewModel>();
         services.AddSingleton<CheckoutViewModel>();
         services.AddSingleton<SplitBillViewModel>();
-        services.AddTransient<ModifiersViewModel>();
+        services.AddSingleton<ModifiersViewModel>();
         services.AddTransient<PeripheralSetupViewModel>();
-        services.AddTransient<CatalogAdminViewModel>();
-        services.AddTransient<StaffAdminViewModel>();
+        services.AddSingleton<CatalogAdminViewModel>();
+        services.AddSingleton<StaffAdminViewModel>();
         services.AddTransient<PrinterAdminViewModel>();
         services.AddTransient<LayoutAdminViewModel>();
-        services.AddTransient<AdminHubViewModel>(sp => new AdminHubViewModel(
+        services.AddSingleton<AdminHubViewModel>(sp => new AdminHubViewModel(
             sp.GetRequiredService<IPlatformEnvironmentService>(),
             sp.GetRequiredService<CatalogAdminViewModel>(),
             sp.GetRequiredService<StaffAdminViewModel>(),
@@ -60,6 +60,7 @@ public static class MauiProgram
         services.AddTransient<CheckoutPage>();
         services.AddTransient<SplitBillPage>();
         services.AddTransient<KitchenKdsPage>();
+        services.AddTransient<FiscalPage>();
 
         // Pages Admin
         services.AddTransient<CatalogAdminPage>();

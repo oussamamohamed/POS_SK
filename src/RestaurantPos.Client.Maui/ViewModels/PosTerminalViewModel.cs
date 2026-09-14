@@ -15,6 +15,7 @@ public partial class PosTerminalViewModel : ObservableObject
     private readonly IOrderDiscountService? _discountService;
     private readonly KdsViewModel? _kdsViewModel;
     private readonly ITableManagementService? _tableService;
+    private readonly Dictionary<string, (Order Order, List<OrderItem> Items)> _tableOrdersCache = new(StringComparer.OrdinalIgnoreCase);
 
     [ObservableProperty]
     private Order _activeOrder = new();
@@ -30,6 +31,20 @@ public partial class PosTerminalViewModel : ObservableObject
 
     [ObservableProperty]
     private string _activeTable = "Comptoir";
+
+    [ObservableProperty]
+    private string _destination = "EatIn";
+
+    [ObservableProperty]
+    private int _coversCount = 2;
+
+    [ObservableProperty]
+    private int _heldOrdersCount = 0;
+
+    private readonly List<(Order Order, List<OrderItem> Items)> _heldOrders = [];
+
+    public Money TotalHt => new((long)Math.Round(TotalTtc.AmountInCents / 1.10m, MidpointRounding.AwayFromZero));
+    public Money TotalVat => new(TotalTtc.AmountInCents - TotalHt.AmountInCents);
 
     [ObservableProperty]
     private string _conflictAlertBanner = string.Empty;
@@ -221,6 +236,16 @@ public partial class PosTerminalViewModel : ObservableObject
             _kdsViewModel.AddIncomingTicket(ticket);
         }
 
+        foreach (var item in CartItems)
+        {
+            item.IsDispatched = true;
+        }
+
+        if (!string.IsNullOrWhiteSpace(ActiveTable))
+        {
+            _tableOrdersCache[ActiveTable] = (ActiveOrder, CartItems.Select(CloneOrderItem).ToList());
+        }
+
         CartItems.Clear();
         RecalculateTotals();
         ConflictAlertBanner = string.Empty;
@@ -246,16 +271,73 @@ public partial class PosTerminalViewModel : ObservableObject
         ConflictAlertBanner = string.Empty;
     }
 
+    [RelayCommand]
+    public void SetDestination(string dest)
+    {
+        Destination = dest;
+        _environmentService.TriggerHapticFeedback(HapticFeedbackType.LightTap);
+    }
+
+    [RelayCommand]
+    public void HoldCurrentCart()
+    {
+        if (CartItems.Count == 0) return;
+        _heldOrders.Add((ActiveOrder, CartItems.Select(CloneOrderItem).ToList()));
+        HeldOrdersCount = _heldOrders.Count;
+        CartItems.Clear();
+        ActiveOrder = new Order { TableNumber = ActiveTable };
+        RecalculateTotals();
+        ConflictAlertBanner = "Commande mise en attente (Parkée).";
+        _environmentService.TriggerHapticFeedback(HapticFeedbackType.Success);
+    }
+
+    [RelayCommand]
+    public void RecallHeldOrder()
+    {
+        if (_heldOrders.Count == 0) return;
+        var last = _heldOrders[^1];
+        _heldOrders.RemoveAt(_heldOrders.Count - 1);
+        HeldOrdersCount = _heldOrders.Count;
+
+        CartItems.Clear();
+        ActiveOrder = last.Order;
+        foreach (var itm in last.Items)
+        {
+            CartItems.Add(CloneOrderItem(itm));
+        }
+        RecalculateTotals();
+        ConflictAlertBanner = "Commande en attente rappelée.";
+        _environmentService.TriggerHapticFeedback(HapticFeedbackType.LightTap);
+    }
+
     public async Task LoadActiveTableOrderAsync(string tableNumber, ITableManagementService? tableService = null)
     {
-        ActiveTable = tableNumber;
-        CartItems.Clear();
+        var isSameTable = string.Equals(ActiveTable, tableNumber, StringComparison.OrdinalIgnoreCase);
 
-        if (tableService is not null)
+        // If we are already on this table and already have items in the cart, do not wipe!
+        if (isSameTable && CartItems.Count > 0)
         {
-            var orderDto = await tableService.GetActiveOrderForTableAsync(tableNumber);
-            if (orderDto is not null)
+            _tableOrdersCache[tableNumber] = (ActiveOrder, CartItems.Select(CloneOrderItem).ToList());
+            return;
+        }
+
+        // If switching from another table and we have cart items, cache previous table's state first
+        if (!string.IsNullOrWhiteSpace(ActiveTable) &&
+            !isSameTable &&
+            CartItems.Count > 0)
+        {
+            _tableOrdersCache[ActiveTable] = (ActiveOrder, CartItems.Select(CloneOrderItem).ToList());
+        }
+
+        ActiveTable = tableNumber;
+        var effTableService = tableService ?? _tableService;
+
+        if (effTableService is not null)
+        {
+            var orderDto = await effTableService.GetActiveOrderForTableAsync(tableNumber);
+            if (orderDto is not null && orderDto.Lines.Count > 0)
             {
+                CartItems.Clear();
                 ActiveOrder = new Order
                 {
                     Id = orderDto.OrderId,
@@ -284,12 +366,64 @@ public partial class PosTerminalViewModel : ObservableObject
                         ModifiersPriceExtra = Money.FromDecimal(line.ModifiersPriceExtra, "EUR")
                     });
                 }
+
+                _tableOrdersCache[tableNumber] = (ActiveOrder, CartItems.Select(CloneOrderItem).ToList());
+                RecalculateTotals();
+                _environmentService.TriggerHapticFeedback(HapticFeedbackType.LightTap);
+                return;
             }
+        }
+
+        // Check local table cache
+        if (_tableOrdersCache.TryGetValue(tableNumber, out var cached) && cached.Items.Count > 0)
+        {
+            CartItems.Clear();
+            ActiveOrder = cached.Order;
+            foreach (var item in cached.Items)
+            {
+                CartItems.Add(CloneOrderItem(item));
+            }
+        }
+        else
+        {
+            CartItems.Clear();
+            ActiveOrder = new Order { TableNumber = tableNumber };
         }
 
         RecalculateTotals();
         _environmentService.TriggerHapticFeedback(HapticFeedbackType.LightTap);
     }
+
+    public void ClearTableOrder(string tableNumber)
+    {
+        _tableOrdersCache.Remove(tableNumber);
+        if (string.Equals(ActiveTable, tableNumber, StringComparison.OrdinalIgnoreCase))
+        {
+            CartItems.Clear();
+            ActiveOrder = new Order { TableNumber = tableNumber };
+            RecalculateTotals();
+        }
+    }
+
+    private static OrderItem CloneOrderItem(OrderItem item) => new()
+    {
+        Id = item.Id,
+        OrderId = item.OrderId,
+        ProductId = item.ProductId,
+        ProductName = item.ProductName,
+        UnitPrice = item.UnitPrice,
+        Quantity = item.Quantity,
+        TaxRatePercent = item.TaxRatePercent,
+        PreparationStationId = item.PreparationStationId,
+        IsDispatched = item.IsDispatched,
+        SelectedModifiers = [.. item.SelectedModifiers],
+        ModifiersPriceExtra = item.ModifiersPriceExtra,
+        Course = item.Course,
+        IsComp = item.IsComp,
+        CompReason = item.CompReason,
+        DiscountPercent = item.DiscountPercent,
+        KitchenComment = item.KitchenComment
+    };
 
     public async Task ApplyGlobalDiscountAsync(DiscountType type, decimal value, string reason, Guid? operatorId = null)
     {
@@ -350,6 +484,13 @@ public partial class PosTerminalViewModel : ObservableObject
         }
 
         TotalTtc = new Money(totalCents);
+        OnPropertyChanged(nameof(TotalHt));
+        OnPropertyChanged(nameof(TotalVat));
+
+        if (!string.IsNullOrWhiteSpace(ActiveTable) && CartItems.Count > 0)
+        {
+            _tableOrdersCache[ActiveTable] = (ActiveOrder, CartItems.Select(CloneOrderItem).ToList());
+        }
     }
 
     private void LoadSampleCatalog()
@@ -369,5 +510,81 @@ public partial class PosTerminalViewModel : ObservableObject
         AvailableProducts.Add(new Product { Name = "Burger Maison & Frites", CategoryId = "CAT-MAINS", Price = Money.FromDecimal(16.50m) });
         AvailableProducts.Add(new Product { Name = "Entrecôte Grillée 250g", CategoryId = "CAT-MAINS", Price = Money.FromDecimal(22.00m) });
         AvailableProducts.Add(new Product { Name = "Tiramisu Maison", CategoryId = "CAT-DESSERTS", Price = Money.FromDecimal(7.50m) });
+    }
+
+    public void SeedDemoTableOrders()
+    {
+        var burger = AvailableProducts.FirstOrDefault(p => p.Name.Contains("Burger"));
+        var coffee = AvailableProducts.FirstOrDefault(p => p.Name.Contains("Café"));
+        if (burger != null && coffee != null)
+        {
+            _tableOrdersCache["T02"] = (
+                new Order { TableNumber = "T02" },
+                [
+                    new OrderItem
+                    {
+                        ProductId = burger.Id,
+                        ProductName = burger.Name,
+                        UnitPrice = burger.Price,
+                        Quantity = 1,
+                        TaxRatePercent = burger.TaxRatePercent,
+                        IsDispatched = true,
+                        Course = CourseType.Direct
+                    },
+                    new OrderItem
+                    {
+                        ProductId = coffee.Id,
+                        ProductName = coffee.Name,
+                        UnitPrice = coffee.Price,
+                        Quantity = 1,
+                        TaxRatePercent = coffee.TaxRatePercent,
+                        IsDispatched = true,
+                        Course = CourseType.Direct
+                    }
+                ]
+            );
+        }
+
+        var steak = AvailableProducts.FirstOrDefault(p => p.Name.Contains("Entrecôte"));
+        var tiramisu = AvailableProducts.FirstOrDefault(p => p.Name.Contains("Tiramisu"));
+        var beer = AvailableProducts.FirstOrDefault(p => p.Name.Contains("Bière"));
+        if (steak != null && tiramisu != null && beer != null)
+        {
+            _tableOrdersCache["T03"] = (
+                new Order { TableNumber = "T03" },
+                [
+                    new OrderItem
+                    {
+                        ProductId = steak.Id,
+                        ProductName = steak.Name,
+                        UnitPrice = steak.Price,
+                        Quantity = 2,
+                        TaxRatePercent = steak.TaxRatePercent,
+                        IsDispatched = true,
+                        Course = CourseType.Suite
+                    },
+                    new OrderItem
+                    {
+                        ProductId = tiramisu.Id,
+                        ProductName = tiramisu.Name,
+                        UnitPrice = tiramisu.Price,
+                        Quantity = 1,
+                        TaxRatePercent = tiramisu.TaxRatePercent,
+                        IsDispatched = true,
+                        Course = CourseType.Dessert
+                    },
+                    new OrderItem
+                    {
+                        ProductId = beer.Id,
+                        ProductName = beer.Name,
+                        UnitPrice = beer.Price,
+                        Quantity = 2,
+                        TaxRatePercent = beer.TaxRatePercent,
+                        IsDispatched = true,
+                        Course = CourseType.Direct
+                    }
+                ]
+            );
+        }
     }
 }

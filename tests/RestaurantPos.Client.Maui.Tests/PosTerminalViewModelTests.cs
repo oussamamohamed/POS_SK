@@ -211,4 +211,158 @@ public class PosTerminalViewModelTests
         vm.CartItems.Should().BeEmpty();
         vm.TotalTtc.ToDecimal().Should().Be(0.00m);
     }
+
+    [Fact]
+    public async Task CompItemAsync_MarksItemAsCompAndRecalculatesTotals()
+    {
+        // Arrange
+        var vm = new PosTerminalViewModel(_envMock.Object, _journalMock.Object);
+        var item = new OrderItem
+        {
+            ProductName = "Café Espresso",
+            Quantity = 1,
+            UnitPrice = Money.FromDecimal(2.50m)
+        };
+        vm.CartItems.Add(item);
+        vm.RecalculateTotals();
+        vm.TotalTtc.ToDecimal().Should().Be(2.50m);
+
+        // Act
+        await vm.CompItemAsync(item, "Geste commercial fidélité");
+
+        // Assert
+        item.IsComp.Should().BeTrue();
+        item.CompReason.Should().Be("Geste commercial fidélité");
+        vm.TotalTtc.ToDecimal().Should().Be(0.00m);
+        _envMock.Verify(e => e.TriggerHapticFeedback(HapticFeedbackType.LightTap), Times.Once);
+    }
+
+    [Fact]
+    public async Task ApplyGlobalDiscountAsync_FixedAmount_ReducesTotalCorrectly()
+    {
+        // Arrange
+        var vm = new PosTerminalViewModel(_envMock.Object, _journalMock.Object);
+        vm.CartItems.Add(new OrderItem
+        {
+            ProductName = "Entrecôte Grillée",
+            Quantity = 1,
+            UnitPrice = Money.FromDecimal(22.00m)
+        });
+        vm.RecalculateTotals();
+
+        // Act: Apply 5.00 EUR fixed discount
+        await vm.ApplyGlobalDiscountAsync(DiscountType.FixedAmount, 5.00m, "Bon d'achat");
+
+        // Assert
+        vm.TotalTtc.ToDecimal().Should().Be(17.00m);
+        vm.ActiveOrder.GlobalDiscountType.Should().Be(DiscountType.FixedAmount);
+        vm.ActiveOrder.GlobalDiscountValue.Should().Be(5.00m);
+    }
+
+    [Fact]
+    public async Task LoadActiveTableOrderAsync_WithInjectedServiceAndSingleArg_ShouldHydrateCart()
+    {
+        // Arrange: Injected via constructor, called with single arg (as in PosTerminalPage)
+        var tableServiceMock = new Mock<Application.Common.Interfaces.ITableManagementService>();
+        var sampleOrder = new Application.Common.Interfaces.ActiveTableOrderDto(
+            Guid.NewGuid(),
+            "T02",
+            "Sophie",
+            3,
+            DateTimeOffset.UtcNow,
+            [
+                new Application.Common.Interfaces.ActiveOrderLineDto(
+                    Guid.NewGuid(),
+                    Guid.NewGuid(),
+                    "Salade César",
+                    2,
+                    9.50m,
+                    19.00m,
+                    10.0m,
+                    "COLD",
+                    true,
+                    []
+                )
+            ],
+            17.27m,
+            1.73m,
+            19.00m
+        );
+
+        tableServiceMock
+            .Setup(s => s.GetActiveOrderForTableAsync("T02", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(sampleOrder);
+
+        var vm = new PosTerminalViewModel(
+            _envMock.Object,
+            _journalMock.Object,
+            tableService: tableServiceMock.Object);
+
+        // Act: called with single argument tableNumber
+        await vm.LoadActiveTableOrderAsync("T02");
+
+        // Assert
+        vm.ActiveTable.Should().Be("T02");
+        vm.CartItems.Should().HaveCount(1);
+        vm.CartItems[0].ProductName.Should().Be("Salade César");
+        vm.TotalTtc.ToDecimal().Should().Be(19.00m);
+    }
+
+    [Fact]
+    public async Task RecallTable_AfterKitchenDispatch_ShouldRetainDispatchedItems()
+    {
+        // Arrange
+        var vm = new PosTerminalViewModel(_envMock.Object, _journalMock.Object);
+        await vm.LoadActiveTableOrderAsync("T01");
+
+        var burger = vm.AvailableProducts.First(p => p.Name.Contains("Burger"));
+        await vm.AddProductAsync(burger);
+        vm.CartItems.Should().HaveCount(1);
+
+        // Act 1: Send to kitchen
+        await vm.SendKitchenAndResetAsync();
+        vm.CartItems.Should().BeEmpty(); // Screen resets for next operation
+
+        // Act 2: Switch to table T02
+        await vm.LoadActiveTableOrderAsync("T02");
+        vm.ActiveTable.Should().Be("T02");
+        vm.CartItems.Should().BeEmpty();
+
+        // Act 3: Recall table T01
+        await vm.LoadActiveTableOrderAsync("T01");
+
+        // Assert: T01 cart is restored with dispatched items!
+        vm.ActiveTable.Should().Be("T01");
+        vm.CartItems.Should().HaveCount(1);
+        vm.CartItems[0].ProductName.Should().Be(burger.Name);
+        vm.CartItems[0].IsDispatched.Should().BeTrue();
+        vm.TotalTtc.ToDecimal().Should().Be(burger.Price.ToDecimal());
+    }
+
+    [Fact]
+    public async Task SwitchingTables_WithPendingItems_ShouldPreserveBothTables()
+    {
+        // Arrange
+        var vm = new PosTerminalViewModel(_envMock.Object, _journalMock.Object);
+
+        // Table 1
+        await vm.LoadActiveTableOrderAsync("T01");
+        var burger = vm.AvailableProducts.First(p => p.Name.Contains("Burger"));
+        await vm.AddProductAsync(burger);
+
+        // Table 2
+        await vm.LoadActiveTableOrderAsync("T02");
+        var coffee = vm.AvailableProducts.First(p => p.Name.Contains("Café"));
+        await vm.AddProductAsync(coffee);
+
+        // Act: Recall Table 1
+        await vm.LoadActiveTableOrderAsync("T01");
+        vm.CartItems.Should().HaveCount(1);
+        vm.CartItems[0].ProductName.Should().Be(burger.Name);
+
+        // Act: Recall Table 2
+        await vm.LoadActiveTableOrderAsync("T02");
+        vm.CartItems.Should().HaveCount(1);
+        vm.CartItems[0].ProductName.Should().Be(coffee.Name);
+    }
 }

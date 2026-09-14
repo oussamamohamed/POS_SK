@@ -56,6 +56,19 @@ public static class TableEndpoints
         group.MapPost("/{tableNumber}/dispatch", async (string tableNumber, ITableManagementService tableService, IKitchenRoutingService kds, AppDbContext db) =>
         {
             var table = await db.DiningTables.FirstOrDefaultAsync(t => t.TableNumber == tableNumber);
+            if (table is null)
+            {
+                var altNumber = tableNumber.StartsWith("T0", StringComparison.OrdinalIgnoreCase) && tableNumber.Length > 2
+                    ? "T" + tableNumber[2..]
+                    : (tableNumber.StartsWith("T", StringComparison.OrdinalIgnoreCase) && tableNumber.Length == 2 && char.IsDigit(tableNumber[1]))
+                        ? "T0" + tableNumber[1]
+                        : null;
+                if (altNumber is not null)
+                {
+                    table = await db.DiningTables.FirstOrDefaultAsync(t => t.TableNumber == altNumber);
+                }
+            }
+
             if (table?.ActiveOrderId is not null)
             {
                 await kds.SplitAndRouteOrderAsync(table.ActiveOrderId.Value);

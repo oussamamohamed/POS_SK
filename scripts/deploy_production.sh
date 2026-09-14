@@ -6,7 +6,7 @@ ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$ROOT_DIR"
 
 SIM_DEVICE="iPad Pro 11-inch (M5)"
-BUNDLE_ID="com.restaurantpos.maui"
+BUNDLE_ID="com.restaurantpos.client"
 API_URL="http://127.0.0.1:5000"
 
 echo "========================================================"
@@ -53,14 +53,14 @@ echo "[3/6] Insertion des donnees de test dans la base de donnees..."
 "$SCRIPT_DIR/seed_production_test_data.sh"
 
 # 5. Compilation et Installation du client MAUI en Release
-echo "[4/6] Verification du paquet MAUI Release iOS..."
+echo "[4/6] Compilation et Verification du paquet MAUI Release iOS..."
 APP_BUNDLE="src/RestaurantPos.Client.Maui/bin/Release/net9.0-ios/iossimulator-arm64/RestaurantPos.Client.Maui.app"
-if [ ! -d "$APP_BUNDLE" ]; then
-    echo "  Compilation Release de RestaurantPos.Client.Maui pour iOS Simulator..."
-    dotnet build src/RestaurantPos.Client.Maui/RestaurantPos.Client.Maui.csproj -c Release -p:BuildingForMaui=true -f net9.0-ios --nologo
-fi
+echo "  Compilation Release de RestaurantPos.Client.Maui pour iOS Simulator..."
+dotnet build src/RestaurantPos.Client.Maui/RestaurantPos.Client.Maui.csproj -c Release -p:BuildingForMaui=true -f net9.0-ios --nologo
 
 echo "[5/6] Installation de l'application sur le simulateur iPad..."
+echo "  Desinstallation precedente pour rafraichir le cache de SpringBoard..."
+xcrun simctl uninstall booted "$BUNDLE_ID" 2>/dev/null || true
 xcrun simctl install booted "$APP_BUNDLE"
 
 echo "[6/6] Lancement de l'application RestaurantPos en Mode Production..."
@@ -69,7 +69,7 @@ sleep 1
 xcrun simctl launch booted "$BUNDLE_ID"
 
 sleep 3
-SCREENSHOT_PATH="/Users/oussama/.gemini/antigravity-ide/brain/b2181981-fb8d-46ce-8cd0-c430c92705d5/prod_deployed_screen.png"
+SCREENSHOT_PATH="/Users/oussama/.gemini/antigravity-ide/brain/869c6bf4-a973-4b71-97b9-db1b15ce688f/prod_deployed_screen.png"
 xcrun simctl io booted screenshot "$SCREENSHOT_PATH"
 
 echo ""

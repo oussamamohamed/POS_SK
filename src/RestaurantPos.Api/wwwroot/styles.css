@@ -94,13 +94,24 @@ body.pos-dark {
     color: var(--primary);
 }
 
+.brand-logo-img {
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+    object-fit: cover;
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
+    border: 1px solid rgba(56, 189, 248, 0.5);
+    display: inline-block;
+    vertical-align: middle;
+}
+
 .status-badge {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 0.75rem;
+    gap: 5px;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.7rem;
     font-weight: 600;
     background: rgba(16, 185, 129, 0.12);
     border: 1px solid rgba(16, 185, 129, 0.3);
@@ -108,8 +119,8 @@ body.pos-dark {
 }
 
 .pulse-dot {
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
     background-color: var(--success);
     border-radius: 50%;
     animation: pulse 2s infinite;
