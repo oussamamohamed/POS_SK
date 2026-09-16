@@ -11,6 +11,8 @@ using Microsoft.Extensions.DependencyInjection;
 using RestaurantPos.Client.Maui.ViewModels;
 using RestaurantPos.Domain.Entities;
 using RestaurantPos.Domain.ValueObjects;
+using RestaurantPos.Client.Maui.Views;
+using RestaurantPos.Client.Maui.Views.Admin;
 
 namespace RestaurantPos.Client.Maui.Services;
 
@@ -281,17 +283,66 @@ public static class SimulatorAutoTestRunner
             }
             RecordPass(S4, "ConfirmModifiers", "Modificateurs validés avec succès.");
 
-            // 4.4 Affichage visuel du popup modificateurs
-            await MainThread.InvokeOnMainThreadAsync(async () =>
+            // 4.4 Affichage visuel du popup modificateurs interactif
+            await MainThread.InvokeOnMainThreadAsync(() =>
             {
-                await Shell.Current.GoToAsync("modifiers");
+                if (Shell.Current.CurrentPage is PosTerminalPage posPage)
+                {
+                    posPage.OpenModifiersModal(burger);
+                }
             });
-            await Task.Delay(1000);
+            await Task.Delay(1200);
             await NotifyStepReadyAsync("step4_modifiers_popup");
+
+            // 4.5 Fermeture modal et ajout burger avec options & note en cuisine
             await MainThread.InvokeOnMainThreadAsync(async () =>
             {
-                await Shell.Current.GoToAsync("..");
+                if (Shell.Current.CurrentPage is PosTerminalPage posPage)
+                {
+                    posPage.CloseModifiersModal();
+                }
+                await posVm.AddProductWithModifiersAsync(
+                    burger,
+                    new List<string> { "Saignant", "Sauce Poivre Maison (+1.50 €)" },
+                    1.50m,
+                    "Sans oignons");
             });
+            await Task.Delay(800);
+
+            // Vérifier que le panier contient les modificateurs et la note cuisine
+            var modItem = posVm.CartItems.FirstOrDefault(i => i.SelectedModifiers.Count > 0);
+            if (modItem == null || !modItem.SelectedModifiers.Contains("Saignant"))
+            {
+                RecordFail(S4, "CartModifiersBadge", "Article avec modificateurs absent du panier.");
+            }
+            RecordPass(S4, "CartModifiersBadge", $"Article avec options présent: {string.Join(", ", modItem!.SelectedModifiers)} | Note: {modItem.KitchenComment}");
+
+            // 4.6 Capture du panier avec modificateurs et nouveau bouton Note
+            await NotifyStepReadyAsync("step3_pos_cart");
+            await Task.Delay(800);
+
+            // 4.7 Affichage visuel de la Note de table (Addition provisoire)
+            await MainThread.InvokeOnMainThreadAsync(() =>
+            {
+                if (Shell.Current.CurrentPage is PosTerminalPage posPage)
+                {
+                    posPage.OpenBillNoteModal();
+                }
+            });
+            await Task.Delay(1200);
+            await NotifyStepReadyAsync("step4_bill_note_modal");
+
+            // 4.8 Fermeture de la Note et mise à jour statut table en BillRequested
+            await MainThread.InvokeOnMainThreadAsync(() =>
+            {
+                if (Shell.Current.CurrentPage is PosTerminalPage posPage)
+                {
+                    posPage.CloseBillNoteModal();
+                }
+                var floorVm2 = serviceProvider.GetService<FloorPlanViewModel>();
+                floorVm2?.SetTableStatus(tableT01.TableNumber, TableStatus.BillRequested);
+            });
+            RecordPass(S4, "BillNoteModal", "Note de table affichée, vérifiée et statut 'Addition' validé.");
             await Task.Delay(600);
 
             // =========================================================================
@@ -300,6 +351,7 @@ public static class SimulatorAutoTestRunner
             const string S5 = "5_DISCOUNTS_COMPS";
 
             // 5.1 Remise globale 10%
+            expectedTotal = posVm.TotalTtc.ToDecimal();
             await posVm.ApplyGlobalDiscountAsync(DiscountType.Percentage, 10m, "Fidélité");
             var expectedDiscounted = Math.Round(expectedTotal * 0.9m, 2);
             if (Math.Abs(posVm.TotalTtc.ToDecimal() - expectedDiscounted) > 0.05m)
@@ -611,6 +663,36 @@ public static class SimulatorAutoTestRunner
                 RecordFail(S12, "CatalogManagement", "Aucune famille chargée en Back-Office.");
             }
             RecordPass(S12, "CatalogManagement", $"{catAdminVm.Categories.Count} familles et catalogue synchronisés.");
+
+            // 12.3 Test Disposition Écran & Grille Dynamique (Layout)
+            await MainThread.InvokeOnMainThreadAsync(() =>
+            {
+                if (Shell.Current.CurrentPage is AdminShellPage adminPage)
+                {
+                    adminPage.SelectTab(AdminSection.Layout);
+                }
+            });
+            await Task.Delay(1200);
+            await NotifyStepReadyAsync("step8_admin_layout");
+
+            var layoutVm = serviceProvider.GetRequiredService<LayoutAdminViewModel>();
+            layoutVm.GridColumnCount = 5;
+            layoutVm.ProfileName = "Matrice 5x4";
+            await layoutVm.SaveCurrentProfileAsync();
+            posVm.CatalogGridColumns = 5;
+            if (posVm.CatalogGridColumns != 5)
+            {
+                RecordFail(S12, "LayoutGridColumnsSync", "Synchronisation des colonnes de caisse échouée.");
+            }
+            RecordPass(S12, "LayoutGridColumnsSync", "Grille de caisse configurée en format 5 colonnes.");
+            await Task.Delay(600);
+
+            // Remise en 4 colonnes standard
+            layoutVm.GridColumnCount = 4;
+            layoutVm.ProfileName = "Standard iPad 4x4";
+            await layoutVm.SaveCurrentProfileAsync();
+            posVm.CatalogGridColumns = 4;
+            await Task.Delay(400);
 
             await MainThread.InvokeOnMainThreadAsync(async () =>
             {

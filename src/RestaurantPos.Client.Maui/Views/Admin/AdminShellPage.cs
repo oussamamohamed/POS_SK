@@ -148,7 +148,7 @@ public class AdminShellPage : ContentPage
         };
     }
 
-    private void SelectTab(AdminSection section)
+    public void SelectTab(AdminSection section)
     {
         _vm.CurrentSection = section;
 
@@ -567,6 +567,16 @@ public class AdminShellPage : ContentPage
     {
         var mainStack = new VerticalStackLayout { Spacing = 14 };
 
+        // Feedback Statut
+        var statusLabel = new Label
+        {
+            TextColor = Color.FromArgb("#10B981"),
+            FontSize = 13,
+            FontAttributes = FontAttributes.Bold,
+            IsVisible = false,
+            Margin = new Thickness(0, 4, 0, 0)
+        };
+
         // Barre d'outils Format & Dimensions
         var toolbar = CreateCard("📐 Format & Dimensions de l'Écran Tactile");
         var toolbarGrid = new Grid
@@ -594,7 +604,14 @@ public class AdminShellPage : ContentPage
         presetPicker.Items.Add("5 × 4 (20 touches — Équilibré)");
         presetPicker.Items.Add("5 × 5 (25 touches — Haute densité)");
         presetPicker.Items.Add("6 × 4 (24 touches — Écran large 16:9)");
-        presetPicker.SelectedIndex = 1;
+        
+        presetPicker.SelectedIndex = _vm.LayoutVm.GridColumnCount switch
+        {
+            3 => 0,
+            5 => 2,
+            6 => 4,
+            _ => 1
+        };
 
         var applyBtn = new Button { Text = "Appliquer le Format", BackgroundColor = Color.FromArgb("#3B82F6"), TextColor = Colors.White, FontSize = 12, HeightRequest = 38, CornerRadius = 6 };
         var resetBtn = new Button { Text = "↺ Réinitialiser", BackgroundColor = Color.FromArgb("#334155"), TextColor = Color.FromArgb("#94A3B8"), FontSize = 12, HeightRequest = 38, CornerRadius = 6 };
@@ -605,9 +622,9 @@ public class AdminShellPage : ContentPage
         Grid.SetColumn(resetBtn, 3);
         toolbarGrid.Children.Add(resetBtn);
         toolbar.Children.Add(toolbarGrid);
+        toolbar.Children.Add(statusLabel);
         mainStack.Children.Add(toolbar);
 
-        // Zone Matrice Interactive (4x4)
         var splitGrid = new Grid
         {
             ColumnDefinitions =
@@ -618,71 +635,162 @@ public class AdminShellPage : ContentPage
             ColumnSpacing = 16
         };
 
-        var matrixCard = CreateCard("Matrice Tactile de Caisse (4 × 4 — Miroir Interactif)");
+        var matrixCard = CreateCard("Matrice Tactile de Caisse (Miroir Interactif)");
         var gridMatrix = new Grid
         {
-            RowDefinitions = { new RowDefinition { Height = 90 }, new RowDefinition { Height = 90 }, new RowDefinition { Height = 90 }, new RowDefinition { Height = 90 } },
-            ColumnDefinitions = { new ColumnDefinition(), new ColumnDefinition(), new ColumnDefinition(), new ColumnDefinition() },
             RowSpacing = 8,
             ColumnSpacing = 8,
             BackgroundColor = Color.FromArgb("#0F172A"),
             Padding = new Thickness(10)
         };
 
-        var sampleItems = new[]
+        var sampleItems = new List<(string Name, string Price, string Color)>
         {
-            ("🍔 Burger", "14,50 €", "#3B82F6"),
+            ("🍔 Burger Maison", "16,50 €", "#3B82F6"),
             ("🍟 Frites", "4,00 €", "#3B82F6"),
             ("☕ Café", "2,50 €", "#3B82F6"),
-            ("🍺 Bière IPA", "7,00 €", "#3B82F6"),
+            ("🍺 Bière IPA", "5,50 €", "#3B82F6"),
             ("🥗 Salade César", "12,00 €", "#10B981"),
             ("🥩 Entrecôte", "22,00 €", "#10B981"),
             ("🍕 Pizza Reine", "13,50 €", "#10B981"),
-            ("🍰 Tiramisu", "7,50 €", "#F59E0B")
+            ("🍰 Tiramisu", "7,50 €", "#F59E0B"),
+            ("💧 Eau 50cl", "3,00 €", "#3B82F6"),
+            ("🍫 Fondant", "6,50 €", "#F59E0B")
         };
 
-        for (int r = 0; r < 4; r++)
+        void RenderMatrix(int cols, int rows)
         {
-            for (int c = 0; c < 4; c++)
-            {
-                int index = r * 4 + c;
-                var tile = new Border
-                {
-                    StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = new CornerRadius(8) },
-                    Stroke = Color.FromArgb("#334155"),
-                    StrokeThickness = 1,
-                    BackgroundColor = index < sampleItems.Length ? Color.FromArgb("#1E293B") : Color.FromRgba(255, 255, 255, 10),
-                    Padding = new Thickness(6)
-                };
+            gridMatrix.RowDefinitions.Clear();
+            gridMatrix.ColumnDefinitions.Clear();
+            gridMatrix.Children.Clear();
 
-                if (index < sampleItems.Length)
+            for (int r = 0; r < rows; r++)
+                gridMatrix.RowDefinitions.Add(new RowDefinition { Height = 75 });
+
+            for (int c = 0; c < cols; c++)
+                gridMatrix.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Star });
+
+            for (int r = 0; r < rows; r++)
+            {
+                for (int c = 0; c < cols; c++)
                 {
-                    tile.Content = new VerticalStackLayout
+                    int index = r * cols + c;
+                    var tile = new Border
                     {
-                        VerticalOptions = LayoutOptions.Center,
-                        Children =
+                        StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = new CornerRadius(8) },
+                        Stroke = Color.FromArgb("#334155"),
+                        StrokeThickness = 1,
+                        BackgroundColor = index < sampleItems.Count ? Color.FromArgb("#1E293B") : Color.FromRgba(255, 255, 255, 10),
+                        Padding = new Thickness(6)
+                    };
+
+                    if (index < sampleItems.Count)
+                    {
+                        var item = sampleItems[index];
+                        tile.Content = new VerticalStackLayout
                         {
-                            new Label { Text = sampleItems[index].Item1, TextColor = Colors.White, FontSize = 12, FontAttributes = FontAttributes.Bold, HorizontalOptions = LayoutOptions.Center },
-                            new Label { Text = sampleItems[index].Item2, TextColor = Color.FromArgb("#10B981"), FontSize = 11, HorizontalOptions = LayoutOptions.Center }
+                            VerticalOptions = LayoutOptions.Center,
+                            Children =
+                            {
+                                new Label { Text = item.Name, TextColor = Colors.White, FontSize = 12, FontAttributes = FontAttributes.Bold, HorizontalOptions = LayoutOptions.Center },
+                                new Label { Text = item.Price, TextColor = Color.FromArgb("#10B981"), FontSize = 11, HorizontalOptions = LayoutOptions.Center }
+                            }
+                        };
+                    }
+                    else
+                    {
+                        tile.Content = new Label { Text = "+ Case Libre", TextColor = Color.FromArgb("#475569"), FontSize = 11, HorizontalOptions = LayoutOptions.Center, VerticalOptions = LayoutOptions.Center };
+                    }
+
+                    int slotIndex = index;
+                    var tileTap = new TapGestureRecognizer();
+                    tileTap.Tapped += async (s, e) =>
+                    {
+                        var action = await DisplayActionSheet($"Case #{slotIndex + 1}", "Annuler", null, "🍔 Burger Maison", "🥩 Entrecôte Grillée", "☕ Café Espresso", "🍺 Bière Pression", "Vider la case");
+                        if (!string.IsNullOrEmpty(action) && action != "Annuler")
+                        {
+                            if (action == "Vider la case" && slotIndex < sampleItems.Count)
+                            {
+                                sampleItems.RemoveAt(slotIndex);
+                            }
+                            else if (action != "Vider la case")
+                            {
+                                var newItem = (action, "Assigné", "#3B82F6");
+                                if (slotIndex < sampleItems.Count)
+                                    sampleItems[slotIndex] = newItem;
+                                else
+                                    sampleItems.Add(newItem);
+                            }
+                            RenderMatrix(cols, rows);
                         }
                     };
-                }
-                else
-                {
-                    tile.Content = new Label { Text = "+ Case Libre", TextColor = Color.FromArgb("#475569"), FontSize = 11, HorizontalOptions = LayoutOptions.Center, VerticalOptions = LayoutOptions.Center };
-                }
+                    tile.GestureRecognizers.Add(tileTap);
 
-                Grid.SetRow(tile, r);
-                Grid.SetColumn(tile, c);
-                gridMatrix.Children.Add(tile);
+                    Grid.SetRow(tile, r);
+                    Grid.SetColumn(tile, c);
+                    gridMatrix.Children.Add(tile);
+                }
             }
         }
+
+        int initialCols = _vm.LayoutVm.GridColumnCount is >= 2 and <= 6 ? _vm.LayoutVm.GridColumnCount : 4;
+        int initialRows = initialCols == 3 ? 3 : (initialCols == 5 ? 4 : (initialCols == 6 ? 4 : 4));
+        RenderMatrix(initialCols, initialRows);
+
+        applyBtn.Clicked += async (s, e) =>
+        {
+            int cols = 4;
+            int rows = 4;
+            switch (presetPicker.SelectedIndex)
+            {
+                case 0: cols = 3; rows = 3; break;
+                case 1: cols = 4; rows = 4; break;
+                case 2: cols = 5; rows = 4; break;
+                case 3: cols = 5; rows = 5; break;
+                case 4: cols = 6; rows = 4; break;
+            }
+
+            RenderMatrix(cols, rows);
+
+            _vm.LayoutVm.GridColumnCount = cols;
+            _vm.LayoutVm.ProfileName = $"Matrice {cols}x{rows}";
+            await _vm.LayoutVm.SaveCurrentProfileAsync();
+
+            var posVm = Handler?.MauiContext?.Services.GetService<PosTerminalViewModel>();
+            if (posVm != null)
+            {
+                posVm.CatalogGridColumns = cols;
+            }
+
+            statusLabel.Text = $"✅ Format {cols} × {rows} appliqué avec succès ! Terminal de caisse configuré sur {cols} colonnes.";
+            statusLabel.IsVisible = true;
+        };
+
+        resetBtn.Clicked += async (s, e) =>
+        {
+            presetPicker.SelectedIndex = 1;
+            RenderMatrix(4, 4);
+
+            _vm.LayoutVm.GridColumnCount = 4;
+            _vm.LayoutVm.ProfileName = "Standard iPad 4x4";
+            await _vm.LayoutVm.SaveCurrentProfileAsync();
+
+            var posVm = Handler?.MauiContext?.Services.GetService<PosTerminalViewModel>();
+            if (posVm != null)
+            {
+                posVm.CatalogGridColumns = 4;
+            }
+
+            statusLabel.Text = "↺ Format réinitialisé en 4 × 4 standard (16 touches).";
+            statusLabel.IsVisible = true;
+        };
+
         matrixCard.Children.Add(gridMatrix);
         splitGrid.Children.Add(matrixCard);
 
         var catalogSide = CreateCard("Catalogue Assignable");
         var sideStack = new VerticalStackLayout { Spacing = 6 };
-        sideStack.Children.Add(new Label { Text = "Glissez ou assignez les articles disponibles :", TextColor = Color.FromArgb("#94A3B8"), FontSize = 11, Margin = new Thickness(0, 0, 0, 8) });
+        sideStack.Children.Add(new Label { Text = "Touchez une case pour assigner un article :", TextColor = Color.FromArgb("#94A3B8"), FontSize = 11, Margin = new Thickness(0, 0, 0, 8) });
         foreach (var it in sampleItems)
         {
             var row = new Border
@@ -691,7 +799,7 @@ public class AdminShellPage : ContentPage
                 Stroke = Color.FromArgb("#334155"),
                 BackgroundColor = Color.FromArgb("#0F172A"),
                 Padding = new Thickness(10, 6),
-                Content = new Label { Text = $"{it.Item1} ({it.Item2})", TextColor = Colors.White, FontSize = 12 }
+                Content = new Label { Text = $"{it.Name} ({it.Price})", TextColor = Colors.White, FontSize = 12 }
             };
             sideStack.Children.Add(row);
         }

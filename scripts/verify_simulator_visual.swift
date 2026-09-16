@@ -43,10 +43,19 @@ let steps: [VisualStep] = [
         id: "step4_modifiers_popup",
         description: "Écran 4 : Modificateurs, Cuissons & Options Produit",
         requiredKeywordGroups: [
-            ["Modificateurs", "Cuisson", "Article"],
-            ["Valider", "point", "Saignant", "Option"]
+            ["Burger", "Cuisson", "Viande", "Modificateurs", "Article"],
+            ["Saignant", "point", "Sauce", "Ajouter", "Option"]
         ],
         screenshotName: "step4_modifiers_popup.png"
+    ),
+    VisualStep(
+        id: "step4_bill_note_modal",
+        description: "Écran 4bis : Note de Table & Addition Provisoire",
+        requiredKeywordGroups: [
+            ["Note", "Addition", "Table"],
+            ["Imprimer", "TTC", "PROVISOIRE", "DOCUMENT", "TOTAL"]
+        ],
+        screenshotName: "step4_bill_note_modal.png"
     ),
     VisualStep(
         id: "step5_kitchen_kds",
@@ -84,6 +93,15 @@ let steps: [VisualStep] = [
             ["Salle", "Retour", "Imprimantes", "Famille"]
         ],
         screenshotName: "step8_admin_shell.png"
+    ),
+    VisualStep(
+        id: "step8_admin_layout",
+        description: "Écran 8bis : Disposition de l'Écran & Matrice Tactile",
+        requiredKeywordGroups: [
+            ["Disposition", "Matrice", "Format", "Écran", "Touches", "Colonnes"],
+            ["Appliquer", "Réinitialiser", "Standard", "Burger", "Case"]
+        ],
+        screenshotName: "step8_admin_layout.png"
     ),
     VisualStep(
         id: "step9_final_lock",

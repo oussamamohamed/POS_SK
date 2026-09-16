@@ -18,6 +18,10 @@ public class PosTerminalPage : ContentPage, IQueryAttributable
     private readonly PosTerminalViewModel _vm;
     private Grid? _discountModal;
     private Grid? _transferModal;
+    private Grid? _modifiersModal;
+    private Frame? _modifiersCard;
+    private Grid? _billNoteModal;
+    private Frame? _billNoteCard;
 
     public PosTerminalPage(PosTerminalViewModel vm)
     {
@@ -78,9 +82,11 @@ public class PosTerminalPage : ContentPage, IQueryAttributable
             }
         };
 
-        // Modales overlay (Remise & Transfert)
+        // Modales overlay (Remise & Transfert & Modificateurs & Note)
         _discountModal = BuildDiscountModal();
         _transferModal = BuildTransferModal();
+        _modifiersModal = BuildModifiersModal();
+        _billNoteModal = BuildBillNoteModal();
 
         Content = new Grid
         {
@@ -88,7 +94,9 @@ public class PosTerminalPage : ContentPage, IQueryAttributable
             {
                 mainLayout,
                 _discountModal,
-                _transferModal
+                _transferModal,
+                _modifiersModal,
+                _billNoteModal
             }
         };
     }
@@ -267,6 +275,24 @@ public class PosTerminalPage : ContentPage, IQueryAttributable
                 };
                 nameLabel.SetBinding(Label.TextProperty, "ProductName");
 
+                var modifiersLabel = new Label
+                {
+                    FontSize = 11,
+                    TextColor = Color.FromArgb("#38BDF8"),
+                    LineBreakMode = LineBreakMode.WordWrap
+                };
+                modifiersLabel.SetBinding(Label.TextProperty, new Binding("SelectedModifiers", converter: new SelectedModifiersToStringConverter()));
+                modifiersLabel.SetBinding(IsVisibleProperty, new Binding("SelectedModifiers", converter: new CollectionNotEmptyToBoolConverter()));
+
+                var commentLabel = new Label
+                {
+                    FontSize = 11,
+                    TextColor = Color.FromArgb("#F59E0B"),
+                    LineBreakMode = LineBreakMode.WordWrap
+                };
+                commentLabel.SetBinding(Label.TextProperty, new Binding("KitchenComment", stringFormat: "📝 {0}"));
+                commentLabel.SetBinding(IsVisibleProperty, new Binding("KitchenComment", converter: new StringToBoolConverter()));
+
                 var priceLabel = new Label
                 {
                     FontSize = 15,
@@ -277,9 +303,28 @@ public class PosTerminalPage : ContentPage, IQueryAttributable
                 };
                 priceLabel.SetBinding(Label.TextProperty, "TotalTtc", stringFormat: "{0:F2} €");
 
+                var itemNoteBtn = new Button
+                {
+                    Text = "📝",
+                    BackgroundColor = Color.FromArgb("#334155"),
+                    TextColor = Color.FromArgb("#F59E0B"),
+                    WidthRequest = 28,
+                    HeightRequest = 28,
+                    CornerRadius = 6,
+                    FontSize = 11,
+                    Padding = 0
+                };
+                itemNoteBtn.Clicked += async (s, e) =>
+                {
+                    if (itemNoteBtn.BindingContext is OrderItem it)
+                    {
+                        await EditItemNoteAsync(it);
+                    }
+                };
+
                 var qtyRow = new HorizontalStackLayout
                 {
-                    Spacing = 8,
+                    Spacing = 6,
                     Children =
                     {
                         new Button
@@ -318,14 +363,15 @@ public class PosTerminalPage : ContentPage, IQueryAttributable
                         {
                             b.SetBinding(Button.CommandProperty, new Binding(nameof(PosTerminalViewModel.IncrementQuantityCommand), source: _vm));
                             b.SetBinding(Button.CommandParameterProperty, new Binding("."));
-                        })
+                        }),
+                        itemNoteBtn
                     }
                 };
 
                 var leftCol = new VerticalStackLayout
                 {
                     Spacing = 2,
-                    Children = { statusBadge, nameLabel, qtyRow }
+                    Children = { statusBadge, nameLabel, modifiersLabel, commentLabel, qtyRow }
                 };
                 Grid.SetColumn(leftCol, 0);
                 Grid.SetColumn(priceLabel, 1);
@@ -454,11 +500,12 @@ public class PosTerminalPage : ContentPage, IQueryAttributable
             }
         };
 
-        // 6 Action Buttons (Grille 2x3 identique au web)
+        // Action Buttons (Grille responsive avec bouton Note dédié)
         var actionButtonsGrid = new Grid
         {
             ColumnDefinitions =
             {
+                new ColumnDefinition { Width = GridLength.Star },
                 new ColumnDefinition { Width = GridLength.Star },
                 new ColumnDefinition { Width = GridLength.Star },
                 new ColumnDefinition { Width = GridLength.Star }
@@ -468,8 +515,8 @@ public class PosTerminalPage : ContentPage, IQueryAttributable
                 new RowDefinition { Height = GridLength.Auto },
                 new RowDefinition { Height = GridLength.Auto }
             },
-            ColumnSpacing = 6,
-            RowSpacing = 6,
+            ColumnSpacing = 5,
+            RowSpacing = 5,
             Margin = new Thickness(0, 6, 0, 0)
         };
 
@@ -492,6 +539,12 @@ public class PosTerminalPage : ContentPage, IQueryAttributable
             if (_discountModal != null) _discountModal.IsVisible = true;
         }));
         Grid.SetRow(btnDiscount, 0); Grid.SetColumn(btnDiscount, 2);
+
+        var btnNote = MakeCartActionBtn("🧾 Note", "#0284C7", new Command(() =>
+        {
+            OpenBillNoteModal();
+        }));
+        Grid.SetRow(btnNote, 0); Grid.SetColumn(btnNote, 3);
 
         // Row 1
         var btnTransfer = MakeCartActionBtn("🔄 Transférer", "#06B6D4", new Command(() =>
@@ -518,10 +571,12 @@ public class PosTerminalPage : ContentPage, IQueryAttributable
             await Shell.Current.GoToAsync($"checkout?orderId={_vm.ActiveOrder.Id}&totalCents={_vm.TotalTtc.AmountInCents}&tableNumber={_vm.ActiveTable}");
         }));
         Grid.SetRow(btnPay, 1); Grid.SetColumn(btnPay, 2);
+        Grid.SetColumnSpan(btnPay, 2);
 
         actionButtonsGrid.Add(btnKitchen);
         actionButtonsGrid.Add(btnHold);
         actionButtonsGrid.Add(btnDiscount);
+        actionButtonsGrid.Add(btnNote);
         actionButtonsGrid.Add(btnTransfer);
         actionButtonsGrid.Add(btnSplit);
         actionButtonsGrid.Add(btnPay);
@@ -656,7 +711,7 @@ public class PosTerminalPage : ContentPage, IQueryAttributable
         // 3. Grille Articles (products-grid)
         var productsGrid = new CollectionView
         {
-            ItemsLayout = new GridItemsLayout(4, ItemsLayoutOrientation.Vertical)
+            ItemsLayout = new GridItemsLayout(_vm.CatalogGridColumns, ItemsLayoutOrientation.Vertical)
             {
                 HorizontalItemSpacing = 10,
                 VerticalItemSpacing = 10
@@ -684,28 +739,64 @@ public class PosTerminalPage : ContentPage, IQueryAttributable
 
                 var price = new Label
                 {
-                    FontSize = 17,
+                    FontSize = 16,
                     TextColor = Color.FromArgb("#10B981"),
                     FontAttributes = FontAttributes.Bold
                 };
                 price.SetBinding(Label.TextProperty, "Price", stringFormat: "{0:F2} €");
 
+                var optBadge = new Label
+                {
+                    Text = "⚙️ Modificateurs",
+                    FontSize = 10,
+                    FontAttributes = FontAttributes.Bold,
+                    TextColor = Color.FromArgb("#38BDF8"),
+                    BackgroundColor = Color.FromArgb("#0F172A"),
+                    Padding = new Thickness(4, 1),
+                    HorizontalOptions = LayoutOptions.Start
+                };
+
                 frame.Content = new VerticalStackLayout
                 {
-                    Spacing = 6,
-                    Children = { name, price },
+                    Spacing = 4,
+                    Children = { name, price, optBadge },
                     InputTransparent = true
                 };
 
                 var tap = new TapGestureRecognizer();
-                tap.SetBinding(TapGestureRecognizer.CommandProperty, new Binding(nameof(PosTerminalViewModel.AddProductCommand), source: _vm));
-                tap.SetBinding(TapGestureRecognizer.CommandParameterProperty, new Binding("."));
+                tap.Tapped += (s, e) =>
+                {
+                    if (frame.BindingContext is Product prod)
+                    {
+                        if (_vm.HasModifiers(prod))
+                        {
+                            OpenModifiersModal(prod);
+                        }
+                        else
+                        {
+                            _vm.AddProductCommand.Execute(prod);
+                        }
+                    }
+                };
                 frame.GestureRecognizers.Add(tap);
 
                 return frame;
             })
         };
         productsGrid.SetBinding(CollectionView.ItemsSourceProperty, nameof(PosTerminalViewModel.AvailableProducts));
+
+        _vm.PropertyChanged += (s, e) =>
+        {
+            if (e.PropertyName == nameof(PosTerminalViewModel.CatalogGridColumns))
+            {
+                productsGrid.ItemsLayout = new GridItemsLayout(_vm.CatalogGridColumns, ItemsLayoutOrientation.Vertical)
+                {
+                    HorizontalItemSpacing = 10,
+                    VerticalItemSpacing = 10
+                };
+            }
+        };
+
         Grid.SetRow(productsGrid, 2);
 
         // 4. Barre Pagination (grid-pagination-bar)
@@ -935,6 +1026,423 @@ public class PosTerminalPage : ContentPage, IQueryAttributable
         };
     }
 
+    private Grid BuildModifiersModal()
+    {
+        var overlay = new Grid
+        {
+            BackgroundColor = Color.FromArgb("#CC000000"),
+            IsVisible = false
+        };
+
+        _modifiersCard = new Frame
+        {
+            BackgroundColor = Color.FromArgb("#1E293B"),
+            CornerRadius = 16,
+            Padding = new Thickness(24),
+            WidthRequest = 480,
+            MaximumHeightRequest = 620,
+            VerticalOptions = LayoutOptions.Center,
+            HorizontalOptions = LayoutOptions.Center,
+            HasShadow = false
+        };
+
+        overlay.Children.Add(_modifiersCard);
+        return overlay;
+    }
+
+    public void CloseModifiersModal()
+    {
+        if (_modifiersModal != null) _modifiersModal.IsVisible = false;
+    }
+
+    public void OpenModifiersModal(Product product)
+    {
+        if (_modifiersModal == null || _modifiersCard == null) return;
+
+        var groups = _vm.GetModifierGroups(product);
+        var selectedOpts = new List<ProductModifierOption>();
+        foreach (var g in groups)
+        {
+            foreach (var opt in g.Options)
+            {
+                if (opt.IsDefault) selectedOpts.Add(opt);
+            }
+        }
+
+        var mainLayout = new VerticalStackLayout { Spacing = 14 };
+
+        var titleLabel = new Label
+        {
+            Text = $"⚙️ {product.Name}",
+            TextColor = Colors.White,
+            FontSize = 20,
+            FontAttributes = FontAttributes.Bold
+        };
+        var subLabel = new Label
+        {
+            Text = $"Prix de base : {product.Price.ToDecimal():F2} €  •  TVA {product.TaxRatePercent}%",
+            TextColor = Color.FromArgb("#94A3B8"),
+            FontSize = 13
+        };
+        mainLayout.Children.Add(titleLabel);
+        mainLayout.Children.Add(subLabel);
+
+        var groupsStack = new VerticalStackLayout { Spacing = 12 };
+        var optionButtons = new List<(ProductModifierGroup Group, ProductModifierOption Option, Button Btn)>();
+
+        var extraPriceLabel = new Label
+        {
+            TextColor = Color.FromArgb("#10B981"),
+            FontSize = 13,
+            FontAttributes = FontAttributes.Bold
+        };
+        var finalPriceLabel = new Label
+        {
+            TextColor = Color.FromArgb("#38BDF8"),
+            FontSize = 16,
+            FontAttributes = FontAttributes.Bold
+        };
+
+        void UpdatePriceDisplays()
+        {
+            decimal totalExtra = selectedOpts.Sum(o => o.ExtraPrice.ToDecimal());
+            decimal finalPrice = product.Price.ToDecimal() + totalExtra;
+            extraPriceLabel.Text = totalExtra > 0 ? $"Suppléments : +{totalExtra:F2} €" : "Suppléments : inclus";
+            finalPriceLabel.Text = $"Prix total : {finalPrice:F2} €";
+
+            foreach (var (grp, opt, btn) in optionButtons)
+            {
+                bool isSelected = selectedOpts.Contains(opt);
+                btn.BackgroundColor = isSelected ? Color.FromArgb("#0284C7") : Color.FromArgb("#0F172A");
+                btn.BorderColor = isSelected ? Color.FromArgb("#38BDF8") : Color.FromArgb("#334155");
+                btn.TextColor = isSelected ? Colors.White : Color.FromArgb("#CBD5E1");
+            }
+        }
+
+        foreach (var grp in groups)
+        {
+            var grpBox = new VerticalStackLayout { Spacing = 6 };
+            grpBox.Children.Add(new Label
+            {
+                Text = $"{grp.GroupName} {(grp.IsSingleChoice ? "(1 choix)" : "(Choix multiples)")} :",
+                TextColor = Color.FromArgb("#F8FAFC"),
+                FontSize = 13,
+                FontAttributes = FontAttributes.Bold
+            });
+
+            var optionsFlex = new FlexLayout
+            {
+                Wrap = Microsoft.Maui.Layouts.FlexWrap.Wrap,
+                AlignItems = Microsoft.Maui.Layouts.FlexAlignItems.Start
+            };
+
+            foreach (var opt in grp.Options)
+            {
+                var optBtn = new Button
+                {
+                    Text = opt.ExtraPrice.AmountInCents > 0
+                        ? $"{opt.Name} (+{opt.ExtraPrice.ToDecimal():F2} €)"
+                        : opt.Name,
+                    FontSize = 12,
+                    FontAttributes = FontAttributes.Bold,
+                    HeightRequest = 36,
+                    CornerRadius = 8,
+                    BorderWidth = 1,
+                    Margin = new Thickness(0, 0, 8, 8),
+                    Padding = new Thickness(10, 0)
+                };
+
+                optBtn.Clicked += (s, e) =>
+                {
+                    if (grp.IsSingleChoice)
+                    {
+                        selectedOpts.RemoveAll(o => grp.Options.Contains(o));
+                        selectedOpts.Add(opt);
+                    }
+                    else
+                    {
+                        if (!selectedOpts.Remove(opt))
+                            selectedOpts.Add(opt);
+                    }
+                    UpdatePriceDisplays();
+                };
+
+                optionButtons.Add((grp, opt, optBtn));
+                optionsFlex.Children.Add(optBtn);
+            }
+
+            grpBox.Children.Add(optionsFlex);
+            groupsStack.Children.Add(grpBox);
+        }
+
+        mainLayout.Children.Add(new ScrollView { Content = groupsStack, MaximumHeightRequest = 260 });
+
+        var instructionEntry = new Entry
+        {
+            Placeholder = "Instructions cuisine / Note (ex: sans sel, bien chaud...)",
+            PlaceholderColor = Color.FromArgb("#64748B"),
+            TextColor = Colors.White,
+            BackgroundColor = Color.FromArgb("#0F172A"),
+            FontSize = 13,
+            HeightRequest = 40
+        };
+        mainLayout.Children.Add(instructionEntry);
+
+        UpdatePriceDisplays();
+        var priceSummaryRow = new HorizontalStackLayout
+        {
+            Spacing = 16,
+            Children = { extraPriceLabel, finalPriceLabel }
+        };
+        mainLayout.Children.Add(priceSummaryRow);
+
+        var btnAdd = new Button
+        {
+            Text = "✔ Valider & Ajouter au Panier",
+            BackgroundColor = Color.FromArgb("#10B981"),
+            TextColor = Colors.White,
+            FontSize = 14,
+            FontAttributes = FontAttributes.Bold,
+            HeightRequest = 44,
+            CornerRadius = 8
+        };
+        btnAdd.Clicked += async (s, e) =>
+        {
+            decimal totalExtra = selectedOpts.Sum(o => o.ExtraPrice.ToDecimal());
+            var selectedNames = selectedOpts.Select(o => o.ExtraPrice.AmountInCents > 0 ? $"{o.Name} (+{o.ExtraPrice.ToDecimal():F2} €)" : o.Name).ToList();
+            await _vm.AddProductWithModifiersAsync(product, selectedNames, totalExtra, string.IsNullOrWhiteSpace(instructionEntry.Text) ? null : instructionEntry.Text.Trim());
+            _modifiersModal.IsVisible = false;
+        };
+
+        var btnQuickAdd = new Button
+        {
+            Text = "⚡ Ajout Simple Direct",
+            BackgroundColor = Color.FromArgb("#334155"),
+            TextColor = Colors.White,
+            FontSize = 12,
+            HeightRequest = 38,
+            CornerRadius = 8
+        };
+        btnQuickAdd.Clicked += async (s, e) =>
+        {
+            await _vm.AddProductAsync(product);
+            _modifiersModal.IsVisible = false;
+        };
+
+        var btnCancel = new Button
+        {
+            Text = "Annuler",
+            BackgroundColor = Color.FromArgb("#1E293B"),
+            TextColor = Color.FromArgb("#94A3B8"),
+            FontSize = 12,
+            HeightRequest = 36,
+            CornerRadius = 8
+        };
+        btnCancel.Clicked += (s, e) =>
+        {
+            _modifiersModal.IsVisible = false;
+        };
+
+        var actionsGrid = new Grid
+        {
+            ColumnDefinitions = { new ColumnDefinition { Width = GridLength.Star }, new ColumnDefinition { Width = GridLength.Auto }, new ColumnDefinition { Width = GridLength.Auto } },
+            ColumnSpacing = 8,
+            Children = { btnAdd }
+        };
+        Grid.SetColumn(btnQuickAdd, 1);
+        Grid.SetColumn(btnCancel, 2);
+        actionsGrid.Children.Add(btnQuickAdd);
+        actionsGrid.Children.Add(btnCancel);
+        mainLayout.Children.Add(actionsGrid);
+
+        _modifiersCard.Content = mainLayout;
+        _modifiersModal.IsVisible = true;
+    }
+
+    private Grid BuildBillNoteModal()
+    {
+        var overlay = new Grid
+        {
+            BackgroundColor = Color.FromArgb("#CC000000"),
+            IsVisible = false
+        };
+
+        _billNoteCard = new Frame
+        {
+            BackgroundColor = Color.FromArgb("#1E293B"),
+            CornerRadius = 16,
+            Padding = new Thickness(24),
+            WidthRequest = 420,
+            MaximumHeightRequest = 620,
+            VerticalOptions = LayoutOptions.Center,
+            HorizontalOptions = LayoutOptions.Center,
+            HasShadow = false
+        };
+
+        overlay.Children.Add(_billNoteCard);
+        return overlay;
+    }
+
+    public void CloseBillNoteModal()
+    {
+        if (_billNoteModal != null) _billNoteModal.IsVisible = false;
+    }
+
+    public void OpenBillNoteModal()
+    {
+        if (_billNoteModal == null || _billNoteCard == null) return;
+
+        var stack = new VerticalStackLayout { Spacing = 12 };
+
+        var header = new VerticalStackLayout
+        {
+            Spacing = 4,
+            Children =
+            {
+                new Label { Text = "🧾 Note de Table (Addition Provisoire)", TextColor = Colors.White, FontSize = 18, FontAttributes = FontAttributes.Bold },
+                new Label { Text = $"Table : {_vm.ActiveTable}  •  Couverts : {_vm.CoversCount}  •  Opérateur : Alexandre D.", TextColor = Color.FromArgb("#94A3B8"), FontSize = 12 },
+                new Label { Text = $"Éditée le {DateTime.Now:dd/MM/yyyy à HH:mm}", TextColor = Color.FromArgb("#64748B"), FontSize = 11 },
+                new Label { Text = "⚠️ DOCUMENT PROVISOIRE — NE CONSTITUE PAS UNE FACTURE", TextColor = Color.FromArgb("#F59E0B"), FontSize = 10, FontAttributes = FontAttributes.Bold }
+            }
+        };
+        stack.Children.Add(header);
+        stack.Children.Add(new BoxView { HeightRequest = 1, Color = Color.FromArgb("#334155") });
+
+        var itemsStack = new VerticalStackLayout { Spacing = 6 };
+        if (_vm.CartItems.Count == 0)
+        {
+            itemsStack.Children.Add(new Label { Text = "Aucun article dans la commande.", TextColor = Color.FromArgb("#94A3B8"), FontSize = 13, HorizontalOptions = LayoutOptions.Center });
+        }
+        else
+        {
+            foreach (var it in _vm.CartItems)
+            {
+                var row = new Grid
+                {
+                    ColumnDefinitions =
+                    {
+                        new ColumnDefinition { Width = new GridLength(28) },
+                        new ColumnDefinition { Width = GridLength.Star },
+                        new ColumnDefinition { Width = GridLength.Auto }
+                    }
+                };
+
+                row.Children.Add(new Label { Text = $"{it.Quantity}x", TextColor = Color.FromArgb("#38BDF8"), FontSize = 12, FontAttributes = FontAttributes.Bold });
+                
+                var details = new VerticalStackLayout { Spacing = 1 };
+                details.Children.Add(new Label { Text = it.ProductName, TextColor = Colors.White, FontSize = 13, FontAttributes = FontAttributes.Bold });
+                if (it.SelectedModifiers.Count > 0)
+                {
+                    details.Children.Add(new Label { Text = "• " + string.Join(" • ", it.SelectedModifiers), TextColor = Color.FromArgb("#94A3B8"), FontSize = 10 });
+                }
+                if (!string.IsNullOrWhiteSpace(it.KitchenComment))
+                {
+                    details.Children.Add(new Label { Text = $"📝 {it.KitchenComment}", TextColor = Color.FromArgb("#F59E0B"), FontSize = 10 });
+                }
+                Grid.SetColumn(details, 1);
+                row.Children.Add(details);
+
+                var price = new Label { Text = $"{it.CalculateTotalTtc().ToDecimal():F2} €", TextColor = Color.FromArgb("#10B981"), FontSize = 13, FontAttributes = FontAttributes.Bold };
+                Grid.SetColumn(price, 2);
+                row.Children.Add(price);
+
+                itemsStack.Children.Add(row);
+            }
+        }
+        stack.Children.Add(new ScrollView { Content = itemsStack, MaximumHeightRequest = 260 });
+
+        stack.Children.Add(new BoxView { HeightRequest = 1, Color = Color.FromArgb("#334155") });
+        var totalsBox = new VerticalStackLayout
+        {
+            Spacing = 4,
+            Children =
+            {
+                new Grid
+                {
+                    ColumnDefinitions = { new ColumnDefinition { Width = GridLength.Star }, new ColumnDefinition { Width = GridLength.Auto } },
+                    Children =
+                    {
+                        new Label { Text = "Total HT :", TextColor = Color.FromArgb("#94A3B8"), FontSize = 12 },
+                        new Label { Text = $"{_vm.TotalHt.ToDecimal():F2} €", TextColor = Colors.White, FontSize = 12 }.Also(l => Grid.SetColumn(l, 1))
+                    }
+                },
+                new Grid
+                {
+                    ColumnDefinitions = { new ColumnDefinition { Width = GridLength.Star }, new ColumnDefinition { Width = GridLength.Auto } },
+                    Children =
+                    {
+                        new Label { Text = "TVA (10% & 20%) :", TextColor = Color.FromArgb("#94A3B8"), FontSize = 12 },
+                        new Label { Text = $"{_vm.TotalVat.ToDecimal():F2} €", TextColor = Colors.White, FontSize = 12 }.Also(l => Grid.SetColumn(l, 1))
+                    }
+                },
+                new Grid
+                {
+                    ColumnDefinitions = { new ColumnDefinition { Width = GridLength.Star }, new ColumnDefinition { Width = GridLength.Auto } },
+                    Children =
+                    {
+                        new Label { Text = "TOTAL TTC :", TextColor = Colors.White, FontSize = 16, FontAttributes = FontAttributes.Bold },
+                        new Label { Text = $"{_vm.TotalTtc.ToDecimal():F2} €", TextColor = Color.FromArgb("#10B981"), FontSize = 18, FontAttributes = FontAttributes.Bold }.Also(l => Grid.SetColumn(l, 1))
+                    }
+                }
+            }
+        };
+        stack.Children.Add(totalsBox);
+
+        var printBtn = new Button
+        {
+            Text = "🖨️ Imprimer Note & Demande d'Addition",
+            BackgroundColor = Color.FromArgb("#0284C7"),
+            TextColor = Colors.White,
+            FontSize = 13,
+            FontAttributes = FontAttributes.Bold,
+            HeightRequest = 44,
+            CornerRadius = 8
+        };
+        printBtn.Clicked += async (s, e) =>
+        {
+            var floorVm = Handler?.MauiContext?.Services.GetService<FloorPlanViewModel>();
+            floorVm?.SetTableStatus(_vm.ActiveTable, TableStatus.BillRequested);
+            _vm.ActiveOrder.Status = OrderStatus.BillRequested;
+            _billNoteModal.IsVisible = false;
+            await DisplayAlert("Note Imprimée", $"La note de table pour {_vm.ActiveTable} ({_vm.TotalTtc.ToDecimal():F2} €) a été imprimée. La table est désormais marquée en statut 'Addition'.", "OK");
+        };
+
+        var closeBtn = new Button
+        {
+            Text = "Fermer",
+            BackgroundColor = Color.FromArgb("#334155"),
+            TextColor = Colors.White,
+            FontSize = 13,
+            HeightRequest = 38,
+            CornerRadius = 8
+        };
+        closeBtn.Clicked += (s, e) =>
+        {
+            _billNoteModal.IsVisible = false;
+        };
+
+        stack.Children.Add(printBtn);
+        stack.Children.Add(closeBtn);
+
+        _billNoteCard.Content = stack;
+        _billNoteModal.IsVisible = true;
+    }
+
+    private async Task EditItemNoteAsync(OrderItem item)
+    {
+        string current = item.KitchenComment ?? string.Empty;
+        string result = await DisplayPromptAsync(
+            "Consigne Cuisine",
+            $"Instruction ou note pour {item.ProductName} :",
+            initialValue: current,
+            placeholder: "Ex: Sans sel, bien cuit, sauce à part...");
+
+        if (result != null)
+        {
+            _vm.SetItemKitchenComment(item, result.Trim());
+        }
+    }
+
     private static T AddToGrid<T>(T view, int row) where T : View
     {
         Grid.SetRow(view, row);
@@ -944,6 +1452,27 @@ public class PosTerminalPage : ContentPage, IQueryAttributable
     // =========================================================================
     // CONVERTISSEURS INTERNES POUR L'UI TACTILE
     // =========================================================================
+    private class SelectedModifiersToStringConverter : IValueConverter
+    {
+        public object Convert(object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture)
+        {
+            if (value is List<string> list && list.Count > 0)
+            {
+                return "• " + string.Join(" • ", list);
+            }
+            return string.Empty;
+        }
+        public object ConvertBack(object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture)
+            => throw new NotImplementedException();
+    }
+
+    private class CollectionNotEmptyToBoolConverter : IValueConverter
+    {
+        public object Convert(object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture)
+            => value is System.Collections.ICollection col && col.Count > 0;
+        public object ConvertBack(object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture)
+            => throw new NotImplementedException();
+    }
     private class StringToBoolConverter : IValueConverter
     {
         public object Convert(object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture)

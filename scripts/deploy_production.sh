@@ -30,6 +30,9 @@ echo "[2/6] Redemarrage API en Mode Production..."
 pkill -f "RestaurantPos.Api" 2>/dev/null || true
 sleep 1
 
+echo "  Nettoyage base de donnees existante (remise a zero)..."
+rm -f src/RestaurantPos.Api/restaurantpos.db* restaurantpos.db* 2>/dev/null || true
+
 # 3. Compilation et Lancement Backend API en Release
 echo "  Compilation Release API..."
 dotnet build src/RestaurantPos.Api/RestaurantPos.Api.csproj -c Release --nologo
@@ -62,6 +65,11 @@ echo "[5/6] Installation de l'application sur le simulateur iPad..."
 echo "  Desinstallation precedente pour rafraichir le cache de SpringBoard..."
 xcrun simctl uninstall booted "$BUNDLE_ID" 2>/dev/null || true
 xcrun simctl install booted "$APP_BUNDLE"
+
+echo "  Capture d'ecran de l'ecran d'accueil (icone)..."
+xcrun simctl spawn booted killall -9 SpringBoard 2>/dev/null || true
+sleep 2
+xcrun simctl io booted screenshot "/Users/oussama/.gemini/antigravity-ide/brain/869c6bf4-a973-4b71-97b9-db1b15ce688f/homescreen_verified.png" 2>/dev/null || true
 
 echo "[6/6] Lancement de l'application RestaurantPos en Mode Production..."
 xcrun simctl terminate booted "$BUNDLE_ID" 2>/dev/null || true
