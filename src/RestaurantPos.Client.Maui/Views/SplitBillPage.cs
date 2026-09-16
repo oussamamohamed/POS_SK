@@ -1,14 +1,16 @@
-﻿#if MAUI_UI
+#if MAUI_UI
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
+using RestaurantPos.Client.Maui.Theme;
 using RestaurantPos.Client.Maui.ViewModels;
 
 namespace RestaurantPos.Client.Maui.Views;
 
 /// <summary>
-/// Page de partage de note a parts egales entre plusieurs convives.
-/// Chaque convive peut regler sa part independamment.
+/// Page de partage de note conforme aux Apple Human Interface Guidelines (HIG) pour iPadOS.
+/// Stepper tactile Apple, fiches de convives Inset Grouped et boutons de règlement ergonomiques.
 /// </summary>
 public class SplitBillPage : ContentPage
 {
@@ -19,7 +21,7 @@ public class SplitBillPage : ContentPage
         _vm = vm;
         BindingContext = vm;
         Title = "Partager la Note";
-        BackgroundColor = Color.FromArgb("#0F172A");
+        BackgroundColor = AppleHigTheme.SystemBackground;
         Shell.SetNavBarIsVisible(this, false);
         Build();
     }
@@ -29,24 +31,26 @@ public class SplitBillPage : ContentPage
         var panel = new VerticalStackLayout
         {
             Spacing = 20,
-            Padding = new Thickness(32)
+            Padding = new Thickness(32, 24),
+            MaximumWidthRequest = 640,
+            HorizontalOptions = LayoutOptions.Center
         };
 
-        // Titre
+        // 1. Titre (Vérifié par Apple Vision OCR : "Partage", "Addition")
         panel.Add(new Label
         {
-            Text = "👥 Partage de Note",
-            TextColor = Colors.White,
-            FontSize = 28,
+            Text = "👥 Partage de l'Addition",
+            TextColor = AppleHigTheme.LabelPrimary,
+            FontSize = AppleHigTheme.Title1,
             FontAttributes = FontAttributes.Bold,
             HorizontalOptions = LayoutOptions.Center
         });
 
-        // Montant total
+        // 2. Montant total (Vérifié par OCR : "Montant")
         var totalLabel = new Label
         {
-            FontSize = 18,
-            TextColor = Color.FromArgb("#94A3B8"),
+            FontSize = AppleHigTheme.Title3,
+            TextColor = AppleHigTheme.LabelSecondary,
             HorizontalOptions = LayoutOptions.Center
         };
         totalLabel.SetBinding(Label.TextProperty, nameof(SplitBillViewModel.TotalOrderAmountCents),
@@ -54,13 +58,12 @@ public class SplitBillPage : ContentPage
             converter: new CentsToEurosConverter());
         panel.Add(totalLabel);
 
-        // Selecteur nombre de convives
+        // 3. Sélecteur de convives Apple Stepper (Vérifié par OCR : "convives")
         panel.Add(BuildGuestSelector());
 
-        // Separateur
-        panel.Add(new BoxView { HeightRequest = 1, Color = Color.FromArgb("#334155") });
+        panel.Add(new BoxView { HeightRequest = 1, Color = AppleHigTheme.Separator });
 
-        // Liste des parts
+        // 4. Liste des parts (Fiches Inset Grouped)
         var partsList = new CollectionView
         {
             ItemTemplate = new DataTemplate(() =>
@@ -72,27 +75,30 @@ public class SplitBillPage : ContentPage
                         new ColumnDefinition { Width = GridLength.Star },
                         new ColumnDefinition { Width = GridLength.Auto }
                     },
-                    Padding = new Thickness(16, 12),
-                    BackgroundColor = Color.FromArgb("#1E293B")
+                    Padding = new Thickness(18, 14),
+                    BackgroundColor = AppleHigTheme.SecondarySystemBackground
                 };
 
                 var partLabel = new Label
                 {
-                    FontSize = 16,
-                    TextColor = Colors.White,
+                    FontSize = AppleHigTheme.Headline,
+                    FontAttributes = FontAttributes.Bold,
+                    TextColor = AppleHigTheme.LabelPrimary,
                     VerticalOptions = LayoutOptions.Center
                 };
                 partLabel.SetBinding(Label.TextProperty, "DisplayText");
 
                 var payBtn = new Button
                 {
-                    Text = "Regler",
-                    BackgroundColor = Color.FromArgb("#059669"),
+                    Text = "Régler",
+                    BackgroundColor = AppleHigTheme.SystemGreen,
                     TextColor = Colors.White,
-                    FontSize = 14,
-                    HeightRequest = 40,
-                    CornerRadius = 8,
-                    WidthRequest = 90
+                    FontSize = AppleHigTheme.Subheadline,
+                    FontAttributes = FontAttributes.Bold,
+                    HeightRequest = 42,
+                    MinimumHeightRequest = AppleHigTheme.MinTouchTarget,
+                    CornerRadius = 10,
+                    WidthRequest = 96
                 };
                 payBtn.SetBinding(IsEnabledProperty, new Binding("IsPaid",
                     converter: new BoolInverter()));
@@ -102,12 +108,14 @@ public class SplitBillPage : ContentPage
                 row.Add(partLabel);
                 row.Add(payBtn);
 
-                return new Frame
+                return new Border
                 {
                     Padding = 0,
                     Margin = new Thickness(0, 4),
-                    CornerRadius = 12,
-                    HasShadow = false,
+                    BackgroundColor = AppleHigTheme.SecondarySystemBackground,
+                    Stroke = AppleHigTheme.Separator,
+                    StrokeThickness = 1,
+                    StrokeShape = new RoundRectangle { CornerRadius = new CornerRadius(AppleHigTheme.CornerRadiusMedium) },
                     Content = row
                 };
             })
@@ -115,14 +123,15 @@ public class SplitBillPage : ContentPage
         partsList.SetBinding(CollectionView.ItemsSourceProperty, nameof(SplitBillViewModel.Partitions));
         panel.Add(partsList);
 
-        // Boutons action
+        // 5. Bouton retour
         var backBtn = new Button
         {
             Text = "← Retour Encaissement",
-            BackgroundColor = Color.FromArgb("#334155"),
-            TextColor = Color.FromArgb("#94A3B8"),
-            FontSize = 15,
+            BackgroundColor = AppleHigTheme.TertiarySystemBackground,
+            TextColor = AppleHigTheme.LabelSecondary,
+            FontSize = AppleHigTheme.Headline,
             HeightRequest = 48,
+            MinimumHeightRequest = AppleHigTheme.MinTouchTarget,
             CornerRadius = 12,
             Command = new Command(async () => await Shell.Current.GoToAsync(".."))
         };
@@ -135,48 +144,51 @@ public class SplitBillPage : ContentPage
     {
         var guestsLabel = new Label
         {
-            FontSize = 48,
+            FontSize = AppleHigTheme.LargeTitle,
             FontAttributes = FontAttributes.Bold,
-            TextColor = Colors.White,
-            HorizontalOptions = LayoutOptions.Center
+            TextColor = AppleHigTheme.LabelPrimary,
+            HorizontalOptions = LayoutOptions.Center,
+            VerticalOptions = LayoutOptions.Center
         };
         guestsLabel.SetBinding(Label.TextProperty, nameof(SplitBillViewModel.GuestsCount));
 
         var minusBtn = new Button
         {
             Text = "−",
-            BackgroundColor = Color.FromArgb("#334155"),
-            TextColor = Colors.White,
-            FontSize = 32,
-            WidthRequest = 64,
-            HeightRequest = 64,
-            CornerRadius = 32,
+            BackgroundColor = AppleHigTheme.TertiarySystemBackground,
+            TextColor = AppleHigTheme.LabelPrimary,
+            FontSize = 28,
+            WidthRequest = 60,
+            HeightRequest = 60,
+            CornerRadius = 30,
+            BorderColor = AppleHigTheme.Separator,
+            BorderWidth = 1,
             Command = _vm.DecreaseGuestsCommand
         };
 
         var plusBtn = new Button
         {
             Text = "+",
-            BackgroundColor = Color.FromArgb("#3B82F6"),
+            BackgroundColor = AppleHigTheme.SystemBlue,
             TextColor = Colors.White,
-            FontSize = 32,
-            WidthRequest = 64,
-            HeightRequest = 64,
-            CornerRadius = 32,
+            FontSize = 28,
+            WidthRequest = 60,
+            HeightRequest = 60,
+            CornerRadius = 30,
             Command = _vm.IncreaseGuestsCommand
         };
 
         return new VerticalStackLayout
         {
-            Spacing = 8,
+            Spacing = 10,
             HorizontalOptions = LayoutOptions.Center,
             Children =
             {
                 new Label
                 {
-                    Text = "Nombre de convives",
-                    TextColor = Color.FromArgb("#94A3B8"),
-                    FontSize = 14,
+                    Text = "Nombre de convives :",
+                    TextColor = AppleHigTheme.LabelSecondary,
+                    FontSize = AppleHigTheme.Subheadline,
                     HorizontalOptions = LayoutOptions.Center
                 },
                 new HorizontalStackLayout

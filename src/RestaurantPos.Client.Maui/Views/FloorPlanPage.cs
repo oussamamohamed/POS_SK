@@ -1,16 +1,18 @@
 #if MAUI_UI
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
 using RestaurantPos.Client.Maui.Controls;
+using RestaurantPos.Client.Maui.Theme;
 using RestaurantPos.Client.Maui.ViewModels;
 using RestaurantPos.Domain.Entities;
 
 namespace RestaurantPos.Client.Maui.Views;
 
 /// <summary>
-/// Plan de salle interactif — grille de tables avec statuts colores
-/// et navigation vers le terminal POS.
+/// Plan de salle interactif conforme aux Apple Human Interface Guidelines (HIG) pour iPadOS.
+/// Grille de tables tactiles avec fiches Inset Grouped, badges capsules de statut et modale Sheet Apple.
 /// </summary>
 public class FloorPlanPage : ContentPage
 {
@@ -21,7 +23,7 @@ public class FloorPlanPage : ContentPage
         _vm = vm;
         BindingContext = vm;
         Title = "Plan de Salle";
-        BackgroundColor = Color.FromArgb("#0F172A");
+        BackgroundColor = AppleHigTheme.SystemBackground;
         Build();
     }
 
@@ -33,10 +35,10 @@ public class FloorPlanPage : ContentPage
 
     private void Build()
     {
-        // Barre de navigation superieure globale
+        // 1. Barre de navigation supérieure globale
         var topBar = new GlobalHeaderView(PosActiveViewTab.Floor);
 
-        // Sous-barre : Section active + Bouton Nouvelle Table + Legende des statuts
+        // 2. Sous-barre : Section active + Bouton Nouvelle Table + Légende des statuts Apple
         var subHeader = new Grid
         {
             ColumnDefinitions =
@@ -44,8 +46,8 @@ public class FloorPlanPage : ContentPage
                 new ColumnDefinition { Width = GridLength.Star },
                 new ColumnDefinition { Width = GridLength.Auto }
             },
-            Padding = new Thickness(24, 12),
-            BackgroundColor = Color.FromArgb("#0F172A")
+            Padding = new Thickness(24, 14),
+            BackgroundColor = AppleHigTheme.SystemBackground
         };
 
         var titleStack = new HorizontalStackLayout
@@ -56,21 +58,22 @@ public class FloorPlanPage : ContentPage
             {
                 new Label
                 {
-                    TextColor = Colors.White,
-                    FontSize = 22,
+                    TextColor = AppleHigTheme.LabelPrimary,
+                    FontSize = AppleHigTheme.Title2,
                     FontAttributes = FontAttributes.Bold,
                     VerticalOptions = LayoutOptions.Center
                 }.Also(l => l.SetBinding(Label.TextProperty, nameof(FloorPlanViewModel.ActiveSection))),
                 new Button
                 {
                     Text = "➕ Nouvelle Table",
-                    BackgroundColor = Color.FromArgb("#3B82F6"),
+                    BackgroundColor = AppleHigTheme.SystemBlue,
                     TextColor = Colors.White,
-                    FontSize = 13,
+                    FontSize = AppleHigTheme.Subheadline,
                     FontAttributes = FontAttributes.Bold,
-                    HeightRequest = 36,
-                    CornerRadius = 8,
-                    Padding = new Thickness(14, 0),
+                    HeightRequest = 40,
+                    MinimumHeightRequest = AppleHigTheme.MinTouchTarget,
+                    CornerRadius = 20,
+                    Padding = new Thickness(16, 0),
                     Command = new Command(async () =>
                     {
                         var newTableNum = $"T{_vm.Tables.Count + 1:D2}";
@@ -84,14 +87,14 @@ public class FloorPlanPage : ContentPage
 
         var legend = new HorizontalStackLayout
         {
-            Spacing = 18,
+            Spacing = 16,
             VerticalOptions = LayoutOptions.Center,
             Children =
             {
-                MakeLegendItem("#10B981", "Libre"),
-                MakeLegendItem("#F59E0B", "Occupée"),
-                MakeLegendItem("#EF4444", "Addition"),
-                MakeLegendItem("#6366F1", "Encaissée")
+                MakeLegendItem(AppleHigTheme.SystemGreen, "Libre"),
+                MakeLegendItem(AppleHigTheme.SystemOrange, "Occupée"),
+                MakeLegendItem(AppleHigTheme.SystemRed, "Addition"),
+                MakeLegendItem(AppleHigTheme.SystemIndigo, "Encaissée")
             }
         };
         Grid.SetColumn(legend, 1);
@@ -99,7 +102,7 @@ public class FloorPlanPage : ContentPage
         subHeader.Add(titleStack);
         subHeader.Add(legend);
 
-        // Grille des tables
+        // 3. Grille des tables (Cartes Inset Grouped)
         var tablesGrid = new CollectionView
         {
             ItemsLayout = new GridItemsLayout(4, ItemsLayoutOrientation.Vertical)
@@ -112,7 +115,7 @@ public class FloorPlanPage : ContentPage
         };
         tablesGrid.SetBinding(CollectionView.ItemsSourceProperty, nameof(FloorPlanViewModel.Tables));
 
-        // Popup "Ouvrir table"
+        // 4. Modale Sheet "Ouvrir table"
         var openTablePopup = BuildOpenTablePopup();
         openTablePopup.SetBinding(IsVisibleProperty, nameof(FloorPlanViewModel.IsTablePromptOpen));
 
@@ -132,8 +135,8 @@ public class FloorPlanPage : ContentPage
             }
         };
 
-        // Popup par-dessus tout
-        var overlay = new Grid
+        // Overlay global
+        Content = new Grid
         {
             Children =
             {
@@ -141,79 +144,98 @@ public class FloorPlanPage : ContentPage
                 openTablePopup
             }
         };
-        Content = overlay;
     }
 
     private View BuildTableCard()
     {
-        var frame = new Frame
+        var border = new Border
         {
             Padding = new Thickness(16),
-            CornerRadius = 14,
-            HasShadow = false,
-            HeightRequest = 115,
-            BackgroundColor = Color.FromArgb("#1E293B")
+            StrokeShape = new RoundRectangle { CornerRadius = new CornerRadius(AppleHigTheme.CornerRadiusLarge) },
+            StrokeThickness = 1,
+            Stroke = AppleHigTheme.Separator,
+            HeightRequest = 120,
+            BackgroundColor = AppleHigTheme.SecondarySystemBackground
         };
-        frame.BindingContextChanged += (s, _) => ConfigureTableCard((BindableObject)s!);
-        return frame;
+        border.BindingContextChanged += (s, _) => ConfigureTableCard((BindableObject)s!);
+        return border;
     }
 
     private void ConfigureTableCard(BindableObject bindable)
     {
-        if (bindable is not Frame frame) return;
-        if (frame.BindingContext is not DiningTable table) return;
-
-        frame.BackgroundColor = table.Status switch
-        {
-            TableStatus.Free => Color.FromArgb("#064E3B"),
-            TableStatus.Occupied => Color.FromArgb("#78350F"),
-            TableStatus.BillRequested => Color.FromArgb("#7F1D1D"),
-            _ => Color.FromArgb("#1E1B4B")
-        };
+        if (bindable is not Border border) return;
+        if (border.BindingContext is not DiningTable table) return;
 
         var statusColor = table.Status switch
         {
-            TableStatus.Free => "#10B981",
-            TableStatus.Occupied => "#F59E0B",
-            TableStatus.BillRequested => "#EF4444",
-            _ => "#6366F1"
+            TableStatus.Free => AppleHigTheme.SystemGreen,
+            TableStatus.Occupied => AppleHigTheme.SystemOrange,
+            TableStatus.BillRequested => AppleHigTheme.SystemRed,
+            _ => AppleHigTheme.SystemIndigo
         };
 
-        frame.Content = new VerticalStackLayout
+        var statusText = table.Status switch
         {
-            Spacing = 6,
+            TableStatus.Free => "Libre",
+            TableStatus.Occupied => $"{table.CoversCount} couverts",
+            TableStatus.BillRequested => "Addition",
+            _ => "Encaissée"
+        };
+
+        border.BackgroundColor = AppleHigTheme.SecondarySystemBackground;
+        border.Stroke = Color.FromRgba(statusColor.Red, statusColor.Green, statusColor.Blue, 0.4);
+
+        border.Content = new VerticalStackLayout
+        {
+            Spacing = 8,
             Children =
             {
-                new Label
+                new Grid
                 {
-                    Text = table.TableNumber,
-                    TextColor = Colors.White,
-                    FontSize = 20,
-                    FontAttributes = FontAttributes.Bold
+                    ColumnDefinitions =
+                    {
+                        new ColumnDefinition { Width = GridLength.Star },
+                        new ColumnDefinition { Width = GridLength.Auto }
+                    },
+                    Children =
+                    {
+                        new Label
+                        {
+                            Text = table.TableNumber,
+                            TextColor = AppleHigTheme.LabelPrimary,
+                            FontSize = AppleHigTheme.Title3,
+                            FontAttributes = FontAttributes.Bold,
+                            VerticalOptions = LayoutOptions.Center
+                        }.Also(l => Grid.SetColumn(l, 0)),
+                        new Border
+                        {
+                            Padding = new Thickness(8, 2),
+                            BackgroundColor = Color.FromRgba(statusColor.Red, statusColor.Green, statusColor.Blue, 0.18),
+                            Stroke = Color.FromRgba(statusColor.Red, statusColor.Green, statusColor.Blue, 0.5),
+                            StrokeThickness = 1,
+                            StrokeShape = new RoundRectangle { CornerRadius = new CornerRadius(AppleHigTheme.CornerRadiusPill) },
+                            VerticalOptions = LayoutOptions.Center,
+                            Content = new Label
+                            {
+                                Text = statusText,
+                                TextColor = statusColor,
+                                FontSize = AppleHigTheme.Caption1,
+                                FontAttributes = FontAttributes.Bold
+                            }
+                        }.Also(b => Grid.SetColumn(b, 1))
+                    }
                 },
                 new BoxView
                 {
-                    HeightRequest = 3,
-                    CornerRadius = 2,
-                    Color = Color.FromArgb(statusColor)
-                },
-                new Label
-                {
-                    Text = table.Status switch
-                    {
-                        TableStatus.Free => "Libre",
-                        TableStatus.Occupied => $"{table.CoversCount} couverts",
-                        TableStatus.BillRequested => "Addition",
-                        _ => "Encaissee"
-                    },
-                    TextColor = Color.FromArgb(statusColor),
-                    FontSize = 13
+                    HeightRequest = 2,
+                    CornerRadius = 1,
+                    Color = Color.FromRgba(statusColor.Red, statusColor.Green, statusColor.Blue, 0.3)
                 },
                 new Label
                 {
                     Text = table.AssignedWaiterName is not null ? $"👤 {table.AssignedWaiterName}" : "",
-                    TextColor = Color.FromArgb("#94A3B8"),
-                    FontSize = 12
+                    TextColor = AppleHigTheme.LabelSecondary,
+                    FontSize = AppleHigTheme.Footnote
                 }
             }
         };
@@ -227,122 +249,111 @@ public class FloorPlanPage : ContentPage
                 await Shell.Current.GoToAsync($"//pos?table={table.TableNumber}");
             }
         });
-        frame.GestureRecognizers.Clear();
-        frame.GestureRecognizers.Add(tapGesture);
+        border.GestureRecognizers.Clear();
+        border.GestureRecognizers.Add(tapGesture);
     }
 
-    private VerticalStackLayout BuildOpenTablePopup()
+    private Grid BuildOpenTablePopup()
     {
-        var popup = new Grid
+        var overlay = new Grid
         {
-            BackgroundColor = Color.FromArgb("#BB000000"),
+            BackgroundColor = Color.FromArgb("#AA000000"),
             IsVisible = false
         };
-        popup.SetBinding(IsVisibleProperty, nameof(FloorPlanViewModel.IsTablePromptOpen));
+        overlay.SetBinding(IsVisibleProperty, nameof(FloorPlanViewModel.IsTablePromptOpen));
 
-        var card = new Frame
+        var sheetCard = new Border
         {
-            BackgroundColor = Color.FromArgb("#1E293B"),
-            CornerRadius = 20,
-            Padding = new Thickness(32),
-            WidthRequest = 380,
+            BackgroundColor = AppleHigTheme.SecondarySystemBackground,
+            Stroke = AppleHigTheme.Separator,
+            StrokeThickness = 1,
+            StrokeShape = new RoundRectangle { CornerRadius = new CornerRadius(AppleHigTheme.CornerRadiusExtraLarge) },
+            Padding = new Thickness(28, 20),
+            WidthRequest = 400,
             VerticalOptions = LayoutOptions.Center,
             HorizontalOptions = LayoutOptions.Center,
-            HasShadow = false,
             Content = new VerticalStackLayout
             {
-                Spacing = 20,
+                Spacing = 16,
                 Children =
                 {
+                    AppleHigTheme.CreateSheetGrabber(),
                     new Label
                     {
                         Text = "Ouvrir la table",
-                        TextColor = Colors.White,
-                        FontSize = 24,
-                        FontAttributes = FontAttributes.Bold
+                        TextColor = AppleHigTheme.LabelPrimary,
+                        FontSize = AppleHigTheme.Title2,
+                        FontAttributes = FontAttributes.Bold,
+                        HorizontalOptions = LayoutOptions.Center
                     },
                     new Label
                     {
                         Text = "Nombre de couverts :",
-                        TextColor = Color.FromArgb("#94A3B8"),
-                        FontSize = 16
+                        TextColor = AppleHigTheme.LabelSecondary,
+                        FontSize = AppleHigTheme.Body,
+                        HorizontalOptions = LayoutOptions.Center
                     },
                     BuildCoversSelector(),
-                    new Button
+                    AppleHigTheme.CreatePillButton("✔ Confirmer", AppleHigTheme.SystemGreen, Colors.White, new Command(async () =>
                     {
-                        Text = "✔ Confirmer",
-                        BackgroundColor = Color.FromArgb("#10B981"),
-                        TextColor = Colors.White,
-                        HeightRequest = 52,
-                        CornerRadius = 12,
-                        FontSize = 18,
-                        Command = new Command(async () =>
+                        await _vm.ConfirmOpenTableAsync();
+                        if (_vm.SelectedTable is not null)
                         {
-                            await _vm.ConfirmOpenTableAsync();
-                            if (_vm.SelectedTable is not null)
-                            {
-                                await Shell.Current.GoToAsync($"//pos?table={_vm.SelectedTable.TableNumber}");
-                            }
-                        })
-                    },
+                            await Shell.Current.GoToAsync($"//pos?table={_vm.SelectedTable.TableNumber}");
+                        }
+                    }), height: 50, fontSize: 17),
                     new Button
                     {
                         Text = "Annuler",
-                        BackgroundColor = Color.FromArgb("#334155"),
-                        TextColor = Color.FromArgb("#94A3B8"),
+                        BackgroundColor = Colors.Transparent,
+                        TextColor = AppleHigTheme.LabelSecondary,
                         HeightRequest = 44,
-                        CornerRadius = 10,
-                        FontSize = 16,
+                        FontSize = AppleHigTheme.Headline,
                         Command = _vm.CancelTablePromptCommand
                     }
                 }
             }
         };
 
-        var wrapper = new VerticalStackLayout
-        {
-            IsVisible = false,
-            BackgroundColor = Color.FromArgb("#BB000000"),
-            VerticalOptions = LayoutOptions.Fill,
-            HorizontalOptions = LayoutOptions.Fill,
-            Children = { card }
-        };
-        wrapper.SetBinding(IsVisibleProperty, nameof(FloorPlanViewModel.IsTablePromptOpen));
-        return wrapper;
+        overlay.Children.Add(sheetCard);
+        return overlay;
     }
 
     private Grid BuildCoversSelector()
     {
         var coversLabel = new Label
         {
-            TextColor = Colors.White,
-            FontSize = 40,
+            TextColor = AppleHigTheme.LabelPrimary,
+            FontSize = AppleHigTheme.LargeTitle,
             FontAttributes = FontAttributes.Bold,
-            HorizontalOptions = LayoutOptions.Center
+            HorizontalOptions = LayoutOptions.Center,
+            VerticalOptions = LayoutOptions.Center
         };
         coversLabel.SetBinding(Label.TextProperty, nameof(FloorPlanViewModel.CoversToOpen));
 
         var minusBtn = new Button
         {
             Text = "−",
-            BackgroundColor = Color.FromArgb("#334155"),
-            TextColor = Colors.White,
-            FontSize = 28,
-            WidthRequest = 60,
-            HeightRequest = 60,
-            CornerRadius = 30,
+            BackgroundColor = AppleHigTheme.TertiarySystemBackground,
+            TextColor = AppleHigTheme.LabelPrimary,
+            FontSize = 26,
+            WidthRequest = 56,
+            HeightRequest = 56,
+            CornerRadius = 28,
+            BorderColor = AppleHigTheme.Separator,
+            BorderWidth = 1,
             Command = new Command(() => { if (_vm.CoversToOpen > 1) _vm.CoversToOpen--; })
         };
 
         var plusBtn = new Button
         {
             Text = "+",
-            BackgroundColor = Color.FromArgb("#3B82F6"),
+            BackgroundColor = AppleHigTheme.SystemBlue,
             TextColor = Colors.White,
-            FontSize = 28,
-            WidthRequest = 60,
-            HeightRequest = 60,
-            CornerRadius = 30,
+            FontSize = 26,
+            WidthRequest = 56,
+            HeightRequest = 56,
+            CornerRadius = 28,
             Command = new Command(() => _vm.CoversToOpen++)
         };
 
@@ -363,26 +374,26 @@ public class FloorPlanPage : ContentPage
         };
     }
 
-    private static HorizontalStackLayout MakeLegendItem(string colorHex, string label) =>
+    private static HorizontalStackLayout MakeLegendItem(Color color, string label) =>
         new()
         {
-            Spacing = 6,
+            Spacing = 7,
             VerticalOptions = LayoutOptions.Center,
             Children =
             {
                 new BoxView
                 {
-                    WidthRequest = 12,
-                    HeightRequest = 12,
-                    CornerRadius = 6,
-                    Color = Color.FromArgb(colorHex),
+                    WidthRequest = 10,
+                    HeightRequest = 10,
+                    CornerRadius = 5,
+                    Color = color,
                     VerticalOptions = LayoutOptions.Center
                 },
                 new Label
                 {
                     Text = label,
-                    TextColor = Color.FromArgb("#94A3B8"),
-                    FontSize = 13,
+                    TextColor = AppleHigTheme.LabelSecondary,
+                    FontSize = AppleHigTheme.Footnote,
                     VerticalOptions = LayoutOptions.Center
                 }
             }
@@ -398,22 +409,6 @@ public class FloorPlanPage : ContentPage
     {
         Grid.SetColumn(view, col);
         return view;
-    }
-
-    private static Button MakeNavButton(string text, bool isActive, Command? command)
-    {
-        return new Button
-        {
-            Text = text,
-            BackgroundColor = isActive ? Color.FromArgb("#3B82F6") : Color.FromArgb("#334155"),
-            TextColor = isActive ? Colors.White : Color.FromArgb("#94A3B8"),
-            FontSize = 13,
-            FontAttributes = isActive ? FontAttributes.Bold : FontAttributes.None,
-            HeightRequest = 38,
-            CornerRadius = 8,
-            Padding = new Thickness(14, 0),
-            Command = command
-        };
     }
 }
 #endif

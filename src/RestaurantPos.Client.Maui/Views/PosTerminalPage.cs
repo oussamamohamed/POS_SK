@@ -3,6 +3,7 @@ using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using RestaurantPos.Client.Maui.Controls;
+using RestaurantPos.Client.Maui.Theme;
 using RestaurantPos.Client.Maui.ViewModels;
 using RestaurantPos.Domain.Entities;
 using RestaurantPos.Domain.ValueObjects;
@@ -10,8 +11,8 @@ using RestaurantPos.Domain.ValueObjects;
 namespace RestaurantPos.Client.Maui.Views;
 
 /// <summary>
-/// Terminal de caisse tactile principal répliquant fidèlement le layout web (posView).
-/// Disposition 2 colonnes : Panier / Ticket (Gauche 380px) | Catalogue & Touches Rapides (Droite Star).
+/// Terminal de caisse tactile principal conforme aux Apple Human Interface Guidelines (HIG) pour iPadOS.
+/// Disposition 2 colonnes Split-View : Panier Inset Grouped (Gauche 380px) | Catalogue & Touches Rapides (Droite Star).
 /// </summary>
 public class PosTerminalPage : ContentPage, IQueryAttributable
 {
@@ -27,7 +28,7 @@ public class PosTerminalPage : ContentPage, IQueryAttributable
     {
         _vm = vm;
         BindingContext = vm;
-        BackgroundColor = Color.FromArgb("#0F172A");
+        BackgroundColor = AppleHigTheme.SystemBackground;
         Shell.SetNavBarIsVisible(this, false);
         Build();
     }
@@ -108,7 +109,7 @@ public class PosTerminalPage : ContentPage, IQueryAttributable
     {
         var panel = new Grid
         {
-            BackgroundColor = Color.FromArgb("#1E293B"),
+            BackgroundColor = AppleHigTheme.SecondarySystemBackground,
             RowDefinitions =
             {
                 new RowDefinition { Height = GridLength.Auto }, // Header
@@ -121,7 +122,7 @@ public class PosTerminalPage : ContentPage, IQueryAttributable
         var headerGrid = new Grid
         {
             Padding = new Thickness(16, 12),
-            BackgroundColor = Color.FromArgb("#0F172A"),
+            BackgroundColor = AppleHigTheme.SecondarySystemBackground,
             ColumnDefinitions =
             {
                 new ColumnDefinition { Width = GridLength.Star },
@@ -423,7 +424,7 @@ public class PosTerminalPage : ContentPage, IQueryAttributable
     {
         var summaryLayout = new VerticalStackLayout
         {
-            BackgroundColor = Color.FromArgb("#0F172A"),
+            BackgroundColor = AppleHigTheme.TertiarySystemBackground,
             Padding = new Thickness(14, 10),
             Spacing = 6
         };
@@ -434,8 +435,8 @@ public class PosTerminalPage : ContentPage, IQueryAttributable
             ColumnDefinitions = { new ColumnDefinition { Width = GridLength.Star }, new ColumnDefinition { Width = GridLength.Auto } },
             Children =
             {
-                new Label { Text = "Total HT :", TextColor = Color.FromArgb("#94A3B8"), FontSize = 12 },
-                new Label { TextColor = Color.FromArgb("#94A3B8"), FontSize = 12 }.Also(l =>
+                new Label { Text = "Total HT :", TextColor = AppleHigTheme.LabelSecondary, FontSize = 12 },
+                new Label { TextColor = AppleHigTheme.LabelSecondary, FontSize = 12 }.Also(l =>
                 {
                     Grid.SetColumn(l, 1);
                     l.SetBinding(Label.TextProperty, nameof(PosTerminalViewModel.TotalHt), stringFormat: "{0:F2} €");
@@ -449,8 +450,8 @@ public class PosTerminalPage : ContentPage, IQueryAttributable
             ColumnDefinitions = { new ColumnDefinition { Width = GridLength.Star }, new ColumnDefinition { Width = GridLength.Auto } },
             Children =
             {
-                new Label { Text = "TVA (10% / 20%) :", TextColor = Color.FromArgb("#94A3B8"), FontSize = 12 },
-                new Label { TextColor = Color.FromArgb("#94A3B8"), FontSize = 12 }.Also(l =>
+                new Label { Text = "TVA (10% / 20%) :", TextColor = AppleHigTheme.LabelSecondary, FontSize = 12 },
+                new Label { TextColor = AppleHigTheme.LabelSecondary, FontSize = 12 }.Also(l =>
                 {
                     Grid.SetColumn(l, 1);
                     l.SetBinding(Label.TextProperty, nameof(PosTerminalViewModel.TotalVat), stringFormat: "{0:F2} €");
@@ -465,12 +466,12 @@ public class PosTerminalPage : ContentPage, IQueryAttributable
             Padding = new Thickness(0, 4, 0, 4),
             Children =
             {
-                new Label { Text = "TOTAL TTC", TextColor = Colors.White, FontSize = 16, FontAttributes = FontAttributes.Bold, VerticalOptions = LayoutOptions.Center },
+                new Label { Text = "TOTAL TTC", TextColor = AppleHigTheme.LabelPrimary, FontSize = 16, FontAttributes = FontAttributes.Bold, VerticalOptions = LayoutOptions.Center },
                 new Label
                 {
                     FontSize = 26,
                     FontAttributes = FontAttributes.Bold,
-                    TextColor = Color.FromArgb("#10B981"),
+                    TextColor = AppleHigTheme.SystemGreen,
                     HorizontalOptions = LayoutOptions.End
                 }.Also(l =>
                 {
@@ -500,7 +501,7 @@ public class PosTerminalPage : ContentPage, IQueryAttributable
             }
         };
 
-        // Action Buttons (Grille responsive avec bouton Note dédié)
+        // Action Buttons (Grille responsive ergonomique Apple HIG min 44pt)
         var actionButtonsGrid = new Grid
         {
             ColumnDefinitions =
@@ -515,13 +516,13 @@ public class PosTerminalPage : ContentPage, IQueryAttributable
                 new RowDefinition { Height = GridLength.Auto },
                 new RowDefinition { Height = GridLength.Auto }
             },
-            ColumnSpacing = 5,
-            RowSpacing = 5,
+            ColumnSpacing = 6,
+            RowSpacing = 6,
             Margin = new Thickness(0, 6, 0, 0)
         };
 
         // Row 0
-        var btnKitchen = MakeCartActionBtn("📤 Cuisine", "#3B82F6", new Command(async () =>
+        var btnKitchen = MakeCartActionBtn("📤 Envoyer Cuisine", AppleHigTheme.SystemBlue, new Command(async () =>
         {
             var tableNum = _vm.ActiveTable;
             await _vm.SendKitchenAndResetAsync();
@@ -531,29 +532,29 @@ public class PosTerminalPage : ContentPage, IQueryAttributable
         }));
         Grid.SetRow(btnKitchen, 0); Grid.SetColumn(btnKitchen, 0);
 
-        var btnHold = MakeCartActionBtn("⏸️ Attente", "#475569", _vm.HoldCurrentCartCommand);
+        var btnHold = MakeCartActionBtn("⏸️ Attente", AppleHigTheme.QuaternarySystemFill, _vm.HoldCurrentCartCommand);
         Grid.SetRow(btnHold, 0); Grid.SetColumn(btnHold, 1);
 
-        var btnDiscount = MakeCartActionBtn("🏷️ Remise", "#8B5CF6", new Command(() =>
+        var btnDiscount = MakeCartActionBtn("🏷️ Remise", AppleHigTheme.SystemIndigo, new Command(() =>
         {
             if (_discountModal != null) _discountModal.IsVisible = true;
         }));
         Grid.SetRow(btnDiscount, 0); Grid.SetColumn(btnDiscount, 2);
 
-        var btnNote = MakeCartActionBtn("🧾 Note", "#0284C7", new Command(() =>
+        var btnNote = MakeCartActionBtn("🧾 Note", AppleHigTheme.SystemTeal, new Command(() =>
         {
             OpenBillNoteModal();
         }));
         Grid.SetRow(btnNote, 0); Grid.SetColumn(btnNote, 3);
 
         // Row 1
-        var btnTransfer = MakeCartActionBtn("🔄 Transférer", "#06B6D4", new Command(() =>
+        var btnTransfer = MakeCartActionBtn("🔄 Transférer", AppleHigTheme.SystemTeal, new Command(() =>
         {
             if (_transferModal != null) _transferModal.IsVisible = true;
         }));
         Grid.SetRow(btnTransfer, 1); Grid.SetColumn(btnTransfer, 0);
 
-        var btnSplit = MakeCartActionBtn("➗ Split", "#F59E0B", new Command(async () =>
+        var btnSplit = MakeCartActionBtn("➗ Split", AppleHigTheme.SystemOrange, new Command(async () =>
         {
             var splitVm = Handler?.MauiContext?.Services.GetService<SplitBillViewModel>();
             splitVm?.Initialize(_vm.TotalTtc.AmountInCents, 2);
@@ -561,7 +562,7 @@ public class PosTerminalPage : ContentPage, IQueryAttributable
         }));
         Grid.SetRow(btnSplit, 1); Grid.SetColumn(btnSplit, 1);
 
-        var btnPay = MakeCartActionBtn("💳 Encaisser", "#10B981", new Command(async () =>
+        var btnPay = MakeCartActionBtn("💳 Encaisser", AppleHigTheme.SystemGreen, new Command(async () =>
         {
             var checkoutVm = Handler?.MauiContext?.Services.GetService<CheckoutViewModel>();
             if (checkoutVm != null)
@@ -595,12 +596,12 @@ public class PosTerminalPage : ContentPage, IQueryAttributable
         var btn = new Button
         {
             Text = text,
-            BackgroundColor = Color.FromArgb("#334155"),
-            TextColor = Colors.White,
-            FontSize = 12,
+            BackgroundColor = AppleHigTheme.QuaternarySystemFill,
+            TextColor = AppleHigTheme.LabelPrimary,
+            FontSize = 13,
             FontAttributes = FontAttributes.Bold,
-            HeightRequest = 34,
-            CornerRadius = 6,
+            HeightRequest = 36,
+            CornerRadius = 8,
             Padding = 0,
             Command = command
         };
@@ -608,17 +609,18 @@ public class PosTerminalPage : ContentPage, IQueryAttributable
         return btn;
     }
 
-    private static Button MakeCartActionBtn(string text, string colorHex, System.Windows.Input.ICommand command)
+    private static Button MakeCartActionBtn(string text, Color color, System.Windows.Input.ICommand command)
     {
         return new Button
         {
             Text = text,
-            BackgroundColor = Color.FromArgb(colorHex),
+            BackgroundColor = color,
             TextColor = Colors.White,
             FontSize = 12,
             FontAttributes = FontAttributes.Bold,
             HeightRequest = 44,
-            CornerRadius = 8,
+            MinimumHeightRequest = AppleHigTheme.MinTouchTarget,
+            CornerRadius = 10,
             Padding = 0,
             Command = command
         };
@@ -642,7 +644,7 @@ public class PosTerminalPage : ContentPage, IQueryAttributable
     {
         var panel = new Grid
         {
-            BackgroundColor = Color.FromArgb("#0F172A"),
+            BackgroundColor = AppleHigTheme.SystemBackground,
             Padding = new Thickness(16),
             RowDefinitions =
             {
@@ -651,7 +653,7 @@ public class PosTerminalPage : ContentPage, IQueryAttributable
                 new RowDefinition { Height = GridLength.Star }, // Grille Articles
                 new RowDefinition { Height = GridLength.Auto }  // Barre Pagination
             },
-            RowSpacing = 10
+            RowSpacing = 12
         };
 
         // 1. Touches Rapides ("Coup de feu")
@@ -660,7 +662,7 @@ public class PosTerminalPage : ContentPage, IQueryAttributable
             Spacing = 8,
             Children =
             {
-                new Label { Text = "⚡ Rapide :", TextColor = Color.FromArgb("#F59E0B"), FontSize = 13, FontAttributes = FontAttributes.Bold, VerticalOptions = LayoutOptions.Center },
+                new Label { Text = "⚡ Rapide :", TextColor = AppleHigTheme.SystemOrange, FontSize = 13, FontAttributes = FontAttributes.Bold, VerticalOptions = LayoutOptions.Center },
                 MakeQuickKeyBtn("☕ Café", () => AddProductByName("Café")),
                 MakeQuickKeyBtn("🍔 Burger", () => AddProductByName("Burger")),
                 MakeQuickKeyBtn("💧 Eau", () => AddProductByName("Eau")),
@@ -679,17 +681,17 @@ public class PosTerminalPage : ContentPage, IQueryAttributable
                 var frame = new Frame
                 {
                     Padding = new Thickness(16, 8),
-                    CornerRadius = 8,
+                    CornerRadius = 10,
                     HasShadow = false,
-                    BackgroundColor = Color.FromArgb("#1E293B"),
-                    BorderColor = Color.FromArgb("#334155")
+                    BackgroundColor = AppleHigTheme.TertiarySystemBackground,
+                    BorderColor = AppleHigTheme.Separator
                 };
 
                 var label = new Label
                 {
                     FontSize = 14,
                     FontAttributes = FontAttributes.Bold,
-                    TextColor = Colors.White,
+                    TextColor = AppleHigTheme.LabelPrimary,
                     VerticalOptions = LayoutOptions.Center
                 };
                 label.SetBinding(Label.TextProperty, "Name");
@@ -713,25 +715,25 @@ public class PosTerminalPage : ContentPage, IQueryAttributable
         {
             ItemsLayout = new GridItemsLayout(_vm.CatalogGridColumns, ItemsLayoutOrientation.Vertical)
             {
-                HorizontalItemSpacing = 10,
-                VerticalItemSpacing = 10
+                HorizontalItemSpacing = 12,
+                VerticalItemSpacing = 12
             },
             ItemTemplate = new DataTemplate(() =>
             {
                 var frame = new Frame
                 {
-                    Padding = new Thickness(12),
-                    CornerRadius = 8,
+                    Padding = new Thickness(14),
+                    CornerRadius = (float)AppleHigTheme.CornerRadiusLarge,
                     HasShadow = false,
-                    BackgroundColor = Color.FromArgb("#1E293B"),
-                    BorderColor = Color.FromRgba(255, 255, 255, 25)
+                    BackgroundColor = AppleHigTheme.SecondarySystemBackground,
+                    BorderColor = AppleHigTheme.Separator
                 };
 
                 var name = new Label
                 {
                     FontSize = 15,
                     FontAttributes = FontAttributes.Bold,
-                    TextColor = Colors.White,
+                    TextColor = AppleHigTheme.LabelPrimary,
                     LineBreakMode = LineBreakMode.WordWrap,
                     MaxLines = 2
                 };
@@ -740,7 +742,7 @@ public class PosTerminalPage : ContentPage, IQueryAttributable
                 var price = new Label
                 {
                     FontSize = 16,
-                    TextColor = Color.FromArgb("#10B981"),
+                    TextColor = AppleHigTheme.SystemGreen,
                     FontAttributes = FontAttributes.Bold
                 };
                 price.SetBinding(Label.TextProperty, "Price", stringFormat: "{0:F2} €");
@@ -750,15 +752,15 @@ public class PosTerminalPage : ContentPage, IQueryAttributable
                     Text = "⚙️ Modificateurs",
                     FontSize = 10,
                     FontAttributes = FontAttributes.Bold,
-                    TextColor = Color.FromArgb("#38BDF8"),
-                    BackgroundColor = Color.FromArgb("#0F172A"),
-                    Padding = new Thickness(4, 1),
+                    TextColor = AppleHigTheme.SystemTeal,
+                    BackgroundColor = AppleHigTheme.TertiarySystemBackground,
+                    Padding = new Thickness(6, 2),
                     HorizontalOptions = LayoutOptions.Start
                 };
 
                 frame.Content = new VerticalStackLayout
                 {
-                    Spacing = 4,
+                    Spacing = 5,
                     Children = { name, price, optBadge },
                     InputTransparent = true
                 };
@@ -789,11 +791,14 @@ public class PosTerminalPage : ContentPage, IQueryAttributable
         {
             if (e.PropertyName == nameof(PosTerminalViewModel.CatalogGridColumns))
             {
-                productsGrid.ItemsLayout = new GridItemsLayout(_vm.CatalogGridColumns, ItemsLayoutOrientation.Vertical)
+                MainThread.BeginInvokeOnMainThread(() =>
                 {
-                    HorizontalItemSpacing = 10,
-                    VerticalItemSpacing = 10
-                };
+                    productsGrid.ItemsLayout = new GridItemsLayout(_vm.CatalogGridColumns, ItemsLayoutOrientation.Vertical)
+                    {
+                        HorizontalItemSpacing = 12,
+                        VerticalItemSpacing = 12
+                    };
+                });
             }
         };
 
@@ -803,7 +808,7 @@ public class PosTerminalPage : ContentPage, IQueryAttributable
         var paginationBar = new Grid
         {
             Padding = new Thickness(12, 6),
-            BackgroundColor = Color.FromArgb("#1E293B"),
+            BackgroundColor = AppleHigTheme.SecondarySystemBackground,
             ColumnDefinitions =
             {
                 new ColumnDefinition { Width = GridLength.Auto },
@@ -815,17 +820,17 @@ public class PosTerminalPage : ContentPage, IQueryAttributable
                 new Button
                 {
                     Text = "◀ Précédent",
-                    BackgroundColor = Color.FromArgb("#334155"),
-                    TextColor = Color.FromArgb("#94A3B8"),
+                    BackgroundColor = AppleHigTheme.TertiarySystemBackground,
+                    TextColor = AppleHigTheme.LabelSecondary,
                     FontSize = 12,
                     FontAttributes = FontAttributes.Bold,
                     HeightRequest = 36,
-                    CornerRadius = 6
+                    CornerRadius = 8
                 }.Also(b => Grid.SetColumn(b, 0)),
                 new Label
                 {
                     Text = "Page 1 / 1",
-                    TextColor = Colors.White,
+                    TextColor = AppleHigTheme.LabelPrimary,
                     FontSize = 13,
                     FontAttributes = FontAttributes.Bold,
                     HorizontalOptions = LayoutOptions.Center,
@@ -834,12 +839,12 @@ public class PosTerminalPage : ContentPage, IQueryAttributable
                 new Button
                 {
                     Text = "Suivant ▶",
-                    BackgroundColor = Color.FromArgb("#334155"),
-                    TextColor = Color.FromArgb("#94A3B8"),
+                    BackgroundColor = AppleHigTheme.TertiarySystemBackground,
+                    TextColor = AppleHigTheme.LabelSecondary,
                     FontSize = 12,
                     FontAttributes = FontAttributes.Bold,
                     HeightRequest = 36,
-                    CornerRadius = 6
+                    CornerRadius = 8
                 }.Also(b => Grid.SetColumn(b, 2))
             }
         };
@@ -858,14 +863,14 @@ public class PosTerminalPage : ContentPage, IQueryAttributable
         return new Button
         {
             Text = text,
-            BackgroundColor = Color.FromRgba(245, 158, 11, 40),
-            TextColor = Color.FromArgb("#FEF08A"),
+            BackgroundColor = Color.FromRgba(255, 159, 10, 30),
+            TextColor = AppleHigTheme.SystemOrange,
             FontSize = 12,
             FontAttributes = FontAttributes.Bold,
-            HeightRequest = 34,
-            CornerRadius = 6,
+            HeightRequest = 36,
+            CornerRadius = 8,
             Padding = new Thickness(10, 0),
-            BorderColor = Color.FromRgba(245, 158, 11, 80),
+            BorderColor = Color.FromRgba(255, 159, 10, 75),
             BorderWidth = 1,
             Command = new Command(onTapped)
         };
@@ -887,16 +892,17 @@ public class PosTerminalPage : ContentPage, IQueryAttributable
     {
         var overlay = new Grid
         {
-            BackgroundColor = Color.FromArgb("#BB000000"),
+            BackgroundColor = Color.FromArgb("#AA000000"),
             IsVisible = false
         };
 
         var card = new Frame
         {
-            BackgroundColor = Color.FromArgb("#1E293B"),
-            CornerRadius = 14,
-            Padding = new Thickness(24),
-            WidthRequest = 360,
+            BackgroundColor = AppleHigTheme.SecondarySystemBackground,
+            BorderColor = AppleHigTheme.Separator,
+            CornerRadius = (float)AppleHigTheme.CornerRadiusSheet,
+            Padding = new Thickness(24, 16),
+            WidthRequest = 380,
             VerticalOptions = LayoutOptions.Center,
             HorizontalOptions = LayoutOptions.Center,
             HasShadow = false,
@@ -905,10 +911,12 @@ public class PosTerminalPage : ContentPage, IQueryAttributable
                 Spacing = 16,
                 Children =
                 {
-                    new Label { Text = "🏷️ Remise sur la Note", TextColor = Colors.White, FontSize = 18, FontAttributes = FontAttributes.Bold },
+                    AppleHigTheme.CreateSheetGrabber(),
+                    new Label { Text = "🏷️ Remise sur la Note", TextColor = AppleHigTheme.LabelPrimary, FontSize = AppleHigTheme.Title3, FontAttributes = FontAttributes.Bold, HorizontalOptions = LayoutOptions.Center },
                     new HorizontalStackLayout
                     {
-                        Spacing = 8,
+                        Spacing = 10,
+                        HorizontalOptions = LayoutOptions.Center,
                         Children =
                         {
                             MakeDiscountPill("10%", async () => await ApplyQuickDiscount(10m)),
@@ -919,10 +927,10 @@ public class PosTerminalPage : ContentPage, IQueryAttributable
                     new Button
                     {
                         Text = "Annuler",
-                        BackgroundColor = Color.FromArgb("#334155"),
-                        TextColor = Colors.White,
-                        HeightRequest = 40,
-                        CornerRadius = 8,
+                        BackgroundColor = AppleHigTheme.TertiarySystemBackground,
+                        TextColor = AppleHigTheme.LabelSecondary,
+                        HeightRequest = 44,
+                        CornerRadius = 10,
                         Command = new Command(() => overlay.IsVisible = false)
                     }
                 }
@@ -938,12 +946,13 @@ public class PosTerminalPage : ContentPage, IQueryAttributable
         return new Button
         {
             Text = text,
-            BackgroundColor = Color.FromArgb("#8B5CF6"),
+            BackgroundColor = AppleHigTheme.SystemIndigo,
             TextColor = Colors.White,
-            FontSize = 14,
+            FontSize = 15,
             FontAttributes = FontAttributes.Bold,
-            HeightRequest = 40,
-            CornerRadius = 8,
+            HeightRequest = 44,
+            MinimumWidthRequest = 70,
+            CornerRadius = 10,
             Command = new Command(async () => await action())
         };
     }
@@ -958,16 +967,17 @@ public class PosTerminalPage : ContentPage, IQueryAttributable
     {
         var overlay = new Grid
         {
-            BackgroundColor = Color.FromArgb("#BB000000"),
+            BackgroundColor = Color.FromArgb("#AA000000"),
             IsVisible = false
         };
 
         var card = new Frame
         {
-            BackgroundColor = Color.FromArgb("#1E293B"),
-            CornerRadius = 14,
-            Padding = new Thickness(24),
-            WidthRequest = 360,
+            BackgroundColor = AppleHigTheme.SecondarySystemBackground,
+            BorderColor = AppleHigTheme.Separator,
+            CornerRadius = (float)AppleHigTheme.CornerRadiusSheet,
+            Padding = new Thickness(24, 16),
+            WidthRequest = 380,
             VerticalOptions = LayoutOptions.Center,
             HorizontalOptions = LayoutOptions.Center,
             HasShadow = false,
@@ -976,11 +986,13 @@ public class PosTerminalPage : ContentPage, IQueryAttributable
                 Spacing = 16,
                 Children =
                 {
-                    new Label { Text = "🔄 Transférer la Table", TextColor = Colors.White, FontSize = 18, FontAttributes = FontAttributes.Bold },
-                    new Label { Text = "Sélectionner la table de destination :", TextColor = Color.FromArgb("#94A3B8"), FontSize = 13 },
+                    AppleHigTheme.CreateSheetGrabber(),
+                    new Label { Text = "🔄 Transférer la Table", TextColor = AppleHigTheme.LabelPrimary, FontSize = AppleHigTheme.Title3, FontAttributes = FontAttributes.Bold, HorizontalOptions = LayoutOptions.Center },
+                    new Label { Text = "Sélectionner la table de destination :", TextColor = AppleHigTheme.LabelSecondary, FontSize = 13, HorizontalOptions = LayoutOptions.Center },
                     new HorizontalStackLayout
                     {
-                        Spacing = 8,
+                        Spacing = 10,
+                        HorizontalOptions = LayoutOptions.Center,
                         Children =
                         {
                             MakeTransferPill("T02"),
@@ -991,10 +1003,10 @@ public class PosTerminalPage : ContentPage, IQueryAttributable
                     new Button
                     {
                         Text = "Annuler",
-                        BackgroundColor = Color.FromArgb("#334155"),
-                        TextColor = Colors.White,
-                        HeightRequest = 40,
-                        CornerRadius = 8,
+                        BackgroundColor = AppleHigTheme.TertiarySystemBackground,
+                        TextColor = AppleHigTheme.LabelSecondary,
+                        HeightRequest = 44,
+                        CornerRadius = 10,
                         Command = new Command(() => overlay.IsVisible = false)
                     }
                 }
@@ -1010,12 +1022,13 @@ public class PosTerminalPage : ContentPage, IQueryAttributable
         return new Button
         {
             Text = targetTable,
-            BackgroundColor = Color.FromArgb("#06B6D4"),
+            BackgroundColor = AppleHigTheme.SystemTeal,
             TextColor = Colors.White,
-            FontSize = 14,
+            FontSize = 15,
             FontAttributes = FontAttributes.Bold,
-            HeightRequest = 40,
-            CornerRadius = 8,
+            HeightRequest = 44,
+            MinimumWidthRequest = 70,
+            CornerRadius = 10,
             Command = new Command(async () =>
             {
                 var currentTable = _vm.ActiveTable;
@@ -1030,15 +1043,16 @@ public class PosTerminalPage : ContentPage, IQueryAttributable
     {
         var overlay = new Grid
         {
-            BackgroundColor = Color.FromArgb("#CC000000"),
+            BackgroundColor = Color.FromArgb("#AA000000"),
             IsVisible = false
         };
 
         _modifiersCard = new Frame
         {
-            BackgroundColor = Color.FromArgb("#1E293B"),
-            CornerRadius = 16,
-            Padding = new Thickness(24),
+            BackgroundColor = AppleHigTheme.SecondarySystemBackground,
+            BorderColor = AppleHigTheme.Separator,
+            CornerRadius = (float)AppleHigTheme.CornerRadiusSheet,
+            Padding = new Thickness(24, 16),
             WidthRequest = 480,
             MaximumHeightRequest = 620,
             VerticalOptions = LayoutOptions.Center,
@@ -1263,15 +1277,16 @@ public class PosTerminalPage : ContentPage, IQueryAttributable
     {
         var overlay = new Grid
         {
-            BackgroundColor = Color.FromArgb("#CC000000"),
+            BackgroundColor = Color.FromArgb("#AA000000"),
             IsVisible = false
         };
 
         _billNoteCard = new Frame
         {
-            BackgroundColor = Color.FromArgb("#1E293B"),
-            CornerRadius = 16,
-            Padding = new Thickness(24),
+            BackgroundColor = AppleHigTheme.SecondarySystemBackground,
+            BorderColor = AppleHigTheme.Separator,
+            CornerRadius = (float)AppleHigTheme.CornerRadiusSheet,
+            Padding = new Thickness(24, 16),
             WidthRequest = 420,
             MaximumHeightRequest = 620,
             VerticalOptions = LayoutOptions.Center,
@@ -1293,20 +1308,21 @@ public class PosTerminalPage : ContentPage, IQueryAttributable
         if (_billNoteModal == null || _billNoteCard == null) return;
 
         var stack = new VerticalStackLayout { Spacing = 12 };
+        stack.Children.Add(AppleHigTheme.CreateSheetGrabber());
 
         var header = new VerticalStackLayout
         {
             Spacing = 4,
             Children =
             {
-                new Label { Text = "🧾 Note de Table (Addition Provisoire)", TextColor = Colors.White, FontSize = 18, FontAttributes = FontAttributes.Bold },
-                new Label { Text = $"Table : {_vm.ActiveTable}  •  Couverts : {_vm.CoversCount}  •  Opérateur : Alexandre D.", TextColor = Color.FromArgb("#94A3B8"), FontSize = 12 },
-                new Label { Text = $"Éditée le {DateTime.Now:dd/MM/yyyy à HH:mm}", TextColor = Color.FromArgb("#64748B"), FontSize = 11 },
-                new Label { Text = "⚠️ DOCUMENT PROVISOIRE — NE CONSTITUE PAS UNE FACTURE", TextColor = Color.FromArgb("#F59E0B"), FontSize = 10, FontAttributes = FontAttributes.Bold }
+                new Label { Text = "🧾 Note de Table (Addition Provisoire)", TextColor = AppleHigTheme.LabelPrimary, FontSize = AppleHigTheme.Title3, FontAttributes = FontAttributes.Bold },
+                new Label { Text = $"Table : {_vm.ActiveTable}  •  Couverts : {_vm.CoversCount}  •  Opérateur : Alexandre D.", TextColor = AppleHigTheme.LabelSecondary, FontSize = 12 },
+                new Label { Text = $"Éditée le {DateTime.Now:dd/MM/yyyy à HH:mm}", TextColor = AppleHigTheme.LabelTertiary, FontSize = 11 },
+                new Label { Text = "⚠️ DOCUMENT PROVISOIRE — NE CONSTITUE PAS UNE FACTURE", TextColor = AppleHigTheme.SystemOrange, FontSize = 10, FontAttributes = FontAttributes.Bold }
             }
         };
         stack.Children.Add(header);
-        stack.Children.Add(new BoxView { HeightRequest = 1, Color = Color.FromArgb("#334155") });
+        stack.Children.Add(new BoxView { HeightRequest = 1, Color = AppleHigTheme.Separator });
 
         var itemsStack = new VerticalStackLayout { Spacing = 6 };
         if (_vm.CartItems.Count == 0)

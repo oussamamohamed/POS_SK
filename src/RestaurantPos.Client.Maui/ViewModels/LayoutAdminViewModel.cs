@@ -104,8 +104,12 @@ public partial class LayoutAdminViewModel : ObservableObject
         profile.DefaultLandingView = DefaultLandingView;
         profile.IsDefault = IsDefault;
 
-        var saved = await _layoutService.SaveProfileAsync(profile);
-        _environmentService.TriggerHapticFeedback(HapticFeedbackType.Success);
+        TerminalLayoutProfile saved = profile;
+        if (_layoutService != null)
+        {
+            saved = await _layoutService.SaveProfileAsync(profile);
+        }
+        _environmentService?.TriggerHapticFeedback(HapticFeedbackType.Success);
         StatusMessage = $"Profil '{saved.ProfileName}' enregistré avec succès.";
         await LoadProfilesAsync();
     }

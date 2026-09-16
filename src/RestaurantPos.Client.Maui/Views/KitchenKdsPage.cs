@@ -1,7 +1,10 @@
 #if MAUI_UI
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
+using RestaurantPos.Client.Maui.Controls;
+using RestaurantPos.Client.Maui.Theme;
 using RestaurantPos.Client.Maui.ViewModels;
 using RestaurantPos.Domain.Entities;
 using RestaurantPos.Application.DTOs;
@@ -9,9 +12,9 @@ using RestaurantPos.Application.DTOs;
 namespace RestaurantPos.Client.Maui.Views;
 
 /// <summary>
-/// Ecran Cuisine KDS (Kitchen Display System).
-/// 3 colonnes : En Attente | En Preparation | Pret.
-/// Chronometre par ticket avec code couleur urgence.
+/// Écran Cuisine KDS (Kitchen Display System) conforme aux Apple Human Interface Guidelines (HIG) pour iPadOS.
+/// 3 colonnes : En Attente | En Préparation | Prêt à Servir.
+/// Fiches Inset Grouped, badges capsules d'urgence et gros boutons tactiles BUMP.
 /// </summary>
 public class KitchenKdsPage : ContentPage
 {
@@ -22,7 +25,7 @@ public class KitchenKdsPage : ContentPage
     {
         _vm = vm;
         BindingContext = vm;
-        BackgroundColor = Color.FromArgb("#0A0F1A");
+        BackgroundColor = AppleHigTheme.SystemBackground;
         Shell.SetNavBarIsVisible(this, false);
         Build();
     }
@@ -47,12 +50,12 @@ public class KitchenKdsPage : ContentPage
 
     private void Build()
     {
-        var topBar = new Controls.GlobalHeaderView(Controls.PosActiveViewTab.Kds);
+        var topBar = new GlobalHeaderView(PosActiveViewTab.Kds);
 
-        // Subheader KDS : Titre et filtres stations (matching kdsView)
+        // Subheader KDS : Titre et filtres stations façon Apple iPadOS
         var header = new Grid
         {
-            BackgroundColor = Color.FromArgb("#0F172A"),
+            BackgroundColor = AppleHigTheme.SecondarySystemBackground,
             Padding = new Thickness(20, 10),
             ColumnDefinitions =
             {
@@ -64,8 +67,8 @@ public class KitchenKdsPage : ContentPage
         var titleLabel = new Label
         {
             Text = "👨‍🍳 Écran de Cuisine KDS (Temps Réel)",
-            TextColor = Colors.White,
-            FontSize = 18,
+            TextColor = AppleHigTheme.LabelPrimary,
+            FontSize = AppleHigTheme.Title3,
             FontAttributes = FontAttributes.Bold,
             VerticalOptions = LayoutOptions.Center
         };
@@ -76,10 +79,10 @@ public class KitchenKdsPage : ContentPage
             VerticalOptions = LayoutOptions.Center,
             Children =
             {
-                new Button { Text = "Toutes Stations", BackgroundColor = Color.FromArgb("#3B82F6"), TextColor = Colors.White, FontSize = 12, HeightRequest = 32, CornerRadius = 6 },
-                new Button { Text = "Chaud / Grill", BackgroundColor = Color.FromArgb("#334155"), TextColor = Color.FromArgb("#94A3B8"), FontSize = 12, HeightRequest = 32, CornerRadius = 6 },
-                new Button { Text = "Froid / Entrées", BackgroundColor = Color.FromArgb("#334155"), TextColor = Color.FromArgb("#94A3B8"), FontSize = 12, HeightRequest = 32, CornerRadius = 6 },
-                new Button { Text = "Bar & Boissons", BackgroundColor = Color.FromArgb("#334155"), TextColor = Color.FromArgb("#94A3B8"), FontSize = 12, HeightRequest = 32, CornerRadius = 6 }
+                MakeStationFilterBtn("Toutes Stations", true),
+                MakeStationFilterBtn("Chaud / Grill", false),
+                MakeStationFilterBtn("Froid / Entrées", false),
+                MakeStationFilterBtn("Bar & Boissons", false)
             }
         };
 
@@ -87,7 +90,7 @@ public class KitchenKdsPage : ContentPage
         header.Add(titleLabel);
         header.Add(filterPills);
 
-        // Colonnes KDS
+        // 3 Colonnes KDS
         var columns = new Grid
         {
             ColumnDefinitions =
@@ -96,13 +99,13 @@ public class KitchenKdsPage : ContentPage
                 new ColumnDefinition { Width = GridLength.Star },
                 new ColumnDefinition { Width = GridLength.Star }
             },
-            ColumnSpacing = 8,
-            Padding = new Thickness(8)
+            ColumnSpacing = 12,
+            Padding = new Thickness(12)
         };
 
-        columns.Add(BuildKdsColumn("⏳ En Attente", "#F59E0B", _vm.PendingTickets), 0, 0);
-        columns.Add(BuildKdsColumn("🔥 En Préparation", "#3B82F6", _vm.InPrepTickets), 1, 0);
-        columns.Add(BuildKdsColumn("✅ Prêt à Servir", "#10B981", _vm.ReadyTickets), 2, 0);
+        columns.Add(BuildKdsColumn("⏳ En Attente", AppleHigTheme.SystemOrange, _vm.PendingTickets), 0, 0);
+        columns.Add(BuildKdsColumn("🔥 En Préparation", AppleHigTheme.SystemBlue, _vm.InPrepTickets), 1, 0);
+        columns.Add(BuildKdsColumn("✅ Prêt à Servir", AppleHigTheme.SystemGreen, _vm.ReadyTickets), 2, 0);
 
         Content = new Grid
         {
@@ -121,27 +124,50 @@ public class KitchenKdsPage : ContentPage
         };
     }
 
-    private View BuildKdsColumn(string title, string colorHex, System.Collections.ObjectModel.ObservableCollection<KdsTicketItemViewModel> items)
+    private static Button MakeStationFilterBtn(string text, bool isActive)
     {
-        var colHeader = new Label
+        return new Button
         {
-            Text = title,
-            TextColor = Color.FromArgb(colorHex),
-            FontSize = 16,
-            FontAttributes = FontAttributes.Bold,
-            Padding = new Thickness(8, 10),
-            BackgroundColor = Color.FromArgb("#0F172A")
+            Text = text,
+            BackgroundColor = isActive ? AppleHigTheme.SystemBlue : AppleHigTheme.TertiarySystemBackground,
+            TextColor = isActive ? Colors.White : AppleHigTheme.LabelSecondary,
+            FontSize = 13,
+            FontAttributes = isActive ? FontAttributes.Bold : FontAttributes.None,
+            HeightRequest = 34,
+            CornerRadius = 17,
+            Padding = new Thickness(14, 0)
+        };
+    }
+
+    private View BuildKdsColumn(string title, Color headerColor, System.Collections.ObjectModel.ObservableCollection<KdsTicketItemViewModel> items)
+    {
+        var colHeader = new Border
+        {
+            BackgroundColor = AppleHigTheme.SecondarySystemBackground,
+            Stroke = AppleHigTheme.Separator,
+            StrokeThickness = 1,
+            StrokeShape = new RoundRectangle { CornerRadius = new CornerRadius(10) },
+            Padding = new Thickness(14, 8),
+            Margin = new Thickness(0, 0, 0, 8),
+            Content = new Label
+            {
+                Text = title,
+                TextColor = headerColor,
+                FontSize = AppleHigTheme.Headline,
+                FontAttributes = FontAttributes.Bold,
+                HorizontalOptions = LayoutOptions.Center
+            }
         };
 
         var list = new CollectionView
         {
             ItemsSource = items,
-            ItemTemplate = new DataTemplate(() => BuildTicketCard(colorHex))
+            ItemTemplate = new DataTemplate(() => BuildTicketCard(headerColor))
         };
 
         return new Grid
         {
-            BackgroundColor = Color.FromArgb("#111827"),
+            BackgroundColor = AppleHigTheme.SystemBackground,
             RowDefinitions =
             {
                 new RowDefinition { Height = GridLength.Auto },
@@ -155,55 +181,60 @@ public class KitchenKdsPage : ContentPage
         };
     }
 
-    private View BuildTicketCard(string accentColor)
+    private View BuildTicketCard(Color accentColor)
     {
-        var frame = new Frame
+        var border = new Border
         {
-            Margin = new Thickness(6, 4),
-            Padding = new Thickness(12),
-            CornerRadius = 12,
-            HasShadow = false,
-            BackgroundColor = Color.FromArgb("#1E293B")
+            Margin = new Thickness(0, 4, 0, 10),
+            Padding = new Thickness(16),
+            StrokeShape = new RoundRectangle { CornerRadius = new CornerRadius(AppleHigTheme.CornerRadiusLarge) },
+            Stroke = AppleHigTheme.Separator,
+            StrokeThickness = 1,
+            BackgroundColor = AppleHigTheme.SecondarySystemBackground
         };
 
         var tableLabel = new Label
         {
-            FontSize = 18,
+            FontSize = AppleHigTheme.Title2,
             FontAttributes = FontAttributes.Bold,
-            TextColor = Colors.White
+            TextColor = AppleHigTheme.LabelPrimary
         };
         tableLabel.SetBinding(Label.TextProperty, new Binding("Ticket.TableNumber"));
 
-        var timerLabel = new Label { FontSize = 14, FontAttributes = FontAttributes.Bold };
+        var timerLabel = new Label
+        {
+            FontSize = AppleHigTheme.Subheadline,
+            FontAttributes = FontAttributes.Bold
+        };
         timerLabel.SetBinding(Label.TextProperty, nameof(KdsTicketItemViewModel.ElapsedTimeText));
         timerLabel.SetBinding(Label.TextColorProperty, new Binding(
             nameof(KdsTicketItemViewModel.UrgencyColorHex),
             converter: new HexToColorConverter()));
 
-        var urgencyBar = new BoxView { HeightRequest = 4, CornerRadius = 2 };
+        var urgencyBar = new BoxView { HeightRequest = 3, CornerRadius = 1.5f };
         urgencyBar.SetBinding(BoxView.ColorProperty, new Binding(
             nameof(KdsTicketItemViewModel.UrgencyColorHex),
             converter: new HexToColorConverter()));
 
-        var itemsList = new VerticalStackLayout { Spacing = 4, Margin = new Thickness(0, 4) };
+        var itemsList = new VerticalStackLayout { Spacing = 6, Margin = new Thickness(0, 6) };
         itemsList.SetBinding(BindableLayout.ItemsSourceProperty, "Ticket.Items");
         BindableLayout.SetItemTemplate(itemsList, new DataTemplate(() =>
         {
-            var row = new HorizontalStackLayout { Spacing = 8 };
+            var row = new HorizontalStackLayout { Spacing = 10 };
             var qty = new Label
             {
-                FontSize = 15,
+                FontSize = AppleHigTheme.Headline,
                 FontAttributes = FontAttributes.Bold,
-                TextColor = Color.FromArgb("#F59E0B"),
+                TextColor = AppleHigTheme.SystemOrange,
                 VerticalOptions = LayoutOptions.Center
             };
             qty.SetBinding(Label.TextProperty, new Binding("Quantity", stringFormat: "{0}x"));
 
             var name = new Label
             {
-                FontSize = 15,
+                FontSize = AppleHigTheme.Headline,
                 FontAttributes = FontAttributes.Bold,
-                TextColor = Colors.White,
+                TextColor = AppleHigTheme.LabelPrimary,
                 VerticalOptions = LayoutOptions.Center,
                 LineBreakMode = LineBreakMode.TailTruncation
             };
@@ -217,12 +248,13 @@ public class KitchenKdsPage : ContentPage
         var bumpBtn = new Button
         {
             Text = "BUMP ▶",
-            BackgroundColor = Color.FromArgb(accentColor),
+            BackgroundColor = accentColor,
             TextColor = Colors.White,
-            FontSize = 16,
+            FontSize = AppleHigTheme.Headline,
             FontAttributes = FontAttributes.Bold,
-            HeightRequest = 52,
-            CornerRadius = 10,
+            HeightRequest = 50,
+            MinimumHeightRequest = AppleHigTheme.MinTouchTarget,
+            CornerRadius = 12,
             Margin = new Thickness(0, 8, 0, 0),
             Command = _vm.BumpTicketCommand
         };
@@ -231,23 +263,32 @@ public class KitchenKdsPage : ContentPage
         var recallBtn = new Button
         {
             Text = "↩ Rappel",
-            BackgroundColor = Color.FromArgb("#334155"),
-            TextColor = Color.FromArgb("#94A3B8"),
-            FontSize = 13,
-            HeightRequest = 36,
+            BackgroundColor = AppleHigTheme.TertiarySystemBackground,
+            TextColor = AppleHigTheme.LabelSecondary,
+            FontSize = AppleHigTheme.Footnote,
+            HeightRequest = 38,
             CornerRadius = 8,
             Command = _vm.RecallTicketCommand
         };
         recallBtn.SetBinding(Button.CommandParameterProperty, new Binding("."));
 
-        frame.Content = new VerticalStackLayout
+        border.Content = new VerticalStackLayout
         {
             Spacing = 8,
             Children =
             {
-                new HorizontalStackLayout
+                new Grid
                 {
-                    Children = { tableLabel, new BoxView { HorizontalOptions = LayoutOptions.FillAndExpand }, timerLabel }
+                    ColumnDefinitions =
+                    {
+                        new ColumnDefinition { Width = GridLength.Star },
+                        new ColumnDefinition { Width = GridLength.Auto }
+                    },
+                    Children =
+                    {
+                        tableLabel,
+                        timerLabel.Also(l => Grid.SetColumn(l, 1))
+                    }
                 },
                 urgencyBar,
                 itemsList,
@@ -256,7 +297,7 @@ public class KitchenKdsPage : ContentPage
             }
         };
 
-        return frame;
+        return border;
     }
 
     private static T AddToGrid<T>(T view, int row) where T : View

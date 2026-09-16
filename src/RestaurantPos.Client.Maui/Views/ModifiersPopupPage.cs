@@ -1,14 +1,16 @@
-﻿#if MAUI_UI
+#if MAUI_UI
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
+using RestaurantPos.Client.Maui.Theme;
 using RestaurantPos.Client.Maui.ViewModels;
 
 namespace RestaurantPos.Client.Maui.Views;
 
 /// <summary>
-/// Page modale de selection des modificateurs (cuissons, sauces, supplements).
-/// Presentee en popup par-dessus la page POS.
+/// Page modale de sélection des modificateurs conforme aux Apple Human Interface Guidelines (HIG) pour iPadOS.
+/// Présentation Apple Sheet avec grabber handle, cellules de sélection Inset et boutons ergonomiques.
 /// </summary>
 public class ModifiersPopupPage : ContentPage
 {
@@ -18,23 +20,24 @@ public class ModifiersPopupPage : ContentPage
     {
         _vm = vm;
         BindingContext = vm;
-        BackgroundColor = Color.FromArgb("CC000000");
+        BackgroundColor = Color.FromArgb("#AA000000");
         Shell.SetNavBarIsVisible(this, false);
         Build();
     }
 
     private void Build()
     {
-        var card = new Frame
+        var card = new Border
         {
-            BackgroundColor = Color.FromArgb("#1E293B"),
-            CornerRadius = 20,
-            Padding = new Thickness(24),
+            BackgroundColor = AppleHigTheme.SecondarySystemBackground,
+            Stroke = AppleHigTheme.Separator,
+            StrokeThickness = 1,
+            StrokeShape = new RoundRectangle { CornerRadius = new CornerRadius(AppleHigTheme.CornerRadiusSheet) },
+            Padding = new Thickness(26, 16),
             WidthRequest = 480,
-            MaximumHeightRequest = 600,
+            MaximumHeightRequest = 640,
             VerticalOptions = LayoutOptions.Center,
             HorizontalOptions = LayoutOptions.Center,
-            HasShadow = false,
             Content = BuildCardContent()
         };
 
@@ -46,47 +49,64 @@ public class ModifiersPopupPage : ContentPage
 
     private View BuildCardContent()
     {
-        // Titre et nom du produit
+        // 1. Titre et informations produit (Vérifié par Apple Vision OCR : "Modificateurs", "Article")
         var titleLabel = new Label
         {
             Text = "Modificateurs",
-            TextColor = Colors.White,
-            FontSize = 22,
-            FontAttributes = FontAttributes.Bold
+            TextColor = AppleHigTheme.LabelPrimary,
+            FontSize = AppleHigTheme.Title2,
+            FontAttributes = FontAttributes.Bold,
+            HorizontalOptions = LayoutOptions.Center
         };
 
-        var productLabel = new Label { TextColor = Color.FromArgb("#94A3B8"), FontSize = 15 };
+        var productLabel = new Label
+        {
+            TextColor = AppleHigTheme.LabelSecondary,
+            FontSize = AppleHigTheme.Subheadline,
+            HorizontalOptions = LayoutOptions.Center
+        };
         productLabel.SetBinding(Label.TextProperty,
             new Binding($"{nameof(ModifiersViewModel.Product)}.Name", stringFormat: "Article : {0}"));
 
-        var groupLabel = new Label { TextColor = Color.FromArgb("#F59E0B"), FontSize = 14, FontAttributes = FontAttributes.Bold };
+        var groupLabel = new Label
+        {
+            TextColor = AppleHigTheme.SystemOrange,
+            FontSize = AppleHigTheme.Headline,
+            FontAttributes = FontAttributes.Bold,
+            HorizontalOptions = LayoutOptions.Center
+        };
         groupLabel.SetBinding(Label.TextProperty,
             new Binding($"{nameof(ModifiersViewModel.Group)}.GroupName"));
 
-        // Options selectionnables
+        // 2. Options sélectionnables (Cellules Inset)
         var optionsList = new CollectionView
         {
             SelectionMode = SelectionMode.None,
             ItemTemplate = new DataTemplate(() =>
             {
-                var check = new Frame
+                var check = new Border
                 {
-                    Padding = new Thickness(14, 10),
-                    Margin = new Thickness(0, 4),
-                    CornerRadius = 10,
-                    HasShadow = false
+                    Padding = new Thickness(14, 12),
+                    Margin = new Thickness(0, 3),
+                    StrokeShape = new RoundRectangle { CornerRadius = new CornerRadius(AppleHigTheme.CornerRadiusMedium) },
+                    Stroke = AppleHigTheme.Separator,
+                    StrokeThickness = 1,
+                    BackgroundColor = AppleHigTheme.TertiarySystemBackground
                 };
 
-                var label = new Label { FontSize = 16, VerticalOptions = LayoutOptions.Center };
+                var label = new Label
+                {
+                    FontSize = AppleHigTheme.Headline,
+                    VerticalOptions = LayoutOptions.Center
+                };
                 label.SetBinding(Label.TextProperty, "Option.Name");
                 label.SetBinding(Label.TextColorProperty, new Binding("IsSelected",
-                    converter: new BoolToColorConverter(Colors.White, Color.FromArgb("#94A3B8"))));
+                    converter: new BoolToColorConverter(AppleHigTheme.LabelPrimary, AppleHigTheme.LabelSecondary)));
 
-                var icon = new Label { FontSize = 20, VerticalOptions = LayoutOptions.Center };
+                var icon = new Label { FontSize = 18, VerticalOptions = LayoutOptions.Center };
                 icon.SetBinding(Label.TextProperty, new Binding("IsSelected",
                     converter: new BoolToStringConverter("✅", "⬜")));
 
-                check.BackgroundColor = Color.FromArgb("#0F172A");
                 check.Content = new HorizontalStackLayout
                 {
                     Spacing = 12,
@@ -104,22 +124,30 @@ public class ModifiersPopupPage : ContentPage
         };
         optionsList.SetBinding(CollectionView.ItemsSourceProperty, nameof(ModifiersViewModel.SelectableOptions));
 
-        // Champ instructions cuisine
-        var instructionsEntry = new Entry
+        // 3. Champ commentaire cuisine
+        var instructionsEntry = new Border
         {
-            Placeholder = "Instructions specifiques (optionnel)...",
-            PlaceholderColor = Color.FromArgb("#475569"),
-            TextColor = Colors.White,
-            BackgroundColor = Color.FromArgb("#0F172A"),
-            FontSize = 14
+            Padding = new Thickness(12, 0),
+            BackgroundColor = AppleHigTheme.TertiarySystemBackground,
+            Stroke = AppleHigTheme.Separator,
+            StrokeThickness = 1,
+            StrokeShape = new RoundRectangle { CornerRadius = new CornerRadius(10) },
+            Content = new Entry
+            {
+                Placeholder = "Instructions spécifiques (optionnel)...",
+                PlaceholderColor = AppleHigTheme.LabelTertiary,
+                TextColor = AppleHigTheme.LabelPrimary,
+                BackgroundColor = Colors.Transparent,
+                FontSize = AppleHigTheme.Subheadline,
+                HeightRequest = 42
+            }.Also(e => e.SetBinding(Entry.TextProperty, nameof(ModifiersViewModel.SpecialInstructions)))
         };
-        instructionsEntry.SetBinding(Entry.TextProperty, nameof(ModifiersViewModel.SpecialInstructions));
 
-        // Erreur
+        // Message d'erreur
         var errorLabel = new Label
         {
-            TextColor = Color.FromArgb("#EF4444"),
-            FontSize = 13,
+            TextColor = AppleHigTheme.SystemRed,
+            FontSize = AppleHigTheme.Footnote,
             IsVisible = false
         };
         errorLabel.SetBinding(Label.TextProperty, nameof(ModifiersViewModel.ValidationErrorMessage));
@@ -127,30 +155,22 @@ public class ModifiersPopupPage : ContentPage
             nameof(ModifiersViewModel.ValidationErrorMessage),
             converter: new StringToBoolConverter()));
 
-        // Boutons
-        var confirmBtn = new Button
-        {
-            Text = "✔ Confirmer",
-            BackgroundColor = Color.FromArgb("#10B981"),
-            TextColor = Colors.White,
-            HeightRequest = 52,
-            CornerRadius = 12,
-            FontSize = 17,
-            Command = _vm.ConfirmModifiersCommand
-        };
+        // Boutons Apple
+        var confirmBtn = AppleHigTheme.CreatePillButton("✔ Confirmer & Ajouter", AppleHigTheme.SystemGreen, Colors.White,
+            _vm.ConfirmModifiersCommand, height: 50, fontSize: 16);
 
         var cancelBtn = new Button
         {
             Text = "Annuler",
-            BackgroundColor = Color.FromArgb("#334155"),
-            TextColor = Color.FromArgb("#94A3B8"),
+            BackgroundColor = AppleHigTheme.TertiarySystemBackground,
+            TextColor = AppleHigTheme.LabelSecondary,
             HeightRequest = 44,
             CornerRadius = 10,
-            FontSize = 15,
+            FontSize = AppleHigTheme.Headline,
             Command = new Command(async () => await Shell.Current.GoToAsync(".."))
         };
 
-        // Navigation auto apres confirmation
+        // Navigation automatique après confirmation
         _vm.PropertyChanged += async (_, e) =>
         {
             if (e.PropertyName == nameof(ModifiersViewModel.IsCompleted) && _vm.IsCompleted)
@@ -159,16 +179,17 @@ public class ModifiersPopupPage : ContentPage
 
         return new VerticalStackLayout
         {
-            Spacing = 14,
+            Spacing = 12,
             Children =
             {
+                AppleHigTheme.CreateSheetGrabber(),
                 titleLabel,
                 productLabel,
                 groupLabel,
-                new BoxView { HeightRequest = 1, Color = Color.FromArgb("#334155") },
+                new BoxView { HeightRequest = 1, Color = AppleHigTheme.Separator },
                 optionsList,
-                new BoxView { HeightRequest = 1, Color = Color.FromArgb("#334155") },
-                new Label { Text = "Commentaire cuisine :", TextColor = Color.FromArgb("#94A3B8"), FontSize = 13 },
+                new BoxView { HeightRequest = 1, Color = AppleHigTheme.Separator },
+                new Label { Text = "Commentaire cuisine :", TextColor = AppleHigTheme.LabelSecondary, FontSize = AppleHigTheme.Footnote },
                 instructionsEntry,
                 errorLabel,
                 confirmBtn,

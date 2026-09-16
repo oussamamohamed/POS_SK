@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
+using RestaurantPos.Client.Maui.Theme;
 using RestaurantPos.Client.Maui.ViewModels;
 using RestaurantPos.Domain.Entities;
 
@@ -24,7 +25,7 @@ public class AdminShellPage : ContentPage
     {
         _vm = vm;
         BindingContext = vm;
-        BackgroundColor = Color.FromArgb("#0F172A");
+        BackgroundColor = AppleHigTheme.SystemBackground;
         Shell.SetNavBarIsVisible(this, false);
         BuildPage();
     }
@@ -43,7 +44,7 @@ public class AdminShellPage : ContentPage
         var sidebar = new Grid
         {
             WidthRequest = 250,
-            BackgroundColor = Color.FromArgb("#1E293B"),
+            BackgroundColor = AppleHigTheme.SecondarySystemBackground,
             RowDefinitions =
             {
                 new RowDefinition { Height = GridLength.Auto }, // Titre Paramétrage POS
@@ -55,7 +56,7 @@ public class AdminShellPage : ContentPage
         var sidebarTitle = new Label
         {
             Text = "⚙️ Paramétrage POS",
-            TextColor = Colors.White,
+            TextColor = AppleHigTheme.LabelPrimary,
             FontSize = 16,
             FontAttributes = FontAttributes.Bold,
             Padding = new Thickness(16, 14, 16, 10)
@@ -89,8 +90,8 @@ public class AdminShellPage : ContentPage
         var backBtn = new Button
         {
             Text = "← Retour Salle",
-            BackgroundColor = Color.FromArgb("#334155"),
-            TextColor = Color.FromArgb("#94A3B8"),
+            BackgroundColor = AppleHigTheme.TertiarySystemBackground,
+            TextColor = AppleHigTheme.LabelSecondary,
             FontSize = 13,
             HeightRequest = 42,
             CornerRadius = 8,
@@ -101,7 +102,7 @@ public class AdminShellPage : ContentPage
         sidebar.Children.Add(backBtn);
 
         // Zone de contenu principal à droite
-        _tabContainer.BackgroundColor = Color.FromArgb("#0F172A");
+        _tabContainer.BackgroundColor = AppleHigTheme.SystemBackground;
         _tabContainer.Padding = new Thickness(16);
 
         var mainLayout = new Grid
@@ -138,7 +139,7 @@ public class AdminShellPage : ContentPage
         {
             Text = label,
             BackgroundColor = Colors.Transparent,
-            TextColor = Color.FromArgb("#94A3B8"),
+            TextColor = AppleHigTheme.LabelSecondary,
             FontSize = 13,
             HeightRequest = 42,
             CornerRadius = 8,
@@ -156,8 +157,8 @@ public class AdminShellPage : ContentPage
         for (int i = 0; i < _sidebarButtons.Length; i++)
         {
             bool isCurrent = (int)section == i;
-            _sidebarButtons[i].BackgroundColor = isCurrent ? Color.FromArgb("#3B82F6") : Colors.Transparent;
-            _sidebarButtons[i].TextColor = isCurrent ? Colors.White : Color.FromArgb("#94A3B8");
+            _sidebarButtons[i].BackgroundColor = isCurrent ? AppleHigTheme.SystemBlue : Colors.Transparent;
+            _sidebarButtons[i].TextColor = isCurrent ? Colors.White : AppleHigTheme.LabelSecondary;
             _sidebarButtons[i].FontAttributes = isCurrent ? FontAttributes.Bold : FontAttributes.None;
         }
 

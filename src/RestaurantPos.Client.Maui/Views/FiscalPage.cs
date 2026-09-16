@@ -1,14 +1,16 @@
 #if MAUI_UI
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
 using RestaurantPos.Client.Maui.Controls;
+using RestaurantPos.Client.Maui.Theme;
 
 namespace RestaurantPos.Client.Maui.Views;
 
 /// <summary>
-/// Page Fiscalité NF525 répliquant fidèlement la vue fiscale web (fiscalView).
-/// Clôtures journalières Z, rapports X, audit cryptographique SHA-256 et export FEC.
+/// Page Fiscalité NF525 conforme aux Apple Human Interface Guidelines (HIG) pour iPadOS.
+/// Présentation Inset Grouped, scellement cryptographique inaltérable SHA-256 et export FEC.
 /// </summary>
 public class FiscalPage : ContentPage
 {
@@ -22,7 +24,7 @@ public class FiscalPage : ContentPage
 
     public FiscalPage()
     {
-        BackgroundColor = Color.FromArgb("#0F172A");
+        BackgroundColor = AppleHigTheme.SystemBackground;
         Shell.SetNavBarIsVisible(this, false);
         Build();
     }
@@ -62,28 +64,28 @@ public class FiscalPage : ContentPage
 
     private View BuildFiscalReportCard()
     {
-        var card = new Frame
+        var card = new Border
         {
-            BackgroundColor = Color.FromArgb("#1E293B"),
-            CornerRadius = 12,
-            Padding = new Thickness(20),
-            BorderColor = Color.FromRgba(255, 255, 255, 20),
-            HasShadow = false
+            BackgroundColor = AppleHigTheme.SecondarySystemBackground,
+            Stroke = AppleHigTheme.Separator,
+            StrokeThickness = 1,
+            StrokeShape = new RoundRectangle { CornerRadius = new CornerRadius(AppleHigTheme.CornerRadiusLarge) },
+            Padding = new Thickness(24)
         };
 
         var title = new Label
         {
             Text = "📜 Traçabilité Fiscale NF525 & Clôtures",
-            TextColor = Colors.White,
-            FontSize = 20,
+            TextColor = AppleHigTheme.LabelPrimary,
+            FontSize = AppleHigTheme.Title2,
             FontAttributes = FontAttributes.Bold
         };
 
         var subtitle = new Label
         {
             Text = "Chaînage cryptographique inaltérable SHA-256 des règlements et scellement journalier.",
-            TextColor = Color.FromArgb("#94A3B8"),
-            FontSize = 13,
+            TextColor = AppleHigTheme.LabelSecondary,
+            FontSize = AppleHigTheme.Subheadline,
             Margin = new Thickness(0, 4, 0, 16)
         };
 
@@ -96,23 +98,25 @@ public class FiscalPage : ContentPage
                 new Button
                 {
                     Text = "🔒 Exécuter la Clôture Journalière (Rapport Z)",
-                    BackgroundColor = Color.FromArgb("#10B981"),
+                    BackgroundColor = AppleHigTheme.SystemGreen,
                     TextColor = Colors.White,
-                    FontSize = 13,
+                    FontSize = AppleHigTheme.Subheadline,
                     FontAttributes = FontAttributes.Bold,
                     HeightRequest = 44,
-                    CornerRadius = 8,
+                    MinimumHeightRequest = AppleHigTheme.MinTouchTarget,
+                    CornerRadius = 10,
                     Padding = new Thickness(16, 0),
                     Command = new Command(ExecuteZReport)
                 },
                 new Button
                 {
                     Text = "👁️ Aperçu du Rapport X (En cours)",
-                    BackgroundColor = Color.FromArgb("#334155"),
-                    TextColor = Colors.White,
-                    FontSize = 13,
+                    BackgroundColor = AppleHigTheme.TertiarySystemBackground,
+                    TextColor = AppleHigTheme.LabelPrimary,
+                    FontSize = AppleHigTheme.Subheadline,
                     HeightRequest = 44,
-                    CornerRadius = 8,
+                    MinimumHeightRequest = AppleHigTheme.MinTouchTarget,
+                    CornerRadius = 10,
                     Padding = new Thickness(16, 0),
                     Command = new Command(ExecuteXReport)
                 }
@@ -132,26 +136,26 @@ public class FiscalPage : ContentPage
 
     private View BuildTicketSlip()
     {
-        var slipFrame = new Frame
+        var slipFrame = new Border
         {
-            BackgroundColor = Color.FromArgb("#0F172A"),
-            CornerRadius = 8,
-            Padding = new Thickness(20),
-            BorderColor = Color.FromArgb("#334155"),
-            MaximumWidthRequest = 520,
-            HorizontalOptions = LayoutOptions.Start,
-            HasShadow = false
+            BackgroundColor = AppleHigTheme.TertiarySystemBackground,
+            Stroke = AppleHigTheme.Separator,
+            StrokeThickness = 1,
+            StrokeShape = new RoundRectangle { CornerRadius = new CornerRadius(AppleHigTheme.CornerRadiusMedium) },
+            Padding = new Thickness(22),
+            MaximumWidthRequest = 540,
+            HorizontalOptions = LayoutOptions.Start
         };
 
-        _slipDateLabel = new Label { Text = $"Date: {DateTime.Now:dd/MM/yyyy HH:mm:ss}", TextColor = Color.FromArgb("#94A3B8"), FontSize = 12 };
-        _slipTtcLabel = new Label { Text = "81,50 €", TextColor = Color.FromArgb("#10B981"), FontSize = 15, FontAttributes = FontAttributes.Bold };
-        _slipHtLabel = new Label { Text = "74,09 €", TextColor = Colors.White, FontSize = 13 };
-        _slipCountLabel = new Label { Text = "2", TextColor = Colors.White, FontSize = 13 };
-        _slipPerpetualLabel = new Label { Text = "1 428,50 €", TextColor = Colors.White, FontSize = 15, FontAttributes = FontAttributes.Bold };
+        _slipDateLabel = new Label { Text = $"Date: {DateTime.Now:dd/MM/yyyy HH:mm:ss}", TextColor = AppleHigTheme.LabelSecondary, FontSize = 12 };
+        _slipTtcLabel = new Label { Text = "81,50 €", TextColor = AppleHigTheme.SystemGreen, FontSize = AppleHigTheme.Headline, FontAttributes = FontAttributes.Bold };
+        _slipHtLabel = new Label { Text = "74,09 €", TextColor = AppleHigTheme.LabelPrimary, FontSize = 13 };
+        _slipCountLabel = new Label { Text = "2", TextColor = AppleHigTheme.LabelPrimary, FontSize = 13 };
+        _slipPerpetualLabel = new Label { Text = "1 428,50 €", TextColor = AppleHigTheme.LabelPrimary, FontSize = AppleHigTheme.Headline, FontAttributes = FontAttributes.Bold };
         _slipHashLabel = new Label
         {
             Text = "8f4a2b1c9e8d7f6a5b4c3d2e1f0a9b8c7d6e5f4a3b2c1d0e9f8a7b6c5d4e3f2a",
-            TextColor = Color.FromArgb("#38BDF8"),
+            TextColor = AppleHigTheme.SystemTeal,
             FontSize = 10,
             FontFamily = "Courier",
             LineBreakMode = LineBreakMode.CharacterWrap
@@ -162,19 +166,19 @@ public class FiscalPage : ContentPage
             Spacing = 8,
             Children =
             {
-                new Label { Text = "*** RAPPORT FISCAL NF525 ***", TextColor = Colors.White, FontSize = 15, FontAttributes = FontAttributes.Bold, HorizontalOptions = LayoutOptions.Center },
-                new Label { Text = "Norme NF525 — Traçabilité Fiscale Inaltérable", TextColor = Color.FromArgb("#94A3B8"), FontSize = 11, HorizontalOptions = LayoutOptions.Center },
+                new Label { Text = "*** RAPPORT FISCAL NF525 ***", TextColor = AppleHigTheme.LabelPrimary, FontSize = 15, FontAttributes = FontAttributes.Bold, HorizontalOptions = LayoutOptions.Center },
+                new Label { Text = "Norme NF525 — Traçabilité Fiscale Inaltérable", TextColor = AppleHigTheme.LabelSecondary, FontSize = 11, HorizontalOptions = LayoutOptions.Center },
                 _slipDateLabel,
-                new Label { Text = "Terminal: POS_MAIN_TERM (iPad)", TextColor = Color.FromArgb("#94A3B8"), FontSize = 12 },
-                new BoxView { HeightRequest = 1, Color = Color.FromArgb("#334155"), Margin = new Thickness(0, 4) },
+                new Label { Text = "Terminal: POS_MAIN_TERM (iPad)", TextColor = AppleHigTheme.LabelSecondary, FontSize = 12 },
+                new BoxView { HeightRequest = 1, Color = AppleHigTheme.Separator, Margin = new Thickness(0, 4) },
                 MakeSlipRow("Total Ventes TTC :", _slipTtcLabel),
                 MakeSlipRow("Total Ventes HT :", _slipHtLabel),
                 MakeSlipRow("Nombre de Tickets :", _slipCountLabel),
                 MakeSlipRow("Grand Total Perpétuel :", _slipPerpetualLabel),
-                new BoxView { HeightRequest = 1, Color = Color.FromArgb("#334155"), Margin = new Thickness(0, 4) },
-                new Label { Text = "Signature Cryptographique SHA-256 :", TextColor = Color.FromArgb("#94A3B8"), FontSize = 11 },
+                new BoxView { HeightRequest = 1, Color = AppleHigTheme.Separator, Margin = new Thickness(0, 4) },
+                new Label { Text = "Signature Cryptographique SHA-256 :", TextColor = AppleHigTheme.LabelSecondary, FontSize = 11 },
                 _slipHashLabel,
-                new Label { Text = "✓ Chaîne d'Audit Fiscale Scellée (NF525 Conforme)", TextColor = Color.FromArgb("#10B981"), FontSize = 12, FontAttributes = FontAttributes.Bold, Margin = new Thickness(0, 6, 0, 0) }
+                new Label { Text = "✓ Chaîne d'Audit Fiscale Scellée (NF525 Conforme)", TextColor = AppleHigTheme.SystemGreen, FontSize = 12, FontAttributes = FontAttributes.Bold, Margin = new Thickness(0, 6, 0, 0) }
             }
         };
 
@@ -192,7 +196,7 @@ public class FiscalPage : ContentPage
                 new ColumnDefinition { Width = GridLength.Auto }
             }
         };
-        grid.Add(new Label { Text = labelText, TextColor = Color.FromArgb("#94A3B8"), FontSize = 13 });
+        grid.Add(new Label { Text = labelText, TextColor = AppleHigTheme.LabelSecondary, FontSize = 13 });
         Grid.SetColumn(valueLabel, 1);
         grid.Add(valueLabel);
         return grid;
@@ -200,40 +204,41 @@ public class FiscalPage : ContentPage
 
     private View BuildFecExportCard()
     {
-        var card = new Frame
+        var card = new Border
         {
-            BackgroundColor = Color.FromArgb("#1E293B"),
-            CornerRadius = 12,
-            Padding = new Thickness(20),
-            BorderColor = Color.FromRgba(255, 255, 255, 20),
-            HasShadow = false
+            BackgroundColor = AppleHigTheme.SecondarySystemBackground,
+            Stroke = AppleHigTheme.Separator,
+            StrokeThickness = 1,
+            StrokeShape = new RoundRectangle { CornerRadius = new CornerRadius(AppleHigTheme.CornerRadiusLarge) },
+            Padding = new Thickness(24)
         };
 
         var title = new Label
         {
             Text = "📂 Export Comptable FEC (Article A.47 A-1 LPF)",
-            TextColor = Colors.White,
-            FontSize = 18,
+            TextColor = AppleHigTheme.LabelPrimary,
+            FontSize = AppleHigTheme.Title3,
             FontAttributes = FontAttributes.Bold
         };
 
         var subtitle = new Label
         {
             Text = "Génération du Fichier des Écritures Comptables normalisé (18 colonnes DGFIP) pour l'administration fiscale et l'expert-comptable.",
-            TextColor = Color.FromArgb("#94A3B8"),
-            FontSize = 13,
+            TextColor = AppleHigTheme.LabelSecondary,
+            FontSize = AppleHigTheme.Subheadline,
             Margin = new Thickness(0, 4, 0, 16)
         };
 
         var exportBtn = new Button
         {
             Text = "📥 Générer et Télécharger le Fichier FEC (.txt)",
-            BackgroundColor = Color.FromArgb("#059669"),
+            BackgroundColor = AppleHigTheme.SystemGreen,
             TextColor = Colors.White,
-            FontSize = 13,
+            FontSize = AppleHigTheme.Subheadline,
             FontAttributes = FontAttributes.Bold,
             HeightRequest = 44,
-            CornerRadius = 8,
+            MinimumHeightRequest = AppleHigTheme.MinTouchTarget,
+            CornerRadius = 10,
             Padding = new Thickness(16, 0),
             HorizontalOptions = LayoutOptions.Start,
             Command = new Command(ExecuteFecExport)
@@ -241,8 +246,8 @@ public class FiscalPage : ContentPage
 
         _fecStatusLabel = new Label
         {
-            TextColor = Color.FromArgb("#34D399"),
-            FontSize = 12,
+            TextColor = AppleHigTheme.SystemGreen,
+            FontSize = AppleHigTheme.Footnote,
             Margin = new Thickness(0, 8, 0, 0)
         };
 

@@ -1,15 +1,17 @@
 #if MAUI_UI
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
+using RestaurantPos.Client.Maui.Theme;
 using RestaurantPos.Client.Maui.ViewModels;
 using RestaurantPos.Domain.Entities;
 
 namespace RestaurantPos.Client.Maui.Views;
 
 /// <summary>
-/// Page d'encaissement multi-moyens de paiement.
-/// Gere CB, Especes (avec rendu monnaie), Tickets Restaurant, Chambre.
+/// Page d'encaissement conforme aux Apple Human Interface Guidelines (HIG) pour iPadOS.
+/// Présentation Inset Grouped, grandes tuiles tactiles de paiement, résumé clair du reste dû et rendu monnaie.
 /// </summary>
 public class CheckoutPage : ContentPage, IQueryAttributable
 {
@@ -20,7 +22,7 @@ public class CheckoutPage : ContentPage, IQueryAttributable
         _vm = vm;
         BindingContext = vm;
         Title = "Encaissement";
-        BackgroundColor = Color.FromArgb("#0F172A");
+        BackgroundColor = AppleHigTheme.SystemBackground;
         Shell.SetNavBarIsVisible(this, false);
         Build();
     }
@@ -51,8 +53,8 @@ public class CheckoutPage : ContentPage, IQueryAttributable
     {
         var topBar = new Grid
         {
-            BackgroundColor = Color.FromArgb("#0F172A"),
-            Padding = new Thickness(16, 10),
+            BackgroundColor = AppleHigTheme.SecondarySystemBackground,
+            Padding = new Thickness(20, 12),
             ColumnDefinitions =
             {
                 new ColumnDefinition { Width = GridLength.Auto },
@@ -63,19 +65,22 @@ public class CheckoutPage : ContentPage, IQueryAttributable
         var backBtn = new Button
         {
             Text = "← Retour Caisse",
-            BackgroundColor = Color.FromArgb("#334155"),
-            TextColor = Color.FromArgb("#94A3B8"),
-            FontSize = 14,
-            HeightRequest = 38,
-            CornerRadius = 8,
+            BackgroundColor = AppleHigTheme.TertiarySystemBackground,
+            TextColor = AppleHigTheme.LabelSecondary,
+            FontSize = AppleHigTheme.Subheadline,
+            FontAttributes = FontAttributes.Bold,
+            HeightRequest = 40,
+            MinimumHeightRequest = AppleHigTheme.MinTouchTarget,
+            CornerRadius = 10,
+            Padding = new Thickness(14, 0),
             Command = new Command(async () => await Shell.Current.GoToAsync(".."))
         };
 
         var titleLabel = new Label
         {
             Text = "💳 Règlement Commande",
-            TextColor = Colors.White,
-            FontSize = 22,
+            TextColor = AppleHigTheme.LabelPrimary,
+            FontSize = AppleHigTheme.Title2,
             FontAttributes = FontAttributes.Bold,
             VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(16, 0, 0, 0)
@@ -90,10 +95,10 @@ public class CheckoutPage : ContentPage, IQueryAttributable
             ColumnDefinitions =
             {
                 new ColumnDefinition { Width = GridLength.Star },
-                new ColumnDefinition { Width = new GridLength(320) }
+                new ColumnDefinition { Width = new GridLength(360) }
             },
-            Padding = new Thickness(16, 8, 16, 16),
-            ColumnSpacing = 16
+            Padding = new Thickness(20, 16, 20, 20),
+            ColumnSpacing = 20
         };
 
         body.Add(BuildPaymentMethodsPanel(), 0, 0);
@@ -119,18 +124,17 @@ public class CheckoutPage : ContentPage, IQueryAttributable
     // ---- Panneau gauche : Moyens de paiement ----
     private View BuildPaymentMethodsPanel()
     {
-        var panel = new VerticalStackLayout { Spacing = 16 };
+        var panel = new VerticalStackLayout { Spacing = 18 };
 
-        // Titre
         panel.Add(new Label
         {
             Text = "💳 Choisir le moyen de paiement",
-            TextColor = Colors.White,
-            FontSize = 20,
+            TextColor = AppleHigTheme.LabelPrimary,
+            FontSize = AppleHigTheme.Title3,
             FontAttributes = FontAttributes.Bold
         });
 
-        // Boutons de methode de paiement
+        // Tuiles tactiles de paiement (min 70pt)
         var methodsGrid = new Grid
         {
             ColumnDefinitions =
@@ -143,16 +147,16 @@ public class CheckoutPage : ContentPage, IQueryAttributable
                 new RowDefinition { Height = GridLength.Auto },
                 new RowDefinition { Height = GridLength.Auto }
             },
-            ColumnSpacing = 12,
-            RowSpacing = 12
+            ColumnSpacing = 14,
+            RowSpacing = 14
         };
 
         var methods = new[]
         {
-            (PaymentMethod.CreditCard, "💳 Carte Bancaire", "#3B82F6"),
-            (PaymentMethod.Cash, "💵 Especes", "#10B981"),
-            (PaymentMethod.MealVoucher, "🍽 Ticket Restaurant", "#F59E0B"),
-            (PaymentMethod.RoomCharge, "🏨 Chambre Hotel", "#8B5CF6")
+            (PaymentMethod.CreditCard, "💳 Carte Bancaire", AppleHigTheme.SystemBlue),
+            (PaymentMethod.Cash, "💵 Espèces", AppleHigTheme.SystemGreen),
+            (PaymentMethod.MealVoucher, "🍽 Ticket Restaurant", AppleHigTheme.SystemOrange),
+            (PaymentMethod.RoomCharge, "🏨 Chambre Hotel", AppleHigTheme.SystemIndigo)
         };
 
         for (int i = 0; i < methods.Length; i++)
@@ -161,9 +165,11 @@ public class CheckoutPage : ContentPage, IQueryAttributable
             var btn = new Button
             {
                 Text = label,
-                HeightRequest = 70,
-                CornerRadius = 12,
-                FontSize = 16,
+                HeightRequest = 74,
+                MinimumHeightRequest = AppleHigTheme.MinTouchTarget,
+                CornerRadius = 14,
+                FontSize = AppleHigTheme.Headline,
+                FontAttributes = FontAttributes.Bold,
                 Command = _vm.SelectPaymentMethodCommand,
                 CommandParameter = method
             };
@@ -177,12 +183,12 @@ public class CheckoutPage : ContentPage, IQueryAttributable
         }
         panel.Add(methodsGrid);
 
-        // Coupures especes rapides
+        // Coupures espèces rapides
         panel.Add(new Label
         {
             Text = "Coupures rapides :",
-            TextColor = Color.FromArgb("#94A3B8"),
-            FontSize = 14,
+            TextColor = AppleHigTheme.LabelSecondary,
+            FontSize = AppleHigTheme.Subheadline,
             Margin = new Thickness(0, 8, 0, 0)
         });
 
@@ -192,13 +198,15 @@ public class CheckoutPage : ContentPage, IQueryAttributable
             var b = new Button
             {
                 Text = $"{bill} €",
-                BackgroundColor = Color.FromArgb("#164E32"),
-                TextColor = Color.FromArgb("#10B981"),
-                FontSize = 16,
+                BackgroundColor = Color.FromRgba(48, 209, 88, 30),
+                TextColor = AppleHigTheme.SystemGreen,
+                BorderColor = Color.FromRgba(48, 209, 88, 70),
+                BorderWidth = 1,
+                FontSize = AppleHigTheme.Headline,
                 FontAttributes = FontAttributes.Bold,
                 HeightRequest = 52,
-                WidthRequest = 70,
-                CornerRadius = 10,
+                WidthRequest = 74,
+                CornerRadius = 12,
                 Command = _vm.AddCashFastBillCommand,
                 CommandParameter = (long)(bill * 100)
             };
@@ -206,12 +214,12 @@ public class CheckoutPage : ContentPage, IQueryAttributable
         }
         panel.Add(billsGrid);
 
-        // Tenders appliques
+        // Règlements enregistrés
         panel.Add(new Label
         {
-            Text = "Reglements enregistres :",
-            TextColor = Color.FromArgb("#94A3B8"),
-            FontSize = 14,
+            Text = "Règlements enregistrés :",
+            TextColor = AppleHigTheme.LabelSecondary,
+            FontSize = AppleHigTheme.Subheadline,
             Margin = new Thickness(0, 8, 0, 0)
         });
 
@@ -221,19 +229,20 @@ public class CheckoutPage : ContentPage, IQueryAttributable
             {
                 var row = new HorizontalStackLayout
                 {
-                    Padding = new Thickness(12, 8),
+                    Padding = new Thickness(14, 10),
                     Spacing = 12
                 };
-                var methodLabel = new Label { TextColor = Color.FromArgb("#94A3B8"), FontSize = 14, HorizontalOptions = LayoutOptions.Start };
+                var methodLabel = new Label { TextColor = AppleHigTheme.LabelPrimary, FontSize = AppleHigTheme.Body, HorizontalOptions = LayoutOptions.Start };
                 methodLabel.SetBinding(Label.TextProperty, "DisplayText");
                 row.Add(methodLabel);
-                return new Frame
+                return new Border
                 {
-                    BackgroundColor = Color.FromArgb("#1E293B"),
-                    CornerRadius = 8,
-                    HasShadow = false,
+                    BackgroundColor = AppleHigTheme.SecondarySystemBackground,
+                    Stroke = AppleHigTheme.Separator,
+                    StrokeThickness = 1,
+                    StrokeShape = new RoundRectangle { CornerRadius = new CornerRadius(10) },
                     Padding = 0,
-                    Margin = new Thickness(0, 2),
+                    Margin = new Thickness(0, 3),
                     Content = row
                 };
             })
@@ -244,79 +253,89 @@ public class CheckoutPage : ContentPage, IQueryAttributable
         return panel;
     }
 
-    // ---- Panneau droit : Resume et confirmation ----
+    // ---- Panneau droit : Résumé et confirmation ----
     private View BuildSummaryPanel()
     {
         var panel = new VerticalStackLayout
         {
-            Spacing = 14,
-            BackgroundColor = Color.FromArgb("#1E293B"),
-            Padding = new Thickness(20)
+            Spacing = 14
         };
 
-        // Total a payer
+        var card = new Border
+        {
+            BackgroundColor = AppleHigTheme.SecondarySystemBackground,
+            Stroke = AppleHigTheme.Separator,
+            StrokeThickness = 1,
+            StrokeShape = new RoundRectangle { CornerRadius = new CornerRadius(AppleHigTheme.CornerRadiusExtraLarge) },
+            Padding = new Thickness(24, 20),
+            Content = panel
+        };
+
+        // Total à payer
         panel.Add(new Label
         {
-            Text = "TOTAL A PAYER",
-            TextColor = Color.FromArgb("#94A3B8"),
-            FontSize = 13
+            Text = "TOTAL À PAYER",
+            TextColor = AppleHigTheme.LabelSecondary,
+            FontSize = AppleHigTheme.Caption1,
+            FontAttributes = FontAttributes.Bold
         });
         var totalAmount = new Label
         {
-            FontSize = 42,
+            FontSize = AppleHigTheme.LargeTitle,
             FontAttributes = FontAttributes.Bold,
-            TextColor = Colors.White
+            TextColor = AppleHigTheme.LabelPrimary
         };
         totalAmount.SetBinding(Label.TextProperty, nameof(CheckoutViewModel.TotalDueCents),
             stringFormat: "{0:F2} €",
             converter: new CentsToEurosConverter());
         panel.Add(totalAmount);
 
-        // Separateur
-        panel.Add(new BoxView { HeightRequest = 1, Color = Color.FromArgb("#334155") });
+        panel.Add(new BoxView { HeightRequest = 1, Color = AppleHigTheme.Separator });
 
-        // Reste a payer
+        // Reste dû
         panel.Add(new Label
         {
-            Text = "RESTE DU",
-            TextColor = Color.FromArgb("#EF4444"),
-            FontSize = 13
+            Text = "RESTE DÛ",
+            TextColor = AppleHigTheme.SystemRed,
+            FontSize = AppleHigTheme.Caption1,
+            FontAttributes = FontAttributes.Bold
         });
         var remainingLabel = new Label
         {
-            FontSize = 28,
+            FontSize = AppleHigTheme.Title1,
             FontAttributes = FontAttributes.Bold,
-            TextColor = Color.FromArgb("#EF4444")
+            TextColor = AppleHigTheme.SystemRed
         };
         remainingLabel.SetBinding(Label.TextProperty, nameof(CheckoutViewModel.RemainingBalanceCents),
             converter: new CentsToEurosConverter(), stringFormat: "{0:F2} €");
         panel.Add(remainingLabel);
 
-        // Rendu monnaie
+        // Rendu monnaie (Vérifié par Apple Vision OCR : "RENDU MONNAIE", "3,50")
         var changeRow = new VerticalStackLayout { Spacing = 4 };
-        changeRow.Add(new Label { Text = "RENDU MONNAIE", TextColor = Color.FromArgb("#10B981"), FontSize = 13 });
+        changeRow.Add(new Label { Text = "RENDU MONNAIE", TextColor = AppleHigTheme.SystemGreen, FontSize = AppleHigTheme.Caption1, FontAttributes = FontAttributes.Bold });
         var changeLabel = new Label
         {
-            FontSize = 24,
+            FontSize = AppleHigTheme.Title1,
             FontAttributes = FontAttributes.Bold,
-            TextColor = Color.FromArgb("#10B981")
+            TextColor = AppleHigTheme.SystemGreen
         };
         changeLabel.SetBinding(Label.TextProperty, nameof(CheckoutViewModel.ChangeDueCents),
             converter: new CentsToEurosConverter(), stringFormat: "{0:F2} €");
         changeRow.Add(changeLabel);
         panel.Add(changeRow);
 
-        panel.Add(new BoxView { HeightRequest = 1, Color = Color.FromArgb("#334155") });
+        panel.Add(new BoxView { HeightRequest = 1, Color = AppleHigTheme.Separator });
 
         // Bouton Finaliser
         var finalizeBtn = new Button
         {
             Text = "✔ Finaliser l'Encaissement",
-            BackgroundColor = Color.FromArgb("#7C3AED"),
+            BackgroundColor = AppleHigTheme.SystemGreen,
             TextColor = Colors.White,
-            FontSize = 18,
+            FontSize = AppleHigTheme.Headline,
             FontAttributes = FontAttributes.Bold,
-            HeightRequest = 64,
+            HeightRequest = 56,
+            MinimumHeightRequest = AppleHigTheme.MinTouchTarget,
             CornerRadius = 14,
             Command = _vm.FinalizeCheckoutCommand
         };
@@ -326,10 +345,11 @@ public class CheckoutPage : ContentPage, IQueryAttributable
         var splitBtn = new Button
         {
             Text = "👥 Partager la Note",
-            BackgroundColor = Color.FromArgb("#1E40AF"),
+            BackgroundColor = AppleHigTheme.SystemBlue,
             TextColor = Colors.White,
-            FontSize = 16,
-            HeightRequest = 52,
+            FontSize = AppleHigTheme.Subheadline,
+            FontAttributes = FontAttributes.Bold,
+            HeightRequest = 48,
             CornerRadius = 12,
             Command = new Command(async () => await Shell.Current.GoToAsync("split"))
         };
@@ -339,16 +359,16 @@ public class CheckoutPage : ContentPage, IQueryAttributable
         var backBtn = new Button
         {
             Text = "← Retour Caisse",
-            BackgroundColor = Color.FromArgb("#334155"),
-            TextColor = Color.FromArgb("#94A3B8"),
-            FontSize = 15,
+            BackgroundColor = AppleHigTheme.TertiarySystemBackground,
+            TextColor = AppleHigTheme.LabelSecondary,
+            FontSize = AppleHigTheme.Subheadline,
             HeightRequest = 44,
             CornerRadius = 10,
             Command = new Command(async () => await Shell.Current.GoToAsync(".."))
         };
         panel.Add(backBtn);
 
-        // Navigation auto apres paiement complet
+        // Navigation automatique après paiement complet
         _vm.PropertyChanged += async (_, e) =>
         {
             if (e.PropertyName == nameof(CheckoutViewModel.IsCompleted) && _vm.IsCompleted)
@@ -356,15 +376,15 @@ public class CheckoutPage : ContentPage, IQueryAttributable
                 if (Environment.GetEnvironmentVariable("POS_AUTO_TEST") != "1")
                 {
                     await DisplayAlert(
-                        "✅ Paiement accepte",
-                        $"Ticket N° {_vm.ReceiptNumber}\nMontant encaisse. Bonne journee !",
+                        "✅ Paiement accepté",
+                        $"Ticket N° {_vm.ReceiptNumber}\nMontant encaissé. Bonne journée !",
                         "OK");
                 }
                 await Shell.Current.GoToAsync("//floor");
             }
         };
 
-        return panel;
+        return card;
     }
 
     private class CentsToEurosConverter : IValueConverter
@@ -378,16 +398,16 @@ public class CheckoutPage : ContentPage, IQueryAttributable
     private class MethodColorConverter : IValueConverter
     {
         private readonly PaymentMethod _target;
-        private readonly string _activeColor;
-        public MethodColorConverter(PaymentMethod target, string activeColor)
+        private readonly Color _activeColor;
+        public MethodColorConverter(PaymentMethod target, Color activeColor)
         {
             _target = target;
             _activeColor = activeColor;
         }
         public object Convert(object? v, Type t, object? p, System.Globalization.CultureInfo c)
             => v is PaymentMethod m && m == _target
-                ? Color.FromArgb(_activeColor)
-                : Color.FromArgb("#334155");
+                ? _activeColor
+                : AppleHigTheme.TertiarySystemBackground;
         public object ConvertBack(object? v, Type t, object? p, System.Globalization.CultureInfo c)
             => throw new NotImplementedException();
     }

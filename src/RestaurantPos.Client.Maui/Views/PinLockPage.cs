@@ -1,14 +1,17 @@
 #if MAUI_UI
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
+using RestaurantPos.Client.Maui.Theme;
 using RestaurantPos.Client.Maui.ViewModels;
 
 namespace RestaurantPos.Client.Maui.Views;
 
 /// <summary>
-/// Ecran de verrouillage et d'authentification par code PIN.
-/// Interface tactile plein ecran avec pave numerique 3x4.
+/// Écran de verrouillage et d'authentification par code PIN conforme aux Apple Human Interface Guidelines (HIG).
+/// Interface tactile iPad épurée inspirée du Lock Screen iOS, avec touches numériques circulaires/squircles
+/// et pastilles PIN élégantes.
 /// </summary>
 public class PinLockPage : ContentPage
 {
@@ -21,27 +24,27 @@ public class PinLockPage : ContentPage
         _vm = vm;
         _serviceProvider = serviceProvider;
         BindingContext = vm;
-        BackgroundColor = Color.FromArgb("#0F172A");
+        BackgroundColor = AppleHigTheme.SystemBackground;
         Shell.SetNavBarIsVisible(this, false);
         Build();
     }
 
     private void Build()
     {
-        // Indicateur de saisie PIN (pastilles)
+        // 1. Indicateur de saisie PIN (Pastilles style Apple Lock Screen)
         var pinDotsRow = new HorizontalStackLayout
         {
-            Spacing = 16,
+            Spacing = 20,
             HorizontalOptions = LayoutOptions.Center
         };
         for (int i = 0; i < 4; i++)
         {
             var dot = new BoxView
             {
-                WidthRequest = 20,
-                HeightRequest = 20,
-                CornerRadius = 10,
-                Color = Color.FromArgb("#334155")
+                WidthRequest = 18,
+                HeightRequest = 18,
+                CornerRadius = 9,
+                Color = AppleHigTheme.QuaternarySystemFill
             };
             dot.SetBinding(BoxView.ColorProperty, new Binding(
                 nameof(PinLockViewModel.PinInput),
@@ -49,11 +52,11 @@ public class PinLockPage : ContentPage
             pinDotsRow.Add(dot);
         }
 
-        // Message d'erreur
+        // 2. Message d'erreur
         var errorLabel = new Label
         {
-            TextColor = Color.FromArgb("#EF4444"),
-            FontSize = 16,
+            TextColor = AppleHigTheme.SystemRed,
+            FontSize = AppleHigTheme.Subheadline,
             HorizontalOptions = LayoutOptions.Center
         };
         errorLabel.SetBinding(Label.TextProperty, nameof(PinLockViewModel.ErrorMessage));
@@ -61,25 +64,26 @@ public class PinLockPage : ContentPage
             nameof(PinLockViewModel.ErrorMessage),
             converter: new StringToBoolConverter()));
 
-        // Grille numerique 3x4
+        // 3. Pavé numérique tactile Apple HIG (3x4)
         var numPad = BuildNumPad();
 
-        // Bouton effacer
+        // 4. Touche Effacer Apple style
         var clearBtn = new Button
         {
             Text = "⌫ Effacer",
-            BackgroundColor = Color.FromArgb("#0F172A"),
-            TextColor = Color.FromArgb("#94A3B8"),
-            FontSize = 16,
-            HeightRequest = 52,
-            CornerRadius = 12,
+            BackgroundColor = Colors.Transparent,
+            TextColor = AppleHigTheme.LabelSecondary,
+            FontSize = AppleHigTheme.Headline,
+            HeightRequest = 48,
+            MinimumHeightRequest = AppleHigTheme.MinTouchTarget,
+            CornerRadius = (int)AppleHigTheme.CornerRadiusMedium,
             Command = new Command(() => _vm.DeleteDigit())
         };
 
         _testStatusLabel = new Label
         {
-            TextColor = Color.FromArgb("#38BDF8"),
-            FontSize = 14,
+            TextColor = AppleHigTheme.SystemTeal,
+            FontSize = AppleHigTheme.Footnote,
             FontAttributes = FontAttributes.Bold,
             HorizontalOptions = LayoutOptions.Center,
             HorizontalTextAlignment = TextAlignment.Center,
@@ -89,13 +93,13 @@ public class PinLockPage : ContentPage
         var autoTestBtn = new Button
         {
             Text = "⚡ Lancer Tests Auto Simulateur",
-            BackgroundColor = Color.FromArgb("#1E1B4B"),
-            TextColor = Color.FromArgb("#818CF8"),
-            BorderColor = Color.FromArgb("#4338CA"),
+            BackgroundColor = Color.FromRgba(94, 92, 230, 30),
+            TextColor = AppleHigTheme.SystemIndigo,
+            BorderColor = Color.FromRgba(94, 92, 230, 80),
             BorderWidth = 1,
-            FontSize = 13,
+            FontSize = AppleHigTheme.Footnote,
             HeightRequest = 42,
-            CornerRadius = 10,
+            CornerRadius = (int)AppleHigTheme.CornerRadiusSmall,
             Command = new Command(() =>
             {
                 Task.Run(async () =>
@@ -117,6 +121,7 @@ public class PinLockPage : ContentPage
             });
         };
 
+        // Carte centrale Apple Inset Grouped
         var card = new VerticalStackLayout
         {
             Spacing = 16,
@@ -138,47 +143,52 @@ public class PinLockPage : ContentPage
                                 new Border
                                 {
                                     Padding = 0,
-                                    StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = new CornerRadius(10) },
-                                    Stroke = new LinearGradientBrush
-                                    {
-                                        StartPoint = new Point(0, 0),
-                                        EndPoint = new Point(1, 1),
-                                        GradientStops =
-                                        {
-                                            new GradientStop { Color = Color.FromArgb("#38BDF8"), Offset = 0.0f },
-                                            new GradientStop { Color = Color.FromArgb("#818CF8"), Offset = 1.0f }
-                                        }
-                                    },
-                                    StrokeThickness = 2,
-                                    WidthRequest = 38,
-                                    HeightRequest = 38,
-                                    Background = Color.FromArgb("#0F172A"),
+                                    StrokeShape = new RoundRectangle { CornerRadius = new CornerRadius(AppleHigTheme.CornerRadiusSmall) },
+                                    Stroke = AppleHigTheme.SystemBlue,
+                                    StrokeThickness = 1.5,
+                                    WidthRequest = 40,
+                                    HeightRequest = 40,
+                                    BackgroundColor = AppleHigTheme.TertiarySystemBackground,
                                     VerticalOptions = LayoutOptions.Center,
                                     Content = new Label
                                     {
                                         Text = "⚡",
-                                        TextColor = Color.FromArgb("#38BDF8"),
+                                        TextColor = AppleHigTheme.SystemBlue,
                                         FontSize = 22,
                                         HorizontalOptions = LayoutOptions.Center,
                                         VerticalOptions = LayoutOptions.Center
                                     }
                                 },
-                                new Label
+                                new VerticalStackLayout
                                 {
-                                    Text = "AGY POS",
-                                    TextColor = Colors.White,
-                                    FontSize = 26,
-                                    FontAttributes = FontAttributes.Bold,
-                                    VerticalOptions = LayoutOptions.Center
+                                    Spacing = 0,
+                                    VerticalOptions = LayoutOptions.Center,
+                                    Children =
+                                    {
+                                        new Label
+                                        {
+                                            Text = "Restaurant POS",
+                                            TextColor = AppleHigTheme.LabelPrimary,
+                                            FontSize = AppleHigTheme.Title2,
+                                            FontAttributes = FontAttributes.Bold
+                                        },
+                                        new Label
+                                        {
+                                            Text = "AGY Edition iPad",
+                                            TextColor = AppleHigTheme.LabelSecondary,
+                                            FontSize = AppleHigTheme.Caption1
+                                        }
+                                    }
                                 }
                             }
                         },
                         new Label
                         {
                             Text = "Saisissez votre code PIN",
-                            TextColor = Color.FromArgb("#94A3B8"),
-                            FontSize = 16,
-                            HorizontalOptions = LayoutOptions.Center
+                            TextColor = AppleHigTheme.LabelSecondary,
+                            FontSize = AppleHigTheme.Subheadline,
+                            HorizontalOptions = LayoutOptions.Center,
+                            Margin = new Thickness(0, 4, 0, 0)
                         }
                     }
                 },
@@ -193,17 +203,18 @@ public class PinLockPage : ContentPage
 
         Content = new Grid
         {
-            BackgroundColor = Color.FromArgb("#0A0F1D"),
+            BackgroundColor = AppleHigTheme.SystemBackground,
             Padding = new Thickness(24),
             Children =
             {
-                new Frame
+                new Border
                 {
-                    BackgroundColor = Color.FromArgb("#1E293B"),
-                    CornerRadius = 24,
-                    Padding = new Thickness(36, 32),
-                    WidthRequest = 380,
-                    HasShadow = false,
+                    BackgroundColor = AppleHigTheme.SecondarySystemBackground,
+                    Stroke = AppleHigTheme.Separator,
+                    StrokeThickness = 1,
+                    StrokeShape = new RoundRectangle { CornerRadius = new CornerRadius(24) },
+                    Padding = new Thickness(36, 28),
+                    WidthRequest = 400,
                     HorizontalOptions = LayoutOptions.Center,
                     VerticalOptions = LayoutOptions.Center,
                     Content = card
@@ -211,7 +222,7 @@ public class PinLockPage : ContentPage
             }
         };
 
-        // Navigation auto apres validation
+        // Navigation automatique après validation réussie
         _vm.PropertyChanged += (_, e) =>
         {
             if (e.PropertyName == nameof(PinLockViewModel.IsAuthenticated) && _vm.IsAuthenticated)
@@ -235,8 +246,8 @@ public class PinLockPage : ContentPage
     {
         var grid = new Grid
         {
-            ColumnSpacing = 12,
-            RowSpacing = 12,
+            ColumnSpacing = 14,
+            RowSpacing = 14,
             ColumnDefinitions =
             {
                 new ColumnDefinition { Width = GridLength.Star },
@@ -264,17 +275,19 @@ public class PinLockPage : ContentPage
             var btn = new Button
             {
                 Text = digit,
-                BackgroundColor = Color.FromArgb("#1E293B"),
-                TextColor = Colors.White,
-                FontSize = 32,
+                BackgroundColor = AppleHigTheme.TertiarySystemBackground,
+                TextColor = AppleHigTheme.LabelPrimary,
+                FontSize = AppleHigTheme.Title1,
                 FontAttributes = FontAttributes.Bold,
-                HeightRequest = 80,
-                CornerRadius = 16,
+                HeightRequest = 76,
+                CornerRadius = 18,
+                BorderColor = AppleHigTheme.Separator,
+                BorderWidth = 1,
                 Command = new Command(async () => await _vm.AppendDigitAsync(digit))
             };
 
-            btn.Pressed += (_, _) => btn.BackgroundColor = Color.FromArgb("#3B82F6");
-            btn.Released += (_, _) => btn.BackgroundColor = Color.FromArgb("#1E293B");
+            btn.Pressed += (_, _) => btn.BackgroundColor = AppleHigTheme.SystemBlue;
+            btn.Released += (_, _) => btn.BackgroundColor = AppleHigTheme.TertiarySystemBackground;
 
             Grid.SetRow(btn, row);
             Grid.SetColumn(btn, col);
@@ -282,12 +295,6 @@ public class PinLockPage : ContentPage
         }
 
         return grid;
-    }
-
-    private static T AddToGrid<T>(T view, int row) where T : View
-    {
-        Grid.SetRow(view, row);
-        return view;
     }
 
     // Convertisseurs locaux
@@ -298,8 +305,8 @@ public class PinLockPage : ContentPage
 
         public object Convert(object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture)
             => value is string pin && pin.Length > _index
-                ? Color.FromArgb("#3B82F6")
-                : Color.FromArgb("#334155");
+                ? AppleHigTheme.SystemBlue
+                : AppleHigTheme.QuaternarySystemFill;
 
         public object ConvertBack(object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture)
             => throw new NotImplementedException();
