@@ -141,9 +141,9 @@ public partial class CheckoutViewModel : ObservableObject
             return;
         }
 #endif
-        if (RemainingBalanceCents > 0 && SelectedMethod != PaymentMethod.Cash)
+        if (RemainingBalanceCents > 0)
         {
-            // Settle remainder with currently selected non-cash method
+            // Settle remainder with currently selected method (including Cash if no bills were pre-selected)
             AppliedTenders.Add(new ActiveTenderItem
             {
                 Method = SelectedMethod,

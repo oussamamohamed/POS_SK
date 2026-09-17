@@ -1783,10 +1783,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const change = Math.max(0, tendered - total);
 
         try {
+            await ensureAuthToken();
+            const headers = { 'Content-Type': 'application/json' };
+            if (state.token) {
+                headers['Authorization'] = `Bearer ${state.token}`;
+            }
+
             const payload = {
                 orderId: state.activeOrderId || '00000000-0000-0000-0000-000000000000',
                 tableNumber: state.activeTable,
-                operatorId: '00000000-0000-0000-0000-000000000000',
+                operatorId: state.operator?.id || '00000000-0000-0000-0000-000000000000',
                 tenders: [
                     {
                         method: tenderMethod,
@@ -1799,7 +1805,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const res = await fetch('/api/checkout/pay', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: headers,
                 body: JSON.stringify(payload)
             });
 
@@ -1824,7 +1830,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     await loadFloorPlanData();
                 }
             } else {
-                showToast('Erreur validation paiement', 'error');
+                let errMsg = 'Erreur validation paiement';
+                try {
+                    const errData = await res.json();
+                    if (errData && errData.message) errMsg = errData.message;
+                } catch (_) { }
+                showToast(errMsg, 'error');
             }
         } catch (err) {
             console.error('Erreur paiement:', err);

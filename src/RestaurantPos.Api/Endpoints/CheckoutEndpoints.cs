@@ -3,8 +3,10 @@ using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.EntityFrameworkCore;
 using RestaurantPos.Application.Common.Interfaces;
 using RestaurantPos.Application.DTOs;
+using RestaurantPos.Infrastructure.Persistence;
 
 namespace RestaurantPos.Api.Endpoints;
 
@@ -16,8 +18,23 @@ public static class CheckoutEndpoints
                        .WithTags("Checkout & Payments")
                        .RequireAuthorization();
 
-        group.MapPost("/pay", async (PaymentSettlementRequest req, ICheckoutPaymentService checkout) =>
+        group.MapPost("/pay", async (PaymentSettlementRequest req, ICheckoutPaymentService checkout, AppDbContext db) =>
         {
+            var orderId = req.OrderId;
+            if (orderId == Guid.Empty && !string.IsNullOrWhiteSpace(req.TableNumber))
+            {
+                var table = await db.DiningTables.FirstOrDefaultAsync(t => t.TableNumber == req.TableNumber);
+                if (table?.ActiveOrderId != null)
+                {
+                    orderId = table.ActiveOrderId.Value;
+                }
+            }
+
+            if (orderId == Guid.Empty)
+            {
+                return Results.BadRequest(new { Message = "Commande introuvable pour ce règlement." });
+            }
+
             var tenderRequests = req.Tenders.Select(t => new PaymentTenderRequest(
                 t.Method,
                 (long)Math.Round(t.Amount * 100),
@@ -28,7 +45,12 @@ public static class CheckoutEndpoints
                 ? req.TerminalId
                 : "POS_MAIN_TERM";
 
-            var result = await checkout.ProcessPaymentTendersAsync(req.OrderId, terminalId, tenderRequests);
+            var result = await checkout.ProcessPaymentTendersAsync(orderId, terminalId, tenderRequests);
+
+            if (!result.IsSuccess)
+            {
+                return Results.BadRequest(new { Message = "Échec de l'encaissement." });
+            }
 
             return Results.Ok(new
             {
