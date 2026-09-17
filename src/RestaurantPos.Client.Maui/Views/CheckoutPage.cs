@@ -377,10 +377,33 @@ public class CheckoutPage : ContentPage, IQueryAttributable
                 {
                     await DisplayAlert(
                         "✅ Paiement accepté",
-                        $"Ticket N° {_vm.ReceiptNumber}\nMontant encaissé. Bonne journée !",
+                        $"Ticket N° {_vm.ReceiptNumber}\nMontant encaissé ({_vm.TotalDueCents / 100.0:F2} €). Bonne journée !",
                         "OK");
                 }
-                await Shell.Current.GoToAsync("//floor");
+
+                // Check if returning to split bill
+                var splitVm = Handler?.MauiContext?.Services.GetService<SplitBillViewModel>();
+                if (splitVm != null && splitVm.Partitions.Any(p => !p.IsPaid && p.AmountCents == _vm.TotalDueCents))
+                {
+                    var unpaidPart = splitVm.Partitions.FirstOrDefault(p => !p.IsPaid && p.AmountCents == _vm.TotalDueCents);
+                    if (unpaidPart != null)
+                    {
+                        unpaidPart.IsPaid = true;
+                    }
+
+                    if (splitVm.Partitions.All(p => p.IsPaid))
+                    {
+                        await Shell.Current.GoToAsync("//floor");
+                    }
+                    else
+                    {
+                        await Shell.Current.GoToAsync("..");
+                    }
+                }
+                else
+                {
+                    await Shell.Current.GoToAsync("//floor");
+                }
             }
         };
 

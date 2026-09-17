@@ -12,7 +12,7 @@ namespace RestaurantPos.Client.Maui.Views;
 /// Page de partage de note conforme aux Apple Human Interface Guidelines (HIG) pour iPadOS.
 /// Stepper tactile Apple, fiches de convives Inset Grouped et boutons de règlement ergonomiques.
 /// </summary>
-public class SplitBillPage : ContentPage
+public class SplitBillPage : ContentPage, IQueryAttributable
 {
     private readonly SplitBillViewModel _vm;
 
@@ -24,6 +24,29 @@ public class SplitBillPage : ContentPage
         BackgroundColor = AppleHigTheme.SystemBackground;
         Shell.SetNavBarIsVisible(this, false);
         Build();
+    }
+
+    public void ApplyQueryAttributes(IDictionary<string, object> query)
+    {
+        long totalCents = 0;
+        if (query.TryGetValue("totalCents", out var tc) && long.TryParse(tc?.ToString(), out var cents))
+        {
+            totalCents = cents;
+        }
+
+        var orderId = query.TryGetValue("orderId", out var oid) && Guid.TryParse(oid?.ToString(), out var g)
+            ? g
+            : Guid.Empty;
+
+        var table = query.TryGetValue("tableNumber", out var t) ? t?.ToString() ?? "" : "";
+
+        if (totalCents > 0)
+        {
+            if (_vm.ActiveOrderId != orderId || _vm.TotalOrderAmountCents != totalCents || _vm.Partitions.Count == 0)
+            {
+                _vm.Initialize(totalCents, _vm.GuestsCount, orderId, table);
+            }
+        }
     }
 
     private void Build()
@@ -102,6 +125,19 @@ public class SplitBillPage : ContentPage
                 };
                 payBtn.SetBinding(IsEnabledProperty, new Binding("IsPaid",
                     converter: new BoolInverter()));
+                payBtn.Clicked += async (s, e) =>
+                {
+                    if (payBtn.BindingContext is SplitPartitionItem partItem)
+                    {
+                        var checkoutVm = Handler?.MauiContext?.Services.GetService<CheckoutViewModel>();
+                        var orderId = _vm.ActiveOrderId != Guid.Empty ? _vm.ActiveOrderId : Guid.NewGuid();
+                        if (checkoutVm != null)
+                        {
+                            checkoutVm.Initialize(orderId, partItem.AmountCents);
+                        }
+                        await Shell.Current.GoToAsync($"checkout?orderId={orderId}&totalCents={partItem.AmountCents}&tableNumber={_vm.ActiveTable}");
+                    }
+                };
 
                 Grid.SetColumn(payBtn, 1);
 

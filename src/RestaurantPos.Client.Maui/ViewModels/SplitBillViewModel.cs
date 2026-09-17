@@ -8,11 +8,19 @@ using RestaurantPos.Client.Maui.Contracts;
 
 namespace RestaurantPos.Client.Maui.ViewModels;
 
-public class SplitPartitionItem : ObservableObject
+public partial class SplitPartitionItem : ObservableObject
 {
-    public int PartitionIndex { get; init; }
-    public long AmountCents { get; set; }
-    public bool IsPaid { get; set; }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(DisplayText))]
+    private int _partitionIndex;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(DisplayText))]
+    private long _amountCents;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(DisplayText))]
+    private bool _isPaid;
 
     public string DisplayText => $"Part {PartitionIndex}: {AmountCents / 100.0:F2} € {(IsPaid ? "(Payé)" : "")}";
 }
@@ -28,6 +36,12 @@ public partial class SplitBillViewModel : ObservableObject
     [ObservableProperty]
     private int _guestsCount = 2;
 
+    [ObservableProperty]
+    private Guid _activeOrderId;
+
+    [ObservableProperty]
+    private string _activeTable = string.Empty;
+
     public ObservableCollection<SplitPartitionItem> Partitions { get; } = [];
 
     public SplitBillViewModel(
@@ -38,11 +52,23 @@ public partial class SplitBillViewModel : ObservableObject
         _checkoutService = checkoutService;
     }
 
-    public void Initialize(long totalCents, int initialGuests = 2)
+    public void Initialize(long totalCents, int initialGuests = 2, Guid orderId = default, string tableNumber = "")
     {
         TotalOrderAmountCents = totalCents;
         GuestsCount = Math.Max(2, initialGuests);
+        ActiveOrderId = orderId;
+        ActiveTable = tableNumber;
         RecalculatePartitions();
+    }
+
+    public void MarkPartitionPaid(int partitionIndex)
+    {
+        var part = Partitions.FirstOrDefault(p => p.PartitionIndex == partitionIndex);
+        if (part != null)
+        {
+            part.IsPaid = true;
+            OnPropertyChanged(nameof(Partitions));
+        }
     }
 
     [RelayCommand]

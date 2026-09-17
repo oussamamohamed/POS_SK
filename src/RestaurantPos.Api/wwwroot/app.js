@@ -1613,6 +1613,7 @@ document.addEventListener('DOMContentLoaded', () => {
             elements.paymentModal.classList.add('active');
             const total = calculateTotalTtc();
             const part = (total / state.splitGuests).toFixed(2);
+            state.splitActivePart = parseFloat(part);
             elements.payRemainingAmount.textContent = `${part} € (Part 1/${state.splitGuests})`;
         });
 
@@ -1777,7 +1778,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!state.activeOrderId && state.cart.length > 0) {
             await saveActiveCartToServer();
         }
-        const total = getFinalPayTotal();
+        const isSplit = (typeof state.splitActivePart === 'number' && state.splitActivePart > 0);
+        const total = isSplit ? state.splitActivePart : getFinalPayTotal();
         const change = Math.max(0, tendered - total);
 
         try {
@@ -1805,10 +1807,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 const resData = await res.json();
                 showToast(`Paiement validé ! Reçu #${resData.receiptNumber || 'NF'} - Rendu: ${change.toFixed(2)} €`, 'success');
                 elements.paymentModal.classList.remove('active');
-                state.cart = [];
-                state.activeOrderId = null;
-                renderCart();
-                await loadFloorPlanData();
+
+                if (resData.remainingBalance > 0.001) {
+                    showToast(`Reste à payer : ${resData.remainingBalance.toFixed(2)} €`, 'info');
+                    state.splitActivePart = null;
+                    // Proposer le règlement du ticket suivant
+                    setTimeout(() => {
+                        elements.splitBillModal.classList.add('active');
+                        updateSplitPartitions();
+                    }, 400);
+                } else {
+                    state.splitActivePart = null;
+                    state.cart = [];
+                    state.activeOrderId = null;
+                    renderCart();
+                    await loadFloorPlanData();
+                }
             } else {
                 showToast('Erreur validation paiement', 'error');
             }

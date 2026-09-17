@@ -557,7 +557,7 @@ public class PosTerminalPage : ContentPage, IQueryAttributable
         var btnSplit = MakeCartActionBtn("➗ Split", AppleHigTheme.SystemOrange, new Command(async () =>
         {
             var splitVm = Handler?.MauiContext?.Services.GetService<SplitBillViewModel>();
-            splitVm?.Initialize(_vm.TotalTtc.AmountInCents, 2);
+            splitVm?.Initialize(_vm.TotalTtc.AmountInCents, 2, _vm.ActiveOrder.Id, _vm.ActiveTable);
             await Shell.Current.GoToAsync($"split?orderId={_vm.ActiveOrder.Id}&totalCents={_vm.TotalTtc.AmountInCents}&tableNumber={_vm.ActiveTable}");
         }));
         Grid.SetRow(btnSplit, 1); Grid.SetColumn(btnSplit, 1);

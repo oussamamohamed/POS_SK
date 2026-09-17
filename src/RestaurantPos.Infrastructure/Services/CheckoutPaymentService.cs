@@ -63,12 +63,20 @@ public class CheckoutPaymentService : ICheckoutPaymentService
                     return new CheckoutResult(false, 0, 0, 0, string.Empty, null);
                 }
 
+                // Account for prior non-void payments already settled for this order (e.g. split bill)
+                long previousPaidCents = await _dbContext.FiscalReceipts
+                    .Where(r => r.OrderId == order.Id && !r.IsVoid)
+                    .SelectMany(r => r.Tenders)
+                    .SumAsync(t => t.Amount.AmountInCents, ct)
+                    .ConfigureAwait(false);
+
                 long totalDueCents = order.TotalTtc.AmountInCents + order.TipAmount.AmountInCents;
                 long totalPaidCents = tenders.Sum(t => t.AmountInCents);
                 long totalTenderedCents = tenders.Sum(t => t.TenderedInCents);
 
-                long changeGivenCents = Math.Max(0, totalTenderedCents - totalDueCents);
-                long remainingBalanceCents = Math.Max(0, totalDueCents - totalPaidCents);
+                long remainingBeforeThisPaymentCents = Math.Max(0, totalDueCents - previousPaidCents);
+                long changeGivenCents = Math.Max(0, totalTenderedCents - remainingBeforeThisPaymentCents);
+                long remainingBalanceCents = Math.Max(0, totalDueCents - (previousPaidCents + totalPaidCents));
 
                 // Fetch last receipt for terminal to chain cryptographic signature (inside transaction lock)
                 var lastReceipt = await _dbContext.FiscalReceipts
@@ -81,26 +89,42 @@ public class CheckoutPaymentService : ICheckoutPaymentService
                 string receiptNumber = $"{terminalId}-{nextSequence:D6}";
                 string prevHash = lastReceipt?.SignatureHash ?? NF525FiscalAuditService.GenesisHash;
 
+                // For split / partial receipts, calculate proportional VAT breakdown for this receipt
+                decimal paymentRatio = (totalDueCents > 0 && totalPaidCents < totalDueCents)
+                    ? (decimal)totalPaidCents / totalDueCents
+                    : 1.0m;
+
                 var vatDict = new Dictionary<decimal, long>();
                 foreach (var item in order.Items)
                 {
+                    long itemVatCents = paymentRatio == 1.0m
+                        ? item.TaxAmount.AmountInCents
+                        : (long)Math.Round(item.TaxAmount.AmountInCents * paymentRatio);
+
                     if (!vatDict.TryGetValue(item.TaxRatePercent, out long amt))
                     {
-                        vatDict[item.TaxRatePercent] = item.TaxAmount.AmountInCents;
+                        vatDict[item.TaxRatePercent] = itemVatCents;
                     }
                     else
                     {
-                        vatDict[item.TaxRatePercent] = amt + item.TaxAmount.AmountInCents;
+                        vatDict[item.TaxRatePercent] = amt + itemVatCents;
                     }
                 }
                 string taxJson = JsonSerializer.Serialize(vatDict);
+
+                long receiptTtcCents = paymentRatio == 1.0m
+                    ? order.TotalTtc.AmountInCents
+                    : totalPaidCents;
+                long receiptHtCents = paymentRatio == 1.0m
+                    ? order.TotalHt.AmountInCents
+                    : (long)Math.Round(order.TotalHt.AmountInCents * paymentRatio);
 
                 var now = DateTimeOffset.UtcNow;
                 string sigHash = _fiscalService.ComputeReceiptHashSignature(
                     prevHash,
                     terminalId,
                     nextSequence,
-                    totalDueCents,
+                    receiptTtcCents,
                     now,
                     taxJson
                 );
@@ -112,8 +136,8 @@ public class CheckoutPaymentService : ICheckoutPaymentService
                     ReceiptNumber = receiptNumber,
                     OrderId = order.Id,
                     SequenceNumber = nextSequence,
-                    TotalTtcAmount = order.TotalTtc,
-                    TotalHtAmount = order.TotalHt,
+                    TotalTtcAmount = Money.FromCents(receiptTtcCents),
+                    TotalHtAmount = Money.FromCents(receiptHtCents),
                     TaxBreakdownJson = taxJson,
                     PreviousSignatureHash = prevHash,
                     SignatureHash = sigHash,

@@ -136,4 +136,74 @@ public class CheckoutPaymentServiceTests
         result.ChangeGivenCents.Should().Be(150, // 5.00 - 3.50 = 1.50 €
             because: "sans tip, la monnaie = billet remis - total note");
     }
+
+    [Fact]
+    public async Task ProcessPaymentTendersAsync_SplitBillTwoTickets_SettlesBothAndClosesTable()
+    {
+        // Arrange : Commande de 30.00 € partagée entre 2 convives (15.00 € chacun)
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase(databaseName: "CheckoutSplitDb_" + Guid.NewGuid().ToString("N"))
+            .Options;
+
+        using var dbContext = new AppDbContext(options);
+        var fiscalService = new NF525FiscalAuditService(dbContext);
+        var checkoutService = new CheckoutPaymentService(dbContext, fiscalService);
+
+        var table = new DiningTable { TableNumber = "T05", Status = TableStatus.Occupied };
+        dbContext.DiningTables.Add(table);
+
+        var order = new Order { TableNumber = "T05" };
+        order.Items.Add(new OrderItem
+        {
+            ProductName = "Menu Duo Gourmand",
+            Quantity = 1,
+            UnitPrice = Money.FromDecimal(30.00m), // 30.00 € TTC
+            TaxRatePercent = 10m
+        });
+        dbContext.Orders.Add(order);
+        await dbContext.SaveChangesAsync();
+
+        // 1er règlement (Ticket 1) : 15.00 € par Carte Bancaire
+        var tendersTicket1 = new List<PaymentTenderRequest>
+        {
+            new(PaymentMethod.CreditCard, 1500, 1500)
+        };
+        var result1 = await checkoutService.ProcessPaymentTendersAsync(order.Id, "POS01", tendersTicket1);
+
+        result1.IsSuccess.Should().BeTrue();
+        result1.TotalPaidCents.Should().Be(1500);
+        result1.RemainingBalanceCents.Should().Be(1500);
+        result1.ReceiptNumber.Should().Be("POS01-000001");
+
+        // Vérifier que la table reste Occupée après le premier ticket
+        var tableAfterPart1 = await dbContext.DiningTables.FindAsync("T05");
+        tableAfterPart1!.Status.Should().Be(TableStatus.Occupied);
+
+        // 2ème règlement (Ticket 2) : 15.00 € en Espèces avec un billet de 20 €
+        var tendersTicket2 = new List<PaymentTenderRequest>
+        {
+            new(PaymentMethod.Cash, 1500, 2000)
+        };
+        var result2 = await checkoutService.ProcessPaymentTendersAsync(order.Id, "POS01", tendersTicket2);
+
+        result2.IsSuccess.Should().BeTrue();
+        result2.TotalPaidCents.Should().Be(1500);
+        result2.ChangeGivenCents.Should().Be(500); // 20.00 - 15.00 = 5.00 € rendu
+        result2.RemainingBalanceCents.Should().Be(0);
+        result2.ReceiptNumber.Should().Be("POS01-000002");
+
+        // Vérifier que l'ordre est marqué Paid et la table libérée (Paid)
+        var orderFinal = await dbContext.Orders.FindAsync(order.Id);
+        orderFinal!.Status.Should().Be(OrderStatus.Paid);
+
+        var tableFinal = await dbContext.DiningTables.FindAsync("T05");
+        tableFinal!.Status.Should().Be(TableStatus.Paid);
+        tableFinal.ActiveOrderId.Should().BeNull();
+
+        // Vérifier les 2 reçus fiscaux en base
+        var receipts = await dbContext.FiscalReceipts.Where(r => r.OrderId == order.Id).OrderBy(r => r.SequenceNumber).ToListAsync();
+        receipts.Should().HaveCount(2);
+        receipts[0].TotalTtcAmount.AmountInCents.Should().Be(1500);
+        receipts[1].TotalTtcAmount.AmountInCents.Should().Be(1500);
+    }
 }
