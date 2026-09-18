@@ -66,10 +66,14 @@ echo "  Desinstallation precedente pour rafraichir le cache de SpringBoard..."
 xcrun simctl uninstall booted "$BUNDLE_ID" 2>/dev/null || true
 xcrun simctl install booted "$APP_BUNDLE"
 
+CURRENT_CONV_ID="26c2f2fb-dd0a-4906-97fe-a500c297bf1d"
+ARTIFACTS_DIR="/Users/oussama/.gemini/antigravity-ide/brain/$CURRENT_CONV_ID"
+mkdir -p "$ARTIFACTS_DIR"
+
 echo "  Capture d'ecran de l'ecran d'accueil (icone)..."
 xcrun simctl spawn booted killall -9 SpringBoard 2>/dev/null || true
 sleep 2
-xcrun simctl io booted screenshot "/Users/oussama/.gemini/antigravity-ide/brain/869c6bf4-a973-4b71-97b9-db1b15ce688f/homescreen_verified.png" 2>/dev/null || true
+xcrun simctl io booted screenshot "$ARTIFACTS_DIR/homescreen_verified.png" 2>/dev/null || true
 
 echo "[6/6] Lancement de l'application RestaurantPos en Mode Production..."
 xcrun simctl terminate booted "$BUNDLE_ID" 2>/dev/null || true
@@ -77,7 +81,7 @@ sleep 1
 xcrun simctl launch booted "$BUNDLE_ID"
 
 sleep 3
-SCREENSHOT_PATH="/Users/oussama/.gemini/antigravity-ide/brain/869c6bf4-a973-4b71-97b9-db1b15ce688f/prod_deployed_screen.png"
+SCREENSHOT_PATH="$ARTIFACTS_DIR/prod_deployed_screen.png"
 xcrun simctl io booted screenshot "$SCREENSHOT_PATH"
 
 echo ""

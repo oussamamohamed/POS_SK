@@ -172,7 +172,15 @@ public partial class FloorPlanViewModel : ObservableObject
         if (table != null)
         {
             table.Status = status;
-            if (covers.HasValue && covers.Value > 0)
+            if (status == TableStatus.Free)
+            {
+                table.CurrentTotalTtc = 0m;
+                table.CoversCount = 0;
+                table.AssignedWaiterName = null;
+                table.ActiveOrderId = null;
+                table.OpenedAtUtc = null;
+            }
+            else if (covers.HasValue && covers.Value > 0)
             {
                 table.CoversCount = covers.Value;
             }
@@ -181,14 +189,82 @@ public partial class FloorPlanViewModel : ObservableObject
             {
                 Tables[index] = table;
             }
+
+            if (_signalRClient != null)
+            {
+                _ = _signalRClient.UpdateTableStatusAsync(tableNumber, status);
+            }
+        }
+    }
+
+    public TableStatus? GetTableStatus(string tableNumber)
+    {
+        var table = Tables.FirstOrDefault(t => string.Equals(t.TableNumber, tableNumber, StringComparison.OrdinalIgnoreCase));
+        return table?.Status;
+    }
+
+    public void UpdateTableTotal(string tableNumber, decimal totalTtc)
+    {
+        var table = Tables.FirstOrDefault(t => string.Equals(t.TableNumber, tableNumber, StringComparison.OrdinalIgnoreCase));
+        if (table != null)
+        {
+            table.CurrentTotalTtc = totalTtc;
+            var index = Tables.IndexOf(table);
+            if (index >= 0)
+            {
+                Tables[index] = table;
+            }
+        }
+    }
+
+    public async Task RefreshTablesAsync()
+    {
+        if (_tableService != null)
+        {
+            try
+            {
+                var dtos = await _tableService.GetFloorPlanTablesAsync().ConfigureAwait(false);
+                if (dtos.Count > 0)
+                {
+                    var updateAction = () =>
+                    {
+                        Tables.Clear();
+                        foreach (var dto in dtos)
+                        {
+                            Tables.Add(new DiningTable
+                            {
+                                TableNumber = dto.TableNumber,
+                                Capacity = dto.Capacity,
+                                Status = dto.Status,
+                                PositionX = dto.PositionX,
+                                PositionY = dto.PositionY,
+                                AssignedWaiterName = dto.AssignedWaiterName,
+                                CoversCount = dto.CoversCount,
+                                ActiveOrderId = dto.ActiveOrderId,
+                                OpenedAtUtc = dto.OpenedAtUtc,
+                                CurrentTotalTtc = dto.ActiveOrderTotalTtc
+                            });
+                        }
+                    };
+#if MAUI_UI
+                    MainThread.BeginInvokeOnMainThread(updateAction);
+#else
+                    updateAction();
+#endif
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"RefreshTablesAsync failed: {ex.Message}");
+            }
         }
     }
 
     private void LoadDefaultTables()
     {
-        Tables.Add(new DiningTable { TableNumber = "T01", Capacity = 2, PositionX = 40, PositionY = 40, Status = TableStatus.Occupied, CoversCount = 2, AssignedWaiterName = "Alexandre" });
+        Tables.Add(new DiningTable { TableNumber = "T01", Capacity = 2, PositionX = 40, PositionY = 40, Status = TableStatus.Free });
         Tables.Add(new DiningTable { TableNumber = "T02", Capacity = 4, PositionX = 180, PositionY = 40, Status = TableStatus.Free });
-        Tables.Add(new DiningTable { TableNumber = "T03", Capacity = 6, PositionX = 340, PositionY = 40, Status = TableStatus.BillRequested, CoversCount = 5, AssignedWaiterName = "Sophie" });
+        Tables.Add(new DiningTable { TableNumber = "T03", Capacity = 6, PositionX = 340, PositionY = 40, Status = TableStatus.Free });
         Tables.Add(new DiningTable { TableNumber = "T04", Capacity = 4, PositionX = 40, PositionY = 180, Status = TableStatus.Free });
         Tables.Add(new DiningTable { TableNumber = "T05", Capacity = 8, PositionX = 180, PositionY = 180, Status = TableStatus.Free });
         Tables.Add(new DiningTable { TableNumber = "Bar 01", Capacity = 2, PositionX = 340, PositionY = 180, Status = TableStatus.Free });

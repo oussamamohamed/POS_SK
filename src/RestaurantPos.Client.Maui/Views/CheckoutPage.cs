@@ -29,24 +29,37 @@ public class CheckoutPage : ContentPage, IQueryAttributable
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
     {
+        var tableNumber = string.Empty;
+        if (query.TryGetValue("tableNumber", out var tnObj) && tnObj != null)
+        {
+            tableNumber = tnObj.ToString() ?? string.Empty;
+        }
+
         if (query.TryGetValue("totalCents", out var tc) && long.TryParse(tc?.ToString(), out var cents))
         {
             var orderId = query.TryGetValue("orderId", out var oid) && Guid.TryParse(oid?.ToString(), out var g) ? g : Guid.NewGuid();
-            _vm.Initialize(orderId, cents);
+            _vm.Initialize(orderId, cents, tableNumber);
         }
     }
 
     protected override void OnAppearing()
     {
         base.OnAppearing();
+        _vm.PropertyChanged += OnCheckoutViewModelPropertyChanged;
         if (_vm.TotalDueCents == 0)
         {
             var posVm = Handler?.MauiContext?.Services.GetService<PosTerminalViewModel>();
             if (posVm != null && posVm.TotalTtc.AmountInCents > 0)
             {
-                _vm.Initialize(posVm.ActiveOrder.Id, posVm.TotalTtc.AmountInCents);
+                _vm.Initialize(posVm.ActiveOrder.Id, posVm.TotalTtc.AmountInCents, posVm.ActiveTable);
             }
         }
+    }
+
+    protected override void OnDisappearing()
+    {
+        base.OnDisappearing();
+        _vm.PropertyChanged -= OnCheckoutViewModelPropertyChanged;
     }
 
     private void Build()
@@ -223,31 +236,29 @@ public class CheckoutPage : ContentPage, IQueryAttributable
             Margin = new Thickness(0, 8, 0, 0)
         });
 
-        var tenderList = new CollectionView
+        var tenderList = new VerticalStackLayout { Spacing = 4 };
+        BindableLayout.SetItemTemplate(tenderList, new DataTemplate(() =>
         {
-            ItemTemplate = new DataTemplate(() =>
+            var row = new HorizontalStackLayout
             {
-                var row = new HorizontalStackLayout
-                {
-                    Padding = new Thickness(14, 10),
-                    Spacing = 12
-                };
-                var methodLabel = new Label { TextColor = AppleHigTheme.LabelPrimary, FontSize = AppleHigTheme.Body, HorizontalOptions = LayoutOptions.Start };
-                methodLabel.SetBinding(Label.TextProperty, "DisplayText");
-                row.Add(methodLabel);
-                return new Border
-                {
-                    BackgroundColor = AppleHigTheme.SecondarySystemBackground,
-                    Stroke = AppleHigTheme.Separator,
-                    StrokeThickness = 1,
-                    StrokeShape = new RoundRectangle { CornerRadius = new CornerRadius(10) },
-                    Padding = 0,
-                    Margin = new Thickness(0, 3),
-                    Content = row
-                };
-            })
-        };
-        tenderList.SetBinding(CollectionView.ItemsSourceProperty, nameof(CheckoutViewModel.AppliedTenders));
+                Padding = new Thickness(14, 10),
+                Spacing = 12
+            };
+            var methodLabel = new Label { TextColor = AppleHigTheme.LabelPrimary, FontSize = AppleHigTheme.Body, HorizontalOptions = LayoutOptions.Start };
+            methodLabel.SetBinding(Label.TextProperty, "DisplayText");
+            row.Add(methodLabel);
+            return new Border
+            {
+                BackgroundColor = AppleHigTheme.SecondarySystemBackground,
+                Stroke = AppleHigTheme.Separator,
+                StrokeThickness = 1,
+                StrokeShape = new RoundRectangle { CornerRadius = new CornerRadius(10) },
+                Padding = 0,
+                Margin = new Thickness(0, 3),
+                Content = row
+            };
+        }));
+        tenderList.SetBinding(BindableLayout.ItemsSourceProperty, nameof(CheckoutViewModel.AppliedTenders));
         panel.Add(tenderList);
 
         return panel;
@@ -368,46 +379,61 @@ public class CheckoutPage : ContentPage, IQueryAttributable
         };
         panel.Add(backBtn);
 
-        // Navigation automatique après paiement complet
-        _vm.PropertyChanged += async (_, e) =>
+        return card;
+    }
+
+    private async void OnCheckoutViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(CheckoutViewModel.IsCompleted) && _vm.IsCompleted)
         {
-            if (e.PropertyName == nameof(CheckoutViewModel.IsCompleted) && _vm.IsCompleted)
+            var floorVm = Handler?.MauiContext?.Services.GetService<FloorPlanViewModel>();
+            var posVm = Handler?.MauiContext?.Services.GetService<PosTerminalViewModel>();
+            var targetTable = !string.IsNullOrWhiteSpace(_vm.TableNumber)
+                ? _vm.TableNumber
+                : (posVm?.ActiveTable ?? string.Empty);
+
+            if (!string.IsNullOrWhiteSpace(targetTable))
             {
-                if (Environment.GetEnvironmentVariable("POS_AUTO_TEST") != "1")
+                floorVm?.SetTableStatus(targetTable, TableStatus.Free);
+                posVm?.ClearTableOrder(targetTable);
+            }
+            else
+            {
+                posVm?.ClearCart();
+            }
+
+            if (Environment.GetEnvironmentVariable("POS_AUTO_TEST") != "1")
+            {
+                await DisplayAlert(
+                    "✅ Paiement accepté",
+                    $"Ticket N° {_vm.ReceiptNumber}\nMontant encaissé ({_vm.TotalDueCents / 100.0:F2} €). Bonne journée !",
+                    "OK");
+            }
+
+            // Check if returning to split bill
+            var splitVm = Handler?.MauiContext?.Services.GetService<SplitBillViewModel>();
+            if (splitVm != null && splitVm.Partitions.Any(p => !p.IsPaid && p.AmountCents == _vm.TotalDueCents))
+            {
+                var unpaidPart = splitVm.Partitions.FirstOrDefault(p => !p.IsPaid && p.AmountCents == _vm.TotalDueCents);
+                if (unpaidPart != null)
                 {
-                    await DisplayAlert(
-                        "✅ Paiement accepté",
-                        $"Ticket N° {_vm.ReceiptNumber}\nMontant encaissé ({_vm.TotalDueCents / 100.0:F2} €). Bonne journée !",
-                        "OK");
+                    unpaidPart.IsPaid = true;
                 }
 
-                // Check if returning to split bill
-                var splitVm = Handler?.MauiContext?.Services.GetService<SplitBillViewModel>();
-                if (splitVm != null && splitVm.Partitions.Any(p => !p.IsPaid && p.AmountCents == _vm.TotalDueCents))
-                {
-                    var unpaidPart = splitVm.Partitions.FirstOrDefault(p => !p.IsPaid && p.AmountCents == _vm.TotalDueCents);
-                    if (unpaidPart != null)
-                    {
-                        unpaidPart.IsPaid = true;
-                    }
-
-                    if (splitVm.Partitions.All(p => p.IsPaid))
-                    {
-                        await Shell.Current.GoToAsync("//floor");
-                    }
-                    else
-                    {
-                        await Shell.Current.GoToAsync("..");
-                    }
-                }
-                else
+                if (splitVm.Partitions.All(p => p.IsPaid))
                 {
                     await Shell.Current.GoToAsync("//floor");
                 }
+                else
+                {
+                    await Shell.Current.GoToAsync("..");
+                }
             }
-        };
-
-        return card;
+            else
+            {
+                await Shell.Current.GoToAsync("//floor");
+            }
+        }
     }
 
     private class CentsToEurosConverter : IValueConverter

@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using RestaurantPos.Client.Maui.Contracts;
 using RestaurantPos.Client.Maui.ViewModels;
@@ -101,5 +102,102 @@ public class CheckoutViewModelTests
             null,
             null,
             It.IsAny<System.Threading.CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task ReceiptNumber_IncrementsMonotonicallyAcrossCheckouts()
+    {
+        var vm1 = new CheckoutViewModel(_envMock.Object);
+        vm1.Initialize(Guid.NewGuid(), 1000, "T01");
+        await vm1.FinalizeCheckoutAsync();
+
+        var vm2 = new CheckoutViewModel(_envMock.Object);
+        vm2.Initialize(Guid.NewGuid(), 2000, "T02");
+        await vm2.FinalizeCheckoutAsync();
+
+        vm1.ReceiptNumber.Should().NotBeNullOrEmpty();
+        vm2.ReceiptNumber.Should().NotBeNullOrEmpty();
+        vm1.ReceiptNumber.Should().NotBe(vm2.ReceiptNumber);
+    }
+
+    [Fact]
+    public async Task FinalizeCheckoutAsync_WithScopeFactory_CreatesFiscalReceiptInLocalDb()
+    {
+        string tempDir = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "CheckoutFiscalTest_" + Guid.NewGuid().ToString("N"));
+        var envMock = new Mock<IPlatformEnvironmentService>();
+        envMock.Setup(e => e.GetSecureDatabasePath(It.IsAny<string>()))
+               .Returns(System.IO.Path.Combine(tempDir, "test_fiscal.db"));
+
+        if (!System.IO.Directory.Exists(tempDir)) System.IO.Directory.CreateDirectory(tempDir);
+
+        var services = new Microsoft.Extensions.DependencyInjection.ServiceCollection();
+        services.AddSingleton(envMock.Object);
+        services.AddDbContext<Persistence.LocalAppDbContext>();
+        var serviceProvider = services.BuildServiceProvider();
+
+        using (var scope = serviceProvider.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<Persistence.LocalAppDbContext>();
+            await db.Database.EnsureCreatedAsync();
+        }
+
+        var scopeFactory = serviceProvider.GetRequiredService<Microsoft.Extensions.DependencyInjection.IServiceScopeFactory>();
+        var vm = new CheckoutViewModel(envMock.Object, scopeFactory: scopeFactory);
+        vm.Initialize(Guid.NewGuid(), 2500, "T01"); // 25.00 EUR
+        vm.SelectPaymentMethod(PaymentMethod.CreditCard);
+
+        await vm.FinalizeCheckoutAsync();
+
+        vm.IsCompleted.Should().BeTrue();
+        vm.ReceiptNumber.Should().StartWith("POS01-");
+
+        using (var scope = serviceProvider.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<Persistence.LocalAppDbContext>();
+            var receipts = db.FiscalReceipts.ToList();
+            receipts.Should().HaveCount(1);
+            receipts[0].TotalTtcAmount.AmountInCents.Should().Be(2500);
+            receipts[0].ReceiptNumber.Should().Be(vm.ReceiptNumber);
+            receipts[0].SignatureHash.Should().NotBeNullOrEmpty();
+        }
+
+        try { System.IO.Directory.Delete(tempDir, true); } catch { }
+    }
+
+    [Fact]
+    public async Task FinalizeCheckoutAsync_FreesDiningTable_AndClearsActiveOrder()
+    {
+        // Arrange
+        var envMock = new Mock<IPlatformEnvironmentService>();
+        var journalMock = new Mock<ILocalJournalService>();
+        var tableMock = new Mock<Application.Common.Interfaces.ITableManagementService>();
+
+        var floorVm = new FloorPlanViewModel(envMock.Object, tableMock.Object);
+        var posVm = new PosTerminalViewModel(envMock.Object, journalMock.Object, tableService: tableMock.Object);
+
+        await posVm.LoadActiveTableOrderAsync("T01");
+        var burger = posVm.AvailableProducts.First();
+        await posVm.AddProductAsync(burger);
+        posVm.CartItems.Should().HaveCount(1);
+
+        floorVm.SetTableStatus("T01", TableStatus.Occupied);
+
+        var checkoutVm = new CheckoutViewModel(
+            envMock.Object,
+            floorPlanViewModel: floorVm,
+            posTerminalViewModel: posVm);
+
+        checkoutVm.Initialize(Guid.NewGuid(), 1650, "T01");
+        checkoutVm.SelectPaymentMethod(PaymentMethod.Cash);
+        checkoutVm.AddCashFastBill(2000);
+
+        // Act
+        await checkoutVm.FinalizeCheckoutAsync();
+
+        // Assert: Table status is liberated to Free, cart is cleared, totals 0
+        checkoutVm.IsCompleted.Should().BeTrue();
+        floorVm.GetTableStatus("T01").Should().Be(TableStatus.Free);
+        posVm.CartItems.Should().BeEmpty();
+        posVm.TotalTtc.AmountInCents.Should().Be(0);
     }
 }

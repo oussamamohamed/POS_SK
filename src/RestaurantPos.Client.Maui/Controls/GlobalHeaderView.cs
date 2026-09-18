@@ -113,21 +113,26 @@ public class GlobalHeaderView : Grid
             BackgroundColor = AppleHigTheme.TertiarySystemBackground,
             Stroke = AppleHigTheme.Separator,
             StrokeThickness = 1,
-            StrokeShape = new RoundRectangle { CornerRadius = new CornerRadius(10) },
-            Padding = new Thickness(3),
+            StrokeShape = new RoundRectangle { CornerRadius = 10 },
+            Padding = new Thickness(2),
             HeightRequest = 42,
             VerticalOptions = LayoutOptions.Center,
-            Content = new HorizontalStackLayout
+            Content = new ScrollView
             {
-                Spacing = 4,
-                VerticalOptions = LayoutOptions.Center,
-                Children =
+                Orientation = ScrollOrientation.Horizontal,
+                HorizontalScrollBarVisibility = ScrollBarVisibility.Never,
+                Content = new HorizontalStackLayout
                 {
-                    MakeSegmentButton("🛒 Caisse", activeTab == PosActiveViewTab.Pos, new Command(async () => await Shell.Current.GoToAsync("//pos"))),
-                    MakeSegmentButton("🗺️ Plan de Salle", activeTab == PosActiveViewTab.Floor, new Command(async () => await Shell.Current.GoToAsync("//floor"))),
-                    MakeSegmentButton("👨‍🍳 Cuisine KDS", activeTab == PosActiveViewTab.Kds, new Command(async () => await Shell.Current.GoToAsync("//kds"))),
-                    MakeSegmentButton("⚙️ Paramétrage", activeTab == PosActiveViewTab.Admin, new Command(async () => await Shell.Current.GoToAsync("admin"))),
-                    MakeSegmentButton("📜 Fiscalité NF525", activeTab == PosActiveViewTab.Fiscal, new Command(async () => await Shell.Current.GoToAsync("fiscal")))
+                    Spacing = 2,
+                    VerticalOptions = LayoutOptions.Center,
+                    Children =
+                    {
+                        MakeSegmentButton("🛒 Caisse", activeTab == PosActiveViewTab.Pos, new Command(async () => await Shell.Current.GoToAsync("//pos"))),
+                        MakeSegmentButton("🗺️ Salle", activeTab == PosActiveViewTab.Floor, new Command(async () => await Shell.Current.GoToAsync("//floor"))),
+                        MakeSegmentButton("👨‍🍳 KDS", activeTab == PosActiveViewTab.Kds, new Command(async () => await Shell.Current.GoToAsync("//kds"))),
+                        MakeSegmentButton("⚙️ Admin", activeTab == PosActiveViewTab.Admin, new Command(async () => await Shell.Current.GoToAsync("admin"))),
+                        MakeSegmentButton("📜 Fiscal", activeTab == PosActiveViewTab.Fiscal, new Command(async () => await Shell.Current.GoToAsync("//fiscal")))
+                    }
                 }
             }
         };
@@ -200,11 +205,11 @@ public class GlobalHeaderView : Grid
             Text = text,
             BackgroundColor = isActive ? AppleHigTheme.SystemBlue : Colors.Transparent,
             TextColor = isActive ? Colors.White : AppleHigTheme.LabelSecondary,
-            FontSize = 13,
+            FontSize = 12,
             FontAttributes = isActive ? FontAttributes.Bold : FontAttributes.None,
             HeightRequest = 36,
             CornerRadius = 8,
-            Padding = new Thickness(12, 0),
+            Padding = new Thickness(8, 0),
             Command = command
         };
     }

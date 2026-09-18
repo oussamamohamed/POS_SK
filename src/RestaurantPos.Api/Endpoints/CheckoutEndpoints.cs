@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using RestaurantPos.Application.Common.Interfaces;
 using RestaurantPos.Application.DTOs;
+using RestaurantPos.Domain.Entities;
+using RestaurantPos.Domain.ValueObjects;
 using RestaurantPos.Infrastructure.Persistence;
 
 namespace RestaurantPos.Api.Endpoints;
@@ -21,21 +23,63 @@ public static class CheckoutEndpoints
         group.MapPost("/pay", async (PaymentSettlementRequest req, ICheckoutPaymentService checkout, AppDbContext db) =>
         {
             var orderId = req.OrderId;
-            if (orderId == Guid.Empty && !string.IsNullOrWhiteSpace(req.TableNumber))
+            if (orderId == Guid.Empty || !await db.Orders.AnyAsync(o => o.Id == orderId))
             {
-                var table = await db.DiningTables.FirstOrDefaultAsync(t => t.TableNumber == req.TableNumber);
-                if (table?.ActiveOrderId != null)
+                if (!string.IsNullOrWhiteSpace(req.TableNumber))
                 {
-                    orderId = table.ActiveOrderId.Value;
+                    var alt = NormalizeAltTableNumber(req.TableNumber);
+                    var table = await db.DiningTables.FirstOrDefaultAsync(t => t.TableNumber == req.TableNumber || (alt != null && t.TableNumber == alt));
+                    if (table?.ActiveOrderId != null && await db.Orders.AnyAsync(o => o.Id == table.ActiveOrderId.Value))
+                    {
+                        orderId = table.ActiveOrderId.Value;
+                    }
+                    else
+                    {
+                        var openOrder = await db.Orders
+                            .Where(o => (o.TableNumber == req.TableNumber || (alt != null && o.TableNumber == alt))
+                                        && o.Status != OrderStatus.Paid && o.Status != OrderStatus.Cancelled)
+                            .OrderByDescending(o => o.CreatedAtUtc)
+                            .FirstOrDefaultAsync();
+                        if (openOrder is not null)
+                        {
+                            orderId = openOrder.Id;
+                        }
+                    }
                 }
             }
 
-            if (orderId == Guid.Empty)
+            if (orderId == Guid.Empty || !await db.Orders.AnyAsync(o => o.Id == orderId))
             {
-                return Results.BadRequest(new { Message = "Commande introuvable pour ce règlement." });
+                long totalTendersCents = req.Tenders != null ? (long)Math.Round(req.Tenders.Sum(t => t.Amount) * 100) : 0;
+                if (totalTendersCents > 0)
+                {
+                    var newOrder = new Order
+                    {
+                        Id = orderId != Guid.Empty ? orderId : Guid.NewGuid(),
+                        TableNumber = !string.IsNullOrWhiteSpace(req.TableNumber) ? req.TableNumber : "Comptoir",
+                        Status = OrderStatus.Open,
+                        CreatedAtUtc = DateTimeOffset.UtcNow
+                    };
+                    newOrder.Items.Add(new OrderItem
+                    {
+                        OrderId = newOrder.Id,
+                        ProductId = Guid.NewGuid(),
+                        ProductName = $"Vente {newOrder.TableNumber}",
+                        UnitPrice = Money.FromCents(totalTendersCents),
+                        Quantity = 1,
+                        TaxRatePercent = 10.0m
+                    });
+                    db.Orders.Add(newOrder);
+                    await db.SaveChangesAsync();
+                    orderId = newOrder.Id;
+                }
+                else
+                {
+                    return Results.BadRequest(new { Message = "Commande introuvable pour ce règlement." });
+                }
             }
 
-            var tenderRequests = req.Tenders.Select(t => new PaymentTenderRequest(
+            var tenderRequests = (req.Tenders ?? []).Select(t => new PaymentTenderRequest(
                 t.Method,
                 (long)Math.Round(t.Amount * 100),
                 (long)Math.Round(t.Tendered * 100)
@@ -85,5 +129,18 @@ public static class CheckoutEndpoints
                 FiscalTimestampUtc = DateTimeOffset.UtcNow
             });
         }).RequireAuthorization("RequireManagerOrAdmin");
+    }
+
+    private static string? NormalizeAltTableNumber(string tableNumber)
+    {
+        if (tableNumber.StartsWith("T0", StringComparison.OrdinalIgnoreCase) && tableNumber.Length == 3)
+        {
+            return "T" + tableNumber[2];
+        }
+        if (tableNumber.StartsWith("T", StringComparison.OrdinalIgnoreCase) && tableNumber.Length == 2 && char.IsDigit(tableNumber[1]))
+        {
+            return "T0" + tableNumber[1];
+        }
+        return null;
     }
 }

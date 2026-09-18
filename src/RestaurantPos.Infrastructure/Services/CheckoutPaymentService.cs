@@ -64,11 +64,15 @@ public class CheckoutPaymentService : ICheckoutPaymentService
                 }
 
                 // Account for prior non-void payments already settled for this order (e.g. split bill)
-                long previousPaidCents = await _dbContext.FiscalReceipts
+                var priorReceipts = await _dbContext.FiscalReceipts
+                    .Include(r => r.Tenders)
                     .Where(r => r.OrderId == order.Id && !r.IsVoid)
-                    .SelectMany(r => r.Tenders)
-                    .SumAsync(t => t.Amount.AmountInCents, ct)
+                    .ToListAsync(ct)
                     .ConfigureAwait(false);
+
+                long previousPaidCents = priorReceipts
+                    .SelectMany(r => r.Tenders)
+                    .Sum(t => t.Amount.AmountInCents);
 
                 long totalDueCents = order.TotalTtc.AmountInCents + order.TipAmount.AmountInCents;
                 long totalPaidCents = tenders.Sum(t => t.AmountInCents);
@@ -169,10 +173,23 @@ public class CheckoutPaymentService : ICheckoutPaymentService
                     var table = await _dbContext.DiningTables
                         .FindAsync([order.TableNumber], ct)
                         .ConfigureAwait(false);
+
+                    if (table is null && !string.IsNullOrWhiteSpace(order.TableNumber))
+                    {
+                        var norm = order.TableNumber.Trim();
+                        table = await _dbContext.DiningTables
+                            .FirstOrDefaultAsync(t => t.TableNumber == norm, ct)
+                            .ConfigureAwait(false);
+                    }
+
                     if (table is not null)
                     {
-                        table.Status = TableStatus.Paid;
+                        table.Status = TableStatus.Free;
                         table.ActiveOrderId = null;
+                        table.CoversCount = 0;
+                        table.AssignedWaiterId = null;
+                        table.AssignedWaiterName = null;
+                        table.OpenedAtUtc = null;
                     }
                 }
 

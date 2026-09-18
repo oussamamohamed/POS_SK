@@ -25,6 +25,7 @@ public static class MauiProgram
         services.AddSingleton<ILocalSyncWorker, LocalSyncWorker>();
         services.AddSingleton<IKitchenSignalRClient, KitchenSignalRClient>();
         services.AddSingleton<ITableSignalRClient, TableSignalRClient>();
+        services.AddSingleton<IGridLayoutApiService, GridLayoutApiService>();
 
         // Local SQLite Persistence
         services.AddDbContext<LocalAppDbContext>();
@@ -34,7 +35,14 @@ public static class MauiProgram
         services.AddSingleton<PosTerminalViewModel>();
         services.AddSingleton<FloorPlanViewModel>();
         services.AddSingleton<KdsViewModel>();
-        services.AddSingleton<CheckoutViewModel>();
+        services.AddSingleton<CheckoutViewModel>(sp => new CheckoutViewModel(
+            sp.GetRequiredService<IPlatformEnvironmentService>(),
+            null,
+            null,
+            sp.GetService<FloorPlanViewModel>(),
+            sp.GetService<PosTerminalViewModel>(),
+            sp.GetRequiredService<IServiceScopeFactory>()
+        ));
         services.AddSingleton<SplitBillViewModel>();
         services.AddSingleton<ModifiersViewModel>();
         services.AddTransient<PeripheralSetupViewModel>();

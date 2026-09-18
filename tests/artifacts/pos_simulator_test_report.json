@@ -1,0 +1,311 @@
+{
+  "AllPassed": true,
+  "TotalSuites": 14,
+  "PassedSuites": 14,
+  "TotalTests": 43,
+  "PassedTests": 43,
+  "Tests": [
+    {
+      "Suite": "1_AUTH_FLOW",
+      "TestName": "RejectInvalidPin",
+      "Success": true,
+      "Message": "Code PIN erron\u00E9 rejet\u00E9 avec succ\u00E8s.",
+      "Timestamp": "2026-09-18T21:27:51.150623Z"
+    },
+    {
+      "Suite": "1_AUTH_FLOW",
+      "TestName": "AuthenticateValidPin",
+      "Success": true,
+      "Message": "Op\u00E9rateur authentifi\u00E9: Alexandre Dupont (Waiter)",
+      "Timestamp": "2026-09-18T21:27:51.956291Z"
+    },
+    {
+      "Suite": "2_FLOOR_PLAN",
+      "TestName": "TablesDisplay",
+      "Success": true,
+      "Message": "6 tables affich\u00E9es avec statuts.",
+      "Timestamp": "2026-09-18T21:27:54.361778Z"
+    },
+    {
+      "Suite": "2_FLOOR_PLAN",
+      "TestName": "TableSelection",
+      "Success": true,
+      "Message": "Table T01 s\u00E9lectionn\u00E9e et caisse ouverte.",
+      "Timestamp": "2026-09-18T21:27:55.830532Z"
+    },
+    {
+      "Suite": "3_CATALOG_CART",
+      "TestName": "CategoryFilterPlats",
+      "Success": true,
+      "Message": "Filtrage Plats valid\u00E9 (2 articles exclusifs, aucune boisson pr\u00E9sente).",
+      "Timestamp": "2026-09-18T21:27:56.295021Z"
+    },
+    {
+      "Suite": "3_CATALOG_CART",
+      "TestName": "CategoryFilterBoissons",
+      "Success": true,
+      "Message": "Filtrage Boissons valid\u00E9 (3 articles exclusifs, aucun plat pr\u00E9sent).",
+      "Timestamp": "2026-09-18T21:27:58.327979Z"
+    },
+    {
+      "Suite": "3_CATALOG_CART",
+      "TestName": "CategoryFilterReset",
+      "Success": true,
+      "Message": "Catalogue complet restaur\u00E9 (11 articles affich\u00E9s).",
+      "Timestamp": "2026-09-18T21:28:00.342578Z"
+    },
+    {
+      "Suite": "3_CATALOG_CART",
+      "TestName": "PaginationControls",
+      "Success": true,
+      "Message": "Commandes de pagination valid\u00E9es (Page 1 / 1).",
+      "Timestamp": "2026-09-18T21:28:01.546485Z"
+    },
+    {
+      "Suite": "3_CATALOG_CART",
+      "TestName": "AddProducts",
+      "Success": true,
+      "Message": "2 articles ajout\u00E9s: Burger Gourmet Rossini \u002B Bi\u00E8re Artisanale IPA 33cl",
+      "Timestamp": "2026-09-18T21:28:01.547115Z"
+    },
+    {
+      "Suite": "3_CATALOG_CART",
+      "TestName": "QuantityStepper",
+      "Success": true,
+      "Message": "Incr\u00E9mentation/d\u00E9cr\u00E9mentation des quantit\u00E9s valid\u00E9e.",
+      "Timestamp": "2026-09-18T21:28:01.548806Z"
+    },
+    {
+      "Suite": "3_CATALOG_CART",
+      "TestName": "TotalCalculation",
+      "Success": true,
+      "Message": "Total TTC v\u00E9rifi\u00E9: 25,50 EUR",
+      "Timestamp": "2026-09-18T21:28:01.550965Z"
+    },
+    {
+      "Suite": "4_MODIFIERS_OPTIONS",
+      "TestName": "SingleChoiceCuisson",
+      "Success": true,
+      "Message": "Choix exclusif cuisson \u0027Saignant\u0027 valid\u00E9.",
+      "Timestamp": "2026-09-18T21:28:03.758535Z"
+    },
+    {
+      "Suite": "4_MODIFIERS_OPTIONS",
+      "TestName": "SpecialInstructions",
+      "Success": true,
+      "Message": "Instruction cuisine enregistr\u00E9e: \u0027Sans oignons, sauce \u00E0 part\u0027.",
+      "Timestamp": "2026-09-18T21:28:03.759169Z"
+    },
+    {
+      "Suite": "4_MODIFIERS_OPTIONS",
+      "TestName": "ConfirmModifiers",
+      "Success": true,
+      "Message": "Modificateurs valid\u00E9s avec succ\u00E8s.",
+      "Timestamp": "2026-09-18T21:28:03.761091Z"
+    },
+    {
+      "Suite": "4_MODIFIERS_OPTIONS",
+      "TestName": "CartModifiersBadge",
+      "Success": true,
+      "Message": "Article avec options pr\u00E9sent: Saignant, Sauce Poivre Maison (\u002B1.50 \u20AC) | Note: Sans oignons",
+      "Timestamp": "2026-09-18T21:28:07.096217Z"
+    },
+    {
+      "Suite": "4_MODIFIERS_OPTIONS",
+      "TestName": "BillNoteModal",
+      "Success": true,
+      "Message": "Note de table affich\u00E9e, v\u00E9rifi\u00E9e et statut \u0027Addition\u0027 valid\u00E9.",
+      "Timestamp": "2026-09-18T21:28:17.585038Z"
+    },
+    {
+      "Suite": "5_DISCOUNTS_COMPS",
+      "TestName": "PercentageDiscount",
+      "Success": true,
+      "Message": "Remise 10% appliqu\u00E9e avec succ\u00E8s (41,85 EUR).",
+      "Timestamp": "2026-09-18T21:28:18.188029Z"
+    },
+    {
+      "Suite": "5_DISCOUNTS_COMPS",
+      "TestName": "ResetDiscount",
+      "Success": true,
+      "Message": "Remise r\u00E9initialis\u00E9e au montant initial.",
+      "Timestamp": "2026-09-18T21:28:18.188303Z"
+    },
+    {
+      "Suite": "5_DISCOUNTS_COMPS",
+      "TestName": "CompItemAudit",
+      "Success": true,
+      "Message": "Caf\u00E9 offert avec motif d\u0027audit NF525 \u0027Geste commercial fid\u00E9lit\u00E9\u0027.",
+      "Timestamp": "2026-09-18T21:28:18.188587Z"
+    },
+    {
+      "Suite": "6_KDS_WORKFLOW",
+      "TestName": "KitchenDispatch",
+      "Success": true,
+      "Message": "Lignes envoy\u00E9es en cuisine et panier r\u00E9initialis\u00E9.",
+      "Timestamp": "2026-09-18T21:28:19.494722Z"
+    },
+    {
+      "Suite": "6_KDS_WORKFLOW",
+      "TestName": "KdsDisplay",
+      "Success": true,
+      "Message": "\u00C9cran KDS actif (1 tickets, 3 articles affich\u00E9s).",
+      "Timestamp": "2026-09-18T21:28:21.12056Z"
+    },
+    {
+      "Suite": "7_KDS_LIFECYCLE",
+      "TestName": "BumpToInPrep",
+      "Success": true,
+      "Message": "Ticket avanc\u00E9 \u00E0 l\u0027\u00E9tat \u0027En Pr\u00E9paration\u0027 en cuisine.",
+      "Timestamp": "2026-09-18T21:28:22.773638Z"
+    },
+    {
+      "Suite": "7_KDS_LIFECYCLE",
+      "TestName": "BumpToReady",
+      "Success": true,
+      "Message": "Ticket avanc\u00E9 \u00E0 l\u0027\u00E9tat \u0027Pr\u00EAt\u0027 pour le passe.",
+      "Timestamp": "2026-09-18T21:28:23.222392Z"
+    },
+    {
+      "Suite": "7_KDS_LIFECYCLE",
+      "TestName": "RecallTicket",
+      "Success": true,
+      "Message": "Ticket rappel\u00E9 avec succ\u00E8s en cuisine.",
+      "Timestamp": "2026-09-18T21:28:23.68931Z"
+    },
+    {
+      "Suite": "7_KDS_LIFECYCLE",
+      "TestName": "TableRecallNotEmpty",
+      "Success": true,
+      "Message": "Rappel de la table T01 r\u00E9ussi : 3 article(s) restaur\u00E9(s), total=40,50 \u20AC.",
+      "Timestamp": "2026-09-18T21:28:25.026488Z"
+    },
+    {
+      "Suite": "8_SPLIT_BILL",
+      "TestName": "EqualSplit2",
+      "Success": true,
+      "Message": "Partage 2 convives: 15.00 \u20AC / personne.",
+      "Timestamp": "2026-09-18T21:28:25.031082Z"
+    },
+    {
+      "Suite": "8_SPLIT_BILL",
+      "TestName": "EqualSplit3",
+      "Success": true,
+      "Message": "Partage 3 convives: 10.00 \u20AC / personne.",
+      "Timestamp": "2026-09-18T21:28:28.62556Z"
+    },
+    {
+      "Suite": "8_SPLIT_BILL",
+      "TestName": "DecreaseGuests",
+      "Success": true,
+      "Message": "Ajustement dynamique des convives valid\u00E9.",
+      "Timestamp": "2026-09-18T21:28:28.627979Z"
+    },
+    {
+      "Suite": "9_CHECKOUT_PAYMENT",
+      "TestName": "CashChangeDue",
+      "Success": true,
+      "Message": "Paiement esp\u00E8ces 20.00 \u20AC pour 16.50 \u20AC -\u003E Rendu 3,50 \u20AC.",
+      "Timestamp": "2026-09-18T21:28:31.286319Z"
+    },
+    {
+      "Suite": "9_CHECKOUT_PAYMENT",
+      "TestName": "FinalizeCheckout",
+      "Success": true,
+      "Message": "Encaissement finalis\u00E9. Re\u00E7u N\u00B0: POS01-000011",
+      "Timestamp": "2026-09-18T21:28:33.502885Z"
+    },
+    {
+      "Suite": "9_CHECKOUT_PAYMENT",
+      "TestName": "TableFreedAfterCheckout",
+      "Success": true,
+      "Message": "Table T01 lib\u00E9r\u00E9e avec succ\u00E8s (statut: Free).",
+      "Timestamp": "2026-09-18T21:28:34.504886Z"
+    },
+    {
+      "Suite": "9_CHECKOUT_PAYMENT",
+      "TestName": "TableCartClearedAfterCheckout",
+      "Success": true,
+      "Message": "Panier de la table T01 v\u00E9rifi\u00E9 et vierge (0 article, 0,00 \u20AC).",
+      "Timestamp": "2026-09-18T21:28:38.181929Z"
+    },
+    {
+      "Suite": "10_MULTI_TENDER_PAYMENT",
+      "TestName": "MultiTenderCardAndCash",
+      "Success": true,
+      "Message": "R\u00E8glement mixte valid\u00E9: 15.00 \u20AC CB \u002B 10.00 \u20AC Esp\u00E8ces (Rendu: 10.00 \u20AC).",
+      "Timestamp": "2026-09-18T21:28:38.98683Z"
+    },
+    {
+      "Suite": "10_MULTI_TENDER_PAYMENT",
+      "TestName": "HotelRoomBilling",
+      "Success": true,
+      "Message": "Facturation chambre 102 (Dupont M.) valid\u00E9e.",
+      "Timestamp": "2026-09-18T21:28:39.000739Z"
+    },
+    {
+      "Suite": "11_DIRECT_SALE_LOCK",
+      "TestName": "DirectSaleCartReset",
+      "Success": true,
+      "Message": "Panier caisse comptoir pr\u00EAt et vierge.",
+      "Timestamp": "2026-09-18T21:28:39.808058Z"
+    },
+    {
+      "Suite": "12_ADMIN_BACKOFFICE",
+      "TestName": "StaffManagement",
+      "Success": true,
+      "Message": "3 \u00E9quipiers charg\u00E9s en Back-Office.",
+      "Timestamp": "2026-09-18T21:28:42.963231Z"
+    },
+    {
+      "Suite": "12_ADMIN_BACKOFFICE",
+      "TestName": "CatalogManagement",
+      "Success": true,
+      "Message": "3 familles et catalogue synchronis\u00E9s.",
+      "Timestamp": "2026-09-18T21:28:42.96772Z"
+    },
+    {
+      "Suite": "12_ADMIN_BACKOFFICE",
+      "TestName": "LayoutGridColumnsSync",
+      "Success": true,
+      "Message": "Grille de caisse configur\u00E9e en format 5 colonnes.",
+      "Timestamp": "2026-09-18T21:28:50.378347Z"
+    },
+    {
+      "Suite": "14_FISCAL_NF525",
+      "TestName": "FiscalReceiptsRecorded",
+      "Success": true,
+      "Message": "12 re\u00E7u(s) fiscaux enregistr\u00E9s avec succ\u00E8s. Total: 286,75 \u20AC TTC.",
+      "Timestamp": "2026-09-18T21:28:52.174237Z"
+    },
+    {
+      "Suite": "14_FISCAL_NF525",
+      "TestName": "FiscalPageNavigation",
+      "Success": true,
+      "Message": "Page Fiscalit\u00E9 NF525 affich\u00E9e avec donn\u00E9es en direct.",
+      "Timestamp": "2026-09-18T21:28:54.901751Z"
+    },
+    {
+      "Suite": "14_FISCAL_NF525",
+      "TestName": "FiscalTotalNotZero",
+      "Success": true,
+      "Message": "Rapport fiscal actif: 51,50 \u20AC TTC sur 2 encaissement(s) (non nul).",
+      "Timestamp": "2026-09-18T21:28:54.97688Z"
+    },
+    {
+      "Suite": "14_FISCAL_NF525",
+      "TestName": "ZReportResetCounter",
+      "Success": true,
+      "Message": "Cl\u00F4ture Z valid\u00E9e : nouveau compteur session = 0,00 \u20AC TTC, Grand Total perp\u00E9tuel conserv\u00E9 (2164,75 \u20AC).",
+      "Timestamp": "2026-09-18T21:28:57.372255Z"
+    },
+    {
+      "Suite": "13_SESSION_SECURITY",
+      "TestName": "LockSession",
+      "Success": true,
+      "Message": "Session verrouill\u00E9e et retour sur \u00E9cran PIN.",
+      "Timestamp": "2026-09-18T21:28:58.260727Z"
+    }
+  ],
+  "CompletedAt": "2026-09-18T21:28:59.465373Z"
+}

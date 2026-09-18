@@ -23,4 +23,7 @@ public class DiningTable
     public Guid? ActiveOrderId { get; set; }
     public DateTimeOffset? OpenedAtUtc { get; set; }
     public DateTimeOffset UpdatedAtUtc { get; set; } = DateTimeOffset.UtcNow;
+
+    [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+    public decimal CurrentTotalTtc { get; set; }
 }

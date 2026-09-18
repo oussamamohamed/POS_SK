@@ -23,6 +23,31 @@ public class PosTerminalPage : ContentPage, IQueryAttributable
     private Frame? _modifiersCard;
     private Grid? _billNoteModal;
     private Frame? _billNoteCard;
+    private HorizontalStackLayout? _categoryTabsLayout;
+    private FlexLayout? _productsLayout;
+    private Button? _prevBtn;
+    private Button? _nextBtn;
+
+    public bool SimulateCategoryButtonClick(string categoryNameOrAll)
+    {
+        if (_categoryTabsLayout == null) return false;
+        foreach (var child in _categoryTabsLayout.Children)
+        {
+            if (child is Button btn)
+            {
+                if ((categoryNameOrAll.Equals("ALL", StringComparison.OrdinalIgnoreCase) && btn.Text.Contains("Tous")) ||
+                    btn.Text.Contains(categoryNameOrAll, StringComparison.OrdinalIgnoreCase))
+                {
+                    btn.SendClicked();
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public void SimulateNextPageClick() => _nextBtn?.SendClicked();
+    public void SimulatePrevPageClick() => _prevBtn?.SendClicked();
 
     public PosTerminalPage(PosTerminalViewModel vm)
     {
@@ -100,6 +125,12 @@ public class PosTerminalPage : ContentPage, IQueryAttributable
                 _billNoteModal
             }
         };
+    }
+
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
+        await _vm.RefreshCatalogAsync();
     }
 
     // =========================================================================
@@ -567,7 +598,7 @@ public class PosTerminalPage : ContentPage, IQueryAttributable
             var checkoutVm = Handler?.MauiContext?.Services.GetService<CheckoutViewModel>();
             if (checkoutVm != null)
             {
-                checkoutVm.Initialize(_vm.ActiveOrder.Id, _vm.TotalTtc.AmountInCents);
+                checkoutVm.Initialize(_vm.ActiveOrder.Id, _vm.TotalTtc.AmountInCents, _vm.ActiveTable);
             }
             await Shell.Current.GoToAsync($"checkout?orderId={_vm.ActiveOrder.Id}&totalCents={_vm.TotalTtc.AmountInCents}&tableNumber={_vm.ActiveTable}");
         }));
@@ -632,7 +663,7 @@ public class PosTerminalPage : ContentPage, IQueryAttributable
         var checkoutVm = Handler?.MauiContext?.Services.GetService<CheckoutViewModel>();
         if (checkoutVm != null)
         {
-            checkoutVm.Initialize(_vm.ActiveOrder.Id, _vm.TotalTtc.AmountInCents);
+            checkoutVm.Initialize(_vm.ActiveOrder.Id, _vm.TotalTtc.AmountInCents, _vm.ActiveTable);
         }
         await Shell.Current.GoToAsync($"checkout?orderId={_vm.ActiveOrder.Id}&totalCents={_vm.TotalTtc.AmountInCents}&tableNumber={_vm.ActiveTable}");
     }
@@ -671,140 +702,223 @@ public class PosTerminalPage : ContentPage, IQueryAttributable
         };
         Grid.SetRow(quickKeysBar, 0);
 
-        // 2. Onglets Catégories Horizontaux (Matching category-tabs-bar)
-        var categoryTabs = new CollectionView
+        // 2. Onglets Familles Horizontaux (Écrans de familles réactifs)
+        var categoryTabsLayout = new HorizontalStackLayout
         {
-            ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Horizontal) { ItemSpacing = 8 },
-            SelectionMode = SelectionMode.Single,
-            ItemTemplate = new DataTemplate(() =>
-            {
-                var frame = new Frame
-                {
-                    Padding = new Thickness(16, 8),
-                    CornerRadius = 10,
-                    HasShadow = false,
-                    BackgroundColor = AppleHigTheme.TertiarySystemBackground,
-                    BorderColor = AppleHigTheme.Separator
-                };
-
-                var label = new Label
-                {
-                    FontSize = 14,
-                    FontAttributes = FontAttributes.Bold,
-                    TextColor = AppleHigTheme.LabelPrimary,
-                    VerticalOptions = LayoutOptions.Center
-                };
-                label.SetBinding(Label.TextProperty, "Name");
-                frame.Content = label;
-
-                var tap = new TapGestureRecognizer();
-                tap.SetBinding(TapGestureRecognizer.CommandProperty, new Binding(nameof(PosTerminalViewModel.SelectCategoryCommand), source: _vm));
-                tap.SetBinding(TapGestureRecognizer.CommandParameterProperty, new Binding("."));
-                frame.GestureRecognizers.Add(tap);
-
-                return frame;
-            }),
-            HeightRequest = 48
+            Spacing = 8,
+            VerticalOptions = LayoutOptions.Center
         };
-        categoryTabs.SetBinding(CollectionView.ItemsSourceProperty, nameof(PosTerminalViewModel.Categories));
-        categoryTabs.SetBinding(CollectionView.SelectedItemProperty, nameof(PosTerminalViewModel.SelectedCategory));
+        _categoryTabsLayout = categoryTabsLayout;
+
+        var categoryTabs = new ScrollView
+        {
+            Orientation = ScrollOrientation.Horizontal,
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Never,
+            HeightRequest = 46,
+            Content = categoryTabsLayout
+        };
         Grid.SetRow(categoryTabs, 1);
 
-        // 3. Grille Articles (products-grid)
-        var productsGrid = new CollectionView
+        void RenderCategoryTabs()
         {
-            ItemsLayout = new GridItemsLayout(_vm.CatalogGridColumns, ItemsLayoutOrientation.Vertical)
-            {
-                HorizontalItemSpacing = 12,
-                VerticalItemSpacing = 12
-            },
-            ItemTemplate = new DataTemplate(() =>
-            {
-                var frame = new Frame
-                {
-                    Padding = new Thickness(14),
-                    CornerRadius = (float)AppleHigTheme.CornerRadiusLarge,
-                    HasShadow = false,
-                    BackgroundColor = AppleHigTheme.SecondarySystemBackground,
-                    BorderColor = AppleHigTheme.Separator
-                };
+            categoryTabsLayout.Children.Clear();
 
-                var name = new Label
+            // Bouton "⚡ Tous"
+            bool isAll = _vm.SelectedCategory is null || _vm.SelectedCategory.Id == "ALL";
+            var allBtn = new Button
+            {
+                Text = "⚡ Tous",
+                FontSize = 13,
+                FontAttributes = FontAttributes.Bold,
+                Padding = new Thickness(16, 6),
+                CornerRadius = 10,
+                BackgroundColor = isAll ? Color.FromArgb("#2563EB") : AppleHigTheme.TertiarySystemBackground,
+                TextColor = isAll ? Colors.White : AppleHigTheme.LabelPrimary,
+                HeightRequest = 40
+            };
+            allBtn.Clicked += (s, e) =>
+            {
+                _vm.SelectCategory(null);
+                RenderCategoryTabs();
+            };
+            categoryTabsLayout.Children.Add(allBtn);
+
+            foreach (var cat in _vm.Categories)
+            {
+                bool isSel = _vm.SelectedCategory?.Id == cat.Id;
+                var btn = new Button
                 {
-                    FontSize = 15,
+                    Text = cat.Name,
+                    FontSize = 13,
                     FontAttributes = FontAttributes.Bold,
-                    TextColor = AppleHigTheme.LabelPrimary,
-                    LineBreakMode = LineBreakMode.WordWrap,
-                    MaxLines = 2
+                    Padding = new Thickness(16, 6),
+                    CornerRadius = 10,
+                    BackgroundColor = isSel ? Color.FromArgb("#2563EB") : AppleHigTheme.TertiarySystemBackground,
+                    TextColor = isSel ? Colors.White : AppleHigTheme.LabelPrimary,
+                    HeightRequest = 40
                 };
-                name.SetBinding(Label.TextProperty, "Name");
-
-                var price = new Label
+                var capturedCat = cat;
+                btn.Clicked += (s, e) =>
                 {
-                    FontSize = 16,
-                    TextColor = AppleHigTheme.SystemGreen,
-                    FontAttributes = FontAttributes.Bold
+                    _vm.SelectCategory(capturedCat);
+                    RenderCategoryTabs();
                 };
-                price.SetBinding(Label.TextProperty, "Price", stringFormat: "{0:F2} €");
-
-                var optBadge = new Label
-                {
-                    Text = "⚙️ Modificateurs",
-                    FontSize = 10,
-                    FontAttributes = FontAttributes.Bold,
-                    TextColor = AppleHigTheme.SystemTeal,
-                    BackgroundColor = AppleHigTheme.TertiarySystemBackground,
-                    Padding = new Thickness(6, 2),
-                    HorizontalOptions = LayoutOptions.Start
-                };
-
-                frame.Content = new VerticalStackLayout
-                {
-                    Spacing = 5,
-                    Children = { name, price, optBadge },
-                    InputTransparent = true
-                };
-
-                var tap = new TapGestureRecognizer();
-                tap.Tapped += (s, e) =>
-                {
-                    if (frame.BindingContext is Product prod)
-                    {
-                        if (_vm.HasModifiers(prod))
-                        {
-                            OpenModifiersModal(prod);
-                        }
-                        else
-                        {
-                            _vm.AddProductCommand.Execute(prod);
-                        }
-                    }
-                };
-                frame.GestureRecognizers.Add(tap);
-
-                return frame;
-            })
-        };
-        productsGrid.SetBinding(CollectionView.ItemsSourceProperty, nameof(PosTerminalViewModel.AvailableProducts));
-
-        _vm.PropertyChanged += (s, e) =>
-        {
-            if (e.PropertyName == nameof(PosTerminalViewModel.CatalogGridColumns))
-            {
-                MainThread.BeginInvokeOnMainThread(() =>
-                {
-                    productsGrid.ItemsLayout = new GridItemsLayout(_vm.CatalogGridColumns, ItemsLayoutOrientation.Vertical)
-                    {
-                        HorizontalItemSpacing = 12,
-                        VerticalItemSpacing = 12
-                    };
-                });
+                categoryTabsLayout.Children.Add(btn);
             }
-        };
+        }
 
-        Grid.SetRow(productsGrid, 2);
+        RenderCategoryTabs();
+        _vm.Categories.CollectionChanged += (s, e) => MainThread.BeginInvokeOnMainThread(RenderCategoryTabs);
+
+        // 3. Grille Articles (products-grid FlexLayout iOS-safe)
+        var productsLayout = new FlexLayout
+        {
+            Direction = Microsoft.Maui.Layouts.FlexDirection.Row,
+            Wrap = Microsoft.Maui.Layouts.FlexWrap.Wrap,
+            JustifyContent = Microsoft.Maui.Layouts.FlexJustify.Start,
+            AlignItems = Microsoft.Maui.Layouts.FlexAlignItems.Start
+        };
+        _productsLayout = productsLayout;
+
+        Frame CreateProductFrame(Product prod)
+        {
+            var frame = new Frame
+            {
+                Padding = new Thickness(14),
+                CornerRadius = (float)AppleHigTheme.CornerRadiusLarge,
+                HasShadow = false,
+                BackgroundColor = AppleHigTheme.SecondarySystemBackground,
+                BorderColor = AppleHigTheme.Separator,
+                WidthRequest = 180,
+                HeightRequest = 110,
+                Margin = new Thickness(6)
+            };
+
+            var name = new Label
+            {
+                Text = prod.Name,
+                FontSize = 15,
+                FontAttributes = FontAttributes.Bold,
+                TextColor = AppleHigTheme.LabelPrimary,
+                LineBreakMode = LineBreakMode.WordWrap,
+                MaxLines = 2
+            };
+
+            var price = new Label
+            {
+                Text = $"{prod.Price:F2} €",
+                FontSize = 16,
+                TextColor = AppleHigTheme.SystemGreen,
+                FontAttributes = FontAttributes.Bold
+            };
+
+            var optBadge = new Label
+            {
+                Text = "⚙️ Modificateurs",
+                FontSize = 10,
+                FontAttributes = FontAttributes.Bold,
+                TextColor = AppleHigTheme.SystemTeal,
+                BackgroundColor = AppleHigTheme.TertiarySystemBackground,
+                Padding = new Thickness(6, 2),
+                HorizontalOptions = LayoutOptions.Start,
+                IsVisible = _vm.HasModifiers(prod)
+            };
+
+            frame.Content = new VerticalStackLayout
+            {
+                Spacing = 5,
+                Children = { name, price, optBadge },
+                InputTransparent = true
+            };
+
+            var tap = new TapGestureRecognizer();
+            tap.Tapped += (s, e) =>
+            {
+                if (_vm.HasModifiers(prod))
+                {
+                    OpenModifiersModal(prod);
+                }
+                else
+                {
+                    _vm.AddProductCommand.Execute(prod);
+                }
+            };
+            frame.GestureRecognizers.Add(tap);
+
+            return frame;
+        }
+
+        BindableLayout.SetItemTemplate(productsLayout, new DataTemplate(() =>
+        {
+            var frame = new Frame();
+            frame.SetBinding(Frame.BindingContextProperty, ".");
+            frame.BindingContextChanged += (s, e) =>
+            {
+                if (frame.BindingContext is Product prod)
+                {
+                    var actualFrame = CreateProductFrame(prod);
+                    frame.Content = actualFrame.Content;
+                    frame.BackgroundColor = actualFrame.BackgroundColor;
+                    frame.BorderColor = actualFrame.BorderColor;
+                    frame.Padding = actualFrame.Padding;
+                    frame.CornerRadius = actualFrame.CornerRadius;
+                    frame.WidthRequest = actualFrame.WidthRequest;
+                    frame.HeightRequest = actualFrame.HeightRequest;
+                    frame.Margin = actualFrame.Margin;
+                    foreach(var g in actualFrame.GestureRecognizers) frame.GestureRecognizers.Add(g);
+                }
+            };
+            return frame;
+        }));
+
+        productsLayout.SetBinding(BindableLayout.ItemsSourceProperty, nameof(PosTerminalViewModel.AvailableProducts));
+
+        var productsScroll = new ScrollView
+        {
+            Content = productsLayout
+        };
+        Grid.SetRow(productsScroll, 2);
 
         // 4. Barre Pagination (grid-pagination-bar)
+        var prevBtn = new Button
+        {
+            Text = "◀ Précédent",
+            BackgroundColor = AppleHigTheme.TertiarySystemBackground,
+            TextColor = AppleHigTheme.LabelPrimary,
+            FontSize = 13,
+            FontAttributes = FontAttributes.Bold,
+            HeightRequest = 38,
+            CornerRadius = 8,
+            Command = _vm.PreviousPageCommand
+        };
+        _prevBtn = prevBtn;
+        Grid.SetColumn(prevBtn, 0);
+
+        var pageLabel = new Label
+        {
+            TextColor = AppleHigTheme.LabelPrimary,
+            FontSize = 13,
+            FontAttributes = FontAttributes.Bold,
+            HorizontalOptions = LayoutOptions.Center,
+            VerticalOptions = LayoutOptions.Center
+        };
+        pageLabel.SetBinding(Label.TextProperty, nameof(PosTerminalViewModel.PageDisplay));
+        Grid.SetColumn(pageLabel, 1);
+
+        var nextBtn = new Button
+        {
+            Text = "Suivant ▶",
+            BackgroundColor = AppleHigTheme.TertiarySystemBackground,
+            TextColor = AppleHigTheme.LabelPrimary,
+            FontSize = 13,
+            FontAttributes = FontAttributes.Bold,
+            HeightRequest = 38,
+            CornerRadius = 8,
+            Command = _vm.NextPageCommand
+        };
+        _nextBtn = nextBtn;
+        Grid.SetColumn(nextBtn, 2);
+
         var paginationBar = new Grid
         {
             Padding = new Thickness(12, 6),
@@ -815,45 +929,96 @@ public class PosTerminalPage : ContentPage, IQueryAttributable
                 new ColumnDefinition { Width = GridLength.Star },
                 new ColumnDefinition { Width = GridLength.Auto }
             },
-            Children =
-            {
-                new Button
-                {
-                    Text = "◀ Précédent",
-                    BackgroundColor = AppleHigTheme.TertiarySystemBackground,
-                    TextColor = AppleHigTheme.LabelSecondary,
-                    FontSize = 12,
-                    FontAttributes = FontAttributes.Bold,
-                    HeightRequest = 36,
-                    CornerRadius = 8
-                }.Also(b => Grid.SetColumn(b, 0)),
-                new Label
-                {
-                    Text = "Page 1 / 1",
-                    TextColor = AppleHigTheme.LabelPrimary,
-                    FontSize = 13,
-                    FontAttributes = FontAttributes.Bold,
-                    HorizontalOptions = LayoutOptions.Center,
-                    VerticalOptions = LayoutOptions.Center
-                }.Also(l => Grid.SetColumn(l, 1)),
-                new Button
-                {
-                    Text = "Suivant ▶",
-                    BackgroundColor = AppleHigTheme.TertiarySystemBackground,
-                    TextColor = AppleHigTheme.LabelSecondary,
-                    FontSize = 12,
-                    FontAttributes = FontAttributes.Bold,
-                    HeightRequest = 36,
-                    CornerRadius = 8
-                }.Also(b => Grid.SetColumn(b, 2))
-            }
+            Children = { prevBtn, pageLabel, nextBtn }
         };
         Grid.SetRow(paginationBar, 3);
 
         panel.Add(quickKeysBar);
         panel.Add(categoryTabs);
-        panel.Add(productsGrid);
+        panel.Add(productsScroll);
         panel.Add(paginationBar);
+
+        // Recalcule la largeur des tuiles dès que le panel est redimensionné ou que le nombre de colonnes change
+        void ApplyTileWidth()
+        {
+            double available = productsScroll.Width > 0 ? productsScroll.Width : 720;
+            int cols = _vm.CatalogGridColumns is >= 2 and <= 6 ? _vm.CatalogGridColumns : 4;
+            double tileWidth = Math.Max(100, (available - cols * 12.0) / cols);
+            if (_productsLayout is null) return;
+            foreach (var child in _productsLayout.Children)
+            {
+                if (child is Frame f) f.WidthRequest = tileWidth;
+            }
+        }
+
+        productsScroll.SizeChanged += (s, e) => ApplyTileWidth();
+
+        void UpdateProductsLayout()
+        {
+            if (_vm.CurrentMatrix != null)
+            {
+                var grid = new Grid
+                {
+                    RowSpacing = 8,
+                    ColumnSpacing = 8,
+                    Padding = new Thickness(6)
+                };
+
+                int cols = _vm.CurrentMatrix.ColumnsCount > 0 ? _vm.CurrentMatrix.ColumnsCount : 4;
+                int rows = _vm.CurrentMatrix.RowsCount > 0 ? _vm.CurrentMatrix.RowsCount : 4;
+
+                for (int c = 0; c < cols; c++) grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Star });
+                for (int r = 0; r < rows; r++) grid.RowDefinitions.Add(new RowDefinition { Height = 120 });
+
+                foreach (var slot in _vm.CurrentMatrix.Slots)
+                {
+                    if (slot.ProductId.HasValue)
+                    {
+                        var prod = _vm.MasterCatalogProducts.FirstOrDefault(p => p.Id == slot.ProductId.Value);
+                        if (prod != null)
+                        {
+                            var frame = CreateProductFrame(prod);
+                            frame.Margin = new Thickness(0);
+                            frame.WidthRequest = -1; // Auto width in grid
+                            Grid.SetColumn(frame, slot.ColumnIndex);
+                            Grid.SetRow(frame, slot.RowIndex);
+                            grid.Children.Add(frame);
+                        }
+                    }
+                }
+
+                productsScroll.Content = grid;
+                _productsLayout = null; // Disable flex layout logic
+            }
+            else
+            {
+                productsScroll.Content = productsLayout;
+                _productsLayout = productsLayout;
+                ApplyTileWidth();
+            }
+        }
+
+        _vm.PropertyChanged += (s, e) =>
+        {
+            if (e.PropertyName == nameof(PosTerminalViewModel.SelectedCategory))
+            {
+                MainThread.BeginInvokeOnMainThread(RenderCategoryTabs);
+            }
+            else if (e.PropertyName == nameof(PosTerminalViewModel.CatalogGridColumns) || e.PropertyName == nameof(PosTerminalViewModel.CurrentMatrix))
+            {
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    if (e.PropertyName == nameof(PosTerminalViewModel.CurrentMatrix))
+                    {
+                        UpdateProductsLayout();
+                    }
+                    else
+                    {
+                        ApplyTileWidth();
+                    }
+                });
+            }
+        };
 
         return panel;
     }
@@ -1296,6 +1461,26 @@ public class PosTerminalPage : ContentPage, IQueryAttributable
 
         overlay.Children.Add(_billNoteCard);
         return overlay;
+    }
+
+    public void OpenDiscountModal()
+    {
+        if (_discountModal != null) _discountModal.IsVisible = true;
+    }
+
+    public void CloseDiscountModal()
+    {
+        if (_discountModal != null) _discountModal.IsVisible = false;
+    }
+
+    public void OpenTransferModal()
+    {
+        if (_transferModal != null) _transferModal.IsVisible = true;
+    }
+
+    public void CloseTransferModal()
+    {
+        if (_transferModal != null) _transferModal.IsVisible = false;
     }
 
     public void CloseBillNoteModal()

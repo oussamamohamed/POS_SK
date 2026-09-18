@@ -54,6 +54,7 @@ public partial class PinLockViewModel : ObservableObject
     {
         PinInput = string.Empty;
         ErrorMessage = string.Empty;
+        IsAuthenticated = false;
     }
 
     [RelayCommand]
@@ -80,6 +81,7 @@ public partial class PinLockViewModel : ObservableObject
                 return true;
             }
             
+            IsAuthenticated = false;
             ErrorMessage = result.ErrorMessage ?? "Code PIN invalide";
             _environmentService.TriggerHapticFeedback(HapticFeedbackType.Error);
             PinInput = string.Empty;
@@ -98,6 +100,7 @@ public partial class PinLockViewModel : ObservableObject
                 return true;
             }
 
+            IsAuthenticated = false;
             ErrorMessage = "Code PIN invalide";
             _environmentService.TriggerHapticFeedback(HapticFeedbackType.Error);
             PinInput = string.Empty;

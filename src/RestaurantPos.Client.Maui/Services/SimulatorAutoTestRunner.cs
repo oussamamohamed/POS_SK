@@ -190,27 +190,107 @@ public static class SimulatorAutoTestRunner
             posVm.CartItems.Clear();
             posVm.RecalculateTotals();
 
-            // 3.1 Filtrage catégorie Plats
+            // 3.1 Filtrage catégorie Plats avec simulation tactile UI
             var catPlats = posVm.Categories.FirstOrDefault(c => c.Name.Contains("Plat", StringComparison.OrdinalIgnoreCase))
                            ?? posVm.Categories.First();
-            posVm.SelectCategory(catPlats);
-            await Task.Delay(200);
+            var catDrinks = posVm.Categories.FirstOrDefault(c => c.Name.Contains("Boisson", StringComparison.OrdinalIgnoreCase))
+                            ?? posVm.Categories.First(c => c.Id != catPlats.Id);
+
+            await MainThread.InvokeOnMainThreadAsync(() =>
+            {
+                if (Shell.Current.CurrentPage is PosTerminalPage page)
+                {
+                    page.SimulateCategoryButtonClick("Plat");
+                }
+                else
+                {
+                    posVm.SelectCategory(catPlats);
+                }
+            });
+            await Task.Delay(400);
+
+            if (posVm.AvailableProducts.Count == 0 ||
+                !posVm.AvailableProducts.All(p => p.CategoryId == catPlats.Id) ||
+                posVm.AvailableProducts.Any(p => p.CategoryId == catDrinks.Id))
+            {
+                RecordFail(S3, "CategoryFilterPlats", "Le filtrage par catégorie Plats a échoué (fuite de produits ou articles manquants).");
+            }
+            RecordPass(S3, "CategoryFilterPlats", $"Filtrage Plats validé ({posVm.AvailableProducts.Count} articles exclusifs, aucune boisson présente).");
+            await NotifyStepReadyAsync("step3_pos_category_plats");
 
             var burger = posVm.AvailableProducts.FirstOrDefault(p => p.Name.Contains("Burger", StringComparison.OrdinalIgnoreCase))
                          ?? posVm.AvailableProducts.First();
             await posVm.AddProductAsync(burger);
             await Task.Delay(200);
 
-            // 3.2 Filtrage catégorie Boissons
-            var catDrinks = posVm.Categories.FirstOrDefault(c => c.Name.Contains("Boisson", StringComparison.OrdinalIgnoreCase))
-                            ?? posVm.Categories.First();
-            posVm.SelectCategory(catDrinks);
-            await Task.Delay(200);
+            // 3.2 Filtrage catégorie Boissons avec simulation tactile UI
+            await MainThread.InvokeOnMainThreadAsync(() =>
+            {
+                if (Shell.Current.CurrentPage is PosTerminalPage page)
+                {
+                    page.SimulateCategoryButtonClick("Boisson");
+                }
+                else
+                {
+                    posVm.SelectCategory(catDrinks);
+                }
+            });
+            await Task.Delay(400);
 
-            var coffee = posVm.AvailableProducts.FirstOrDefault(p => p.Name.Contains("Café", StringComparison.OrdinalIgnoreCase) || p.Name.Contains("Espresso", StringComparison.OrdinalIgnoreCase) || p.Name.Contains("Expresso", StringComparison.OrdinalIgnoreCase))
+            if (posVm.AvailableProducts.Count == 0 ||
+                !posVm.AvailableProducts.All(p => p.CategoryId == catDrinks.Id) ||
+                posVm.AvailableProducts.Any(p => p.CategoryId == catPlats.Id))
+            {
+                RecordFail(S3, "CategoryFilterBoissons", "Le filtrage par catégorie Boissons a échoué (présence de plats ou boissons manquantes).");
+            }
+            RecordPass(S3, "CategoryFilterBoissons", $"Filtrage Boissons validé ({posVm.AvailableProducts.Count} articles exclusifs, aucun plat présent).");
+            await NotifyStepReadyAsync("step3_pos_category_drinks");
+
+            var coffee = posVm.AvailableProducts.FirstOrDefault(p => p.Name.Contains("Café", StringComparison.OrdinalIgnoreCase) || p.Name.Contains("Espresso", StringComparison.OrdinalIgnoreCase) || p.Name.Contains("Expresso", StringComparison.OrdinalIgnoreCase) || p.Name.Contains("Bière", StringComparison.OrdinalIgnoreCase))
                          ?? posVm.AvailableProducts.First();
             await posVm.AddProductAsync(coffee);
             await Task.Delay(300);
+
+            // 3.3 Retour Catégorie '⚡ Tous' & Vérification restauration intégrale
+            await MainThread.InvokeOnMainThreadAsync(() =>
+            {
+                if (Shell.Current.CurrentPage is PosTerminalPage page)
+                {
+                    page.SimulateCategoryButtonClick("ALL");
+                }
+                else
+                {
+                    posVm.SelectCategory(null);
+                }
+            });
+            await Task.Delay(400);
+
+            if (posVm.SelectedCategory != null || posVm.AvailableProducts.Count < 2)
+            {
+                RecordFail(S3, "CategoryFilterReset", "Le retour à l'ensemble du catalogue a échoué.");
+            }
+            RecordPass(S3, "CategoryFilterReset", $"Catalogue complet restauré ({posVm.AvailableProducts.Count} articles affichés).");
+            await NotifyStepReadyAsync("step3_pos_category_all");
+
+            // 3.4 Test des contrôles de pagination
+            await MainThread.InvokeOnMainThreadAsync(() =>
+            {
+                if (Shell.Current.CurrentPage is PosTerminalPage page)
+                {
+                    page.SimulateNextPageClick();
+                    page.SimulatePrevPageClick();
+                }
+                else
+                {
+                    posVm.NextPageCommand.Execute(null);
+                    posVm.PreviousPageCommand.Execute(null);
+                }
+            });
+            if (posVm.CurrentPage != 1 || string.IsNullOrWhiteSpace(posVm.PageDisplay))
+            {
+                RecordFail(S3, "PaginationControls", "Gestion des pages et commandes de pagination défaillantes.");
+            }
+            RecordPass(S3, "PaginationControls", $"Commandes de pagination validées ({posVm.PageDisplay}).");
 
             if (posVm.CartItems.Count != 2)
             {
@@ -218,7 +298,7 @@ public static class SimulatorAutoTestRunner
             }
             RecordPass(S3, "AddProducts", $"2 articles ajoutés: {burger.Name} + {coffee.Name}");
 
-            // 3.3 Incrémentation et Décrémentation
+            // 3.5 Incrémentation et Décrémentation
             var burgerItem = posVm.CartItems.First(i => i.ProductName == burger.Name);
             posVm.IncrementQuantity(burgerItem);
             if (burgerItem.Quantity != 2)
@@ -232,7 +312,7 @@ public static class SimulatorAutoTestRunner
             }
             RecordPass(S3, "QuantityStepper", "Incrémentation/décrémentation des quantités validée.");
 
-            // 3.4 Vérification Total TTC
+            // 3.6 Vérification Total TTC
             var expectedTotal = burger.Price.ToDecimal() + coffee.Price.ToDecimal();
             if (posVm.TotalTtc.ToDecimal() != expectedTotal)
             {
@@ -320,6 +400,44 @@ public static class SimulatorAutoTestRunner
             // 4.6 Capture du panier avec modificateurs et nouveau bouton Note
             await NotifyStepReadyAsync("step3_pos_cart");
             await Task.Delay(800);
+
+            // 4.6a Affichage visuel de la modale de remise
+            await MainThread.InvokeOnMainThreadAsync(() =>
+            {
+                if (Shell.Current.CurrentPage is PosTerminalPage posPage)
+                {
+                    posPage.OpenDiscountModal();
+                }
+            });
+            await Task.Delay(1200);
+            await NotifyStepReadyAsync("step4_discount_modal");
+            await MainThread.InvokeOnMainThreadAsync(() =>
+            {
+                if (Shell.Current.CurrentPage is PosTerminalPage posPage)
+                {
+                    posPage.CloseDiscountModal();
+                }
+            });
+            await Task.Delay(600);
+
+            // 4.6b Affichage visuel de la modale de transfert de table
+            await MainThread.InvokeOnMainThreadAsync(() =>
+            {
+                if (Shell.Current.CurrentPage is PosTerminalPage posPage)
+                {
+                    posPage.OpenTransferModal();
+                }
+            });
+            await Task.Delay(1200);
+            await NotifyStepReadyAsync("step4_transfer_modal");
+            await MainThread.InvokeOnMainThreadAsync(() =>
+            {
+                if (Shell.Current.CurrentPage is PosTerminalPage posPage)
+                {
+                    posPage.CloseTransferModal();
+                }
+            });
+            await Task.Delay(600);
 
             // 4.7 Affichage visuel de la Note de table (Addition provisoire)
             await MainThread.InvokeOnMainThreadAsync(() =>
@@ -528,10 +646,10 @@ public static class SimulatorAutoTestRunner
             const string S9 = "9_CHECKOUT_PAYMENT";
             var checkoutVm = serviceProvider.GetRequiredService<CheckoutViewModel>();
 
-            // Initialisation d'une commande de 16.50 € (1650 cents)
+            // Initialisation d'une commande de 16.50 € (1650 cents) sur la table T01
             await MainThread.InvokeOnMainThreadAsync(() =>
             {
-                checkoutVm.Initialize(Guid.NewGuid(), 1650);
+                checkoutVm.Initialize(Guid.NewGuid(), 1650, tableT01.TableNumber);
             });
 
             // Navigation visuelle vers l'écran Checkout
@@ -568,11 +686,35 @@ public static class SimulatorAutoTestRunner
             RecordPass(S9, "FinalizeCheckout", $"Encaissement finalisé. Reçu N°: {checkoutVm.ReceiptNumber}");
             await Task.Delay(1000);
 
+            // 9.3 Vérification critique: Libération de la table et remise à zéro du panier (Non récurrence du bug table bloquée)
+            var tableStatusAfter = floorVm.GetTableStatus(tableT01.TableNumber);
+            if (tableStatusAfter != TableStatus.Free)
+            {
+                RecordFail(S9, "TableFreedAfterCheckout", $"La table {tableT01.TableNumber} est toujours marquée '{tableStatusAfter}' au lieu de 'Free' après encaissement.");
+            }
+            RecordPass(S9, "TableFreedAfterCheckout", $"Table {tableT01.TableNumber} libérée avec succès (statut: Free).");
+
+            // Navigation vers le plan de salle pour capture visuelle de la table libérée
             await MainThread.InvokeOnMainThreadAsync(async () =>
             {
-                await Shell.Current.GoToAsync("..");
+                await Shell.Current.GoToAsync("//floor");
             });
-            await Task.Delay(600);
+            await Task.Delay(1200);
+            await NotifyStepReadyAsync("step7_table_freed");
+
+            // Rappel de la table T01 dans le POS pour vérifier que les articles ont bien disparu
+            await MainThread.InvokeOnMainThreadAsync(async () =>
+            {
+                await Shell.Current.GoToAsync($"//pos?table={tableT01.TableNumber}");
+            });
+            await Task.Delay(800);
+
+            if (posVm.CartItems.Count > 0 || posVm.TotalTtc.AmountInCents > 0)
+            {
+                RecordFail(S9, "TableCartClearedAfterCheckout", $"La table {tableT01.TableNumber} contient encore {posVm.CartItems.Count} articles ({posVm.TotalTtc}) après encaissement !");
+            }
+            RecordPass(S9, "TableCartClearedAfterCheckout", $"Panier de la table {tableT01.TableNumber} vérifié et vierge (0 article, 0,00 €).");
+            await Task.Delay(800);
 
             // =========================================================================
             // SUITE 10 : Règlement Multi-Tenders & Facturation Chambre
@@ -664,6 +806,28 @@ public static class SimulatorAutoTestRunner
             }
             RecordPass(S12, "CatalogManagement", $"{catAdminVm.Categories.Count} familles et catalogue synchronisés.");
 
+            // 12.2a Affichage visuel de l'onglet Personnel & Codes PIN
+            await MainThread.InvokeOnMainThreadAsync(() =>
+            {
+                if (Shell.Current.CurrentPage is AdminShellPage adminPage)
+                {
+                    adminPage.SelectTab(AdminSection.Staff);
+                }
+            });
+            await Task.Delay(1200);
+            await NotifyStepReadyAsync("step8_admin_staff");
+
+            // 12.2b Affichage visuel de l'onglet Imprimantes Réseau
+            await MainThread.InvokeOnMainThreadAsync(() =>
+            {
+                if (Shell.Current.CurrentPage is AdminShellPage adminPage)
+                {
+                    adminPage.SelectTab(AdminSection.Printers);
+                }
+            });
+            await Task.Delay(1200);
+            await NotifyStepReadyAsync("step8_admin_printers");
+
             // 12.3 Test Disposition Écran & Grille Dynamique (Layout)
             await MainThread.InvokeOnMainThreadAsync(() =>
             {
@@ -694,11 +858,98 @@ public static class SimulatorAutoTestRunner
             posVm.CatalogGridColumns = 4;
             await Task.Delay(400);
 
+            // 12.4 Réseau & Sync (step8_admin_network)
+            await MainThread.InvokeOnMainThreadAsync(() =>
+            {
+                if (Shell.Current.CurrentPage is AdminShellPage adminPage)
+                    adminPage.SelectTab(AdminSection.NetworkSync);
+            });
+            await Task.Delay(1200);
+            await NotifyStepReadyAsync("step8_admin_network");
+            RecordPass(S12, "AdminNetworkSyncTab", "Onglet Réseau & Sync affiché avec boutons de découverte/synchronisation.");
+
+            // 12.5 Tableaux de Bord & KPIs (step8_admin_dashboard)
+            await MainThread.InvokeOnMainThreadAsync(() =>
+            {
+                if (Shell.Current.CurrentPage is AdminShellPage adminPage)
+                    adminPage.SelectTab(AdminSection.Dashboard);
+            });
+            await Task.Delay(1200);
+            await NotifyStepReadyAsync("step8_admin_dashboard");
+            RecordPass(S12, "AdminDashboardTab", "Onglet KPIs Financiers affiché avec CA TTC, Panier Moyen et filtres temporels.");
+
+            // 12.6 Plages Happy Hour (step8_admin_happyhour)
+            await MainThread.InvokeOnMainThreadAsync(() =>
+            {
+                if (Shell.Current.CurrentPage is AdminShellPage adminPage)
+                    adminPage.SelectTab(AdminSection.HappyHour);
+            });
+            await Task.Delay(1200);
+            await NotifyStepReadyAsync("step8_admin_happyhour");
+            RecordPass(S12, "AdminHappyHourTab", "Onglet Happy Hour affiché avec créneau Afterwork et bouton Nouveau Créneau.");
+
             await MainThread.InvokeOnMainThreadAsync(async () =>
             {
                 await Shell.Current.GoToAsync("..");
             });
             await Task.Delay(600);
+
+            // =========================================================================
+            // SUITE 14 : Fiscalité NF525 & Traçabilité des Encaissements
+            // =========================================================================
+            const string S14 = "14_FISCAL_NF525";
+            using (var scope = serviceProvider.CreateScope())
+            {
+                var localDb = scope.ServiceProvider.GetRequiredService<Persistence.LocalAppDbContext>();
+                var receipts = localDb.FiscalReceipts.Where(r => !r.IsVoid).ToList();
+                if (receipts.Count == 0)
+                {
+                    RecordFail(S14, "FiscalReceiptsRecorded", "Aucun reçu fiscal NF525 n'a été enregistré après encaissement.");
+                }
+                else
+                {
+                    var totalTtc = receipts.Sum(r => r.TotalTtcAmount.AmountInCents);
+                    RecordPass(S14, "FiscalReceiptsRecorded", $"{receipts.Count} reçu(s) fiscaux enregistrés avec succès. Total: {totalTtc / 100.0:F2} € TTC.");
+                }
+            }
+
+            // Navigation vers la page Fiscalité
+            FiscalPage? fiscalPageInstance = null;
+            await MainThread.InvokeOnMainThreadAsync(async () =>
+            {
+                await Shell.Current.GoToAsync("//fiscal");
+                fiscalPageInstance = Shell.Current.CurrentPage as FiscalPage;
+            });
+            await Task.Delay(1400);
+            await NotifyStepReadyAsync("step8_fiscal");
+            RecordPass(S14, "FiscalPageNavigation", "Page Fiscalité NF525 affichée avec données en direct.");
+
+            // 14.1 Vérification critique : Le rapport fiscal n'est PAS à 0,00 € après encaissement
+            if (fiscalPageInstance != null)
+            {
+                var fiscalDataBeforeZ = await fiscalPageInstance.GetActiveFiscalTotalsPublicAsync();
+                if (fiscalDataBeforeZ.totalTtc == 0 || fiscalDataBeforeZ.count == 0)
+                {
+                    RecordFail(S14, "FiscalTotalNotZero", "Le rapport fiscal affiche 0,00 € alors que des encaissements ont été réalisés !");
+                }
+                RecordPass(S14, "FiscalTotalNotZero", $"Rapport fiscal actif: {fiscalDataBeforeZ.totalTtc / 100.0:F2} € TTC sur {fiscalDataBeforeZ.count} encaissement(s) (non nul).");
+
+                // 14.2 Vérification critique : Clôture Z et remise à zéro du compteur de la session suivante
+                await fiscalPageInstance.ExecuteZReportAsync(showAlert: false);
+                await Task.Delay(1000);
+                await NotifyStepReadyAsync("step8_fiscal_post_z");
+
+                var fiscalDataAfterZ = await fiscalPageInstance.GetActiveFiscalTotalsPublicAsync();
+                if (fiscalDataAfterZ.totalTtc != 0 || fiscalDataAfterZ.count != 0)
+                {
+                    RecordFail(S14, "ZReportResetCounter", $"Après rapport Z, le compteur de la session n'est pas revenu à zéro (affiche {fiscalDataAfterZ.totalTtc / 100.0:F2} €) !");
+                }
+                if (fiscalDataAfterZ.perpetual < fiscalDataBeforeZ.perpetual)
+                {
+                    RecordFail(S14, "ZReportPerpetualGrandTotal", "Le Grand Total perpétuel NF525 a régressé après clôture Z !");
+                }
+                RecordPass(S14, "ZReportResetCounter", $"Clôture Z validée : nouveau compteur session = 0,00 € TTC, Grand Total perpétuel conservé ({fiscalDataAfterZ.perpetual / 100.0:F2} €).");
+            }
 
             // =========================================================================
             // SUITE 13 : Sécurité de Session & Verrouillage (auth-flow.spec.ts)
@@ -733,9 +984,9 @@ public static class SimulatorAutoTestRunner
             report.PassedTests = report.Tests.Count(t => t.Success);
             report.TotalSuites = report.Tests.Select(t => t.Suite).Distinct().Count();
 
-            Console.WriteLine($"[IPAD_E2E_FAIL] ERREUR: {ex.Message}");
+            Console.WriteLine($"[IPAD_E2E_FAIL] ERREUR: {ex}");
             System.Diagnostics.Debug.WriteLine($"[IPAD_E2E_FAIL] {ex}");
-            Notify("FAILURE", "Error", $"❌ {ex.Message}");
+            Notify("FAILURE", "Error", $"❌ {ex.GetType().Name}: {ex.Message} -> {ex.StackTrace?.Split('\n').FirstOrDefault()}");
         }
         finally
         {

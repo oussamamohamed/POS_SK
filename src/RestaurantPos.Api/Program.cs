@@ -500,98 +500,41 @@ public partial class Program
             await db.SaveChangesAsync();
         }
 
-        // Seed Tables with Active Orders for Instant Recall Demo
-        if (!await db.DiningTables.AnyAsync())
+        // Seed Tables (all free, no active orders or transactions for clean report control)
+        if (!await db.DiningTables.AnyAsync() || force)
         {
-            var orderT2 = new Order
+            if (force)
             {
-                Id = UuidV7.NewGuid(),
-                TableNumber = "T2",
-                Status = OrderStatus.SentToKitchen,
-                CreatedAtUtc = DateTimeOffset.UtcNow.AddMinutes(-20)
-            };
-
-            if (prodSalade is not null)
-            {
-                orderT2.Items.Add(new OrderItem
-                {
-                    Id = UuidV7.NewGuid(),
-                    ProductId = prodSalade.Id,
-                    ProductName = prodSalade.Name,
-                    Quantity = 2,
-                    UnitPrice = prodSalade.Price,
-                    TaxRatePercent = 10.0m,
-                    PreparationStationId = "COLD",
-                    IsDispatched = true
-                });
+                var existingTables = await db.DiningTables.ToListAsync();
+                db.DiningTables.RemoveRange(existingTables);
+                await db.SaveChangesAsync();
             }
-
-            if (prodBurger is not null)
-            {
-                orderT2.Items.Add(new OrderItem
-                {
-                    Id = UuidV7.NewGuid(),
-                    ProductId = prodBurger.Id,
-                    ProductName = prodBurger.Name,
-                    Quantity = 1,
-                    UnitPrice = prodBurger.Price,
-                    TaxRatePercent = 10.0m,
-                    PreparationStationId = "HOT_KITCHEN",
-                    IsDispatched = true,
-                    SelectedModifiers = ["Cuisson : À Point", "Sauce Poivre Vert"]
-                });
-            }
-
-            var orderT6 = new Order
-            {
-                Id = UuidV7.NewGuid(),
-                TableNumber = "T6",
-                Status = OrderStatus.SentToKitchen,
-                CreatedAtUtc = DateTimeOffset.UtcNow.AddMinutes(-10)
-            };
-
-            if (prodPizza is not null)
-            {
-                orderT6.Items.Add(new OrderItem
-                {
-                    Id = UuidV7.NewGuid(),
-                    ProductId = prodPizza.Id,
-                    ProductName = prodPizza.Name,
-                    Quantity = 1,
-                    UnitPrice = prodPizza.Price,
-                    TaxRatePercent = 10.0m,
-                    PreparationStationId = "HOT_KITCHEN",
-                    IsDispatched = true
-                });
-            }
-
-            if (prodBeer is not null)
-            {
-                orderT6.Items.Add(new OrderItem
-                {
-                    Id = UuidV7.NewGuid(),
-                    ProductId = prodBeer.Id,
-                    ProductName = prodBeer.Name,
-                    Quantity = 2,
-                    UnitPrice = prodBeer.Price,
-                    TaxRatePercent = 20.0m,
-                    PreparationStationId = "BAR",
-                    IsDispatched = true
-                });
-            }
-
-            db.Orders.AddRange(orderT2, orderT6);
 
             db.DiningTables.AddRange(
                 new DiningTable { TableNumber = "T1", Capacity = 2, Status = TableStatus.Free },
-                new DiningTable { TableNumber = "T2", Capacity = 4, Status = TableStatus.Occupied, AssignedWaiterName = "Sophie Martin", CoversCount = 3, ActiveOrderId = orderT2.Id, OpenedAtUtc = DateTimeOffset.UtcNow.AddMinutes(-20) },
-                new DiningTable { TableNumber = "T3", Capacity = 6, Status = TableStatus.BillRequested, AssignedWaiterName = "Alexandre Dupont", CoversCount = 4 },
+                new DiningTable { TableNumber = "T2", Capacity = 4, Status = TableStatus.Free },
+                new DiningTable { TableNumber = "T3", Capacity = 6, Status = TableStatus.Free },
                 new DiningTable { TableNumber = "T4", Capacity = 2, Status = TableStatus.Free },
                 new DiningTable { TableNumber = "T5", Capacity = 8, Status = TableStatus.Free },
-                new DiningTable { TableNumber = "T6", Capacity = 4, Status = TableStatus.Occupied, AssignedWaiterName = "Sophie Martin", CoversCount = 2, ActiveOrderId = orderT6.Id, OpenedAtUtc = DateTimeOffset.UtcNow.AddMinutes(-10) },
+                new DiningTable { TableNumber = "T6", Capacity = 4, Status = TableStatus.Free },
                 new DiningTable { TableNumber = "T7", Capacity = 2, Status = TableStatus.Free },
-                new DiningTable { TableNumber = "T8", Capacity = 4, Status = TableStatus.Paid, AssignedWaiterName = "Alexandre Dupont", CoversCount = 2 }
+                new DiningTable { TableNumber = "T8", Capacity = 4, Status = TableStatus.Free }
             );
+            await db.SaveChangesAsync();
+        }
+        else
+        {
+            // Reset any existing tables to Free and clear active orders
+            var tables = await db.DiningTables.ToListAsync();
+            foreach (var table in tables)
+            {
+                table.Status = TableStatus.Free;
+                table.ActiveOrderId = null;
+                table.CoversCount = 0;
+                table.AssignedWaiterId = null;
+                table.AssignedWaiterName = null;
+                table.OpenedAtUtc = null;
+            }
             await db.SaveChangesAsync();
         }
 

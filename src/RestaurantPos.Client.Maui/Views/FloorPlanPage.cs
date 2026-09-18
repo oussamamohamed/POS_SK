@@ -31,6 +31,7 @@ public class FloorPlanPage : ContentPage
     {
         base.OnAppearing();
         Shell.SetNavBarIsVisible(this, false);
+        _ = _vm.RefreshTablesAsync();
     }
 
     private void Build()
@@ -102,18 +103,22 @@ public class FloorPlanPage : ContentPage
         subHeader.Add(titleStack);
         subHeader.Add(legend);
 
-        // 3. Grille des tables (Cartes Inset Grouped)
-        var tablesGrid = new CollectionView
+        // 3. Grille des tables (Cartes Inset Grouped FlexLayout)
+        var tablesLayout = new FlexLayout
         {
-            ItemsLayout = new GridItemsLayout(4, ItemsLayoutOrientation.Vertical)
-            {
-                HorizontalItemSpacing = 16,
-                VerticalItemSpacing = 16
-            },
-            ItemTemplate = new DataTemplate(BuildTableCard),
+            Direction = Microsoft.Maui.Layouts.FlexDirection.Row,
+            Wrap = Microsoft.Maui.Layouts.FlexWrap.Wrap,
+            JustifyContent = Microsoft.Maui.Layouts.FlexJustify.Start,
+            AlignItems = Microsoft.Maui.Layouts.FlexAlignItems.Start,
             Margin = new Thickness(24, 8, 24, 24)
         };
-        tablesGrid.SetBinding(CollectionView.ItemsSourceProperty, nameof(FloorPlanViewModel.Tables));
+        BindableLayout.SetItemTemplate(tablesLayout, new DataTemplate(BuildTableCard));
+        tablesLayout.SetBinding(BindableLayout.ItemsSourceProperty, nameof(FloorPlanViewModel.Tables));
+
+        var tablesScroll = new ScrollView
+        {
+            Content = tablesLayout
+        };
 
         // 4. Modale Sheet "Ouvrir table"
         var openTablePopup = BuildOpenTablePopup();
@@ -131,7 +136,7 @@ public class FloorPlanPage : ContentPage
             {
                 AddToGrid(topBar, 0),
                 AddToGrid(subHeader, 1),
-                AddToGrid(tablesGrid, 2)
+                AddToGrid(tablesScroll, 2)
             }
         };
 
@@ -154,7 +159,9 @@ public class FloorPlanPage : ContentPage
             StrokeShape = new RoundRectangle { CornerRadius = new CornerRadius(AppleHigTheme.CornerRadiusLarge) },
             StrokeThickness = 1,
             Stroke = AppleHigTheme.Separator,
+            WidthRequest = 180,
             HeightRequest = 120,
+            Margin = new Thickness(8),
             BackgroundColor = AppleHigTheme.SecondarySystemBackground
         };
         border.BindingContextChanged += (s, _) => ConfigureTableCard((BindableObject)s!);
@@ -231,11 +238,31 @@ public class FloorPlanPage : ContentPage
                     CornerRadius = 1,
                     Color = Color.FromRgba(statusColor.Red, statusColor.Green, statusColor.Blue, 0.3)
                 },
-                new Label
+                new Grid
                 {
-                    Text = table.AssignedWaiterName is not null ? $"👤 {table.AssignedWaiterName}" : "",
-                    TextColor = AppleHigTheme.LabelSecondary,
-                    FontSize = AppleHigTheme.Footnote
+                    ColumnDefinitions =
+                    {
+                        new ColumnDefinition { Width = GridLength.Star },
+                        new ColumnDefinition { Width = GridLength.Auto }
+                    },
+                    Children =
+                    {
+                        new Label
+                        {
+                            Text = table.AssignedWaiterName is not null ? $"👤 {table.AssignedWaiterName}" : "",
+                            TextColor = AppleHigTheme.LabelSecondary,
+                            FontSize = AppleHigTheme.Footnote,
+                            VerticalOptions = LayoutOptions.Center
+                        }.Also(l => Grid.SetColumn(l, 0)),
+                        new Label
+                        {
+                            Text = table.CurrentTotalTtc > 0 ? $"{table.CurrentTotalTtc:F2} €" : (table.Status != TableStatus.Free ? "0.00 €" : ""),
+                            TextColor = table.CurrentTotalTtc > 0 ? AppleHigTheme.SystemBlue : AppleHigTheme.LabelSecondary,
+                            FontSize = AppleHigTheme.Subheadline,
+                            FontAttributes = FontAttributes.Bold,
+                            VerticalOptions = LayoutOptions.Center
+                        }.Also(l => Grid.SetColumn(l, 1))
+                    }
                 }
             }
         };

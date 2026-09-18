@@ -344,9 +344,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Check Happy Hour status on startup
         await checkHappyHourStatus();
-
-        // Automatically open default direct takeaway counter cart (Feature 018 US1)
-        await openDirectCounterOrder('Takeaway');
         await updateHeldQueueCount();
     }
 
@@ -928,6 +925,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             await ensureAuthToken();
+            const headers = { 'Content-Type': 'application/json' };
+            if (state.token) headers['Authorization'] = `Bearer ${state.token}`;
+
             const courseMap = { 'Direct': 0, 'Suite': 1, 'Dessert': 2, 'OnDemand': 3 };
             const itemsPayload = unsaved.map(i => ({
                 productId: i.product.id,
@@ -944,11 +944,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 appliedHappyHourScheduleId: i.appliedHappyHourScheduleId || null
             }));
 
-            const res = await fetch(`/api/tables/${state.activeTable}/items`, {
+            let res = await fetch(`/api/tables/${encodeURIComponent(state.activeTable)}/items`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: headers,
                 body: JSON.stringify({ items: itemsPayload })
             });
+
+            if (res.status === 401) {
+                await ensureAuthToken();
+                if (state.token) headers['Authorization'] = `Bearer ${state.token}`;
+                res = await fetch(`/api/tables/${encodeURIComponent(state.activeTable)}/items`, {
+                    method: 'POST',
+                    headers: headers,
+                    body: JSON.stringify({ items: itemsPayload })
+                });
+            }
 
             if (res.ok) {
                 const data = await res.json();
@@ -1333,9 +1343,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const endpoint = mode === 'merge' ? `/api/tables/${state.activeTable}/merge` : `/api/tables/${state.activeTable}/transfer`;
 
             try {
+                await ensureAuthToken();
+                const headers = { 'Content-Type': 'application/json' };
+                if (state.token) headers['Authorization'] = `Bearer ${state.token}`;
+
                 const res = await fetch(endpoint, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: headers,
                     body: JSON.stringify({ targetTableNumber: targetTable })
                 });
                 const data = await res.json();
@@ -1792,6 +1806,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const payload = {
                 orderId: state.activeOrderId || '00000000-0000-0000-0000-000000000000',
                 tableNumber: state.activeTable,
+                terminalId: state.terminalId || 'POS_MAIN_TERM',
                 operatorId: state.operator?.id || '00000000-0000-0000-0000-000000000000',
                 tenders: [
                     {
@@ -1826,8 +1841,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     state.splitActivePart = null;
                     state.cart = [];
                     state.activeOrderId = null;
+                    state.activeTable = null;
                     renderCart();
                     await loadFloorPlanData();
+                    switchView('floorPlanView');
                 }
             } else {
                 let errMsg = 'Erreur validation paiement';
@@ -2309,12 +2326,18 @@ document.addEventListener('DOMContentLoaded', () => {
             const card = document.createElement('div');
             const statusClass = getTableStatusClass(table.status);
             card.className = `table-card ${statusClass}`;
+            const total = Number(table.activeOrderTotalTtc || 0);
+            const totalHtml = total > 0
+                ? `<div class="table-total">💶 ${total.toFixed(2)} €</div>`
+                : (table.status !== 0 ? `<div class="table-sub" style="font-weight:700;color:var(--text-muted);margin-top:4px;">Total : 0.00 €</div>` : '');
+
             card.innerHTML = `
                 <div class="table-num">${table.tableNumber}</div>
                 <div class="table-sub">Capacité : ${table.capacity} pers.</div>
                 <div class="table-sub">Statut : ${getTableStatusLabel(table.status)}</div>
                 <div class="table-sub">Serveur : ${table.assignedWaiterName || '—'}</div>
                 ${table.coversCount > 0 ? `<div style="font-size:0.75rem;color:#10b981;font-weight:700;margin-top:4px;">👥 ${table.coversCount} Couverts actifs</div>` : ''}
+                ${totalHtml}
             `;
 
             card.addEventListener('click', async () => {
@@ -2457,8 +2480,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
+            await ensureAuthToken();
+            const headers = state.token ? { 'Authorization': `Bearer ${state.token}` } : {};
             const url = `/api/dashboard/financial?from=${encodeURIComponent(fromDate.toISOString())}&to=${encodeURIComponent(toDate.toISOString())}`;
-            const res = await fetch(url);
+            const res = await fetch(url, { headers });
             if (!res.ok) {
                 console.error('Erreur chargement dashboard financier:', res.status);
                 return;
@@ -3415,9 +3440,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 const managerId = state.operator?.id || '01a067d9-b8b9-7b6a-8b3c-d272e6128c35';
                 const managerName = state.operator?.name || 'Alexandre Dupont (Manager)';
                 try {
+                    await ensureAuthToken();
+                    const headers = { 'Content-Type': 'application/json' };
+                    if (state.token) {
+                        headers['Authorization'] = `Bearer ${state.token}`;
+                    }
                     const res = await fetch('/api/fiscal/z-closure', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: headers,
                         body: JSON.stringify({
                             terminalId: 'POS_MAIN_TERM',
                             managerId: managerId,
@@ -3524,7 +3554,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==================== FISCAL TRAIL & NF525 REPORTS ====================
     async function loadFiscalViewData() {
         try {
-            const res = await fetch('/api/fiscal/latest-closure');
+            await ensureAuthToken();
+            const headers = state.token ? { 'Authorization': `Bearer ${state.token}` } : {};
+            const res = await fetch('/api/fiscal/latest-closure', { headers });
             if (res.ok) {
                 const closure = await res.json();
                 renderFiscalSlip(closure, true);
@@ -3538,7 +3570,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function previewXReport() {
         try {
-            const res = await fetch('/api/fiscal/x-report?terminalId=POS_MAIN_TERM');
+            await ensureAuthToken();
+            const headers = state.token ? { 'Authorization': `Bearer ${state.token}` } : {};
+            const res = await fetch('/api/fiscal/x-report?terminalId=POS_MAIN_TERM', { headers });
             if (res.ok) {
                 const data = await res.json();
                 renderFiscalSlip(data, false);

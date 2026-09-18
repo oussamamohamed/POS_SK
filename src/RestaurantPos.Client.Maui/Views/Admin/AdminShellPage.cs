@@ -593,32 +593,39 @@ public class AdminShellPage : ContentPage
             VerticalOptions = LayoutOptions.Center
         };
 
+        var categoryPicker = new Picker
+        {
+            Title = "Sélectionnez une catégorie...",
+            TextColor = Colors.White,
+            BackgroundColor = Color.FromArgb("#0F172A"),
+            HeightRequest = 38,
+            WidthRequest = 200,
+            ItemDisplayBinding = new Binding("Name")
+        };
+        categoryPicker.ItemsSource = _vm.CatalogVm.Categories;
+
         var presetPicker = new Picker
         {
             Title = "Format de la Matrice",
             TextColor = Colors.White,
             BackgroundColor = Color.FromArgb("#0F172A"),
-            HeightRequest = 38
+            HeightRequest = 38,
+            WidthRequest = 180
         };
-        presetPicker.Items.Add("3 × 3 (9 touches — Grandes touches)");
-        presetPicker.Items.Add("4 × 4 (16 touches — Standard recommandé)");
-        presetPicker.Items.Add("5 × 4 (20 touches — Équilibré)");
-        presetPicker.Items.Add("5 × 5 (25 touches — Haute densité)");
-        presetPicker.Items.Add("6 × 4 (24 touches — Écran large 16:9)");
-        
-        presetPicker.SelectedIndex = _vm.LayoutVm.GridColumnCount switch
-        {
-            3 => 0,
-            5 => 2,
-            6 => 4,
-            _ => 1
-        };
+        presetPicker.Items.Add("3 × 3 (9 touches)");
+        presetPicker.Items.Add("4 × 4 (16 touches)");
+        presetPicker.Items.Add("5 × 4 (20 touches)");
+        presetPicker.Items.Add("5 × 5 (25 touches)");
+        presetPicker.Items.Add("6 × 4 (24 touches)");
+        presetPicker.SelectedIndex = 1;
 
-        var applyBtn = new Button { Text = "Appliquer le Format", BackgroundColor = Color.FromArgb("#3B82F6"), TextColor = Colors.White, FontSize = 12, HeightRequest = 38, CornerRadius = 6 };
-        var resetBtn = new Button { Text = "↺ Réinitialiser", BackgroundColor = Color.FromArgb("#334155"), TextColor = Color.FromArgb("#94A3B8"), FontSize = 12, HeightRequest = 38, CornerRadius = 6 };
+        var applyBtn = new Button { Text = "Enregistrer la Grille", BackgroundColor = Color.FromArgb("#3B82F6"), TextColor = Colors.White, FontSize = 12, HeightRequest = 38, CornerRadius = 6 };
+        var resetBtn = new Button { Text = "↺ Vider", BackgroundColor = Color.FromArgb("#334155"), TextColor = Color.FromArgb("#94A3B8"), FontSize = 12, HeightRequest = 38, CornerRadius = 6 };
 
+        toolbarGrid.Children.Add(categoryPicker);
+        Grid.SetColumn(presetPicker, 1);
         toolbarGrid.Children.Add(presetPicker);
-        Grid.SetColumn(applyBtn, 1);
+        Grid.SetColumn(applyBtn, 2);
         toolbarGrid.Children.Add(applyBtn);
         Grid.SetColumn(resetBtn, 3);
         toolbarGrid.Children.Add(resetBtn);
@@ -630,13 +637,27 @@ public class AdminShellPage : ContentPage
         {
             ColumnDefinitions =
             {
-                new ColumnDefinition { Width = GridLength.Star },
-                new ColumnDefinition { Width = new GridLength(280) }
+                new ColumnDefinition { Width = new GridLength(280) },
+                new ColumnDefinition { Width = GridLength.Star }
             },
             ColumnSpacing = 16
         };
 
-        var matrixCard = CreateCard("Matrice Tactile de Caisse (Miroir Interactif)");
+        var catalogProducts = new List<(Guid Id, string Name, string Price, string Color)>();
+        foreach (var p in _vm.CatalogVm.Products)
+        {
+            catalogProducts.Add((p.Id, p.Name, $"{p.Price:C}", "#3B82F6"));
+        }
+
+        var catalogSide = CreateCard("Boîte à Outils (Drag & Drop)");
+        var sideStack = new VerticalStackLayout { Spacing = 8 };
+        sideStack.Children.Add(new Label { Text = "Glissez un article vers la grille :", TextColor = Color.FromArgb("#94A3B8"), FontSize = 11, Margin = new Thickness(0, 0, 0, 8) });
+        
+        var assignedItems = new Dictionary<int, (Guid Id, string Name, string Price, string Color)>();
+        int currentCols = 4;
+        int currentRows = 4;
+
+        var matrixCard = CreateCard("Matrice Tactile de Caisse (Canvas)");
         var gridMatrix = new Grid
         {
             RowSpacing = 8,
@@ -645,22 +666,76 @@ public class AdminShellPage : ContentPage
             Padding = new Thickness(10)
         };
 
-        var sampleItems = new List<(string Name, string Price, string Color)>
+        var filteredToolbox = new VerticalStackLayout { Spacing = 8 };
+        sideStack.Children.Add(filteredToolbox);
+
+        void RenderToolbox()
         {
-            ("🍔 Burger Maison", "16,50 €", "#3B82F6"),
-            ("🍟 Frites", "4,00 €", "#3B82F6"),
-            ("☕ Café", "2,50 €", "#3B82F6"),
-            ("🍺 Bière IPA", "5,50 €", "#3B82F6"),
-            ("🥗 Salade César", "12,00 €", "#10B981"),
-            ("🥩 Entrecôte", "22,00 €", "#10B981"),
-            ("🍕 Pizza Reine", "13,50 €", "#10B981"),
-            ("🍰 Tiramisu", "7,50 €", "#F59E0B"),
-            ("💧 Eau 50cl", "3,00 €", "#3B82F6"),
-            ("🍫 Fondant", "6,50 €", "#F59E0B")
+            filteredToolbox.Children.Clear();
+            var selectedCat = categoryPicker.SelectedItem as Category;
+            if (selectedCat == null) return;
+
+            foreach (var prod in catalogProducts.Where(p => _vm.CatalogVm.Products.FirstOrDefault(x => x.Id == p.Id)?.CategoryId == selectedCat.Id))
+            {
+                var row = new Border
+                {
+                    StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = new CornerRadius(6) },
+                    Stroke = Color.FromArgb("#334155"),
+                    BackgroundColor = Color.FromArgb("#0F172A"),
+                    Padding = new Thickness(10, 8),
+                    Content = new Label { Text = $"{prod.Name} ({prod.Price})", TextColor = Colors.White, FontSize = 12 }
+                };
+
+                var dragGesture = new DragGestureRecognizer { CanDrag = true };
+                dragGesture.DragStarting += (s, e) =>
+                {
+                    e.Data.Properties.Add("Id", prod.Id);
+                    e.Data.Properties.Add("Name", prod.Name);
+                    e.Data.Properties.Add("Price", prod.Price);
+                    e.Data.Properties.Add("Color", prod.Color);
+                };
+                row.GestureRecognizers.Add(dragGesture);
+
+                filteredToolbox.Children.Add(row);
+            }
+        }
+
+        // Corbeille pour supprimer
+        var trashBin = new Border
+        {
+            StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = new CornerRadius(6) },
+            Stroke = Color.FromArgb("#EF4444"),
+            StrokeDashArray = new double[] { 4, 4 },
+            BackgroundColor = Color.FromRgba(239, 68, 68, 15),
+            Padding = new Thickness(10, 15),
+            Margin = new Thickness(0, 20, 0, 0),
+            Content = new Label { Text = "🗑️ Glissez ici pour retirer", TextColor = Color.FromArgb("#EF4444"), FontSize = 12, HorizontalOptions = LayoutOptions.Center }
         };
+        var trashDrop = new DropGestureRecognizer { AllowDrop = true };
+        trashDrop.DragOver += (s, e) => trashBin.BackgroundColor = Color.FromRgba(239, 68, 68, 40);
+        trashDrop.DragLeave += (s, e) => trashBin.BackgroundColor = Color.FromRgba(239, 68, 68, 15);
+        trashDrop.Drop += (s, e) => 
+        {
+            trashBin.BackgroundColor = Color.FromRgba(239, 68, 68, 15);
+            if (e.Data.Properties.ContainsKey("SlotIndex"))
+            {
+                int srcSlot = (int)e.Data.Properties["SlotIndex"];
+                assignedItems.Remove(srcSlot);
+                RenderMatrix(currentCols, currentRows);
+            }
+        };
+        trashBin.GestureRecognizers.Add(trashDrop);
+        sideStack.Children.Add(trashBin);
+
+        catalogSide.Children.Add(new ScrollView { Content = sideStack, HeightRequest = 480 });
+        splitGrid.Children.Add(catalogSide);
+
+
 
         void RenderMatrix(int cols, int rows)
         {
+            currentCols = cols;
+            currentRows = rows;
             gridMatrix.RowDefinitions.Clear();
             gridMatrix.ColumnDefinitions.Clear();
             gridMatrix.Children.Clear();
@@ -675,19 +750,20 @@ public class AdminShellPage : ContentPage
             {
                 for (int c = 0; c < cols; c++)
                 {
-                    int index = r * cols + c;
+                    int slotIndex = r * cols + c;
+                    bool hasItem = assignedItems.TryGetValue(slotIndex, out var item);
+
                     var tile = new Border
                     {
                         StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = new CornerRadius(8) },
                         Stroke = Color.FromArgb("#334155"),
                         StrokeThickness = 1,
-                        BackgroundColor = index < sampleItems.Count ? Color.FromArgb("#1E293B") : Color.FromRgba(255, 255, 255, 10),
+                        BackgroundColor = hasItem ? Color.FromArgb("#1E293B") : Color.FromRgba(255, 255, 255, 10),
                         Padding = new Thickness(6)
                     };
 
-                    if (index < sampleItems.Count)
+                    if (hasItem)
                     {
-                        var item = sampleItems[index];
                         tile.Content = new VerticalStackLayout
                         {
                             VerticalOptions = LayoutOptions.Center,
@@ -697,35 +773,47 @@ public class AdminShellPage : ContentPage
                                 new Label { Text = item.Price, TextColor = Color.FromArgb("#10B981"), FontSize = 11, HorizontalOptions = LayoutOptions.Center }
                             }
                         };
+
+                        var dragGesture = new DragGestureRecognizer { CanDrag = true };
+                        dragGesture.DragStarting += (s, e) =>
+                        {
+                            e.Data.Properties.Add("Id", item.Id);
+                            e.Data.Properties.Add("Name", item.Name);
+                            e.Data.Properties.Add("Price", item.Price);
+                            e.Data.Properties.Add("Color", item.Color);
+                            e.Data.Properties.Add("SlotIndex", slotIndex);
+                        };
+                        tile.GestureRecognizers.Add(dragGesture);
                     }
                     else
                     {
-                        tile.Content = new Label { Text = "+ Case Libre", TextColor = Color.FromArgb("#475569"), FontSize = 11, HorizontalOptions = LayoutOptions.Center, VerticalOptions = LayoutOptions.Center };
+                        tile.Content = new Label { Text = "+ Glisser ici", TextColor = Color.FromArgb("#475569"), FontSize = 11, HorizontalOptions = LayoutOptions.Center, VerticalOptions = LayoutOptions.Center };
                     }
 
-                    int slotIndex = index;
-                    var tileTap = new TapGestureRecognizer();
-                    tileTap.Tapped += async (s, e) =>
+                    var dropGesture = new DropGestureRecognizer { AllowDrop = true };
+                    dropGesture.DragOver += (s, e) => tile.BackgroundColor = Color.FromRgba(59, 130, 246, 50);
+                    dropGesture.DragLeave += (s, e) => tile.BackgroundColor = hasItem ? Color.FromArgb("#1E293B") : Color.FromRgba(255, 255, 255, 10);
+                    dropGesture.Drop += (s, e) =>
                     {
-                        var action = await DisplayActionSheet($"Case #{slotIndex + 1}", "Annuler", null, "🍔 Burger Maison", "🥩 Entrecôte Grillée", "☕ Café Espresso", "🍺 Bière Pression", "Vider la case");
-                        if (!string.IsNullOrEmpty(action) && action != "Annuler")
+                        tile.BackgroundColor = hasItem ? Color.FromArgb("#1E293B") : Color.FromRgba(255, 255, 255, 10);
+                        if (e.Data.Properties.TryGetValue("Id", out var idObj) &&
+                            e.Data.Properties.TryGetValue("Name", out var nameObj) &&
+                            e.Data.Properties.TryGetValue("Price", out var priceObj) &&
+                            e.Data.Properties.TryGetValue("Color", out var colorObj))
                         {
-                            if (action == "Vider la case" && slotIndex < sampleItems.Count)
+                            if (e.Data.Properties.TryGetValue("SlotIndex", out var srcSlotObj))
                             {
-                                sampleItems.RemoveAt(slotIndex);
+                                int srcSlot = (int)srcSlotObj;
+                                if (srcSlot != slotIndex)
+                                {
+                                    assignedItems.Remove(srcSlot);
+                                }
                             }
-                            else if (action != "Vider la case")
-                            {
-                                var newItem = (action, "Assigné", "#3B82F6");
-                                if (slotIndex < sampleItems.Count)
-                                    sampleItems[slotIndex] = newItem;
-                                else
-                                    sampleItems.Add(newItem);
-                            }
+                            assignedItems[slotIndex] = ((Guid)idObj, nameObj?.ToString() ?? "", priceObj?.ToString() ?? "", colorObj?.ToString() ?? "");
                             RenderMatrix(cols, rows);
                         }
                     };
-                    tile.GestureRecognizers.Add(tileTap);
+                    tile.GestureRecognizers.Add(dropGesture);
 
                     Grid.SetRow(tile, r);
                     Grid.SetColumn(tile, c);
@@ -734,14 +822,64 @@ public class AdminShellPage : ContentPage
             }
         }
 
-        int initialCols = _vm.LayoutVm.GridColumnCount is >= 2 and <= 6 ? _vm.LayoutVm.GridColumnCount : 4;
-        int initialRows = initialCols == 3 ? 3 : (initialCols == 5 ? 4 : (initialCols == 6 ? 4 : 4));
+        int initialCols = 4;
+        int initialRows = 4;
         RenderMatrix(initialCols, initialRows);
 
-        applyBtn.Clicked += async (s, e) =>
+        categoryPicker.SelectedIndexChanged += async (s, e) =>
         {
-            int cols = 4;
-            int rows = 4;
+            var selectedCat = categoryPicker.SelectedItem as Category;
+            if (selectedCat == null) return;
+            RenderToolbox();
+
+            var gridApi = Handler?.MauiContext?.Services.GetService<Contracts.IGridLayoutApiService>();
+            if (gridApi != null)
+            {
+                var layout = await gridApi.GetLayoutByCategoryAsync(selectedCat.Id);
+                if (layout != null)
+                {
+                    assignedItems.Clear();
+                    foreach (var slot in layout.Slots)
+                    {
+                        if (slot.ProductId.HasValue)
+                        {
+                            var prod = catalogProducts.FirstOrDefault(p => p.Id == slot.ProductId.Value);
+                            if (prod != default)
+                            {
+                                assignedItems[slot.SlotIndex] = prod;
+                            }
+                        }
+                    }
+                    
+                    int cols = layout.ColumnsCount > 0 ? layout.ColumnsCount : 4;
+                    int rows = layout.RowsCount > 0 ? layout.RowsCount : 4;
+                    
+                    presetPicker.SelectedIndex = cols switch
+                    {
+                        3 => 0,
+                        5 => rows == 4 ? 2 : 3,
+                        6 => 4,
+                        _ => 1
+                    };
+                    
+                    RenderMatrix(cols, rows);
+                    statusLabel.Text = $"Grille chargée pour {selectedCat.Name}";
+                    statusLabel.IsVisible = true;
+                }
+                else
+                {
+                    assignedItems.Clear();
+                    presetPicker.SelectedIndex = 1;
+                    RenderMatrix(4, 4);
+                    statusLabel.Text = $"Nouvelle grille pour {selectedCat.Name}";
+                    statusLabel.IsVisible = true;
+                }
+            }
+        };
+
+        presetPicker.SelectedIndexChanged += (s, e) =>
+        {
+            int cols = 4, rows = 4;
             switch (presetPicker.SelectedIndex)
             {
                 case 0: cols = 3; rows = 3; break;
@@ -750,63 +888,60 @@ public class AdminShellPage : ContentPage
                 case 3: cols = 5; rows = 5; break;
                 case 4: cols = 6; rows = 4; break;
             }
-
             RenderMatrix(cols, rows);
+        };
 
-            _vm.LayoutVm.GridColumnCount = cols;
-            _vm.LayoutVm.ProfileName = $"Matrice {cols}x{rows}";
-            await _vm.LayoutVm.SaveCurrentProfileAsync();
-
-            var posVm = Handler?.MauiContext?.Services.GetService<PosTerminalViewModel>();
-            if (posVm != null)
+        applyBtn.Clicked += async (s, e) =>
+        {
+            var selectedCat = categoryPicker.SelectedItem as Category;
+            if (selectedCat == null)
             {
-                posVm.CatalogGridColumns = cols;
+                statusLabel.Text = "❌ Veuillez sélectionner une catégorie.";
+                statusLabel.IsVisible = true;
+                return;
             }
 
-            statusLabel.Text = $"✅ Format {cols} × {rows} appliqué avec succès ! Terminal de caisse configuré sur {cols} colonnes.";
+            int cols = currentCols;
+            int rows = currentRows;
+
+            var gridApi = Handler?.MauiContext?.Services.GetService<Contracts.IGridLayoutApiService>();
+            if (gridApi != null)
+            {
+                var slotsDto = assignedItems.Select(kv => new RestaurantPos.Application.DTOs.UpdateGridSlotItem(
+                    RowIndex: kv.Key / cols,
+                    ColumnIndex: kv.Key % cols,
+                    ProductId: kv.Value.Id,
+                    CustomLabel: null,
+                    CustomColorHex: null
+                )).ToList();
+
+                var request = new RestaurantPos.Application.DTOs.UpdateGridLayoutRequest(
+                    CategoryId: selectedCat.Id,
+                    ColumnsCount: cols,
+                    RowsCount: rows,
+                    PageIndex: 0,
+                    Slots: slotsDto
+                );
+
+                await gridApi.SaveLayoutAsync(request);
+            }
+
+            statusLabel.Text = $"✅ Grille de {selectedCat.Name} ({cols}×{rows}) sauvegardée !";
             statusLabel.IsVisible = true;
         };
 
-        resetBtn.Clicked += async (s, e) =>
+        resetBtn.Clicked += (s, e) =>
         {
             presetPicker.SelectedIndex = 1;
+            assignedItems.Clear();
             RenderMatrix(4, 4);
-
-            _vm.LayoutVm.GridColumnCount = 4;
-            _vm.LayoutVm.ProfileName = "Standard iPad 4x4";
-            await _vm.LayoutVm.SaveCurrentProfileAsync();
-
-            var posVm = Handler?.MauiContext?.Services.GetService<PosTerminalViewModel>();
-            if (posVm != null)
-            {
-                posVm.CatalogGridColumns = 4;
-            }
-
-            statusLabel.Text = "↺ Format réinitialisé en 4 × 4 standard (16 touches).";
+            statusLabel.Text = "Grille vidée localement. N'oubliez pas d'enregistrer.";
             statusLabel.IsVisible = true;
         };
 
         matrixCard.Children.Add(gridMatrix);
+        Grid.SetColumn(matrixCard, 1);
         splitGrid.Children.Add(matrixCard);
-
-        var catalogSide = CreateCard("Catalogue Assignable");
-        var sideStack = new VerticalStackLayout { Spacing = 6 };
-        sideStack.Children.Add(new Label { Text = "Touchez une case pour assigner un article :", TextColor = Color.FromArgb("#94A3B8"), FontSize = 11, Margin = new Thickness(0, 0, 0, 8) });
-        foreach (var it in sampleItems)
-        {
-            var row = new Border
-            {
-                StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = new CornerRadius(6) },
-                Stroke = Color.FromArgb("#334155"),
-                BackgroundColor = Color.FromArgb("#0F172A"),
-                Padding = new Thickness(10, 6),
-                Content = new Label { Text = $"{it.Name} ({it.Price})", TextColor = Colors.White, FontSize = 12 }
-            };
-            sideStack.Children.Add(row);
-        }
-        catalogSide.Children.Add(new ScrollView { Content = sideStack, HeightRequest = 390 });
-        Grid.SetColumn(catalogSide, 1);
-        splitGrid.Children.Add(catalogSide);
 
         mainStack.Children.Add(splitGrid);
         return new ScrollView { Content = mainStack };

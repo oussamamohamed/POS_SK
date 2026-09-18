@@ -6,7 +6,16 @@ struct VisualStep {
     let id: String
     let description: String
     let requiredKeywordGroups: [[String]] // AND across groups, OR within each group
+    let forbiddenKeywords: [String]
     let screenshotName: String
+
+    init(id: String, description: String, requiredKeywordGroups: [[String]], forbiddenKeywords: [String] = [], screenshotName: String) {
+        self.id = id
+        self.description = description
+        self.requiredKeywordGroups = requiredKeywordGroups
+        self.forbiddenKeywords = forbiddenKeywords
+        self.screenshotName = screenshotName
+    }
 }
 
 let steps: [VisualStep] = [
@@ -30,12 +39,44 @@ let steps: [VisualStep] = [
         screenshotName: "step2_floor_plan.png"
     ),
     VisualStep(
+        id: "step3_pos_category_plats",
+        description: "Écran 3a : Filtrage Catégorie 'Plats & Grillades' (Exclusion Boissons/Desserts)",
+        requiredKeywordGroups: [
+            ["Plats", "Grillades", "Plat"],
+            ["Burger", "Entrecôte", "Entrecote"]
+        ],
+        forbiddenKeywords: ["Tiramisu", "Margherita", "Reine Royale"],
+        screenshotName: "step3_pos_category_plats.png"
+    ),
+    VisualStep(
+        id: "step3_pos_category_drinks",
+        description: "Écran 3b : Filtrage Catégorie 'Boissons & Vins' (Exclusion Plats/Desserts)",
+        requiredKeywordGroups: [
+            ["Boissons", "Vins", "Boisson"],
+            ["Bière", "Biere", "Bordeaux", "Expresso", "Café"]
+        ],
+        forbiddenKeywords: ["Entrecôte", "Entrecote", "Tiramisu", "Margherita"],
+        screenshotName: "step3_pos_category_drinks.png"
+    ),
+    VisualStep(
+        id: "step3_pos_category_all",
+        description: "Écran 3c : Retour Catégorie '⚡ Tous' & Pagination Grille",
+        requiredKeywordGroups: [
+            ["Tous"],
+            ["Burger", "Entrecôte", "Entrecote"],
+            ["Page 1", "Précédent", "Suivant"]
+        ],
+        forbiddenKeywords: [],
+        screenshotName: "step3_pos_category_all.png"
+    ),
+    VisualStep(
         id: "step3_pos_cart",
-        description: "Écran 3 : Caisse Tactile, Articles & Panier",
+        description: "Écran 3 : Caisse Tactile, Articles & Panier avec boutons d'action",
         requiredKeywordGroups: [
             ["Burger", "Burger Maison"],
             ["TTC", "EUR", "€"],
-            ["Envoyer Cuisine", "Envoyer", "Caisse"]
+            ["Envoyer Cuisine", "Envoyer", "Cuisine"],
+            ["Encaisser", "Remise", "Transférer", "Split", "Attente"]
         ],
         screenshotName: "step3_pos_cart.png"
     ),
@@ -49,6 +90,26 @@ let steps: [VisualStep] = [
         screenshotName: "step4_modifiers_popup.png"
     ),
     VisualStep(
+        id: "step4_discount_modal",
+        description: "Écran 4ter : Modale Remise & Gestes Commerciaux",
+        requiredKeywordGroups: [
+            ["Remise", "Note", "Geste"],
+            ["10%", "20%", "50%"],
+            ["Annuler"]
+        ],
+        screenshotName: "step4_discount_modal.png"
+    ),
+    VisualStep(
+        id: "step4_transfer_modal",
+        description: "Écran 4quater : Modale Transfert de Table",
+        requiredKeywordGroups: [
+            ["Transférer", "Transferer", "Table"],
+            ["destination", "T02", "T04", "T05"],
+            ["Annuler"]
+        ],
+        screenshotName: "step4_transfer_modal.png"
+    ),
+    VisualStep(
         id: "step4_bill_note_modal",
         description: "Écran 4bis : Note de Table & Addition Provisoire",
         requiredKeywordGroups: [
@@ -59,49 +120,132 @@ let steps: [VisualStep] = [
     ),
     VisualStep(
         id: "step5_kitchen_kds",
-        description: "Écran 5 : Écran Cuisine KDS & Bons de Préparation",
+        description: "Écran 5 : Écran Cuisine KDS & Bons de Préparation (boutons BUMP & Rappel)",
         requiredKeywordGroups: [
             ["Cuisine", "KDS", "Ecran Cuisine"],
-            ["Attente", "En Attente", "BUMP", "Preparation"]
+            ["Attente", "En Attente", "BUMP", "Preparation"],
+            ["BUMP", "Rappel", "Recall"]
         ],
         screenshotName: "step5_kitchen_kds.png"
     ),
     VisualStep(
         id: "step6_split_bill",
-        description: "Écran 6 : Partage de l'Addition (Split Bill)",
+        description: "Écran 6 : Partage de l'Addition (Split Bill) avec bouton Régler par convive",
         requiredKeywordGroups: [
             ["Partage", "Partager", "Addition"],
-            ["convives", "Convive", "Montant"]
+            ["convives", "Convive", "Montant"],
+            ["Régler", "Regler", "Retour Encaissement", "Retour"]
         ],
         screenshotName: "step6_split_bill.png"
     ),
     VisualStep(
         id: "step7_checkout",
-        description: "Écran 7 : Règlement Commande, Espèces & Rendu Monnaie",
+        description: "Écran 7 : Règlement Commande, Espèces & Rendu Monnaie (bouton Finaliser)",
         requiredKeywordGroups: [
             ["Règlement", "Paiement", "Reglement"],
-            ["3,50", "3.50", "Rendu", "RENDU MONNAIE"],
-            ["Especes", "Espèces", "Cash", "Carte"]
+            ["Rendu", "RENDU MONNAIE", "Monnaie"],
+            ["Especes", "Espèces", "Cash", "Carte"],
+            ["Finaliser", "Encaissement", "Partager la Note", "Retour Caisse"]
         ],
         screenshotName: "step7_checkout.png"
     ),
     VisualStep(
-        id: "step8_admin_shell",
-        description: "Écran 8 : Back-Office Administration (Personnel & Catalogue)",
+        id: "step7_table_freed",
+        description: "Écran 7bis : Libération de la Table sur le Plan de Salle après Encaissement",
         requiredKeywordGroups: [
-            ["Catalogue", "Familles", "Personnel", "Back-Office"],
-            ["Salle", "Retour", "Imprimantes", "Famille"]
+            ["Salle Principale", "Plan de Salle", "Salle"],
+            ["T01", "Libre", "Disponible"]
+        ],
+        screenshotName: "step7_table_freed.png"
+    ),
+    VisualStep(
+        id: "step8_admin_shell",
+        description: "Écran 8a : Back-Office Administration (Onglet Catalogue & Familles)",
+        requiredKeywordGroups: [
+            ["Catalogue", "Familles", "Famille"],
+            ["Ajouter", "Article", "TVA"]
         ],
         screenshotName: "step8_admin_shell.png"
     ),
     VisualStep(
+        id: "step8_admin_staff",
+        description: "Écran 8b : Back-Office Administration (Onglet Personnel & Codes PIN)",
+        requiredKeywordGroups: [
+            ["Personnel", "Serveurs", "Équipe", "Equipe"],
+            ["Code PIN", "PIN", "Rôle", "Role", "Actif"]
+        ],
+        screenshotName: "step8_admin_staff.png"
+    ),
+    VisualStep(
+        id: "step8_admin_printers",
+        description: "Écran 8c : Back-Office Administration (Onglet Imprimantes Réseau)",
+        requiredKeywordGroups: [
+            ["Imprimantes", "Imprimante", "Réseau", "Reseau"],
+            ["Enregistrer", "tiroir", "9100", "IP"]
+        ],
+        screenshotName: "step8_admin_printers.png"
+    ),
+    VisualStep(
         id: "step8_admin_layout",
-        description: "Écran 8bis : Disposition de l'Écran & Matrice Tactile",
+        description: "Écran 8d : Disposition de l'Écran & Matrice Tactile",
         requiredKeywordGroups: [
             ["Disposition", "Matrice", "Format", "Écran", "Touches", "Colonnes"],
             ["Appliquer", "Réinitialiser", "Standard", "Burger", "Case"]
         ],
         screenshotName: "step8_admin_layout.png"
+    ),
+    VisualStep(
+        id: "step8_admin_network",
+        description: "Écran 8g : Back-Office Réseau & Sync (mDNS, boutons Lancer/Tester/Forcer)",
+        requiredKeywordGroups: [
+            ["Réseau", "Reseau", "Sync", "Synchronisation", "mDNS", "Découverte", "Decouverte"],
+            ["Lancer", "Découverte", "Decouverte", "Scan", "Tester", "Connexion", "Forcer", "Synchronisation"]
+        ],
+        forbiddenKeywords: [],
+        screenshotName: "step8_admin_network.png"
+    ),
+    VisualStep(
+        id: "step8_admin_dashboard",
+        description: "Écran 8h : Tableaux de Bord & KPIs Financiers (CA TTC, Panier Moyen, filtres)",
+        requiredKeywordGroups: [
+            ["Tableaux de Bord", "Tableaux", "KPIs", "KPI", "Financiers", "Dashboard"],
+            ["CHIFFRE", "Chiffre", "AFFAIRES", "Affaires", "PANIER", "Panier", "TTC", "Aujourd'hui"]
+        ],
+        forbiddenKeywords: [],
+        screenshotName: "step8_admin_dashboard.png"
+    ),
+    VisualStep(
+        id: "step8_admin_happyhour",
+        description: "Écran 8i : Plages Happy Hour & Tarifs (bouton Nouveau Créneau, Afterwork)",
+        requiredKeywordGroups: [
+            ["Happy Hour", "HappyHour", "Happy", "Plages", "Créneau", "Creneau"],
+            ["Afterwork", "Nouveau", "Créneau", "Creneau", "Tarifs", "Bière", "Biere"]
+        ],
+        forbiddenKeywords: [],
+        screenshotName: "step8_admin_happyhour.png"
+    ),
+    VisualStep(
+        id: "step8_fiscal",
+        description: "Écran 8e : Fiscalité NF525 & Rapport Journalier Actif (boutons Z, X, FEC)",
+        requiredKeywordGroups: [
+            ["Fiscalité", "Fiscalite", "NF525", "FEC"],
+            ["Rapport Z", "Clôture", "Cloture"],
+            ["Rapport X", "Aperçu", "Aperu"],
+            ["FEC", "Générer", "Generer", "Export Comptable"]
+        ],
+        forbiddenKeywords: [],
+        screenshotName: "step8_fiscal.png"
+    ),
+    VisualStep(
+        id: "step8_fiscal_post_z",
+        description: "Écran 8f : Fiscalité NF525 après Clôture Z (Compteur session réinitialisé à 0,00 €)",
+        requiredKeywordGroups: [
+            ["Fiscalité", "Fiscalite", "NF525"],
+            ["0,00 €", "0.00 €"],
+            ["Grand Total", "Perpétuel", "Perpetuel", "Total Ventes TTC"]
+        ],
+        forbiddenKeywords: [],
+        screenshotName: "step8_fiscal_post_z.png"
     ),
     VisualStep(
         id: "step9_final_lock",
@@ -203,7 +347,14 @@ for step in steps {
         }
     }
 
-    if allGroupsSatisfied {
+    var forbiddenFound: [String] = []
+    for forbidden in step.forbiddenKeywords {
+        if joinedText.contains(forbidden.lowercased()) {
+            forbiddenFound.append(forbidden)
+        }
+    }
+
+    if allGroupsSatisfied && forbiddenFound.isEmpty {
         passedCount += 1
         print("  ✅ [VISU ÉCRAN VALIDÉ] \(step.description)")
         print("     Capture : \(screenshotPath)")
@@ -211,10 +362,18 @@ for step in steps {
         print("     Aperçu texte détecté : \(recognizedLines.prefix(6).joined(separator: " | "))\n")
         stepResults.append((step, true, "Validé", recognizedLines))
     } else {
+        var failureReasons: [String] = []
+        if !allGroupsSatisfied {
+            failureReasons.append("Manque: \(missingGroupDesc.joined(separator: ", "))")
+        }
+        if !forbiddenFound.isEmpty {
+            failureReasons.append("Mots interdits détectés (fuite filtre): \(forbiddenFound.joined(separator: ", "))")
+        }
+        let fullMsg = failureReasons.joined(separator: " | ")
         print("  ❌ [ÉCHEC VISUEL] \(step.description)")
-        print("     Éléments manquants sur l'écran : \(missingGroupDesc.joined(separator: " ET "))")
+        print("     Cause : \(fullMsg)")
         print("     Texte brut détecté par Vision : \(recognizedLines.joined(separator: " | "))\n")
-        stepResults.append((step, false, "Manque: \(missingGroupDesc.joined(separator: ", "))", recognizedLines))
+        stepResults.append((step, false, fullMsg, recognizedLines))
     }
 
     try? FileManager.default.removeItem(atPath: readyPath)

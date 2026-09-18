@@ -17,7 +17,8 @@ public record DiningTableDto(
     string? AssignedWaiterName,
     int CoversCount,
     Guid? ActiveOrderId,
-    DateTimeOffset? OpenedAtUtc);
+    DateTimeOffset? OpenedAtUtc,
+    decimal ActiveOrderTotalTtc = 0.0m);
 
 public record ActiveTableOrderDto(
     Guid OrderId,

@@ -12,11 +12,13 @@ namespace RestaurantPos.Client.Maui;
 /// </summary>
 public class App : Microsoft.Maui.Controls.Application
 {
+    public static IServiceProvider? Services { get; private set; }
     private readonly IServiceProvider _serviceProvider;
 
     public App(IServiceProvider serviceProvider)
     {
         _serviceProvider = serviceProvider;
+        Services = serviceProvider;
 
         try
         {
@@ -55,7 +57,20 @@ public class App : Microsoft.Maui.Controls.Application
             Task.Run(async () =>
             {
                 await Task.Delay(2000);
-                await Services.SimulatorAutoTestRunner.RunAllTestsAsync(_serviceProvider);
+                await RestaurantPos.Client.Maui.Services.SimulatorAutoTestRunner.RunAllTestsAsync(_serviceProvider);
+            });
+        }
+
+        var openTabEnv = Environment.GetEnvironmentVariable("POS_OPEN_TAB");
+        if (!string.IsNullOrWhiteSpace(openTabEnv))
+        {
+            Task.Run(async () =>
+            {
+                await Task.Delay(1000);
+                await MainThread.InvokeOnMainThreadAsync(async () =>
+                {
+                    await Shell.Current.GoToAsync($"//{openTabEnv}");
+                });
             });
         }
     }

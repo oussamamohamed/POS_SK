@@ -55,7 +55,7 @@ public class NF525FiscalAuditService : INF525FiscalAuditService
             .FirstOrDefault()
             ?? closures.OrderByDescending(c => c.ClosureSequence).FirstOrDefault();
 
-        var periodStart = lastClosure?.PeriodEndUtc ?? DateTimeOffset.UtcNow.Date;
+        var periodStart = lastClosure?.PeriodEndUtc ?? DateTimeOffset.MinValue;
         var periodEnd = DateTimeOffset.UtcNow;
 
         var allReceipts = await _dbContext.FiscalReceipts
@@ -68,10 +68,10 @@ public class NF525FiscalAuditService : INF525FiscalAuditService
             .Where(r => r.CreatedAtUtc >= periodStart && r.CreatedAtUtc <= periodEnd)
             .ToList();
 
-        // If no receipts found starting from lastClosure, but there are unclosed receipts today:
-        if (receipts.Count == 0 && allReceipts.Count > 0 && lastClosure != null && lastClosure.TotalSalesTtc.AmountInCents == 0)
+        // If no receipts found starting from lastClosure, but there are unclosed receipts:
+        if (receipts.Count == 0 && allReceipts.Count > 0 && (lastClosure == null || allReceipts.Any(r => r.CreatedAtUtc > lastClosure.PeriodEndUtc)))
         {
-            periodStart = DateTimeOffset.UtcNow.Date;
+            periodStart = lastClosure?.PeriodEndUtc ?? DateTimeOffset.MinValue;
             receipts = allReceipts.Where(r => r.CreatedAtUtc >= periodStart && r.CreatedAtUtc <= periodEnd).ToList();
         }
 

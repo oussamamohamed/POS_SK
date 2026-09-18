@@ -1204,6 +1204,18 @@ body.pos-dark {
     color: var(--text-muted);
 }
 
+.table-total {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #38bdf8;
+    margin-top: 6px;
+    background: rgba(56, 189, 248, 0.12);
+    padding: 3px 8px;
+    border-radius: 6px;
+    border: 1px solid rgba(56, 189, 248, 0.25);
+    display: inline-block;
+}
+
 /* ==================== KDS KANBAN ==================== */
 .kds-container {
     flex: 1;

@@ -54,7 +54,7 @@ public class AppShell : Shell
         {
             Title = "Fiscalité NF525",
             Route = "fiscal",
-            ContentTemplate = new DataTemplate(typeof(FiscalPage))
+            ContentTemplate = new DataTemplate(() => App.Services?.GetService<FiscalPage>() ?? new FiscalPage())
         };
 
         Items.Add(pinContent);

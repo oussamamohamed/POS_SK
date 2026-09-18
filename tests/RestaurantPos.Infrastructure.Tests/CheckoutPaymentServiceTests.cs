@@ -59,7 +59,9 @@ public class CheckoutPaymentServiceTests
         result.FiscalSignature.Should().NotBeNullOrEmpty();
 
         var updatedTable = await dbContext.DiningTables.FindAsync("T02");
-        updatedTable!.Status.Should().Be(TableStatus.Paid);
+        updatedTable!.Status.Should().Be(TableStatus.Free);
+        updatedTable.ActiveOrderId.Should().BeNull();
+        updatedTable.CoversCount.Should().Be(0);
     }
 
     // Bug fix: TipAmount was excluded from totalDueCents → change was inflated by tip amount.
@@ -197,8 +199,9 @@ public class CheckoutPaymentServiceTests
         orderFinal!.Status.Should().Be(OrderStatus.Paid);
 
         var tableFinal = await dbContext.DiningTables.FindAsync("T05");
-        tableFinal!.Status.Should().Be(TableStatus.Paid);
+        tableFinal!.Status.Should().Be(TableStatus.Free);
         tableFinal.ActiveOrderId.Should().BeNull();
+        tableFinal.CoversCount.Should().Be(0);
 
         // Vérifier les 2 reçus fiscaux en base
         var receipts = await dbContext.FiscalReceipts.Where(r => r.OrderId == order.Id).OrderBy(r => r.SequenceNumber).ToListAsync();

@@ -33,17 +33,7 @@ public sealed class FinancialDashboardService : IFinancialDashboardService
             (startUtc, endUtc) = (endUtc, startUtc);
         }
 
-        // 1. Fetch Orders and related data in memory
-        var allOrders = await _dbContext.Orders
-            .Include(o => o.Items)
-            .ToListAsync(cancellationToken)
-            .ConfigureAwait(false);
-
-        var orders = allOrders
-            .Where(o => o.CreatedAtUtc >= startUtc && o.CreatedAtUtc <= endUtc && o.Status != OrderStatus.Cancelled)
-            .ToList();
-
-        // 2. Fetch Fiscal Receipts with Tenders
+        // 1. Fetch Fiscal Receipts with Tenders
         var allReceipts = await _dbContext.FiscalReceipts
             .Include(r => r.Tenders)
             .ToListAsync(cancellationToken)
@@ -51,6 +41,16 @@ public sealed class FinancialDashboardService : IFinancialDashboardService
 
         var receipts = allReceipts
             .Where(r => r.CreatedAtUtc >= startUtc && r.CreatedAtUtc <= endUtc && !r.IsVoid)
+            .ToList();
+
+        // 2. Fetch Orders and related data in memory
+        var allOrders = await _dbContext.Orders
+            .Include(o => o.Items)
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        var orders = allOrders
+            .Where(o => o.CreatedAtUtc >= startUtc && o.CreatedAtUtc <= endUtc && (o.Status == OrderStatus.Paid || receipts.Any(r => r.OrderId == o.Id)))
             .ToList();
 
         // 3. Fetch Dining Tables and Users for mapping
@@ -77,20 +77,24 @@ public sealed class FinancialDashboardService : IFinancialDashboardService
             ? receipts.Sum(r => r.TotalHtAmount.AmountInCents) / 100.0m
             : orders.Sum(o => o.TotalHt.AmountInCents) / 100.0m;
 
-        int totalOrdersCount = orders.Count > 0 ? orders.Count : receipts.Count;
+        int totalOrdersCount = receipts.Count > 0 ? receipts.Count : orders.Count;
 
-        int totalCoversCount = orders.Sum(o =>
+        int totalCoversCount = 0;
+        if (totalOrdersCount > 0)
         {
-            if (tableMap.TryGetValue(o.TableNumber, out var table) && table.CoversCount > 0)
+            totalCoversCount = orders.Sum(o =>
             {
-                return table.CoversCount;
-            }
-            return 1;
-        });
+                if (tableMap.TryGetValue(o.TableNumber, out var table) && table.CoversCount > 0)
+                {
+                    return table.CoversCount;
+                }
+                return 1;
+            });
 
-        if (totalCoversCount == 0 && totalOrdersCount > 0)
-        {
-            totalCoversCount = totalOrdersCount;
+            if (totalCoversCount == 0)
+            {
+                totalCoversCount = totalOrdersCount;
+            }
         }
 
         decimal averageOrderTtc = totalOrdersCount > 0
@@ -214,6 +218,10 @@ public sealed class FinancialDashboardService : IFinancialDashboardService
         }
 
         staffPerformance = staffPerformance.OrderByDescending(s => s.TotalSalesTtc).ToList();
+        if (totalOrdersCount == 0)
+        {
+            staffPerformance.Clear();
+        }
 
         // 8. Payment Methods Summary
         var allTenders = receipts.SelectMany(r => r.Tenders).ToList();

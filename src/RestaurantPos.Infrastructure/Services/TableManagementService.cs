@@ -28,17 +28,43 @@ public class TableManagementService : ITableManagementService
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 
-        return tables.Select(t => new DiningTableDto(
-            t.TableNumber,
-            t.Capacity,
-            t.Status,
-            t.PositionX,
-            t.PositionY,
-            t.AssignedWaiterName,
-            t.CoversCount,
-            t.ActiveOrderId,
-            t.OpenedAtUtc
-        )).ToList();
+        var activeOrders = await _dbContext.Orders
+            .AsNoTracking()
+            .Include(o => o.Items)
+            .Where(o => o.Status != OrderStatus.Paid && o.Status != OrderStatus.Cancelled)
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        var ordersById = activeOrders.ToDictionary(o => o.Id);
+        var ordersByTable = activeOrders
+            .GroupBy(o => o.TableNumber, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(g => g.Key, g => g.OrderByDescending(o => o.CreatedAtUtc).First(), StringComparer.OrdinalIgnoreCase);
+
+        return tables.Select(t =>
+        {
+            decimal orderTotal = 0m;
+            if (t.ActiveOrderId.HasValue && ordersById.TryGetValue(t.ActiveOrderId.Value, out var orderById))
+            {
+                orderTotal = orderById.TotalTtc.ToDecimal();
+            }
+            else if (ordersByTable.TryGetValue(t.TableNumber, out var orderByTable) && t.Status != TableStatus.Free)
+            {
+                orderTotal = orderByTable.TotalTtc.ToDecimal();
+            }
+
+            return new DiningTableDto(
+                t.TableNumber,
+                t.Capacity,
+                t.Status,
+                t.PositionX,
+                t.PositionY,
+                t.AssignedWaiterName,
+                t.CoversCount,
+                t.ActiveOrderId,
+                t.OpenedAtUtc,
+                orderTotal
+            );
+        }).ToList();
     }
 
     public async Task<DiningTableDto> CreateTableAsync(

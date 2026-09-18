@@ -84,4 +84,89 @@ public class CheckoutE2ETests : IClassFixture<PosApiApplicationFactory>
             voidReceipt!.TotalTtcAmount.ToDecimal().Should().Be(-15m); // Negative amount for void
         }
     }
+
+    [Fact]
+    public async Task Pay_WithTableNumber_ShouldSucceedFreeTableAndIncrementReceiptNumber()
+    {
+        var token = await GetAuthTokenAsync();
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        Guid orderId1 = Guid.NewGuid();
+        Guid orderId2 = Guid.NewGuid();
+
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+            var order1 = new Order
+            {
+                Id = orderId1,
+                TableNumber = "T91",
+                Status = OrderStatus.Open,
+                Items =
+                {
+                    new OrderItem { Id = Guid.NewGuid(), OrderId = orderId1, ProductId = Guid.NewGuid(), ProductName = "Menu Test 1", Quantity = 1, UnitPrice = Money.FromCents(2000), TaxRatePercent = 10 }
+                }
+            };
+            var order2 = new Order
+            {
+                Id = orderId2,
+                TableNumber = "T92",
+                Status = OrderStatus.Open,
+                Items =
+                {
+                    new OrderItem { Id = Guid.NewGuid(), OrderId = orderId2, ProductId = Guid.NewGuid(), ProductName = "Menu Test 2", Quantity = 1, UnitPrice = Money.FromCents(3000), TaxRatePercent = 10 }
+                }
+            };
+            db.Orders.AddRange(order1, order2);
+
+            var table1 = new DiningTable { TableNumber = "T91", Status = TableStatus.Occupied, ActiveOrderId = orderId1, CoversCount = 2 };
+            var table2 = new DiningTable { TableNumber = "T92", Status = TableStatus.Occupied, ActiveOrderId = orderId2, CoversCount = 3 };
+            db.DiningTables.AddRange(table1, table2);
+
+            await db.SaveChangesAsync();
+        }
+
+        // Act 1: Pay table T91 without explicit orderId
+        var req1 = new PaymentSettlementRequest(
+            Guid.Empty,
+            "T91",
+            Guid.NewGuid(),
+            [new TenderItemRequest(PaymentMethod.Cash, 20.0m, 20.0m, 0.0m)],
+            "POS_TEST"
+        );
+        var resp1 = await _client.PostAsJsonAsync("/api/checkout/pay", req1);
+        resp1.StatusCode.Should().Be(HttpStatusCode.OK);
+        var res1 = await resp1.Content.ReadFromJsonAsync<System.Text.Json.JsonElement>();
+        var receiptNum1 = res1.GetProperty("receiptNumber").GetString();
+        receiptNum1.Should().NotBeNullOrEmpty();
+
+        // Act 2: Pay table T92
+        var req2 = new PaymentSettlementRequest(
+            Guid.Empty,
+            "T92",
+            Guid.NewGuid(),
+            [new TenderItemRequest(PaymentMethod.Cash, 30.0m, 30.0m, 0.0m)],
+            "POS_TEST"
+        );
+        var resp2 = await _client.PostAsJsonAsync("/api/checkout/pay", req2);
+        resp2.StatusCode.Should().Be(HttpStatusCode.OK);
+        var res2 = await resp2.Content.ReadFromJsonAsync<System.Text.Json.JsonElement>();
+        var receiptNum2 = res2.GetProperty("receiptNumber").GetString();
+        receiptNum2.Should().NotBeNullOrEmpty();
+
+        // Assert receipt numbers differ and increment
+        receiptNum1.Should().NotBe(receiptNum2);
+
+        // Assert table T91 is freed directly
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var table = await db.DiningTables.FindAsync("T91");
+            table.Should().NotBeNull();
+            table!.Status.Should().Be(TableStatus.Free);
+            table.ActiveOrderId.Should().BeNull();
+            table.CoversCount.Should().Be(0);
+        }
+    }
 }

@@ -43,7 +43,61 @@ public class PosTerminalViewModelTests
 
         // Assert
         vm.SelectedCategory.Should().Be(mainsCat);
+        vm.AvailableProducts.Should().OnlyContain(p => p.CategoryId == "CAT-MAINS");
+        vm.AvailableProducts.Should().HaveCount(2);
         _envMock.Verify(e => e.TriggerHapticFeedback(HapticFeedbackType.LightTap), Times.Once);
+
+        // Act: reset to all categories
+        vm.SelectCategory(null);
+        vm.AvailableProducts.Should().HaveCount(6);
+    }
+
+    [Fact]
+    public void SelectCategory_FiltersForEachSpecificFamily()
+    {
+        var vm = new PosTerminalViewModel(_envMock.Object, _journalMock.Object);
+
+        // Mains
+        var mains = vm.Categories.First(c => c.Id == "CAT-MAINS");
+        vm.SelectCategory(mains);
+        vm.AvailableProducts.Should().OnlyContain(p => p.CategoryId == "CAT-MAINS");
+        vm.AvailableProducts.Should().HaveCount(2);
+
+        // Desserts
+        var desserts = vm.Categories.First(c => c.Id == "CAT-DESSERTS");
+        vm.SelectCategory(desserts);
+        vm.AvailableProducts.Should().OnlyContain(p => p.CategoryId == "CAT-DESSERTS");
+        vm.AvailableProducts.Should().HaveCount(1);
+
+        // Drinks
+        var drinks = vm.Categories.First(c => c.Id == "CAT-DRINKS");
+        vm.SelectCategory(drinks);
+        vm.AvailableProducts.Should().OnlyContain(p => p.CategoryId == "CAT-DRINKS");
+        vm.AvailableProducts.Should().HaveCount(3);
+
+        // Back to All
+        vm.SelectCategory(null);
+        vm.AvailableProducts.Should().HaveCount(6);
+        vm.PageDisplay.Should().Be("Page 1 / 1");
+    }
+
+    [Fact]
+    public void Pagination_ChangesCurrentPageAndDisplaysCorrectRange()
+    {
+        var vm = new PosTerminalViewModel(_envMock.Object, _journalMock.Object);
+
+        // Verify initial state
+        vm.CurrentPage.Should().Be(1);
+        vm.TotalPages.Should().Be(1);
+        vm.PageDisplay.Should().Be("Page 1 / 1");
+
+        // Next page when TotalPages is 1 should stay at page 1
+        vm.NextPageCommand.Execute(null);
+        vm.CurrentPage.Should().Be(1);
+
+        // Previous page when CurrentPage is 1 should stay at page 1
+        vm.PreviousPageCommand.Execute(null);
+        vm.CurrentPage.Should().Be(1);
     }
 
     [Fact]

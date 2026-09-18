@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.DependencyInjection;
 using RestaurantPos.Application.Common.Interfaces;
 using RestaurantPos.Client.Maui.Contracts;
 using RestaurantPos.Domain.Entities;
@@ -26,15 +27,22 @@ public class ActiveTenderItem : ObservableObject
 
 public partial class CheckoutViewModel : ObservableObject
 {
+    private static int _localSequence = 0;
     private readonly IPlatformEnvironmentService _environmentService;
     private readonly ICheckoutPaymentService? _checkoutService;
     private readonly IRoomBillingService? _roomBillingService;
+    private readonly FloorPlanViewModel? _floorPlanViewModel;
+    private readonly PosTerminalViewModel? _posTerminalViewModel;
+    private readonly Microsoft.Extensions.DependencyInjection.IServiceScopeFactory? _scopeFactory;
 
     [ObservableProperty]
     private Guid _orderId;
 
     [ObservableProperty]
     private string _terminalId = "POS01";
+
+    [ObservableProperty]
+    private string _tableNumber = string.Empty;
 
     [ObservableProperty]
     private long _totalDueCents;
@@ -65,25 +73,32 @@ public partial class CheckoutViewModel : ObservableObject
     public CheckoutViewModel(
         IPlatformEnvironmentService environmentService,
         ICheckoutPaymentService? checkoutService = null,
-        IRoomBillingService? roomBillingService = null)
+        IRoomBillingService? roomBillingService = null,
+        FloorPlanViewModel? floorPlanViewModel = null,
+        PosTerminalViewModel? posTerminalViewModel = null,
+        Microsoft.Extensions.DependencyInjection.IServiceScopeFactory? scopeFactory = null)
     {
         _environmentService = environmentService;
         _checkoutService = checkoutService;
         _roomBillingService = roomBillingService;
+        _floorPlanViewModel = floorPlanViewModel;
+        _posTerminalViewModel = posTerminalViewModel;
+        _scopeFactory = scopeFactory;
     }
 
-    public void Initialize(Guid orderId, long totalAmountCents)
+    public void Initialize(Guid orderId, long totalAmountCents, string tableNumber = "")
     {
 #if MAUI_UI
         if (!MainThread.IsMainThread)
         {
-            MainThread.BeginInvokeOnMainThread(() => Initialize(orderId, totalAmountCents));
+            MainThread.BeginInvokeOnMainThread(() => Initialize(orderId, totalAmountCents, tableNumber));
             return;
         }
 #endif
         OrderId = orderId;
         TotalDueCents = totalAmountCents;
         RemainingBalanceCents = totalAmountCents;
+        TableNumber = tableNumber;
         ChangeDueCents = 0;
         IsCompleted = false;
         ReceiptNumber = string.Empty;
@@ -186,7 +201,7 @@ public partial class CheckoutViewModel : ObservableObject
             {
                 await _roomBillingService.PostRoomChargeAsync(
                     OrderId,
-                    tableNumber: "T01",
+                    tableNumber: !string.IsNullOrWhiteSpace(TableNumber) ? TableNumber : "T01",
                     roomNumber: RoomNumber,
                     guestName: string.IsNullOrWhiteSpace(GuestName) ? "Client Chambre" : GuestName,
                     amount: Money.FromCents(TotalDueCents),
@@ -195,9 +210,144 @@ public partial class CheckoutViewModel : ObservableObject
                 ).ConfigureAwait(false);
             }
 
-            ReceiptNumber = $"{TerminalId}-000001";
+            long totalCents = TotalDueCents > 0 ? TotalDueCents : AppliedTenders.Sum(t => t.AmountCents);
+            long htCents = (long)Math.Round(totalCents / 1.10m);
+            long vatCents = totalCents - htCents;
+            string taxJson = $"{{\"10\":{vatCents}}}";
+            DateTimeOffset now = DateTimeOffset.UtcNow;
+            long nextSeq = 0;
+            string prevHash = "GENESIS_0000000000000000000000000000000000000000000000000000000000000000";
+
+            var scopeFactory = _scopeFactory
+#if MAUI_UI
+                ?? App.Services?.GetService<Microsoft.Extensions.DependencyInjection.IServiceScopeFactory>()
+#endif
+                ;
+            if (scopeFactory is not null)
+            {
+                try
+                {
+                    using var scope = scopeFactory.CreateScope();
+                    var db = scope.ServiceProvider.GetService<RestaurantPos.Client.Maui.Persistence.LocalAppDbContext>();
+                    if (db is not null)
+                    {
+                        var lastReceipt = db.FiscalReceipts
+                            .Where(r => r.TerminalId == TerminalId)
+                            .OrderByDescending(r => r.SequenceNumber)
+                            .FirstOrDefault();
+
+                        nextSeq = (lastReceipt?.SequenceNumber ?? 0) + 1;
+                        prevHash = lastReceipt?.SignatureHash ?? prevHash;
+
+                        ReceiptNumber = $"{TerminalId}-{nextSeq:D6}";
+
+                        string rawData = $"{prevHash}|{TerminalId}|{nextSeq}|{totalCents}|{now:O}|{taxJson}";
+                        string sigHash = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(rawData)));
+
+                        var fiscalReceipt = new FiscalReceipt
+                        {
+                            Id = Guid.NewGuid(),
+                            TerminalId = TerminalId,
+                            ReceiptNumber = ReceiptNumber,
+                            OrderId = OrderId != Guid.Empty ? OrderId : Guid.NewGuid(),
+                            SequenceNumber = nextSeq,
+                            TotalTtcAmount = Money.FromCents(totalCents),
+                            TotalHtAmount = Money.FromCents(htCents),
+                            TaxBreakdownJson = taxJson,
+                            SignatureHash = sigHash,
+                            PreviousSignatureHash = prevHash,
+                            CreatedAtUtc = now,
+                            IsVoid = false
+                        };
+
+                        foreach (var tender in AppliedTenders)
+                        {
+                            fiscalReceipt.Tenders.Add(new PaymentTender
+                            {
+                                Id = Guid.NewGuid(),
+                                FiscalReceiptId = fiscalReceipt.Id,
+                                Method = tender.Method,
+                                Amount = Money.FromCents(tender.AmountCents),
+                                Tendered = Money.FromCents(tender.TenderedCents),
+                                ChangeGiven = Money.FromCents(Math.Max(0, tender.TenderedCents - tender.AmountCents))
+                            });
+                        }
+
+                        db.FiscalReceipts.Add(fiscalReceipt);
+                        await db.SaveChangesAsync();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Local fiscal receipt write error: {ex}");
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(ReceiptNumber))
+            {
+                nextSeq = System.Threading.Interlocked.Increment(ref _localSequence);
+                ReceiptNumber = $"{TerminalId}-{nextSeq:D6}";
+            }
+
+            var tendersSnapshot = AppliedTenders.Select(t => new
+            {
+                Method = (int)t.Method,
+                t.AmountCents,
+                t.TenderedCents
+            }).ToList();
+
+            var currentOrderId = OrderId != Guid.Empty ? OrderId : Guid.NewGuid();
+            var currentTable = !string.IsNullOrWhiteSpace(TableNumber) ? TableNumber : "Comptoir";
+            var currentTerm = TerminalId;
+
+            // Fire-and-forget sync to backend API Master POS
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    using var client = new System.Net.Http.HttpClient { Timeout = TimeSpan.FromSeconds(3) };
+                    var payload = new
+                    {
+                        OrderId = currentOrderId,
+                        TableNumber = currentTable,
+                        TotalTtcCents = totalCents,
+                        TerminalId = currentTerm,
+                        Tenders = tendersSnapshot
+                    };
+                    await System.Net.Http.Json.HttpClientJsonExtensions.PostAsJsonAsync(client, "http://127.0.0.1:5000/api/sync/receipt", payload);
+                }
+                catch
+                {
+                    // Offline or server not yet reachable
+                }
+            });
+
             IsCompleted = true;
-            _environmentService.TriggerHapticFeedback(HapticFeedbackType.Success);
+            _environmentService?.TriggerHapticFeedback(HapticFeedbackType.Success);
+        }
+
+        if (IsCompleted)
+        {
+            var targetTable = !string.IsNullOrWhiteSpace(TableNumber)
+                ? TableNumber
+                : (_posTerminalViewModel?.ActiveTable ?? "");
+
+#if MAUI_UI
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+#endif
+                if (!string.IsNullOrWhiteSpace(targetTable))
+                {
+                    _floorPlanViewModel?.SetTableStatus(targetTable, TableStatus.Free);
+                    _posTerminalViewModel?.ClearTableOrder(targetTable);
+                }
+                else
+                {
+                    _posTerminalViewModel?.ClearCart();
+                }
+#if MAUI_UI
+            });
+#endif
         }
     }
 }
