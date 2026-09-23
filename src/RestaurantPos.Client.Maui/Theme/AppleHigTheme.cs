@@ -1,67 +1,102 @@
 #if MAUI_UI
+using System;
+using System.Windows.Input;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Shapes;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 
 namespace RestaurantPos.Client.Maui.Theme;
 
 /// <summary>
 /// Système de design officiel inspiré des Apple Human Interface Guidelines (HIG) pour iPadOS.
-/// Centralise la palette Apple Dark Mode, la typographie SF, les rayons de courbure squircle
-/// et les composants visuels standardisés (cartes inset grouped, segmented controls, modal sheets).
+/// Centralise la palette Apple Dark Mode, la typographie SF, les rayons de courbure squircle,
+/// le retour haptique tactile et les composants visuels standardisés.
 /// </summary>
 public static class AppleHigTheme
 {
     // =========================================================================
-    // Couleurs Système Apple (Dark Mode Palette)
+    // Palette Apple HIG (iOS / iPadOS Dark Mode & Light Mode Adaptatif)
     // =========================================================================
-    public static readonly Color SystemBackground = Color.FromArgb("#000000");            // Noir pur OLED
-    public static readonly Color SecondarySystemBackground = Color.FromArgb("#1C1C1E");   // Cartes & Panneaux
-    public static readonly Color TertiarySystemBackground = Color.FromArgb("#2C2C2E");    // Sous-cartes & Champs
-    public static readonly Color QuaternarySystemFill = Color.FromArgb("#3A3A3C");        // Remplissage & Chips
-    public static readonly Color Separator = Color.FromArgb("#38383A");                    // Lignes de séparation
-    public static readonly Color OpaqueSeparator = Color.FromArgb("#545458");              // Bordures accentuées
+    public static readonly Color SystemBackground = Color.FromArgb("#000000");           // Noir pur OLED iPad
+    public static readonly Color SecondarySystemBackground = Color.FromArgb("#1C1C1E");  // Cartes / Groupes
+    public static readonly Color TertiarySystemBackground = Color.FromArgb("#2C2C2E");   // Boutons / Tuiles
+    public static readonly Color QuaternarySystemFill = Color.FromArgb("#3A3A3C");        // Éléments inactifs
 
-    public static readonly Color LabelPrimary = Colors.White;                             // Titres & Textes forts
-    public static readonly Color LabelSecondary = Color.FromArgb("#8E8E93");              // Labels secondaires (System Gray)
+    public static readonly Color LabelPrimary = Color.FromArgb("#FFFFFF");                // Texte principal
+    public static readonly Color LabelSecondary = Color.FromArgb("#8E8E93");              // Sous-titres
     public static readonly Color LabelTertiary = Color.FromArgb("#636366");               // Mentions discrètes
+    public static readonly Color Separator = Color.FromArgb("#38383A");                   // Lignes de séparation
 
-    // Tints Sémantiques Apple
-    public static readonly Color SystemBlue = Color.FromArgb("#0A84FF");                  // Accent principal / Actions
-    public static readonly Color SystemGreen = Color.FromArgb("#30D158");                 // Succès / Validation / Espèces
-    public static readonly Color SystemOrange = Color.FromArgb("#FF9F0A");                // Attente / Avertissement
-    public static readonly Color SystemRed = Color.FromArgb("#FF453A");                   // Annulation / Erreur / Supprimer
-    public static readonly Color SystemIndigo = Color.FromArgb("#5E5CE6");                // Mode Fiscal / Avancé
-    public static readonly Color SystemTeal = Color.FromArgb("#64D2FF");                  // Info / Cyan
-    public static readonly Color SystemYellow = Color.FromArgb("#FFD60A");                // Étoiles / Alertes
-    public static readonly Color SystemPurple = Color.FromArgb("#BF5AF2");                // Catégories spéciales
+    // Accents Apple Système
+    public static readonly Color SystemBlue = Color.FromArgb("#0A84FF");                  // Actions principales / Navigation
+    public static readonly Color SystemGreen = Color.FromArgb("#30D158");                 // Succès / Encaissement / Table Libre
+    public static readonly Color SystemOrange = Color.FromArgb("#FF9F0A");                // Table Occupée / KDS En cours
+    public static readonly Color SystemRed = Color.FromArgb("#FF453A");                   // Suppressions / Retards / Addition
+    public static readonly Color SystemIndigo = Color.FromArgb("#5E5CE6");                // Remises / Clôture
+    public static readonly Color SystemTeal = Color.FromArgb("#64D2FF");                  // Transfert / Impression
 
     // =========================================================================
-    // Échelle Typographique Apple HIG
+    // Typographie Apple San Francisco (Échelles de points HIG)
     // =========================================================================
-    public const double LargeTitle = 34;
-    public const double Title1 = 28;
-    public const double Title2 = 22;
-    public const double Title3 = 20;
-    public const double Headline = 17;
-    public const double Body = 17;
-    public const double Callout = 16;
-    public const double Subheadline = 15;
+    public const double LargeTitle = 28;
+    public const double Title1 = 22;
+    public const double Title2 = 20;
+    public const double Title3 = 18;
+    public const double Headline = 16;
+    public const double Body = 15;
+    public const double Subheadline = 14;
     public const double Footnote = 13;
     public const double Caption1 = 12;
     public const double Caption2 = 11;
 
     // =========================================================================
-    // Rayons de Courbure & Dimensions Ergonomiques
+    // Rayons de Courbure & Dimensions Ergonomiques (Apple HIG)
     // =========================================================================
     public const double CornerRadiusSmall = 8;
     public const double CornerRadiusMedium = 12;
     public const double CornerRadiusLarge = 16;
     public const double CornerRadiusExtraLarge = 20;
-    public const double CornerRadiusSheet = 18;
+    public const double CornerRadiusSheet = 24;
     public const double CornerRadiusPill = 999;
     public const double MinTouchTarget = 44;
+
+    // Inset de sécurité pour la barre Home Indicator iPadOS
+    public static readonly Thickness iPadBottomSafeArea = new(0, 0, 0, 10);
+
+    // =========================================================================
+    // Retours Haptiques Tactiles (iPad / iOS Touch Feedback)
+    // =========================================================================
+    /// <summary>
+    /// Déclenche un retour tactile instantané pour les interactions de commande ou touches caisse.
+    /// </summary>
+    public static void PerformHapticClick()
+    {
+        try
+        {
+            Microsoft.Maui.Devices.HapticFeedback.Default.Perform(Microsoft.Maui.Devices.HapticFeedbackType.Click);
+        }
+        catch
+        {
+            // Ignoré si non supporté sur la plateforme ou en mode test
+        }
+    }
+
+    /// <summary>
+    /// Déclenche un retour tactile de confirmation forte (ex: encaissement réussi, impression, envoi cuisine).
+    /// </summary>
+    public static void PerformHapticSuccess()
+    {
+        try
+        {
+            Microsoft.Maui.Devices.HapticFeedback.Default.Perform(Microsoft.Maui.Devices.HapticFeedbackType.LongPress);
+        }
+        catch
+        {
+            // Ignoré si non supporté sur la plateforme ou en mode test
+        }
+    }
 
     // =========================================================================
     // Constructeurs de Composants Standards Apple HIG
@@ -74,81 +109,82 @@ public static class AppleHigTheme
     {
         return new Border
         {
-            Padding = padding ?? new Thickness(16),
-            BackgroundColor = backgroundColor ?? SecondarySystemBackground,
-            Stroke = Separator,
-            StrokeThickness = 1,
             StrokeShape = new RoundRectangle { CornerRadius = new CornerRadius(cornerRadius) },
+            StrokeThickness = 1,
+            Stroke = Separator,
+            BackgroundColor = backgroundColor ?? SecondarySystemBackground,
+            Padding = padding ?? new Thickness(16),
             Content = content
         };
     }
 
     /// <summary>
-    /// Crée un bouton ergonomique Apple HIG (cible tactile minimum 44pt).
+    /// Crée un bouton capsule (Pill Button) respectant la cible tactile minimale iPad (44pt).
     /// </summary>
-    public static Button CreatePillButton(string text, Color backgroundColor, Color textColor, System.Windows.Input.ICommand? command = null, double height = 44, double fontSize = 15, FontAttributes fontAttributes = FontAttributes.Bold)
+    public static Button CreatePillButton(string text, Color backgroundColor, Color textColor, ICommand command, double height = 44, double fontSize = Subheadline)
     {
         return new Button
         {
             Text = text,
             BackgroundColor = backgroundColor,
             TextColor = textColor,
-            FontSize = fontSize,
-            FontAttributes = fontAttributes,
+            CornerRadius = (int)(height / 2),
             HeightRequest = height,
             MinimumHeightRequest = MinTouchTarget,
-            MinimumWidthRequest = MinTouchTarget,
-            CornerRadius = (int)(height / 2),
-            Padding = new Thickness(16, 0),
+            Padding = new Thickness(18, 0),
+            FontSize = fontSize,
+            FontAttributes = FontAttributes.Bold,
             Command = command
         };
     }
 
     /// <summary>
-    /// Poignée de préhension ("grabber handle") caractéristique des modales Apple Sheet.
+    /// Indicateur de préhension supérieur pour les feuilles modales iPad (Apple Modal Sheet Grabber).
     /// </summary>
     public static View CreateSheetGrabber()
     {
         return new BoxView
         {
-            WidthRequest = 40,
+            WidthRequest = 36,
             HeightRequest = 5,
-            CornerRadius = 2.5f,
-            Color = LabelTertiary,
+            CornerRadius = 2.5,
+            Color = QuaternarySystemFill,
             HorizontalOptions = LayoutOptions.Center,
-            Margin = new Thickness(0, 8, 0, 12)
+            Margin = new Thickness(0, 0, 0, 12)
         };
     }
 
     /// <summary>
-    /// Badge capsule discret au style Apple (fond teinté translucide + texte coloré).
+    /// Badge capsule (Pill Tag) avec fond translucide Apple.
     /// </summary>
-    public static View CreateCapsuleBadge(string text, Color tintColor, double fontSize = 11)
+    public static Border CreateBadge(string text, Color color, double fontSize = Caption1)
     {
         return new Border
         {
-            Padding = new Thickness(8, 3),
-            BackgroundColor = Color.FromRgba(tintColor.Red, tintColor.Green, tintColor.Blue, 0.18),
-            Stroke = Color.FromRgba(tintColor.Red, tintColor.Green, tintColor.Blue, 0.4),
+            BackgroundColor = Color.FromRgba(color.Red, color.Green, color.Blue, 0.18),
+            Stroke = Color.FromRgba(color.Red, color.Green, color.Blue, 0.4),
             StrokeThickness = 1,
             StrokeShape = new RoundRectangle { CornerRadius = new CornerRadius(CornerRadiusPill) },
+            Padding = new Thickness(8, 2),
             VerticalOptions = LayoutOptions.Center,
             Content = new Label
             {
                 Text = text,
-                TextColor = tintColor,
+                TextColor = color,
                 FontSize = fontSize,
                 FontAttributes = FontAttributes.Bold,
+                HorizontalOptions = LayoutOptions.Center,
                 VerticalOptions = LayoutOptions.Center
             }
         };
     }
+
     /// <summary>
     /// Extension fluide pour configurer un BindableObject inline.
     /// </summary>
-    public static T Also<T>(this T obj, Action<T> configure) where T : BindableObject
+    public static T Also<T>(this T obj, Action<T> action) where T : BindableObject
     {
-        configure(obj);
+        action(obj);
         return obj;
     }
 }

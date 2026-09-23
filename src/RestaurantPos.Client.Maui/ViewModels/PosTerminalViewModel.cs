@@ -82,6 +82,8 @@ public partial class PosTerminalViewModel : ObservableObject
         _tableService = tableService;
         _floorPlanViewModel = floorPlanViewModel;
         _gridLayoutService = gridLayoutService;
+
+        LoadSampleCatalog();
     }
 
     [ObservableProperty]
@@ -100,9 +102,15 @@ public partial class PosTerminalViewModel : ObservableObject
     [RelayCommand]
     public async Task SelectCategoryAsync(Category? category)
     {
-        SelectedCategory = category ?? Categories.FirstOrDefault();
-        CurrentPage = 1;
+        SelectCategory(category);
         await FilterProductsForCurrentCategoryAndPageAsync();
+    }
+
+    public void SelectCategory(Category? category)
+    {
+        SelectedCategory = category;
+        CurrentPage = 1;
+        FilterProductsForCurrentCategoryAndPage();
         _environmentService.TriggerHapticFeedback(HapticFeedbackType.LightTap);
     }
 
@@ -113,6 +121,16 @@ public partial class PosTerminalViewModel : ObservableObject
         {
             CurrentPage--;
             await FilterProductsForCurrentCategoryAndPageAsync();
+            _environmentService.TriggerHapticFeedback(HapticFeedbackType.LightTap);
+        }
+    }
+
+    public void PreviousPage()
+    {
+        if (CurrentPage > 1)
+        {
+            CurrentPage--;
+            FilterProductsForCurrentCategoryAndPage();
             _environmentService.TriggerHapticFeedback(HapticFeedbackType.LightTap);
         }
     }
@@ -128,15 +146,53 @@ public partial class PosTerminalViewModel : ObservableObject
         }
     }
 
+    public void NextPage()
+    {
+        if (CurrentPage < TotalPages)
+        {
+            CurrentPage++;
+            FilterProductsForCurrentCategoryAndPage();
+            _environmentService.TriggerHapticFeedback(HapticFeedbackType.LightTap);
+        }
+    }
+
     [ObservableProperty]
     private GridLayoutDto? _currentMatrix;
+
+    public void FilterProductsForCurrentCategoryAndPage()
+    {
+        var isAll = SelectedCategory is null || SelectedCategory.Id == "ALL";
+        var filtered = isAll
+            ? MasterCatalogProducts.ToList()
+            : MasterCatalogProducts.Where(p => p.CategoryId == SelectedCategory!.Id).ToList();
+
+        if (isAll || _gridLayoutService == null)
+        {
+            CurrentMatrix = null;
+            CatalogGridColumns = 4;
+        }
+
+        TotalPages = Math.Max(1, (int)Math.Ceiling(filtered.Count / (double)ItemsPerPage));
+        if (CurrentPage > TotalPages) CurrentPage = TotalPages;
+        if (CurrentPage < 1) CurrentPage = 1;
+
+        PageDisplay = $"Page {CurrentPage} / {TotalPages}";
+
+        var pageItems = filtered.Skip((CurrentPage - 1) * ItemsPerPage).Take(ItemsPerPage).ToList();
+
+        AvailableProducts.Clear();
+        foreach (var p in pageItems)
+        {
+            AvailableProducts.Add(p);
+        }
+    }
 
     public async Task FilterProductsForCurrentCategoryAndPageAsync()
     {
         var isAll = SelectedCategory is null || SelectedCategory.Id == "ALL";
         var filtered = isAll
             ? MasterCatalogProducts.ToList()
-            : MasterCatalogProducts.Where(p => p.CategoryId == SelectedCategory.Id).ToList();
+            : MasterCatalogProducts.Where(p => p.CategoryId == SelectedCategory!.Id).ToList();
 
         if (!isAll && _gridLayoutService != null)
         {
@@ -643,11 +699,153 @@ public partial class PosTerminalViewModel : ObservableObject
         }
     }
 
-
-
     public void SeedDemoTableOrders()
     {
         // No seed orders to ensure reports start at clean zero state
+    }
+
+    public void LoadSampleCatalog()
+    {
+        Categories.Clear();
+        MasterCatalogProducts.Clear();
+        ProductModifierGroups.Clear();
+
+        var catBoissons = new Category { Id = "CAT-DRINKS", Name = "Boissons", DisplayOrder = 1, ColorHex = "#3B82F6" };
+        var catPlats = new Category { Id = "CAT-MAINS", Name = "Plats", DisplayOrder = 2, ColorHex = "#10B981" };
+        var catDesserts = new Category { Id = "CAT-DESSERTS", Name = "Desserts", DisplayOrder = 3, ColorHex = "#F59E0B" };
+
+        Categories.Add(catBoissons);
+        Categories.Add(catPlats);
+        Categories.Add(catDesserts);
+
+        var cafe = new Product { Name = "Café Espresso", CategoryId = "CAT-DRINKS", Price = Money.FromDecimal(2.50m), TaxRatePercent = 10m };
+        var eau = new Product { Name = "Eau Minérale 50cl", CategoryId = "CAT-DRINKS", Price = Money.FromDecimal(3.00m), TaxRatePercent = 10m };
+        var biere = new Product { Name = "Bière Pression 33cl", CategoryId = "CAT-DRINKS", Price = Money.FromDecimal(5.50m), TaxRatePercent = 20m };
+        var burger = new Product { Name = "Burger Maison & Frites", CategoryId = "CAT-MAINS", Price = Money.FromDecimal(16.50m), TaxRatePercent = 10m };
+        var entrecote = new Product { Name = "Entrecôte Grillée 250g", CategoryId = "CAT-MAINS", Price = Money.FromDecimal(22.00m), TaxRatePercent = 10m };
+        var tiramisu = new Product { Name = "Tiramisu Maison", CategoryId = "CAT-DESSERTS", Price = Money.FromDecimal(7.50m), TaxRatePercent = 10m };
+
+        MasterCatalogProducts.Add(cafe);
+        MasterCatalogProducts.Add(eau);
+        MasterCatalogProducts.Add(biere);
+        MasterCatalogProducts.Add(burger);
+        MasterCatalogProducts.Add(entrecote);
+        MasterCatalogProducts.Add(tiramisu);
+
+        // Modificateurs Burger Maison
+        ProductModifierGroups[burger.Id] =
+        [
+            new ProductModifierGroup
+            {
+                ProductId = burger.Id,
+                GroupName = "Cuisson de la Viande",
+                MinSelections = 1,
+                MaxSelections = 1,
+                Options =
+                [
+                    new ProductModifierOption { Name = "Bleu", ExtraPrice = Money.Zero(), IsDefault = false },
+                    new ProductModifierOption { Name = "Saignant", ExtraPrice = Money.Zero(), IsDefault = true },
+                    new ProductModifierOption { Name = "À point", ExtraPrice = Money.Zero(), IsDefault = false },
+                    new ProductModifierOption { Name = "Bien cuit", ExtraPrice = Money.Zero(), IsDefault = false }
+                ]
+            },
+            new ProductModifierGroup
+            {
+                ProductId = burger.Id,
+                GroupName = "Suppléments & Sauces",
+                MinSelections = 0,
+                MaxSelections = 3,
+                Options =
+                [
+                    new ProductModifierOption { Name = "Double Cheddar", ExtraPrice = Money.FromDecimal(1.50m), IsDefault = false },
+                    new ProductModifierOption { Name = "Bacon Croustillant", ExtraPrice = Money.FromDecimal(2.00m), IsDefault = false },
+                    new ProductModifierOption { Name = "Sauce Poivre Maison", ExtraPrice = Money.FromDecimal(1.00m), IsDefault = false }
+                ]
+            }
+        ];
+
+        // Modificateurs Entrecôte Grillée
+        ProductModifierGroups[entrecote.Id] =
+        [
+            new ProductModifierGroup
+            {
+                ProductId = entrecote.Id,
+                GroupName = "Cuisson",
+                MinSelections = 1,
+                MaxSelections = 1,
+                Options =
+                [
+                    new ProductModifierOption { Name = "Bleu", ExtraPrice = Money.Zero(), IsDefault = false },
+                    new ProductModifierOption { Name = "Saignant", ExtraPrice = Money.Zero(), IsDefault = true },
+                    new ProductModifierOption { Name = "À point", ExtraPrice = Money.Zero(), IsDefault = false },
+                    new ProductModifierOption { Name = "Bien cuit", ExtraPrice = Money.Zero(), IsDefault = false }
+                ]
+            },
+            new ProductModifierGroup
+            {
+                ProductId = entrecote.Id,
+                GroupName = "Sauce au Choix",
+                MinSelections = 1,
+                MaxSelections = 1,
+                Options =
+                [
+                    new ProductModifierOption { Name = "Sauce Poivre Vert", ExtraPrice = Money.Zero(), IsDefault = true },
+                    new ProductModifierOption { Name = "Sauce Béarnaise", ExtraPrice = Money.Zero(), IsDefault = false },
+                    new ProductModifierOption { Name = "Beurre Maître d'Hôtel", ExtraPrice = Money.Zero(), IsDefault = false }
+                ]
+            },
+            new ProductModifierGroup
+            {
+                ProductId = entrecote.Id,
+                GroupName = "Accompagnement",
+                MinSelections = 0,
+                MaxSelections = 1,
+                Options =
+                [
+                    new ProductModifierOption { Name = "Frites Fraîches", ExtraPrice = Money.Zero(), IsDefault = true },
+                    new ProductModifierOption { Name = "Haricots Verts", ExtraPrice = Money.Zero(), IsDefault = false },
+                    new ProductModifierOption { Name = "Purée Truffée", ExtraPrice = Money.FromDecimal(2.50m), IsDefault = false }
+                ]
+            }
+        ];
+
+        // Modificateurs Bière Pression
+        ProductModifierGroups[biere.Id] =
+        [
+            new ProductModifierGroup
+            {
+                ProductId = biere.Id,
+                GroupName = "Format & Arôme",
+                MinSelections = 0,
+                MaxSelections = 1,
+                Options =
+                [
+                    new ProductModifierOption { Name = "Pinte 50cl", ExtraPrice = Money.FromDecimal(3.00m), IsDefault = false },
+                    new ProductModifierOption { Name = "Sirop Grenadine", ExtraPrice = Money.FromDecimal(0.50m), IsDefault = false },
+                    new ProductModifierOption { Name = "Sirop Picon", ExtraPrice = Money.FromDecimal(1.00m), IsDefault = false }
+                ]
+            }
+        ];
+
+        // Modificateurs Café Espresso
+        ProductModifierGroups[cafe.Id] =
+        [
+            new ProductModifierGroup
+            {
+                ProductId = cafe.Id,
+                GroupName = "Options Café",
+                MinSelections = 0,
+                MaxSelections = 2,
+                Options =
+                [
+                    new ProductModifierOption { Name = "Double Dose", ExtraPrice = Money.FromDecimal(1.00m), IsDefault = false },
+                    new ProductModifierOption { Name = "Lait Végétal Avoine", ExtraPrice = Money.FromDecimal(0.50m), IsDefault = false },
+                    new ProductModifierOption { Name = "Déca", ExtraPrice = Money.Zero(), IsDefault = false }
+                ]
+            }
+        ];
+
+        FilterProductsForCurrentCategoryAndPage();
     }
 
     public async Task RefreshCatalogAsync()

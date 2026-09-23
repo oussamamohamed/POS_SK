@@ -1,4 +1,7 @@
 #if MAUI_UI
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Shapes;
@@ -11,7 +14,8 @@ namespace RestaurantPos.Client.Maui.Views;
 
 /// <summary>
 /// Page d'encaissement conforme aux Apple Human Interface Guidelines (HIG) pour iPadOS.
-/// Présentation Inset Grouped, grandes tuiles tactiles de paiement, résumé clair du reste dû et rendu monnaie.
+/// Présentation Inset Grouped, grandes tuiles tactiles de paiement, résumé clair du reste dû,
+/// rendu monnaie et retour haptique tactile.
 /// </summary>
 public class CheckoutPage : ContentPage, IQueryAttributable
 {
@@ -24,6 +28,7 @@ public class CheckoutPage : ContentPage, IQueryAttributable
         Title = "Encaissement";
         BackgroundColor = AppleHigTheme.SystemBackground;
         Shell.SetNavBarIsVisible(this, false);
+        Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.SetUseSafeArea(this, true);
         Build();
     }
 
@@ -86,7 +91,11 @@ public class CheckoutPage : ContentPage, IQueryAttributable
             MinimumHeightRequest = AppleHigTheme.MinTouchTarget,
             CornerRadius = 10,
             Padding = new Thickness(14, 0),
-            Command = new Command(async () => await Shell.Current.GoToAsync(".."))
+            Command = new Command(async () =>
+            {
+                AppleHigTheme.PerformHapticClick();
+                await Shell.Current.GoToAsync("..");
+            })
         };
 
         var titleLabel = new Label
@@ -183,8 +192,11 @@ public class CheckoutPage : ContentPage, IQueryAttributable
                 CornerRadius = 14,
                 FontSize = AppleHigTheme.Headline,
                 FontAttributes = FontAttributes.Bold,
-                Command = _vm.SelectPaymentMethodCommand,
-                CommandParameter = method
+                Command = new Command(() =>
+                {
+                    AppleHigTheme.PerformHapticClick();
+                    _vm.SelectPaymentMethodCommand.Execute(method);
+                })
             };
             btn.SetBinding(BackgroundColorProperty, new Binding(
                 nameof(CheckoutViewModel.SelectedMethod),
@@ -220,8 +232,11 @@ public class CheckoutPage : ContentPage, IQueryAttributable
                 HeightRequest = 52,
                 WidthRequest = 74,
                 CornerRadius = 12,
-                Command = _vm.AddCashFastBillCommand,
-                CommandParameter = (long)(bill * 100)
+                Command = new Command(() =>
+                {
+                    AppleHigTheme.PerformHapticClick();
+                    _vm.AddCashFastBillCommand.Execute((long)(bill * 100));
+                })
             };
             billsGrid.Add(b);
         }
@@ -321,7 +336,7 @@ public class CheckoutPage : ContentPage, IQueryAttributable
             converter: new CentsToEurosConverter(), stringFormat: "{0:F2} €");
         panel.Add(remainingLabel);
 
-        // Rendu monnaie (Vérifié par Apple Vision OCR : "RENDU MONNAIE", "3,50")
+        // Rendu monnaie
         var changeRow = new VerticalStackLayout { Spacing = 4 };
         changeRow.Add(new Label { Text = "RENDU MONNAIE", TextColor = AppleHigTheme.SystemGreen, FontSize = AppleHigTheme.Caption1, FontAttributes = FontAttributes.Bold });
         var changeLabel = new Label
@@ -348,7 +363,11 @@ public class CheckoutPage : ContentPage, IQueryAttributable
             HeightRequest = 56,
             MinimumHeightRequest = AppleHigTheme.MinTouchTarget,
             CornerRadius = 14,
-            Command = _vm.FinalizeCheckoutCommand
+            Command = new Command(() =>
+            {
+                AppleHigTheme.PerformHapticSuccess();
+                _vm.FinalizeCheckoutCommand.Execute(null);
+            })
         };
         panel.Add(finalizeBtn);
 
@@ -362,7 +381,11 @@ public class CheckoutPage : ContentPage, IQueryAttributable
             FontAttributes = FontAttributes.Bold,
             HeightRequest = 48,
             CornerRadius = 12,
-            Command = new Command(async () => await Shell.Current.GoToAsync("split"))
+            Command = new Command(async () =>
+            {
+                AppleHigTheme.PerformHapticClick();
+                await Shell.Current.GoToAsync("split");
+            })
         };
         panel.Add(splitBtn);
 
@@ -375,7 +398,11 @@ public class CheckoutPage : ContentPage, IQueryAttributable
             FontSize = AppleHigTheme.Subheadline,
             HeightRequest = 44,
             CornerRadius = 10,
-            Command = new Command(async () => await Shell.Current.GoToAsync(".."))
+            Command = new Command(async () =>
+            {
+                AppleHigTheme.PerformHapticClick();
+                await Shell.Current.GoToAsync("..");
+            })
         };
         panel.Add(backBtn);
 
@@ -418,30 +445,13 @@ public class CheckoutPage : ContentPage, IQueryAttributable
                 if (unpaidPart != null)
                 {
                     unpaidPart.IsPaid = true;
-                }
-
-                if (splitVm.Partitions.All(p => p.IsPaid))
-                {
-                    await Shell.Current.GoToAsync("//floor");
-                }
-                else
-                {
                     await Shell.Current.GoToAsync("..");
+                    return;
                 }
             }
-            else
-            {
-                await Shell.Current.GoToAsync("//floor");
-            }
-        }
-    }
 
-    private class CentsToEurosConverter : IValueConverter
-    {
-        public object Convert(object? v, Type t, object? p, System.Globalization.CultureInfo c)
-            => v is long cents ? cents / 100.0m : 0m;
-        public object ConvertBack(object? v, Type t, object? p, System.Globalization.CultureInfo c)
-            => throw new NotImplementedException();
+            await Shell.Current.GoToAsync("//floor");
+        }
     }
 
     private class MethodColorConverter : IValueConverter
@@ -454,9 +464,15 @@ public class CheckoutPage : ContentPage, IQueryAttributable
             _activeColor = activeColor;
         }
         public object Convert(object? v, Type t, object? p, System.Globalization.CultureInfo c)
-            => v is PaymentMethod m && m == _target
-                ? _activeColor
-                : AppleHigTheme.TertiarySystemBackground;
+            => v is PaymentMethod m && m == _target ? _activeColor : AppleHigTheme.TertiarySystemBackground;
+        public object ConvertBack(object? v, Type t, object? p, System.Globalization.CultureInfo c)
+            => throw new NotImplementedException();
+    }
+
+    private class CentsToEurosConverter : IValueConverter
+    {
+        public object Convert(object? v, Type t, object? p, System.Globalization.CultureInfo c)
+            => v is long cents ? cents / 100.0m : 0.0m;
         public object ConvertBack(object? v, Type t, object? p, System.Globalization.CultureInfo c)
             => throw new NotImplementedException();
     }

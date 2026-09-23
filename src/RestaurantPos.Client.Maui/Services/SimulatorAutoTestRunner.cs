@@ -42,6 +42,7 @@ public class SimulatorTestReport
 /// </summary>
 public static class SimulatorAutoTestRunner
 {
+    private static readonly JsonSerializerOptions s_jsonOptions = new() { WriteIndented = true };
     public static bool IsRunning { get; private set; }
     public static event Action<string>? StatusChanged;
 
@@ -993,8 +994,7 @@ public static class SimulatorAutoTestRunner
             report.CompletedAt = DateTime.UtcNow;
             try
             {
-                var options = new JsonSerializerOptions { WriteIndented = true };
-                var json = JsonSerializer.Serialize(report, options);
+                var json = JsonSerializer.Serialize(report, s_jsonOptions);
                 File.WriteAllText("/tmp/pos_simulator_test_report.json", json);
                 Console.WriteLine("[IPAD_E2E] Rapport JSON écrit avec succès dans /tmp/pos_simulator_test_report.json");
             }

@@ -1,4 +1,6 @@
 #if MAUI_UI
+using System;
+using System.Collections.Generic;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Shapes;
@@ -10,7 +12,7 @@ namespace RestaurantPos.Client.Maui.Views;
 
 /// <summary>
 /// Page de partage de note conforme aux Apple Human Interface Guidelines (HIG) pour iPadOS.
-/// Stepper tactile Apple, fiches de convives Inset Grouped et boutons de règlement ergonomiques.
+/// Stepper tactile Apple, fiches de convives Inset Grouped, retour haptique tactile et boutons ergonomiques.
 /// </summary>
 public class SplitBillPage : ContentPage, IQueryAttributable
 {
@@ -23,6 +25,7 @@ public class SplitBillPage : ContentPage, IQueryAttributable
         Title = "Partager la Note";
         BackgroundColor = AppleHigTheme.SystemBackground;
         Shell.SetNavBarIsVisible(this, false);
+        Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.SetUseSafeArea(this, true);
         Build();
     }
 
@@ -59,7 +62,7 @@ public class SplitBillPage : ContentPage, IQueryAttributable
             HorizontalOptions = LayoutOptions.Center
         };
 
-        // 1. Titre (Vérifié par Apple Vision OCR : "Partage", "Addition")
+        // 1. Titre
         panel.Add(new Label
         {
             Text = "👥 Partage de l'Addition",
@@ -69,7 +72,7 @@ public class SplitBillPage : ContentPage, IQueryAttributable
             HorizontalOptions = LayoutOptions.Center
         });
 
-        // 2. Montant total (Vérifié par OCR : "Montant")
+        // 2. Montant total
         var totalLabel = new Label
         {
             FontSize = AppleHigTheme.Title3,
@@ -81,7 +84,7 @@ public class SplitBillPage : ContentPage, IQueryAttributable
             converter: new CentsToEurosConverter());
         panel.Add(totalLabel);
 
-        // 3. Sélecteur de convives Apple Stepper (Vérifié par OCR : "convives")
+        // 3. Sélecteur de convives Apple Stepper
         panel.Add(BuildGuestSelector());
 
         panel.Add(new BoxView { HeightRequest = 1, Color = AppleHigTheme.Separator });
@@ -127,6 +130,7 @@ public class SplitBillPage : ContentPage, IQueryAttributable
                     converter: new BoolInverter()));
                 payBtn.Clicked += async (s, e) =>
                 {
+                    AppleHigTheme.PerformHapticSuccess();
                     if (payBtn.BindingContext is SplitPartitionItem partItem)
                     {
                         var checkoutVm = Handler?.MauiContext?.Services.GetService<CheckoutViewModel>();
@@ -169,7 +173,11 @@ public class SplitBillPage : ContentPage, IQueryAttributable
             HeightRequest = 48,
             MinimumHeightRequest = AppleHigTheme.MinTouchTarget,
             CornerRadius = 12,
-            Command = new Command(async () => await Shell.Current.GoToAsync(".."))
+            Command = new Command(async () =>
+            {
+                AppleHigTheme.PerformHapticClick();
+                await Shell.Current.GoToAsync("..");
+            })
         };
         panel.Add(backBtn);
 
@@ -199,7 +207,11 @@ public class SplitBillPage : ContentPage, IQueryAttributable
             CornerRadius = 30,
             BorderColor = AppleHigTheme.Separator,
             BorderWidth = 1,
-            Command = _vm.DecreaseGuestsCommand
+            Command = new Command(() =>
+            {
+                AppleHigTheme.PerformHapticClick();
+                _vm.DecreaseGuestsCommand.Execute(null);
+            })
         };
 
         var plusBtn = new Button
@@ -211,7 +223,11 @@ public class SplitBillPage : ContentPage, IQueryAttributable
             WidthRequest = 60,
             HeightRequest = 60,
             CornerRadius = 30,
-            Command = _vm.IncreaseGuestsCommand
+            Command = new Command(() =>
+            {
+                AppleHigTheme.PerformHapticClick();
+                _vm.IncreaseGuestsCommand.Execute(null);
+            })
         };
 
         return new VerticalStackLayout
@@ -227,21 +243,36 @@ public class SplitBillPage : ContentPage, IQueryAttributable
                     FontSize = AppleHigTheme.Subheadline,
                     HorizontalOptions = LayoutOptions.Center
                 },
-                new HorizontalStackLayout
+                new Grid
                 {
-                    Spacing = 24,
+                    ColumnDefinitions =
+                    {
+                        new ColumnDefinition { Width = GridLength.Auto },
+                        new ColumnDefinition { Width = new GridLength(100) },
+                        new ColumnDefinition { Width = GridLength.Auto }
+                    },
                     HorizontalOptions = LayoutOptions.Center,
-                    VerticalOptions = LayoutOptions.Center,
-                    Children = { minusBtn, guestsLabel, plusBtn }
+                    Children =
+                    {
+                        AddToGridCol(minusBtn, 0),
+                        AddToGridCol(guestsLabel, 1),
+                        AddToGridCol(plusBtn, 2)
+                    }
                 }
             }
         };
     }
 
+    private static T AddToGridCol<T>(T view, int col) where T : View
+    {
+        Grid.SetColumn(view, col);
+        return view;
+    }
+
     private class CentsToEurosConverter : IValueConverter
     {
         public object Convert(object? v, Type t, object? p, System.Globalization.CultureInfo c)
-            => v is long cents ? cents / 100.0m : 0m;
+            => v is long cents ? cents / 100.0m : 0.0m;
         public object ConvertBack(object? v, Type t, object? p, System.Globalization.CultureInfo c)
             => throw new NotImplementedException();
     }

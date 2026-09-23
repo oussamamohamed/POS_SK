@@ -12,12 +12,13 @@ using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
 using RestaurantPos.Client.Maui.Controls;
 using RestaurantPos.Client.Maui.Theme;
+using RestaurantPos.Domain.ValueObjects;
 
 namespace RestaurantPos.Client.Maui.Views;
 
 /// <summary>
 /// Page Fiscalité NF525 conforme aux Apple Human Interface Guidelines (HIG) pour iPadOS.
-/// Présentation Inset Grouped, scellement cryptographique inaltérable SHA-256 et export FEC.
+/// Présentation Inset Grouped, scellement cryptographique inaltérable SHA-256, retour haptique tactile et export FEC.
 /// </summary>
 public class FiscalPage : ContentPage
 {
@@ -37,6 +38,7 @@ public class FiscalPage : ContentPage
         _scopeFactory = scopeFactory;
         BackgroundColor = AppleHigTheme.SystemBackground;
         Shell.SetNavBarIsVisible(this, false);
+        Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.SetUseSafeArea(this, true);
         Build();
     }
 
@@ -124,7 +126,11 @@ public class FiscalPage : ContentPage
                     MinimumHeightRequest = AppleHigTheme.MinTouchTarget,
                     CornerRadius = 10,
                     Padding = new Thickness(16, 0),
-                    Command = new Command(async () => await ExecuteZReportAsync())
+                    Command = new Command(async () =>
+                    {
+                        AppleHigTheme.PerformHapticSuccess();
+                        await ExecuteZReportAsync();
+                    })
                 },
                 new Button
                 {
@@ -136,7 +142,11 @@ public class FiscalPage : ContentPage
                     MinimumHeightRequest = AppleHigTheme.MinTouchTarget,
                     CornerRadius = 10,
                     Padding = new Thickness(16, 0),
-                    Command = new Command(ExecuteXReport)
+                    Command = new Command(() =>
+                    {
+                        AppleHigTheme.PerformHapticClick();
+                        ExecuteXReport();
+                    })
                 }
             }
         };
@@ -233,7 +243,7 @@ public class FiscalPage : ContentPage
 
         var title = new Label
         {
-            Text = "📂 Export Comptable FEC (Article A.47 A-1 LPF)",
+            Text = "📁 Export Comptable FEC (Article A.47 A-1 LPF)",
             TextColor = AppleHigTheme.LabelPrimary,
             FontSize = AppleHigTheme.Title3,
             FontAttributes = FontAttributes.Bold
@@ -259,7 +269,11 @@ public class FiscalPage : ContentPage
             CornerRadius = 10,
             Padding = new Thickness(16, 0),
             HorizontalOptions = LayoutOptions.Start,
-            Command = new Command(ExecuteFecExport)
+            Command = new Command(() =>
+            {
+                AppleHigTheme.PerformHapticClick();
+                ExecuteFecExport();
+            })
         };
 
         _fecStatusLabel = new Label
@@ -286,7 +300,7 @@ public class FiscalPage : ContentPage
         string lastHash = "0000000000000000000000000000000000000000000000000000000000000000";
         DateTimeOffset periodStart = DateTimeOffset.MinValue;
 
-        var scopeFactory = _scopeFactory 
+        var scopeFactory = _scopeFactory
             ?? App.Services?.GetService<IServiceScopeFactory>()
             ?? Handler?.MauiContext?.Services?.GetService<IServiceScopeFactory>();
         if (scopeFactory is not null)
@@ -379,8 +393,8 @@ public class FiscalPage : ContentPage
     public async Task ExecuteZReportAsync(bool showAlert = true)
     {
         var data = await GetActiveFiscalTotalsAsync();
-        var scopeFactory = _scopeFactory 
-            ?? App.Services?.GetService<IServiceScopeFactory>() 
+        var scopeFactory = _scopeFactory
+            ?? App.Services?.GetService<IServiceScopeFactory>()
             ?? Handler?.MauiContext?.Services?.GetService<IServiceScopeFactory>();
         long nextClosureSeq = 1;
         string closureHash = "0000000000000000000000000000000000000000000000000000000000000000";
@@ -395,36 +409,36 @@ public class FiscalPage : ContentPage
                 {
                     var lastClosure = db.DailyFiscalClosures.OrderByDescending(c => c.ClosureSequence).FirstOrDefault();
                     nextClosureSeq = (lastClosure?.ClosureSequence ?? 0) + 1;
-                    var now = DateTimeOffset.UtcNow;
-                    string rawData = $"{lastClosure?.SignatureHash ?? "GENESIS"}|POS_MAIN_TERM|{nextClosureSeq}|{data.totalTtc}|{now:O}|{data.count}";
-                    closureHash = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(rawData)));
+                    var previousHash = lastClosure?.SignatureHash ?? "0000000000000000000000000000000000000000000000000000000000000000";
+
+                    var raw = $"{nextClosureSeq}|{DateTimeOffset.UtcNow:O}|{data.totalTtc}|{data.perpetual}|{previousHash}";
+                    closureHash = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(raw))).ToLowerInvariant();
 
                     var closure = new RestaurantPos.Domain.Entities.DailyFiscalClosure
                     {
                         Id = Guid.NewGuid(),
                         TerminalId = "POS_MAIN_TERM",
                         ClosureSequence = nextClosureSeq,
-                        PeriodStartUtc = data.periodStart,
-                        PeriodEndUtc = now,
-                        TotalSalesTtc = RestaurantPos.Domain.ValueObjects.Money.FromCents(data.totalTtc),
-                        TotalSalesHt = RestaurantPos.Domain.ValueObjects.Money.FromCents(data.totalHt),
+                        PeriodStartUtc = data.periodStart == DateTimeOffset.MinValue ? DateTimeOffset.UtcNow.Date : data.periodStart,
+                        PeriodEndUtc = DateTimeOffset.UtcNow,
+                        TotalSalesTtc = Money.FromCents(data.totalTtc),
+                        TotalSalesHt = Money.FromCents(data.totalHt),
                         PerpetualGrandTotalCents = data.perpetual,
-                        PreviousSignatureHash = lastClosure?.SignatureHash ?? "GENESIS",
                         SignatureHash = closureHash,
-                        SealedByUserName = "Responsable Caisse (iPad)",
-                        SealedByUserId = Guid.NewGuid()
+                        PreviousSignatureHash = previousHash
                     };
+
                     db.DailyFiscalClosures.Add(closure);
                     await db.SaveChangesAsync();
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Local Z-closure error: {ex}");
+                System.Diagnostics.Debug.WriteLine($"Local fiscal Z-closure error: {ex}");
             }
         }
 
-        // Also sync Z-closure with backend Master POS if reachable
+        // Send to master API
         try
         {
             using var client = new System.Net.Http.HttpClient { Timeout = TimeSpan.FromSeconds(3) };

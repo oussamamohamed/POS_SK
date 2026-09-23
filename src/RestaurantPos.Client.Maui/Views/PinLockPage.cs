@@ -1,4 +1,7 @@
 #if MAUI_UI
+using System;
+using System.ComponentModel;
+using System.Threading.Tasks;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Shapes;
@@ -10,14 +13,15 @@ namespace RestaurantPos.Client.Maui.Views;
 
 /// <summary>
 /// Écran de verrouillage et d'authentification par code PIN conforme aux Apple Human Interface Guidelines (HIG).
-/// Interface tactile iPad épurée inspirée du Lock Screen iOS, avec touches numériques circulaires/squircles
-/// et pastilles PIN élégantes.
+/// Interface tactile iPad épurée inspirée du Lock Screen iOS, avec touches numériques circulaires/squircles,
+/// pastilles PIN élégantes et retour haptique instantané.
 /// </summary>
 public class PinLockPage : ContentPage
 {
     private readonly PinLockViewModel _vm;
     private readonly IServiceProvider _serviceProvider;
     private Label? _testStatusLabel;
+    private readonly PropertyChangedEventHandler _vmPropertyChangedHandler;
 
     public PinLockPage(PinLockViewModel vm, IServiceProvider serviceProvider)
     {
@@ -26,7 +30,40 @@ public class PinLockPage : ContentPage
         BindingContext = vm;
         BackgroundColor = AppleHigTheme.SystemBackground;
         Shell.SetNavBarIsVisible(this, false);
+        Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.SetUseSafeArea(this, true);
+
+        _vmPropertyChangedHandler = (s, e) =>
+        {
+            if (e.PropertyName == nameof(PinLockViewModel.IsAuthenticated) && _vm.IsAuthenticated)
+            {
+                AppleHigTheme.PerformHapticSuccess();
+                MainThread.BeginInvokeOnMainThread(async () =>
+                {
+                    try
+                    {
+                        await Shell.Current.GoToAsync("//floor");
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Navigation error: {ex}");
+                    }
+                });
+            }
+        };
+
         Build();
+    }
+
+    protected override void OnAppearing()
+    {
+        base.OnAppearing();
+        _vm.PropertyChanged += _vmPropertyChangedHandler;
+    }
+
+    protected override void OnDisappearing()
+    {
+        base.OnDisappearing();
+        _vm.PropertyChanged -= _vmPropertyChangedHandler;
     }
 
     private void Build()
@@ -77,7 +114,11 @@ public class PinLockPage : ContentPage
             HeightRequest = 48,
             MinimumHeightRequest = AppleHigTheme.MinTouchTarget,
             CornerRadius = (int)AppleHigTheme.CornerRadiusMedium,
-            Command = new Command(() => _vm.DeleteDigit())
+            Command = new Command(() =>
+            {
+                AppleHigTheme.PerformHapticClick();
+                _vm.DeleteDigit();
+            })
         };
 
         _testStatusLabel = new Label
@@ -102,6 +143,7 @@ public class PinLockPage : ContentPage
             CornerRadius = (int)AppleHigTheme.CornerRadiusSmall,
             Command = new Command(() =>
             {
+                AppleHigTheme.PerformHapticClick();
                 Task.Run(async () =>
                 {
                     await Services.SimulatorAutoTestRunner.RunAllTestsAsync(_serviceProvider);
@@ -221,25 +263,6 @@ public class PinLockPage : ContentPage
                 }
             }
         };
-
-        // Navigation automatique après validation réussie
-        _vm.PropertyChanged += (_, e) =>
-        {
-            if (e.PropertyName == nameof(PinLockViewModel.IsAuthenticated) && _vm.IsAuthenticated)
-            {
-                MainThread.BeginInvokeOnMainThread(async () =>
-                {
-                    try
-                    {
-                        await Shell.Current.GoToAsync("//floor");
-                    }
-                    catch (Exception ex)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"Navigation error: {ex}");
-                    }
-                });
-            }
-        };
     }
 
     private Grid BuildNumPad()
@@ -283,7 +306,11 @@ public class PinLockPage : ContentPage
                 CornerRadius = 18,
                 BorderColor = AppleHigTheme.Separator,
                 BorderWidth = 1,
-                Command = new Command(async () => await _vm.AppendDigitAsync(digit))
+                Command = new Command(async () =>
+                {
+                    AppleHigTheme.PerformHapticClick();
+                    await _vm.AppendDigitAsync(digit);
+                })
             };
 
             btn.Pressed += (_, _) => btn.BackgroundColor = AppleHigTheme.SystemBlue;

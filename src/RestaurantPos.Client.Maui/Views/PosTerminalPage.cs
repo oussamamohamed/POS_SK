@@ -851,7 +851,7 @@ public class PosTerminalPage : ContentPage, IQueryAttributable
         BindableLayout.SetItemTemplate(productsLayout, new DataTemplate(() =>
         {
             var frame = new Frame();
-            frame.SetBinding(Frame.BindingContextProperty, ".");
+            frame.SetBinding(BindableObject.BindingContextProperty, ".");
             frame.BindingContextChanged += (s, e) =>
             {
                 if (frame.BindingContext is Product prod)

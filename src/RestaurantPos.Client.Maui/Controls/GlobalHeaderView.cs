@@ -18,8 +18,8 @@ public enum PosActiveViewTab
 
 /// <summary>
 /// Barre de navigation supérieure globale conforme aux Apple Human Interface Guidelines (HIG) pour iPadOS.
-/// Présente un contrôle segmenté Apple (Pill bar), des badges capsules translucides
-/// et des boutons d'actions aux dimensions tactiles ergonomiques (min 44pt).
+/// Présente un contrôle segmenté Apple (Pill bar), des badges capsules translucides,
+/// retour haptique instantané et boutons d'actions ergonomiques (min 44pt).
 /// </summary>
 public class GlobalHeaderView : Grid
 {
@@ -127,11 +127,31 @@ public class GlobalHeaderView : Grid
                     VerticalOptions = LayoutOptions.Center,
                     Children =
                     {
-                        MakeSegmentButton("🛒 Caisse", activeTab == PosActiveViewTab.Pos, new Command(async () => await Shell.Current.GoToAsync("//pos"))),
-                        MakeSegmentButton("🗺️ Salle", activeTab == PosActiveViewTab.Floor, new Command(async () => await Shell.Current.GoToAsync("//floor"))),
-                        MakeSegmentButton("👨‍🍳 KDS", activeTab == PosActiveViewTab.Kds, new Command(async () => await Shell.Current.GoToAsync("//kds"))),
-                        MakeSegmentButton("⚙️ Admin", activeTab == PosActiveViewTab.Admin, new Command(async () => await Shell.Current.GoToAsync("admin"))),
-                        MakeSegmentButton("📜 Fiscal", activeTab == PosActiveViewTab.Fiscal, new Command(async () => await Shell.Current.GoToAsync("//fiscal")))
+                        MakeSegmentButton("🛒 Caisse", activeTab == PosActiveViewTab.Pos, new Command(async () =>
+                        {
+                            AppleHigTheme.PerformHapticClick();
+                            await Shell.Current.GoToAsync("//pos");
+                        })),
+                        MakeSegmentButton("🗺️ Salle", activeTab == PosActiveViewTab.Floor, new Command(async () =>
+                        {
+                            AppleHigTheme.PerformHapticClick();
+                            await Shell.Current.GoToAsync("//floor");
+                        })),
+                        MakeSegmentButton("👨‍🍳 KDS", activeTab == PosActiveViewTab.Kds, new Command(async () =>
+                        {
+                            AppleHigTheme.PerformHapticClick();
+                            await Shell.Current.GoToAsync("//kds");
+                        })),
+                        MakeSegmentButton("⚙️ Admin", activeTab == PosActiveViewTab.Admin, new Command(async () =>
+                        {
+                            AppleHigTheme.PerformHapticClick();
+                            await Shell.Current.GoToAsync("admin");
+                        })),
+                        MakeSegmentButton("📜 Fiscal", activeTab == PosActiveViewTab.Fiscal, new Command(async () =>
+                        {
+                            AppleHigTheme.PerformHapticClick();
+                            await Shell.Current.GoToAsync("//fiscal");
+                        }))
                     }
                 }
             }
@@ -187,7 +207,11 @@ public class GlobalHeaderView : Grid
                     Padding = 0,
                     BorderColor = AppleHigTheme.Separator,
                     BorderWidth = 1,
-                    Command = new Command(async () => await Shell.Current.GoToAsync("//pin"))
+                    Command = new Command(async () =>
+                    {
+                        AppleHigTheme.PerformHapticClick();
+                        await Shell.Current.GoToAsync("//pin");
+                    })
                 }
             }
         };

@@ -12,7 +12,8 @@ namespace RestaurantPos.Client.Maui.Views;
 
 /// <summary>
 /// Plan de salle interactif conforme aux Apple Human Interface Guidelines (HIG) pour iPadOS.
-/// Grille de tables tactiles avec fiches Inset Grouped, badges capsules de statut et modale Sheet Apple.
+/// Grille de tables tactiles avec fiches Inset Grouped, badges capsules de statut, modale Sheet Apple
+/// et retour haptique instantané.
 /// </summary>
 public class FloorPlanPage : ContentPage
 {
@@ -24,6 +25,8 @@ public class FloorPlanPage : ContentPage
         BindingContext = vm;
         Title = "Plan de Salle";
         BackgroundColor = AppleHigTheme.SystemBackground;
+        Shell.SetNavBarIsVisible(this, false);
+        Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.SetUseSafeArea(this, true);
         Build();
     }
 
@@ -77,6 +80,7 @@ public class FloorPlanPage : ContentPage
                     Padding = new Thickness(16, 0),
                     Command = new Command(async () =>
                     {
+                        AppleHigTheme.PerformHapticClick();
                         var newTableNum = $"T{_vm.Tables.Count + 1:D2}";
                         _vm.Tables.Add(new DiningTable { TableNumber = newTableNum, Capacity = 4, Status = TableStatus.Free });
                         await DisplayAlert("Table Créée", $"Nouvelle table {newTableNum} ajoutée avec succès au plan de salle.", "OK");
@@ -270,6 +274,7 @@ public class FloorPlanPage : ContentPage
         var tapGesture = new TapGestureRecognizer();
         tapGesture.Command = new Command(async () =>
         {
+            AppleHigTheme.PerformHapticClick();
             await _vm.SelectTableAsync(table);
             if (table.Status != TableStatus.Free)
             {
@@ -323,6 +328,7 @@ public class FloorPlanPage : ContentPage
                     BuildCoversSelector(),
                     AppleHigTheme.CreatePillButton("✔ Confirmer", AppleHigTheme.SystemGreen, Colors.White, new Command(async () =>
                     {
+                        AppleHigTheme.PerformHapticSuccess();
                         await _vm.ConfirmOpenTableAsync();
                         if (_vm.SelectedTable is not null)
                         {
@@ -336,7 +342,11 @@ public class FloorPlanPage : ContentPage
                         TextColor = AppleHigTheme.LabelSecondary,
                         HeightRequest = 44,
                         FontSize = AppleHigTheme.Headline,
-                        Command = _vm.CancelTablePromptCommand
+                        Command = new Command(() =>
+                        {
+                            AppleHigTheme.PerformHapticClick();
+                            _vm.CancelTablePromptCommand.Execute(null);
+                        })
                     }
                 }
             }
@@ -369,7 +379,11 @@ public class FloorPlanPage : ContentPage
             CornerRadius = 28,
             BorderColor = AppleHigTheme.Separator,
             BorderWidth = 1,
-            Command = new Command(() => { if (_vm.CoversToOpen > 1) _vm.CoversToOpen--; })
+            Command = new Command(() =>
+            {
+                AppleHigTheme.PerformHapticClick();
+                if (_vm.CoversToOpen > 1) _vm.CoversToOpen--;
+            })
         };
 
         var plusBtn = new Button
@@ -381,7 +395,11 @@ public class FloorPlanPage : ContentPage
             WidthRequest = 56,
             HeightRequest = 56,
             CornerRadius = 28,
-            Command = new Command(() => _vm.CoversToOpen++)
+            Command = new Command(() =>
+            {
+                AppleHigTheme.PerformHapticClick();
+                _vm.CoversToOpen++;
+            })
         };
 
         return new Grid
@@ -401,10 +419,11 @@ public class FloorPlanPage : ContentPage
         };
     }
 
-    private static HorizontalStackLayout MakeLegendItem(Color color, string label) =>
-        new()
+    private static View MakeLegendItem(Color color, string label)
+    {
+        return new HorizontalStackLayout
         {
-            Spacing = 7,
+            Spacing = 6,
             VerticalOptions = LayoutOptions.Center,
             Children =
             {
@@ -420,11 +439,13 @@ public class FloorPlanPage : ContentPage
                 {
                     Text = label,
                     TextColor = AppleHigTheme.LabelSecondary,
-                    FontSize = AppleHigTheme.Footnote,
+                    FontSize = AppleHigTheme.Caption1,
+                    FontAttributes = FontAttributes.Bold,
                     VerticalOptions = LayoutOptions.Center
                 }
             }
         };
+    }
 
     private static T AddToGrid<T>(T view, int row) where T : View
     {

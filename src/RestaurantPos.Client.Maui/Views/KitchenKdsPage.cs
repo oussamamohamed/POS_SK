@@ -1,4 +1,5 @@
 #if MAUI_UI
+using System;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Shapes;
@@ -14,7 +15,7 @@ namespace RestaurantPos.Client.Maui.Views;
 /// <summary>
 /// Écran Cuisine KDS (Kitchen Display System) conforme aux Apple Human Interface Guidelines (HIG) pour iPadOS.
 /// 3 colonnes : En Attente | En Préparation | Prêt à Servir.
-/// Fiches Inset Grouped, badges capsules d'urgence et gros boutons tactiles BUMP.
+/// Fiches Inset Grouped, badges capsules d'urgence, retour haptique tactile et gros boutons BUMP.
 /// </summary>
 public class KitchenKdsPage : ContentPage
 {
@@ -27,6 +28,7 @@ public class KitchenKdsPage : ContentPage
         BindingContext = vm;
         BackgroundColor = AppleHigTheme.SystemBackground;
         Shell.SetNavBarIsVisible(this, false);
+        Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.SetUseSafeArea(this, true);
         Build();
     }
 
@@ -135,7 +137,8 @@ public class KitchenKdsPage : ContentPage
             FontAttributes = isActive ? FontAttributes.Bold : FontAttributes.None,
             HeightRequest = 34,
             CornerRadius = 17,
-            Padding = new Thickness(14, 0)
+            Padding = new Thickness(14, 0),
+            Command = new Command(() => AppleHigTheme.PerformHapticClick())
         };
     }
 
@@ -255,10 +258,16 @@ public class KitchenKdsPage : ContentPage
             HeightRequest = 50,
             MinimumHeightRequest = AppleHigTheme.MinTouchTarget,
             CornerRadius = 12,
-            Margin = new Thickness(0, 8, 0, 0),
-            Command = _vm.BumpTicketCommand
+            Margin = new Thickness(0, 8, 0, 0)
         };
-        bumpBtn.SetBinding(Button.CommandParameterProperty, new Binding("."));
+        bumpBtn.Clicked += (s, e) =>
+        {
+            AppleHigTheme.PerformHapticSuccess();
+            if (bumpBtn.BindingContext is KdsTicketItemViewModel vmItem)
+            {
+                _vm.BumpTicketCommand.Execute(vmItem);
+            }
+        };
 
         var recallBtn = new Button
         {
@@ -267,10 +276,16 @@ public class KitchenKdsPage : ContentPage
             TextColor = AppleHigTheme.LabelSecondary,
             FontSize = AppleHigTheme.Footnote,
             HeightRequest = 38,
-            CornerRadius = 8,
-            Command = _vm.RecallTicketCommand
+            CornerRadius = 8
         };
-        recallBtn.SetBinding(Button.CommandParameterProperty, new Binding("."));
+        recallBtn.Clicked += (s, e) =>
+        {
+            AppleHigTheme.PerformHapticClick();
+            if (recallBtn.BindingContext is KdsTicketItemViewModel vmItem)
+            {
+                _vm.RecallTicketCommand.Execute(vmItem);
+            }
+        };
 
         border.Content = new VerticalStackLayout
         {
