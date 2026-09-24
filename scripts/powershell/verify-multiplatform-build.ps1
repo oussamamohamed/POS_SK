@@ -18,7 +18,7 @@ if ($LASTEXITCODE -ne 0) {
 
 # 2. Run all unit and integration test suites
 Write-Host "`n[2/3] Running test suites..." -ForegroundColor Yellow
-dotnet test tests/RestaurantPos.Client.Maui.Tests/RestaurantPos.Client.Maui.Tests.csproj -c $Configuration --verbosity normal
+dotnet test RestaurantPos.slnx -c $Configuration --verbosity normal
 if ($LASTEXITCODE -ne 0) {
     Write-Error "Test suite failed!"
     exit 1

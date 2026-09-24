@@ -3,7 +3,7 @@
 **Projet :** Système de Point de Vente (POS) Tactile pour Restaurant sur iPad / iOS 
 **Statut :** Spécification Technique & Plan d'Exécution Complet  
 **Cible Client :** iPadOS 17+ & iOS 17+ (Apple iPad 10.2", 10.9", iPad Pro 11"/13", iPad Mini)  
-**Stack Frontend :** .NET MAUI (C# / XAML ou C# Markup) pour iOS/iPadOS  
+**Stack Frontend :** Application iPad native SwiftUI (Swift 6, iPadOS 17+) — voir `ios/README.md` (le client .NET MAUI a été abandonné)  
 **Stack Backend :** .NET 9 (C#) / ASP.NET Core (Clean Architecture + CQRS + SignalR)  
 **Mode de Fonctionnement :** Local-First / Hybride (SQLite local sur iPad + Sync temps réel)  
 **Conformité Fiscale :** Traçabilité inaltérable, Chaînage SHA-256 & Clôtures Z (Norme NF525)

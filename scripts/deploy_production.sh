@@ -6,7 +6,7 @@ ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$ROOT_DIR"
 
 SIM_DEVICE="iPad Pro 11-inch (M5)"
-BUNDLE_ID="com.restaurantpos.client"
+BUNDLE_ID="com.restaurantpos.ipad"
 API_URL="http://127.0.0.1:5000"
 
 echo "========================================================"
@@ -55,19 +55,20 @@ done
 echo "[3/6] Insertion des donnees de test dans la base de donnees..."
 "$SCRIPT_DIR/seed_production_test_data.sh"
 
-# 5. Compilation et Installation du client MAUI en Release
-echo "[4/6] Compilation et Verification du paquet MAUI Release iOS..."
-APP_BUNDLE="src/RestaurantPos.Client.Maui/bin/Release/net9.0-ios/iossimulator-arm64/RestaurantPos.Client.Maui.app"
-echo "  Compilation Release de RestaurantPos.Client.Maui pour iOS Simulator..."
-dotnet build src/RestaurantPos.Client.Maui/RestaurantPos.Client.Maui.csproj -c Release -p:BuildingForMaui=true -f net9.0-ios --nologo
+# 5. Compilation du client iPad natif (SwiftUI) en Release
+echo "[4/6] Compilation Release du client iPad natif (SwiftUI)..."
+DERIVED_DIR="$ROOT_DIR/ios/build/DerivedData"
+APP_BUNDLE="$DERIVED_DIR/Build/Products/Release-iphonesimulator/RestaurantPOS.app"
+(cd ios && xcodegen generate --quiet)
+xcodebuild -project ios/RestaurantPOS.xcodeproj -scheme RestaurantPOS -configuration Release \
+    -destination "platform=iOS Simulator,id=$BOOTED_UDID" -derivedDataPath "$DERIVED_DIR" build -quiet
 
 echo "[5/6] Installation de l'application sur le simulateur iPad..."
 echo "  Desinstallation precedente pour rafraichir le cache de SpringBoard..."
 xcrun simctl uninstall booted "$BUNDLE_ID" 2>/dev/null || true
 xcrun simctl install booted "$APP_BUNDLE"
 
-CURRENT_CONV_ID="26c2f2fb-dd0a-4906-97fe-a500c297bf1d"
-ARTIFACTS_DIR="/Users/oussama/.gemini/antigravity-ide/brain/$CURRENT_CONV_ID"
+ARTIFACTS_DIR="$ROOT_DIR/ios/build/deploy"
 mkdir -p "$ARTIFACTS_DIR"
 
 echo "  Capture d'ecran de l'ecran d'accueil (icone)..."
@@ -78,7 +79,7 @@ xcrun simctl io booted screenshot "$ARTIFACTS_DIR/homescreen_verified.png" 2>/de
 echo "[6/6] Lancement de l'application RestaurantPos en Mode Production..."
 xcrun simctl terminate booted "$BUNDLE_ID" 2>/dev/null || true
 sleep 1
-xcrun simctl launch booted "$BUNDLE_ID"
+SIMCTL_CHILD_POS_SERVER_URL="$API_URL" xcrun simctl launch booted "$BUNDLE_ID"
 
 sleep 3
 SCREENSHOT_PATH="$ARTIFACTS_DIR/prod_deployed_screen.png"
@@ -89,6 +90,6 @@ echo "========================================================"
 echo " [TERMINE] Deploiement Production Reussi !"
 echo " - Environnement API : Production (Release)"
 echo " - Base SQLite       : restaurantpos.db avec donnees reelles inserees"
-echo " - Client iOS MAUI   : Installe et execute en Release"
+echo " - Client iPad natif : Installe et execute en Release"
 echo " - Capture d'ecran   : $SCREENSHOT_PATH"
 echo "========================================================"

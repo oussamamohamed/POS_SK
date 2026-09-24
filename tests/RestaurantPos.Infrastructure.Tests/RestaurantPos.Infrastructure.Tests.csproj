@@ -26,6 +26,5 @@
     <ProjectReference Include="..\..\src\RestaurantPos.Domain\RestaurantPos.Domain.csproj" />
     <ProjectReference Include="..\..\src\RestaurantPos.Application\RestaurantPos.Application.csproj" />
     <ProjectReference Include="..\..\src\RestaurantPos.Infrastructure\RestaurantPos.Infrastructure.csproj" />
-    <ProjectReference Include="..\..\src\RestaurantPos.Client.Maui\RestaurantPos.Client.Maui.csproj" />
   </ItemGroup>
 </Project>
