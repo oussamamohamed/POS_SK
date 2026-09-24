@@ -23,3 +23,7 @@ dotnet_style_qualification_for_event = false:suggestion
 # Allow underscores in test method names (standard xUnit BDD naming convention)
 [*{test,Test,Tests,Simulation,Simulations}*.cs]
 dotnet_diagnostic.CA1707.severity = none
+
+# App iPad (Swift/Xcode), scripts shell et CI : LF (voir .gitattributes)
+[{ios/**,*.swift,*.sh,*.yml,*.yaml,*.plist,*.pbxproj}]
+end_of_line = lf

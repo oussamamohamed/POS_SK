@@ -33,3 +33,8 @@ ios/build/
 ios/POSKit/.swiftpm/
 xcuserdata/
 *.xcresult
+
+# Bases SQLite et resultats de tests generes a l'execution
+*.db
+*.sqlite
+TestResults/
