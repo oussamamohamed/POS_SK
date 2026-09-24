@@ -32,7 +32,7 @@ public actor InMemoryPOSBackend: POSAPI {
     }
 
     private var staff: [StaffMember]
-    private var categoryList: [Category]
+    private var categoryList: [MenuCategory]
     private var productList: [Product]
     private var tableList: [DiningTable]
     private var orders: [UUID: StoredOrder] = [:]
@@ -70,12 +70,12 @@ public actor InMemoryPOSBackend: POSAPI {
         StaffMember(pin: "9999", op: Operator(id: uuid(4), name: "Admin Système", role: .admin)),
     ]
 
-    public static let defaultCategories: [Category] = [
-        Category(id: "CAT_ENTREES", name: "Entrées Fraîches", iconName: "salad", colorHex: "#2ECC71", displayOrder: 1),
-        Category(id: "CAT_PLATS", name: "Plats & Grillades", iconName: "meat", colorHex: "#E74C3C", displayOrder: 2),
-        Category(id: "CAT_PIZZAS", name: "Pizzas Artisanales", iconName: "pizza", colorHex: "#E67E22", displayOrder: 3),
-        Category(id: "CAT_DESSERTS", name: "Desserts Maison", iconName: "cake", colorHex: "#9B59B6", displayOrder: 4),
-        Category(id: "CAT_BOISSONS", name: "Boissons & Vins", iconName: "glass", colorHex: "#3498DB", displayOrder: 5),
+    public static let defaultCategories: [MenuCategory] = [
+        MenuCategory(id: "CAT_ENTREES", name: "Entrées Fraîches", iconName: "salad", colorHex: "#2ECC71", displayOrder: 1),
+        MenuCategory(id: "CAT_PLATS", name: "Plats & Grillades", iconName: "meat", colorHex: "#E74C3C", displayOrder: 2),
+        MenuCategory(id: "CAT_PIZZAS", name: "Pizzas Artisanales", iconName: "pizza", colorHex: "#E67E22", displayOrder: 3),
+        MenuCategory(id: "CAT_DESSERTS", name: "Desserts Maison", iconName: "cake", colorHex: "#9B59B6", displayOrder: 4),
+        MenuCategory(id: "CAT_BOISSONS", name: "Boissons & Vins", iconName: "glass", colorHex: "#3498DB", displayOrder: 5),
     ]
 
     public static let defaultProducts: [Product] = {
@@ -296,7 +296,7 @@ public actor InMemoryPOSBackend: POSAPI {
         currentOperator = nil
     }
 
-    public func categories() async throws -> [Category] {
+    public func categories() async throws -> [MenuCategory] {
         await pause()
         return categoryList
     }

@@ -1,7 +1,7 @@
 import Foundation
 
 /// Catégorie de la carte (`GET /api/catalog/categories`).
-public struct Category: Identifiable, Hashable, Codable, Sendable {
+public struct MenuCategory: Identifiable, Hashable, Codable, Sendable {
     public var id: String
     public var name: String
     public var iconName: String?

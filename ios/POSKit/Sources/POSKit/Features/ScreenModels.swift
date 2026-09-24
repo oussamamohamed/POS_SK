@@ -6,7 +6,7 @@ import Observation
 @MainActor
 @Observable
 public final class CatalogModel {
-    public private(set) var categories: [Category] = []
+    public private(set) var categories: [MenuCategory] = []
     public private(set) var products: [Product] = []
     public var selectedCategoryID: String?
     public var searchText = ""
@@ -45,7 +45,7 @@ public final class CatalogModel {
 
     public var hasFavorites: Bool { products.contains(where: \.isQuickKey) }
 
-    public func category(for product: Product) -> Category? {
+    public func category(for product: Product) -> MenuCategory? {
         categories.first { $0.id == product.categoryId }
     }
 

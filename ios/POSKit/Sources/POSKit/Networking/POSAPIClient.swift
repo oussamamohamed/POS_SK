@@ -175,8 +175,8 @@ public actor POSAPIClient: POSAPI {
         token = nil
     }
 
-    public func categories() async throws -> [Category] {
-        try await request([Category].self, "GET", "/api/catalog/categories")
+    public func categories() async throws -> [MenuCategory] {
+        try await request([MenuCategory].self, "GET", "/api/catalog/categories")
     }
 
     public func products() async throws -> [Product] {

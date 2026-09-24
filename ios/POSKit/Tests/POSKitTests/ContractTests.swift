@@ -15,7 +15,7 @@ struct ContractTests {
     }
 
     @Test func catalog() throws {
-        let categories = try Fixture.decode([Category].self, "categories")
+        let categories = try Fixture.decode([MenuCategory].self, "categories")
         #expect(categories.count == 5)
         #expect(categories.first?.name == "Entrées Fraîches")
         #expect(categories.first?.colorHex == "#2ECC71")

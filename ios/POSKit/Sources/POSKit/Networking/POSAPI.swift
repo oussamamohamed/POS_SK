@@ -12,7 +12,7 @@ public protocol POSAPI: Sendable {
     func logout() async
 
     // Carte
-    func categories() async throws -> [Category]
+    func categories() async throws -> [MenuCategory]
     func products() async throws -> [Product]
 
     // Salle
