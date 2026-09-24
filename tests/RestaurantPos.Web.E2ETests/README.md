@@ -52,6 +52,13 @@ Suite de tests automatisés de bout en bout pour l'interface tactile Web POS (`h
    - Présence des boutons de Clôture Journalière (Rapport Z) et du scellement SHA-256.
    - Formulaire et génération de l'Export Comptable FEC réglementaire (Article A.47 A-1 LPF).
 
+11. **Régressions corrigées (`web-regressions.spec.ts`)** — chaque test vérifie l'état côté serveur via l'API :
+   - Destination envoyée conforme à l'enum serveur (`Takeaway = 0`, `EatIn = 1`) ; commandes de table « sur place ».
+   - Quantités modifiées après coup réellement enregistrées (brouillon local, plus de perte de lignes).
+   - Commentaire cuisine transmis au bon de préparation.
+   - Partage en 3 parts encaissées au centime, table soldée.
+   - Création/modification d'employés, d'articles, de familles et d'imprimantes ; fermeture des fenêtres d'édition.
+
 ---
 
 ## 🚀 Exécution des Tests sur Profil iPad
@@ -65,8 +72,11 @@ La suite est configurée nativement pour émuler un **iPad Pro 11 (Landscape)** 
 # 2. Ou directement depuis le dossier de tests E2E :
 cd tests/RestaurantPos.Web.E2ETests
 
-# Lancer les 41 tests sous profil iPad Pro 11 WebKit (mode par défaut) :
+# Lancer les 50 tests sous profil iPad Pro 11 WebKit (mode par défaut) :
 npm test
+
+# Serveur sur un autre port (sur macOS, le port 5000 est occupé par AirPlay) :
+POS_WEB_URL=http://localhost:5080 npm test
 
 # Lancer avec fenêtre visible :
 npm run test:headed

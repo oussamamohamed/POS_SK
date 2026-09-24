@@ -324,6 +324,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setupAdminTabs();
         setupDashboardHandlers();
         setupModals();
+        setupEditModals();
         setupForms();
         setupSalesGridPaginationListeners();
         setupAdminGridEditorListeners();
@@ -334,6 +335,8 @@ document.addEventListener('DOMContentLoaded', () => {
         await ensureAuthToken();
 
         await loadCatalogData();
+        // Le terminal démarre sur le comptoir : on charge sa commande en cours (articles, destination).
+        if (state.token) await openDirectCounterOrder(state.destination);
         await loadFloorPlanData();
         await loadKdsData();
         await loadAdminData();
@@ -835,7 +838,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let originalUnitPrice = null;
         let scheduleId = null;
 
-        const isTakeaway = state.destination === 'Takeaway' || state.destination === 1;
+        const isTakeaway = isTakeawayMode();
         const hhAllowed = !isTakeaway || (state.happyHour && state.happyHour.appliesToTakeaway);
 
         if (state.happyHour && state.happyHour.isActive && hhAllowed) {
@@ -848,9 +851,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        const existing = state.cart.find(item => 
-            item.product.id === product.id && 
-            !item.isDispatched && 
+        const existing = state.cart.find(item =>
+            item.product.id === product.id &&
+            !item.lineId &&
             item.course === course &&
             item.isHappyHourApplied === isHhApplied &&
             (item.product.price === effectiveUnitPrice) &&
@@ -868,6 +871,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     name: product.name,
                     price: effectiveUnitPrice,
                     taxRatePercent: product.taxRatePercent || 10.0,
+                    taxRateTakeawayPercent: product.taxRateTakeawayPercent ?? null,
                     preparationStationId: product.preparationStationId || 'HOT_KITCHEN'
                 },
                 quantity: 1,
@@ -885,7 +889,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         renderCart();
         showToast(`+1 ${product.name} [${course}]`, 'success');
-        scheduleAutoSaveCart();
     }
 
     // ==================== AUTO-SAVE & TABLE RECALL ====================
@@ -910,162 +913,178 @@ document.addEventListener('DOMContentLoaded', () => {
         return null;
     }
 
-    let autoSaveTimer = null;
-    function scheduleAutoSaveCart() {
-        if (autoSaveTimer) clearTimeout(autoSaveTimer);
-        autoSaveTimer = setTimeout(() => {
-            saveActiveCartToServer();
-        }, 400);
-    }
+    /**
+     * Enregistre les articles en brouillon (sans lineId) côté serveur.
+     * L'API ne permet que l'ajout de lignes : les brouillons restent donc modifiables localement
+     * et ne sont envoyés qu'au moment utile (envoi cuisine, paiement, remise, attente, transfert,
+     * changement de table ou fermeture de la page). Renvoie true si tout est enregistré.
+     */
+    async function saveActiveCartToServer(options = {}) {
+        if (!state.activeTable) return true;
+        const drafts = state.cart.filter(i => !i.lineId);
+        if (drafts.length === 0) return true;
 
-    async function saveActiveCartToServer() {
-        if (!state.activeTable) return;
-        const unsaved = state.cart.filter(i => !i.lineId && !i.isDispatched);
-        if (unsaved.length === 0) return;
-
-        try {
-            await ensureAuthToken();
-            const headers = { 'Content-Type': 'application/json' };
-            if (state.token) headers['Authorization'] = `Bearer ${state.token}`;
-
-            const courseMap = { 'Direct': 0, 'Suite': 1, 'Dessert': 2, 'OnDemand': 3 };
-            const itemsPayload = unsaved.map(i => ({
+        const courseMap = { 'Direct': 0, 'Suite': 1, 'Dessert': 2, 'OnDemand': 3 };
+        const itemsPayload = drafts.map(i => {
+            const modifiers = (i.modifiers || []).slice();
+            if (i.kitchenComment && i.kitchenComment.trim()) {
+                modifiers.push(`💬 ${i.kitchenComment.trim()}`);
+            }
+            return {
                 productId: i.product.id,
                 productName: i.product.name,
                 quantity: i.quantity,
                 unitPrice: i.product.price,
                 taxRatePercent: i.product.taxRatePercent || 10.0,
+                taxRateTakeawayPercent: i.product.taxRateTakeawayPercent ?? null,
                 preparationStationId: i.product.preparationStationId || 'HOT_KITCHEN',
-                modifiers: i.modifiers || [],
+                modifiers: modifiers,
                 modifiersPriceExtra: i.modifiersPriceExtra || 0,
                 course: courseMap[i.course] || 0,
                 isHappyHourApplied: !!i.isHappyHourApplied,
                 originalUnitPrice: i.originalUnitPrice || null,
                 appliedHappyHourScheduleId: i.appliedHappyHourScheduleId || null
-            }));
+            };
+        });
 
-            let res = await fetch(`/api/tables/${encodeURIComponent(state.activeTable)}/items`, {
+        const table = state.activeTable;
+        const isCounter = table === 'Comptoir';
+        const wantedDestination = isCounter ? destinationToEnum(state.destination) : destinationToEnum('EatIn');
+
+        try {
+            await ensureAuthToken();
+            const res = await fetch(`/api/tables/${encodeURIComponent(table)}/items`, {
                 method: 'POST',
-                headers: headers,
-                body: JSON.stringify({ items: itemsPayload })
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ items: itemsPayload }),
+                keepalive: !!options.keepalive
             });
+            if (!res.ok) {
+                if (!options.keepalive) showToast(`Erreur ${res.status} lors de l'enregistrement du ticket`, 'error');
+                return false;
+            }
+            if (options.keepalive) return true;
 
-            if (res.status === 401) {
-                await ensureAuthToken();
-                if (state.token) headers['Authorization'] = `Bearer ${state.token}`;
-                res = await fetch(`/api/tables/${encodeURIComponent(state.activeTable)}/items`, {
+            const data = await res.json();
+            // Le serveur a pris en compte tous les brouillons : on repart de sa version du ticket.
+            if (state.activeTable === table) {
+                state.cart = state.cart.filter(i => i.lineId || !drafts.includes(i));
+                hydrateCartFromOrder(data, true);
+            }
+            // Le serveur crée les commandes « À emporter » par défaut ; une table est servie sur place.
+            if (data && data.orderId && data.destination !== wantedDestination) {
+                await fetch(`/api/orders/${data.orderId}/destination`, {
                     method: 'POST',
-                    headers: headers,
-                    body: JSON.stringify({ items: itemsPayload })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ destination: wantedDestination })
                 });
             }
-
-            if (res.ok) {
-                const data = await res.json();
-                if (data && data.orderId) {
-                    state.activeOrderId = data.orderId;
-                }
-                if (data && Array.isArray(data.lines)) {
-                    data.lines.forEach((line, idx) => {
-                        if (state.cart[idx]) {
-                            state.cart[idx].lineId = line.lineId;
-                            state.cart[idx].isDispatched = line.isDispatched;
-                        }
-                    });
-                }
-            }
+            renderCart();
+            return true;
         } catch (err) {
-            console.error('Erreur sauvegarde automatique panier:', err);
+            console.error('Erreur enregistrement du ticket:', err);
+            if (!options.keepalive) showToast('Erreur réseau : ticket non enregistré', 'error');
+            return false;
         }
     }
 
-    async function loadActiveTableOrder(tableNumber) {
-        state.tableCarts = state.tableCarts || {};
+    // Filet de sécurité : les brouillons sont envoyés si la page est fermée ou masquée.
+    window.addEventListener('pagehide', () => { saveActiveCartToServer({ keepalive: true }); });
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') saveActiveCartToServer();
+    });
 
-        // First flush any pending undispatched items on previous table if switching tables
-        if (state.activeTable && state.activeTable !== tableNumber) {
-            if (state.cart && state.cart.length > 0) {
-                state.tableCarts[state.activeTable] = JSON.parse(JSON.stringify(state.cart));
-            }
+    async function loadActiveTableOrder(tableNumber) {
+        const switching = state.activeTable && state.activeTable !== tableNumber;
+        // Avant de quitter une table, ses brouillons sont enregistrés côté serveur.
+        if (switching) {
             await saveActiveCartToServer();
+            state.cart = [];
+            state.amountPaid = 0;
+            state.splitPlan = null;
         }
 
         state.activeTable = tableNumber;
         elements.activeTableBadge.textContent = `Table ${tableNumber}`;
 
         try {
-            const authHeaders = state.token ? { 'Authorization': `Bearer ${state.token}` } : {};
-            let res = await fetch(`/api/tables/${encodeURIComponent(tableNumber)}/order`, { headers: authHeaders });
-            if (res.status === 401 && !state.token) {
-                await ensureAuthToken();
-                res = await fetch(`/api/tables/${encodeURIComponent(tableNumber)}/order`, {
-                    headers: state.token ? { 'Authorization': `Bearer ${state.token}` } : {}
-                });
-            }
+            await ensureAuthToken();
+            const res = await fetch(`/api/tables/${encodeURIComponent(tableNumber)}/order`);
 
             if (res.ok) {
                 const orderData = await res.json();
-                state.activeOrderId = orderData.orderId;
                 state.activeCovers = orderData.coversCount || 2;
-                state.globalDiscount = orderData.globalDiscountType !== null ? {
-                    type: orderData.globalDiscountType,
-                    value: orderData.globalDiscountValue,
-                    reason: orderData.globalDiscountReason
-                } : null;
-
                 elements.activeCoversBadge.textContent = `👥 ${state.activeCovers} Couverts`;
-
-                // Hydrate cart from database order lines
-                state.cart = orderData.lines.map(line => ({
-                    lineId: line.lineId,
-                    product: {
-                        id: line.productId,
-                        name: line.productName,
-                        price: line.unitPrice,
-                        taxRatePercent: line.taxRatePercent,
-                        preparationStationId: line.preparationStationId
-                    },
-                    quantity: line.quantity,
-                    course: typeof line.course === 'number' ? getCourseNameFromEnum(line.course) : (line.course || 'Direct'),
-                    isDispatched: line.isDispatched,
-                    isComp: line.isComp || false,
-                    discountPercent: line.discountPercent || 0,
-                    isHappyHourApplied: line.isHappyHourApplied || false,
-                    originalUnitPrice: line.originalUnitPrice || null,
-                    appliedHappyHourScheduleId: line.appliedHappyHourScheduleId || null,
-                    modifiers: line.modifiersSummary || [],
-                    modifiersPriceExtra: Number(line.modifiersPriceExtra) || 0
-                }));
-
-                state.tableCarts[tableNumber] = JSON.parse(JSON.stringify(state.cart));
+                hydrateCartFromOrder(orderData, true);
                 renderCart();
             } else if (res.status === 404) {
-                if (state.tableCarts && state.tableCarts[tableNumber] && state.tableCarts[tableNumber].length > 0) {
-                    state.cart = JSON.parse(JSON.stringify(state.tableCarts[tableNumber]));
-                    renderCart();
-                } else {
-                    // Table is genuinely free in database - reset cart for new order
-                    state.activeOrderId = null;
-                    state.cart = [];
-                    state.globalDiscount = null;
-                    elements.activeCoversBadge.textContent = `👥 2 Couverts (Libre)`;
-                    renderCart();
-                }
+                // Aucune commande enregistrée : on conserve les éventuels brouillons de cette table.
+                state.activeOrderId = null;
+                state.globalDiscount = null;
+                state.amountPaid = 0;
+                state.cart = state.cart.filter(i => !i.lineId);
+                elements.activeCoversBadge.textContent = `👥 2 Couverts (Libre)`;
+                renderCart();
             } else if (res.status === 401) {
-                // Not authenticated: do not wipe cart, terminal will prompt for PIN
+                // Non authentifié : on ne vide pas le panier, le terminal redemande le PIN.
                 console.warn(`Rappel table ${tableNumber} refusé (401 Non Authentifié). Authentification requise.`);
             } else {
                 showToast(`Erreur ${res.status} lors du rappel de la table ${tableNumber}`, 'error');
             }
         } catch (err) {
             console.error('Erreur rappel table:', err);
-            if (state.tableCarts && state.tableCarts[tableNumber] && state.tableCarts[tableNumber].length > 0) {
-                state.cart = JSON.parse(JSON.stringify(state.tableCarts[tableNumber]));
-                renderCart();
-            } else {
-                showToast(`Erreur chargement table ${tableNumber}`, 'error');
-            }
+            showToast(`Erreur chargement table ${tableNumber}`, 'error');
         }
+    }
+
+    // Enum serveur OrderDestination : Takeaway = 0, EatIn = 1.
+    function destinationToEnum(dest) {
+        return dest === 'EatIn' ? 1 : 0;
+    }
+
+    function destinationFromEnum(value) {
+        return value === 1 || value === 'EatIn' ? 'EatIn' : 'Takeaway';
+    }
+
+    function isTakeawayMode() {
+        return state.destination === 'Takeaway';
+    }
+
+    /** Ligne de commande serveur → ligne de panier (enregistrée : porte un lineId). */
+    function mapServerLine(line) {
+        return {
+            lineId: line.lineId,
+            product: {
+                id: line.productId,
+                name: line.productName,
+                price: line.unitPrice,
+                taxRatePercent: line.taxRatePercent,
+                taxRateTakeawayPercent: line.taxRateTakeawayPercent,
+                preparationStationId: line.preparationStationId
+            },
+            quantity: line.quantity,
+            course: typeof line.course === 'number' ? getCourseNameFromEnum(line.course) : (line.course || 'Direct'),
+            isDispatched: line.isDispatched,
+            isComp: line.isComp || false,
+            discountPercent: line.discountPercent || 0,
+            isHappyHourApplied: line.isHappyHourApplied || false,
+            originalUnitPrice: line.originalUnitPrice || null,
+            appliedHappyHourScheduleId: line.appliedHappyHourScheduleId || null,
+            modifiers: line.modifiersSummary || [],
+            modifiersPriceExtra: Number(line.modifiersPriceExtra) || 0
+        };
+    }
+
+    /** Recharge le panier depuis une commande serveur en conservant les brouillons non enregistrés. */
+    function hydrateCartFromOrder(orderData, keepDrafts = true) {
+        const drafts = keepDrafts ? state.cart.filter(i => !i.lineId) : [];
+        state.activeOrderId = orderData.orderId;
+        state.globalDiscount = orderData.globalDiscountType !== null && orderData.globalDiscountType !== undefined ? {
+            type: orderData.globalDiscountType,
+            value: orderData.globalDiscountValue,
+            reason: orderData.globalDiscountReason
+        } : null;
+        state.cart = (orderData.lines || []).map(mapServerLine).concat(drafts);
     }
 
     function getCourseNameFromEnum(val) {
@@ -1102,7 +1121,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 lineTtc = lineTtc * (1.0 - (item.discountPercent / 100.0));
             }
 
-            const isTakeaway = state.destination === 'Takeaway' || state.destination === 1;
+            const isTakeaway = isTakeawayMode();
             const effectiveVatPercent = (isTakeaway && item.product.taxRateTakeawayPercent !== undefined && item.product.taxRateTakeawayPercent !== null)
                 ? Number(item.product.taxRateTakeawayPercent)
                 : Number(item.product.taxRatePercent || 10.0);
@@ -1126,7 +1145,11 @@ document.addEventListener('DOMContentLoaded', () => {
                         ${item.isHappyHourApplied ? '<span class="cart-item-badge-hh" title="Tarif Happy Hour appliqué">🍻 [HH]</span>' : ''}
                         <span class="course-badge ${courseClass}" data-idx="${index}" title="Cliquer pour changer de service (Direct / Suite / Dessert)">${item.course || 'Direct'}</span>
                         ${item.isComp ? '<span class="comp-badge">🎁 Offert</span>' : ''}
-                        ${item.isDispatched ? '<span class="badge-dispatched" title="Déjà transmis en préparation">👨‍🍳 Cuisine</span>' : '<span class="badge-pending" title="Nouvel article à envoyer">➕ Nouveau</span>'}
+                        ${item.isDispatched
+                            ? '<span class="badge-dispatched" title="Déjà transmis en préparation">👨‍🍳 Cuisine</span>'
+                            : item.lineId
+                                ? '<span class="badge-pending" title="Enregistré, pas encore envoyé en cuisine">💾 Enregistré</span>'
+                                : '<span class="badge-pending" title="Nouvel article à envoyer">➕ Nouveau</span>'}
                     </div>
                     <span class="cart-item-meta">${unitPrice.toFixed(2)} € × ${item.quantity} ${item.originalUnitPrice ? `<span style="text-decoration:line-through; color:#94a3b8; margin-left:4px;">(${Number(item.originalUnitPrice).toFixed(2)} €)</span>` : ''} ${item.modifiersPriceExtra ? `<span style="color:#10b981; font-weight:600;">(+${Number(item.modifiersPriceExtra).toFixed(2)}€ options)</span>` : ''} (TVA ${effectiveVatPercent}%)</span>
                     ${item.modifiers && item.modifiers.length > 0 ? `<div style="font-size:0.75rem;color:#f59e0b;margin-top:2px;">↳ ${item.modifiers.join(', ')}</div>` : ''}
@@ -1155,7 +1178,7 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.summaryHt.textContent = `${totalHt.toFixed(2)} €`;
         elements.summaryVat.textContent = `${totalVat.toFixed(2)} €`;
         if (document.getElementById('summaryVatLabel')) {
-            document.getElementById('summaryVatLabel').textContent = (state.destination === 'Takeaway' || state.destination === 1)
+            document.getElementById('summaryVatLabel').textContent = isTakeawayMode()
                 ? 'TVA (5.5% / 10% / 20%) :'
                 : 'TVA (10% / 20%) :';
         }
@@ -1166,16 +1189,33 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.addEventListener('click', (e) => {
                 const idx = parseInt(btn.getAttribute('data-idx'));
                 const action = btn.getAttribute('data-action');
+                const item = state.cart[idx];
+                if (!item) return;
                 if (action === 'plus') {
-                    state.cart[idx].quantity += 1;
+                    if (item.lineId) {
+                        // Ligne déjà enregistrée : on ajoute un brouillon identique (fusionné côté serveur).
+                        const draft = state.cart.find(i => !i.lineId && i.product.id === item.product.id && i.course === item.course
+                            && (i.modifiers || []).join('|') === (item.modifiers || []).join('|') && !i.kitchenComment
+                            && (i.modifiersPriceExtra || 0) === (item.modifiersPriceExtra || 0) && i.product.price === item.product.price);
+                        if (draft) {
+                            draft.quantity += 1;
+                        } else {
+                            state.cart.push({ ...item, product: { ...item.product }, modifiers: [...(item.modifiers || [])], lineId: null, quantity: 1, isDispatched: false, isComp: false, discountPercent: 0, kitchenComment: '' });
+                        }
+                    } else {
+                        item.quantity += 1;
+                    }
                 } else if (action === 'minus') {
-                    state.cart[idx].quantity -= 1;
-                    if (state.cart[idx].quantity <= 0) {
+                    if (item.lineId) {
+                        showToast('Article déjà enregistré : utilisez « Remise → Offrir » pour l\'annuler.', 'warning');
+                        return;
+                    }
+                    item.quantity -= 1;
+                    if (item.quantity <= 0) {
                         state.cart.splice(idx, 1);
                     }
                 }
                 renderCart();
-                scheduleAutoSaveCart();
             });
         });
 
@@ -1183,7 +1223,7 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.cartItemsList.querySelectorAll('.course-badge').forEach(badge => {
             badge.addEventListener('click', (e) => {
                 const idx = parseInt(badge.getAttribute('data-idx'));
-                if (state.cart[idx] && !state.cart[idx].isDispatched) {
+                if (state.cart[idx] && !state.cart[idx].lineId) {
                     state.cart[idx].course = cycleCourse(state.cart[idx].course || 'Direct');
                     renderCart();
                     showToast(`Service passé à : ${state.cart[idx].course}`, 'info');
@@ -1195,20 +1235,17 @@ document.addEventListener('DOMContentLoaded', () => {
     elements.btnClearCart.addEventListener('click', () => {
         if (state.cart.length === 0) return;
 
-        const undispatched = state.cart.filter(i => !i.isDispatched);
-        const dispatched = state.cart.filter(i => i.isDispatched);
+        // Seuls les brouillons peuvent être retirés : l'API ne supprime pas de lignes enregistrées.
+        const drafts = state.cart.filter(i => !i.lineId);
+        const saved = state.cart.filter(i => i.lineId);
 
-        if (undispatched.length > 0 && dispatched.length > 0) {
-            state.cart = dispatched;
-            renderCart();
-            showToast(`${undispatched.length} article(s) retiré(s). Articles en cuisine conservés.`, 'info');
-        } else if (undispatched.length > 0 && dispatched.length === 0) {
-            state.cart = [];
-            renderCart();
-            showToast('Panier vidé', 'info');
-        } else if (undispatched.length === 0 && dispatched.length > 0) {
-            showToast('Les articles déjà transmis en cuisine ne peuvent pas être vidés.', 'error');
+        if (drafts.length === 0) {
+            showToast('Les articles déjà enregistrés ne peuvent pas être vidés (utilisez « Offrir »).', 'error');
+            return;
         }
+        state.cart = saved;
+        renderCart();
+        showToast(saved.length > 0 ? `${drafts.length} article(s) retiré(s). Articles enregistrés conservés.` : 'Panier vidé', 'info');
     });
 
     // 1. Send to Kitchen
@@ -1219,19 +1256,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            await saveActiveCartToServer();
+            if (!(await saveActiveCartToServer())) return;
 
-            const authHeaders = state.token ? { 'Authorization': `Bearer ${state.token}` } : {};
-            await fetch(`/api/tables/${encodeURIComponent(state.activeTable)}/dispatch`, { 
-                method: 'POST',
-                headers: authHeaders
-            });
+            const dispatchRes = await fetch(`/api/tables/${encodeURIComponent(state.activeTable)}/dispatch`, { method: 'POST' });
+            if (!dispatchRes.ok) {
+                showToast(`Erreur ${dispatchRes.status} lors de l'envoi en cuisine`, 'error');
+                return;
+            }
             showToast(`Commande ${state.activeTable} envoyée en cuisine ! 👨‍🍳`, 'success');
-            
-            // Mark items as dispatched and preserve in table cache
-            state.cart.forEach(i => i.isDispatched = true);
-            state.tableCarts = state.tableCarts || {};
-            state.tableCarts[state.activeTable] = JSON.parse(JSON.stringify(state.cart));
 
             if (state.activeTable === 'Comptoir') {
                 await loadActiveTableOrder('Comptoir');
@@ -1343,6 +1375,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const endpoint = mode === 'merge' ? `/api/tables/${state.activeTable}/merge` : `/api/tables/${state.activeTable}/transfer`;
 
             try {
+                if (!(await saveActiveCartToServer())) return;
                 await ensureAuthToken();
                 const headers = { 'Content-Type': 'application/json' };
                 if (state.token) headers['Authorization'] = `Bearer ${state.token}`;
@@ -1372,10 +1405,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 await saveActiveCartToServer();
             }
             elements.selectDiscountTarget.innerHTML = '<option value="global">Remise Globale sur la Note</option>';
-            state.cart.forEach((item, idx) => {
+            state.cart.filter(item => item.lineId && !item.isComp).forEach(item => {
                 const opt = document.createElement('option');
-                opt.value = item.lineId || `idx_${idx}`;
-                opt.textContent = `Offrir : 1x ${item.product.name} (${item.isComp ? 'Déjà offert' : Number(item.unitPrice || item.product.price).toFixed(2) + ' €'})`;
+                opt.value = item.lineId;
+                const lineTotal = (Number(item.product.price) + Number(item.modifiersPriceExtra || 0)) * item.quantity;
+                opt.textContent = `Offrir : ${item.quantity}x ${item.product.name} (${lineTotal.toFixed(2)} €)`;
                 elements.selectDiscountTarget.appendChild(opt);
             });
             elements.discountModal.classList.add('active');
@@ -1449,7 +1483,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 } else {
                     // Comp item
-                    const itemId = target.startsWith('idx_') ? state.cart[parseInt(target.replace('idx_', ''))].lineId : target;
+                    const itemId = target;
                     const res = await fetch(`/api/orders/${state.activeOrderId}/items/${itemId}/comp`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -1468,14 +1502,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Payment Modal & Tips (US4)
         elements.btnPayModal.addEventListener('click', async () => {
-            const totalTtc = calculateTotalTtc();
-            if (totalTtc <= 0) {
+            if (getAmountDue() <= 0) {
                 showToast('Le montant est nul.', 'error');
                 return;
             }
-            if (!state.activeOrderId) {
-                await saveActiveCartToServer();
-            }
+            if (!(await saveActiveCartToServer())) return;
+            state.splitPlan = null;
+            state.splitActivePart = null;
             state.selectedTipPercent = 0;
             state.customTipAmount = 0;
             updateTipCalculation();
@@ -1557,7 +1590,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const room = state.hotelRooms.find(r => r.roomNumber === roomNum);
             if (!room) return;
 
-            const baseAmount = calculateTotalTtc();
+            if (!(await saveActiveCartToServer())) return;
+            const baseAmount = getAmountDue();
             const tipAmount = getTipAmount();
             const sigData = elements.signatureCanvas.toDataURL('image/png');
 
@@ -1594,12 +1628,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // Split Bill Modal
-        elements.btnSplitBill.addEventListener('click', () => {
-            const total = calculateTotalTtc();
-            if (total <= 0) {
+        elements.btnSplitBill.addEventListener('click', async () => {
+            if (getAmountDue() <= 0) {
                 showToast('Panier vide pour le split', 'error');
                 return;
             }
+            if (!(await saveActiveCartToServer())) return;
             updateSplitPartitions();
             elements.splitBillModal.classList.add('active');
         });
@@ -1624,11 +1658,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         elements.btnConfirmSplit.addEventListener('click', () => {
             elements.splitBillModal.classList.remove('active');
-            elements.paymentModal.classList.add('active');
-            const total = calculateTotalTtc();
-            const part = (total / state.splitGuests).toFixed(2);
-            state.splitActivePart = parseFloat(part);
-            elements.payRemainingAmount.textContent = `${part} € (Part 1/${state.splitGuests})`;
+            // Parts figées au centime près : le reste de la division va aux premiers convives.
+            state.splitPlan = { parts: splitIntoParts(getAmountDue(), state.splitGuests), index: 0 };
+            showCurrentSplitPart();
         });
 
         // Edit Grid Slot Modal (US2 & US3)
@@ -1678,16 +1710,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function getTipAmount() {
         if (state.customTipAmount > 0) return state.customTipAmount;
-        const total = calculateTotalTtc();
+        const total = getAmountDue();
         return (total * (state.selectedTipPercent / 100.0));
     }
 
     function getFinalPayTotal() {
-        return calculateTotalTtc() + getTipAmount();
+        return getAmountDue() + getTipAmount();
     }
 
     function updateTipCalculation() {
-        const total = calculateTotalTtc();
+        if (state.splitPlan) {
+            showCurrentSplitPart();
+            return;
+        }
+        const total = getAmountDue();
         const tip = getTipAmount();
         const finalTotal = total + tip;
 
@@ -1766,10 +1802,34 @@ document.addEventListener('DOMContentLoaded', () => {
         return total;
     }
 
+    /** Montant restant dû : tient compte des paiements partiels déjà encaissés (split). */
+    function getAmountDue() {
+        const total = calculateTotalTtc();
+        return Math.max(0, Math.round((total - (state.amountPaid || 0)) * 100) / 100);
+    }
+
+    function splitIntoParts(amount, guests) {
+        const totalCents = Math.round(amount * 100);
+        const base = Math.floor(totalCents / guests);
+        const remainder = totalCents % guests;
+        return Array.from({ length: guests }, (_, i) => base + (i < remainder ? 1 : 0));
+    }
+
+    function showCurrentSplitPart() {
+        const plan = state.splitPlan;
+        if (!plan) return;
+        state.splitActivePart = plan.parts[plan.index] / 100;
+        state.selectedTipPercent = 0;
+        state.customTipAmount = 0;
+        elements.payRemainingAmount.textContent = `${state.splitActivePart.toFixed(2)} € (Part ${plan.index + 1}/${plan.parts.length})`;
+        elements.payTotalWithTip.textContent = `${state.splitActivePart.toFixed(2)} €`;
+        elements.paymentModal.classList.add('active');
+    }
+
     function updateSplitPartitions() {
         elements.splitGuestsCount.textContent = `${state.splitGuests} Convives`;
         elements.splitPartitionsList.innerHTML = '';
-        const totalCents = Math.round(calculateTotalTtc() * 100);
+        const totalCents = Math.round(getAmountDue() * 100);
         const base = Math.floor(totalCents / state.splitGuests);
         let remainder = totalCents % state.splitGuests;
 
@@ -1789,12 +1849,16 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        if (!state.activeOrderId && state.cart.length > 0) {
-            await saveActiveCartToServer();
-        }
+        if (!(await saveActiveCartToServer())) return;
         const isSplit = (typeof state.splitActivePart === 'number' && state.splitActivePart > 0);
-        const total = isSplit ? state.splitActivePart : getFinalPayTotal();
-        const change = Math.max(0, tendered - total);
+        const total = Math.round((isSplit ? state.splitActivePart : getFinalPayTotal()) * 100) / 100;
+        if (tenderMethod === 0 && tendered + 0.001 < total) {
+            showToast(`Montant remis insuffisant (${tendered.toFixed(2)} € pour ${total.toFixed(2)} €)`, 'warning');
+            return;
+        }
+        // Hors espèces, le montant remis est exactement le montant encaissé (pas de rendu).
+        if (tenderMethod !== 0) tendered = total;
+        const change = Math.max(0, Math.round((tendered - total) * 100) / 100);
 
         try {
             await ensureAuthToken();
@@ -1830,15 +1894,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 elements.paymentModal.classList.remove('active');
 
                 if (resData.remainingBalance > 0.001) {
+                    state.amountPaid = (state.amountPaid || 0) + Number(resData.totalPaid ?? total);
                     showToast(`Reste à payer : ${resData.remainingBalance.toFixed(2)} €`, 'info');
-                    state.splitActivePart = null;
-                    // Proposer le règlement du ticket suivant
-                    setTimeout(() => {
-                        elements.splitBillModal.classList.add('active');
-                        updateSplitPartitions();
-                    }, 400);
+                    const plan = state.splitPlan;
+                    if (plan && plan.index + 1 < plan.parts.length) {
+                        // Part suivante du partage.
+                        plan.index += 1;
+                        showCurrentSplitPart();
+                    } else {
+                        // Solde restant (arrondis, paiement partiel libre) : encaissement classique.
+                        state.splitPlan = null;
+                        state.splitActivePart = null;
+                        renderCart();
+                    }
                 } else {
                     state.splitActivePart = null;
+                    state.splitPlan = null;
+                    state.amountPaid = 0;
                     state.cart = [];
                     state.activeOrderId = null;
                     state.activeTable = null;
@@ -1862,6 +1934,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ==================== TAKEAWAY & DIRECT SALES (FEATURE 018) ====================
     async function openDirectCounterOrder(destination = 'Takeaway') {
+        const wasCounter = state.activeTable === 'Comptoir';
+        if (state.activeTable && !wasCounter) {
+            await saveActiveCartToServer();
+            state.cart = [];
+        }
         state.activeTable = 'Comptoir';
         state.destination = destination;
 
@@ -1873,7 +1950,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             await ensureAuthToken();
-            const destEnum = destination === 'EatIn' ? 0 : 1;
+            const destEnum = destinationToEnum(destination);
             const res = await fetch('/api/orders/counter/direct', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -1885,31 +1962,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (res.ok) {
                 const orderData = await res.json();
-                state.activeOrderId = orderData.orderId;
                 state.activeCovers = 1;
                 state.pickupNumber = orderData.pickupNumber || null;
                 state.pickupBuzzer = orderData.pickupBuzzer || null;
-
-                // Hydrate cart
-                state.cart = (orderData.lines || []).map(line => ({
-                    lineId: line.lineId,
-                    product: {
-                        id: line.productId,
-                        name: line.productName,
-                        price: line.unitPrice,
-                        taxRatePercent: line.taxRatePercent,
-                        taxRateTakeawayPercent: line.taxRateTakeawayPercent,
-                        preparationStationId: line.preparationStationId
-                    },
-                    quantity: line.quantity,
-                    course: typeof line.course === 'number' ? getCourseNameFromEnum(line.course) : (line.course || 'Direct'),
-                    isDispatched: line.isDispatched,
-                    isComp: line.isComp || false,
-                    discountPercent: line.discountPercent || 0,
-                    modifiers: line.modifiersSummary || [],
-                    modifiersPriceExtra: Number(line.modifiersPriceExtra) || 0
-                }));
-
+                state.amountPaid = 0;
+                state.splitPlan = null;
+                // Une commande comptoir déjà entamée garde sa destination ; sinon on applique celle choisie.
+                if ((orderData.lines || []).length > 0) {
+                    state.destination = destinationFromEnum(orderData.destination);
+                    updateDestinationToggleUI();
+                } else if (orderData.destination !== destEnum) {
+                    await fetch(`/api/orders/${orderData.orderId}/destination`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ destination: destEnum })
+                    });
+                }
+                hydrateCartFromOrder(orderData, wasCounter);
                 renderCart();
             }
         } catch (err) {
@@ -1918,7 +1987,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateDestinationToggleUI() {
-        const isTakeaway = state.destination === 'Takeaway' || state.destination === 1;
+        const isTakeaway = isTakeawayMode();
         if (elements.btnDestTakeaway && elements.btnDestEatIn) {
             elements.btnDestTakeaway.classList.toggle('active', isTakeaway);
             elements.btnDestEatIn.classList.toggle('active', !isTakeaway);
@@ -1932,10 +2001,15 @@ document.addEventListener('DOMContentLoaded', () => {
         state.destination = newDest;
         updateDestinationToggleUI();
 
+        // Aucune commande comptoir chargée : on l'ouvre d'abord pour pouvoir y enregistrer la destination.
+        if (!state.activeOrderId && state.activeTable === 'Comptoir') {
+            await openDirectCounterOrder(newDest);
+        }
+
         if (state.activeOrderId) {
             try {
                 await ensureAuthToken();
-                const destEnum = newDest === 'EatIn' ? 0 : 1;
+                const destEnum = destinationToEnum(newDest);
                 await fetch(`/api/orders/${state.activeOrderId}/destination`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -2076,29 +2150,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (res.ok) {
                 const orderData = await res.json();
-                state.activeOrderId = orderData.orderId;
                 state.activeTable = 'Comptoir';
-                state.destination = orderData.destination === 0 ? 'EatIn' : 'Takeaway';
+                state.destination = destinationFromEnum(orderData.destination);
+                state.amountPaid = 0;
+                state.splitPlan = null;
                 updateDestinationToggleUI();
-
-                state.cart = (orderData.lines || []).map(line => ({
-                    lineId: line.lineId,
-                    product: {
-                        id: line.productId,
-                        name: line.productName,
-                        price: line.unitPrice,
-                        taxRatePercent: line.taxRatePercent,
-                        taxRateTakeawayPercent: line.taxRateTakeawayPercent,
-                        preparationStationId: line.preparationStationId
-                    },
-                    quantity: line.quantity,
-                    course: typeof line.course === 'number' ? getCourseNameFromEnum(line.course) : (line.course || 'Direct'),
-                    isDispatched: line.isDispatched,
-                    isComp: line.isComp || false,
-                    discountPercent: line.discountPercent || 0,
-                    modifiers: line.modifiersSummary || [],
-                    modifiersPriceExtra: Number(line.modifiersPriceExtra) || 0
-                }));
+                hydrateCartFromOrder(orderData, false);
 
                 elements.heldOrdersModal.classList.remove('active');
                 renderCart();
@@ -2164,7 +2221,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const payload = {
             orderId: state.activeOrderId,
             terminalId: state.terminalId || 'POS_A',
-            destination: state.destination === 'EatIn' ? 0 : 1,
+            destination: destinationToEnum(state.destination),
             pickupBuzzer: buzzer || null,
             pickupScheduledAtUtc: null,
             tipAmount: getTipAmount(),
@@ -2618,7 +2675,12 @@ document.addEventListener('DOMContentLoaded', () => {
             row.querySelector('.btn-edit-product').addEventListener('click', () => {
                 document.getElementById('editProdId').value = p.id;
                 document.getElementById('editProdName').value = p.name;
+                const catSelect = document.getElementById('editProdCat');
+                catSelect.innerHTML = state.categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+                catSelect.value = p.categoryId;
                 document.getElementById('editProdPrice').value = p.price;
+                setSelectValue('editProdTax', String(Number(p.taxRatePercent)));
+                setSelectValue('editProdStation', p.preparationStationId || 'HOT_KITCHEN');
                 document.getElementById('editProdQuickKey').checked = !!p.isQuickKey;
                 elements.editProductModal.classList.add('active');
             });
@@ -2682,12 +2744,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 row.className = 'item-list-row';
                 row.innerHTML = `
                     <div>
-                        <strong>${pr.name}</strong> (${pr.ipAddress}:${pr.port})
-                        <small style="display:block;color:#94a3b8;">Postes: ${(pr.targetStations || []).join(', ')} | Tiroir: ${pr.hasCashDrawer ? 'Oui' : 'Non'}</small>
+                        <strong>${pr.name}</strong> (${pr.ipAddress}:${pr.port})${pr.isActive === false ? ' <span style="color:#f87171;">— désactivée</span>' : ''}
+                        <small style="display:block;color:#94a3b8;">Postes: ${(pr.assignedStationIds || []).join(', ') || '—'} | Tiroir: ${pr.openCashDrawerOnReceipt ? 'Oui' : 'Non'}</small>
                     </div>
                     <div style="display:flex; gap:6px;">
                         <button class="btn-archive btn-edit-printer" data-id="${pr.id}" style="background:rgba(59,130,246,0.2); border-color:rgba(59,130,246,0.4); color:#60a5fa;">✏️ Modifier</button>
-                        <button class="btn-archive btn-del-printer" data-id="${pr.id}">Désactiver</button>
+                        <button class="btn-archive btn-del-printer" data-id="${pr.id}">${pr.isActive === false ? 'Réactiver' : 'Désactiver'}</button>
                     </div>
                 `;
                 row.querySelector('.btn-edit-printer').addEventListener('click', () => {
@@ -2695,13 +2757,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     document.getElementById('editPrinterName').value = pr.name;
                     document.getElementById('editPrinterIp').value = pr.ipAddress;
                     document.getElementById('editPrinterPort').value = pr.port;
-                    document.getElementById('editPrinterDrawer').checked = !!pr.hasCashDrawer;
+                    document.getElementById('editPrinterDrawer').checked = !!pr.openCashDrawerOnReceipt;
                     elements.editPrinterModal.classList.add('active');
                 });
                 row.querySelector('.btn-del-printer').addEventListener('click', async () => {
-                    await fetch(`/api/printers/${pr.id}`, { method: 'DELETE' });
-                    showToast(`Imprimante '${pr.name}' désactivée`, 'info');
-                    await loadAdminPrinters();
+                    // L'API n'expose pas de suppression : on (dés)active l'imprimante via PUT.
+                    const activate = pr.isActive === false;
+                    const res = await savePrinter(pr.id, { ...printerToUpdatePayload(pr), isActive: activate });
+                    if (res.ok) {
+                        showToast(`Imprimante '${pr.name}' ${activate ? 'réactivée' : 'désactivée'}`, 'info');
+                        await loadAdminPrinters();
+                    }
                 });
                 elements.adminPrintersList.appendChild(row);
             });
@@ -3384,7 +3450,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const role = roleEl ? roleEl.value : 'Waiter';
             const pin = document.getElementById('inputStaffPin').value;
 
-            const res = await fetch('/api/staff/operators', {
+            const res = await fetch('/api/staff', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name, role, pin })
@@ -3395,6 +3461,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('inputStaffName').value = '';
                 document.getElementById('inputStaffPin').value = '';
                 await loadAdminStaff();
+            } else {
+                showToast(await readApiError(res, 'Création de l\'employé refusée'), 'error');
             }
         });
 
@@ -3414,8 +3482,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     ipAddress: ip,
                     port: 9100,
                     paperWidthMm: 80,
-                    hasCashDrawer: drawer,
-                    targetStations: ["HOT_KITCHEN", "RECEIPT"]
+                    openCashDrawerOnReceipt: drawer,
+                    assignedStationIds: ["HOT_KITCHEN", "RECEIPT"]
                 })
             });
 
@@ -3771,6 +3839,167 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
         }
+    }
+
+    function setSelectValue(id, value) {
+        const select = document.getElementById(id);
+        if (!select) return;
+        if (![...select.options].some(o => o.value === value)) {
+            const opt = document.createElement('option');
+            opt.value = value;
+            opt.textContent = value;
+            select.appendChild(opt);
+        }
+        select.value = value;
+    }
+
+    async function readApiError(res, fallback) {
+        try {
+            const data = await res.json();
+            return data.message || data.Message || data.errorMessage || `${fallback} (${res.status})`;
+        } catch {
+            return `${fallback} (${res.status})`;
+        }
+    }
+
+    function printerToUpdatePayload(pr) {
+        return {
+            name: pr.name,
+            ipAddress: pr.ipAddress,
+            port: pr.port,
+            paperWidthMm: pr.paperWidthMm || 80,
+            hasCashDrawer: !!pr.openCashDrawerOnReceipt,
+            targetStations: pr.assignedStationIds || [],
+            isActive: pr.isActive !== false
+        };
+    }
+
+    function savePrinter(id, payload) {
+        return fetch(`/api/printers/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+    }
+
+    /** Branche la fermeture (✕ / Annuler) et l'enregistrement des fenêtres d'édition du back-office. */
+    function setupEditModals() {
+        const modals = [
+            ['editProductModal', 'btnCloseEditProductModal', 'btnCancelEditProduct'],
+            ['editCategoryModal', 'btnCloseEditCatModal', 'btnCancelEditCat'],
+            ['editStaffModal', 'btnCloseEditStaffModal', 'btnCancelEditStaff'],
+            ['editPrinterModal', 'btnCloseEditPrinterModal', 'btnCancelEditPrinter']
+        ];
+        modals.forEach(([modalId, ...buttonIds]) => {
+            buttonIds.forEach(buttonId => {
+                const btn = document.getElementById(buttonId);
+                if (btn) btn.addEventListener('click', () => document.getElementById(modalId).classList.remove('active'));
+            });
+        });
+
+        document.getElementById('formEditProduct').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('editProdId').value;
+            const current = state.products.find(p => p.id === id) || {};
+            const res = await fetch(`/api/catalog/products/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: document.getElementById('editProdName').value.trim(),
+                    categoryId: document.getElementById('editProdCat').value || current.categoryId,
+                    price: parseFloat(document.getElementById('editProdPrice').value),
+                    taxRatePercent: parseFloat(document.getElementById('editProdTax').value),
+                    description: current.description || '',
+                    colorHex: current.colorHex || '#3b82f6',
+                    displayOrder: current.displayOrder || 0,
+                    isAvailable: true,
+                    isActive: true,
+                    isQuickKey: document.getElementById('editProdQuickKey').checked,
+                    stationId: document.getElementById('editProdStation').value
+                })
+            });
+            if (!res.ok) {
+                showToast(await readApiError(res, 'Modification de l\'article refusée'), 'error');
+                return;
+            }
+            elements.editProductModal.classList.remove('active');
+            showToast('Article mis à jour ✏️', 'success');
+            state.gridLayouts = {};
+            await loadCatalogData();
+            await loadAdminCatalog();
+        });
+
+        document.getElementById('formEditCategory').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('editCatId').value;
+            const current = state.categories.find(c => c.id === id) || {};
+            const res = await fetch(`/api/catalog/categories/${encodeURIComponent(id)}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: document.getElementById('editCatName').value.trim(),
+                    colorHex: document.getElementById('editCatColor').value,
+                    displayOrder: current.displayOrder || 0,
+                    iconName: current.iconName || null,
+                    isActive: true
+                })
+            });
+            if (!res.ok) {
+                showToast(await readApiError(res, 'Modification de la famille refusée'), 'error');
+                return;
+            }
+            elements.editCategoryModal.classList.remove('active');
+            showToast('Famille mise à jour ✏️', 'success');
+            await loadCatalogData();
+        });
+
+        document.getElementById('formEditStaff').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('editStaffId').value;
+            const pin = document.getElementById('editStaffPin').value.trim();
+            if (pin && !/^\d{4,6}$/.test(pin)) {
+                showToast('Le code PIN doit comporter 4 à 6 chiffres', 'warning');
+                return;
+            }
+            const res = await fetch(`/api/staff/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: document.getElementById('editStaffName').value.trim(),
+                    role: document.getElementById('editStaffRole').value,
+                    pin: pin || null,
+                    isActive: true
+                })
+            });
+            if (!res.ok) {
+                showToast(await readApiError(res, 'Modification de l\'employé refusée'), 'error');
+                return;
+            }
+            document.getElementById('editStaffPin').value = '';
+            elements.editStaffModal.classList.remove('active');
+            showToast('Employé mis à jour ✏️', 'success');
+            await loadAdminStaff();
+        });
+
+        document.getElementById('formEditPrinter').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('editPrinterId').value;
+            const current = (state.printers || []).find(p => p.id === id) || {};
+            const res = await savePrinter(id, {
+                ...printerToUpdatePayload(current),
+                name: document.getElementById('editPrinterName').value.trim(),
+                ipAddress: document.getElementById('editPrinterIp').value.trim(),
+                port: parseInt(document.getElementById('editPrinterPort').value, 10) || 9100,
+                hasCashDrawer: document.getElementById('editPrinterDrawer').checked
+            });
+            if (!res.ok) {
+                showToast(await readApiError(res, 'Modification de l\'imprimante refusée'), 'error');
+                return;
+            }
+            elements.editPrinterModal.classList.remove('active');
+            showToast('Imprimante mise à jour ✏️', 'success');
+            await loadAdminPrinters();
+        });
     }
 
     function renderCategorySelectOptions() {
