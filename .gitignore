@@ -27,3 +27,9 @@ Thumbs.db
 .DS_Store
 *.db-shm
 *.db-wal
+
+# App iPad native (ios/)
+ios/build/
+ios/POSKit/.swiftpm/
+xcuserdata/
+*.xcresult

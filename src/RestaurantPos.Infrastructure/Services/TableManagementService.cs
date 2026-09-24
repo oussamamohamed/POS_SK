@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using RestaurantPos.Application.Common.Interfaces;
 using RestaurantPos.Domain.Common;
 using RestaurantPos.Domain.Entities;
+using RestaurantPos.Domain.Enums;
 using RestaurantPos.Domain.ValueObjects;
 using RestaurantPos.Infrastructure.Persistence;
 
@@ -151,6 +152,7 @@ public class TableManagementService : ITableManagementService
                     TableNumber = tableNumber,
                     OperatorId = operatorId,
                     Status = OrderStatus.Open,
+                    Destination = DestinationForTable(tableNumber),
                     CreatedAtUtc = DateTimeOffset.UtcNow
                 };
 
@@ -179,6 +181,13 @@ public class TableManagementService : ITableManagementService
                 );
             }, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
+
+    // Une commande prise sur une table de salle est consommée sur place ; seul le
+    // « Comptoir » (ventes directes) reste à emporter par défaut.
+    private static OrderDestination DestinationForTable(string tableNumber) =>
+        string.Equals(tableNumber, "Comptoir", StringComparison.OrdinalIgnoreCase)
+            ? OrderDestination.Takeaway
+            : OrderDestination.EatIn;
 
     private static string? NormalizeAltTableNumber(string tableNumber)
     {
@@ -327,6 +336,7 @@ public class TableManagementService : ITableManagementService
                         Id = UuidV7.NewGuid(),
                         TableNumber = tableNumber,
                         Status = OrderStatus.Open,
+                        Destination = DestinationForTable(tableNumber),
                         CreatedAtUtc = DateTimeOffset.UtcNow
                     };
                     _dbContext.Orders.Add(order);

@@ -1,0 +1,550 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		1E532E3FAFA97CE795BAED46 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83C50986E471543B8A74BCAD /* RootView.swift */; };
+		1FDD33A0A501822737917F87 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 376FCCAAAA16F860891EA74D /* Assets.xcassets */; };
+		2B2ACA0CD4086CFA0DB853BA /* FiscalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 489D4E5C215EF53622C47244 /* FiscalView.swift */; };
+		310FE8217D7B3C966D1BA926 /* POSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E981AC065035C91A99558BA3 /* POSApp.swift */; };
+		3EE6510CC192FB68204CF4B8 /* PinLockView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12FE4AC1D0B2F9CE8EF75BA8 /* PinLockView.swift */; };
+		559A614CF94A67202531AD72 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37D869A93DDCB031F42BDC06 /* Theme.swift */; };
+		591711F95B999A16DCC7C019 /* Components.swift in Sources */ = {isa = PBXBuildFile; fileRef = 557A1973EA991BE09B7ABCBB /* Components.swift */; };
+		6FC93D89AEB7C73FFF746918 /* CheckoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82C8586564F74BAE2C3D68E8 /* CheckoutView.swift */; };
+		83DFF3B68A60D23BCE9BE1F2 /* POSKit in Frameworks */ = {isa = PBXBuildFile; productRef = E0E7FD9BCAFEA1B2A07763BB /* POSKit */; };
+		A36EE1A4A8909813FD366FC7 /* CartPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 393C15BAD186C25BF2EE43D6 /* CartPanel.swift */; };
+		B54334FEB95EC7099A872861 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99A0AEEAAABA8A08086DE4E2 /* SettingsView.swift */; };
+		B8B3EF79B31FF8E3C543A375 /* POSTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE6527B05E207CF56BD7E47D /* POSTestCase.swift */; };
+		B9FC508D5A2582B97090A537 /* HeldOrdersSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E168287B5FFED0931CE1938 /* HeldOrdersSheet.swift */; };
+		BF89D5555309144997561E13 /* KitchenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29FF1A9E0A54CF28ABB45DB5 /* KitchenView.swift */; };
+		C78B20C1FBC14330E270A0F6 /* FloorPlanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E32BC5750F838977B1418852 /* FloorPlanView.swift */; };
+		C7D80AFDBBEA9EBF05542FF6 /* OrderEntryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B0057A546FA2852F8336357 /* OrderEntryView.swift */; };
+		EB464B9D2679181D7E47E82D /* POSUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9E0238F6B8D364B097B7FB0 /* POSUITests.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		202DDFE5BCD815FA8F2C7477 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 997056E3929790C18B735C04 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 17BFB39DA3541B62DC1D65DE;
+			remoteInfo = RestaurantPOS;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		12FE4AC1D0B2F9CE8EF75BA8 /* PinLockView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinLockView.swift; sourceTree = "<group>"; };
+		29FF1A9E0A54CF28ABB45DB5 /* KitchenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KitchenView.swift; sourceTree = "<group>"; };
+		376FCCAAAA16F860891EA74D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		37D869A93DDCB031F42BDC06 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
+		393C15BAD186C25BF2EE43D6 /* CartPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CartPanel.swift; sourceTree = "<group>"; };
+		489D4E5C215EF53622C47244 /* FiscalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FiscalView.swift; sourceTree = "<group>"; };
+		48CD257A123042A022FB4B94 /* POSKit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = POSKit; path = POSKit; sourceTree = SOURCE_ROOT; };
+		557A1973EA991BE09B7ABCBB /* Components.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Components.swift; sourceTree = "<group>"; };
+		5E89F169768F557CB81AAABB /* RestaurantPOS.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = RestaurantPOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		7E168287B5FFED0931CE1938 /* HeldOrdersSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeldOrdersSheet.swift; sourceTree = "<group>"; };
+		82C8586564F74BAE2C3D68E8 /* CheckoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckoutView.swift; sourceTree = "<group>"; };
+		83C50986E471543B8A74BCAD /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		99A0AEEAAABA8A08086DE4E2 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		9B0057A546FA2852F8336357 /* OrderEntryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrderEntryView.swift; sourceTree = "<group>"; };
+		A7CE3444A1F611AD54C4B3C2 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		B9E0238F6B8D364B097B7FB0 /* POSUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = POSUITests.swift; sourceTree = "<group>"; };
+		DE6527B05E207CF56BD7E47D /* POSTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = POSTestCase.swift; sourceTree = "<group>"; };
+		E32BC5750F838977B1418852 /* FloorPlanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FloorPlanView.swift; sourceTree = "<group>"; };
+		E981AC065035C91A99558BA3 /* POSApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = POSApp.swift; sourceTree = "<group>"; };
+		F719D66808F2FEC4805B3DD6 /* RestaurantPOSUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = RestaurantPOSUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		DB60F0877C471D96FD8F574C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				83DFF3B68A60D23BCE9BE1F2 /* POSKit in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		0613551AD46F77F23D82FF06 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				376FCCAAAA16F860891EA74D /* Assets.xcassets */,
+				A7CE3444A1F611AD54C4B3C2 /* Info.plist */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		39C50FDC3B7361135B9DAC4F /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				557A1973EA991BE09B7ABCBB /* Components.swift */,
+				37D869A93DDCB031F42BDC06 /* Theme.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		67436F2889EA15E8D82AACC8 /* POSApp */ = {
+			isa = PBXGroup;
+			children = (
+				BBDCB795C264612C2FCA7FC0 /* App */,
+				39C50FDC3B7361135B9DAC4F /* Components */,
+				0613551AD46F77F23D82FF06 /* Resources */,
+				CDD9F1BA0792013E4DCAC329 /* Screens */,
+			);
+			path = POSApp;
+			sourceTree = "<group>";
+		};
+		773F332C26773468524D6A94 /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				48CD257A123042A022FB4B94 /* POSKit */,
+			);
+			name = Packages;
+			sourceTree = "<group>";
+		};
+		966F5FAE2B7A7064CB9B28A7 = {
+			isa = PBXGroup;
+			children = (
+				773F332C26773468524D6A94 /* Packages */,
+				67436F2889EA15E8D82AACC8 /* POSApp */,
+				A1BA97E3A99B33E1C044AE27 /* POSAppUITests */,
+				E27CB93E0AFC8A265E7B6D8F /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		A1BA97E3A99B33E1C044AE27 /* POSAppUITests */ = {
+			isa = PBXGroup;
+			children = (
+				DE6527B05E207CF56BD7E47D /* POSTestCase.swift */,
+				B9E0238F6B8D364B097B7FB0 /* POSUITests.swift */,
+			);
+			path = POSAppUITests;
+			sourceTree = "<group>";
+		};
+		BBDCB795C264612C2FCA7FC0 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				E981AC065035C91A99558BA3 /* POSApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		CDD9F1BA0792013E4DCAC329 /* Screens */ = {
+			isa = PBXGroup;
+			children = (
+				393C15BAD186C25BF2EE43D6 /* CartPanel.swift */,
+				82C8586564F74BAE2C3D68E8 /* CheckoutView.swift */,
+				489D4E5C215EF53622C47244 /* FiscalView.swift */,
+				E32BC5750F838977B1418852 /* FloorPlanView.swift */,
+				7E168287B5FFED0931CE1938 /* HeldOrdersSheet.swift */,
+				29FF1A9E0A54CF28ABB45DB5 /* KitchenView.swift */,
+				9B0057A546FA2852F8336357 /* OrderEntryView.swift */,
+				12FE4AC1D0B2F9CE8EF75BA8 /* PinLockView.swift */,
+				83C50986E471543B8A74BCAD /* RootView.swift */,
+				99A0AEEAAABA8A08086DE4E2 /* SettingsView.swift */,
+			);
+			path = Screens;
+			sourceTree = "<group>";
+		};
+		E27CB93E0AFC8A265E7B6D8F /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				5E89F169768F557CB81AAABB /* RestaurantPOS.app */,
+				F719D66808F2FEC4805B3DD6 /* RestaurantPOSUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		0E15C7CF7A1B402305CDA5A0 /* RestaurantPOSUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7EEBE8848F9B69DC068AED49 /* Build configuration list for PBXNativeTarget "RestaurantPOSUITests" */;
+			buildPhases = (
+				31505D7AC2B00804D158FAAC /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				288532D04AF17FA9A855A72A /* PBXTargetDependency */,
+			);
+			name = RestaurantPOSUITests;
+			packageProductDependencies = (
+			);
+			productName = RestaurantPOSUITests;
+			productReference = F719D66808F2FEC4805B3DD6 /* RestaurantPOSUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+		17BFB39DA3541B62DC1D65DE /* RestaurantPOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B01369CF515CC4095D0EF1CF /* Build configuration list for PBXNativeTarget "RestaurantPOS" */;
+			buildPhases = (
+				BADB93E0F4EAA3A85D41512C /* Sources */,
+				C9698D56C9A8DDB82C1E3258 /* Resources */,
+				DB60F0877C471D96FD8F574C /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = RestaurantPOS;
+			packageProductDependencies = (
+				E0E7FD9BCAFEA1B2A07763BB /* POSKit */,
+			);
+			productName = RestaurantPOS;
+			productReference = 5E89F169768F557CB81AAABB /* RestaurantPOS.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		997056E3929790C18B735C04 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					0E15C7CF7A1B402305CDA5A0 = {
+						ProvisioningStyle = Automatic;
+						TestTargetID = 17BFB39DA3541B62DC1D65DE;
+					};
+					17BFB39DA3541B62DC1D65DE = {
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = 947B0990CCD2ED4A42A81A7E /* Build configuration list for PBXProject "RestaurantPOS" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = fr;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				fr,
+			);
+			mainGroup = 966F5FAE2B7A7064CB9B28A7;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				19AF3EFB6525C1E4373664AE /* XCLocalSwiftPackageReference "POSKit" */,
+			);
+			preferredProjectObjectVersion = 77;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				17BFB39DA3541B62DC1D65DE /* RestaurantPOS */,
+				0E15C7CF7A1B402305CDA5A0 /* RestaurantPOSUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		C9698D56C9A8DDB82C1E3258 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1FDD33A0A501822737917F87 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		31505D7AC2B00804D158FAAC /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B8B3EF79B31FF8E3C543A375 /* POSTestCase.swift in Sources */,
+				EB464B9D2679181D7E47E82D /* POSUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BADB93E0F4EAA3A85D41512C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A36EE1A4A8909813FD366FC7 /* CartPanel.swift in Sources */,
+				6FC93D89AEB7C73FFF746918 /* CheckoutView.swift in Sources */,
+				591711F95B999A16DCC7C019 /* Components.swift in Sources */,
+				2B2ACA0CD4086CFA0DB853BA /* FiscalView.swift in Sources */,
+				C78B20C1FBC14330E270A0F6 /* FloorPlanView.swift in Sources */,
+				B9FC508D5A2582B97090A537 /* HeldOrdersSheet.swift in Sources */,
+				BF89D5555309144997561E13 /* KitchenView.swift in Sources */,
+				C7D80AFDBBEA9EBF05542FF6 /* OrderEntryView.swift in Sources */,
+				310FE8217D7B3C966D1BA926 /* POSApp.swift in Sources */,
+				3EE6510CC192FB68204CF4B8 /* PinLockView.swift in Sources */,
+				1E532E3FAFA97CE795BAED46 /* RootView.swift in Sources */,
+				B54334FEB95EC7099A872861 /* SettingsView.swift in Sources */,
+				559A614CF94A67202531AD72 /* Theme.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		288532D04AF17FA9A855A72A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 17BFB39DA3541B62DC1D65DE /* RestaurantPOS */;
+			targetProxy = 202DDFE5BCD815FA8F2C7477 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		2492A0D4F1AF43E8BC6F67BB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.restaurantpos.ipad.uitests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = 2;
+				TEST_TARGET_NAME = RestaurantPOS;
+			};
+			name = Debug;
+		};
+		39F7FA32BB130F7A16AEF3D2 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				ENABLE_PREVIEWS = YES;
+				INFOPLIST_FILE = POSApp/Resources/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.restaurantpos.ipad;
+				PRODUCT_NAME = RestaurantPOS;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = 2;
+			};
+			name = Release;
+		};
+		5AB237ED29862CE47AC07ECB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.restaurantpos.ipad.uitests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = 2;
+				TEST_TARGET_NAME = RestaurantPOS;
+			};
+			name = Release;
+		};
+		8C29BB39451B9B233242ACC8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				ENABLE_PREVIEWS = YES;
+				INFOPLIST_FILE = POSApp/Resources/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.restaurantpos.ipad;
+				PRODUCT_NAME = RestaurantPOS;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = 2;
+			};
+			name = Debug;
+		};
+		B797E7C649F728C6F915BF0B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_STRICT_CONCURRENCY = minimal;
+				SWIFT_VERSION = 5.10;
+			};
+			name = Debug;
+		};
+		C522754E495FF36C4F09F791 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_STRICT_CONCURRENCY = minimal;
+				SWIFT_VERSION = 5.10;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		7EEBE8848F9B69DC068AED49 /* Build configuration list for PBXNativeTarget "RestaurantPOSUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2492A0D4F1AF43E8BC6F67BB /* Debug */,
+				5AB237ED29862CE47AC07ECB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		947B0990CCD2ED4A42A81A7E /* Build configuration list for PBXProject "RestaurantPOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B797E7C649F728C6F915BF0B /* Debug */,
+				C522754E495FF36C4F09F791 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		B01369CF515CC4095D0EF1CF /* Build configuration list for PBXNativeTarget "RestaurantPOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8C29BB39451B9B233242ACC8 /* Debug */,
+				39F7FA32BB130F7A16AEF3D2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		19AF3EFB6525C1E4373664AE /* XCLocalSwiftPackageReference "POSKit" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = POSKit;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		E0E7FD9BCAFEA1B2A07763BB /* POSKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = POSKit;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 997056E3929790C18B735C04 /* Project object */;
+}
