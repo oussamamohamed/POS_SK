@@ -1,0 +1,11 @@
+# Projet généré par XcodeGen (source : project.yml)
+RestaurantPOS.xcodeproj/
+build/
+.build/
+Packages/PosKit/.build/
+Packages/PosKit/.swiftpm/
+*.xcresult
+xcuserdata/
+
+# Le .gitignore racine ignore « packages/ » (NuGet) ; sur macOS la casse est ignorée.
+!Packages/
