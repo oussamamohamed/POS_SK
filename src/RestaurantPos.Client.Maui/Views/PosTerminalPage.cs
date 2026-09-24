@@ -280,6 +280,15 @@ public class PosTerminalPage : ContentPage, IQueryAttributable
         {
             ItemTemplate = new DataTemplate(() =>
             {
+                var swipeDeleteBtn = new SwipeItem
+                {
+                    Text = "Supprimer",
+                    BackgroundColor = Colors.Red,
+                    IconImageSource = "trash.png"
+                };
+                swipeDeleteBtn.SetBinding(MenuItem.CommandProperty, new Binding("BindingContext.RemoveItemCommand", source: new RelativeBindingSource(RelativeBindingSourceMode.FindAncestorBindingContext, typeof(PosTerminalViewModel))));
+                swipeDeleteBtn.SetBinding(MenuItem.CommandParameterProperty, new Binding("."));
+                var swipeItems = new SwipeItems { swipeDeleteBtn };
                 var row = new Grid
                 {
                     Padding = new Thickness(12, 8),
@@ -832,9 +841,14 @@ public class PosTerminalPage : ContentPage, IQueryAttributable
             };
 
             var tap = new TapGestureRecognizer();
+            
             tap.Tapped += (s, e) =>
             {
+                #if MAUI_UI
+                Microsoft.Maui.Devices.HapticFeedback.Default.Perform(Microsoft.Maui.Devices.HapticFeedbackType.Click);
+                #endif
                 if (_vm.HasModifiers(prod))
+
                 {
                     OpenModifiersModal(prod);
                 }
@@ -1653,6 +1667,19 @@ public class PosTerminalPage : ContentPage, IQueryAttributable
     // =========================================================================
     // CONVERTISSEURS INTERNES POUR L'UI TACTILE
     // =========================================================================
+    
+    private class BoolToFlowDirectionConverter : IValueConverter
+    {
+        public object Convert(object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture)
+        {
+            if (value is bool isLeftHanded && isLeftHanded)
+                return FlowDirection.RightToLeft;
+            return FlowDirection.LeftToRight;
+        }
+
+        public object ConvertBack(object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture) => throw new NotImplementedException();
+    }
+
     private class SelectedModifiersToStringConverter : IValueConverter
     {
         public object Convert(object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture)

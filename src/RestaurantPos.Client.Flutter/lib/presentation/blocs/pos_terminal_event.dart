@@ -1,0 +1,2 @@
+
+class ClearCartEvent extends PosTerminalEvent {}

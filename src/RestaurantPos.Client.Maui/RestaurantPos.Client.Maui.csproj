@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks Condition="'$(BuildingForMaui)' == 'true' And '$(OS)' == 'Windows_NT'">net9.0-android;net9.0-ios;net9.0-windows10.0.19041.0</TargetFrameworks>
-    <TargetFrameworks Condition="'$(BuildingForMaui)' == 'true' And '$(OS)' != 'Windows_NT'">net9.0-android;net9.0-ios</TargetFrameworks>
+    <TargetFrameworks Condition="'$(BuildingForMaui)' == 'true' And '$(OS)' == 'Windows_NT'">net9.0-android;net9.0-ios;net9.0-maccatalyst;net9.0-windows10.0.19041.0</TargetFrameworks>
+    <TargetFrameworks Condition="'$(BuildingForMaui)' == 'true' And '$(OS)' != 'Windows_NT'">net9.0-android;net9.0-ios;net9.0-maccatalyst</TargetFrameworks>
     <TargetFramework Condition="'$(BuildingForMaui)' != 'true'">net9.0</TargetFramework>
     <OutputType Condition="'$(BuildingForMaui)' == 'true'">Exe</OutputType>
     <OutputType Condition="'$(BuildingForMaui)' != 'true'">Library</OutputType>

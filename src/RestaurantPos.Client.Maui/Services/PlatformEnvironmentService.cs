@@ -48,10 +48,26 @@ public class PlatformEnvironmentService : IPlatformEnvironmentService
         return Path.Combine(_baseStorageDirectory, databaseName);
     }
 
-    public void TriggerHapticFeedback(Contracts.HapticFeedbackType feedbackType)
+                public void TriggerHapticFeedback(Contracts.HapticFeedbackType feedbackType)
     {
-        // On native devices, bridged to UIKit / Android HapticFeedback / Windows Vibration
-        // In shared runtime, safely dispatches or logs without throwing
+        try
+        {
+#if MAUI_UI
+            if (Microsoft.Maui.Devices.HapticFeedback.Default.IsSupported)
+            {
+                var mauiType = feedbackType switch
+                {
+                    Contracts.HapticFeedbackType.LongPress => Microsoft.Maui.Devices.HapticFeedbackType.LongPress,
+                    _ => Microsoft.Maui.Devices.HapticFeedbackType.Click
+                };
+                Microsoft.Maui.Devices.HapticFeedback.Default.Perform(mauiType);
+            }
+#endif
+        }
+        catch
+        {
+            // Ignore haptic failures
+        }
     }
 
     public Task<bool> EnsureLocalNetworkPermissionsAsync()
@@ -64,6 +80,16 @@ public class PlatformEnvironmentService : IPlatformEnvironmentService
     {
         // Toggles DeviceDisplay.Current.KeepScreenOn on native platforms
     }
+
+    #if MAUI_UI
+    public void SetApplicationTheme(Microsoft.Maui.ApplicationModel.AppTheme theme)
+    {
+        if (Microsoft.Maui.Controls.Application.Current != null)
+        {
+            Microsoft.Maui.Controls.Application.Current.UserAppTheme = theme;
+        }
+    }
+#endif
 
     private static DevicePlatformProfile DetectCurrentPlatform()
     {
