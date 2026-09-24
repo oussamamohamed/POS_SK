@@ -58,8 +58,10 @@ class POSTestCase: XCTestCase {
         XCTAssertEqual(result, .completed, "« \(identifier) » vaut « \(String(describing: target.value)) » au lieu de « \(value) »", file: file, line: line)
     }
 
-    func expectNotice(_ text: String, file: StaticString = #filePath, line: UInt = #line) {
-        expectLabel("notice.banner", contains: text, file: file, line: line)
+    func expectNotice(_ text: String, timeout: TimeInterval = 8, file: StaticString = #filePath, line: UInt = #line) {
+        let banner = element("notice.banner")
+        XCTAssertTrue(banner.waitForExistence(timeout: timeout), "Aucune notification affichée (attendu : « \(text) »)", file: file, line: line)
+        expectLabel("notice.banner", contains: text, timeout: timeout, file: file, line: line)
     }
 
     func screenshot(_ name: String) {

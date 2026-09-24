@@ -156,6 +156,14 @@ struct StatTile: View {
 struct NoticeBanner: View {
     @Environment(AppModel.self) private var app
 
+    /// Les simulateurs de CI sont lents : en test UI, le message reste le temps d'être vérifié.
+    private static let isUITesting = ProcessInfo.processInfo.arguments.contains("-uiTesting")
+
+    static func displayDuration(for style: Notice.Style) -> Double {
+        if isUITesting { return 15 }
+        return style == .error ? 4 : 2.5
+    }
+
     var body: some View {
         if let notice = app.context.notice {
             HStack(spacing: 10) {
@@ -178,7 +186,7 @@ struct NoticeBanner: View {
             .accessibilityElement(children: .combine)
             .accessibilityIdentifier("notice.banner")
             .task(id: notice.id) {
-                try? await Task.sleep(for: .seconds(notice.style == .error ? 4 : 2.5))
+                try? await Task.sleep(for: .seconds(Self.displayDuration(for: notice.style)))
                 if app.context.notice?.id == notice.id {
                     app.context.notice = nil
                 }

@@ -11,8 +11,9 @@ final class AuthenticationUITests: POSTestCase {
     }
 
     func testManagerUnlocksThenLocksTerminal() {
-        loginToFloor("1234")
-        expectNotice("Bonjour Alexandre")
+        login("1234")
+        expectNotice("Bonjour Alexandre", timeout: 10)
+        waitFor("table.T1")
         screenshot("Plan de salle")
         tap("session.lock")
         waitFor("pin.key.1")
