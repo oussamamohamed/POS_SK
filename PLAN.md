@@ -1,11 +1,11 @@
 # Implementation Plan — Restaurant POS System (Tactile & Offline-First)
 
-**Projet :** Système de Point de Vente (POS) Tactile pour Restaurant sur iPad / iOS 
-**Statut :** Spécification Technique & Plan d'Exécution Complet  
-**Cible Client :** iPadOS 17+ & iOS 17+ (Apple iPad 10.2", 10.9", iPad Pro 11"/13", iPad Mini)  
-**Stack Frontend :** Application iPad native SwiftUI (Swift 6, iPadOS 17+) — voir `ios/README.md` (le client .NET MAUI a été abandonné)  
-**Stack Backend :** .NET 9 (C#) / ASP.NET Core (Clean Architecture + CQRS + SignalR)  
-**Mode de Fonctionnement :** Local-First / Hybride (SQLite local sur iPad + Sync temps réel)  
+**Projet :** Système de Point de Vente (POS) Tactile pour Restaurant sur iPad / iOS
+**Statut :** Spécification Technique & Plan d'Exécution Complet
+**Cible Client :** iPadOS 17+ & iOS 17+ (Apple iPad 10.2", 10.9", iPad Pro 11"/13", iPad Mini)
+**Stack Frontend :** Application iPad native SwiftUI (Swift 6, iPadOS 17+) — voir `ios/README.md` (le client .NET MAUI a été abandonné)
+**Stack Backend :** .NET 9 (C#) / ASP.NET Core (Clean Architecture + CQRS + SignalR)
+**Mode de Fonctionnement :** Local-First / Hybride (SQLite local sur iPad + Sync temps réel)
 **Conformité Fiscale :** Traçabilité inaltérable, Chaînage SHA-256 & Clôtures Z (Norme NF525)
 
 ## 1. Vision, Ergonomie iPadOS & Spécifications Matérielles
@@ -19,7 +19,7 @@ Concevoir une application de caisse enregistreuse tactile, de prise de commande 
 * **Écrans Cuisine (KDS) :** iPad Pro 12.9"/13" ou tablette murale dédiée connectée en WebSocket temps réel.
 * **Imprimantes Thermiques :** Imprimantes réseau Ethernet/Wi-Fi 80 mm et 58 mm (Epson, Star Micronics, Munbyn) pilotées via sockets TCP bruts (port 9100) ou protocoles ESC/POS réseau.
 * **Tiroir-Caisse :** Déclenchement automatique 24V via le port RJ11 de l'imprimante thermique principale.
-* **Terminaux de Paiement (TPE) :** 
+* **Terminaux de Paiement (TPE) :**
   * TPE bancaire IP (Protocole Concert / TCP local).
   * Lecteurs mobiles Bluetooth Low Energy (ex: Stripe Terminal, Zettle, SumUp via SDKs iOS natifs).
 
@@ -44,7 +44,7 @@ Concevoir une application de caisse enregistreuse tactile, de prise de commande 
 │                                                                                         │
 │  ┌──────────────────────┐         ┌──────────────────────┐                              │
 │  │ iPad Caisse Comptoir │         │ iPad Serveur Mobile  │                              │
-│  │  (.NET MAUI Client)  │         │  (.NET MAUI Client)  │                              │
+│  │                      │         │                      │                              │
 │  └──────────┬───────────┘         └──────────┬───────────┘                              │
 │             │                                │                                          │
 │             │       Réseau Wi-Fi Local       │                                          │
@@ -68,8 +68,8 @@ Concevoir une application de caisse enregistreuse tactile, de prise de commande 
 │ OPTION B : Standalone iPad (Caisse Unique Autonome / Food-Truck)                        │
 │                                                                                         │
 │  ┌───────────────────────────────────────────────────────────┐                          │
-│  │ iPad (.NET MAUI App)                                      │                          │
-│  │ ├─ UI XAML Tactile                                        │                          │
+│  │ iPad (.NET )                                              │                          │
+│  │ ├─ UI Tactile                                             │                          │
 │  │ ├─ SQLite Local Embarqué (App Sandbox)                    │                          │
 │  │ └─ Moteur Métier & Fiscalité C# embarqué                  │                          │
 │  └─────────────────────────────┬─────────────────────────────┘                          │
