@@ -81,6 +81,8 @@ public partial class Program
         builder.Services.AddScoped<IHappyHourPricingService, HappyHourPricingService>();
         builder.Services.AddScoped<IJwtTokenGeneratorService, JwtTokenGeneratorService>();
         builder.Services.AddSingleton<IPinRateLimiterService, PinRateLimiterService>();
+        builder.Services.AddSingleton(TimeProvider.System);
+        builder.Services.AddScoped<IDeviceService, DeviceService>();
         builder.Services.AddHostedService<NetworkDiscoveryBeaconService>();
 
         // JWT Authentication Configuration
@@ -258,13 +260,35 @@ public partial class Program
                 CreatedAtUtc TEXT NOT NULL
             );
             CREATE INDEX IF NOT EXISTS IX_HappyHourOverrideSessions_TerminalId_IsActive ON HappyHourOverrideSessions(TerminalId, IsActive);"); } catch { }
+            try { dbContext.Database.ExecuteSqlRaw(@"CREATE TABLE IF NOT EXISTS Devices (
+                Id TEXT PRIMARY KEY,
+                Name TEXT NOT NULL,
+                Role INTEGER NOT NULL,
+                TerminalId TEXT NOT NULL,
+                TokenHash TEXT NOT NULL,
+                PairedAtUtc TEXT NOT NULL,
+                LastSeenUtc TEXT NULL,
+                RevokedAtUtc TEXT NULL
+            );
+            CREATE UNIQUE INDEX IF NOT EXISTS IX_Devices_TerminalId ON Devices(TerminalId);
+            CREATE UNIQUE INDEX IF NOT EXISTS IX_Devices_TokenHash ON Devices(TokenHash);"); } catch { }
+            try { dbContext.Database.ExecuteSqlRaw(@"CREATE TABLE IF NOT EXISTS DevicePairingCodes (
+                Id TEXT PRIMARY KEY,
+                CodeHash TEXT NOT NULL,
+                Name TEXT NOT NULL,
+                Role INTEGER NOT NULL,
+                ExpiresAtUtc TEXT NOT NULL,
+                UsedAtUtc TEXT NULL,
+                CreatedByOperatorId TEXT NOT NULL
+            );
+            CREATE INDEX IF NOT EXISTS IX_DevicePairingCodes_CodeHash ON DevicePairingCodes(CodeHash);"); } catch { }
         }
 
         app.UseCors();
         app.UseDefaultFiles();
         app.UseStaticFiles();
         app.UseRouting();
-        
+
         app.UseAuthentication();
         app.UseAuthorization();
 
