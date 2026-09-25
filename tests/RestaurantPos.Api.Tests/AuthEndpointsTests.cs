@@ -27,7 +27,7 @@ public class AuthEndpointsTests : IClassFixture<PosApiApplicationFactory>
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        
+
         var result = await response.Content.ReadFromJsonAsync<LoginResultDto>();
         result.Should().NotBeNull();
         result!.Success.Should().BeTrue();
@@ -104,6 +104,7 @@ public class AuthEndpointsTests : IClassFixture<PosApiApplicationFactory>
         // Arrange - using test header X-Test-Role: FloorManager
         var client = _factory.CreateClient();
         client.DefaultRequestHeaders.Add("X-Test-Role", "FloorManager");
+        await DeviceTestHelper.PairAsync(_factory, client);
 
         var voidReq = new VoidReceiptRequest("TERM-1", Guid.NewGuid());
 

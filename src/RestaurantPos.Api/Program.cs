@@ -387,6 +387,7 @@ public partial class Program
 
         // 11. Touch Grid Management
         app.MapGridEndpoints();
+        app.MapDeviceEndpoints();
 
         app.Run();
     }

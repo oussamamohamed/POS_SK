@@ -20,7 +20,7 @@ public static class CheckoutEndpoints
                        .WithTags("Checkout & Payments")
                        .RequireAuthorization();
 
-        group.MapPost("/pay", async (PaymentSettlementRequest req, ICheckoutPaymentService checkout, AppDbContext db) =>
+        group.MapPost("/pay", async (PaymentSettlementRequest req, ICheckoutPaymentService checkout, AppDbContext db, HttpContext http) =>
         {
             var orderId = req.OrderId;
             if (orderId == Guid.Empty || !await db.Orders.AnyAsync(o => o.Id == orderId))
@@ -85,9 +85,7 @@ public static class CheckoutEndpoints
                 (long)Math.Round(t.Tendered * 100)
             )).ToList();
 
-            var terminalId = !string.IsNullOrWhiteSpace(req.TerminalId)
-                ? req.TerminalId
-                : "POS_MAIN_TERM";
+            var terminalId = RequireDeviceFilter.PairedDevice(http).TerminalId;
 
             var result = await checkout.ProcessPaymentTendersAsync(orderId, terminalId, tenderRequests);
 
@@ -105,17 +103,17 @@ public static class CheckoutEndpoints
                 result.FiscalSignature,
                 FiscalTimestampUtc = DateTimeOffset.UtcNow
             });
-        });
+        }).RequirePairedDevice();
 
         // Void receipt endpoint
-        group.MapPost("/void/{receiptId:guid}", async (Guid receiptId, VoidReceiptRequest req, ICheckoutPaymentService checkout) =>
+        group.MapPost("/void/{receiptId:guid}", async (Guid receiptId, VoidReceiptRequest req, ICheckoutPaymentService checkout, HttpContext http) =>
         {
-            if (string.IsNullOrWhiteSpace(req.TerminalId) || req.OperatorId == Guid.Empty)
+            if (req.OperatorId == Guid.Empty)
             {
-                return Results.BadRequest(new { Message = "TerminalId et OperatorId sont obligatoires pour l'annulation." });
+                return Results.BadRequest(new { Message = "OperatorId est obligatoire pour l'annulation." });
             }
 
-            var result = await checkout.VoidReceiptAsync(receiptId, req.TerminalId, req.OperatorId);
+            var result = await checkout.VoidReceiptAsync(receiptId, RequireDeviceFilter.PairedDevice(http).TerminalId, req.OperatorId);
             if (!result.IsSuccess)
             {
                 return Results.BadRequest(new { Message = "Impossible d'annuler le reçu." });
@@ -128,7 +126,7 @@ public static class CheckoutEndpoints
                 result.FiscalSignature,
                 FiscalTimestampUtc = DateTimeOffset.UtcNow
             });
-        }).RequireAuthorization("RequireManagerOrAdmin");
+        }).RequireAuthorization("RequireManagerOrAdmin").RequirePairedDevice();
     }
 
     private static string? NormalizeAltTableNumber(string tableNumber)
