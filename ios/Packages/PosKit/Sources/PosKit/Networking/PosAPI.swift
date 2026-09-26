@@ -2,6 +2,7 @@ import Foundation
 
 public enum APIError: Error, Equatable, Sendable, LocalizedError {
     case unauthorized
+    case deviceNotPaired
     case forbidden(String?)
     case notFound(String?)
     case rateLimited(String?)
@@ -12,6 +13,7 @@ public enum APIError: Error, Equatable, Sendable, LocalizedError {
     public var errorDescription: String? {
         switch self {
         case .unauthorized: "Session expirée : veuillez saisir votre code PIN."
+        case .deviceNotPaired: "Ce poste n'est pas appairé au serveur. Générez un code dans Gestion → Appareils."
         case .forbidden(let m): m ?? "Action réservée à un responsable."
         case .notFound(let m): m ?? "Élément introuvable."
         case .rateLimited(let m): m ?? "Trop de tentatives, patientez."
@@ -30,6 +32,7 @@ public protocol PosAPI: Sendable {
     // Auth
     func login(pin: String) async throws -> LoginResponse
     func setToken(_ token: String?) async
+    func pair(code: String) async throws -> PairResponse
 
     // Catalogue
     func categories() async throws -> [MenuCategory]

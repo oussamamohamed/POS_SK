@@ -329,7 +329,6 @@ public struct NetworkInfo: Codable, Hashable, Sendable {
     public var primaryIp: String?
     public var ipAddresses: [String]?
     public var port: Int?
-    public var discoveryPort: Int?
     public var serverName: String?
     public var status: String?
     public var version: String?
