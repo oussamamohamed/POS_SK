@@ -84,7 +84,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         }
-        if (state.device?.token) {
+        // Le jeton du poste ne part que vers l'API de ce serveur, jamais vers un autre domaine.
+        const target = new URL(resource instanceof Request ? resource.url : String(resource), location.href);
+        if (state.device?.token && target.origin === location.origin && target.pathname.startsWith('/api/')) {
             config = config || {};
             config.headers = config.headers || {};
             if (config.headers instanceof Headers) config.headers.set('X-Device-Token', state.device.token);
