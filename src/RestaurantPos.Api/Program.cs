@@ -83,7 +83,10 @@ public partial class Program
         builder.Services.AddSingleton<IPinRateLimiterService, PinRateLimiterService>();
         builder.Services.AddSingleton(TimeProvider.System);
         builder.Services.AddScoped<IDeviceService, DeviceService>();
-        builder.Services.AddHostedService<NetworkDiscoveryBeaconService>();
+        if (!builder.Environment.IsEnvironment("Testing"))
+        {
+            builder.Services.AddHostedService<BonjourAdvertiserService>();
+        }
 
         // JWT Authentication Configuration
         builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

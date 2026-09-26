@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
-using RestaurantPos.Api.Services;
 using RestaurantPos.Application.Common.Interfaces;
 using RestaurantPos.Application.DTOs;
 using RestaurantPos.Domain.Entities;
@@ -48,7 +47,6 @@ public static class SyncEndpoints
                 IpAddresses = ipAddresses,
                 PrimaryIp = ipAddresses.FirstOrDefault() ?? "127.0.0.1",
                 Port = 5000,
-                DiscoveryPort = NetworkDiscoveryBeaconService.DiscoveryPort,
                 ServerName = "Caisse Principale (Master POS)",
                 Status = "Online",
                 Version = "1.0.0",
