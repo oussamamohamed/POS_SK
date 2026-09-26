@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
+using RestaurantPos.Api.Endpoints;
 using RestaurantPos.Application.DTOs;
 using RestaurantPos.Domain.Entities;
 using RestaurantPos.Domain.Enums;
@@ -160,6 +161,60 @@ public class DeviceEndpointsTests : IClassFixture<PosApiApplicationFactory>
         var receipt = scope.ServiceProvider.GetRequiredService<AppDbContext>().FiscalReceipts.Single(r => r.OrderId == orderId);
         receipt.TerminalId.Should().Be(paired.TerminalId);
         receipt.PreviousSignatureHash.Should().Be(NF525FiscalAuditService.GenesisHash);
+    }
+
+    [Fact]
+    public async Task CounterCheckout_IgnoresBodyTerminalId_AndWritesDeviceTerminal()
+    {
+        var client = ClientWithRole("Admin");
+        var paired = await DeviceTestHelper.PairAsync(_factory, client, "Caisse comptoir chaîne");
+        var orderId = await SeedOpenOrderAsync("D16", 1000);
+        var request = new CounterCheckoutRequest(
+            OrderId: orderId, TerminalId: "POS_A", Destination: OrderDestination.Takeaway,
+            PickupBuzzer: null, PickupScheduledAtUtc: null, TipAmount: 0m, RequestFiscalReceiptPrint: false,
+            MealVoucherPolicy: null, Tenders: [new CounterPaymentTender(PaymentMethod.Cash, 10m, 10m, null)]);
+
+        var response = await client.PostAsJsonAsync("/api/orders/counter/checkout", request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        using var scope = _factory.Services.CreateScope();
+        scope.ServiceProvider.GetRequiredService<AppDbContext>().FiscalReceipts
+            .Single(r => r.OrderId == orderId).TerminalId.Should().Be(paired.TerminalId);
+    }
+
+    private static SyncReceiptDto SyncReceipt(Guid orderId) =>
+        new(orderId, null, 1000, [new SyncTenderDto(PaymentMethod.Cash, 1000, 1000)], "POS_A");
+
+    [Fact]
+    public async Task SyncReceipt_Anonymous_Returns401()
+    {
+        var response = await _factory.CreateClient().PostAsJsonAsync("/api/sync/receipt", SyncReceipt(Guid.NewGuid()));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task SyncReceipt_WithoutDeviceToken_Returns401DeviceNotPaired()
+    {
+        var response = await ClientWithRole("Admin").PostAsJsonAsync("/api/sync/receipt", SyncReceipt(Guid.NewGuid()));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        (await response.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("code").GetString().Should().Be("device_not_paired");
+    }
+
+    [Fact]
+    public async Task SyncReceipt_IgnoresBodyTerminalId_AndWritesDeviceTerminal()
+    {
+        var client = ClientWithRole("Admin");
+        var paired = await DeviceTestHelper.PairAsync(_factory, client, "Caisse synchro");
+        var orderId = await SeedOpenOrderAsync("D17", 1000);
+
+        var response = await client.PostAsJsonAsync("/api/sync/receipt", SyncReceipt(orderId));
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        using var scope = _factory.Services.CreateScope();
+        scope.ServiceProvider.GetRequiredService<AppDbContext>().FiscalReceipts
+            .Single(r => r.OrderId == orderId).TerminalId.Should().Be(paired.TerminalId);
     }
 
     [Fact]

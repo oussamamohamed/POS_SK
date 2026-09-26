@@ -86,7 +86,7 @@ public static class SyncEndpoints
             });
         });
 
-        group.MapPost("/sync/receipt", async (SyncReceiptDto req, ICheckoutPaymentService checkout, AppDbContext db) =>
+        group.MapPost("/sync/receipt", async (SyncReceiptDto req, ICheckoutPaymentService checkout, AppDbContext db, HttpContext http) =>
         {
             var orderId = req.OrderId != Guid.Empty ? req.OrderId : Guid.NewGuid();
             var order = await db.Orders.Include(o => o.Items).FirstOrDefaultAsync(o => o.Id == orderId);
@@ -120,7 +120,7 @@ public static class SyncEndpoints
                 t.TenderedCents > 0 ? t.TenderedCents : t.AmountCents
             )).ToList();
 
-            var terminalId = !string.IsNullOrWhiteSpace(req.TerminalId) ? req.TerminalId : "POS01";
+            var terminalId = RequireDeviceFilter.PairedDevice(http).TerminalId;
             var result = await checkout.ProcessPaymentTendersAsync(orderId, terminalId, tenderRequests);
 
             if (!result.IsSuccess)
@@ -147,7 +147,7 @@ public static class SyncEndpoints
                 result.FiscalSignature,
                 FiscalTimestampUtc = DateTimeOffset.UtcNow
             });
-        });
+        }).RequireAuthorization().RequirePairedDevice();
 
         group.MapGet("/sync/status", async (AppDbContext db) =>
         {
