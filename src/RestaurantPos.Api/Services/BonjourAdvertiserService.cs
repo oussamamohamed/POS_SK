@@ -55,6 +55,14 @@ public sealed partial class BonjourAdvertiserService : BackgroundService
         return parsed is null ? null : (ushort)parsed.Port;
     }
 
+    private static ServiceProfile BuildProfile(string name, ushort port)
+    {
+        var profile = new ServiceProfile(name, ServiceType, port);
+        profile.AddProperty("name", name);
+        profile.AddProperty("version", Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "1.0.0");
+        return profile;
+    }
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         var started = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -74,11 +82,42 @@ public sealed partial class BonjourAdvertiserService : BackgroundService
             var name = ServerName(_config);
             using var mdns = new MulticastService();
             using var discovery = new ServiceDiscovery(mdns);
-            var profile = new ServiceProfile(name, ServiceType, port.Value);
-            profile.AddProperty("version", Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "1.0.0");
+            var gate = new object();
+            ServiceProfile? profile = null;
+
+            // Le profil fige les adresses IP à sa création : à chaque changement d'interface (nouveau bail DHCP…),
+            // on le remplace pour ne pas annoncer une IP périmée. L'événement se déclenche aussi au Start, avant la
+            // première annonce : ignoré tant que profile est null.
+            mdns.NetworkInterfaceDiscovered += (_, _) =>
+            {
+                try
+                {
+                    lock (gate)
+                    {
+                        if (profile is null)
+                        {
+                            return;
+                        }
+
+                        discovery.Unadvertise(profile);
+                        profile = BuildProfile(name, port.Value);
+                        discovery.Advertise(profile);
+                        discovery.Announce(profile, 2);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogAdvertiseFailed(_logger, ex.Message);
+                }
+            };
+
             mdns.Start();
-            discovery.Advertise(profile);
-            discovery.Announce(profile, 2);
+            lock (gate)
+            {
+                profile = BuildProfile(name, port.Value);
+                discovery.Advertise(profile);
+                discovery.Announce(profile, 2);
+            }
             LogAdvertising(_logger, name, ServiceType, port.Value);
 
             await Task.Delay(Timeout.Infinite, stoppingToken);
