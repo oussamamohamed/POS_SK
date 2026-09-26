@@ -511,4 +511,22 @@ struct PairingStateTests {
         #expect(!model.ticket.lines.isEmpty)
         #expect(model.notifier.lastMessage == APIError.deviceNotPaired.errorDescription)
     }
+
+    @Test func rePairingOnSameServerKeepsDraftAndSwapsDeviceToken() async {
+        let (model, api) = await makeModel()
+        let serverURL = model.settings.serverURL
+        await model.ticket.load(table: "T1")
+        model.ticket.add(product(model, "Pizza 4 Fromages"))
+        await api.setFailure(.deviceNotPaired)
+        _ = await model.ticket.pay(method: .cash, amount: Money(cents: 1450), tendered: Money(cents: 2000))
+        #expect(!model.settings.isPaired)
+        await api.setFailure(nil)
+
+        #expect(await model.applyPairing(serverURL: serverURL, credentials: .demo))
+
+        #expect(model.settings.isPaired)
+        #expect(!model.ticket.lines.isEmpty)
+        #expect(model.ticket.tableNumber == "T1")
+        #expect(await api.calls.contains("setDeviceToken"))
+    }
 }

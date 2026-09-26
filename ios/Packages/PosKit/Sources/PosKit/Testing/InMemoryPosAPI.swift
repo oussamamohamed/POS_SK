@@ -66,6 +66,7 @@ public actor InMemoryPosAPI: PosAPI {
     }
 
     public func setToken(_ token: String?) { self.token = token }
+    public func setDeviceToken(_ token: String?) { calls.append("setDeviceToken") }
 
     // MARK: Auth
 

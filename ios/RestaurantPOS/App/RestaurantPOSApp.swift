@@ -92,11 +92,13 @@ final class AppEnvironment {
         generation += 1
     }
 
-    /// Appairage réussi : nouvelle adresse, nouveau jeton d'appareil, nouvelle session.
+    /// Appairage réussi. Même serveur (ré-appairage après révocation) : on garde le modèle, donc le brouillon,
+    /// et on change seulement le jeton. Nouveau serveur : nouvelle session.
     @discardableResult
-    func completePairing(serverURL: URL, response: PairResponse) -> Bool {
-        guard settings.pair(serverURL: serverURL.absoluteString, credentials: DeviceCredentials(response)) else { return false }
-        reconnect()
+    func completePairing(serverURL: URL, response: PairResponse) async -> Bool {
+        let serverChanged = serverURL.absoluteString != settings.serverURL
+        guard await model.applyPairing(serverURL: serverURL.absoluteString, credentials: DeviceCredentials(response)) else { return false }
+        if serverChanged { reconnect() }
         return true
     }
 

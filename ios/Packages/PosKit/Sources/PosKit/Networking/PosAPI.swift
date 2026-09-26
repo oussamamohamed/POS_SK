@@ -32,6 +32,7 @@ public protocol PosAPI: Sendable {
     // Auth
     func login(pin: String) async throws -> LoginResponse
     func setToken(_ token: String?) async
+    func setDeviceToken(_ token: String?) async
     func pair(code: String) async throws -> PairResponse
 
     // Catalogue

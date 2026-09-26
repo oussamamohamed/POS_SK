@@ -26,6 +26,7 @@ public actor HTTPPosAPI: PosAPI {
     }
 
     public func setToken(_ token: String?) { self.token = token }
+    public func setDeviceToken(_ token: String?) { deviceToken = token }
 
     // MARK: - Transport
 

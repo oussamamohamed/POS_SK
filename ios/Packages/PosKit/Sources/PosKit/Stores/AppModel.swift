@@ -69,6 +69,14 @@ public final class AppModel {
         startRealtime()
     }
 
+    /// Ré-appairage sur le même serveur (après révocation) : on garde les stores, donc le ticket en cours,
+    /// et on remplace seulement le jeton d'appareil. `false` si l'identité n'a pas pu être enregistrée.
+    public func applyPairing(serverURL: String, credentials: DeviceCredentials) async -> Bool {
+        guard settings.pair(serverURL: serverURL, credentials: credentials) else { return false }
+        await api.setDeviceToken(credentials.token)
+        return true
+    }
+
     // MARK: - Temps réel
 
     public func startRealtime() {

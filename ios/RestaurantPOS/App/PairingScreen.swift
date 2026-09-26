@@ -105,7 +105,7 @@ struct PairingScreen: View {
         let api: PosAPI = environment.launch.isUITest ? model.api : HTTPPosAPI(baseURL: serverURL)
         do {
             let response = try await api.pair(code: code.trimmingCharacters(in: .whitespaces))
-            if !environment.completePairing(serverURL: serverURL, response: response) {
+            if await !environment.completePairing(serverURL: serverURL, response: response) {
                 error = "Impossible d'enregistrer l'identité de l'iPad. Réessayez avec un nouveau code."
             }
         } catch {
