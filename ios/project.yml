@@ -47,6 +47,7 @@ targets:
         UIApplicationSceneManifest:
           UIApplicationSupportsMultipleScenes: false
         NSLocalNetworkUsageDescription: La caisse communique avec le serveur de caisse, les imprimantes et les écrans cuisine du réseau local.
+        NSCameraUsageDescription: La caisse utilise l'appareil photo pour scanner le QR d'appairage affiché dans le back-office.
         NSBonjourServices:
           - _restaurantpos._tcp
         NSAppTransportSecurity:

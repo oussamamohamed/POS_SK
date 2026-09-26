@@ -23,10 +23,12 @@ class PosUITestCase: XCTestCase {
     /// - Parameters:
     ///   - pin: déverrouillage automatique (nil = rester sur l'écran PIN).
     ///   - section: écran initial après connexion.
+    ///   - paired: démarre avec un poste déjà appairé (sinon écran d'appairage).
     @discardableResult
-    func launch(pin: String? = "1234", section: String? = nil, happyHour: Bool = false) -> XCUIApplication {
+    func launch(pin: String? = "1234", section: String? = nil, happyHour: Bool = false, paired: Bool = true) -> XCUIApplication {
         app = XCUIApplication()
         app.launchArguments = ["-UITestMode"]
+        if paired { app.launchArguments.append("-UITestPaired") }
         if let pin { app.launchArguments += ["-UITestPin", pin] }
         if let section { app.launchArguments += ["-UITestSection", section] }
         if happyHour { app.launchArguments.append("-UITestHappyHour") }

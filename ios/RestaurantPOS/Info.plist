@@ -33,6 +33,8 @@
 	<array>
 		<string>_restaurantpos._tcp</string>
 	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>La caisse utilise l'appareil photo pour scanner le QR d'appairage affiché dans le back-office.</string>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>La caisse communique avec le serveur de caisse, les imprimantes et les écrans cuisine du réseau local.</string>
 	<key>UIApplicationSceneManifest</key>

@@ -6,7 +6,10 @@ struct RootView: View {
 
     var body: some View {
         ZStack(alignment: .top) {
-            if model.session.isUnlocked {
+            if !model.settings.isPaired {
+                PairingScreen()
+                    .transition(.opacity)
+            } else if model.session.isUnlocked {
                 MainShell()
                     .transition(.opacity)
             } else {
@@ -16,6 +19,7 @@ struct RootView: View {
             ToastOverlay(notifier: model.notifier)
         }
         .animation(.easeInOut(duration: 0.25), value: model.session.isUnlocked)
+        .animation(.easeInOut(duration: 0.25), value: model.settings.isPaired)
         .task(id: model.session.currentOperator?.id) {
             guard model.session.isUnlocked, !model.isBootstrapped else { return }
             await model.bootstrap()
@@ -89,6 +93,7 @@ struct LockScreen: View {
         .sheet(isPresented: $showsServerSettings) {
             ServerSettingsSheet()
         }
+        .task { await environment.rediscoverServerIfUnreachable() }
     }
 }
 
@@ -104,7 +109,6 @@ struct ServerSettingsSheet: View {
     @Environment(AppEnvironment.self) private var environment
     @Environment(\.dismiss) private var dismiss
     @State private var url = ""
-    @State private var terminal = ""
     @State private var testResult: String?
     @State private var isTesting = false
 
@@ -127,10 +131,17 @@ struct ServerSettingsSheet: View {
                     }
                     if let testResult { Text(testResult).font(.footnote).foregroundStyle(.secondary) }
                 }
-                Section("Terminal") {
-                    TextField("Identifiant du terminal", text: $terminal)
-                        .textInputAutocapitalization(.characters)
-                        .accessibilityIdentifier("settings.terminalId")
+                if let device = environment.settings.credentials {
+                    Section("Cet iPad") {
+                        LabeledContent("Nom", value: device.name)
+                        LabeledContent("Terminal", value: device.terminalId)
+                        LabeledContent("Serveur", value: device.serverName)
+                        Button("Dissocier cet iPad", role: .destructive) {
+                            environment.settings.unpair()
+                            dismiss()
+                        }
+                        .accessibilityIdentifier("settings.unpair")
+                    }
                 }
             }
             .navigationTitle("Connexion")
@@ -140,7 +151,6 @@ struct ServerSettingsSheet: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Enregistrer") {
                         environment.settings.serverURL = url
-                        environment.settings.terminalId = terminal.isEmpty ? "POS_A" : terminal
                         environment.reconnect()
                         dismiss()
                     }
@@ -149,7 +159,6 @@ struct ServerSettingsSheet: View {
             }
             .onAppear {
                 url = environment.settings.serverURL
-                terminal = environment.settings.terminalId
             }
         }
     }
@@ -159,7 +168,7 @@ struct ServerSettingsSheet: View {
         isTesting = true
         defer { isTesting = false }
         do {
-            let latency = try await HTTPPosAPI(baseURL: parsed).health()
+            let latency = try await HTTPPosAPI(baseURL: parsed, deviceToken: environment.settings.credentials?.token).health()
             testResult = "✓ Serveur joignable (\(Int(latency * 1000)) ms)"
         } catch {
             testResult = "✗ \((error as? LocalizedError)?.errorDescription ?? error.localizedDescription)"
