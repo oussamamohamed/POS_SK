@@ -1,8 +1,10 @@
 import { test, expect } from '@playwright/test';
+import { pairTill } from './helpers/pairing';
 
 test.describe('Partage de l Addition (Split Bill)', () => {
 
   async function ensureLoggedIn(page: any) {
+    await pairTill(page);
     await page.goto('/?nocache=' + Date.now());
     await page.waitForLoadState('domcontentloaded');
 

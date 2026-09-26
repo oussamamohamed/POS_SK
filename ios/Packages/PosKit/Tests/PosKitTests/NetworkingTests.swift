@@ -222,11 +222,30 @@ struct SignalRTests {
 /// Lancer avec : `POS_API_URL=http://localhost:5080 swift test --filter LiveAPI`
 @Suite("LiveAPI", .enabled(if: ProcessInfo.processInfo.environment["POS_API_URL"] != nil), .serialized)
 struct LiveAPITests {
-    let api = HTTPPosAPI(baseURL: URL(string: ProcessInfo.processInfo.environment["POS_API_URL"] ?? "http://localhost:5080")!)
+    static let env = ProcessInfo.processInfo.environment
+    static let baseURL = URL(string: env["POS_API_URL"] ?? "http://localhost:5080")!
+    static let pin = env["POS_API_PIN"] ?? "1234"
+
+    /// Crée un code avec le PIN gérant, appaire ce client de test, puis ouvre une session opérateur.
+    static func pairedSession() async throws -> (api: HTTPPosAPI, login: LoginResponse, device: PairResponse) {
+        let manager = HTTPPosAPI(baseURL: baseURL)
+        let managerLogin = try await manager.login(pin: pin)
+        var request = URLRequest(url: baseURL.appendingPathComponent("api/devices/pairing-codes"))
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("Bearer \(managerLogin.token ?? "")", forHTTPHeaderField: "Authorization")
+        request.httpBody = Data(#"{"name":"iPad contrat","role":"Caisse"}"#.utf8)
+        let (data, _) = try await URLSession.shared.data(for: request)
+        let code = try #require((try JSONSerialization.jsonObject(with: data) as? [String: Any])?["code"] as? String)
+        let device = try await manager.pair(code: code)
+        let api = HTTPPosAPI(baseURL: baseURL, deviceToken: device.token)
+        let login = try await api.login(pin: pin)
+        try #require(login.success)
+        return (api, login, device)
+    }
 
     @Test func endToEndTableFlow() async throws {
-        let login = try await api.login(pin: ProcessInfo.processInfo.environment["POS_API_PIN"] ?? "1234")
-        try #require(login.success)
+        let (api, login, device) = try await Self.pairedSession()
         let products = try await api.products()
         let product = try #require(products.first { !$0.hasModifiers })
         let tables = try await api.tables()
@@ -242,11 +261,12 @@ struct LiveAPITests {
         #expect(total == refreshed.totalTtcAmount)
         let paid = try await api.pay(PaymentRequest(orderId: order.orderId, tableNumber: table.tableNumber, operatorId: login.operatorId, terminalId: "IPAD_TEST", tenders: [TenderInput(method: .creditCard, amount: total, tendered: total, changeGiven: .zero)]))
         #expect(paid.remainingBalance == .zero)
+        #expect(paid.receiptNumber?.hasPrefix("\(device.terminalId)-") == true)
         #expect(try await api.activeOrder(table: table.tableNumber) == nil)
     }
 
     @Test func readEndpointsDecode() async throws {
-        _ = try await api.login(pin: ProcessInfo.processInfo.environment["POS_API_PIN"] ?? "1234")
+        let (api, _, _) = try await Self.pairedSession()
         _ = try await api.categories()
         _ = try await api.kitchenTickets()
         _ = try await api.xReport(terminalId: "IPAD_TEST")

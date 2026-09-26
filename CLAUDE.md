@@ -43,7 +43,7 @@ POS_API_URL=http://localhost:5080 ./scripts/test.sh contract   # live flow again
 cd Packages/PosKit && swift test --filter <TestName>           # single unit test
 ```
 
-Test-only launch args: `-UITestMode` (in-memory backend, no server), `-UITestPin 1234`, `-UITestSection floor|kitchen|fiscal|admin`, `-UITestHappyHour`.
+Test-only launch args: `-UITestMode` (in-memory backend, no server), `-UITestPaired` (start already paired), `-UITestPin 1234`, `-UITestSection floor|kitchen|fiscal|admin`, `-UITestHappyHour`.
 
 ### Web E2E (Playwright)
 
@@ -67,6 +67,8 @@ Requires the API running. Tests run serially (`workers: 1`) because they share s
 ## Cross-client contract
 
 The web client (`app.js`), the iOS `PosKit/Models` DTOs, and the .NET DTOs/entities are kept in sync by hand. `ios/Packages/PosKit/Tests/PosKitTests/Fixtures` holds captured real API responses that the Swift contract tests decode. When you change an API response shape, update those fixtures and the Swift models. Known quirk: order destination enum is `Takeaway = 0`, `EatIn = 1`, and table orders default to takeaway on the server, so clients must set eat-in explicitly.
+
+Receipt-writing routes (`POST /api/checkout/pay`, `/api/checkout/void/{id}`, `/api/orders/counter/checkout`) require a paired device: header `X-Device-Token`, obtained from `POST /api/devices/pair` with a code generated in the back-office (Gestion → Appareils). The server takes `terminalId` from the device (`T01`, `T02`…) and ignores the body's. A missing, unknown or revoked token returns `401 {"code":"device_not_paired"}`; both clients then show their pairing UI. The server announces itself over Bonjour as `_restaurantpos._tcp` (name = `Discovery:ServerName`). A receipt can only be voided from the device that issued it (the void is written into that device's chain); receipts issued before pairing (`POS_A`, `POS_MAIN_TERM`…) cannot be voided through the API.
 
 ## iOS architecture (summary)
 

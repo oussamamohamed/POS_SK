@@ -10,6 +10,7 @@
 
 import { test, expect, type Page } from '@playwright/test';
 import { execSync } from 'child_process';
+import { pairTill } from './helpers/pairing';
 
 const DB_PATH = '/Users/oussama/Library/CloudStorage/OneDrive-Personnel/Documents/Visual Studio 2022/POS_SK_Antigavity/src/RestaurantPos.Api/restaurantpos.db';
 
@@ -33,6 +34,7 @@ async function closeOverlay(page: Page) {
 }
 
 async function ensureLoggedIn(page: Page) {
+  await pairTill(page);
   resetComptoirDb();
 
   await page.goto('/?nocache=' + Date.now());
