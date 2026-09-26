@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Sockets;
 using System.Net.Http.Json;
 using System.Text.Json;
 using FluentAssertions;
@@ -71,7 +72,12 @@ public class DeviceEndpointsTests : IClassFixture<PosApiApplicationFactory>
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var body = (await response.Content.ReadFromJsonAsync<PairingCodeResponse>())!;
         body.Code.Should().HaveLength(8);
-        body.QrPayload.Should().StartWith("posdevice://pair?url=http%3A%2F%2Flocalhost").And.EndWith($"&code={body.Code}");
+        body.QrPayload.Should().StartWith("posdevice://pair?url=").And.EndWith($"&code={body.Code}");
+        var url = Uri.UnescapeDataString(body.QrPayload["posdevice://pair?url=".Length..body.QrPayload.IndexOf("&code=", StringComparison.Ordinal)]);
+        // TestServer reçoit « localhost » : le QR doit porter une IPv4 de la machine joignable par l'iPad, s'il y en a une.
+        var lanIp = Dns.GetHostAddresses(Dns.GetHostName())
+            .FirstOrDefault(ip => ip.AddressFamily == AddressFamily.InterNetwork && !IPAddress.IsLoopback(ip));
+        url.Should().Be(lanIp is null ? "http://localhost" : $"http://{lanIp}");
         Convert.FromBase64String(body.QrPngBase64).Take(4).Should().Equal(0x89, 0x50, 0x4E, 0x47); // signature PNG
     }
 

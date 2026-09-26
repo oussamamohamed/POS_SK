@@ -1,5 +1,7 @@
 using System;
 using System.Linq;
+using System.Net;
+using System.Net.Sockets;
 using System.Security.Claims;
 using System.Threading;
 using Microsoft.AspNetCore.Builder;
@@ -34,8 +36,7 @@ public static class DeviceEndpoints
             var operatorId = Guid.TryParse(http.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var id) ? id : Guid.Empty;
             var created = await devices.CreatePairingCodeAsync(name, role, operatorId, ct);
 
-            // Le gérant consulte le back-office depuis le réseau local : l'hôte vu ici est joignable par l'iPad.
-            var serverUrl = $"{http.Request.Scheme}://{http.Request.Host}";
+            var serverUrl = $"{http.Request.Scheme}://{ReachableHost(http.Request.Host)}";
             var payload = $"posdevice://pair?url={Uri.EscapeDataString(serverUrl)}&code={created.Code}";
             var png = PngByteQRCodeHelper.GetQRCode(payload, QRCodeGenerator.ECCLevel.M, 8);
 
@@ -73,5 +74,28 @@ public static class DeviceEndpoints
         group.MapPost("/{id:guid}/revoke", async (Guid id, IDeviceService devices, CancellationToken ct) =>
             await devices.RevokeAsync(id, ct) ? Results.NoContent() : Results.NotFound())
             .RequireAuthorization("RequireManagerOrAdmin");
+    }
+
+    /// <summary>
+    /// Hôte à mettre dans le QR : celui vu par le back-office, sauf s'il est local (gérant sur le serveur même),
+    /// auquel cas la première IPv4 non locale de la machine, joignable par l'iPad. Le port est conservé.
+    /// </summary>
+    private static HostString ReachableHost(HostString host)
+    {
+        var isLoopback = host.Host.Equals("localhost", StringComparison.OrdinalIgnoreCase)
+            || (IPAddress.TryParse(host.Host.Trim('[', ']'), out var ip) && IPAddress.IsLoopback(ip));
+        if (!isLoopback)
+        {
+            return host;
+        }
+
+        var lanIp = Dns.GetHostAddresses(Dns.GetHostName())
+            .FirstOrDefault(a => a.AddressFamily == AddressFamily.InterNetwork && !IPAddress.IsLoopback(a));
+        if (lanIp is null)
+        {
+            return host;
+        }
+
+        return host.Port is { } port ? new HostString(lanIp.ToString(), port) : new HostString(lanIp.ToString());
     }
 }
