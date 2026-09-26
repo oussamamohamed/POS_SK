@@ -26,12 +26,12 @@ struct FiscalScreen: View {
                     VStack(alignment: .leading, spacing: 12) {
                         Label("Rapports de caisse", systemImage: "doc.text").font(.headline)
                         Text("Le rapport X est un aperçu en direct, non scellé. La clôture Z scelle la journée par chaînage SHA-256 et remet les compteurs à zéro.")
-                            .font(.subheadline).foregroundStyle(.secondary)
-                        ActionButton(title: "Aperçu rapport X", systemImage: "eye", tint: .blue, prominent: false) {
+                            .font(.subheadline).foregroundStyle(Theme.inkMuted)
+                        ActionButton(title: "Aperçu rapport X", systemImage: "eye", kind: .tonal) {
                             Task { await fiscal.previewX() }
                         }
                         .accessibilityIdentifier("fiscal.previewX")
-                        ActionButton(title: "Clôture Z du jour", systemImage: "lock.doc", tint: .red, isLoading: fiscal.isWorking) {
+                        ActionButton(title: "Clôture Z du jour", systemImage: "lock.doc", isLoading: fiscal.isWorking, kind: .danger) {
                             confirmsZ = true
                         }
                         .accessibilityIdentifier("fiscal.executeZ")
@@ -49,13 +49,13 @@ struct FiscalScreen: View {
                                 .textFieldStyle(.roundedBorder)
                                 .accessibilityIdentifier("fec.siren")
                         }
-                        ActionButton(title: "Générer le FEC", systemImage: "doc.badge.gearshape", tint: .indigo, prominent: false) {
+                        ActionButton(title: "Générer le FEC", systemImage: "doc.badge.gearshape", kind: .tonal) {
                             let end = Calendar.current.date(bySettingHour: 23, minute: 59, second: 59, of: fecTo) ?? fecTo
                             Task { await fiscal.exportFec(from: Calendar.current.startOfDay(for: fecFrom), to: end) }
                         }
                         .accessibilityIdentifier("fec.generate")
                         if let status = fiscal.fecStatus {
-                            Text(status).font(.footnote).foregroundStyle(.secondary).accessibilityIdentifier("fec.status")
+                            Text(status).font(.footnote).foregroundStyle(Theme.inkMuted).accessibilityIdentifier("fec.status")
                         }
                         if let file = fiscal.exportedFile {
                             ShareLink(item: file) { Label("Partager \(file.lastPathComponent)", systemImage: "square.and.arrow.up") }
@@ -120,13 +120,13 @@ struct FiscalSlip: View {
         }
         .padding(24)
         .frame(maxWidth: 440)
-        .background(Color(.systemBackground))
+        .background(Theme.surface)
         .clipShape(RoundedRectangle(cornerRadius: 6))
         .shadow(color: .black.opacity(0.15), radius: 12, y: 6)
     }
 
     private var dashed: some View {
-        Line().stroke(style: StrokeStyle(lineWidth: 1, dash: [4, 3])).foregroundStyle(.secondary).frame(height: 1)
+        Line().stroke(style: StrokeStyle(lineWidth: 1, dash: [4, 3])).foregroundStyle(Theme.inkMuted).frame(height: 1)
     }
 
     private func line(_ label: String, _ value: String, bold: Bool = false) -> some View {

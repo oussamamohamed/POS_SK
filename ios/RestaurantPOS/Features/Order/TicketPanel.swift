@@ -17,30 +17,41 @@ struct TicketPanel: View {
         let ticket = model.ticket
         VStack(spacing: 0) {
             header
-            Divider()
+            Theme.line.frame(height: 1)
             if ticket.isEmpty {
                 EmptyStateView(title: "\(ticket.title) vide", systemImage: "fork.knife", message: "Touchez un article pour démarrer la commande")
                     .frame(maxHeight: .infinity)
             } else {
                 List {
-                    ForEach(ticket.lines) { line in
-                        TicketLineRow(line: line, destination: ticket.destination)
-                            .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                                if line.isDraft {
-                                    Button(role: .destructive) { ticket.remove(line.id) } label: { Label("Supprimer", systemImage: "trash") }
-                                }
+                    ForEach(activeCourses, id: \.self) { course in
+                        Section {
+                            ForEach(ticket.lines.filter { $0.course == course }) { line in
+                                TicketLineRow(line: line, destination: ticket.destination)
+                                    .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                                        if line.isDraft {
+                                            Button(role: .destructive) { ticket.remove(line.id) } label: { Label("Supprimer", systemImage: "trash") }
+                                        }
+                                    }
+                                    .listRowInsets(EdgeInsets(top: Theme.Space.s, leading: Theme.Space.l, bottom: Theme.Space.s, trailing: Theme.Space.l))
+                                    .listRowBackground(Theme.surface)
+                                    .listRowSeparatorTint(Theme.line)
                             }
-                            .listRowInsets(EdgeInsets(top: 8, leading: 14, bottom: 8, trailing: 14))
+                        } header: {
+                            CourseTag(course: course)
+                                .padding(.vertical, Theme.Space.xs)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
                     }
                 }
                 .listStyle(.plain)
+                .scrollContentBackground(.hidden)
                 .accessibilityIdentifier("ticket.lines")
             }
-            Divider()
+            Theme.line.frame(height: 1)
             totals
             actions
         }
-        .background(Color(.systemBackground))
+        .background(Theme.surface)
         .sheet(item: $sheet) { sheet in
             switch sheet {
             case .payment:
@@ -65,6 +76,12 @@ struct TicketPanel: View {
         }
     }
 
+    /// Suites présentes dans le ticket, dans l'ordre de service.
+    private var activeCourses: [CourseType] {
+        let used = Set(model.ticket.lines.map(\.course))
+        return CourseType.allCases.filter { used.contains($0) }
+    }
+
     // MARK: En-tête
 
     private var header: some View {
@@ -72,9 +89,9 @@ struct TicketPanel: View {
         return VStack(alignment: .leading, spacing: 10) {
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(ticket.title).font(.title2.weight(.bold)).accessibilityIdentifier("ticket.title")
+                    Text(ticket.title).font(.system(size: 22, weight: .bold)).foregroundStyle(Theme.ink).accessibilityIdentifier("ticket.title")
                     if !ticket.isCounter {
-                        Text(ticket.covers > 0 ? "\(ticket.covers) couvert(s)" : "Sur place").font(.subheadline).foregroundStyle(.secondary)
+                        Text(ticket.covers > 0 ? "\(ticket.covers) couvert(s)" : "Sur place").font(.posLabel).foregroundStyle(Theme.inkMuted)
                     }
                 }
                 Spacer()
@@ -83,9 +100,11 @@ struct TicketPanel: View {
                         Task { await ticket.refreshHeldOrders(); sheet = .held }
                     } label: {
                         Label("\(ticket.heldOrders.count)", systemImage: "pause.circle")
-                            .font(.headline)
+                            .font(.posHeadline)
+                            .padding(.horizontal, Theme.Space.m)
+                            .frame(minHeight: Theme.touchMin)
                     }
-                    .buttonStyle(.bordered)
+                    .buttonStyle(ActionButtonStyle(kind: .neutral))
                     .accessibilityIdentifier("ticket.heldQueue")
                     .accessibilityLabel("Commandes en attente : \(ticket.heldOrders.count)")
                 } else {
@@ -93,16 +112,21 @@ struct TicketPanel: View {
                         Task { await ticket.openCounter(destination: .takeaway) }
                     } label: {
                         Label("Comptoir", systemImage: "bag")
+                            .font(.posLabel)
+                            .padding(.horizontal, Theme.Space.m)
+                            .frame(minHeight: Theme.touchMin)
                     }
-                    .buttonStyle(.bordered)
+                    .buttonStyle(ActionButtonStyle(kind: .neutral))
                     .accessibilityIdentifier("ticket.toCounter")
                 }
                 Button {
                     router.section = .floor
                 } label: {
                     Image(systemName: "square.grid.3x3.topleft.filled")
+                        .font(.system(size: 17, weight: .semibold))
+                        .frame(width: Theme.touchMin, height: Theme.touchMin)
                 }
-                .buttonStyle(.bordered)
+                .buttonStyle(ActionButtonStyle(kind: .neutral))
                 .accessibilityLabel("Plan de salle")
                 .accessibilityIdentifier("ticket.toFloor")
             }
@@ -115,7 +139,7 @@ struct TicketPanel: View {
                 .accessibilityIdentifier("ticket.destination")
             }
         }
-        .padding(16)
+        .padding(Theme.Space.l)
     }
 
     // MARK: Totaux
@@ -126,37 +150,39 @@ struct TicketPanel: View {
         return VStack(spacing: 6) {
             if let discount = ticket.discount {
                 row("Sous-total", totals.subtotalTtc.formatted)
-                row("Remise \(discount.label)\(discount.reason.map { " · \($0)" } ?? "")", "−\(totals.discountAmount.formatted)", color: .green)
+                row("Remise \(discount.label)\(discount.reason.map { " · \($0)" } ?? "")", "−\(totals.discountAmount.formatted)", color: Theme.success)
             }
             row("Total HT", totals.totalHt.formatted)
             ForEach(totals.vatLines, id: \.ratePercent) { vat in
                 row("TVA \(vat.ratePercent.formatted()) %", vat.vat.formatted)
             }
             if let remaining = ticket.remainingBalance, remaining != totals.totalTtc {
-                row("Déjà réglé", (totals.totalTtc - remaining).formatted, color: .green)
+                row("Déjà réglé", (totals.totalTtc - remaining).formatted, color: Theme.success)
             }
             HStack(alignment: .firstTextBaseline) {
-                Text(ticket.remainingBalance == nil ? "Total TTC" : "Reste à payer").font(.headline)
+                Text(ticket.remainingBalance == nil ? "Total TTC" : "Reste à payer").font(.posHeadline).foregroundStyle(Theme.ink)
                 Spacer()
                 Text(ticket.amountDue.formatted)
-                    .font(.system(.largeTitle, design: .rounded).weight(.bold))
-                    .monospacedDigit()
+                    .font(.posAmountXL)
+                    .foregroundStyle(Theme.ink)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.6)
                     .contentTransition(.numericText())
                     .accessibilityIdentifier("ticket.total")
             }
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 10)
+        .padding(.horizontal, Theme.Space.l)
+        .padding(.top, Theme.Space.m)
+        .padding(.bottom, Theme.Space.s)
         .animation(.snappy, value: totals.totalTtc)
     }
 
-    private func row(_ label: String, _ value: String, color: Color = .secondary) -> some View {
+    private func row(_ label: String, _ value: String, color: Color = Theme.inkMuted) -> some View {
         HStack {
-            Text(label).lineLimit(1)
+            Text(label).lineLimit(1).font(.posLabel)
             Spacer()
-            Text(value).monospacedDigit()
+            Text(value).font(.system(size: 13, weight: .medium, design: .monospaced))
         }
-        .font(.subheadline)
         .foregroundStyle(color)
     }
 
@@ -164,30 +190,30 @@ struct TicketPanel: View {
 
     private var actions: some View {
         let ticket = model.ticket
-        return VStack(spacing: 10) {
-            HStack(spacing: 8) {
-                smallAction("Vider", "trash", tint: .red, id: "ticket.clear", disabled: !ticket.hasDrafts) { ticket.clearDrafts() }
-                smallAction("Remise", "percent", tint: .green, id: "ticket.discount", disabled: ticket.isEmpty) {
+        return VStack(spacing: Theme.Space.s) {
+            HStack(spacing: Theme.Space.s) {
+                smallAction("Remise", "percent", kind: .neutral, id: "ticket.discount", disabled: ticket.isEmpty) {
                     Task { if await ticket.prepareForDiscount() { sheet = .discount } }
                 }
                 if ticket.isCounter {
-                    smallAction("Attente", "pause", tint: .orange, id: "ticket.hold", disabled: ticket.isEmpty) { sheet = .hold }
+                    smallAction("Attente", "pause", kind: .neutral, id: "ticket.hold", disabled: ticket.isEmpty) { sheet = .hold }
                 } else {
-                    smallAction("Transfert", "arrow.left.arrow.right", tint: .indigo, id: "ticket.transfer", disabled: ticket.isEmpty) {
+                    smallAction("Transfert", "arrow.left.arrow.right", kind: .neutral, id: "ticket.transfer", disabled: ticket.isEmpty) {
                         Task { await model.floor.load(); sheet = .transfer }
                     }
-                    smallAction("Suite", "bell", tint: .purple, id: "ticket.fireSuite", disabled: ticket.isEmpty) {
+                    smallAction("Suite", "bell", kind: .neutral, id: "ticket.fireSuite", disabled: ticket.isEmpty) {
                         Task { await ticket.fireSuite() }
                     }
                 }
+                smallAction("Vider", "trash", kind: .danger, id: "ticket.clear", disabled: !ticket.hasDrafts) { ticket.clearDrafts() }
             }
 
             if ticket.isCounter && !ticket.isEmpty {
                 FastCashBar { counterOutcome = $0 }
             }
 
-            HStack(spacing: 10) {
-                ActionButton(title: "Cuisine", systemImage: "paperplane.fill", tint: .orange, isLoading: ticket.isBusy) {
+            HStack(spacing: Theme.Space.s) {
+                ActionButton(title: "Cuisine", systemImage: "paperplane.fill", isLoading: ticket.isBusy, kind: .tonal, height: Theme.touchLarge) {
                     Task {
                         if await ticket.sendToKitchen(), !ticket.isCounter {
                             Haptics.success()
@@ -197,27 +223,30 @@ struct TicketPanel: View {
                 }
                 .disabled(!ticket.hasUndispatched)
                 .accessibilityIdentifier("ticket.send")
+                .frame(maxWidth: 150)
 
-                ActionButton(title: "Encaisser \(ticket.amountDue.formatted)", systemImage: "creditcard.fill", tint: .green) {
+                ActionButton(title: "Encaisser \(ticket.amountDue.formatted)", systemImage: "creditcard.fill", kind: .primary, height: Theme.touchLarge) {
                     sheet = .payment
                 }
                 .disabled(ticket.amountDue.cents <= 0)
                 .accessibilityIdentifier("ticket.pay")
             }
         }
-        .padding(16)
-        .background(Color(.secondarySystemBackground))
+        .padding(.horizontal, Theme.Space.l)
+        .padding(.top, Theme.Space.m)
+        .padding(.bottom, Theme.Space.l)
+        .background(Theme.sunken)
     }
 
-    private func smallAction(_ title: String, _ icon: String, tint: Color, id: String, disabled: Bool, action: @escaping () -> Void) -> some View {
+    private func smallAction(_ title: String, _ icon: String, kind: ActionButton.Kind, id: String, disabled: Bool, action: @escaping () -> Void) -> some View {
         Button(action: { Haptics.tap(); action() }) {
-            VStack(spacing: 4) {
-                Image(systemName: icon).font(.headline)
-                Text(title).font(.caption.weight(.semibold))
+            VStack(spacing: 2) {
+                Image(systemName: icon).font(.system(size: 17, weight: .semibold))
+                Text(title).font(.system(size: 12, weight: .semibold)).lineLimit(1).minimumScaleFactor(0.8)
             }
-            .frame(maxWidth: .infinity, minHeight: 52)
+            .frame(maxWidth: .infinity, minHeight: Theme.touchTarget)
         }
-        .buttonStyle(ActionButtonStyle(tint: tint, prominent: false))
+        .buttonStyle(ActionButtonStyle(kind: kind))
         .disabled(disabled)
         .accessibilityIdentifier(id)
     }
@@ -235,7 +264,7 @@ struct FastCashBar: View {
     var body: some View {
         let due = model.ticket.amountDue
         HStack(spacing: 6) {
-            Image(systemName: "banknote").foregroundStyle(.green)
+            Image(systemName: "banknote").foregroundStyle(Theme.success)
             ForEach(OrderMath.suggestedCashAmounts(for: due).prefix(4), id: \.self) { amount in
                 Button(amount == due ? "Exact" : amount.formatted) {
                     Task {
@@ -246,9 +275,9 @@ struct FastCashBar: View {
                         }
                     }
                 }
-                .font(.footnote.weight(.bold))
+                .font(.system(size: 13, weight: .bold, design: .monospaced))
                 .buttonStyle(.bordered)
-                .tint(.green)
+                .tint(Theme.success)
                 .accessibilityIdentifier(amount == due ? "fastcash.exact" : "fastcash.\(amount.cents / 100)")
             }
         }
@@ -262,57 +291,66 @@ struct TicketLineRow: View {
 
     var body: some View {
         let ticket = model.ticket
-        HStack(alignment: .top, spacing: 10) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(line.name).font(.body.weight(.semibold)).strikethrough(line.isComp)
-                HStack(spacing: 4) {
+        HStack(alignment: .center, spacing: Theme.Space.m) {
+            HStack(spacing: 0) {
+                Button { ticket.decrement(line.id) } label: {
+                    Image(systemName: "minus").frame(width: 36, height: 40)
+                }
+                .disabled(!line.isDraft)
+                .accessibilityIdentifier("line.minus.\(line.name)")
+                Text("\(line.quantity)")
+                    .font(.system(size: 15, weight: .semibold, design: .monospaced))
+                    .frame(minWidth: 22)
+                    .accessibilityIdentifier("line.qty.\(line.name)")
+                Button { ticket.increment(line.id) } label: {
+                    Image(systemName: "plus").frame(width: 36, height: 40)
+                }
+                .accessibilityIdentifier("line.plus.\(line.name)")
+            }
+            .font(.system(size: 15, weight: .bold))
+            .foregroundStyle(Theme.ink)
+            .buttonStyle(.borderless)
+            .background(RoundedRectangle(cornerRadius: Theme.Radius.sm, style: .continuous).fill(Theme.raised))
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text(line.name).font(.system(size: 15, weight: .semibold)).foregroundStyle(Theme.ink).strikethrough(line.isComp)
+                if !line.modifiers.isEmpty {
+                    Text(line.modifiers.joined(separator: " · ")).font(.system(size: 13, weight: .medium)).foregroundStyle(Theme.inkMuted)
+                }
+                if let comment = line.kitchenComment {
+                    Label(comment, systemImage: "text.bubble").font(.system(size: 13, weight: .medium)).foregroundStyle(Theme.inkMuted)
+                }
+                HStack(spacing: Theme.Space.xs) {
                     Button {
                         ticket.cycleCourse(line.id)
                     } label: {
-                        Badge(text: line.course.label, color: Theme.color(for: line.course))
+                        CourseTag(course: line.course)
                     }
                     .buttonStyle(.plain)
                     .disabled(!line.isDraft)
+                    .accessibilityLabel(line.course.label)
                     .accessibilityIdentifier("line.course.\(line.name)")
-                    if line.isHappyHourApplied { Badge(text: "HH", color: Theme.happyHour, systemImage: "wineglass") }
-                    if line.isComp { Badge(text: "Offert", color: .green, systemImage: "gift") }
+                    if line.isHappyHourApplied { Badge(text: "HH", color: Theme.happyInk, systemImage: "wineglass") }
+                    if line.isComp { Badge(text: "Offert", color: Theme.success, systemImage: "gift") }
                     if line.isDispatched {
-                        Badge(text: "Cuisine", color: .orange, systemImage: "flame")
-                    } else if line.isDraft {
-                        Badge(text: "Nouveau", color: .blue, systemImage: "plus")
+                        Label("En cuisine", systemImage: "checkmark").font(.system(size: 12, weight: .semibold)).foregroundStyle(Theme.inkSubtle)
                     } else {
-                        Badge(text: "Enregistré", color: .secondary)
+                        HStack(spacing: 4) {
+                            Circle().fill(Theme.warning).frame(width: 6, height: 6)
+                            Text("Non envoyé")
+                        }
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(Theme.warning)
                     }
                 }
-                if !line.modifiers.isEmpty {
-                    Text(line.modifiers.joined(separator: " · ")).font(.caption).foregroundStyle(.orange)
-                }
-                if let comment = line.kitchenComment {
-                    Label(comment, systemImage: "text.bubble").font(.caption).foregroundStyle(.secondary)
-                }
-                Text(unitDescription).font(.caption).foregroundStyle(.secondary)
+                Text(unitDescription).font(.system(size: 12, weight: .medium)).foregroundStyle(Theme.inkSubtle)
             }
             Spacer(minLength: 4)
-            VStack(alignment: .trailing, spacing: 8) {
-                Text(OrderMath.lineTotal(line).formatted).font(.body.weight(.bold)).monospacedDigit()
-                HStack(spacing: 0) {
-                    Button { ticket.decrement(line.id) } label: {
-                        Image(systemName: "minus").frame(width: 36, height: 36)
-                    }
-                    .disabled(!line.isDraft)
-                    .accessibilityIdentifier("line.minus.\(line.name)")
-                    Text("\(line.quantity)").font(.headline.monospacedDigit()).frame(minWidth: 26)
-                        .accessibilityIdentifier("line.qty.\(line.name)")
-                    Button { ticket.increment(line.id) } label: {
-                        Image(systemName: "plus").frame(width: 36, height: 36)
-                    }
-                    .accessibilityIdentifier("line.plus.\(line.name)")
-                }
-                .buttonStyle(.borderless)
-                .background(Capsule().fill(Color(.tertiarySystemFill)))
-            }
+            Text(OrderMath.lineTotal(line).formatted)
+                .font(.posAmountSmall)
+                .foregroundStyle(Theme.ink)
         }
-        .opacity(line.isDispatched ? 0.8 : 1)
+        .opacity(line.isDispatched ? 0.85 : 1)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("line.\(line.name)")
     }

@@ -1,7 +1,7 @@
 import SwiftUI
 import PosKit
 
-/// Coque principale : barre latérale compacte + en-tête + écran courant.
+/// Coque principale : rail de navigation + en-tête + écran courant.
 struct MainShell: View {
     @Environment(AppModel.self) private var model
     @Environment(Router.self) private var router
@@ -9,7 +9,6 @@ struct MainShell: View {
     var body: some View {
         HStack(spacing: 0) {
             SidebarRail()
-            Divider().ignoresSafeArea()
             VStack(spacing: 0) {
                 HeaderBar()
                 if model.happyHour.isActive {
@@ -19,7 +18,7 @@ struct MainShell: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
-        .background(Color(.systemGroupedBackground))
+        .background(Theme.canvas)
         .task {
             // Horloge d'une seconde : compte à rebours Happy Hour.
             while !Task.isCancelled {
@@ -46,11 +45,15 @@ struct SidebarRail: View {
     @Environment(Router.self) private var router
 
     var body: some View {
-        VStack(spacing: 6) {
-            Image(systemName: "fork.knife.circle.fill")
-                .font(.system(size: 34))
-                .foregroundStyle(Color.accentColor)
-                .padding(.vertical, 14)
+        VStack(spacing: Theme.Space.s) {
+            Image("BrandMark")
+                .resizable()
+                .scaledToFill()
+                .frame(width: 48, height: 48)
+                .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.md, style: .continuous))
+                .padding(.top, Theme.Space.l)
+                .padding(.bottom, Theme.Space.m)
+                .accessibilityHidden(true)
 
             ForEach(Router.Section.allCases) { section in
                 if !section.requiresManager || model.session.isManager {
@@ -66,17 +69,20 @@ struct SidebarRail: View {
                 model.session.lock()
             } label: {
                 VStack(spacing: 4) {
-                    Image(systemName: "lock.fill").font(.title3)
-                    Text("Verrouiller").font(.caption2.weight(.semibold))
+                    Image(systemName: "lock.fill").font(.system(size: 20, weight: .semibold))
+                    Text("Verrouiller").font(.system(size: 12, weight: .semibold))
                 }
-                .frame(width: 76, height: 64)
-                .foregroundStyle(.secondary)
+                .frame(width: 72, height: 64)
+                .foregroundStyle(Theme.inkMuted)
+                .contentShape(Rectangle())
             }
+            .buttonStyle(.plain)
             .accessibilityIdentifier("nav.lock")
-            .padding(.bottom, 12)
+            .padding(.bottom, Theme.Space.l)
         }
         .frame(width: Theme.sidebarWidth)
-        .background(Color(.secondarySystemBackground))
+        .frame(maxHeight: .infinity)
+        .background(Theme.sunken.ignoresSafeArea())
     }
 }
 
@@ -88,12 +94,15 @@ private struct RailButton: View {
     var body: some View {
         Button(action: { Haptics.tap(); action() }) {
             VStack(spacing: 4) {
-                Image(systemName: section.systemImage).font(.title3).symbolVariant(isSelected ? .fill : .none)
-                Text(section.title).font(.caption2.weight(.semibold))
+                Image(systemName: section.systemImage)
+                    .font(.system(size: 20, weight: .semibold))
+                    .symbolVariant(isSelected ? .fill : .none)
+                Text(section.title).font(.system(size: 12, weight: .semibold))
             }
-            .frame(width: 76, height: 64)
-            .foregroundStyle(isSelected ? Color.accentColor : Color.secondary)
-            .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(isSelected ? Color.accentColor.opacity(0.14) : .clear))
+            .frame(width: 72, height: 64)
+            .foregroundStyle(isSelected ? Theme.primaryInk : Theme.inkMuted)
+            .background(RoundedRectangle(cornerRadius: Theme.Radius.md, style: .continuous).fill(isSelected ? Theme.primarySoft : .clear))
+            .contentShape(RoundedRectangle(cornerRadius: Theme.Radius.md, style: .continuous))
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier("nav.\(section.rawValue)")
@@ -107,25 +116,46 @@ struct HeaderBar: View {
     @Environment(AppEnvironment.self) private var environment
 
     var body: some View {
-        HStack(spacing: 16) {
-            Text(router.section.title).font(.title2.weight(.bold))
+        HStack(spacing: Theme.Space.l) {
+            Text(router.section.title).font(.posTitle).foregroundStyle(Theme.ink)
+            if let context {
+                Text(context).font(.system(size: 15, weight: .semibold)).foregroundStyle(Theme.inkMuted).lineLimit(1)
+            }
             Spacer()
             ConnectionBadge(isOnline: model.network.isOnline || environment.launch.isUITest, isRealtime: model.isRealtimeConnected, terminal: model.settings.terminalId)
             if let op = model.session.currentOperator {
                 HStack(spacing: 10) {
-                    Image(systemName: "person.crop.circle.fill").font(.title2).foregroundStyle(Color.accentColor)
+                    Text(initials(of: op.name))
+                        .font(.system(size: 15, weight: .bold))
+                        .foregroundStyle(Theme.primaryInk)
+                        .frame(width: 40, height: 40)
+                        .background(Circle().fill(Theme.primarySoft))
                     VStack(alignment: .leading, spacing: 0) {
-                        Text(op.name).font(.subheadline.weight(.semibold)).lineLimit(1)
-                        Text(op.role.label).font(.caption).foregroundStyle(.secondary)
+                        Text(op.name).font(.system(size: 15, weight: .bold)).foregroundStyle(Theme.ink).lineLimit(1)
+                        Text(op.role.label).font(.system(size: 12, weight: .semibold)).foregroundStyle(Theme.inkMuted)
                     }
                 }
                 .accessibilityElement(children: .combine)
                 .accessibilityIdentifier("header.operator")
             }
         }
-        .padding(.horizontal, 20)
-        .frame(height: 60)
-        .background(Color(.systemBackground))
+        .padding(.horizontal, Theme.Space.xl)
+        .frame(height: Theme.headerHeight)
+        .background(Theme.surface)
+        .overlay(alignment: .bottom) { Theme.line.frame(height: 1) }
+    }
+
+    /// Table en cours sur l'écran Caisse.
+    private var context: String? {
+        guard router.section == .order else { return nil }
+        let ticket = model.ticket
+        if ticket.isCounter { return ticket.title }
+        return ticket.covers > 0 ? "\(ticket.title) · \(ticket.covers) couvert(s)" : ticket.title
+    }
+
+    private func initials(of name: String) -> String {
+        let letters = name.split(separator: " ").prefix(2).compactMap(\.first)
+        return letters.isEmpty ? "?" : String(letters).uppercased()
     }
 }
 
@@ -135,14 +165,15 @@ struct ConnectionBadge: View {
     let terminal: String
 
     var body: some View {
-        HStack(spacing: 6) {
-            Circle().fill(isOnline ? Color.green : Color.red).frame(width: 8, height: 8)
-            Text(isOnline ? "En ligne · \(terminal)" : "Hors ligne").font(.caption.weight(.semibold))
-            if isRealtime { Image(systemName: "bolt.fill").font(.caption2).foregroundStyle(.yellow) }
+        HStack(spacing: Theme.Space.s) {
+            Circle().fill(isOnline ? Theme.success : Theme.danger).frame(width: 8, height: 8)
+            Text(isOnline ? "En ligne · \(terminal)" : "Hors ligne").font(.posLabel).foregroundStyle(Theme.ink)
+            if isRealtime { Image(systemName: "bolt.fill").font(.caption2).foregroundStyle(Theme.brandCyan) }
         }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 6)
-        .background(Capsule().fill(Color(.secondarySystemFill)))
+        .padding(.horizontal, Theme.Space.m)
+        .frame(minHeight: 32)
+        .background(Capsule().fill(Theme.raised))
+        .accessibilityElement(children: .combine)
         .accessibilityIdentifier("header.connection")
     }
 }
@@ -153,27 +184,32 @@ struct HappyHourBanner: View {
     @State private var showsOverride = false
 
     var body: some View {
-        HStack(spacing: 14) {
+        HStack(spacing: Theme.Space.l) {
             Image(systemName: model.happyHour.status.isOverride ? "bolt.fill" : "wineglass.fill").font(.title3)
             VStack(alignment: .leading, spacing: 0) {
-                Text(model.happyHour.bannerTitle).font(.subheadline.weight(.bold))
+                Text(model.happyHour.bannerTitle).font(.system(size: 15, weight: .bold))
                     .accessibilityIdentifier("happyhour.banner")
                 Text(model.happyHour.status.isOverride ? "Tarifs réduits forcés par un responsable" : "Tarifs préférentiels actifs")
-                    .font(.caption)
+                    .font(.system(size: 12, weight: .semibold))
             }
             Spacer()
             Text(model.happyHour.countdownText)
-                .font(.title3.monospacedDigit().weight(.bold))
+                .font(.system(size: 22, weight: .semibold, design: .monospaced))
                 .accessibilityIdentifier("happyhour.countdown")
-            Button("Dérogation") { showsOverride = true }
-                .buttonStyle(.bordered)
-                .tint(.white)
-                .accessibilityIdentifier("happyhour.override")
+            Button { showsOverride = true } label: {
+                Text("Dérogation")
+                    .font(.system(size: 15, weight: .bold))
+                    .padding(.horizontal, Theme.Space.l)
+                    .frame(minHeight: Theme.touchMin)
+                    .background(RoundedRectangle(cornerRadius: Theme.Radius.md, style: .continuous).fill(Theme.onHappy.opacity(0.12)))
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("happyhour.override")
         }
-        .foregroundStyle(.white)
-        .padding(.horizontal, 20)
+        .foregroundStyle(Theme.onHappy)
+        .padding(.horizontal, Theme.Space.xl)
         .padding(.vertical, 10)
-        .background(LinearGradient(colors: [Theme.happyHour, .orange], startPoint: .leading, endPoint: .trailing))
+        .background(Theme.happyHour)
         .sheet(isPresented: $showsOverride) { HappyHourOverrideSheet() }
     }
 }
@@ -192,21 +228,22 @@ struct HappyHourOverrideSheet: View {
                 .textFieldStyle(.roundedBorder)
                 .accessibilityIdentifier("hh.reason")
             HStack(spacing: 12) {
-                ActionButton(title: "+30 min", systemImage: "plus.circle", tint: Theme.happyHour) {
+                ActionButton(title: "+30 min", systemImage: "plus.circle", kind: .tonal) {
                     Task { if await model.happyHour.activateOverride(pin: pin, minutes: 30, reason: reason) { dismiss() } }
                 }
                 .accessibilityIdentifier("hh.extend30")
-                ActionButton(title: "Forcer 1 h", systemImage: "bolt", tint: .orange) {
+                ActionButton(title: "Forcer 1 h", systemImage: "bolt", kind: .primary) {
                     Task { if await model.happyHour.activateOverride(pin: pin, minutes: 60, reason: reason) { dismiss() } }
                 }
                 .accessibilityIdentifier("hh.force60")
-                ActionButton(title: "Arrêter", systemImage: "stop.circle", tint: .red, prominent: false) {
+                ActionButton(title: "Arrêter", systemImage: "stop.circle", kind: .danger) {
                     Task { if await model.happyHour.stopOverride(pin: pin, reason: reason) { dismiss() } }
                 }
                 .accessibilityIdentifier("hh.stop")
             }
         }
-        .padding(28)
+        .padding(Theme.Space.xxl)
+        .background(Theme.surface)
         .presentationDetents([.large])
     }
 }

@@ -33,24 +33,26 @@ struct LockScreen: View {
     var body: some View {
         let session = model.session
         ZStack {
-            LinearGradient(colors: [Color.accentColor.opacity(0.25), Color(.systemBackground)], startPoint: .topLeading, endPoint: .bottomTrailing)
-                .ignoresSafeArea()
+            Theme.canvas.ignoresSafeArea()
 
-            VStack(spacing: 28) {
-                VStack(spacing: 8) {
-                    Image(systemName: "fork.knife.circle.fill")
-                        .font(.system(size: 64))
-                        .foregroundStyle(Color.accentColor)
-                    Text("Restaurant POS").font(.largeTitle.weight(.bold))
-                    Text("Saisissez votre code PIN").font(.title3).foregroundStyle(.secondary)
+            VStack(spacing: Theme.Space.xxl) {
+                VStack(spacing: Theme.Space.s) {
+                    Image("BrandMark")
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 88, height: 88)
+                        .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.lg, style: .continuous))
+                        .accessibilityHidden(true)
+                    Text("AGY POS").font(.system(size: 34, weight: .heavy)).foregroundStyle(Theme.ink)
+                    Text("Saisissez votre code PIN").font(.system(size: 17, weight: .medium)).foregroundStyle(Theme.inkMuted)
                 }
 
                 PinDots(count: SessionStore.pinLength, filled: session.pinEntry.count, isError: session.pinError != nil)
                     .modifier(ShakeEffect(animatableData: CGFloat(shake)))
 
                 Text(session.pinError ?? " ")
-                    .font(.subheadline.weight(.medium))
-                    .foregroundStyle(.red)
+                    .font(.posLabel)
+                    .foregroundStyle(Theme.danger)
                     .accessibilityIdentifier("pin.error")
 
                 NumericKeypad(keySize: 84, identifierPrefix: "pin") { digit in
@@ -64,7 +66,8 @@ struct LockScreen: View {
                 .overlay { if session.isAuthenticating { ProgressView().controlSize(.large) } }
             }
             .padding(40)
-            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 32, style: .continuous))
+            .background(RoundedRectangle(cornerRadius: Theme.Radius.xl, style: .continuous).fill(Theme.surface))
+            .cardShadow(radius: Theme.Radius.xl)
             .frame(maxWidth: 460)
 
             VStack {
@@ -72,7 +75,7 @@ struct LockScreen: View {
                 HStack {
                     Label(environment.launch.isUITest ? "Mode démo (données locales)" : model.settings.serverURL, systemImage: "server.rack")
                         .font(.footnote)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Theme.inkMuted)
                     Button("Changer") { showsServerSettings = true }
                         .font(.footnote.weight(.semibold))
                         .accessibilityIdentifier("lock.server")

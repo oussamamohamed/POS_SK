@@ -4,6 +4,7 @@ import PosKit
 @main
 struct RestaurantPOSApp: App {
     @State private var environment = AppEnvironment()
+    @AppStorage(AppearancePreference.storageKey) private var appearance = AppearancePreference.dark.rawValue
 
     var body: some Scene {
         WindowGroup {
@@ -12,6 +13,8 @@ struct RestaurantPOSApp: App {
                 .environment(environment.model)
                 .environment(environment.router)
                 .id(environment.generation)
+                .tint(Theme.primary)
+                .preferredColorScheme((AppearancePreference(rawValue: appearance) ?? .dark).colorScheme)
         }
     }
 }

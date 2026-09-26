@@ -28,7 +28,7 @@ struct HappyHourAdminView: View {
                         VStack(alignment: .leading) {
                             Text(schedule.name).font(.title2.weight(.bold))
                             Text("\(schedule.daysLabel) · \(schedule.startTime)–\(schedule.endTime) · \(schedule.appliesToTakeaway ? "emporté inclus" : "sur place uniquement")")
-                                .font(.subheadline).foregroundStyle(.secondary)
+                                .font(.subheadline).foregroundStyle(Theme.inkMuted)
                         }
                         Spacer()
                     }
@@ -60,7 +60,7 @@ struct HappyHourAdminView: View {
                 ForEach(store.schedules) { schedule in
                     VStack(alignment: .leading, spacing: 4) {
                         Text(schedule.name).font(.headline)
-                        Text("\(schedule.startTime)–\(schedule.endTime) · \(schedule.daysLabel)").font(.caption).foregroundStyle(.secondary)
+                        Text("\(schedule.startTime)–\(schedule.endTime) · \(schedule.daysLabel)").font(.caption).foregroundStyle(Theme.inkMuted)
                         Text("\(schedule.priceRules.count) règle(s) · priorité \(schedule.priority)").font(.caption2).foregroundStyle(.blue)
                     }
                     .tag(schedule.id)
@@ -89,7 +89,7 @@ struct HappyHourAdminView: View {
                 Button("Tout") { selectedProducts.formUnion(products.map(\.id)) }
                 Button("Aucun") { selectedProducts.removeAll() }
                 Spacer()
-                Text("\(selectedProducts.count) sélectionné(s)").foregroundStyle(.secondary).accessibilityIdentifier("hh.selectedCount")
+                Text("\(selectedProducts.count) sélectionné(s)").foregroundStyle(Theme.inkMuted).accessibilityIdentifier("hh.selectedCount")
             }
             ScrollView {
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 200), spacing: 10)], spacing: 10) {
@@ -110,7 +110,7 @@ struct HappyHourAdminView: View {
                 .frame(width: 280)
                 TextField("Valeur", text: $valueText).keyboardType(.decimalPad).textFieldStyle(.roundedBorder).frame(width: 100)
                     .accessibilityIdentifier("hh.value")
-                ActionButton(title: "Appliquer aux \(selectedProducts.count) article(s)", systemImage: "checkmark", tint: Theme.happyHour) {
+                ActionButton(title: "Appliquer aux \(selectedProducts.count) article(s)", systemImage: "checkmark", kind: .primary) {
                     Task {
                         if await model.happyHourAdmin.applyToProducts(selectedProducts, mode: priceMode, value: decimal(valueText)) { selectedProducts.removeAll() }
                     }
@@ -137,7 +137,7 @@ struct HappyHourAdminView: View {
                 TextField("%", text: $familyPercent).keyboardType(.decimalPad).textFieldStyle(.roundedBorder).frame(width: 80)
                     .accessibilityIdentifier("hh.familyPercent")
                 Text("%")
-                ActionButton(title: "Appliquer aux \(selectedCategories.count) famille(s)", systemImage: "checkmark", tint: Theme.happyHour) {
+                ActionButton(title: "Appliquer aux \(selectedCategories.count) famille(s)", systemImage: "checkmark", kind: .primary) {
                     Task {
                         if await model.happyHourAdmin.applyToCategories(selectedCategories, percent: decimal(familyPercent)) { selectedCategories.removeAll() }
                     }
@@ -164,7 +164,7 @@ struct HappyHourAdminView: View {
             HStack {
                 Button("Tout sélectionner") { selectedRules = Set(schedule.priceRules.compactMap(\.id)) }
                 Spacer()
-                ActionButton(title: "Supprimer \(selectedRules.count) règle(s)", systemImage: "trash", tint: .red) {
+                ActionButton(title: "Supprimer \(selectedRules.count) règle(s)", systemImage: "trash", kind: .danger) {
                     Task { await model.happyHourAdmin.deleteRules(selectedRules); selectedRules.removeAll() }
                 }
                 .frame(maxWidth: 320)
@@ -188,15 +188,15 @@ struct SelectableCard: View {
     var body: some View {
         Button(action: action) {
             HStack(spacing: 10) {
-                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle").font(.title3).foregroundStyle(isSelected ? Color.accentColor : .secondary)
+                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle").font(.title3).foregroundStyle(isSelected ? Theme.primary : .secondary)
                 VStack(alignment: .leading) {
                     Text(title).font(.subheadline.weight(.semibold)).lineLimit(1)
-                    Text(subtitle).font(.caption).foregroundStyle(.secondary)
+                    Text(subtitle).font(.caption).foregroundStyle(Theme.inkMuted)
                 }
                 Spacer(minLength: 0)
             }
             .padding(12)
-            .background(RoundedRectangle(cornerRadius: Theme.smallRadius).fill(isSelected ? Color.accentColor.opacity(0.12) : Color(.secondarySystemGroupedBackground)))
+            .background(RoundedRectangle(cornerRadius: Theme.smallRadius).fill(isSelected ? Theme.primary.opacity(0.12) : Theme.surface))
         }
         .buttonStyle(.plain)
         .accessibilityAddTraits(isSelected ? .isSelected : [])

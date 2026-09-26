@@ -53,14 +53,14 @@ struct PaymentSheet: View {
                 SheetHeader(title: "Encaissement", subtitle: model.ticket.title) { dismiss() }
 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(plan.partLabel ?? "À encaisser").font(.headline).foregroundStyle(.secondary)
+                    Text(plan.partLabel ?? "À encaisser").font(.headline).foregroundStyle(Theme.inkMuted)
                     Text(plan.amountToCollect.formatted)
                         .font(.system(size: 56, weight: .bold, design: .rounded))
                         .monospacedDigit()
                         .contentTransition(.numericText())
                         .accessibilityIdentifier("payment.amount")
                     if plan.tipAmount.cents > 0 {
-                        Text("dont pourboire \(plan.tipAmount.formatted)").font(.subheadline).foregroundStyle(.secondary)
+                        Text("dont pourboire \(plan.tipAmount.formatted)").font(.subheadline).foregroundStyle(Theme.inkMuted)
                     }
                 }
 
@@ -84,8 +84,8 @@ struct PaymentSheet: View {
                             Label(m.label, systemImage: Theme.icon(for: m))
                                 .font(.headline)
                                 .frame(maxWidth: .infinity, minHeight: 60)
-                                .background(RoundedRectangle(cornerRadius: Theme.smallRadius).fill(method == m ? Color.accentColor.opacity(0.18) : Color(.tertiarySystemFill)))
-                                .overlay(RoundedRectangle(cornerRadius: Theme.smallRadius).strokeBorder(method == m ? Color.accentColor : .clear, lineWidth: 2))
+                                .background(RoundedRectangle(cornerRadius: Theme.smallRadius).fill(method == m ? Theme.primary.opacity(0.18) : Theme.raised))
+                                .overlay(RoundedRectangle(cornerRadius: Theme.smallRadius).strokeBorder(method == m ? Theme.primary : .clear, lineWidth: 2))
                         }
                         .buttonStyle(.plain)
                         .accessibilityIdentifier("payment.method.\(m)")
@@ -95,7 +95,7 @@ struct PaymentSheet: View {
                             Label("Chambre d'hôtel", systemImage: "bed.double")
                                 .font(.headline)
                                 .frame(maxWidth: .infinity, minHeight: 60)
-                                .background(RoundedRectangle(cornerRadius: Theme.smallRadius).fill(Color(.tertiarySystemFill)))
+                                .background(RoundedRectangle(cornerRadius: Theme.smallRadius).fill(Theme.raised))
                         }
                         .buttonStyle(.plain)
                         .accessibilityIdentifier("payment.method.room")
@@ -108,7 +108,7 @@ struct PaymentSheet: View {
 
                 Spacer(minLength: 0)
 
-                ActionButton(title: validateTitle, systemImage: "checkmark.seal.fill", tint: .green, isLoading: isPaying) {
+                ActionButton(title: validateTitle, systemImage: "checkmark.seal.fill", isLoading: isPaying, kind: .primary) {
                     Task { await pay() }
                 }
                 .disabled(plan.amountToCollect.cents <= 0)
@@ -157,9 +157,9 @@ struct PaymentSheet: View {
                                 Text(part.formatted).font(.subheadline.monospacedDigit())
                             }
                             .padding(10)
-                            .background(RoundedRectangle(cornerRadius: 10).fill(index < plan.paidParts ? Color.green.opacity(0.2) : index == plan.paidParts ? Color.accentColor.opacity(0.2) : Color(.tertiarySystemFill)))
+                            .background(RoundedRectangle(cornerRadius: 10).fill(index < plan.paidParts ? Theme.success.opacity(0.2) : index == plan.paidParts ? Theme.primary.opacity(0.2) : Theme.raised))
                             .overlay(alignment: .topTrailing) {
-                                if index < plan.paidParts { Image(systemName: "checkmark.circle.fill").foregroundStyle(.green).offset(x: 4, y: -4) }
+                                if index < plan.paidParts { Image(systemName: "checkmark.circle.fill").foregroundStyle(Theme.success).offset(x: 4, y: -4) }
                             }
                         }
                     }
@@ -230,7 +230,7 @@ struct PaymentSheet: View {
                 if method == .cash {
                     Text("Rendu \(OrderMath.change(tendered: tendered, due: plan.amountToCollect).formatted)")
                         .font(.headline)
-                        .foregroundStyle(.green)
+                        .foregroundStyle(Theme.success)
                         .accessibilityIdentifier("payment.change")
                 }
             }
@@ -282,19 +282,19 @@ struct PaymentSheet: View {
             Spacer()
             Image(systemName: outcome.isComplete ? "checkmark.circle.fill" : "clock.badge.checkmark")
                 .font(.system(size: 72))
-                .foregroundStyle(.green)
+                .foregroundStyle(Theme.success)
             Text(outcome.isComplete ? "Paiement validé" : "Paiement partiel enregistré").font(.largeTitle.weight(.bold))
             if outcome.change.cents > 0 {
-                Text("Rendu monnaie").font(.title3).foregroundStyle(.secondary)
-                Text(outcome.change.formatted).font(.system(size: 64, weight: .bold, design: .rounded)).foregroundStyle(.green)
+                Text("Rendu monnaie").font(.title3).foregroundStyle(Theme.inkMuted)
+                Text(outcome.change.formatted).font(.system(size: 64, weight: .bold, design: .rounded)).foregroundStyle(Theme.success)
                     .accessibilityIdentifier("result.change")
             }
             if !outcome.isComplete {
                 Text("Reste à payer : \(outcome.remaining.formatted)").font(.title2).accessibilityIdentifier("result.remaining")
             }
-            if let receipt = outcome.receiptNumber { Text("Reçu \(receipt)").font(.subheadline).foregroundStyle(.secondary) }
+            if let receipt = outcome.receiptNumber { Text("Reçu \(receipt)").font(.subheadline).foregroundStyle(Theme.inkMuted) }
             Spacer()
-            ActionButton(title: outcome.isComplete ? "Terminer" : "Continuer l'encaissement", systemImage: outcome.isComplete ? "checkmark" : "arrow.right", tint: .green) {
+            ActionButton(title: outcome.isComplete ? "Terminer" : "Continuer l'encaissement", systemImage: outcome.isComplete ? "checkmark" : "arrow.right", kind: .primary) {
                 if outcome.isComplete {
                     dismiss()
                     onComplete(outcome)
@@ -318,20 +318,20 @@ struct ChangeOverlay: View {
     var body: some View {
         VStack(spacing: 24) {
             Spacer()
-            Text("Monnaie à rendre").font(.title2).foregroundStyle(.secondary)
+            Text("Monnaie à rendre").font(.title2).foregroundStyle(Theme.inkMuted)
             Text(outcome.change.formatted)
                 .font(.system(size: 96, weight: .heavy, design: .rounded))
-                .foregroundStyle(.green)
+                .foregroundStyle(Theme.success)
                 .accessibilityIdentifier("change.amount")
             HStack(spacing: 40) {
                 VStack {
-                    Text("N° de retrait").font(.headline).foregroundStyle(.secondary)
+                    Text("N° de retrait").font(.headline).foregroundStyle(Theme.inkMuted)
                     Text(outcome.pickupNumber ?? "—").font(.system(size: 48, weight: .bold, design: .rounded))
                         .accessibilityIdentifier("change.pickup")
                 }
                 if let buzzer = outcome.buzzer {
                     VStack {
-                        Text("Buzzer").font(.headline).foregroundStyle(.secondary)
+                        Text("Buzzer").font(.headline).foregroundStyle(Theme.inkMuted)
                         Text(buzzer).font(.system(size: 48, weight: .bold, design: .rounded))
                     }
                 }
@@ -341,20 +341,20 @@ struct ChangeOverlay: View {
                     VStack(alignment: .leading, spacing: 4) {
                         Label("Avoir client émis", systemImage: "ticket").font(.headline)
                         Text(voucher.voucherCode).font(.title2.monospaced().weight(.bold)).accessibilityIdentifier("change.voucher")
-                        Text("Montant \(voucher.amount.formatted) · valable 90 jours").font(.subheadline).foregroundStyle(.secondary)
+                        Text("Montant \(voucher.amount.formatted) · valable 90 jours").font(.subheadline).foregroundStyle(Theme.inkMuted)
                     }
                 }
                 .frame(maxWidth: 420)
             }
-            if let receipt = outcome.receiptNumber { Text("Reçu \(receipt)").foregroundStyle(.secondary) }
+            if let receipt = outcome.receiptNumber { Text("Reçu \(receipt)").foregroundStyle(Theme.inkMuted) }
             Spacer()
-            ActionButton(title: "Client suivant", systemImage: "arrow.right.circle.fill", tint: .green) { onDone() }
+            ActionButton(title: "Client suivant", systemImage: "arrow.right.circle.fill", kind: .primary) { onDone() }
                 .frame(maxWidth: 360)
                 .accessibilityIdentifier("change.done")
                 .padding(.bottom, 40)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(.systemBackground))
+        .background(Theme.surface)
     }
 }
 
@@ -387,7 +387,7 @@ struct RoomChargeSheet: View {
                     HStack {
                         Label(selected.guestName, systemImage: "person")
                         Spacer()
-                        Text("Crédit disponible \(selected.availableCredit.formatted)").foregroundStyle(selected.availableCredit >= model.ticket.amountDue + tip ? Color.green : Color.red)
+                        Text("Crédit disponible \(selected.availableCredit.formatted)").foregroundStyle(selected.availableCredit >= model.ticket.amountDue + tip ? Theme.success : Theme.danger)
                     }
                     .font(.subheadline)
                 }
@@ -400,7 +400,7 @@ struct RoomChargeSheet: View {
             SignaturePad(strokes: $strokes)
                 .frame(height: 180)
                 .accessibilityIdentifier("room.signature")
-            ActionButton(title: "Valider la facturation", systemImage: "bed.double.fill", tint: .indigo) {
+            ActionButton(title: "Valider la facturation", systemImage: "bed.double.fill", kind: .primary) {
                 Task { await charge() }
             }
             .disabled(selected == nil || strokes.isEmpty)
@@ -441,7 +441,7 @@ struct SignaturePad: View {
     var body: some View {
         Drawing(strokes: strokes)
             .background(RoundedRectangle(cornerRadius: Theme.smallRadius).fill(Color.white))
-            .overlay(RoundedRectangle(cornerRadius: Theme.smallRadius).strokeBorder(Color(.separator)))
+            .overlay(RoundedRectangle(cornerRadius: Theme.smallRadius).strokeBorder(Theme.lineStrong))
             .overlay { if strokes.isEmpty { Text("Signez ici").foregroundStyle(.gray) } }
             .gesture(
                 DragGesture(minimumDistance: 0)

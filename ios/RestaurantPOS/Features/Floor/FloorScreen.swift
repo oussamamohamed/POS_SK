@@ -7,37 +7,59 @@ struct FloorScreen: View {
     @Environment(Router.self) private var router
     @State private var opening: DiningTable?
     @State private var showsAddTable = false
+    /// Filtre par statut (`nil` : toutes les tables).
+    @State private var statusFilter: TableStatus?
 
     var body: some View {
         let floor = model.floor
-        VStack(spacing: 0) {
-            HStack(spacing: 12) {
-                KPIView(title: "Tables occupées", value: "\(floor.occupiedCount)/\(floor.diningTables.count)", systemImage: "person.3", tint: .orange)
-                KPIView(title: "En cours", value: floor.openTotal.formatted, systemImage: "eurosign.circle", tint: .green)
+        VStack(alignment: .leading, spacing: Theme.Space.l) {
+            HStack(spacing: Theme.Space.m) {
+                KPIView(title: "Tables occupées", value: "\(floor.occupiedCount)/\(floor.diningTables.count)", systemImage: "person.2")
+                    .frame(maxWidth: 240)
+                KPIView(title: "En cours", value: floor.openTotal.formatted, systemImage: "eurosign.circle")
+                    .frame(maxWidth: 260)
                 Spacer()
-                Button { Task { await floor.load() } } label: { Label("Actualiser", systemImage: "arrow.clockwise") }
-                    .buttonStyle(.bordered)
-                    .accessibilityIdentifier("floor.refresh")
-                Button { showsAddTable = true } label: { Label("Nouvelle table", systemImage: "plus") }
-                    .buttonStyle(.borderedProminent)
-                    .accessibilityIdentifier("floor.add")
+                Button { Task { await floor.load() } } label: {
+                    Image(systemName: "arrow.clockwise")
+                        .font(.system(size: 17, weight: .semibold))
+                        .frame(width: Theme.touchTarget, height: Theme.touchTarget)
+                }
+                .buttonStyle(ActionButtonStyle(kind: .neutral))
+                .accessibilityLabel("Actualiser")
+                .accessibilityIdentifier("floor.refresh")
+                Button { showsAddTable = true } label: {
+                    Label("Nouvelle table", systemImage: "plus")
+                        .font(.posHeadline)
+                        .padding(.horizontal, Theme.Space.xl)
+                        .frame(minHeight: Theme.touchTarget)
+                }
+                .buttonStyle(ActionButtonStyle(kind: .primary))
+                .accessibilityIdentifier("floor.add")
             }
             .fixedSize(horizontal: false, vertical: true)
-            .padding(20)
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: Theme.Space.s) {
+                    filterChip("Toutes", nil, id: "all")
+                    filterChip("Occupées", .occupied, id: "occupied")
+                    filterChip("Addition", .billRequested, id: "bill")
+                    filterChip("Libres", .free, id: "free")
+                }
+            }
 
             ScrollView {
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: 190), spacing: 16)], spacing: 16) {
-                    ForEach(floor.diningTables) { table in
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: 200), spacing: Theme.Space.l)], spacing: Theme.Space.l) {
+                    ForEach(visibleTables) { table in
                         TableCard(table: table)
                             .onTapGesture { select(table) }
                             .accessibilityIdentifier("table.\(table.tableNumber)")
                     }
                 }
-                .padding(.horizontal, 20)
-                .padding(.bottom, 20)
+                .padding(.bottom, Theme.Space.xl)
             }
             .refreshable { await floor.load() }
         }
+        .padding([.horizontal, .top], Theme.Space.xl)
         .task { await floor.load() }
         .sheet(item: $opening) { table in
             OpenTableSheet(table: table) { covers in
@@ -50,6 +72,20 @@ struct FloorScreen: View {
             }
         }
         .sheet(isPresented: $showsAddTable) { AddTableSheet() }
+    }
+
+    private var visibleTables: [DiningTable] {
+        guard let statusFilter else { return model.floor.diningTables }
+        return model.floor.diningTables.filter { $0.status == statusFilter }
+    }
+
+    private func filterChip(_ title: String, _ status: TableStatus?, id: String) -> some View {
+        let tables = model.floor.diningTables
+        let count = status.map { status in tables.filter { $0.status == status }.count } ?? tables.count
+        return ChipButton(title: title, isSelected: statusFilter == status, count: count) {
+            statusFilter = status
+        }
+        .accessibilityIdentifier("floor.filter.\(id)")
     }
 
     private func select(_ table: DiningTable) {
@@ -65,44 +101,51 @@ struct FloorScreen: View {
     }
 }
 
+/// Carte de table : les tables libres s'effacent (pointillés), les tables actives sont pleines.
 struct TableCard: View {
     let table: DiningTable
 
     var body: some View {
         let color = Theme.color(for: table.status)
+        let isFree = table.status == .free
+        let shape = RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous)
         TimelineView(.periodic(from: .now, by: 30)) { context in
-            VStack(alignment: .leading, spacing: 8) {
-                HStack {
-                    Text(table.tableNumber).font(.system(.largeTitle, design: .rounded).weight(.bold))
-                    Spacer()
+            VStack(alignment: .leading, spacing: Theme.Space.s) {
+                HStack(alignment: .top) {
+                    Text(table.tableNumber)
+                        .font(.posDisplay)
+                        .foregroundStyle(isFree ? Theme.inkMuted : Theme.ink)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.5)
+                    Spacer(minLength: Theme.Space.s)
                     Badge(text: table.status.label, color: color)
                 }
-                Label("\(table.coversCount > 0 ? "\(table.coversCount)/" : "")\(table.capacity) pers.", systemImage: "person.2")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                if let waiter = table.assignedWaiterName {
-                    Label(waiter, systemImage: "person.crop.circle").font(.caption).foregroundStyle(.secondary).lineLimit(1)
-                }
+                Label("\(table.coversCount > 0 ? "\(table.coversCount)/" : "")\(table.capacity) pers.\(table.assignedWaiterName.map { " · \($0)" } ?? "")", systemImage: "person.2")
+                    .font(.posLabel)
+                    .foregroundStyle(Theme.inkMuted)
+                    .lineLimit(1)
                 Spacer(minLength: 0)
-                HStack {
-                    if let opened = table.openedAtUtc, table.status != .free {
-                        Label(opened.elapsedDescription(now: context.date), systemImage: "clock").font(.caption.weight(.semibold))
-                            .foregroundStyle(context.date.timeIntervalSince(opened) > 90 * 60 ? .red : .secondary)
+                HStack(alignment: .firstTextBaseline, spacing: Theme.Space.s) {
+                    if isFree {
+                        Text("Touchez pour ouvrir").font(.posLabel).foregroundStyle(Theme.inkSubtle)
+                    } else if let opened = table.openedAtUtc {
+                        let isLate = context.date.timeIntervalSince(opened) > 90 * 60
+                        Label(opened.elapsedDescription(now: context.date), systemImage: "clock")
+                            .font(.posLabel.monospacedDigit())
+                            .foregroundStyle(isLate ? Theme.danger : Theme.inkMuted)
                     }
-                    Spacer()
+                    Spacer(minLength: 0)
                     if table.activeOrderTotalTtc.cents > 0 {
-                        Text(table.activeOrderTotalTtc.formatted).font(.headline.monospacedDigit())
+                        Text(table.activeOrderTotalTtc.formatted).font(.posAmount).foregroundStyle(Theme.ink)
                     }
                 }
+                .lineLimit(1)
             }
-            .padding(16)
-            .frame(minHeight: 170)
-            .background(
-                RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous)
-                    .fill(Color(.secondarySystemGroupedBackground))
-                    .overlay(RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous).strokeBorder(color.opacity(0.8), lineWidth: 2.5))
-            )
-            .contentShape(RoundedRectangle(cornerRadius: Theme.cornerRadius))
+            .padding(Theme.Space.l)
+            .frame(minHeight: 168)
+            .background(shape.fill(isFree ? Theme.canvas : Theme.surface))
+            .overlay(shape.strokeBorder(color, style: StrokeStyle(lineWidth: 2, dash: isFree ? [6, 5] : [])))
+            .contentShape(shape)
         }
         .accessibilityElement(children: .combine)
         .accessibilityAddTraits(.isButton)
@@ -118,25 +161,28 @@ struct OpenTableSheet: View {
     var body: some View {
         VStack(spacing: 24) {
             SheetHeader(title: "Ouvrir la table \(table.tableNumber)", subtitle: "Capacité \(table.capacity) personnes") { dismiss() }
-            Text("Nombre de couverts").font(.headline)
+            Text("Nombre de couverts").font(.posHeadline).foregroundStyle(Theme.ink)
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 6), spacing: 10) {
                 ForEach(1...12, id: \.self) { count in
-                    Button("\(count)") { covers = count }
-                        .font(.title2.weight(.semibold))
-                        .frame(maxWidth: .infinity, minHeight: 60)
-                        .background(RoundedRectangle(cornerRadius: Theme.smallRadius).fill(covers == count ? Color.accentColor : Color(.tertiarySystemFill)))
-                        .foregroundStyle(covers == count ? .white : .primary)
-                        .buttonStyle(.plain)
+                    Button { covers = count } label: {
+                        Text("\(count)")
+                            .font(.system(size: 22, weight: .semibold, design: .monospaced))
+                            .frame(maxWidth: .infinity, minHeight: 60)
+                            .background(RoundedRectangle(cornerRadius: Theme.smallRadius, style: .continuous).fill(covers == count ? Theme.primary : Theme.raised))
+                            .foregroundStyle(covers == count ? Theme.onPrimary : Theme.ink)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
                         .accessibilityIdentifier("covers.\(count)")
                 }
             }
-            ActionButton(title: "Ouvrir avec \(covers) couvert(s)", systemImage: "fork.knife") {
+            ActionButton(title: "Ouvrir avec \(covers) couvert(s)", systemImage: "fork.knife", kind: .primary, height: Theme.touchLarge) {
                 dismiss()
                 onOpen(covers)
             }
             .accessibilityIdentifier("covers.confirm")
         }
-        .padding(28)
+        .padding(Theme.Space.xxl)
         .presentationDetents([.medium])
         .onAppear { covers = min(table.capacity, 2) }
     }
@@ -157,13 +203,13 @@ struct AddTableSheet: View {
                 .accessibilityIdentifier("addTable.number")
             Stepper("Capacité : \(capacity) personnes", value: $capacity, in: 1...20)
                 .accessibilityIdentifier("addTable.capacity")
-            ActionButton(title: "Créer la table", systemImage: "plus") {
+            ActionButton(title: "Créer la table", systemImage: "plus", kind: .primary) {
                 Task { if await model.floor.addTable(number: number, capacity: capacity) { dismiss() } }
             }
             .disabled(number.trimmingCharacters(in: .whitespaces).isEmpty)
             .accessibilityIdentifier("addTable.confirm")
         }
-        .padding(28)
+        .padding(Theme.Space.xxl)
         .presentationDetents([.height(320)])
     }
 }

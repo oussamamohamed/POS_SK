@@ -60,15 +60,15 @@ struct ModifierSheet: View {
             Divider()
             HStack(spacing: 16) {
                 VStack(alignment: .leading) {
-                    Text("Options \(selection.extraTotal.cents > 0 ? "+" : "")\(selection.extraTotal.formatted)").font(.subheadline).foregroundStyle(.secondary)
+                    Text("Options \(selection.extraTotal.cents > 0 ? "+" : "")\(selection.extraTotal.formatted)").font(.subheadline).foregroundStyle(Theme.inkMuted)
                     Text(selection.effectiveUnitPrice(base: product.price).formatted).font(.title2.weight(.bold)).monospacedDigit()
                         .accessibilityIdentifier("modifiers.price")
                 }
                 if let error {
-                    Text(error).font(.footnote.weight(.medium)).foregroundStyle(.red).accessibilityIdentifier("modifiers.error")
+                    Text(error).font(.footnote.weight(.medium)).foregroundStyle(Theme.danger).accessibilityIdentifier("modifiers.error")
                 }
                 Spacer()
-                ActionButton(title: "Ajouter au ticket", systemImage: "plus.circle.fill") { confirm() }
+                ActionButton(title: "Ajouter au ticket", systemImage: "plus.circle.fill", kind: .primary) { confirm() }
                     .frame(maxWidth: 260)
                     .accessibilityIdentifier("modifiers.confirm")
             }
@@ -98,11 +98,11 @@ struct ModifierSheet: View {
             .padding(.horizontal, 12)
             .background(
                 RoundedRectangle(cornerRadius: Theme.smallRadius, style: .continuous)
-                    .fill(selected ? Color.accentColor.opacity(0.15) : Color(.tertiarySystemFill))
+                    .fill(selected ? Theme.primary.opacity(0.15) : Theme.raised)
             )
             .overlay(
                 RoundedRectangle(cornerRadius: Theme.smallRadius, style: .continuous)
-                    .strokeBorder(selected ? Color.accentColor : .clear, lineWidth: 2)
+                    .strokeBorder(selected ? Theme.primary : .clear, lineWidth: 2)
             )
         }
         .buttonStyle(.plain)
@@ -188,12 +188,12 @@ struct DiscountSheet: View {
             Spacer()
             HStack(spacing: 12) {
                 if ticket.discount != nil {
-                    ActionButton(title: "Supprimer la remise", systemImage: "arrow.uturn.backward", tint: .red, prominent: false) {
+                    ActionButton(title: "Supprimer la remise", systemImage: "arrow.uturn.backward", kind: .danger) {
                         Task { await ticket.removeDiscount(); dismiss() }
                     }
                     .accessibilityIdentifier("discount.remove")
                 }
-                ActionButton(title: target == .global ? "Appliquer la remise" : "Offrir l'article", systemImage: "checkmark", tint: .green) {
+                ActionButton(title: target == .global ? "Appliquer la remise" : "Offrir l'article", systemImage: "checkmark", kind: .primary) {
                     Task { await apply() }
                 }
                 .accessibilityIdentifier("discount.apply")
@@ -250,15 +250,15 @@ struct TransferSheet: View {
                                 Text(table.status.label).font(.caption).foregroundStyle(Theme.color(for: table.status))
                             }
                             .frame(maxWidth: .infinity, minHeight: 72)
-                            .background(RoundedRectangle(cornerRadius: Theme.smallRadius).fill(target == table.tableNumber ? Color.accentColor.opacity(0.2) : Color(.tertiarySystemFill)))
-                            .overlay(RoundedRectangle(cornerRadius: Theme.smallRadius).strokeBorder(target == table.tableNumber ? Color.accentColor : .clear, lineWidth: 2))
+                            .background(RoundedRectangle(cornerRadius: Theme.smallRadius).fill(target == table.tableNumber ? Theme.primary.opacity(0.2) : Theme.raised))
+                            .overlay(RoundedRectangle(cornerRadius: Theme.smallRadius).strokeBorder(target == table.tableNumber ? Theme.primary : .clear, lineWidth: 2))
                         }
                         .buttonStyle(.plain)
                         .accessibilityIdentifier("transfer.table.\(table.tableNumber)")
                     }
                 }
             }
-            ActionButton(title: merge ? "Fusionner" : "Transférer", systemImage: "arrow.left.arrow.right", tint: .indigo) {
+            ActionButton(title: merge ? "Fusionner" : "Transférer", systemImage: "arrow.left.arrow.right", kind: .primary) {
                 guard let target else { return }
                 Task { if await ticket.transfer(to: target, merge: merge) { dismiss() } }
             }
@@ -284,7 +284,7 @@ struct HoldSheet: View {
                 .textFieldStyle(.roundedBorder)
                 .font(.title3)
                 .accessibilityIdentifier("hold.label")
-            ActionButton(title: "Mettre en attente", systemImage: "pause.circle.fill", tint: .orange) {
+            ActionButton(title: "Mettre en attente", systemImage: "pause.circle.fill", kind: .primary) {
                 Task { if await model.ticket.hold(label: label.isEmpty ? "Client #\(model.ticket.heldOrders.count + 1)" : label) { dismiss() } }
             }
             .accessibilityIdentifier("hold.confirm")
@@ -313,7 +313,7 @@ struct HeldOrdersSheet: View {
                         VStack(alignment: .leading, spacing: 4) {
                             Text(held.customerLabel ?? "Client").font(.headline)
                             Text("\(held.itemCount) article(s) · \(held.totalTtc.money.formatted) · \(held.heldAtUtc.formatted(date: .omitted, time: .shortened))")
-                                .font(.subheadline).foregroundStyle(.secondary)
+                                .font(.subheadline).foregroundStyle(Theme.inkMuted)
                         }
                         Spacer()
                         Button("Rappeler") {
@@ -338,7 +338,7 @@ struct HeldOrdersSheet: View {
             VStack(spacing: 20) {
                 SheetHeader(title: "Autorisation superviseur", subtitle: "Annulation de « \(held.customerLabel ?? "Client") »") { voiding = nil }
                 SupervisorPinPad(pin: $supervisorPin, identifierPrefix: "void.pin")
-                ActionButton(title: "Confirmer l'annulation", systemImage: "trash", tint: .red) {
+                ActionButton(title: "Confirmer l'annulation", systemImage: "trash", kind: .danger) {
                     Task { if await ticket.voidHeld(held, supervisorPin: supervisorPin) { voiding = nil } else { supervisorPin = "" } }
                 }
                 .accessibilityIdentifier("void.confirm")

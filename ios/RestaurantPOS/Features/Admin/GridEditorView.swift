@@ -92,7 +92,7 @@ struct GridEditorView: View {
                 .buttonStyle(.bordered)
                 .accessibilityIdentifier("grid.addPage")
             Spacer()
-            Text("Format \(layout.columnsCount)×\(layout.rowsCount) · v\(layout.version ?? 1)").font(.caption).foregroundStyle(.secondary)
+            Text("Format \(layout.columnsCount)×\(layout.rowsCount) · v\(layout.version ?? 1)").font(.caption).foregroundStyle(Theme.inkMuted)
         }
     }
 
@@ -119,11 +119,11 @@ struct GridEditorView: View {
             if let product {
                 VStack(alignment: .leading, spacing: 4) {
                     HStack {
-                        Text(label).font(.caption2.monospaced()).foregroundStyle(.secondary)
+                        Text(label).font(.caption2.monospaced()).foregroundStyle(Theme.inkMuted)
                         Spacer()
                         Button { Task { await editor.clear(at: position) } } label: { Image(systemName: "xmark.circle.fill") }
                             .buttonStyle(.plain)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Theme.inkMuted)
                             .accessibilityIdentifier("grid.clear.\(position.row).\(position.column)")
                     }
                     Spacer(minLength: 0)
@@ -131,7 +131,7 @@ struct GridEditorView: View {
                 }
                 .padding(8)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-                .background(RoundedRectangle(cornerRadius: 10).fill(Color(.secondarySystemGroupedBackground)))
+                .background(RoundedRectangle(cornerRadius: 10).fill(Theme.surface))
                 .overlay(alignment: .top) {
                     UnevenRoundedRectangle(topLeadingRadius: 10, topTrailingRadius: 10).fill(Color(hex: slot?.customColorHex ?? product.colorHex) ?? .accentColor).frame(height: 4)
                 }
@@ -141,9 +141,9 @@ struct GridEditorView: View {
                     Image(systemName: "plus").font(.title3)
                     Text(label).font(.caption2.monospaced())
                 }
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Theme.inkMuted)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(RoundedRectangle(cornerRadius: 10).strokeBorder(Color(.separator), style: StrokeStyle(lineWidth: 1.5, dash: [5, 4])))
+                .background(RoundedRectangle(cornerRadius: 10).strokeBorder(Theme.lineStrong, style: StrokeStyle(lineWidth: 1.5, dash: [5, 4])))
             }
         }
         .contentShape(Rectangle())
@@ -176,7 +176,7 @@ struct GridEditorView: View {
                     HStack {
                         VStack(alignment: .leading) {
                             Text(product.name).font(.subheadline.weight(.semibold))
-                            Text(product.price.formatted).font(.caption).foregroundStyle(.secondary)
+                            Text(product.price.formatted).font(.caption).foregroundStyle(Theme.inkMuted)
                         }
                         Spacer()
                         Image(systemName: editor.placedProductIds.contains(product.id) ? "checkmark.circle.fill" : "line.3.horizontal")

@@ -91,7 +91,7 @@ struct DashboardView: View {
                         Card {
                             VStack(alignment: .leading, spacing: 10) {
                                 Text("Moyens de paiement").font(.headline)
-                                if data.paymentMethods.isEmpty { Text("Aucun encaissement").foregroundStyle(.secondary) }
+                                if data.paymentMethods.isEmpty { Text("Aucun encaissement").foregroundStyle(Theme.inkMuted) }
                                 ForEach(data.paymentMethods) { p in
                                     ShareBar(label: "\(PaymentMethod.label(forServerName: p.methodName)) (\(p.transactionsCount))", value: p.totalAmount.formatted, fraction: p.percentageOfTotal / 100, tint: .blue)
                                 }
@@ -100,7 +100,7 @@ struct DashboardView: View {
                         Card {
                             VStack(alignment: .leading, spacing: 10) {
                                 Text("Meilleures ventes").font(.headline)
-                                if data.topProducts.isEmpty { Text("Aucune vente").foregroundStyle(.secondary) }
+                                if data.topProducts.isEmpty { Text("Aucune vente").foregroundStyle(Theme.inkMuted) }
                                 ForEach(data.topProducts.prefix(8)) { p in
                                     ShareBar(label: "\(p.productName) ×\(p.quantitySold)", value: p.totalSalesTtc.formatted, fraction: p.percentageOfTotal / 100, tint: .green)
                                 }
@@ -115,7 +115,7 @@ struct DashboardView: View {
                                     HStack {
                                         VStack(alignment: .leading) {
                                             Text(s.serviceName).font(.subheadline.weight(.semibold))
-                                            Text("\(s.ordersCount) commande(s) · \(s.coversCount) couvert(s)").font(.caption).foregroundStyle(.secondary)
+                                            Text("\(s.ordersCount) commande(s) · \(s.coversCount) couvert(s)").font(.caption).foregroundStyle(Theme.inkMuted)
                                         }
                                         Spacer()
                                         Text(s.salesTtc.formatted).font(.headline.monospacedDigit())
@@ -126,12 +126,12 @@ struct DashboardView: View {
                         Card {
                             VStack(alignment: .leading, spacing: 10) {
                                 Text("Productivité serveurs").font(.headline)
-                                if data.staffPerformance.isEmpty { Text("Aucune activité").foregroundStyle(.secondary) }
+                                if data.staffPerformance.isEmpty { Text("Aucune activité").foregroundStyle(Theme.inkMuted) }
                                 ForEach(data.staffPerformance) { s in
                                     HStack {
                                         VStack(alignment: .leading) {
                                             Text(s.serverName).font(.subheadline.weight(.semibold))
-                                            Text("\(s.tablesServedCount) table(s) · moy. \(s.averageTableTtc.formatted)").font(.caption).foregroundStyle(.secondary)
+                                            Text("\(s.tablesServedCount) table(s) · moy. \(s.averageTableTtc.formatted)").font(.caption).foregroundStyle(Theme.inkMuted)
                                         }
                                         Spacer()
                                         Text(s.totalSalesTtc.formatted).font(.headline.monospacedDigit())
@@ -164,7 +164,7 @@ struct ShareBar: View {
                 Text(value).font(.subheadline.monospacedDigit().weight(.semibold))
             }
             GeometryReader { proxy in
-                Capsule().fill(Color(.tertiarySystemFill))
+                Capsule().fill(Theme.raised)
                     .overlay(alignment: .leading) {
                         Capsule().fill(tint).frame(width: proxy.size.width * min(1, max(0, fraction)))
                     }
@@ -194,7 +194,7 @@ struct CatalogAdminView: View {
                 HStack(spacing: 8) {
                     ChipButton(title: "Tout", isSelected: filter == CatalogStore.allCategoryId) { filter = CatalogStore.allCategoryId }
                     ForEach(catalog.categories) { category in
-                        ChipButton(title: category.name, isSelected: filter == category.id, tint: Color(hex: category.colorHex) ?? .accentColor) { filter = category.id }
+                        ChipButton(title: category.name, isSelected: filter == category.id, tint: Color(hex: category.colorHex) ?? Theme.primary) { filter = category.id }
                             .contextMenu {
                                 Button("Modifier la famille", systemImage: "pencil") {
                                     editingCategory = CategoryEditor(categoryId: category.id, name: category.name, color: Color(hex: category.colorHex) ?? .blue)
@@ -210,14 +210,14 @@ struct CatalogAdminView: View {
             List {
                 ForEach(products) { product in
                     HStack(spacing: 12) {
-                        RoundedRectangle(cornerRadius: 4).fill(Color(hex: product.colorHex) ?? .accentColor).frame(width: 6, height: 40)
+                        RoundedRectangle(cornerRadius: 4).fill(Color(hex: product.colorHex) ?? Theme.primary).frame(width: 6, height: 40)
                         VStack(alignment: .leading, spacing: 2) {
                             HStack(spacing: 6) {
                                 Text(product.name).font(.headline)
-                                if product.isQuickKey { Image(systemName: "bolt.fill").foregroundStyle(.orange).font(.caption) }
+                                if product.isQuickKey { Image(systemName: "bolt.fill").foregroundStyle(Theme.warning).font(.caption) }
                                 if product.hasModifiers { Badge(text: "\(product.modifierGroups.count) option(s)", color: .blue) }
                             }
-                            Text("\(product.station) · TVA \(product.taxRatePercent.formatted()) %").font(.caption).foregroundStyle(.secondary)
+                            Text("\(product.station) · TVA \(product.taxRatePercent.formatted()) %").font(.caption).foregroundStyle(Theme.inkMuted)
                         }
                         Spacer()
                         Text(product.price.formatted).font(.headline.monospacedDigit())
@@ -349,10 +349,10 @@ struct StaffAdminView: View {
         List {
             ForEach(store.members) { member in
                 HStack {
-                    Image(systemName: "person.crop.circle.fill").font(.title).foregroundStyle(member.isActive ? Color.accentColor : .secondary)
+                    Image(systemName: "person.crop.circle.fill").font(.title).foregroundStyle(member.isActive ? Theme.primary : .secondary)
                     VStack(alignment: .leading) {
                         Text(member.name).font(.headline)
-                        Text(member.role.label).font(.subheadline).foregroundStyle(.secondary)
+                        Text(member.role.label).font(.subheadline).foregroundStyle(Theme.inkMuted)
                     }
                     Spacer()
                     if !member.isActive { Badge(text: "Inactif", color: .red) }
@@ -439,11 +439,11 @@ struct PrintersAdminView: View {
         List {
             ForEach(store.printers) { printer in
                 HStack(spacing: 14) {
-                    Image(systemName: "printer.fill").font(.title2).foregroundStyle(printer.isActive ? Color.accentColor : .secondary)
+                    Image(systemName: "printer.fill").font(.title2).foregroundStyle(printer.isActive ? Theme.primary : .secondary)
                     VStack(alignment: .leading, spacing: 2) {
                         Text(printer.name).font(.headline)
                         Text("\(printer.ipAddress):\(printer.port) · \(printer.paperWidthMm) mm · \(printer.assignedStationIds.joined(separator: ", "))")
-                            .font(.caption).foregroundStyle(.secondary)
+                            .font(.caption).foregroundStyle(Theme.inkMuted)
                     }
                     Spacer()
                     if printer.openCashDrawerOnReceipt { Badge(text: "Tiroir", color: .green, systemImage: "tray") }
@@ -530,6 +530,7 @@ struct NetworkSettingsView: View {
     @Environment(AppModel.self) private var model
     @Environment(AppEnvironment.self) private var environment
     @State private var showsServer = false
+    @AppStorage(AppearancePreference.storageKey) private var appearance = AppearancePreference.dark.rawValue
 
     var body: some View {
         let network = model.network
@@ -563,6 +564,12 @@ struct NetworkSettingsView: View {
                     ForEach(MealVoucherPolicy.allCases, id: \.self) { Text($0.label).tag($0) }
                 }
                 .accessibilityIdentifier("settings.voucherPolicy")
+            }
+            Section("Apparence") {
+                Picker("Thème", selection: $appearance) {
+                    ForEach(AppearancePreference.allCases) { Text($0.label).tag($0.rawValue) }
+                }
+                .accessibilityIdentifier("settings.appearance")
             }
         }
         .task { await network.refresh() }

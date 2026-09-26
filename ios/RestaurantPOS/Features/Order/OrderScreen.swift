@@ -25,9 +25,9 @@ struct OrderScreen: View {
                 } onCustomize: { product, course in
                     modifierProduct = ModifierRequest(product: product, course: course)
                 }
-                Divider()
                 TicketPanel()
                     .frame(width: min(Theme.ticketWidth, proxy.size.width * 0.42))
+                    .overlay(alignment: .leading) { Theme.line.frame(width: 1) }
             }
         }
         .sheet(item: $modifierProduct) { request in
@@ -53,30 +53,31 @@ struct CatalogPane: View {
                     }
                     .accessibilityIdentifier("category.ALL")
                     ForEach(catalog.categories) { category in
-                        ChipButton(title: category.name, systemImage: category.symbolName, isSelected: catalog.selectedCategoryId == category.id, tint: Color(hex: category.colorHex) ?? .accentColor) {
+                        ChipButton(title: category.name, isSelected: catalog.selectedCategoryId == category.id, tint: Color(hex: category.colorHex) ?? Theme.primary) {
                             Task { await catalog.selectCategory(category.id) }
                         }
                         .accessibilityIdentifier("category.\(category.id)")
                     }
                 }
-                .padding(.horizontal, 16)
+                .padding(.horizontal, Theme.Space.l)
             }
-            .padding(.top, 12)
+            .padding(.top, Theme.Space.l)
 
             if !catalog.quickKeys.isEmpty {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
-                        Label("Rapide", systemImage: "bolt.fill").font(.caption.weight(.bold)).foregroundStyle(.orange)
+                        Label("Rapide", systemImage: "bolt.fill").font(.posCaption).foregroundStyle(Theme.warning)
                         ForEach(catalog.quickKeys) { product in
                             Button {
                                 onSelect(product, .direct)
                             } label: {
                                 Text("\(product.name) · \(effectivePrice(product).formatted)")
-                                    .font(.footnote.weight(.semibold))
+                                    .font(.posLabel)
+                                    .foregroundStyle(Theme.ink)
                                     .lineLimit(1)
-                                    .padding(.horizontal, 12)
-                                    .frame(minHeight: 40)
-                                    .background(Capsule().fill(Color.orange.opacity(0.14)))
+                                    .padding(.horizontal, Theme.Space.m)
+                                    .frame(minHeight: Theme.touchMin)
+                                    .background(Capsule().fill(Theme.raised))
                             }
                             .buttonStyle(.plain)
                             .accessibilityIdentifier("quickkey.\(product.name)")
@@ -87,7 +88,7 @@ struct CatalogPane: View {
             }
 
             ProductGrid(onSelect: onSelect, onCustomize: onCustomize)
-                .padding(.horizontal, 16)
+                .padding(.horizontal, Theme.Space.l)
 
             if catalog.totalPages > 1 {
                 PageControl(page: catalog.pageIndex, count: catalog.totalPages) { page in
@@ -112,7 +113,7 @@ struct ProductGrid: View {
     var body: some View {
         let catalog = model.catalog
         GeometryReader { proxy in
-            let spacing: CGFloat = 10
+            let spacing: CGFloat = Theme.Space.m
             let columns = CGFloat(catalog.columns)
             let rows = CGFloat(catalog.rows)
             let width = (proxy.size.width - spacing * (columns - 1)) / columns
@@ -130,7 +131,7 @@ struct ProductGrid: View {
                             }
                     } else {
                         RoundedRectangle(cornerRadius: Theme.smallRadius, style: .continuous)
-                            .strokeBorder(Color(.separator), style: StrokeStyle(lineWidth: 1, dash: [4, 4]))
+                            .strokeBorder(Theme.lineStrong.opacity(0.6), style: StrokeStyle(lineWidth: 1.5, dash: [4, 4]))
                             .frame(height: height)
                             .accessibilityHidden(true)
                     }
@@ -152,6 +153,7 @@ struct ProductGrid: View {
     }
 }
 
+/// Tuile d'article : fond teinté par la catégorie, quantité déjà au ticket en pastille.
 struct ProductTile: View {
     @Environment(AppModel.self) private var model
     let product: Product
@@ -159,43 +161,57 @@ struct ProductTile: View {
     let colorHex: String?
 
     var body: some View {
-        let tint = Color(hex: colorHex) ?? .accentColor
+        let tint = Color(hex: colorHex) ?? Theme.primary
         let hh = model.happyHour.displayPrice(for: product)
-        VStack(alignment: .leading, spacing: 6) {
-            HStack(spacing: 4) {
-                Badge(text: product.station.replacingOccurrences(of: "_", with: " "), color: .secondary)
+        let quantity = model.ticket.lines.filter { $0.productId == product.id }.reduce(0) { $0 + $1.quantity }
+        let shape = RoundedRectangle(cornerRadius: Theme.smallRadius, style: .continuous)
+        VStack(alignment: .leading, spacing: Theme.Space.xs) {
+            HStack(spacing: 6) {
+                Circle().fill(tint).frame(width: 10, height: 10)
+                Text(product.station.replacingOccurrences(of: "_", with: " ").uppercased())
+                    .font(.system(size: 11, weight: .bold))
+                    .tracking(0.4)
+                    .foregroundStyle(Theme.inkMuted)
+                    .lineLimit(1)
                 Spacer(minLength: 0)
-                if product.hasModifiers { Image(systemName: "slider.horizontal.3").font(.caption).foregroundStyle(tint) }
+                if quantity > 0 {
+                    Text("×\(quantity)")
+                        .font(.system(size: 14, weight: .semibold, design: .monospaced))
+                        .foregroundStyle(Theme.onPrimary)
+                        .padding(.horizontal, 8)
+                        .frame(minWidth: 28, minHeight: 28)
+                        .background(Capsule().fill(Theme.primary))
+                } else if product.hasModifiers {
+                    Image(systemName: "slider.horizontal.3").font(.caption.weight(.semibold)).foregroundStyle(Theme.inkMuted)
+                }
             }
             Spacer(minLength: 0)
             Text(label)
-                .font(.headline)
-                .lineLimit(3)
+                .font(.posHeadline)
+                .foregroundStyle(Theme.ink)
+                .lineLimit(2)
                 .minimumScaleFactor(0.75)
                 .multilineTextAlignment(.leading)
             if let hh {
                 HStack(spacing: 6) {
-                    Text(hh.standardPrice.formatted).strikethrough().font(.caption).foregroundStyle(.secondary)
-                    Text(hh.happyHourPrice.formatted).font(.subheadline.weight(.bold)).foregroundStyle(Theme.happyHour)
+                    Text(hh.standardPrice.formatted).strikethrough().font(.system(size: 13, design: .monospaced)).foregroundStyle(Theme.inkSubtle)
+                    Text(hh.happyHourPrice.formatted).font(.system(size: 15, weight: .semibold, design: .monospaced)).foregroundStyle(Theme.happyInk)
                 }
             } else {
-                Text(product.price.formatted).font(.subheadline.weight(.semibold)).foregroundStyle(.secondary)
+                Text(product.price.formatted).font(.posAmountSmall).foregroundStyle(Theme.inkMuted)
             }
         }
-        .padding(12)
+        .padding(Theme.Space.m)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .background(
-            RoundedRectangle(cornerRadius: Theme.smallRadius, style: .continuous)
-                .fill(Color(.secondarySystemGroupedBackground))
-                .overlay(alignment: .top) {
-                    UnevenRoundedRectangle(topLeadingRadius: Theme.smallRadius, topTrailingRadius: Theme.smallRadius)
-                        .fill(tint)
-                        .frame(height: 5)
-                }
+            shape.fill(Theme.surface)
+                .overlay(shape.fill(tint.opacity(0.14)))
         )
-        .contentShape(RoundedRectangle(cornerRadius: Theme.smallRadius))
+        .cardShadow(radius: Theme.smallRadius)
+        .contentShape(shape)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(label), \((hh?.happyHourPrice ?? product.price).formatted)")
+        .accessibilityValue(quantity > 0 ? "\(quantity) au ticket" : "")
         .accessibilityHint(product.hasModifiers ? "Ouvre les options" : "Ajoute au ticket")
         .accessibilityAddTraits(.isButton)
         .accessibilityIdentifier("product.\(product.name)")
@@ -214,11 +230,11 @@ struct PageControl: View {
                 .accessibilityIdentifier("grid.previous")
             ForEach(0..<count, id: \.self) { index in
                 Circle()
-                    .fill(index == page ? Color.accentColor : Color(.tertiaryLabel))
+                    .fill(index == page ? Theme.primary : Theme.lineStrong)
                     .frame(width: 8, height: 8)
                     .onTapGesture { onSelect(index) }
             }
-            Text("Page \(page + 1)/\(count)").font(.caption).foregroundStyle(.secondary).accessibilityIdentifier("grid.pageLabel")
+            Text("Page \(page + 1)/\(count)").font(.posLabel).foregroundStyle(Theme.inkMuted).accessibilityIdentifier("grid.pageLabel")
             Button { onSelect(page + 1) } label: { Image(systemName: "chevron.right") }
                 .disabled(page >= count - 1)
                 .accessibilityIdentifier("grid.next")
