@@ -469,7 +469,7 @@ struct PairingStateTests {
         #expect(!settings.isPaired)
         #expect(settings.terminalId.isEmpty)
 
-        settings.pair(serverURL: "http://192.168.1.10:5080", credentials: .demo)
+        #expect(settings.pair(serverURL: "http://192.168.1.10:5080", credentials: .demo))
         #expect(settings.isPaired)
         #expect(settings.terminalId == "T01")
         #expect(settings.serverURL == "http://192.168.1.10:5080")
@@ -479,6 +479,17 @@ struct PairingStateTests {
         #expect(!settings.isPaired)
         #expect(store.load() == nil)
         #expect(settings.serverURL == "http://192.168.1.10:5080")
+    }
+
+    @Test func pairFailsWhenStoreCannotPersist() {
+        final class FailingCredentialStore: DeviceCredentialStore {
+            func load() -> DeviceCredentials? { nil }
+            func save(_ credentials: DeviceCredentials) -> Bool { false }
+            func clear() {}
+        }
+        let settings = TerminalSettings(defaults: UserDefaults(suiteName: "PosKitTests-\(UUID().uuidString)")!, credentialStore: FailingCredentialStore())
+        #expect(!settings.pair(serverURL: "http://192.168.1.10:5080", credentials: .demo))
+        #expect(!settings.isPaired)
     }
 
     @Test func credentialsAreRestoredAtLaunch() {

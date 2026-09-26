@@ -83,10 +83,14 @@ public final class TerminalSettings {
         return url
     }
 
-    public func pair(serverURL: String, credentials: DeviceCredentials) {
+    /// Renvoie `false` sans marquer le poste comme appairé si l'identité n'a pas pu être stockée
+    /// (ex. échec Keychain) : le code d'appairage à usage unique est alors déjà consommé côté serveur.
+    @discardableResult
+    public func pair(serverURL: String, credentials: DeviceCredentials) -> Bool {
         self.serverURL = serverURL
-        credentialStore.save(credentials)
+        guard credentialStore.save(credentials) else { return false }
         self.credentials = credentials
+        return true
     }
 
     /// Poste révoqué ou dissocié : retour à l'écran d'appairage. L'adresse du serveur est conservée.

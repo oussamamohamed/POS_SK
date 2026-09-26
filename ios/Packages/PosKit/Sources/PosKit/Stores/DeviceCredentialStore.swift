@@ -5,7 +5,7 @@ import Security
 @MainActor
 public protocol DeviceCredentialStore: AnyObject {
     func load() -> DeviceCredentials?
-    func save(_ credentials: DeviceCredentials)
+    @discardableResult func save(_ credentials: DeviceCredentials) -> Bool
     func clear()
 }
 
@@ -15,7 +15,7 @@ public final class InMemoryCredentialStore: DeviceCredentialStore {
     private var value: DeviceCredentials?
     public init(_ value: DeviceCredentials? = nil) { self.value = value }
     public func load() -> DeviceCredentials? { value }
-    public func save(_ credentials: DeviceCredentials) { value = credentials }
+    @discardableResult public func save(_ credentials: DeviceCredentials) -> Bool { value = credentials; return true }
     public func clear() { value = nil }
 }
 
@@ -42,13 +42,14 @@ public final class KeychainCredentialStore: DeviceCredentialStore {
         return try? JSONDecoder().decode(DeviceCredentials.self, from: data)
     }
 
-    public func save(_ credentials: DeviceCredentials) {
-        guard let data = try? JSONEncoder().encode(credentials) else { return }
+    @discardableResult
+    public func save(_ credentials: DeviceCredentials) -> Bool {
+        guard let data = try? JSONEncoder().encode(credentials) else { return false }
         SecItemDelete(baseQuery as CFDictionary)
         var query = baseQuery
         query[kSecValueData as String] = data
         query[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
-        SecItemAdd(query as CFDictionary, nil)
+        return SecItemAdd(query as CFDictionary, nil) == errSecSuccess
     }
 
     public func clear() { SecItemDelete(baseQuery as CFDictionary) }
