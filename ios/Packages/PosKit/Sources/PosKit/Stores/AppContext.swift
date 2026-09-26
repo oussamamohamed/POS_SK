@@ -43,15 +43,21 @@ public final class Notifier {
     public func dismiss(_ id: UUID) { toasts.removeAll { $0.id == id } }
 }
 
-/// Paramètres du terminal, persistés dans `UserDefaults`.
+/// Paramètres du terminal : adresse et préférences dans `UserDefaults`, identité du poste dans `credentialStore`.
 @MainActor @Observable
 public final class TerminalSettings {
     private let defaults: UserDefaults
+    @ObservationIgnored private let credentialStore: DeviceCredentialStore
 
     public var serverURL: String { didSet { defaults.set(serverURL, forKey: Keys.server) } }
-    public var terminalId: String { didSet { defaults.set(terminalId, forKey: Keys.terminal) } }
     public var siren: String { didSet { defaults.set(siren, forKey: Keys.siren) } }
     public var mealVoucherPolicy: MealVoucherPolicy { didSet { defaults.set(mealVoucherPolicy.rawValue, forKey: Keys.voucher) } }
+
+    /// Identité du poste attribuée par le serveur à l'appairage.
+    public private(set) var credentials: DeviceCredentials?
+    public var isPaired: Bool { credentials != nil }
+    /// Identifiant fiscal attribué par le serveur (`T01`…). Vide tant que le poste n'est pas appairé.
+    public var terminalId: String { credentials?.terminalId ?? "" }
 
     enum Keys {
         static let server = "pos.serverURL"
@@ -60,18 +66,33 @@ public final class TerminalSettings {
         static let voucher = "pos.mealVoucherPolicy"
     }
 
-    public init(defaults: UserDefaults = .standard) {
+    public init(defaults: UserDefaults = .standard, credentialStore: DeviceCredentialStore = InMemoryCredentialStore()) {
         self.defaults = defaults
         serverURL = defaults.string(forKey: Keys.server) ?? "http://localhost:5080"
-        terminalId = defaults.string(forKey: Keys.terminal) ?? "POS_A"
         siren = defaults.string(forKey: Keys.siren) ?? "123456789"
         mealVoucherPolicy = MealVoucherPolicy(rawValue: defaults.integer(forKey: Keys.voucher)) ?? .capAtBalance
+        self.credentialStore = credentialStore
+        credentials = credentialStore.load()
+        // Ancien identifiant saisi à la main : remplacé par celui du serveur.
+        defaults.removeObject(forKey: Keys.terminal)
     }
 
     public var url: URL? {
         let trimmed = serverURL.trimmingCharacters(in: .whitespacesAndNewlines)
         guard let url = URL(string: trimmed), url.scheme == "http" || url.scheme == "https", url.host != nil else { return nil }
         return url
+    }
+
+    public func pair(serverURL: String, credentials: DeviceCredentials) {
+        self.serverURL = serverURL
+        credentialStore.save(credentials)
+        self.credentials = credentials
+    }
+
+    /// Poste révoqué ou dissocié : retour à l'écran d'appairage. L'adresse du serveur est conservée.
+    public func unpair() {
+        credentialStore.clear()
+        credentials = nil
     }
 }
 

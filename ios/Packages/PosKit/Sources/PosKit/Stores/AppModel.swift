@@ -42,7 +42,7 @@ public final class AppModel {
         self.catalog = catalog
         let happyHour = HappyHourStore(api: api, notifier: notifier, terminalId: terminal)
         self.happyHour = happyHour
-        ticket = TicketStore(api: api, notifier: notifier, happyHour: happyHour, session: session, terminalId: terminal)
+        ticket = TicketStore(api: api, notifier: notifier, happyHour: happyHour, session: session, terminalId: terminal, onDeviceUnpaired: { settings.unpair() })
         floor = FloorStore(api: api, notifier: notifier, session: session)
         kitchen = KitchenStore(api: api, notifier: notifier)
         fiscal = FiscalStore(api: api, notifier: notifier, session: session, settings: settings)

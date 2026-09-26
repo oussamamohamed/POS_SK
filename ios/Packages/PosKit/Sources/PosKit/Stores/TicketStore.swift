@@ -20,13 +20,15 @@ public final class TicketStore {
     private let happyHour: HappyHourStore
     private let session: SessionStore
     private let terminalId: @MainActor () -> String
+    private let onDeviceUnpaired: @MainActor () -> Void
 
-    public init(api: PosAPI, notifier: Notifier, happyHour: HappyHourStore, session: SessionStore, terminalId: @escaping @MainActor () -> String) {
+    public init(api: PosAPI, notifier: Notifier, happyHour: HappyHourStore, session: SessionStore, terminalId: @escaping @MainActor () -> String, onDeviceUnpaired: @escaping @MainActor () -> Void = {}) {
         self.api = api
         self.notifier = notifier
         self.happyHour = happyHour
         self.session = session
         self.terminalId = terminalId
+        self.onDeviceUnpaired = onDeviceUnpaired
     }
 
     // MARK: - Lecture
@@ -223,6 +225,11 @@ public final class TicketStore {
         do {
             try await operation()
             return true
+        } catch APIError.deviceNotPaired {
+            // Le brouillon reste sur l'iPad : il sera envoyé après le nouvel appairage.
+            onDeviceUnpaired()
+            notifier.error(APIError.deviceNotPaired)
+            return false
         } catch APIError.unauthorized {
             session.handleUnauthorized()
             notifier.error(APIError.unauthorized)
