@@ -147,7 +147,7 @@ struct QRScannerView: UIViewControllerRepresentable {
         func fail() {
             guard !done else { return }
             done = true
-            onFailure()
+            DispatchQueue.main.async { self.onFailure() }
         }
 
         func dataScanner(_ dataScanner: DataScannerViewController, didAdd addedItems: [RecognizedItem], allItems: [RecognizedItem]) {
