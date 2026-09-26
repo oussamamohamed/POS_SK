@@ -71,13 +71,16 @@ struct PairingScreen: View {
         }
         .onDisappear { browser.stop() }
         .sheet(isPresented: $showsScanner) {
-            QRScannerView { payload in
+            QRScannerView(onScan: { payload in
                 showsScanner = false
                 guard let link = PairingLink(string: payload) else { error = "QR non reconnu"; return }
                 url = link.serverURL.absoluteString
                 code = link.code
                 Task { await pair() }
-            }
+            }, onFailure: {
+                showsScanner = false
+                error = "Caméra indisponible : saisissez le code manuellement."
+            })
             .ignoresSafeArea()
         }
     }
@@ -114,6 +117,7 @@ struct PairingScreen: View {
 /// Lecteur de QR (VisionKit) : renvoie le premier code lu.
 struct QRScannerView: UIViewControllerRepresentable {
     let onScan: (String) -> Void
+    let onFailure: () -> Void
 
     func makeUIViewController(context: Context) -> DataScannerViewController {
         let scanner = DataScannerViewController(recognizedDataTypes: [.barcode(symbologies: [.qr])], isHighlightingEnabled: true)
@@ -122,17 +126,29 @@ struct QRScannerView: UIViewControllerRepresentable {
     }
 
     func updateUIViewController(_ scanner: DataScannerViewController, context: Context) {
-        if !scanner.isScanning { try? scanner.startScanning() }
+        if !scanner.isScanning {
+            do { try scanner.startScanning() } catch { context.coordinator.fail() }
+        }
     }
 
-    func makeCoordinator() -> Coordinator { Coordinator(onScan: onScan) }
+    func makeCoordinator() -> Coordinator { Coordinator(onScan: onScan, onFailure: onFailure) }
 
     @MainActor
     final class Coordinator: NSObject, DataScannerViewControllerDelegate {
         private let onScan: (String) -> Void
+        private let onFailure: () -> Void
         private var done = false
 
-        init(onScan: @escaping (String) -> Void) { self.onScan = onScan }
+        init(onScan: @escaping (String) -> Void, onFailure: @escaping () -> Void) {
+            self.onScan = onScan
+            self.onFailure = onFailure
+        }
+
+        func fail() {
+            guard !done else { return }
+            done = true
+            onFailure()
+        }
 
         func dataScanner(_ dataScanner: DataScannerViewController, didAdd addedItems: [RecognizedItem], allItems: [RecognizedItem]) {
             guard !done else { return }
