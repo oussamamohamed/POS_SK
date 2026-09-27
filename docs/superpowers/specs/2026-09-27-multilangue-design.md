@@ -21,13 +21,13 @@ Le projet global est découpé en deux sous-projets :
 
 | Sujet | Décision |
 |---|---|
-| Langues | `fr` (source, défaut), `en`, `ar` |
+| Langues | `en` (défaut et repli), `fr`, `ar` |
 | Périmètre | UI des clients + messages serveur + tickets imprimés |
 | Hors périmètre | Données saisies (produits, catégories, tables, opérateurs) jamais traduites ; adaptation fiscale par pays (NF525, FEC, TVA restent France, seulement traduits) ; devise (sous-projet B) |
 | Choix langue UI | Par appareil |
 | Langue des tickets | Réglage restaurant unique, côté serveur |
 | Erreurs serveur | Traduites par le serveur selon `Accept-Language` |
-| Clés | Texte français source = clé, sur les 3 couches |
+| Clés | Clés sémantiques uniques (`payment.submit`), sur les 3 couches |
 | Chiffres | Occidentaux (0-9), y compris en arabe |
 | Arabe | Arabe standard moderne |
 
@@ -35,18 +35,29 @@ Le projet global est découpé en deux sous-projets :
 
 ### Convention commune
 
-- La clé d'une chaîne est son texte français exact.
-- Paramètres par placeholder nommé : `"Aucune grille pour la catégorie {id}"`.
-- Langue ou clé absente → texte français.
+- Chaque chaîne a une clé sémantique unique : `<zone>.<nom>` en `snake_case`, par exemple
+  `payment.submit`, `order.hold_empty_cart`, `errors.order_not_found`, `receipt.pickup_title`.
+- Les zones suivent les écrans et domaines existants (`login`, `floor`, `order`, `payment`,
+  `kitchen`, `fiscal`, `admin`, `receipt`, `errors`, `common`).
+- Une même clé désigne le même texte sur le web, l'iPad et le serveur quand le texte est partagé
+  (ex. `errors.*`), mais chaque couche a ses propres fichiers de traduction.
+- Paramètres par placeholder nommé : `"No grid for category {id}"`.
+- Chaque clé a une valeur dans les trois langues. Langue non supportée ou valeur absente → anglais.
+  Clé absente même en anglais → la clé elle-même est affichée (erreur visible, détectée par les
+  tests de complétude).
 
 ### Web (`src/RestaurantPos.Api/wwwroot/`)
 
-- `i18n/en.json`, `i18n/ar.json` : objets `{ "texte FR": "traduction" }`. Pas de dictionnaire FR.
-- `app.js` : fonction `t(fr, params)` qui cherche la traduction, remplace les `{nom}`, sinon renvoie
-  `fr`. Toutes les chaînes UI en dur passent par `t('…')`.
-- `index.html` : attributs `data-i18n` (texte), `data-i18n-placeholder`, `data-i18n-aria-label`,
-  appliqués au démarrage.
-- Langue courante : `localStorage` → sinon `navigator.language` (préfixe `fr`/`en`/`ar`) → sinon `fr`.
+- `i18n/en.json`, `i18n/fr.json`, `i18n/ar.json` : objets plats `{ "payment.submit": "Pay" }`.
+- `app.js` : fonction `t(key, params)` qui cherche la clé dans la langue courante, sinon en
+  anglais, sinon renvoie la clé ; puis remplace les `{nom}`. Toutes les chaînes UI en dur sont
+  remplacées par `t('zone.nom')`.
+- `index.html` : attributs `data-i18n` (texte), `data-i18n-placeholder`, `data-i18n-aria-label`
+  contenant la clé, appliqués au démarrage.
+- Chargement : le dictionnaire de la langue courante et `en.json` (repli) sont chargés avant le
+  premier rendu.
+- Langue courante : `localStorage` → sinon `navigator.language` (préfixe `en`/`fr`/`ar`) → sinon
+  `en`.
 - Sélecteur de langue sur l'écran de connexion PIN (accessible avant login). Changer de langue
   recharge la page.
 - Au démarrage : `<html lang="…" dir="ltr|rtl">`.
@@ -57,8 +68,10 @@ Le projet global est découpé en deux sous-projets :
 ### iOS (`ios/`)
 
 - `Localizable.xcstrings` (String Catalog) dans la cible app et un dans `PosKit` pour les chaînes
-  produites par les stores et les erreurs. Langue de développement `fr`. `project.yml` déclare
-  `fr`, `en`, `ar`.
+  produites par les stores et les erreurs. Langue de développement `en`. `project.yml` déclare
+  `en`, `fr`, `ar`.
+- Les vues utilisent les clés : `Text("payment.submit")`, `String(localized: "payment.submit")`.
+  Le catalogue porte la valeur anglaise de chaque clé, plus `fr` et `ar`.
 - Langue par appareil : réglage natif iOS (Réglages → RestaurantPOS → Langue). Aucun sélecteur
   dans l'app.
 - `HTTPPosAPI` pose `Accept-Language` à partir de `Bundle.main.preferredLocalizations.first`.
@@ -68,17 +81,21 @@ Le projet global est découpé en deux sous-projets :
 
 ### Serveur (.NET)
 
-- `Program.cs` : `AddLocalization` + `UseRequestLocalization` avec cultures `fr`, `en`, `ar`,
-  défaut `fr`.
-- `IStringLocalizer<SharedResource>` avec `SharedResource.en.resx` et `SharedResource.ar.resx`
-  dans `RestaurantPos.Api`. Clé = message français actuel ; une clé absente renvoie le français.
-  Les ~50 messages d'erreur des endpoints passent par le localizer. Le contrat JSON des erreurs ne
-  change pas.
-- Nouvelle entité `RestaurantSettings` (ligne unique) : `ReceiptLanguage` (`fr` par défaut).
-  Table créée par `EnsureCreated()` et par un `CREATE TABLE IF NOT EXISTS` dans le bloc de schéma
-  de `Program.cs`. Le sous-projet B y ajoutera la devise.
+- `Program.cs` : `AddLocalization` + `UseRequestLocalization` avec cultures `en`, `fr`, `ar`,
+  défaut `en`.
+- `IStringLocalizer<SharedResource>` avec `SharedResource.resx` (neutre = anglais),
+  `SharedResource.fr.resx` et `SharedResource.ar.resx` dans `RestaurantPos.Api`. Une valeur absente
+  dans `fr`/`ar` retombe sur l'anglais.
+- Les ~50 messages d'erreur des endpoints deviennent `localizer["errors.xxx"]`. Le contrat JSON
+  des erreurs ne change pas (`Message`/`message` reste un texte lisible, déjà traduit).
+- Nouvelle entité `RestaurantSettings` (ligne unique) : `ReceiptLanguage`. Table créée par
+  `EnsureCreated()` et par un `CREATE TABLE IF NOT EXISTS` dans le bloc de schéma de
+  `Program.cs`. Le sous-projet B y ajoutera la devise.
+- Initialisation de `ReceiptLanguage` quand la ligne n'existe pas encore : `fr` si la base
+  contient déjà des commandes (installation française existante, aucun changement visible sur ses
+  tickets), sinon `en` (nouvelle installation).
 - Endpoints `GET /api/settings` (authentifié) et `PUT /api/settings` (manager/admin). Valeurs
-  acceptées : `fr`, `en`, `ar` ; autre valeur → 400.
+  acceptées : `en`, `fr`, `ar` ; autre valeur → 400.
 - Impression (`TakeawayTicketFormatter`, tickets cuisine) : libellés via le localizer avec la
   culture `ReceiptLanguage`, indépendante de la langue de la requête. Le centrage par espaces en
   dur est remplacé par un centrage calculé sur la largeur du ticket (40 colonnes).
@@ -103,43 +120,50 @@ Le projet global est découpé en deux sous-projets :
 
 Le serveur produit du texte Unicode en ordre logique. Le rendu réel (liaison des lettres, sens
 d'écriture) dépend de l'imprimante et du client qui imprime ; il est **hors périmètre**. Une
-imprimante qui ne gère pas l'arabe doit garder `ReceiptLanguage` à `fr` ou `en`. Ce risque figure
+imprimante qui ne gère pas l'arabe doit garder `ReceiptLanguage` à `en` ou `fr`. Ce risque figure
 dans la documentation du réglage.
 
 ## Cas limites
 
-- Clé absente d'un dictionnaire web → français affiché, `console.warn` en développement.
-- iOS et serveur retombent nativement sur le texte source.
-- `Accept-Language` non supporté (ex. `de`) → français.
+- Valeur absente dans la langue courante → anglais ; `console.warn` en développement sur le web.
+- Clé absente partout → la clé est affichée telle quelle (bug visible, bloqué par les tests).
+- `Accept-Language` non supporté (ex. `de`) → anglais.
 - Placeholder `{x}` sans valeur → laissé tel quel, pas d'exception.
 
 ## Traductions
 
-EN et AR sont rédigées pendant l'implémentation. La version arabe doit être relue par un
-arabophone avant la mise en production (terminologie restauration locale).
+Les valeurs `en` et `fr` sont rédigées pendant l'extraction (le `fr` reprend les textes actuels).
+La version arabe doit être relue par un arabophone avant la mise en production (terminologie
+restauration locale).
 
 ## Tests
 
 - **Web, complétude** : `scripts/i18n-check.mjs` extrait les clés `t('…')` et `data-i18n*` et
-  signale les clés absentes de `en.json`/`ar.json` et les clés orphelines. Code de sortie non nul
-  en cas d'écart.
+  signale les clés absentes de l'un des trois dictionnaires, les valeurs vides et les clés
+  orphelines. Code de sortie non nul en cas d'écart.
+- **Tests existants** : les tests E2E web et UI iOS vérifient des libellés français. Ils sont
+  épinglés en français : `locale: 'fr-FR'` dans `playwright.config.ts`, `-AppleLanguages (fr)` dans
+  les lancements XCUITest.
 - **Web E2E** : `tests/RestaurantPos.Web.E2ETests/tests/i18n.spec.ts` — langue `ar` →
-  `<html dir="rtl">`, libellé arabe visible, pavé PIN en LTR ; langue `en` → libellé anglais.
-- **Serveur** : `Accept-Language: en` → message d'erreur anglais ; `de` → français ;
-  `PUT /api/settings` puis ticket formaté en anglais ; valeur invalide → 400 ; hash NF525 identique
-  quelle que soit la langue.
-- **iOS unit** : les String Catalogs n'ont aucune entrée `en`/`ar` manquante ou vide.
-- **iOS UI** : lancement avec `-AppleLanguages (ar)`, vérification d'un libellé ; les tests
-  existants restent en français.
+  `<html dir="rtl">`, libellé arabe visible, pavé PIN en LTR ; langue `en` → libellé anglais ;
+  langue navigateur `de` → anglais.
+- **Serveur** : `Accept-Language: fr` → message d'erreur français ; `de` → anglais ;
+  `PUT /api/settings` puis ticket formaté dans la langue choisie ; valeur invalide → 400 ;
+  initialisation `fr` sur base existante et `en` sur base vide ; hash NF525 identique quelle que
+  soit la langue ; chaque clé de `SharedResource.resx` existe dans `fr` et `ar`.
+- **iOS unit** : les String Catalogs n'ont aucune entrée `fr`/`ar` manquante ou vide.
+- **iOS UI** : lancement avec `-AppleLanguages (ar)`, vérification d'un libellé.
 - **Contrat** : fixture `settings.json` + modèle Swift `RestaurantSettings` décodé par les tests de
   contrat.
 
 ## Ordre de livraison
 
 1. Serveur : localization, `.resx`, `RestaurantSettings` + endpoints, tickets.
-2. Web : `t()`, extraction des chaînes, dictionnaires, RTL CSS, sélecteur.
-3. iOS : String Catalogs, `Accept-Language`, réglage langue tickets dans Admin, exceptions LTR.
-4. Traductions complètes et script de vérification au vert.
+2. Web : `t()`, extraction des chaînes en clés, dictionnaires `en`/`fr`, RTL CSS, sélecteur.
+3. iOS : String Catalogs, extraction en clés, `Accept-Language`, réglage langue tickets dans Admin,
+   exceptions LTR.
+4. Dictionnaires `ar` complets et scripts de vérification au vert.
 
-Chaque étape est livrable seule : le français reste la langue par défaut, donc aucune régression
-visible.
+Chaque étape est livrable seule. Les tests existants sont épinglés en français dès l'étape 2 et 3.
+Une installation française existante garde ses tickets en français ; ses appareils affichent la
+langue de leur système (français sur un appareil réglé en français).
