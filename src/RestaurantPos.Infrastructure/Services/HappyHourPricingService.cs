@@ -304,7 +304,7 @@ public class HappyHourPricingService : IHappyHourPricingService
             auth.OperatorName,
             nowUtc,
             expiresAtUtc,
-            $"Happy Hour activé/prolongé de {duration} minutes avec succès."
+            Texts.T("messages.happy_hour_activated", ("minutes", duration))
         );
     }
 
@@ -357,7 +357,7 @@ public class HappyHourPricingService : IHappyHourPricingService
             auth.OperatorName,
             null,
             null,
-            "Dérogation Happy Hour désactivée."
+            Texts.T("messages.happy_hour_deactivated")
         );
     }
 
@@ -373,12 +373,12 @@ public class HappyHourPricingService : IHappyHourPricingService
 
         if (schedule == null)
         {
-            return new BatchPriceRulesResponseDto(false, 0, scheduleId, "Planning Happy Hour introuvable.");
+            return new BatchPriceRulesResponseDto(false, 0, scheduleId, Texts.T("errors.happy_hour_schedule_not_found"));
         }
 
         if (request.TargetIds == null || request.TargetIds.Count == 0)
         {
-            return new BatchPriceRulesResponseDto(false, 0, scheduleId, "Aucun élément sélectionné.");
+            return new BatchPriceRulesResponseDto(false, 0, scheduleId, Texts.T("errors.no_target_selected"));
         }
 
         Money? fixedPriceMoney = null;
@@ -388,7 +388,7 @@ public class HappyHourPricingService : IHappyHourPricingService
         {
             if (!request.FixedPrice.HasValue || request.FixedPrice.Value <= 0)
             {
-                return new BatchPriceRulesResponseDto(false, 0, scheduleId, "Le prix fixe doit être strictement supérieur à 0.");
+                return new BatchPriceRulesResponseDto(false, 0, scheduleId, Texts.T("errors.fixed_price_must_be_positive"));
             }
             fixedPriceMoney = Money.FromEuros(request.FixedPrice.Value);
         }
@@ -396,7 +396,7 @@ public class HappyHourPricingService : IHappyHourPricingService
         {
             if (!request.DiscountPercent.HasValue || request.DiscountPercent.Value <= 0 || request.DiscountPercent.Value > 100)
             {
-                return new BatchPriceRulesResponseDto(false, 0, scheduleId, "Le pourcentage de remise doit être compris entre 0.01% et 100%.");
+                return new BatchPriceRulesResponseDto(false, 0, scheduleId, Texts.T("errors.discount_percent_out_of_range"));
             }
             discountPct = request.DiscountPercent.Value;
         }
@@ -473,7 +473,7 @@ public class HappyHourPricingService : IHappyHourPricingService
             true,
             count,
             schedule.Id,
-            $"{count} règles appliquées avec succès au planning '{schedule.Name}'."
+            Texts.T("messages.price_rules_applied", ("count", count), ("schedule", schedule.Name))
         );
     }
 
@@ -489,12 +489,12 @@ public class HappyHourPricingService : IHappyHourPricingService
 
         if (schedule == null)
         {
-            return new BatchDeleteRulesResponseDto(false, 0, scheduleId, "Planning Happy Hour introuvable.");
+            return new BatchDeleteRulesResponseDto(false, 0, scheduleId, Texts.T("errors.happy_hour_schedule_not_found"));
         }
 
         if (request.RuleIds == null || request.RuleIds.Count == 0)
         {
-            return new BatchDeleteRulesResponseDto(false, 0, scheduleId, "Aucune règle sélectionnée pour la suppression.");
+            return new BatchDeleteRulesResponseDto(false, 0, scheduleId, Texts.T("errors.no_rule_selected_for_deletion"));
         }
 
         var toRemove = schedule.PriceRules.Where(r => request.RuleIds.Contains(r.Id)).ToList();
@@ -512,7 +512,7 @@ public class HappyHourPricingService : IHappyHourPricingService
             true,
             count,
             schedule.Id,
-            $"{count} règles supprimées avec succès."
+            Texts.T("messages.price_rules_deleted", ("count", count))
         );
     }
 

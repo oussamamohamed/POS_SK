@@ -202,4 +202,31 @@
   <data name="errors.test_print_failed" xml:space="preserve">
     <value>Printer connection failed ({ip}:{port}): {error}</value>
   </data>
+  <data name="messages.happy_hour_activated" xml:space="preserve">
+    <value>Happy Hour activated/extended for {minutes} minutes.</value>
+  </data>
+  <data name="messages.happy_hour_deactivated" xml:space="preserve">
+    <value>Happy Hour override deactivated.</value>
+  </data>
+  <data name="errors.happy_hour_schedule_not_found" xml:space="preserve">
+    <value>Happy Hour schedule not found.</value>
+  </data>
+  <data name="errors.no_target_selected" xml:space="preserve">
+    <value>No item selected.</value>
+  </data>
+  <data name="errors.fixed_price_must_be_positive" xml:space="preserve">
+    <value>Fixed price must be strictly greater than 0.</value>
+  </data>
+  <data name="errors.discount_percent_out_of_range" xml:space="preserve">
+    <value>Discount percentage must be between 0.01% and 100%.</value>
+  </data>
+  <data name="messages.price_rules_applied" xml:space="preserve">
+    <value>{count} rule(s) applied successfully to schedule '{schedule}'.</value>
+  </data>
+  <data name="errors.no_rule_selected_for_deletion" xml:space="preserve">
+    <value>No rule selected for deletion.</value>
+  </data>
+  <data name="messages.price_rules_deleted" xml:space="preserve">
+    <value>{count} rule(s) deleted successfully.</value>
+  </data>
 </root>

@@ -203,6 +203,29 @@ public class HappyHourPricingServiceTests
     }
 
     [Fact]
+    public async Task ActivateOverrideAsync_Message_IsTranslatedByCurrentUICulture()
+    {
+        // Arrange
+        var authMock = new Mock<IOperatorAuthenticationService>();
+        authMock.Setup(a => a.AuthenticatePinAsync("9999", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new OperatorAuthenticationResult(true, Guid.NewGuid(), "Sophie (Manager)", UserRole.FloorManager, null));
+        var request = new ActivateOverrideRequest("POS_MAIN", "9999", 45, "Terrasse");
+
+        // Act
+        CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("en");
+        using var dbEn = CreateInMemoryDb();
+        var responseEn = await new HappyHourPricingService(dbEn, authMock.Object).ActivateOverrideAsync(request);
+
+        CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("fr");
+        using var dbFr = CreateInMemoryDb();
+        var responseFr = await new HappyHourPricingService(dbFr, authMock.Object).ActivateOverrideAsync(request);
+
+        // Assert
+        responseEn.Message.Should().Be("Happy Hour activated/extended for 45 minutes.");
+        responseFr.Message.Should().Be("Happy Hour activé/prolongé de 45 minutes avec succès.");
+    }
+
+    [Fact]
     public async Task TableOrder_PriceLocking_ItemsPreserveHappyHourRateAfterScheduleExpiration()
     {
         // Arrange

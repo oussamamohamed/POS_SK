@@ -202,4 +202,31 @@
   <data name="errors.test_print_failed" xml:space="preserve">
     <value>فشل الاتصال بالطابعة ({ip}:{port}): {error}</value>
   </data>
+  <data name="messages.happy_hour_activated" xml:space="preserve">
+    <value>تم تفعيل/تمديد Happy Hour لمدة {minutes} دقيقة.</value>
+  </data>
+  <data name="messages.happy_hour_deactivated" xml:space="preserve">
+    <value>تم إلغاء تفعيل استثناء Happy Hour.</value>
+  </data>
+  <data name="errors.happy_hour_schedule_not_found" xml:space="preserve">
+    <value>لم يتم العثور على جدول Happy Hour.</value>
+  </data>
+  <data name="errors.no_target_selected" xml:space="preserve">
+    <value>لم يتم تحديد أي عنصر.</value>
+  </data>
+  <data name="errors.fixed_price_must_be_positive" xml:space="preserve">
+    <value>يجب أن يكون السعر الثابت أكبر تمامًا من 0.</value>
+  </data>
+  <data name="errors.discount_percent_out_of_range" xml:space="preserve">
+    <value>يجب أن تكون نسبة الخصم بين 0.01% و100%.</value>
+  </data>
+  <data name="messages.price_rules_applied" xml:space="preserve">
+    <value>تم تطبيق {count} قاعدة بنجاح على جدول '{schedule}'.</value>
+  </data>
+  <data name="errors.no_rule_selected_for_deletion" xml:space="preserve">
+    <value>لم يتم تحديد أي قاعدة للحذف.</value>
+  </data>
+  <data name="messages.price_rules_deleted" xml:space="preserve">
+    <value>تم حذف {count} قاعدة بنجاح.</value>
+  </data>
 </root>
