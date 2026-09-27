@@ -37,7 +37,18 @@ public class RestaurantSettingsService : IRestaurantSettingsService
         var hasOrders = await _db.Orders.AnyAsync(ct).ConfigureAwait(false);
         settings = new RestaurantSettings { ReceiptLanguage = hasOrders ? "fr" : "en" };
         _db.RestaurantSettings.Add(settings);
-        await _db.SaveChangesAsync(ct).ConfigureAwait(false);
+        try
+        {
+            await _db.SaveChangesAsync(ct).ConfigureAwait(false);
+        }
+        catch (DbUpdateException)
+        {
+            // Course sur le premier appel (deux terminaux) : un autre a déjà inséré la ligne singleton.
+            // On détache notre tentative locale et on relit la ligne gagnante.
+            _db.Entry(settings).State = EntityState.Detached;
+            settings = await _db.RestaurantSettings.FindAsync([RestaurantSettings.SingletonId], ct).ConfigureAwait(false)
+                ?? throw new InvalidOperationException("RestaurantSettings singleton row missing after insert conflict.");
+        }
         return settings;
     }
 }
