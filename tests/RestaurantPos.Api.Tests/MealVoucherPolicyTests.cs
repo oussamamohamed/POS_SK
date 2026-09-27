@@ -31,6 +31,7 @@ public class MealVoucherPolicyTests : IClassFixture<PosApiApplicationFactory>
         var response = await client.PostAsJsonAsync("/api/auth/login", new PinLoginRequest("9999"));
         var result = await response.Content.ReadFromJsonAsync<LoginResultDto>();
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", result!.Token);
+        await DeviceTestHelper.PairAsync(_factory, client);
         return client;
     }
 

@@ -25,12 +25,14 @@ struct RestaurantPOSApp: App {
 /// - `POS_SERVER_URL` (variable d'environnement) : force l'adresse du serveur.
 /// - `-UITestPin 1234` : déverrouillage automatique (mode test uniquement).
 /// - `-UITestSection floor` : écran affiché après connexion (mode test uniquement).
+/// - `-UITestPaired` : poste déjà appairé (sinon écran d'appairage, mode test uniquement).
 struct LaunchConfiguration {
     let isUITest: Bool
     let forceHappyHour: Bool
     let serverOverride: String?
     let autoPin: String?
     let initialSection: Router.Section?
+    let startsPaired: Bool
 
     static let current: LaunchConfiguration = {
         let args = ProcessInfo.processInfo.arguments
@@ -41,7 +43,8 @@ struct LaunchConfiguration {
             forceHappyHour: args.contains("-UITestHappyHour"),
             serverOverride: ProcessInfo.processInfo.environment["POS_SERVER_URL"],
             autoPin: isUITest ? defaults.string(forKey: "UITestPin") : nil,
-            initialSection: isUITest ? defaults.string(forKey: "UITestSection").flatMap(Router.Section.init(rawValue:)) : nil
+            initialSection: isUITest ? defaults.string(forKey: "UITestSection").flatMap(Router.Section.init(rawValue:)) : nil,
+            startsPaired: isUITest && args.contains("-UITestPaired")
         )
     }()
 }
@@ -61,9 +64,9 @@ final class AppEnvironment {
             UIView.setAnimationsEnabled(false)
             let defaults = UserDefaults(suiteName: "RestaurantPOS.UITests")!
             defaults.removePersistentDomain(forName: "RestaurantPOS.UITests")
-            settings = TerminalSettings(defaults: defaults)
+            settings = TerminalSettings(defaults: defaults, credentialStore: InMemoryCredentialStore(launch.startsPaired ? .demo : nil))
         } else {
-            settings = TerminalSettings()
+            settings = TerminalSettings(credentialStore: KeychainCredentialStore())
         }
         if let override = launch.serverOverride { settings.serverURL = override }
         model = AppEnvironment.makeModel(settings: settings, launch: launch)
@@ -81,7 +84,7 @@ final class AppEnvironment {
             return AppModel(api: api, settings: settings)
         }
         let url = settings.url ?? URL(string: "http://localhost:5080")!
-        return AppModel(api: HTTPPosAPI(baseURL: url), settings: settings, realtimeBaseURL: url)
+        return AppModel(api: HTTPPosAPI(baseURL: url, deviceToken: settings.credentials?.token), settings: settings, realtimeBaseURL: url)
     }
 
     /// Applique une nouvelle adresse serveur : nouvelle session, nouvel état.
@@ -90,6 +93,25 @@ final class AppEnvironment {
         model = AppEnvironment.makeModel(settings: settings, launch: launch)
         router.section = .order
         generation += 1
+    }
+
+    /// Appairage réussi. Même serveur (ré-appairage après révocation) : on garde le modèle, donc le brouillon,
+    /// et on change seulement le jeton. Nouveau serveur : nouvelle session.
+    @discardableResult
+    func completePairing(serverURL: URL, response: PairResponse) async -> Bool {
+        let serverChanged = serverURL.absoluteString != settings.serverURL
+        guard await model.applyPairing(serverURL: serverURL.absoluteString, credentials: DeviceCredentials(response)) else { return false }
+        if serverChanged { reconnect() }
+        return true
+    }
+
+    /// Le serveur a changé d'adresse (DHCP) : on le retrouve par son nom Bonjour.
+    func rediscoverServerIfUnreachable() async {
+        guard !launch.isUITest, let name = settings.credentials?.serverName else { return }
+        if (try? await model.api.health()) != nil { return }
+        guard let url = await ServerBrowser.resolve(name: name), url.absoluteString != settings.serverURL else { return }
+        settings.serverURL = url.absoluteString
+        reconnect()
     }
 }
 

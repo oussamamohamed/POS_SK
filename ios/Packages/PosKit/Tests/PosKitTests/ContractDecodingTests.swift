@@ -108,10 +108,18 @@ struct ContractDecodingTests {
 
     @Test func networkAndSync() throws {
         let info = try decode(NetworkInfo.self, "network_info")
-        #expect(info.discoveryPort == 45454)
+        #expect(info.port == 5000)
         let sync = try decode(SyncStatus.self, "sync_status")
         #expect(sync.pendingMessages == 0)
         #expect(try decode([HeldOrder].self, "held_empty").isEmpty)
+    }
+
+    @Test func devicePairing() throws {
+        let paired = try decode(PairResponse.self, "pair_response")
+        #expect(paired.terminalId == "T01")
+        #expect(paired.role == "Caisse")
+        #expect(!paired.token.isEmpty)
+        #expect(DeviceCredentials(paired).serverName == paired.serverName)
     }
 
     @Test func heldOrderMoneyObject() throws {

@@ -34,6 +34,7 @@ public class CheckoutE2ETests : IClassFixture<PosApiApplicationFactory>
         // Arrange
         var token = await GetAuthTokenAsync();
         _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var paired = await DeviceTestHelper.PairAsync(_factory, _client);
 
         Guid receiptId = Guid.NewGuid();
         Guid operatorId = Guid.NewGuid();
@@ -52,7 +53,7 @@ public class CheckoutE2ETests : IClassFixture<PosApiApplicationFactory>
                 Id = receiptId,
                 ReceiptNumber = "REC-001",
                 OrderId = Guid.NewGuid(),
-                TerminalId = "TERM-1",
+                TerminalId = paired.TerminalId,
                 TotalTtcAmount = Money.FromCents(1500, "EUR"),
                 SignatureHash = "signature-test",
                 CreatedAtUtc = DateTimeOffset.UtcNow
@@ -62,7 +63,7 @@ public class CheckoutE2ETests : IClassFixture<PosApiApplicationFactory>
 
         var request = new VoidReceiptRequest
         {
-            TerminalId = "TERM-1",
+            TerminalId = paired.TerminalId,
             OperatorId = operatorId
         };
 
@@ -71,7 +72,7 @@ public class CheckoutE2ETests : IClassFixture<PosApiApplicationFactory>
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        
+
         using (var scope = _factory.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -90,6 +91,7 @@ public class CheckoutE2ETests : IClassFixture<PosApiApplicationFactory>
     {
         var token = await GetAuthTokenAsync();
         _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        await DeviceTestHelper.PairAsync(_factory, _client);
 
         Guid orderId1 = Guid.NewGuid();
         Guid orderId2 = Guid.NewGuid();

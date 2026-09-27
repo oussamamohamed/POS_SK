@@ -66,6 +66,7 @@ public actor InMemoryPosAPI: PosAPI {
     }
 
     public func setToken(_ token: String?) { self.token = token }
+    public func setDeviceToken(_ token: String?) { calls.append("setDeviceToken") }
 
     // MARK: Auth
 
@@ -78,6 +79,15 @@ public actor InMemoryPosAPI: PosAPI {
         failedLogins = 0
         token = "mock-\(record.member.id)"
         return LoginResponse(success: true, operatorId: record.member.id, operatorName: record.member.name, role: record.member.role, token: token)
+    }
+
+    public func pair(code: String) async throws -> PairResponse {
+        try await step("pair")
+        guard code.trimmingCharacters(in: .whitespaces).uppercased() == "TESTCODE" else {
+            throw APIError.server(status: 400, message: "Code invalide ou expiré")
+        }
+        let demo = DeviceCredentials.demo
+        return PairResponse(deviceId: demo.deviceId, token: demo.token, terminalId: demo.terminalId, name: demo.name, role: demo.role, serverName: demo.serverName)
     }
 
     private func requireAuth() throws { if token == nil { throw APIError.unauthorized } }
@@ -688,7 +698,7 @@ public actor InMemoryPosAPI: PosAPI {
 
     public func networkInfo() async throws -> NetworkInfo {
         try await step("networkInfo")
-        return NetworkInfo(hostName: "simulateur.local", primaryIp: "127.0.0.1", ipAddresses: ["127.0.0.1"], port: 5080, discoveryPort: 45454, serverName: "Caisse Principale (Démo)", status: "Online", version: "1.0.0")
+        return NetworkInfo(hostName: "simulateur.local", primaryIp: "127.0.0.1", ipAddresses: ["127.0.0.1"], port: 5080, serverName: "Caisse Principale (Démo)", status: "Online", version: "1.0.0")
     }
 
     public func syncStatus() async throws -> SyncStatus {

@@ -37,8 +37,30 @@ document.addEventListener('DOMContentLoaded', () => {
             pricingTable: {}, // productId -> { happyHourPrice, standardPrice, ruleType }
             countdownInterval: null
         },
-        token: localStorage.getItem('pos_jwt_token') || null
+        token: localStorage.getItem('pos_jwt_token') || null,
+        device: loadStoredDevice()
     };
+    if (state.device) state.terminalId = state.device.terminalId;
+
+    function loadStoredDevice() {
+        try {
+            const raw = localStorage.getItem('pos_device');
+            return raw ? JSON.parse(raw) : null;
+        } catch {
+            return null;
+        }
+    }
+
+    function storeDevice(device) {
+        state.device = device;
+        if (device) state.terminalId = device.terminalId;
+        try {
+            if (device) localStorage.setItem('pos_device', JSON.stringify(device));
+            else localStorage.removeItem('pos_device');
+        } catch {
+            // Stockage indisponible : l'appairage reste valable jusqu'au rechargement.
+        }
+    }
 
     // Auto attach JWT bearer token to API requests & handle 401
     const originalFetch = window.fetch;
@@ -62,7 +84,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         }
+        // Le jeton du poste ne part que vers l'API de ce serveur, jamais vers un autre domaine.
+        const target = new URL(resource instanceof Request ? resource.url : String(resource), location.href);
+        if (state.device?.token && target.origin === location.origin && target.pathname.startsWith('/api/')) {
+            config = config || {};
+            config.headers = config.headers || {};
+            if (config.headers instanceof Headers) config.headers.set('X-Device-Token', state.device.token);
+            else if (Array.isArray(config.headers)) config.headers.push(['X-Device-Token', state.device.token]);
+            else config.headers['X-Device-Token'] = state.device.token;
+        }
         const res = await originalFetch(resource, config);
+        if (res.status === 401) {
+            const body = await res.clone().json().catch(() => ({}));
+            if (body.code === 'device_not_paired') {
+                // Poste inconnu ou révoqué : on garde la session opérateur, on demande un code.
+                storeDevice(null);
+                openDevicePairingModal();
+                return res;
+            }
+        }
         if (res.status === 401 && !resource.toString().includes('/api/auth/login')) {
             console.warn('Requête API 401: session non authentifiée ou expirée. Verrouillage du terminal.');
             state.token = null;
@@ -1870,7 +1910,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const payload = {
                 orderId: state.activeOrderId || '00000000-0000-0000-0000-000000000000',
                 tableNumber: state.activeTable,
-                terminalId: state.terminalId || 'POS_MAIN_TERM',
                 operatorId: state.operator?.id || '00000000-0000-0000-0000-000000000000',
                 tenders: [
                     {
@@ -2220,7 +2259,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const payload = {
             orderId: state.activeOrderId,
-            terminalId: state.terminalId || 'POS_A',
             destination: destinationToEnum(state.destination),
             pickupBuzzer: buzzer || null,
             pickupScheduledAtUtc: null,
@@ -2477,6 +2515,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     loadAdminGridEditor();
                 } else if (targetTab === 'tabDashboard') {
                     loadFinancialDashboard('today');
+                } else if (targetTab === 'tabDevices') {
+                    loadAdminDevices();
                 }
             });
         });
@@ -2488,6 +2528,7 @@ document.addEventListener('DOMContentLoaded', () => {
             loadAdminStaff(),
             loadAdminPrinters(),
             loadAdminGridEditor(),
+            loadAdminDevices(),
             loadNetworkSyncData(),
             loadFinancialDashboard('today'),
             loadAdminHappyHour()
@@ -3617,6 +3658,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Network Sync Handlers
         setupNetworkSyncHandlers();
+        setupDevicePairingHandlers();
+        setupDeviceAdminHandlers();
     }
 
     // ==================== FISCAL TRAIL & NF525 REPORTS ====================
@@ -3756,43 +3799,114 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // ==================== APPAIRAGE DES POSTES ====================
+    function openDevicePairingModal() {
+        const modal = document.getElementById('devicePairingModal');
+        if (!modal) return;
+        document.getElementById('devicePairingCodeInput').value = '';
+        document.getElementById('devicePairingError').textContent = '';
+        modal.classList.add('active');
+        document.getElementById('devicePairingCodeInput').focus();
+    }
+
+    function setupDevicePairingHandlers() {
+        const modal = document.getElementById('devicePairingModal');
+        document.getElementById('btnCancelDevicePairing')?.addEventListener('click', () => modal.classList.remove('active'));
+        document.getElementById('btnConfirmDevicePairing')?.addEventListener('click', async () => {
+            const code = document.getElementById('devicePairingCodeInput').value.trim().toUpperCase();
+            const errorEl = document.getElementById('devicePairingError');
+            if (!code) {
+                errorEl.textContent = 'Saisissez le code';
+                return;
+            }
+            const res = await fetch('/api/devices/pair', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code })
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) {
+                errorEl.textContent = data.message || 'Code invalide ou expiré';
+                return;
+            }
+            storeDevice({ token: data.token, terminalId: data.terminalId, name: data.name });
+            modal.classList.remove('active');
+            showToast(`Poste couplé : ${data.name} (${data.terminalId}). Relancez l'encaissement.`, 'success');
+        });
+    }
+
+    const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+    async function loadAdminDevices() {
+        const list = document.getElementById('adminDevicesList');
+        if (!list) return;
+        const res = await fetch('/api/devices');
+        if (!res.ok) {
+            list.innerHTML = '<div style="color:var(--text-muted);">Réservé aux responsables</div>';
+            return;
+        }
+        const devices = await res.json();
+        list.innerHTML = devices.length === 0
+            ? '<div style="color:var(--text-muted);">Aucun appareil appairé</div>'
+            : devices.map(d => `
+                <div class="item-list-row" data-device-id="${d.id}">
+                    <div>
+                        <strong>${escapeHtml(d.name)}</strong>
+                        <span style="color:var(--text-muted);">${escapeHtml(d.terminalId)} · ${escapeHtml(d.role)}</span>
+                        <div style="font-size:0.8rem; color:#94a3b8;">${d.isRevoked ? 'Révoqué' : (d.lastSeenUtc ? 'Dernier encaissement : ' + new Date(d.lastSeenUtc).toLocaleString() : 'Jamais utilisé')}</div>
+                    </div>
+                    ${d.isRevoked ? '' : `<button type="button" class="btn-archive btn-revoke-device" data-device-id="${d.id}">Révoquer</button>`}
+                </div>`).join('');
+        list.querySelectorAll('.btn-revoke-device').forEach(btn => btn.addEventListener('click', async () => {
+            if (!confirm('Révoquer cet appareil ? Il ne pourra plus encaisser.')) return;
+            const r = await fetch(`/api/devices/${btn.dataset.deviceId}/revoke`, { method: 'POST' });
+            if (r.ok) {
+                showToast('Appareil révoqué', 'success');
+                await loadAdminDevices();
+            } else {
+                showToast('Révocation impossible', 'error');
+            }
+        }));
+    }
+
+    let pairingCountdown = null;
+
+    function setupDeviceAdminHandlers() {
+        document.getElementById('formDevicePairingCode')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('inputDeviceName').value.trim();
+            const role = document.getElementById('selectDeviceRole').value;
+            const res = await fetch('/api/devices/pairing-codes', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, role })
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) {
+                showToast(data.message || 'Génération du code impossible', 'error');
+                return;
+            }
+            document.getElementById('devicePairingQr').src = `data:image/png;base64,${data.qrPngBase64}`;
+            document.getElementById('devicePairingCode').textContent = data.code;
+            document.getElementById('devicePairingCodeResult').style.display = 'block';
+            const expiry = document.getElementById('devicePairingExpiry');
+            clearInterval(pairingCountdown);
+            const tick = () => {
+                const seconds = Math.max(0, Math.round((new Date(data.expiresAtUtc) - Date.now()) / 1000));
+                expiry.textContent = seconds > 0
+                    ? `Expire dans ${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`
+                    : 'Code expiré';
+                if (seconds === 0) clearInterval(pairingCountdown);
+            };
+            tick();
+            pairingCountdown = setInterval(tick, 1000);
+        });
+    }
+
     function setupNetworkSyncHandlers() {
-        const btnScan = document.getElementById('btnScanNetwork');
-        const listContainer = document.getElementById('discoveredServersList');
         const formManual = document.getElementById('formManualServerConfig');
         const btnTest = document.getElementById('btnTestServerConn');
         const btnForceSync = document.getElementById('btnForceSyncNow');
-
-        if (btnScan && listContainer) {
-            btnScan.addEventListener('click', async () => {
-                listContainer.innerHTML = '<div style="text-align:center; padding:12px; color:#94a3b8;">🔍 Écoute UDP port 45454 et scan des périphériques...</div>';
-                try {
-                    const res = await fetch('/api/network/info');
-                    if (res.ok) {
-                        const info = await res.json();
-                        listContainer.innerHTML = `
-                            <div class="item-list-row" style="border-color:#10b981; background:rgba(16, 185, 129, 0.1);">
-                                <div>
-                                    <strong style="color:#a7f3d0;">🖥️ ${info.serverName}</strong>
-                                    <div style="font-size:0.8rem; color:#94a3b8;">${info.primaryIp}:${info.port} (Port Découverte: ${info.discoveryPort}) — v${info.version}</div>
-                                </div>
-                                <button class="btn-primary" style="padding:6px 12px; font-size:0.8rem;" id="btnSelectMasterServer">Actif ✓</button>
-                            </div>
-                            <div class="item-list-row">
-                                <div>
-                                    <strong>🖨️ Epson TM-T20III (Comptoir)</strong>
-                                    <div style="font-size:0.8rem; color:#94a3b8;">192.168.1.100:9100 — ESC/POS 80mm</div>
-                                </div>
-                                <span style="color:#10b981; font-weight:700; font-size:0.8rem;">En ligne</span>
-                            </div>
-                        `;
-                        showToast('Scan terminé : 1 Serveur Maître et 1 Imprimante détectés !', 'success');
-                    }
-                } catch (err) {
-                    listContainer.innerHTML = '<div style="color:#ef4444; padding:8px;">Échec de la découverte réseau</div>';
-                }
-            });
-        }
 
         if (btnTest) {
             btnTest.addEventListener('click', async () => {

@@ -204,7 +204,7 @@ public static class CounterSaleEndpoints
         });
 
         // 7. Counter & Takeaway Multi-Tender Checkout
-        group.MapPost("/checkout", async (CounterCheckoutRequest req, AppDbContext db, ICheckoutPaymentService checkout, ITakeawayCounterService counterService, IMealVoucherPolicyService mealVoucherPolicyService) =>
+        group.MapPost("/checkout", async (CounterCheckoutRequest req, AppDbContext db, ICheckoutPaymentService checkout, ITakeawayCounterService counterService, IMealVoucherPolicyService mealVoucherPolicyService, HttpContext http) =>
         {
             var order = await db.Orders
                 .Include(o => o.Items)
@@ -215,7 +215,7 @@ public static class CounterSaleEndpoints
                 return Results.BadRequest(new { Message = "Commande introuvable ou panier vide." });
             }
 
-            string terminalId = !string.IsNullOrWhiteSpace(req.TerminalId) ? req.TerminalId : "POS_MAIN_TERM";
+            string terminalId = RequireDeviceFilter.PairedDevice(http).TerminalId;
 
             // 1. Assign sequential daily pickup number (#A-01 .. #A-99)
             string pickupNumber = await counterService.GetNextPickupNumberAsync(terminalId);
@@ -286,6 +286,6 @@ public static class CounterSaleEndpoints
                 printFiscalReceipt,
                 hasCash
             ));
-        });
+        }).RequirePairedDevice();
     }
 }

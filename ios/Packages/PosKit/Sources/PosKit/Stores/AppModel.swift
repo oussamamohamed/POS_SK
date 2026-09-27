@@ -42,7 +42,7 @@ public final class AppModel {
         self.catalog = catalog
         let happyHour = HappyHourStore(api: api, notifier: notifier, terminalId: terminal)
         self.happyHour = happyHour
-        ticket = TicketStore(api: api, notifier: notifier, happyHour: happyHour, session: session, terminalId: terminal)
+        ticket = TicketStore(api: api, notifier: notifier, happyHour: happyHour, session: session, terminalId: terminal, onDeviceUnpaired: { settings.unpair() })
         floor = FloorStore(api: api, notifier: notifier, session: session)
         kitchen = KitchenStore(api: api, notifier: notifier)
         fiscal = FiscalStore(api: api, notifier: notifier, session: session, settings: settings)
@@ -67,6 +67,14 @@ public final class AppModel {
         }
         isBootstrapped = true
         startRealtime()
+    }
+
+    /// Ré-appairage sur le même serveur (après révocation) : on garde les stores, donc le ticket en cours,
+    /// et on remplace seulement le jeton d'appareil. `false` si l'identité n'a pas pu être enregistrée.
+    public func applyPairing(serverURL: String, credentials: DeviceCredentials) async -> Bool {
+        guard settings.pair(serverURL: serverURL, credentials: credentials) else { return false }
+        await api.setDeviceToken(credentials.token)
+        return true
     }
 
     // MARK: - Temps réel

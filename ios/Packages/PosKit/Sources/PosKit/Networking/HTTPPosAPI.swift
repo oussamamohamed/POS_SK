@@ -5,12 +5,14 @@ public actor HTTPPosAPI: PosAPI {
     public nonisolated let baseURL: URL
     private let session: URLSession
     private var token: String?
+    private var deviceToken: String?
     private let decoder = PosJSON.makeDecoder()
     private let encoder = PosJSON.makeEncoder()
 
-    public init(baseURL: URL, token: String? = nil, session: URLSession? = nil) {
+    public init(baseURL: URL, token: String? = nil, deviceToken: String? = nil, session: URLSession? = nil) {
         self.baseURL = baseURL
         self.token = token
+        self.deviceToken = deviceToken
         if let session {
             self.session = session
         } else {
@@ -24,6 +26,7 @@ public actor HTTPPosAPI: PosAPI {
     }
 
     public func setToken(_ token: String?) { self.token = token }
+    public func setDeviceToken(_ token: String?) { deviceToken = token }
 
     // MARK: - Transport
 
@@ -44,6 +47,7 @@ public actor HTTPPosAPI: PosAPI {
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         }
         if let token { request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization") }
+        if let deviceToken { request.setValue(deviceToken, forHTTPHeaderField: "X-Device-Token") }
         return request
     }
 
@@ -59,7 +63,7 @@ public actor HTTPPosAPI: PosAPI {
         guard (200..<300).contains(http.statusCode) else {
             let message = Self.extractMessage(from: data)
             switch http.statusCode {
-            case 401: throw APIError.unauthorized
+            case 401: throw Self.errorCode(in: data) == "device_not_paired" ? APIError.deviceNotPaired : APIError.unauthorized
             case 403: throw APIError.forbidden(message)
             case 404: throw APIError.notFound(message)
             case 429: throw APIError.rateLimited(message)
@@ -72,6 +76,10 @@ public actor HTTPPosAPI: PosAPI {
     static func extractMessage(from data: Data) -> String? {
         guard let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { return nil }
         return (object["message"] ?? object["errorMessage"] ?? object["Message"]) as? String
+    }
+
+    static func errorCode(in data: Data) -> String? {
+        (try? JSONSerialization.jsonObject(with: data) as? [String: Any])?["code"] as? String
     }
 
     private func call<Response: Decodable>(_ method: String, _ path: String, query: [String: String] = [:], as type: Response.Type = Response.self) async throws -> Response {
@@ -125,6 +133,14 @@ public actor HTTPPosAPI: PosAPI {
         let result: LoginResponse = try decode(data)
         if result.success { token = result.token }
         return result
+    }
+
+    /// Échange un code d'appairage du back-office contre l'identité du poste. Sans jeton opérateur.
+    public func pair(code: String) async throws -> PairResponse {
+        var request = try makeRequest("POST", "devices/pair", body: try encoder.encode(["code": code]))
+        request.setValue(nil, forHTTPHeaderField: "Authorization")
+        let (data, _) = try await send(request)
+        return try decode(data)
     }
 
     // MARK: - Catalogue

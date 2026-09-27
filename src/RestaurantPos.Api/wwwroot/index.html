@@ -270,6 +270,9 @@
                     <button class="admin-tab-btn" data-admin-tab="tabNetworkSync">
                         <span>🌐</span> Réseau & Synchronisation
                     </button>
+                    <button class="admin-tab-btn" data-admin-tab="tabDevices">
+                        <span>📲</span> Appareils
+                    </button>
                     <button class="admin-tab-btn" data-admin-tab="tabDashboard">
                         <span>📊</span> Tableaux de Bord & KPIs
                     </button>
@@ -505,19 +508,6 @@
                     <div class="admin-tab-pane" id="tabNetworkSync">
                         <div class="admin-split">
                             <div class="admin-card">
-                                <h4>🔍 Découverte Automatique (Zero-Config)</h4>
-                                <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:12px;">
-                                    Scannez le réseau local Wi-Fi / Ethernet pour détecter automatiquement le serveur de caisse maître et les imprimantes réseau.
-                                </p>
-                                <button type="button" class="btn-primary" id="btnScanNetwork" style="display:flex; align-items:center; justify-content:center; gap:8px;">
-                                    <span>🔍</span> Lancer la Découverte Réseau
-                                </button>
-                                <div id="discoveredServersList" style="margin-top:14px; display:flex; flex-direction:column; gap:8px;">
-                                    <!-- Discovered servers rendered dynamically -->
-                                </div>
-
-                                <hr class="divider" style="margin:16px 0;">
-
                                 <h4>⚙️ Configuration Manuelle du Serveur</h4>
                                 <form id="formManualServerConfig" class="admin-form">
                                     <div class="form-group">
@@ -555,6 +545,40 @@
                                 <button type="button" class="btn-primary" id="btnForceSyncNow" style="background:#10b981; box-shadow:0 4px 14px rgba(16, 185, 129, 0.4); display:flex; align-items:center; justify-content:center; gap:8px;">
                                     <span>⚡</span> Forcer la Synchronisation Immédiate
                                 </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab: Appareils appairés -->
+                    <div class="admin-tab-pane" id="tabDevices">
+                        <div class="admin-split">
+                            <div class="admin-card">
+                                <h4>➕ Ajouter un appareil</h4>
+                                <form id="formDevicePairingCode" class="admin-form">
+                                    <div class="form-group">
+                                        <label>Nom de l'appareil :</label>
+                                        <input type="text" id="inputDeviceName" placeholder="Ex: Caisse comptoir" maxlength="64" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Rôle :</label>
+                                        <select id="selectDeviceRole">
+                                            <option value="Caisse">Caisse</option>
+                                            <option value="Serveur">Serveur</option>
+                                            <option value="Cuisine">Cuisine</option>
+                                            <option value="BackOffice">Back-office</option>
+                                        </select>
+                                    </div>
+                                    <button type="submit" class="btn-primary">Générer un code d'appairage</button>
+                                </form>
+                                <div id="devicePairingCodeResult" style="display:none; margin-top:14px; text-align:center;">
+                                    <img id="devicePairingQr" alt="QR d'appairage" style="width:220px; height:220px; background:white; padding:8px;">
+                                    <div id="devicePairingCode" style="font-size:2rem; letter-spacing:6px; font-weight:800; margin-top:8px;"></div>
+                                    <div id="devicePairingExpiry" style="font-size:0.85rem; color:var(--text-muted);"></div>
+                                </div>
+                            </div>
+                            <div class="admin-card">
+                                <h4>Appareils appairés</h4>
+                                <div id="adminDevicesList" style="display:flex; flex-direction:column; gap:8px;"></div>
                             </div>
                         </div>
                     </div>
@@ -1105,6 +1129,22 @@
             <div style="display:flex; gap:10px;">
                 <button type="button" class="btn-secondary" id="btnCancelSupervisorPin" style="flex:1; padding:12px;">Annuler</button>
                 <button type="button" class="btn-action btn-pay" id="btnConfirmSupervisorPin" style="flex:1; padding:12px; background:#ef4444;">Confirmer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Appairage du poste (encaissement refusé : poste non appairé) -->
+    <div class="modal-overlay" id="devicePairingModal" style="z-index:9996;">
+        <div class="modal-card" style="max-width:380px; text-align:center; padding:24px;">
+            <div class="modal-header" style="justify-content:center; margin-bottom:12px;">
+                <h3>📲 Coupler ce poste</h3>
+            </div>
+            <p style="font-size:0.9rem; color:var(--text-muted); margin-bottom:16px;">Ce poste doit être appairé pour encaisser. Saisissez le code généré dans Gestion → Appareils.</p>
+            <input type="text" id="devicePairingCodeInput" maxlength="12" autocomplete="off" style="width:100%; text-align:center; font-size:1.6rem; letter-spacing:6px; padding:10px; border-radius:6px; background:var(--bg-main); border:1px solid var(--border-color); color:white; margin-bottom:10px; text-transform:uppercase;">
+            <div id="devicePairingError" style="color:#ef4444; min-height:1.2em; font-size:0.85rem; margin-bottom:10px;"></div>
+            <div style="display:flex; gap:10px;">
+                <button type="button" class="btn-secondary" id="btnCancelDevicePairing" style="flex:1; padding:12px;">Annuler</button>
+                <button type="button" class="btn-action btn-pay" id="btnConfirmDevicePairing" style="flex:1; padding:12px;">Coupler</button>
             </div>
         </div>
     </div>

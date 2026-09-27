@@ -1,4 +1,5 @@
 import { test, expect, Page } from '@playwright/test';
+import { pairTill } from './helpers/pairing';
 
 /**
  * Régressions corrigées dans le client web (wwwroot/app.js).
@@ -7,6 +8,7 @@ import { test, expect, Page } from '@playwright/test';
 test.describe('Corrections du client web', () => {
 
   async function login(page: Page) {
+    await pairTill(page);
     await page.goto('/?nocache=' + Date.now());
     await page.waitForLoadState('domcontentloaded');
     const pinModal = page.locator('#pinLockModal');

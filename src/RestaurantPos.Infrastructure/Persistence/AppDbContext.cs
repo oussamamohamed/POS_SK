@@ -40,6 +40,10 @@ public class AppDbContext : DbContext
     public DbSet<HappyHourPriceRule> HappyHourPriceRules => Set<HappyHourPriceRule>();
     public DbSet<HappyHourOverrideSession> HappyHourOverrideSessions => Set<HappyHourOverrideSession>();
 
+    // Appairage des postes
+    public DbSet<Device> Devices => Set<Device>();
+    public DbSet<DevicePairingCode> DevicePairingCodes => Set<DevicePairingCode>();
+
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
     {
     }
@@ -297,6 +301,24 @@ public class AppDbContext : DbContext
             entity.Property(h => h.TotalTtc)
                   .HasConversion(m => m.AmountInCents, cents => new Money(cents, "EUR"));
             entity.HasIndex(h => new { h.TerminalId, h.IsRecalled, h.IsVoided });
+        });
+
+        modelBuilder.Entity<Device>(entity =>
+        {
+            entity.HasKey(d => d.Id);
+            entity.Property(d => d.Name).HasMaxLength(64).IsRequired();
+            entity.Property(d => d.TerminalId).HasMaxLength(16).IsRequired();
+            entity.Property(d => d.TokenHash).HasMaxLength(64).IsRequired();
+            entity.HasIndex(d => d.TerminalId).IsUnique();
+            entity.HasIndex(d => d.TokenHash).IsUnique();
+        });
+
+        modelBuilder.Entity<DevicePairingCode>(entity =>
+        {
+            entity.HasKey(p => p.Id);
+            entity.Property(p => p.CodeHash).HasMaxLength(64).IsRequired();
+            entity.Property(p => p.Name).HasMaxLength(64).IsRequired();
+            entity.HasIndex(p => p.CodeHash);
         });
 
         modelBuilder.Entity<CustomerCreditVoucher>(entity =>

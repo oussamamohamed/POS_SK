@@ -7,11 +7,16 @@ import Testing
 func makeModel(pin: String = "1234") async -> (AppModel, InMemoryPosAPI) {
     let api = InMemoryPosAPI()
     let defaults = UserDefaults(suiteName: "PosKitTests-\(UUID().uuidString)")!
-    let model = AppModel(api: api, settings: TerminalSettings(defaults: defaults))
+    let model = AppModel(api: api, settings: TerminalSettings(defaults: defaults, credentialStore: InMemoryCredentialStore(.demo)))
     model.notifier.autoDismissAfter = nil
     for digit in pin { await model.session.appendDigit(String(digit)) }
     await model.catalog.load()
     return (model, api)
+}
+
+@MainActor
+func product(_ model: AppModel, _ name: String) -> Product {
+    model.catalog.products.first { $0.name == name }!
 }
 
 @MainActor
@@ -76,10 +81,6 @@ struct CatalogStoreTests {
 @MainActor
 @Suite("Ticket — prise de commande")
 struct TicketStoreTests {
-    func product(_ model: AppModel, _ name: String) -> Product {
-        model.catalog.products.first { $0.name == name }!
-    }
-
     @Test func addingSameProductMergesDraftLines() async {
         let (model, _) = await makeModel()
         await model.ticket.load(table: "T1")
@@ -456,5 +457,79 @@ struct AdminTests {
         #expect(await model.happyHourAdmin.create(HappyHourSchedule(name: "Brunch", daysOfWeek: [], startTime: "11:00", endTime: "14:00")) == false)
         #expect(await model.happyHourAdmin.create(HappyHourSchedule(name: "Brunch", daysOfWeek: [0, 6], startTime: "11:00", endTime: "14:00")))
         #expect(model.happyHourAdmin.selectedSchedule?.name == "Brunch")
+    }
+}
+
+@MainActor
+@Suite("Appairage")
+struct PairingStateTests {
+    @Test func pairAndUnpairUpdateSettingsAndStore() {
+        let store = InMemoryCredentialStore()
+        let settings = TerminalSettings(defaults: UserDefaults(suiteName: "PosKitTests-\(UUID().uuidString)")!, credentialStore: store)
+        #expect(!settings.isPaired)
+        #expect(settings.terminalId.isEmpty)
+
+        #expect(settings.pair(serverURL: "http://192.168.1.10:5080", credentials: .demo))
+        #expect(settings.isPaired)
+        #expect(settings.terminalId == "T01")
+        #expect(settings.serverURL == "http://192.168.1.10:5080")
+        #expect(store.load() == .demo)
+
+        settings.unpair()
+        #expect(!settings.isPaired)
+        #expect(store.load() == nil)
+        #expect(settings.serverURL == "http://192.168.1.10:5080")
+    }
+
+    @Test func pairFailsWhenStoreCannotPersist() {
+        final class FailingCredentialStore: DeviceCredentialStore {
+            func load() -> DeviceCredentials? { nil }
+            func save(_ credentials: DeviceCredentials) -> Bool { false }
+            func clear() {}
+        }
+        let settings = TerminalSettings(defaults: UserDefaults(suiteName: "PosKitTests-\(UUID().uuidString)")!, credentialStore: FailingCredentialStore())
+        let previousURL = settings.serverURL
+        #expect(!settings.pair(serverURL: "http://192.168.1.10:5080", credentials: .demo))
+        #expect(!settings.isPaired)
+        // Sinon le nouvel essai croirait le serveur inchangé et ne se reconnecterait pas.
+        #expect(settings.serverURL == previousURL)
+    }
+
+    @Test func credentialsAreRestoredAtLaunch() {
+        let settings = TerminalSettings(defaults: UserDefaults(suiteName: "PosKitTests-\(UUID().uuidString)")!, credentialStore: InMemoryCredentialStore(.demo))
+        #expect(settings.isPaired)
+        #expect(settings.credentials?.serverName == "Serveur démo")
+    }
+
+    @Test func revokedDeviceOnPaymentUnpairsAndKeepsDraft() async {
+        let (model, api) = await makeModel()
+        await model.ticket.load(table: "T1")
+        model.ticket.add(product(model, "Pizza 4 Fromages"))
+        await api.setFailure(.deviceNotPaired)
+
+        let outcome = await model.ticket.pay(method: .cash, amount: Money(cents: 1450), tendered: Money(cents: 2000))
+
+        #expect(outcome == nil)
+        #expect(!model.settings.isPaired)
+        #expect(!model.ticket.lines.isEmpty)
+        #expect(model.notifier.lastMessage == APIError.deviceNotPaired.errorDescription)
+    }
+
+    @Test func rePairingOnSameServerKeepsDraftAndSwapsDeviceToken() async {
+        let (model, api) = await makeModel()
+        let serverURL = model.settings.serverURL
+        await model.ticket.load(table: "T1")
+        model.ticket.add(product(model, "Pizza 4 Fromages"))
+        await api.setFailure(.deviceNotPaired)
+        _ = await model.ticket.pay(method: .cash, amount: Money(cents: 1450), tendered: Money(cents: 2000))
+        #expect(!model.settings.isPaired)
+        await api.setFailure(nil)
+
+        #expect(await model.applyPairing(serverURL: serverURL, credentials: .demo))
+
+        #expect(model.settings.isPaired)
+        #expect(!model.ticket.lines.isEmpty)
+        #expect(model.ticket.tableNumber == "T1")
+        #expect(await api.calls.contains("setDeviceToken"))
     }
 }

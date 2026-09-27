@@ -1,8 +1,10 @@
 import { test, expect } from '@playwright/test';
+import { pairTill } from './helpers/pairing';
 
 test.describe('Facturation sur Chambre d Hôtel (PMS & Signature Tactile)', () => {
 
   async function ensureLoggedIn(page: any) {
+    await pairTill(page);
     await page.goto('/?nocache=' + Date.now());
     await page.waitForLoadState('domcontentloaded');
 

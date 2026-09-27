@@ -1,8 +1,10 @@
 import { test, expect } from '@playwright/test';
+import { pairTill } from './helpers/pairing';
 
 test.describe('Vente Directe & Encaissement À Emporter (Feature 018)', () => {
 
   async function ensureLoggedIn(page: any) {
+    await pairTill(page);
     page.on('console', (msg: any) => console.log(`[BROWSER ${msg.type()}]: ${msg.text()}`));
     page.on('pageerror', (err: any) => console.log(`[BROWSER ERROR STACK]: ${err.stack || err.message}`));
 
