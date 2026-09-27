@@ -232,4 +232,49 @@
   <data name="messages.price_rules_deleted" xml:space="preserve">
     <value>{count} rule(s) deleted successfully.</value>
   </data>
+  <data name="receipt.pickup_title" xml:space="preserve">
+    <value>PICKUP VOUCHER</value>
+  </data>
+  <data name="receipt.number" xml:space="preserve">
+    <value>NUMBER</value>
+  </data>
+  <data name="receipt.buzzer" xml:space="preserve">
+    <value>BUZZER</value>
+  </data>
+  <data name="receipt.date" xml:space="preserve">
+    <value>Date</value>
+  </data>
+  <data name="receipt.mode" xml:space="preserve">
+    <value>Mode</value>
+  </data>
+  <data name="receipt.mode_takeaway" xml:space="preserve">
+    <value>TAKEAWAY</value>
+  </data>
+  <data name="receipt.mode_eat_in" xml:space="preserve">
+    <value>EAT IN</value>
+  </data>
+  <data name="receipt.items_count" xml:space="preserve">
+    <value>Items: {count} line(s)</value>
+  </data>
+  <data name="receipt.keep_until_pickup" xml:space="preserve">
+    <value>KEEP THIS VOUCHER UNTIL PICKUP</value>
+  </data>
+  <data name="receipt.ticket" xml:space="preserve">
+    <value>Receipt</value>
+  </data>
+  <data name="receipt.terminal" xml:space="preserve">
+    <value>Terminal</value>
+  </data>
+  <data name="receipt.total_ttc" xml:space="preserve">
+    <value>TOTAL INCL. VAT</value>
+  </data>
+  <data name="receipt.total_ht" xml:space="preserve">
+    <value>TOTAL EXCL. VAT</value>
+  </data>
+  <data name="receipt.vat_breakdown" xml:space="preserve">
+    <value>VAT BREAKDOWN (NF525)</value>
+  </data>
+  <data name="receipt.fiscal_signature" xml:space="preserve">
+    <value>NF525 FISCAL SIGNATURE</value>
+  </data>
 </root>

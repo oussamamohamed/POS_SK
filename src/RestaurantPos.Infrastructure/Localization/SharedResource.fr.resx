@@ -232,4 +232,49 @@
   <data name="messages.price_rules_deleted" xml:space="preserve">
     <value>{count} règle(s) supprimée(s) avec succès.</value>
   </data>
+  <data name="receipt.pickup_title" xml:space="preserve">
+    <value>BON DE RETRAIT COMMANDE</value>
+  </data>
+  <data name="receipt.number" xml:space="preserve">
+    <value>NUMÉRO</value>
+  </data>
+  <data name="receipt.buzzer" xml:space="preserve">
+    <value>BIPEUR</value>
+  </data>
+  <data name="receipt.date" xml:space="preserve">
+    <value>Date</value>
+  </data>
+  <data name="receipt.mode" xml:space="preserve">
+    <value>Mode</value>
+  </data>
+  <data name="receipt.mode_takeaway" xml:space="preserve">
+    <value>À EMPORTER</value>
+  </data>
+  <data name="receipt.mode_eat_in" xml:space="preserve">
+    <value>SUR PLACE</value>
+  </data>
+  <data name="receipt.items_count" xml:space="preserve">
+    <value>Articles : {count} ligne(s)</value>
+  </data>
+  <data name="receipt.keep_until_pickup" xml:space="preserve">
+    <value>CONSERVEZ CE BON JUSQU'AU RETRAIT</value>
+  </data>
+  <data name="receipt.ticket" xml:space="preserve">
+    <value>Ticket</value>
+  </data>
+  <data name="receipt.terminal" xml:space="preserve">
+    <value>Caisse</value>
+  </data>
+  <data name="receipt.total_ttc" xml:space="preserve">
+    <value>TOTAL TTC</value>
+  </data>
+  <data name="receipt.total_ht" xml:space="preserve">
+    <value>TOTAL HT</value>
+  </data>
+  <data name="receipt.vat_breakdown" xml:space="preserve">
+    <value>VENTILATION TVA (NF525)</value>
+  </data>
+  <data name="receipt.fiscal_signature" xml:space="preserve">
+    <value>SIGNATURE FISCALE NF525</value>
+  </data>
 </root>
