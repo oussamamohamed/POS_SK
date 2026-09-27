@@ -17,6 +17,13 @@ test.describe('Happy Hour Pricing & Schedule Management', () => {
     }
   }
 
+  // Une dérogation laissée active par un test en échec fausserait les tarifs des tests suivants.
+  test.afterEach(async ({ request }) => {
+    await request.post('/api/happy-hour/override/stop', {
+      data: { terminalId: 'POS_A', supervisorPin: '9999', reason: 'Nettoyage test E2E' }
+    });
+  });
+
   test('US1 & US4: Forçage Superviseur Happy Hour active le bandeau, le compte à rebours et applique les tarifs préférentiels', async ({ page, request }) => {
     await ensureLoggedIn(page);
 
@@ -71,14 +78,17 @@ test.describe('Happy Hour Pricing & Schedule Management', () => {
     // 5. Basculer en mode Sur Place (le Happy Hour s'applique sur place par défaut)
     await page.click('#btnDestEatIn');
 
-    // 6. Cliquer sur un produit en Happy Hour pour l'ajouter au panier
+    // 6. Cliquer sur un produit en Happy Hour pour l'ajouter au panier.
+    // La commande « Comptoir » est conservée côté serveur : elle peut déjà contenir des lignes [HH]
+    // enregistrées par d'autres tests, d'où le comptage avant/après.
+    const hhCartBadge = page.locator('.cart-item-badge-hh');
+    const hhLinesBefore = await hhCartBadge.count();
     const hhCard = page.locator('.product-card').filter({ has: page.locator('.product-price-hh') }).first();
     await hhCard.click();
 
-    // 7. Vérifier que la ligne de panier porte le badge [HH]
-    const hhCartBadge = page.locator('.cart-item-badge-hh');
-    await expect(hhCartBadge).toBeVisible();
-    await expect(hhCartBadge).toContainText('[HH]');
+    // 7. Vérifier que la nouvelle ligne de panier porte le badge [HH]
+    await expect(hhCartBadge).toHaveCount(hhLinesBefore + 1);
+    await expect(hhCartBadge.last()).toContainText('[HH]');
 
     // 7. Arrêter la dérogation
     const stopRes = await request.post('/api/happy-hour/override/stop', {
@@ -104,13 +114,15 @@ test.describe('Happy Hour Pricing & Schedule Management', () => {
 
     // Ouvrir le modal dérogation
     const btnOverride = page.locator('#btnHhOverrideQuickAction');
-    // Forcer l'affichage du bouton si le bandeau n'est pas actif
-    await page.evaluate(() => {
-      const banner = document.getElementById('happyHourBanner');
-      if (banner) banner.style.display = 'block';
-    });
-
-    await btnOverride.click();
+    // Forcer l'affichage du bouton si le bandeau n'est pas actif. Le statut Happy Hour chargé au
+    // démarrage peut masquer le bandeau juste après : on recommence tant que le clic échoue.
+    await expect(async () => {
+      await page.evaluate(() => {
+        const banner = document.getElementById('happyHourBanner');
+        if (banner) banner.style.display = 'block';
+      });
+      await btnOverride.click({ timeout: 1000 });
+    }).toPass();
     const modal = page.locator('#hhOverrideModal');
     await expect(modal).toHaveClass(/active/);
 
