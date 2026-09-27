@@ -85,10 +85,11 @@ public final class TerminalSettings {
 
     /// Renvoie `false` sans marquer le poste comme appairé si l'identité n'a pas pu être stockée
     /// (ex. échec Keychain) : le code d'appairage à usage unique est alors déjà consommé côté serveur.
+    /// L'adresse n'est mémorisée qu'après un enregistrement réussi, pour qu'un nouvel essai détecte le changement de serveur.
     @discardableResult
     public func pair(serverURL: String, credentials: DeviceCredentials) -> Bool {
-        self.serverURL = serverURL
         guard credentialStore.save(credentials) else { return false }
+        self.serverURL = serverURL
         self.credentials = credentials
         return true
     }

@@ -488,8 +488,11 @@ struct PairingStateTests {
             func clear() {}
         }
         let settings = TerminalSettings(defaults: UserDefaults(suiteName: "PosKitTests-\(UUID().uuidString)")!, credentialStore: FailingCredentialStore())
+        let previousURL = settings.serverURL
         #expect(!settings.pair(serverURL: "http://192.168.1.10:5080", credentials: .demo))
         #expect(!settings.isPaired)
+        // Sinon le nouvel essai croirait le serveur inchangé et ne se reconnecterait pas.
+        #expect(settings.serverURL == previousURL)
     }
 
     @Test func credentialsAreRestoredAtLaunch() {
