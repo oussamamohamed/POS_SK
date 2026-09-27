@@ -14,6 +14,7 @@ using RestaurantPos.Api.Services;
 using RestaurantPos.Application.Common.Interfaces;
 using RestaurantPos.Application.DTOs;
 using RestaurantPos.Domain.Enums;
+using RestaurantPos.Infrastructure.Localization;
 
 namespace RestaurantPos.Api.Endpoints;
 
@@ -51,7 +52,7 @@ public static class DeviceEndpoints
             {
                 var wait = Math.Ceiling(rateLimiter.GetRemainingLockout(clientKey).TotalSeconds);
                 return Results.Json(
-                    new { code = "rate_limited", message = $"Trop de tentatives. Patientez {wait} secondes." },
+                    new { code = "rate_limited", message = Texts.T("errors.rate_limited_seconds", ("seconds", wait)) },
                     statusCode: StatusCodes.Status429TooManyRequests);
             }
 
@@ -59,7 +60,7 @@ public static class DeviceEndpoints
             if (paired is null)
             {
                 rateLimiter.RecordFailedAttempt(clientKey);
-                return Results.BadRequest(new { code = "pairing_code_invalid", message = "Code invalide ou expiré" });
+                return Results.BadRequest(new { code = "pairing_code_invalid", message = Texts.T("errors.pairing_code_invalid") });
             }
 
             rateLimiter.ResetAttempts(clientKey);

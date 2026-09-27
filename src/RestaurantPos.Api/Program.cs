@@ -6,6 +6,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,6 +20,7 @@ using RestaurantPos.Application.DTOs;
 using RestaurantPos.Domain.Common;
 using RestaurantPos.Domain.Entities;
 using RestaurantPos.Domain.ValueObjects;
+using RestaurantPos.Infrastructure.Localization;
 using RestaurantPos.Infrastructure.Persistence;
 using RestaurantPos.Infrastructure.Security;
 using RestaurantPos.Infrastructure.Services;
@@ -58,6 +60,16 @@ public partial class Program
         });
 
         builder.Services.AddMemoryCache();
+
+        // Langue des messages : seule la culture d'interface suit Accept-Language.
+        // CurrentCulture reste « en » pour que nombres, dates et hash ne changent jamais de format.
+        builder.Services.Configure<RequestLocalizationOptions>(options =>
+        {
+            options.DefaultRequestCulture = new RequestCulture(culture: "en", uiCulture: "en");
+            options.SupportedCultures = [CultureInfo.GetCultureInfo("en")];
+            options.SupportedUICultures = Texts.SupportedLanguages.Select(CultureInfo.GetCultureInfo).ToList();
+            options.RequestCultureProviders = [new AcceptLanguageHeaderRequestCultureProvider()];
+        });
 
         builder.Services.AddScoped<IOperatorAuthenticationService, OperatorAuthenticationService>();
         builder.Services.AddScoped<ITableManagementService, TableManagementService>();
@@ -288,10 +300,11 @@ public partial class Program
         }
 
         app.UseCors();
+        app.UseRequestLocalization();
         app.UseDefaultFiles();
         app.UseStaticFiles();
         app.UseRouting();
-        
+
         app.UseAuthentication();
         app.UseAuthorization();
 

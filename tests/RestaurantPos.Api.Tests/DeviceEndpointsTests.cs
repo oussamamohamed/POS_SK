@@ -128,7 +128,7 @@ public class DeviceEndpointsTests : IClassFixture<PosApiApplicationFactory>
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
             var body = await response.Content.ReadFromJsonAsync<JsonElement>();
             body.GetProperty("code").GetString().Should().Be("pairing_code_invalid");
-            body.GetProperty("message").GetString().Should().Be("Code invalide ou expiré");
+            body.GetProperty("message").GetString().Should().Be("Invalid or expired code");
         }
     }
 
