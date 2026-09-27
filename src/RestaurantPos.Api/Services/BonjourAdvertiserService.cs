@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -85,10 +86,9 @@ public sealed partial class BonjourAdvertiserService : BackgroundService
             var gate = new object();
             ServiceProfile? profile = null;
 
-            // Le profil fige les adresses IP à sa création : à chaque changement d'interface (nouveau bail DHCP…),
-            // on le remplace pour ne pas annoncer une IP périmée. L'événement se déclenche aussi au Start, avant la
-            // première annonce : ignoré tant que profile est null.
-            mdns.NetworkInterfaceDiscovered += (_, _) =>
+            // Le profil fige les adresses IP à sa création : on le remplace pour ne pas annoncer une IP périmée.
+            // Ignoré tant que la première annonce n'est pas faite (profile null) : l'événement mDNS se déclenche aussi au Start.
+            void Readvertise()
             {
                 try
                 {
@@ -109,18 +109,31 @@ public sealed partial class BonjourAdvertiserService : BackgroundService
                 {
                     LogAdvertiseFailed(_logger, ex.Message);
                 }
-            };
-
-            mdns.Start();
-            lock (gate)
-            {
-                profile = BuildProfile(name, port.Value);
-                discovery.Advertise(profile);
-                discovery.Announce(profile, 2);
             }
-            LogAdvertising(_logger, name, ServiceType, port.Value);
 
-            await Task.Delay(Timeout.Infinite, stoppingToken);
+            // Nouvelle interface (câble branché, Wi-Fi reconnecté) côté mDNS ; nouveau bail DHCP sur la même
+            // interface côté système : Makaretu ne signale que les nouvelles interfaces, pas les changements d'adresse.
+            void OnAddressChanged(object? sender, EventArgs e) => Readvertise();
+            mdns.NetworkInterfaceDiscovered += (_, _) => Readvertise();
+            NetworkChange.NetworkAddressChanged += OnAddressChanged;
+            try
+            {
+                mdns.Start();
+                lock (gate)
+                {
+                    profile = BuildProfile(name, port.Value);
+                    discovery.Advertise(profile);
+                    discovery.Announce(profile, 2);
+                }
+                LogAdvertising(_logger, name, ServiceType, port.Value);
+
+                await Task.Delay(Timeout.Infinite, stoppingToken);
+            }
+            finally
+            {
+                // Avant la libération de mdns/discovery : plus de réannonce sur des objets détruits.
+                NetworkChange.NetworkAddressChanged -= OnAddressChanged;
+            }
         }
         catch (OperationCanceledException)
         {
