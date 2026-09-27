@@ -1,85 +1,103 @@
 # Restaurant POS — application iPad native (SwiftUI)
 
-Application de caisse **100 % native iPadOS** (SwiftUI, iOS 17+), branchée sur l'API existante
-`RestaurantPos.Api`, avec la même couverture fonctionnelle de service que le site web :
-
-| Écran | Fonctions |
-|---|---|
-| **Verrouillage** | PIN opérateur sur pavé à l'écran (validation auto à 4 chiffres), secousse + retour haptique en cas d'erreur, réglages accessibles |
-| **Salle** | Tables en temps réel (libre / occupée / addition), couverts, serveur, durée d'occupation, montant en cours, filtre, ouverture avec choix des couverts |
-| **Prise de commande** | Favoris + catégories colorées, recherche sans accents, tuiles ≥ 104 pt, options (cuissons, suppléments, règles min/max/obligatoire), note cuisine, envois (Direct / Suite / Dessert / À la demande), quantités, glisser pour supprimer |
-| **Encaissement** | Espèces avec rendu monnaie et billets suggérés, CB, titre-restaurant, carte cadeau, pavé de montant, partage à parts égales au centime près, règlement convive par convive, signature NF525 |
-| **Comptoir** | Vente directe à emporter / sur place, mise en attente et reprise, annulation protégée par PIN responsable, multi-règlement, numéro de retrait, bipeur, politique titre-restaurant |
-| **Cuisine (KDS)** | 3 colonnes (à préparer / en préparation / prêt), filtre par poste, bons en retard signalés, un toucher = étape suivante |
-| **Rapports fiscaux** | Rapport X en direct, dernière clôture Z scellée, clôture Z avec confirmation (réservé aux responsables) |
-| **Réglages** | Adresse du serveur, identifiant terminal, test de connexion, **mode démonstration** (sans serveur) |
-
-L'administration (carte, personnel, imprimantes, happy hour, grilles) reste sur le back-office web.
+Client iPad natif pour `RestaurantPos.Api`, avec la parité fonctionnelle du client web
+(`src/RestaurantPos.Api/wwwroot`). Il remplace les essais MAUI : aucune couche
+d'abstraction entre le code et UIKit/SwiftUI, et chaque écran est couvert par des tests
+automatiques.
 
 ## Architecture
 
 ```
 ios/
-├── POSKit/                 Package Swift : TOUTE la logique, testable sans iPad (macOS et Linux)
-│   ├── Models/             DTO alignés sur l'API .NET (enums entiers, montants décimaux, dates .NET)
-│   ├── Domain/             Money (centimes), TVA, partage, saisie montant/PIN, modificateurs
-│   ├── Networking/         POSAPI (protocole) + POSAPIClient (HTTP, jeton Bearer, erreurs en français)
-│   ├── Features/           Modèles d'écran @Observable : AppModel, OrderModel, CheckoutModel…
-│   └── Backend/            InMemoryPOSBackend : serveur simulé (mode démo, aperçus, tests UI)
-├── POSApp/                 Interface SwiftUI uniquement (vues fines, aucune règle métier)
-├── POSAppUITests/          Tests UI XCUITest : parcours réels sur simulateur iPad
-├── project.yml             Description du projet (XcodeGen) — RestaurantPOS.xcodeproj en est généré
-└── scripts/                test-kit.sh, test-ui.sh
+├── project.yml                 # XcodeGen : source de vérité du projet (le .xcodeproj est généré)
+├── Packages/PosKit/            # Toute la logique, sans SwiftUI → testable en quelques secondes
+│   ├── Core/                   # Money (centimes), OrderMath (TVA, remises, split), options, paiement
+│   ├── Models/                 # DTO Codable alignés sur l'API .NET
+│   ├── Networking/             # Protocole PosAPI + HTTPPosAPI (URLSession)
+│   ├── Realtime/               # Client SignalR minimal (WebSocket, protocole JSON)
+│   ├── Stores/                 # État @Observable : session, catalogue, ticket, salle, KDS, fiscal, admin
+│   └── Testing/InMemoryPosAPI  # Backend en mémoire (données d'amorçage identiques au serveur)
+├── RestaurantPOS/              # App SwiftUI (vues uniquement)
+│   ├── App/                    # Point d'entrée, verrouillage PIN, navigation
+│   ├── DesignSystem/           # Thème, pavé numérique, boutons, toasts
+│   └── Features/               # Caisse, Paiement, Salle, Cuisine, Clôture, Gestion
+└── RestaurantPOSUITests/       # XCUITest : parcours utilisateur complets
 ```
 
-Pourquoi cette organisation règle les problèmes des essais précédents :
+Les vues n'appellent jamais le réseau directement : elles passent par les stores de
+`PosKit`, qui dépendent du protocole `PosAPI`. En test, `InMemoryPosAPI` remplace
+`HTTPPosAPI` : pas de serveur, des données identiques à chaque lancement, des tests
+déterministes.
 
-- **L'interface ne contient pas de logique** : chaque règle (fusion des lignes, reste à payer,
-  partage, droits par rôle, expiration de session) est dans `POSKit` et couverte par des tests
-  qui tournent en une seconde, sans simulateur.
-- **Contrat API vérifié sur des réponses réelles** : les fixtures ont été capturées sur la vraie
-  API. Cela a déjà révélé que `POST /api/kds/tickets/{id}/bump` renvoie `ticketId` au lieu de `id`
-  (géré), et un bug serveur corrigé dans ce lot : les commandes de table étaient « à emporter »
-  par défaut (libellé `[À EMPORTER] T2` en cuisine et risque de TVA à emporter).
-- **Tests UI déterministes** : lancée avec `-uiTesting`, l'app utilise le serveur simulé ;
-  chaque test repart de données connues (T3 occupée à 36,00 €, bons cuisine en cours…).
-- **Saisie hors-ligne tolérante** : les articles touchés restent sur l'iPad jusqu'à l'envoi en
-  cuisine, l'encaissement, la mise en attente ou le changement de table, puis sont enregistrés.
-  En cas d'erreur réseau, rien n'est perdu et un message clair s'affiche.
+### Choix importants
 
-## Lancer l'app
+- **Brouillon local du ticket.** L'API sait seulement *ajouter* des lignes. Les articles
+  saisis restent donc modifiables sur l'iPad (quantité, service, suppression) et ne sont
+  envoyés au serveur qu'au moment utile : envoi cuisine, paiement, remise, attente,
+  transfert ou changement de table.
+- **Montants en centimes entiers**, arrondis comme `Money.FromDecimal` côté .NET. Le
+  partage à parts égales ne perd ni ne crée aucun centime.
+- **Sur place / à emporter.** Côté serveur, `Takeaway = 0` et `EatIn = 1`. Les commandes
+  de table sont créées « à emporter » par défaut, donc l'iPad force « sur place » (sinon
+  la cuisine voyait `[À EMPORTER] T1`).
 
-Prérequis : Mac avec **Xcode 16 ou plus récent**.
+## Fonctionnalités (parité web)
 
-1. Ouvrir `ios/RestaurantPOS.xcodeproj`, choisir un simulateur iPad (ou un iPad) et lancer (⌘R).
-2. Au premier lancement l'app est en **mode démonstration** : codes `1234` (responsable),
-   `2468` (serveuse), `5678` (cuisine), `9999` (admin).
-3. Pour le vrai serveur : roue dentée de l'écran PIN → désactiver le mode démo → saisir l'adresse
-   (ex. `192.168.1.20:5000`) → « Tester la connexion » → Enregistrer.
+PIN opérateur · plan de salle (ouverture avec couverts, création de tables, chronomètres) ·
+grille tactile paginée (balayage) · touches rapides · options et suppléments avec
+validation · services Direct/Suite/Dessert · envoi cuisine et « réclame suite » ·
+remises globales et articles offerts · transfert et fusion de tables · encaissement
+(CB, espèces avec rendu, titres-restaurant) · pourboires · partage à parts égales ·
+facturation chambre avec signature · comptoir / vente à emporter (TVA réduite, n° de
+retrait, buzzer, espèces express, commandes en attente, annulation sous PIN superviseur,
+avoirs titres-restaurant) · Happy Hour (bandeau, compte à rebours, dérogations) · KDS
+3 colonnes · rapports X / clôture Z NF525 · export FEC · tableau de bord · gestion du
+catalogue, de la grille (glisser-déposer, formats, pages), de l'équipe, des imprimantes,
+des plages Happy Hour · réglages réseau et synchronisation · temps réel SignalR.
 
-Pour un iPad physique, choisir son équipe dans *Signing & Capabilities* (identifiant
-`com.restaurantpos.ipad`).
-
-> Si `project.yml` est modifié : `brew install xcodegen && cd ios && xcodegen generate`.
-
-## Tests automatiques
-
-| Commande | Contenu | Où |
-|---|---|---|
-| `ios/scripts/test-kit.sh` | 80 tests Swift Testing : montants, dates .NET, TVA, partage, contrat API (fixtures réelles), client HTTP, prise de commande, encaissement, comptoir, cuisine, fiscal, session | macOS ou Linux |
-| `POS_API_URL=http://127.0.0.1:5080 ios/scripts/test-kit.sh` | + scénario complet contre un vrai serveur (table, options, cuisine, partage CB/espèces, comptoir, attente, rapport X) | idem, API démarrée |
-| `ios/scripts/test-ui.sh` | 18 tests XCUITest sur simulateur iPad, avec captures d'écran dans `ios/build/UITests.xcresult` | macOS + Xcode |
-
-La CI GitHub Actions (`.github/workflows/ios.yml`) exécute les trois à chaque push touchant
-`ios/` ou l'API : tests Linux, scénario sur l'API démarrée dans la CI, et tests UI sur
-simulateur iPad (`macos-15`) avec le rapport `.xcresult` en artefact.
-
-Démarrer l'API en local pour le test d'intégration :
+## Démarrer
 
 ```bash
-Jwt__Secret='UneCleDeTestDAuMoins32CaracteresIci!' ASPNETCORE_ENVIRONMENT=Development \
-ASPNETCORE_URLS=http://127.0.0.1:5080 dotnet run --project src/RestaurantPos.Api -c Debug
+brew install xcodegen
+cd ios
+xcodegen generate
+open RestaurantPOS.xcodeproj      # cible « RestaurantPOS », simulateur iPad
 ```
 
-(`Jwt:Secret` est obligatoire : sans lui l'API renvoie une erreur 500 dès la première requête,
-même en Development.)
+Au premier lancement, touchez **Changer** sur l'écran PIN pour saisir l'adresse du
+serveur (par défaut `http://localhost:5080`). PIN de démonstration : `1234` (responsable),
+`2468` (serveuse), `5678` (cuisine), `9999` (admin).
+
+Pour lancer l'API localement (le port 5000 est pris par AirPlay sur macOS) :
+
+```bash
+ASPNETCORE_ENVIRONMENT=Development ASPNETCORE_URLS=http://0.0.0.0:5080 \
+Jwt__Secret="SuperSecretKeyForRestaurantPosSystemThatIsAtLeast32BytesLong!" \
+dotnet run --project src/RestaurantPos.Api
+```
+
+Mode démo sans serveur : lancez l'app avec l'argument `-UITestMode` (schéma Xcode →
+*Run → Arguments*).
+
+## Tests
+
+```bash
+./scripts/test.sh unit       # ~1 s   : 93 tests Swift Testing (calculs, contrats JSON, stores, HTTP, SignalR)
+./scripts/test.sh ui         # ~8 min : 27 tests XCUITest sur simulateur iPad
+./scripts/test.sh            # les deux
+POS_API_URL=http://localhost:5080 ./scripts/test.sh contract   # parcours réel contre l'API .NET
+```
+
+| Niveau | Ce qui est vérifié |
+|---|---|
+| Calculs | TVA par taux, remises, articles offerts, split au centime, pourboire, rendu |
+| Contrats | Décodage de vraies réponses capturées sur l'API (`Tests/PosKitTests/Fixtures`) |
+| Stores | Commande, envoi cuisine, paiement, split, transfert, comptoir, attente, Happy Hour, KDS, Z, back-office |
+| HTTP | Chemins, méthodes, corps JSON, jeton Bearer, erreurs 401/403/404/429/500 |
+| UI | Connexion, table → cuisine → paiement, options, split, transfert, comptoir, attente, KDS, Happy Hour, X/Z, FEC, back-office |
+| Contrat live | Parcours table complet contre le vrai serveur |
+
+En cas d'échec, les tests UI joignent une capture d'écran au rapport `.xcresult`.
+
+Arguments de lancement réservés aux tests : `-UITestMode`, `-UITestPin 1234`,
+`-UITestSection floor|kitchen|fiscal|admin`, `-UITestHappyHour`.
