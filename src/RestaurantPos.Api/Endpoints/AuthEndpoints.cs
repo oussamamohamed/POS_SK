@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using RestaurantPos.Application.Common.Interfaces;
 using RestaurantPos.Application.DTOs;
 using RestaurantPos.Domain.Entities;
+using RestaurantPos.Infrastructure.Localization;
 
 namespace RestaurantPos.Api.Endpoints;
 
@@ -31,7 +32,7 @@ public static class AuthEndpoints
             {
                 var remaining = rateLimiter.GetRemainingLockout(clientKey);
                 AuthLogMessages.LoginRateLimited(logger, clientKey, Math.Ceiling(remaining.TotalSeconds));
-                return Results.Json(new { Success = false, ErrorMessage = $"Trop de tentatives infructueuses. Veuillez patienter {Math.Ceiling(remaining.TotalSeconds)} secondes." }, statusCode: StatusCodes.Status429TooManyRequests);
+                return Results.Json(new { Success = false, ErrorMessage = Texts.T("errors.login_rate_limited", ("seconds", Math.Ceiling(remaining.TotalSeconds))) }, statusCode: StatusCodes.Status429TooManyRequests);
             }
 
             var result = await authService.AuthenticatePinAsync(req.Pin);
@@ -99,7 +100,7 @@ public static class AuthEndpoints
             if (rateLimiter.IsLocked(clientKey))
             {
                 var remaining = rateLimiter.GetRemainingLockout(clientKey);
-                return Results.Json(new { Authorized = false, Message = $"Trop de tentatives. Veuillez patienter {Math.Ceiling(remaining.TotalSeconds)} secondes." }, statusCode: StatusCodes.Status429TooManyRequests);
+                return Results.Json(new { Authorized = false, Message = Texts.T("errors.supervisor_rate_limited", ("seconds", Math.Ceiling(remaining.TotalSeconds))) }, statusCode: StatusCodes.Status429TooManyRequests);
             }
 
             var result = await authService.AuthenticatePinAsync(req.SupervisorPin);
@@ -107,7 +108,7 @@ public static class AuthEndpoints
             {
                 rateLimiter.RecordFailedAttempt(clientKey);
                 AuthLogMessages.SupervisorOverrideInvalidPin(logger);
-                return Results.Json(new { Authorized = false, Message = "Code PIN superviseur invalide." }, statusCode: StatusCodes.Status403Forbidden);
+                return Results.Json(new { Authorized = false, Message = Texts.T("errors.supervisor_pin_invalid") }, statusCode: StatusCodes.Status403Forbidden);
             }
 
             var role = result.Role.GetValueOrDefault();
@@ -115,7 +116,7 @@ public static class AuthEndpoints
             {
                 rateLimiter.RecordFailedAttempt(clientKey);
                 AuthLogMessages.SupervisorOverrideInsufficientRole(logger, result.OperatorName ?? "Inconnu", role);
-                return Results.Json(new { Authorized = false, Message = "Privilèges superviseur insuffisants." }, statusCode: StatusCodes.Status403Forbidden);
+                return Results.Json(new { Authorized = false, Message = Texts.T("errors.supervisor_privileges_insufficient") }, statusCode: StatusCodes.Status403Forbidden);
             }
 
             rateLimiter.ResetAttempts(clientKey);

@@ -4,6 +4,7 @@ using System.Linq;
 using RestaurantPos.Application.Common.Interfaces;
 using RestaurantPos.Domain.Entities;
 using RestaurantPos.Domain.Enums;
+using RestaurantPos.Infrastructure.Localization;
 
 namespace RestaurantPos.Infrastructure.Services;
 
@@ -30,7 +31,9 @@ public class MealVoucherPolicyService : IMealVoucherPolicyService
             return new MealVoucherValidationResult(
                 IsAllowed: false,
                 MaxAllowedAmount: legalMax,
-                ErrorMessage: string.Format(CultureInfo.InvariantCulture, "Le montant par Titre-Restaurant ({0:0.00} €) dépasse le plafond légal éligible ({1:0.00} €).", voucherAmount, legalMax),
+                ErrorMessage: Texts.T("errors.meal_voucher_above_legal_cap",
+                    ("amount", voucherAmount.ToString("0.00", CultureInfo.InvariantCulture)),
+                    ("max", legalMax.ToString("0.00", CultureInfo.InvariantCulture))),
                 SurplusAmount: 0m
             );
         }
@@ -46,7 +49,9 @@ public class MealVoucherPolicyService : IMealVoucherPolicyService
                 return new MealVoucherValidationResult(
                     IsAllowed: false,
                     MaxAllowedAmount: balanceDue,
-                    ErrorMessage: string.Format(CultureInfo.InvariantCulture, "Surpaiement par Titre-Restaurant refusé : la valeur faciale ({0:0.00} €) dépasse le solde dû ({1:0.00} €).", facialValue.Value, balanceDue),
+                    ErrorMessage: Texts.T("errors.meal_voucher_overpayment_refused",
+                        ("face", facialValue.Value.ToString("0.00", CultureInfo.InvariantCulture)),
+                        ("due", balanceDue.ToString("0.00", CultureInfo.InvariantCulture))),
                     SurplusAmount: surplus
                 );
             }

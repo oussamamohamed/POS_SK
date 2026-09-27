@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.SignalR;
 using RestaurantPos.Api.Hubs;
 using RestaurantPos.Application.Common.Interfaces;
 using RestaurantPos.Application.DTOs;
+using RestaurantPos.Infrastructure.Localization;
 
 namespace RestaurantPos.Api.Endpoints;
 
@@ -26,7 +27,7 @@ public static class GridEndpoints
         {
             int pageIndex = page.GetValueOrDefault(0);
             var layout = await gridService.GetLayoutByCategoryAsync(categoryId, pageIndex);
-            return layout is not null ? Results.Ok(layout) : Results.NotFound(new { Message = $"Aucune grille pour la catégorie {categoryId} (page {pageIndex})" });
+            return layout is not null ? Results.Ok(layout) : Results.NotFound(new { Message = Texts.T("errors.grid_not_found_for_category", ("category", categoryId), ("page", pageIndex)) });
         }).AllowAnonymous();
 
         group.MapGet("/{categoryId}/pages", async (string categoryId, IGridManagementService gridService) =>
@@ -47,7 +48,7 @@ public static class GridEndpoints
             var swapped = await gridService.SwapSlotsAsync(req);
             if (swapped is null)
             {
-                return Results.NotFound(new { Message = "Grille introuvable pour la permutation." });
+                return Results.NotFound(new { Message = Texts.T("errors.grid_swap_not_found") });
             }
             await hubContext.Clients.All.SendAsync("OnGridLayoutUpdated", swapped);
             return Results.Ok(swapped);

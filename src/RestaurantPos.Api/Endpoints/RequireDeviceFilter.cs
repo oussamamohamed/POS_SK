@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using RestaurantPos.Application.Common.Interfaces;
 using RestaurantPos.Domain.Entities;
+using RestaurantPos.Infrastructure.Localization;
 
 namespace RestaurantPos.Api.Endpoints;
 
@@ -24,7 +25,7 @@ public sealed class RequireDeviceFilter : IEndpointFilter
         if (device is null)
         {
             return Results.Json(
-                new { code = "device_not_paired", message = "Ce poste n'est pas appairé au serveur." },
+                new { code = "device_not_paired", message = Texts.T("errors.device_not_paired") },
                 statusCode: StatusCodes.Status401Unauthorized);
         }
 

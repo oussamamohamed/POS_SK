@@ -10,6 +10,7 @@ using RestaurantPos.Application.DTOs;
 using RestaurantPos.Domain.Common;
 using RestaurantPos.Domain.Entities;
 using RestaurantPos.Domain.ValueObjects;
+using RestaurantPos.Infrastructure.Localization;
 using RestaurantPos.Infrastructure.Persistence;
 
 namespace RestaurantPos.Infrastructure.Services;
@@ -245,7 +246,7 @@ public class HappyHourPricingService : IHappyHourPricingService
                 null,
                 null,
                 null,
-                "Autorisation insuffisante : code PIN superviseur ou gérant requis."
+                Texts.T("errors.authorization_insufficient")
             );
         }
 
@@ -320,7 +321,7 @@ public class HappyHourPricingService : IHappyHourPricingService
                 null,
                 null,
                 null,
-                "Autorisation insuffisante : code PIN superviseur ou gérant requis."
+                Texts.T("errors.authorization_insufficient")
             );
         }
 

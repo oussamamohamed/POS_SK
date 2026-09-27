@@ -32,7 +32,7 @@ public static class DeviceEndpoints
                 || !Enum.IsDefined(role)
                 || int.TryParse(req.Role, out _))
             {
-                return Results.BadRequest(new { Message = "Nom (64 caractères max) et rôle (Caisse, Serveur, Cuisine, BackOffice) obligatoires." });
+                return Results.BadRequest(new { Message = Texts.T("errors.device_name_role_required") });
             }
 
             var operatorId = Guid.TryParse(http.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var id) ? id : Guid.Empty;

@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -11,6 +12,7 @@ using RestaurantPos.Application.DTOs;
 using RestaurantPos.Domain.Entities;
 using RestaurantPos.Domain.ValueObjects;
 using RestaurantPos.Domain.Common;
+using RestaurantPos.Infrastructure.Localization;
 using RestaurantPos.Infrastructure.Persistence;
 
 namespace RestaurantPos.Api.Endpoints;
@@ -27,13 +29,17 @@ public static class HospitalityEndpoints
         tableGroup.MapPost("/{tableNumber}/transfer", async (string tableNumber, TransferTableRequest req, ITableManagementService tableService) =>
         {
             var ok = await tableService.TransferTableAsync(tableNumber, req.TargetTableNumber);
-            return ok ? Results.Ok(new { Success = true, Message = $"Commande transférée de {tableNumber} vers {req.TargetTableNumber}" }) : Results.BadRequest(new { Success = false, Message = "Échec du transfert de table." });
+            return ok
+                ? Results.Ok(new { Success = true, Message = Texts.T("messages.order_transferred", ("from", tableNumber), ("to", req.TargetTableNumber)) })
+                : Results.BadRequest(new { Success = false, Message = Texts.T("errors.table_transfer_failed") });
         });
 
         tableGroup.MapPost("/{tableNumber}/merge", async (string tableNumber, MergeTablesRequest req, ITableManagementService tableService) =>
         {
             var ok = await tableService.MergeTablesAsync(tableNumber, req.TargetTableNumber);
-            return ok ? Results.Ok(new { Success = true, Message = $"Tables {tableNumber} et {req.TargetTableNumber} fusionnées" }) : Results.BadRequest(new { Success = false, Message = "Échec de la fusion de tables." });
+            return ok
+                ? Results.Ok(new { Success = true, Message = Texts.T("messages.tables_merged", ("from", tableNumber), ("to", req.TargetTableNumber)) })
+                : Results.BadRequest(new { Success = false, Message = Texts.T("errors.table_merge_failed") });
         });
 
         orderGroup.MapPost("/{orderId:guid}/discount", async (Guid orderId, ApplyOrderDiscountRequest req, IOrderDiscountService discountService) =>
@@ -45,7 +51,7 @@ public static class HospitalityEndpoints
             }
             catch (Exception)
             {
-                return Results.BadRequest(new { Success = false, Message = "Opération de remise échouée." });
+                return Results.BadRequest(new { Success = false, Message = Texts.T("errors.discount_failed") });
             }
         });
 
@@ -58,7 +64,7 @@ public static class HospitalityEndpoints
             }
             catch (Exception)
             {
-                return Results.BadRequest(new { Success = false, Message = "Opération de gratuité échouée." });
+                return Results.BadRequest(new { Success = false, Message = Texts.T("errors.comp_failed") });
             }
         });
 
@@ -99,7 +105,7 @@ public static class HospitalityEndpoints
                 }
             }
             await hubContext.Clients.All.SendAsync("ReceiveKitchenUpdate", "SUITE_CLAIMED", tableNumber);
-            return Results.Ok(new { Success = true, Message = $"Réclame suite transmise en cuisine pour la table {tableNumber}" });
+            return Results.Ok(new { Success = true, Message = Texts.T("messages.next_course_fired", ("table", tableNumber)) });
         });
 
         hotelGroup.MapGet("/rooms", async (IRoomBillingService roomService) =>
@@ -111,7 +117,7 @@ public static class HospitalityEndpoints
         hotelGroup.MapGet("/rooms/{roomNumber}", async (string roomNumber, IRoomBillingService roomService) =>
         {
             var room = await roomService.GetRoomOccupantAsync(roomNumber);
-            return room is not null ? Results.Ok(room) : Results.NotFound(new { Message = $"Chambre {roomNumber} introuvable ou non occupée." });
+            return room is not null ? Results.Ok(room) : Results.NotFound(new { Message = Texts.T("errors.room_not_found", ("room", roomNumber)) });
         });
 
         hotelGroup.MapPost("/room-charge", async (RoomChargeRequest req, IRoomBillingService roomService, ITableManagementService tableService) =>
@@ -138,12 +144,14 @@ public static class HospitalityEndpoints
                     RoomNumber = charge.RoomNumber,
                     GuestName = charge.GuestName,
                     TotalCharged = (charge.Amount + charge.TipAmount).ToDecimal(),
-                    Message = $"Facturation de {(charge.Amount + charge.TipAmount).ToDecimal():F2} € enregistrée sur la chambre {charge.RoomNumber} ({charge.GuestName})"
+                    Message = Texts.T("messages.room_charge_recorded",
+                        ("amount", (charge.Amount + charge.TipAmount).ToDecimal().ToString("0.00", CultureInfo.InvariantCulture)),
+                        ("room", charge.RoomNumber), ("guest", charge.GuestName))
                 });
             }
             catch (Exception)
             {
-                return Results.BadRequest(new { Success = false, Message = "Facturation chambre échouée." });
+                return Results.BadRequest(new { Success = false, Message = Texts.T("errors.room_charge_failed") });
             }
         });
     }

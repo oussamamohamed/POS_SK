@@ -3,6 +3,7 @@ using System.Text;
 using Microsoft.EntityFrameworkCore;
 using RestaurantPos.Application.Common.Interfaces;
 using RestaurantPos.Domain.Entities;
+using RestaurantPos.Infrastructure.Localization;
 using RestaurantPos.Infrastructure.Persistence;
 
 namespace RestaurantPos.Infrastructure.Security;
@@ -20,7 +21,7 @@ public class OperatorAuthenticationService : IOperatorAuthenticationService
     {
         if (string.IsNullOrWhiteSpace(rawPin) || rawPin.Length < 4)
         {
-            return new OperatorAuthenticationResult(false, null, null, null, "Code PIN invalide");
+            return new OperatorAuthenticationResult(false, null, null, null, Texts.T("errors.pin_invalid"));
         }
 
         var activeUsers = await _dbContext.Users
@@ -44,7 +45,7 @@ public class OperatorAuthenticationService : IOperatorAuthenticationService
             }
         }
 
-        return new OperatorAuthenticationResult(false, null, null, null, "Code PIN ou identifiants incorrects");
+        return new OperatorAuthenticationResult(false, null, null, null, Texts.T("errors.pin_or_credentials_invalid"));
     }
 
     public string HashPin(string rawPin, string salt)

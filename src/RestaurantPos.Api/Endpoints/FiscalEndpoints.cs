@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using RestaurantPos.Application.Common.Interfaces;
 using RestaurantPos.Application.DTOs;
+using RestaurantPos.Infrastructure.Localization;
 
 namespace RestaurantPos.Api.Endpoints;
 
@@ -21,7 +22,7 @@ public static class FiscalEndpoints
 
             if (req.ManagerId == Guid.Empty || string.IsNullOrWhiteSpace(req.ManagerName))
             {
-                return Results.BadRequest(new { Message = "ManagerId et ManagerName sont obligatoires pour la clôture Z." });
+                return Results.BadRequest(new { Message = Texts.T("errors.z_closure_manager_required") });
             }
 
             var closure = await fiscal.ExecuteDailyZClosureAsync(terminalId, req.ManagerId, req.ManagerName);
@@ -45,7 +46,7 @@ public static class FiscalEndpoints
             var closure = await fiscal.GetLatestZClosureAsync(term);
             if (closure is null)
             {
-                return Results.NotFound(new { Message = "Aucune clôture trouvée." });
+                return Results.NotFound(new { Message = Texts.T("errors.no_closure_found") });
             }
 
             return Results.Ok(new

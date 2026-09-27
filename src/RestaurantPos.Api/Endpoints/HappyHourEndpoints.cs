@@ -9,6 +9,7 @@ using RestaurantPos.Application.Common.Interfaces;
 using RestaurantPos.Application.DTOs;
 using RestaurantPos.Domain.Entities;
 using RestaurantPos.Domain.ValueObjects;
+using RestaurantPos.Infrastructure.Localization;
 using RestaurantPos.Infrastructure.Persistence;
 
 namespace RestaurantPos.Api.Endpoints;
@@ -92,7 +93,7 @@ public static class HappyHourEndpoints
         {
             if (!TimeOnly.TryParse(dto.StartTime, out var startTime) || !TimeOnly.TryParse(dto.EndTime, out var endTime))
             {
-                return Results.BadRequest(new { Message = "Format horaire invalide (HH:mm requis)." });
+                return Results.BadRequest(new { Message = Texts.T("errors.time_format_invalid") });
             }
 
             var schedule = new HappyHourSchedule
@@ -125,7 +126,7 @@ public static class HappyHourEndpoints
             db.HappyHourSchedules.Add(schedule);
             await db.SaveChangesAsync();
 
-            return Results.Ok(new { schedule.Id, Message = "Plage Happy Hour créée avec succès." });
+            return Results.Ok(new { schedule.Id, Message = Texts.T("messages.happy_hour_created") });
         }).AllowAnonymous();
 
         group.MapDelete("/schedules/{id:guid}", async (Guid id, AppDbContext db) =>
@@ -133,13 +134,13 @@ public static class HappyHourEndpoints
             var schedule = await db.HappyHourSchedules.FindAsync(id);
             if (schedule == null)
             {
-                return Results.NotFound(new { Message = "Plage horaire introuvable." });
+                return Results.NotFound(new { Message = Texts.T("errors.time_slot_not_found") });
             }
 
             db.HappyHourSchedules.Remove(schedule);
             await db.SaveChangesAsync();
 
-            return Results.Ok(new { Message = "Plage horaire supprimée." });
+            return Results.Ok(new { Message = Texts.T("messages.time_slot_deleted") });
         }).AllowAnonymous();
 
         // 6. Batch Apply Price Rules

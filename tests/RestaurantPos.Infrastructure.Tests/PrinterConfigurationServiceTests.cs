@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
@@ -47,6 +48,7 @@ public class PrinterConfigurationServiceTests
     [Fact]
     public async Task SendTestPrint_ToUnreachableIp_ShouldReturnFailedTestResult()
     {
+        CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("en");
         using var context = CreateInMemoryDbContext();
         var service = new PrinterConfigurationService(context);
 
@@ -56,7 +58,7 @@ public class PrinterConfigurationServiceTests
         var testResult = await service.SendTestPrintAsync(printer.Id);
         testResult.Should().NotBeNull();
         testResult.Success.Should().BeFalse();
-        testResult.Message.Should().Contain("Échec");
+        testResult.Message.Should().Contain("Printer connection failed");
     }
 
     [Fact]

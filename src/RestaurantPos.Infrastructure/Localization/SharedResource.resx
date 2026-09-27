@@ -64,4 +64,142 @@
   <data name="errors.rate_limited_seconds" xml:space="preserve">
     <value>Too many attempts. Please wait {seconds} seconds.</value>
   </data>
+  <data name="errors.device_not_paired" xml:space="preserve">
+    <value>This device is not paired with the server.</value>
+  </data>
+  <data name="errors.grid_not_found_for_category" xml:space="preserve">
+    <value>No grid for category {category} (page {page})</value>
+  </data>
+  <data name="errors.grid_swap_not_found" xml:space="preserve">
+    <value>Grid not found for the swap.</value>
+  </data>
+  <data name="errors.device_name_role_required" xml:space="preserve">
+    <value>Name (max 64 characters) and role (Caisse, Serveur, Cuisine, BackOffice) are required.</value>
+  </data>
+  <data name="messages.order_transferred" xml:space="preserve">
+    <value>Order moved from {from} to {to}</value>
+  </data>
+  <data name="errors.table_transfer_failed" xml:space="preserve">
+    <value>Table transfer failed.</value>
+  </data>
+  <data name="messages.tables_merged" xml:space="preserve">
+    <value>Tables {from} and {to} merged</value>
+  </data>
+  <data name="errors.table_merge_failed" xml:space="preserve">
+    <value>Table merge failed.</value>
+  </data>
+  <data name="errors.discount_failed" xml:space="preserve">
+    <value>Discount operation failed.</value>
+  </data>
+  <data name="errors.comp_failed" xml:space="preserve">
+    <value>Complimentary item operation failed.</value>
+  </data>
+  <data name="messages.next_course_fired" xml:space="preserve">
+    <value>Next course sent to the kitchen for table {table}</value>
+  </data>
+  <data name="errors.room_not_found" xml:space="preserve">
+    <value>Room {room} not found or not occupied.</value>
+  </data>
+  <data name="messages.room_charge_recorded" xml:space="preserve">
+    <value>Charge of {amount} € recorded on room {room} ({guest})</value>
+  </data>
+  <data name="errors.room_charge_failed" xml:space="preserve">
+    <value>Room charge failed.</value>
+  </data>
+  <data name="errors.login_rate_limited" xml:space="preserve">
+    <value>Too many failed attempts. Please wait {seconds} seconds.</value>
+  </data>
+  <data name="errors.supervisor_rate_limited" xml:space="preserve">
+    <value>Too many attempts. Please wait {seconds} seconds.</value>
+  </data>
+  <data name="errors.supervisor_pin_invalid" xml:space="preserve">
+    <value>Invalid supervisor PIN.</value>
+  </data>
+  <data name="errors.supervisor_privileges_insufficient" xml:space="preserve">
+    <value>Insufficient supervisor privileges.</value>
+  </data>
+  <data name="errors.order_not_found" xml:space="preserve">
+    <value>Order not found.</value>
+  </data>
+  <data name="errors.hold_empty_cart" xml:space="preserve">
+    <value>Cannot put an empty cart on hold.</value>
+  </data>
+  <data name="errors.held_order_not_found_or_recalled" xml:space="preserve">
+    <value>Held order not found or already recalled.</value>
+  </data>
+  <data name="errors.supervisor_pin_required" xml:space="preserve">
+    <value>Supervisor PIN required.</value>
+  </data>
+  <data name="errors.authorization_insufficient" xml:space="preserve">
+    <value>Insufficient authorization: supervisor or manager PIN required.</value>
+  </data>
+  <data name="errors.held_order_not_found" xml:space="preserve">
+    <value>Held order not found.</value>
+  </data>
+  <data name="messages.held_order_cancelled" xml:space="preserve">
+    <value>Held order cancelled.</value>
+  </data>
+  <data name="errors.order_not_found_or_empty" xml:space="preserve">
+    <value>Order not found or cart empty.</value>
+  </data>
+  <data name="errors.table_number_required" xml:space="preserve">
+    <value>Table number is required.</value>
+  </data>
+  <data name="errors.no_active_order_on_table" xml:space="preserve">
+    <value>No active order on table {table}</value>
+  </data>
+  <data name="errors.order_not_found_for_payment" xml:space="preserve">
+    <value>Order not found for this payment.</value>
+  </data>
+  <data name="errors.payment_failed" xml:space="preserve">
+    <value>Payment failed.</value>
+  </data>
+  <data name="errors.operator_required_for_void" xml:space="preserve">
+    <value>OperatorId is required to void.</value>
+  </data>
+  <data name="errors.void_failed" xml:space="preserve">
+    <value>Unable to void the receipt.</value>
+  </data>
+  <data name="errors.z_closure_manager_required" xml:space="preserve">
+    <value>ManagerId and ManagerName are required for the Z closure.</value>
+  </data>
+  <data name="errors.no_closure_found" xml:space="preserve">
+    <value>No closure found.</value>
+  </data>
+  <data name="errors.time_format_invalid" xml:space="preserve">
+    <value>Invalid time format (HH:mm required).</value>
+  </data>
+  <data name="messages.happy_hour_created" xml:space="preserve">
+    <value>Happy Hour slot created.</value>
+  </data>
+  <data name="errors.time_slot_not_found" xml:space="preserve">
+    <value>Time slot not found.</value>
+  </data>
+  <data name="messages.time_slot_deleted" xml:space="preserve">
+    <value>Time slot deleted.</value>
+  </data>
+  <data name="errors.sync_payment_failed" xml:space="preserve">
+    <value>Synchronized payment failed.</value>
+  </data>
+  <data name="messages.test_data_seeded" xml:space="preserve">
+    <value>Production test data inserted into the database.</value>
+  </data>
+  <data name="errors.pin_invalid" xml:space="preserve">
+    <value>Invalid PIN</value>
+  </data>
+  <data name="errors.pin_or_credentials_invalid" xml:space="preserve">
+    <value>Invalid PIN or credentials</value>
+  </data>
+  <data name="errors.meal_voucher_above_legal_cap" xml:space="preserve">
+    <value>Meal voucher amount ({amount} €) exceeds the legal eligible cap ({max} €).</value>
+  </data>
+  <data name="errors.meal_voucher_overpayment_refused" xml:space="preserve">
+    <value>Meal voucher overpayment refused: face value ({face} €) exceeds the balance due ({due} €).</value>
+  </data>
+  <data name="messages.test_print_ok" xml:space="preserve">
+    <value>Test print succeeded ({name} @ {ip}:{port})</value>
+  </data>
+  <data name="errors.test_print_failed" xml:space="preserve">
+    <value>Printer connection failed ({ip}:{port}): {error}</value>
+  </data>
 </root>

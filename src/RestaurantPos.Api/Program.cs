@@ -367,7 +367,7 @@ public partial class Program
             ITerminalLayoutService layoutService) =>
         {
             await SeedDatabase(db, staffService, catalogService, printerService, layoutService, force: true);
-            return Results.Ok(new { Success = true, Message = "Données de test de production insérées avec succès dans la base de données." });
+            return Results.Ok(new { Success = true, Message = Texts.T("messages.test_data_seeded") });
         });
 
         // 2. Auth PIN Login

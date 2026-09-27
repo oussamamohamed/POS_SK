@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using RestaurantPos.Application.Common.Interfaces;
 using RestaurantPos.Application.DTOs;
+using RestaurantPos.Infrastructure.Localization;
 using RestaurantPos.Infrastructure.Persistence;
 
 namespace RestaurantPos.Api.Endpoints;
@@ -27,7 +28,7 @@ public static class TableEndpoints
         {
             if (string.IsNullOrWhiteSpace(req.TableNumber))
             {
-                return Results.BadRequest(new { Message = "Le numéro de table est requis." });
+                return Results.BadRequest(new { Message = Texts.T("errors.table_number_required") });
             }
 
             var created = await tableService.CreateTableAsync(req.TableNumber, req.Capacity <= 0 ? 2 : req.Capacity, req.PositionX ?? 0, req.PositionY ?? 0);
@@ -44,7 +45,7 @@ public static class TableEndpoints
         group.MapGet("/{tableNumber}/order", async (string tableNumber, ITableManagementService tableService) =>
         {
             var order = await tableService.GetActiveOrderForTableAsync(tableNumber);
-            return order is not null ? Results.Ok(order) : Results.NotFound(new { Message = $"Aucune commande active sur la table {tableNumber}" });
+            return order is not null ? Results.Ok(order) : Results.NotFound(new { Message = Texts.T("errors.no_active_order_on_table", ("table", tableNumber)) });
         });
 
         group.MapPost("/{tableNumber}/items", async (string tableNumber, AddOrderItemsRequest req, ITableManagementService tableService) =>

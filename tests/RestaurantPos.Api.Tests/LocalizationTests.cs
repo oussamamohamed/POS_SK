@@ -39,6 +39,28 @@ public class LocalizationTests : IClassFixture<PosApiApplicationFactory>
         (await PairWithBadCodeAsync(header)).Should().Be(expected);
 
     [Fact]
+    public async Task NoFrenchMessage_WhenEnglishRequested()
+    {
+        _factory.Services.GetRequiredService<IPinRateLimiterService>().ResetAttempts("unknown-client");
+        var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.Add("Accept-Language", "en");
+        var response = await client.PostAsJsonAsync("/api/auth/login", new PinLoginRequest("0000"));
+        var body = await response.Content.ReadFromJsonAsync<JsonElement>();
+        body.GetProperty("errorMessage").GetString().Should().Be("Invalid PIN or credentials");
+    }
+
+    [Fact]
+    public async Task AuthError_InFrench_WhenFrenchRequested()
+    {
+        _factory.Services.GetRequiredService<IPinRateLimiterService>().ResetAttempts("unknown-client");
+        var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.Add("Accept-Language", "fr");
+        var response = await client.PostAsJsonAsync("/api/auth/login", new PinLoginRequest("0000"));
+        var body = await response.Content.ReadFromJsonAsync<JsonElement>();
+        body.GetProperty("errorMessage").GetString().Should().Be("Code PIN ou identifiants incorrects");
+    }
+
+    [Fact]
     public void AcceptLanguage_Ar_DoesNotChangeCurrentCulture()
     {
         var options = _factory.Services.GetRequiredService<Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Builder.RequestLocalizationOptions>>().Value;

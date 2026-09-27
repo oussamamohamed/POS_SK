@@ -115,7 +115,7 @@ public class MealVoucherPolicyTests : IClassFixture<PosApiApplicationFactory>
         var response = await client.PostAsJsonAsync("/api/orders/counter/checkout", checkoutReq);
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         var content = await response.Content.ReadAsStringAsync();
-        content.Should().Contain("Surpaiement par Titre-Restaurant refusé");
+        content.Should().Contain("Meal voucher overpayment refused");
     }
 
     [Fact]

@@ -8,6 +8,7 @@ using RestaurantPos.Application.Common.Interfaces;
 using RestaurantPos.Application.DTOs;
 using RestaurantPos.Domain.Entities;
 using RestaurantPos.Domain.ValueObjects;
+using RestaurantPos.Infrastructure.Localization;
 using RestaurantPos.Infrastructure.Persistence;
 
 namespace RestaurantPos.Api.Endpoints;
@@ -75,7 +76,7 @@ public static class CheckoutEndpoints
                 }
                 else
                 {
-                    return Results.BadRequest(new { Message = "Commande introuvable pour ce règlement." });
+                    return Results.BadRequest(new { Message = Texts.T("errors.order_not_found_for_payment") });
                 }
             }
 
@@ -91,7 +92,7 @@ public static class CheckoutEndpoints
 
             if (!result.IsSuccess)
             {
-                return Results.BadRequest(new { Message = "Échec de l'encaissement." });
+                return Results.BadRequest(new { Message = Texts.T("errors.payment_failed") });
             }
 
             return Results.Ok(new
@@ -110,13 +111,13 @@ public static class CheckoutEndpoints
         {
             if (req.OperatorId == Guid.Empty)
             {
-                return Results.BadRequest(new { Message = "OperatorId est obligatoire pour l'annulation." });
+                return Results.BadRequest(new { Message = Texts.T("errors.operator_required_for_void") });
             }
 
             var result = await checkout.VoidReceiptAsync(receiptId, RequireDeviceFilter.PairedDevice(http).TerminalId, req.OperatorId);
             if (!result.IsSuccess)
             {
-                return Results.BadRequest(new { Message = "Impossible d'annuler le reçu." });
+                return Results.BadRequest(new { Message = Texts.T("errors.void_failed") });
             }
 
             return Results.Ok(new

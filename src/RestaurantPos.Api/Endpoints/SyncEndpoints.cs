@@ -9,6 +9,7 @@ using RestaurantPos.Application.Common.Interfaces;
 using RestaurantPos.Application.DTOs;
 using RestaurantPos.Domain.Entities;
 using RestaurantPos.Domain.ValueObjects;
+using RestaurantPos.Infrastructure.Localization;
 using RestaurantPos.Infrastructure.Persistence;
 
 namespace RestaurantPos.Api.Endpoints;
@@ -125,7 +126,7 @@ public static class SyncEndpoints
 
             if (!result.IsSuccess)
             {
-                return Results.BadRequest(new { Message = "Échec de l'encaissement synchronisé." });
+                return Results.BadRequest(new { Message = Texts.T("errors.sync_payment_failed") });
             }
 
             if (!string.IsNullOrWhiteSpace(req.TableNumber))

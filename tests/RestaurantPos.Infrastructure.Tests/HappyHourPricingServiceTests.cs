@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -180,6 +181,7 @@ public class HappyHourPricingServiceTests
     public async Task ActivateOverrideAsync_WithWaiterPin_FailsWithForbiddenMessage()
     {
         // Arrange
+        CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("en");
         using var db = CreateInMemoryDb();
         var authMock = new Mock<IOperatorAuthenticationService>();
         authMock.Setup(a => a.AuthenticatePinAsync("1234", It.IsAny<CancellationToken>()))
@@ -194,7 +196,7 @@ public class HappyHourPricingServiceTests
 
         // Assert
         response.Success.Should().BeFalse();
-        response.Message.Should().Contain("Autorisation insuffisante");
+        response.Message.Should().Contain("Insufficient authorization");
 
         var activeSession = await db.HappyHourOverrideSessions.FirstOrDefaultAsync(s => s.TerminalId == "POS_MAIN" && s.IsActive);
         activeSession.Should().BeNull();

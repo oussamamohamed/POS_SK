@@ -64,4 +64,142 @@
   <data name="errors.rate_limited_seconds" xml:space="preserve">
     <value>Trop de tentatives. Patientez {seconds} secondes.</value>
   </data>
+  <data name="errors.device_not_paired" xml:space="preserve">
+    <value>Ce poste n'est pas appairé au serveur.</value>
+  </data>
+  <data name="errors.grid_not_found_for_category" xml:space="preserve">
+    <value>Aucune grille pour la catégorie {category} (page {page})</value>
+  </data>
+  <data name="errors.grid_swap_not_found" xml:space="preserve">
+    <value>Grille introuvable pour la permutation.</value>
+  </data>
+  <data name="errors.device_name_role_required" xml:space="preserve">
+    <value>Nom (64 caractères max) et rôle (Caisse, Serveur, Cuisine, BackOffice) obligatoires.</value>
+  </data>
+  <data name="messages.order_transferred" xml:space="preserve">
+    <value>Commande transférée de {from} vers {to}</value>
+  </data>
+  <data name="errors.table_transfer_failed" xml:space="preserve">
+    <value>Échec du transfert de table.</value>
+  </data>
+  <data name="messages.tables_merged" xml:space="preserve">
+    <value>Tables {from} et {to} fusionnées</value>
+  </data>
+  <data name="errors.table_merge_failed" xml:space="preserve">
+    <value>Échec de la fusion de tables.</value>
+  </data>
+  <data name="errors.discount_failed" xml:space="preserve">
+    <value>Opération de remise échouée.</value>
+  </data>
+  <data name="errors.comp_failed" xml:space="preserve">
+    <value>Opération de gratuité échouée.</value>
+  </data>
+  <data name="messages.next_course_fired" xml:space="preserve">
+    <value>Réclame suite transmise en cuisine pour la table {table}</value>
+  </data>
+  <data name="errors.room_not_found" xml:space="preserve">
+    <value>Chambre {room} introuvable ou non occupée.</value>
+  </data>
+  <data name="messages.room_charge_recorded" xml:space="preserve">
+    <value>Facturation de {amount} € enregistrée sur la chambre {room} ({guest})</value>
+  </data>
+  <data name="errors.room_charge_failed" xml:space="preserve">
+    <value>Facturation chambre échouée.</value>
+  </data>
+  <data name="errors.login_rate_limited" xml:space="preserve">
+    <value>Trop de tentatives infructueuses. Veuillez patienter {seconds} secondes.</value>
+  </data>
+  <data name="errors.supervisor_rate_limited" xml:space="preserve">
+    <value>Trop de tentatives. Veuillez patienter {seconds} secondes.</value>
+  </data>
+  <data name="errors.supervisor_pin_invalid" xml:space="preserve">
+    <value>Code PIN superviseur invalide.</value>
+  </data>
+  <data name="errors.supervisor_privileges_insufficient" xml:space="preserve">
+    <value>Privilèges superviseur insuffisants.</value>
+  </data>
+  <data name="errors.order_not_found" xml:space="preserve">
+    <value>Commande introuvable.</value>
+  </data>
+  <data name="errors.hold_empty_cart" xml:space="preserve">
+    <value>Impossible de mettre en attente un panier vide.</value>
+  </data>
+  <data name="errors.held_order_not_found_or_recalled" xml:space="preserve">
+    <value>Commande en attente introuvable ou déjà rappelée.</value>
+  </data>
+  <data name="errors.supervisor_pin_required" xml:space="preserve">
+    <value>Code PIN superviseur requis.</value>
+  </data>
+  <data name="errors.authorization_insufficient" xml:space="preserve">
+    <value>Autorisation insuffisante : code PIN superviseur ou gérant requis.</value>
+  </data>
+  <data name="errors.held_order_not_found" xml:space="preserve">
+    <value>Commande en attente introuvable.</value>
+  </data>
+  <data name="messages.held_order_cancelled" xml:space="preserve">
+    <value>Commande en attente annulée avec succès.</value>
+  </data>
+  <data name="errors.order_not_found_or_empty" xml:space="preserve">
+    <value>Commande introuvable ou panier vide.</value>
+  </data>
+  <data name="errors.table_number_required" xml:space="preserve">
+    <value>Le numéro de table est requis.</value>
+  </data>
+  <data name="errors.no_active_order_on_table" xml:space="preserve">
+    <value>Aucune commande active sur la table {table}</value>
+  </data>
+  <data name="errors.order_not_found_for_payment" xml:space="preserve">
+    <value>Commande introuvable pour ce règlement.</value>
+  </data>
+  <data name="errors.payment_failed" xml:space="preserve">
+    <value>Échec de l'encaissement.</value>
+  </data>
+  <data name="errors.operator_required_for_void" xml:space="preserve">
+    <value>OperatorId est obligatoire pour l'annulation.</value>
+  </data>
+  <data name="errors.void_failed" xml:space="preserve">
+    <value>Impossible d'annuler le reçu.</value>
+  </data>
+  <data name="errors.z_closure_manager_required" xml:space="preserve">
+    <value>ManagerId et ManagerName sont obligatoires pour la clôture Z.</value>
+  </data>
+  <data name="errors.no_closure_found" xml:space="preserve">
+    <value>Aucune clôture trouvée.</value>
+  </data>
+  <data name="errors.time_format_invalid" xml:space="preserve">
+    <value>Format horaire invalide (HH:mm requis).</value>
+  </data>
+  <data name="messages.happy_hour_created" xml:space="preserve">
+    <value>Plage Happy Hour créée avec succès.</value>
+  </data>
+  <data name="errors.time_slot_not_found" xml:space="preserve">
+    <value>Plage horaire introuvable.</value>
+  </data>
+  <data name="messages.time_slot_deleted" xml:space="preserve">
+    <value>Plage horaire supprimée.</value>
+  </data>
+  <data name="errors.sync_payment_failed" xml:space="preserve">
+    <value>Échec de l'encaissement synchronisé.</value>
+  </data>
+  <data name="messages.test_data_seeded" xml:space="preserve">
+    <value>Données de test de production insérées avec succès dans la base de données.</value>
+  </data>
+  <data name="errors.pin_invalid" xml:space="preserve">
+    <value>Code PIN invalide</value>
+  </data>
+  <data name="errors.pin_or_credentials_invalid" xml:space="preserve">
+    <value>Code PIN ou identifiants incorrects</value>
+  </data>
+  <data name="errors.meal_voucher_above_legal_cap" xml:space="preserve">
+    <value>Le montant par Titre-Restaurant ({amount} €) dépasse le plafond légal éligible ({max} €).</value>
+  </data>
+  <data name="errors.meal_voucher_overpayment_refused" xml:space="preserve">
+    <value>Surpaiement par Titre-Restaurant refusé : la valeur faciale ({face} €) dépasse le solde dû ({due} €).</value>
+  </data>
+  <data name="messages.test_print_ok" xml:space="preserve">
+    <value>Test d'impression réussi ({name} @ {ip}:{port})</value>
+  </data>
+  <data name="errors.test_print_failed" xml:space="preserve">
+    <value>Échec de connexion imprimante ({ip}:{port}) : {error}</value>
+  </data>
 </root>

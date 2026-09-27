@@ -14,6 +14,7 @@ using RestaurantPos.Domain.Common;
 using RestaurantPos.Domain.Entities;
 using RestaurantPos.Domain.Enums;
 using RestaurantPos.Domain.ValueObjects;
+using RestaurantPos.Infrastructure.Localization;
 using RestaurantPos.Infrastructure.Persistence;
 
 namespace RestaurantPos.Api.Endpoints;
@@ -80,7 +81,7 @@ public static class CounterSaleEndpoints
 
             if (order == null)
             {
-                return Results.NotFound(new { Message = "Commande introuvable." });
+                return Results.NotFound(new { Message = Texts.T("errors.order_not_found") });
             }
 
             order.Destination = req.Destination;
@@ -99,7 +100,7 @@ public static class CounterSaleEndpoints
 
             if (order == null || order.Items.Count == 0)
             {
-                return Results.BadRequest(new { Message = "Impossible de mettre en attente un panier vide." });
+                return Results.BadRequest(new { Message = Texts.T("errors.hold_empty_cart") });
             }
 
             string terminalId = !string.IsNullOrWhiteSpace(req.TerminalId) ? req.TerminalId : "POS_MAIN_TERM";
@@ -148,7 +149,7 @@ public static class CounterSaleEndpoints
             var order = await heldStorage.RecallOrderAsync(holdId);
             if (order == null)
             {
-                return Results.NotFound(new { Message = "Commande en attente introuvable ou déjà rappelée." });
+                return Results.NotFound(new { Message = Texts.T("errors.held_order_not_found_or_recalled") });
             }
 
             const string counterTableNumber = "Comptoir";
@@ -173,19 +174,19 @@ public static class CounterSaleEndpoints
         {
             if (string.IsNullOrWhiteSpace(req.SupervisorPin))
             {
-                return Results.BadRequest(new { Message = "Code PIN superviseur requis." });
+                return Results.BadRequest(new { Message = Texts.T("errors.supervisor_pin_required") });
             }
 
             var auth = await authService.AuthenticatePinAsync(req.SupervisorPin);
             if (!auth.IsSuccess || (auth.Role != UserRole.FloorManager && auth.Role != UserRole.Admin))
             {
-                return Results.Json(new { Message = "Autorisation insuffisante : code PIN superviseur ou gérant requis." }, statusCode: StatusCodes.Status403Forbidden);
+                return Results.Json(new { Message = Texts.T("errors.authorization_insufficient") }, statusCode: StatusCodes.Status403Forbidden);
             }
 
             var success = await heldStorage.VoidHeldOrderAsync(holdId, auth.OperatorId!.Value, req.VoidReason);
             if (!success)
             {
-                return Results.NotFound(new { Message = "Commande en attente introuvable." });
+                return Results.NotFound(new { Message = Texts.T("errors.held_order_not_found") });
             }
 
             // Log JET audit event
@@ -200,7 +201,7 @@ public static class CounterSaleEndpoints
             db.JournalEntries.Add(journalEntry);
             await db.SaveChangesAsync();
 
-            return Results.Ok(new { Message = "Commande en attente annulée avec succès." });
+            return Results.Ok(new { Message = Texts.T("messages.held_order_cancelled") });
         });
 
         // 7. Counter & Takeaway Multi-Tender Checkout
@@ -212,7 +213,7 @@ public static class CounterSaleEndpoints
 
             if (order == null || order.Items.Count == 0)
             {
-                return Results.BadRequest(new { Message = "Commande introuvable ou panier vide." });
+                return Results.BadRequest(new { Message = Texts.T("errors.order_not_found_or_empty") });
             }
 
             string terminalId = RequireDeviceFilter.PairedDevice(http).TerminalId;

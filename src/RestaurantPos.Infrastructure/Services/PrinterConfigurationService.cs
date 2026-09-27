@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using RestaurantPos.Application.Common.Interfaces;
 using RestaurantPos.Domain.Common;
 using RestaurantPos.Domain.Entities;
+using RestaurantPos.Infrastructure.Localization;
 using RestaurantPos.Infrastructure.Persistence;
 
 namespace RestaurantPos.Infrastructure.Services;
@@ -105,12 +106,12 @@ public class PrinterConfigurationService : IPrinterConfigurationService
             await stream.FlushAsync(cts.Token).ConfigureAwait(false);
 
             sw.Stop();
-            return new TestPrintResult(true, $"Test d'impression réussi ({printer.Name} @ {printer.IpAddress}:{printer.Port})", sw.Elapsed);
+            return new TestPrintResult(true, Texts.T("messages.test_print_ok", ("name", printer.Name), ("ip", printer.IpAddress), ("port", printer.Port)), sw.Elapsed);
         }
         catch (Exception ex)
         {
             sw.Stop();
-            return new TestPrintResult(false, $"Échec de connexion imprimante ({printer.IpAddress}:{printer.Port}): {ex.Message}", sw.Elapsed);
+            return new TestPrintResult(false, Texts.T("errors.test_print_failed", ("ip", printer.IpAddress), ("port", printer.Port), ("error", ex.Message)), sw.Elapsed);
         }
     }
 
