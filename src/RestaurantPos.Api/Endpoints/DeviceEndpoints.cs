@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Net;
+using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Security.Claims;
 using System.Threading;
@@ -89,8 +90,7 @@ public static class DeviceEndpoints
             return host;
         }
 
-        var lanIp = Dns.GetHostAddresses(Dns.GetHostName())
-            .FirstOrDefault(a => a.AddressFamily == AddressFamily.InterNetwork && !IPAddress.IsLoopback(a));
+        var lanIp = LanIPv4();
         if (lanIp is null)
         {
             return host;
@@ -98,4 +98,18 @@ public static class DeviceEndpoints
 
         return host.Port is { } port ? new HostString(lanIp.ToString(), port) : new HostString(lanIp.ToString());
     }
+
+    /// <summary>
+    /// Première IPv4 d'une interface active dotée d'une passerelle (le LAN du restaurant), sans passer par le DNS :
+    /// un nom d'hôte « .local » non résolu ne peut pas faire échouer la génération du code, et les interfaces
+    /// Docker/VPN sans passerelle sont écartées. <c>null</c> si aucune.
+    /// </summary>
+    public static IPAddress? LanIPv4() =>
+        NetworkInterface.GetAllNetworkInterfaces()
+            .Where(n => n.OperationalStatus == OperationalStatus.Up
+                && n.NetworkInterfaceType != NetworkInterfaceType.Loopback
+                && n.GetIPProperties().GatewayAddresses.Count > 0)
+            .SelectMany(n => n.GetIPProperties().UnicastAddresses)
+            .Select(u => u.Address)
+            .FirstOrDefault(a => a.AddressFamily == AddressFamily.InterNetwork && !IPAddress.IsLoopback(a));
 }

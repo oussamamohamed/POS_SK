@@ -75,9 +75,13 @@ public class DeviceEndpointsTests : IClassFixture<PosApiApplicationFactory>
         body.QrPayload.Should().StartWith("posdevice://pair?url=").And.EndWith($"&code={body.Code}");
         var url = Uri.UnescapeDataString(body.QrPayload["posdevice://pair?url=".Length..body.QrPayload.IndexOf("&code=", StringComparison.Ordinal)]);
         // TestServer reçoit « localhost » : le QR doit porter une IPv4 de la machine joignable par l'iPad, s'il y en a une.
-        var lanIp = Dns.GetHostAddresses(Dns.GetHostName())
-            .FirstOrDefault(ip => ip.AddressFamily == AddressFamily.InterNetwork && !IPAddress.IsLoopback(ip));
+        var lanIp = DeviceEndpoints.LanIPv4();
         url.Should().Be(lanIp is null ? "http://localhost" : $"http://{lanIp}");
+        lanIp?.AddressFamily.Should().Be(AddressFamily.InterNetwork);
+        if (lanIp is not null)
+        {
+            IPAddress.IsLoopback(lanIp).Should().BeFalse();
+        }
         Convert.FromBase64String(body.QrPngBase64).Take(4).Should().Equal(0x89, 0x50, 0x4E, 0x47); // signature PNG
     }
 
