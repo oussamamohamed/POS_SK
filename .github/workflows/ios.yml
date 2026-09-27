@@ -1,0 +1,80 @@
+name: iPad natif (SwiftUI)
+
+on:
+  push:
+    paths:
+      - "ios/**"
+      - "src/RestaurantPos.Api/**"
+      - "src/RestaurantPos.Application/**"
+      - "src/RestaurantPos.Infrastructure/**"
+      - "src/RestaurantPos.Domain/**"
+      - ".github/workflows/ios.yml"
+  pull_request:
+    paths:
+      - "ios/**"
+      - "src/**"
+      - ".github/workflows/ios.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: ios-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  poskit:
+    name: POSKit — tests unitaires et contrat (Linux)
+    runs-on: ubuntu-latest
+    container: swift:6.1-noble
+    steps:
+      - uses: actions/checkout@v4
+      - run: swift test --package-path ios/POSKit
+
+  live-contract:
+    name: POSKit — scénario complet sur la vraie API
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+      - name: Démarrer RestaurantPos.Api (données de démo)
+        env:
+          ASPNETCORE_ENVIRONMENT: Development
+          ASPNETCORE_URLS: http://127.0.0.1:5080
+          Jwt__Secret: CiContractTestsSecretKey_AtLeast32BytesLong!
+        run: |
+          dotnet build src/RestaurantPos.Api/RestaurantPos.Api.csproj -c Debug
+          nohup dotnet run --no-build --project src/RestaurantPos.Api/RestaurantPos.Api.csproj -c Debug > api.log 2>&1 &
+          for i in $(seq 1 60); do
+            curl -sf http://127.0.0.1:5080/api/health && exit 0
+            sleep 2
+          done
+          cat api.log
+          exit 1
+      - name: Tests POSKit contre le serveur
+        run: |
+          docker run --rm --network host -e POS_API_URL=http://127.0.0.1:5080 \
+            -v "$PWD/ios/POSKit:/pkg" -w /pkg swift:6.1-noble swift test
+      - if: failure()
+        run: cat api.log
+
+  ui-tests:
+    name: App iPad — tests UI sur simulateur
+    runs-on: macos-15
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+      - name: Tests POSKit (macOS)
+        run: swift test --package-path ios/POSKit
+      - name: Tests UI XCUITest (iPad)
+        run: ios/scripts/test-ui.sh
+      - name: Rapport de tests (captures d'écran incluses)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ipad-ui-tests-xcresult
+          path: ios/build/UITests.xcresult
+          if-no-files-found: ignore

@@ -1,6 +1,8 @@
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
+using RestaurantPos.Application.Common.Interfaces;
 using RestaurantPos.Domain.Entities;
+using RestaurantPos.Domain.Enums;
 using RestaurantPos.Infrastructure.Persistence;
 using RestaurantPos.Infrastructure.Services;
 using Xunit;
@@ -35,6 +37,30 @@ public class TableManagementServiceTests
         var orderInDb = await dbContext.Orders.FindAsync(tableDto.ActiveOrderId!.Value);
         orderInDb.Should().NotBeNull();
         orderInDb!.TableNumber.Should().Be("T01");
+    }
+
+    [Fact]
+    public async Task TableOrdersAreEatInWhileCounterOrdersStayTakeaway()
+    {
+        // Arrange
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase(databaseName: "TableDestinationTestDb_" + Guid.NewGuid().ToString("N"))
+            .Options;
+
+        using var dbContext = new AppDbContext(options);
+        var service = new TableManagementService(dbContext);
+        var item = new OrderItemInputDto(Guid.NewGuid(), "Pizza", 1, 12.50m, 10.0m, "HOT_KITCHEN", null);
+
+        // Act
+        var opened = await service.OpenTableAsync("T01", 2, Guid.NewGuid(), "Alexandre");
+        var implicitTableOrder = await service.AddOrUpdateTableOrderItemsAsync("T02", [item]);
+        var counterOrder = await service.AddOrUpdateTableOrderItemsAsync("Comptoir", [item]);
+
+        // Assert
+        var openedOrder = await dbContext.Orders.FindAsync(opened.ActiveOrderId!.Value);
+        openedOrder!.Destination.Should().Be(OrderDestination.EatIn);
+        implicitTableOrder.Destination.Should().Be(OrderDestination.EatIn);
+        counterOrder.Destination.Should().Be(OrderDestination.Takeaway);
     }
 
     [Fact]
