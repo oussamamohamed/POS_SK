@@ -33,8 +33,10 @@ final class CounterUITests: PosUITestCase {
         addProduct("Café Gourmand")
         tap("ticket.hold")
         let field = element("hold.label")
+        let suggested = field.value as? String ?? ""
+        XCTAssertEqual(suggested, "Client #1")
         field.tap()
-        field.typeText("Marie")
+        field.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: suggested.count) + "Marie")
         tap("hold.confirm")
         waitToast(containing: "mise en attente")
         waitLabel("ticket.heldQueue", contains: "1")

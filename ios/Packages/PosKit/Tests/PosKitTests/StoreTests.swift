@@ -292,6 +292,18 @@ struct CounterTests {
         #expect(model.ticket.heldOrders.isEmpty)
     }
 
+    @Test func suggestedHoldLabelIsFirstFreeClientNumber() async {
+        let (model, _) = await makeModel()
+        await model.ticket.openCounter()
+        #expect(model.ticket.suggestedHoldLabel == "Client #1")
+        model.ticket.add(product(model, "Café Gourmand"))
+        #expect(await model.ticket.hold(label: "Client #1"))
+        #expect(model.ticket.suggestedHoldLabel == "Client #2")
+        model.ticket.add(product(model, "Café Gourmand"))
+        #expect(await model.ticket.hold(label: "Marie"))
+        #expect(model.ticket.suggestedHoldLabel == "Client #2")
+    }
+
     @Test func switchingDestinationChangesVat() async {
         let (model, _) = await makeModel()
         await model.ticket.openCounter()

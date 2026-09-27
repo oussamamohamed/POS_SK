@@ -285,12 +285,13 @@ struct HoldSheet: View {
                 .font(.title3)
                 .accessibilityIdentifier("hold.label")
             ActionButton(title: "Mettre en attente", systemImage: "pause.circle.fill", kind: .primary) {
-                Task { if await model.ticket.hold(label: label.isEmpty ? "Client #\(model.ticket.heldOrders.count + 1)" : label) { dismiss() } }
+                Task { if await model.ticket.hold(label: label.isEmpty ? model.ticket.suggestedHoldLabel : label) { dismiss() } }
             }
             .accessibilityIdentifier("hold.confirm")
             Spacer()
         }
         .padding(28)
+        .onAppear { if label.isEmpty { label = model.ticket.suggestedHoldLabel } }
         .presentationDetents([.height(260)])
     }
 }

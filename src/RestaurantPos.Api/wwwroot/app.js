@@ -2085,9 +2085,17 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        await saveActiveCartToServer();
+        // Nom proposé : premier « Client #N » pas encore utilisé (même règle que l'app iPad).
+        const usedLabels = new Set(state.heldOrders.map(h => h.customerLabel));
+        let number = 1;
+        while (usedLabels.has(`Client #${number}`)) number++;
+        const suggested = `Client #${number}`;
 
-        const label = prompt('Nom ou repère pour cette commande en attente :', `Client #${state.heldOrders.length + 1}`) || 'Client Comptoir';
+        const input = prompt('Nom ou repère pour cette commande en attente :', suggested);
+        if (input === null) return; // Annuler : le panier reste en cours
+        const label = input.trim() || suggested;
+
+        await saveActiveCartToServer();
 
         try {
             await ensureAuthToken();

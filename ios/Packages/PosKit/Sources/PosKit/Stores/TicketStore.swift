@@ -445,6 +445,14 @@ public final class TicketStore {
         heldOrders = (try? await api.heldOrders(terminalId: terminalId())) ?? heldOrders
     }
 
+    /// Nom proposé à la mise en attente : premier « Client #N » pas encore utilisé.
+    public var suggestedHoldLabel: String {
+        let used = Set(heldOrders.compactMap(\.customerLabel))
+        var number = 1
+        while used.contains("Client #\(number)") { number += 1 }
+        return "Client #\(number)"
+    }
+
     public func hold(label: String) async -> Bool {
         guard !lines.isEmpty else { notifier.warning("Impossible de mettre en attente un ticket vide"); return false }
         let name = label.trimmingCharacters(in: .whitespaces).isEmpty ? "Client comptoir" : label

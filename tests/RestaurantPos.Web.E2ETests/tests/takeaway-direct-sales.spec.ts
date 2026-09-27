@@ -126,4 +126,29 @@ test.describe('Vente Directe & Encaissement À Emporter (Feature 018)', () => {
     await expect(heldModal).not.toBeVisible();
     await expect(page.locator('#summaryTtc')).not.toHaveText('0.00 €');
   });
+
+  test('Mise en attente : nom suggéré modifiable, Annuler ne met rien en attente', async ({ page }) => {
+    await ensureLoggedIn(page);
+
+    await page.waitForSelector('.product-card');
+    await page.locator('.product-card').first().click();
+    const modModal = page.locator('#modifiersModal');
+    if (await modModal.evaluate((el: HTMLElement) => el.classList.contains('active'))) {
+      await page.click('#btnConfirmModifiers');
+    }
+    const total = await page.locator('#summaryTtc').textContent();
+    expect(total).not.toBe('0.00 €');
+    const heldBefore = await page.locator('#heldBadgeCount').textContent();
+
+    // Le nom proposé est le premier « Client #N » libre ; Annuler garde le panier.
+    let suggested = '';
+    page.once('dialog', async dialog => {
+      suggested = dialog.defaultValue();
+      await dialog.dismiss();
+    });
+    await page.click('#btnHoldCart');
+    await expect.poll(() => suggested).toMatch(/^Client #\d+$/);
+    await expect(page.locator('#summaryTtc')).toHaveText(total!);
+    await expect(page.locator('#heldBadgeCount')).toHaveText(heldBefore!);
+  });
 });
