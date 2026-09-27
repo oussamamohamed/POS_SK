@@ -95,6 +95,7 @@ public partial class Program
         builder.Services.AddSingleton<IPinRateLimiterService, PinRateLimiterService>();
         builder.Services.AddSingleton(TimeProvider.System);
         builder.Services.AddScoped<IDeviceService, DeviceService>();
+        builder.Services.AddScoped<IRestaurantSettingsService, RestaurantSettingsService>();
         if (!builder.Environment.IsEnvironment("Testing"))
         {
             builder.Services.AddHostedService<BonjourAdvertiserService>();
@@ -297,6 +298,11 @@ public partial class Program
                 CreatedByOperatorId TEXT NOT NULL
             );
             CREATE INDEX IF NOT EXISTS IX_DevicePairingCodes_CodeHash ON DevicePairingCodes(CodeHash);"); } catch { }
+            try { dbContext.Database.ExecuteSqlRaw(@"CREATE TABLE IF NOT EXISTS RestaurantSettings (
+                Id INTEGER PRIMARY KEY,
+                ReceiptLanguage TEXT NOT NULL,
+                UpdatedAtUtc TEXT NOT NULL
+            );"); } catch { }
         }
 
         app.UseCors();
@@ -381,6 +387,7 @@ public partial class Program
 
         // 5. Printers Management
         app.MapPrinterEndpoints();
+        app.MapSettingsEndpoints();
 
         // 6. Tables & Floor Plan
         app.MapTableEndpoints();

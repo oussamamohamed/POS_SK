@@ -34,6 +34,7 @@ public class AppDbContext : DbContext
     public DbSet<GridSlot> GridSlots => Set<GridSlot>();
     public DbSet<HeldOrder> HeldOrders => Set<HeldOrder>();
     public DbSet<CustomerCreditVoucher> CustomerCreditVouchers => Set<CustomerCreditVoucher>();
+    public DbSet<RestaurantSettings> RestaurantSettings => Set<RestaurantSettings>();
 
     // Happy Hour Pricing DbSets
     public DbSet<HappyHourSchedule> HappyHourSchedules => Set<HappyHourSchedule>();
@@ -329,6 +330,13 @@ public class AppDbContext : DbContext
             entity.Property(c => c.Amount)
                   .HasConversion(m => m.AmountInCents, cents => new Money(cents, "EUR"));
             entity.HasIndex(c => c.VoucherCode).IsUnique();
+        });
+
+        modelBuilder.Entity<RestaurantSettings>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.ReceiptLanguage).HasMaxLength(8).IsRequired();
         });
     }
 }

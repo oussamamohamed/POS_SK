@@ -82,6 +82,9 @@
   <data name="errors.table_transfer_failed" xml:space="preserve">
     <value>فشل نقل الطاولة.</value>
   </data>
+  <data name="errors.receipt_language_invalid" xml:space="preserve">
+    <value>لغة التذاكر غير مدعومة (en، fr، ar).</value>
+  </data>
   <data name="messages.tables_merged" xml:space="preserve">
     <value>تم دمج الطاولتين {from} و{to}</value>
   </data>
