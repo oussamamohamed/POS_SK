@@ -7,13 +7,19 @@ Statut : validé en brainstorming, en attente de relecture
 
 Le POS doit pouvoir être vendu hors de France. Aujourd'hui, tout est en français en dur :
 web (`wwwroot/app.js`, `index.html`), iOS (`Text("...")` SwiftUI), messages d'erreur serveur
-(~50 `{ Message = "..." }`) et tickets imprimés (`TakeawayTicketFormatter`). Aucune infrastructure
+(~50 `{ Message = "..." }`) et gabarits de tickets (`TakeawayTicketFormatter`). Aucune infrastructure
 i18n n'existe.
 
-Le projet global est découpé en deux sous-projets :
+Constat : aucun ticket n'est réellement imprimé aujourd'hui. `TakeawayTicketFormatter` n'est
+appelé nulle part ; le paiement comptoir renvoie seulement les indicateurs `printPickupVoucher` et
+`printFiscalReceipt` ; le seul envoi réel vers une imprimante est l'impression de test
+(`PrinterConfigurationService.SendTestPrintAsync`, ESC/POS brut en TCP 9100).
+
+Le projet global est découpé en trois sous-projets, livrés dans l'ordre A → C → B :
 
 - **A. Langue** (ce document) : FR, EN, AR avec mise en page RTL.
-- **B. Devise** (spec séparée, après A) : réglage restaurant « devise », devises à 2 décimales
+- **C. Impression** (spec séparée, après A) : voir la section « Impression » ci-dessous.
+- **B. Devise** (spec séparée, après C) : réglage restaurant « devise », devises à 2 décimales
   uniquement (EUR, MAD, DZD, USD, AED, SAR…). `Money` reste en centimes. Les devises à 3 décimales
   (TND, KWD…) sont exclues ; ce serait une extension future.
 
@@ -23,7 +29,7 @@ Le projet global est découpé en deux sous-projets :
 |---|---|
 | Langues | `en` (défaut et repli), `fr`, `ar` |
 | Périmètre | UI des clients + messages serveur + tickets imprimés |
-| Hors périmètre | Données saisies (produits, catégories, tables, opérateurs) jamais traduites ; adaptation fiscale par pays (NF525, FEC, TVA restent France, seulement traduits) ; devise (sous-projet B) |
+| Hors périmètre | Données saisies (produits, catégories, tables, opérateurs) jamais traduites ; adaptation fiscale par pays (NF525, FEC, TVA restent France, seulement traduits) ; impression réelle des tickets (sous-projet C) ; devise (sous-projet B) |
 | Choix langue UI | Par appareil |
 | Langue des tickets | Réglage restaurant unique, côté serveur |
 | Erreurs serveur | Traduites par le serveur selon `Accept-Language` |
@@ -96,9 +102,7 @@ Le projet global est découpé en deux sous-projets :
   tickets), sinon `en` (nouvelle installation).
 - Endpoints `GET /api/settings` (authentifié) et `PUT /api/settings` (manager/admin). Valeurs
   acceptées : `en`, `fr`, `ar` ; autre valeur → 400.
-- Impression (`TakeawayTicketFormatter`, tickets cuisine) : libellés via le localizer avec la
-  culture `ReceiptLanguage`, indépendante de la langue de la requête. Le centrage par espaces en
-  dur est remplacé par un centrage calculé sur la largeur du ticket (40 colonnes).
+- Tickets : voir la section « Impression ».
 - Chaîne NF525 : aucun changement. Le hash ne contient aucun libellé.
 
 ## RTL
@@ -116,12 +120,38 @@ Le projet global est découpé en deux sous-projets :
 - Miroir automatique SwiftUI.
 - Pavés numériques et montants : `.environment(\.layoutDirection, .leftToRight)`.
 
-## Tickets imprimés en arabe
+## Impression
 
-Le serveur produit du texte Unicode en ordre logique. Le rendu réel (liaison des lettres, sens
-d'écriture) dépend de l'imprimante et du client qui imprime ; il est **hors périmètre**. Une
-imprimante qui ne gère pas l'arabe doit garder `ReceiptLanguage` à `en` ou `fr`. Ce risque figure
-dans la documentation du réglage.
+### Dans ce sous-projet (A)
+
+- `TakeawayTicketFormatter` (texte brut, code mort) est remplacé par un **modèle de ticket
+  structuré**, indépendant de la façon d'imprimer : `TicketDocument` = liste de lignes, chaque
+  ligne étant soit un texte (alignement début/centre/fin, gras, grande taille), soit deux colonnes
+  (libellé à gauche, valeur à droite, inversées en RTL), soit un séparateur.
+- Un constructeur produit ce modèle pour le bon de retrait et le ticket de caisse, avec les
+  libellés `receipt.*` résolus par le localizer dans la culture `ReceiptLanguage`, indépendante de
+  la langue de la requête. `TicketDocument` porte sa direction (`rtl` si `ar`).
+- Rien n'est envoyé à une imprimante dans A.
+
+### Décisions reportées au sous-projet C (Impression)
+
+- Rendu du `TicketDocument` en **image** côté serveur, pour toutes les langues : l'arabe (liaison
+  des lettres, sens d'écriture) et les accents français s'impriment correctement sans driver ni
+  page de caractères. Le code actuel envoie de l'UTF-8 que les imprimantes ESC/POS ne comprennent
+  pas.
+- Bibliothèques : SkiaSharp pour le dessin, Topten.RichTextKit (HarfBuzz) pour la mise en forme
+  bidirectionnelle (arabe mêlé de chiffres et de noms latins). Police arabe (famille Noto, licence
+  OFL) fournie avec l'application.
+- Envoi en ESC/POS image (`GS v 0`) **par bandes** (~256 lignes) pour ne pas saturer la mémoire
+  des imprimantes d'entrée de gamme ; tiroir-caisse et coupe papier inchangés.
+- Estimation : ~115 Ko par ticket de caisse en 80 mm (576 points de large), transfert < 10 ms en
+  100 Mbit/s ; vitesse identique au texte sur Epson TM-T20III/TM-T88 ou Star TSP143, 30 à 50 %
+  plus lente possible sur Xprinter et génériques.
+- À valider sur une imprimante d'entrée de gamme. Si trop lent : mode texte avec bonne page de
+  caractères pour `en`/`fr`, image seulement pour `ar`.
+- C couvre aussi : quels documents imprimer et quand (bon de retrait, ticket de caisse, ticket
+  cuisine), acheminement vers l'imprimante du poste (`AssignedStationIds`), gestion des pannes
+  (imprimante éteinte, papier vide, relance).
 
 ## Cas limites
 
@@ -148,7 +178,8 @@ restauration locale).
   `<html dir="rtl">`, libellé arabe visible, pavé PIN en LTR ; langue `en` → libellé anglais ;
   langue navigateur `de` → anglais.
 - **Serveur** : `Accept-Language: fr` → message d'erreur français ; `de` → anglais ;
-  `PUT /api/settings` puis ticket formaté dans la langue choisie ; valeur invalide → 400 ;
+  `PUT /api/settings` puis `TicketDocument` construit avec les libellés de la langue choisie et
+  direction `rtl` en arabe ; valeur invalide → 400 ;
   initialisation `fr` sur base existante et `en` sur base vide ; hash NF525 identique quelle que
   soit la langue ; chaque clé de `SharedResource.resx` existe dans `fr` et `ar`.
 - **iOS unit** : les String Catalogs n'ont aucune entrée `fr`/`ar` manquante ou vide.
@@ -158,7 +189,7 @@ restauration locale).
 
 ## Ordre de livraison
 
-1. Serveur : localization, `.resx`, `RestaurantSettings` + endpoints, tickets.
+1. Serveur : localization, `.resx`, `RestaurantSettings` + endpoints, `TicketDocument`.
 2. Web : `t()`, extraction des chaînes en clés, dictionnaires `en`/`fr`, RTL CSS, sélecteur.
 3. iOS : String Catalogs, extraction en clés, `Accept-Language`, réglage langue tickets dans Admin,
    exceptions LTR.
