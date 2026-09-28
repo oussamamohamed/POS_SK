@@ -172,6 +172,22 @@ struct HTTPPosAPITests {
         let api = makeAPI { _ in .init(status: 400, body: #"{"code":"pairing_code_invalid","message":"Code invalide ou expiré"}"#) }
         await #expect(throws: APIError.server(status: 400, message: "Code invalide ou expiré")) { _ = try await api.pair(code: "WRONG") }
     }
+
+    @Test func sendsAcceptLanguage() async throws {
+        let api = makeAPI { _ in .init(status: 200, body: #"{"receiptLanguage":"fr"}"#) }
+        _ = try await api.settings()
+        let header = try #require(last.value(forHTTPHeaderField: "Accept-Language"))
+        #expect(["en", "fr", "ar"].contains(header))
+    }
+
+    @Test func savesSettings() async throws {
+        let api = makeAPI { _ in .init(status: 200, body: #"{"receiptLanguage":"ar"}"#) }
+        let saved = try await api.saveSettings(RestaurantSettings(receiptLanguage: "ar"))
+        #expect(last.httpMethod == "PUT")
+        #expect(last.url?.path == "/api/settings")
+        #expect(try body(last)["receiptLanguage"] as? String == "ar")
+        #expect(saved.receiptLanguage == "ar")
+    }
 }
 
 @Suite("Lien d'appairage (QR)")

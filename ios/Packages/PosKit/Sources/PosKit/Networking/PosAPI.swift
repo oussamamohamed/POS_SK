@@ -12,14 +12,14 @@ public enum APIError: Error, Equatable, Sendable, LocalizedError {
 
     public var errorDescription: String? {
         switch self {
-        case .unauthorized: "Session expirée : veuillez saisir votre code PIN."
-        case .deviceNotPaired: "Ce poste n'est pas appairé au serveur. Générez un code dans Gestion → Appareils."
-        case .forbidden(let m): m ?? "Action réservée à un responsable."
-        case .notFound(let m): m ?? "Élément introuvable."
-        case .rateLimited(let m): m ?? "Trop de tentatives, patientez."
-        case .server(let status, let m): m ?? "Erreur serveur (\(status))."
-        case .transport(let m): "Serveur injoignable : \(m)"
-        case .decoding(let m): "Réponse inattendue du serveur : \(m)"
+        case .unauthorized: L10n.string("errors.unauthorized")
+        case .deviceNotPaired: L10n.string("errors.device_not_paired")
+        case .forbidden(let m): m ?? L10n.string("errors.forbidden")
+        case .notFound(let m): m ?? L10n.string("errors.not_found")
+        case .rateLimited(let m): m ?? L10n.string("errors.rate_limited")
+        case .server(let status, let m): m ?? String(format: L10n.string("errors.server"), status)
+        case .transport(let m): String(format: L10n.string("errors.transport"), m)
+        case .decoding(let m): String(format: L10n.string("errors.decoding"), m)
         }
     }
 
@@ -113,6 +113,10 @@ public protocol PosAPI: Sendable {
     func networkInfo() async throws -> NetworkInfo
     func syncStatus() async throws -> SyncStatus
     func forceSync() async throws
+
+    // Réglages
+    func settings() async throws -> RestaurantSettings
+    func saveSettings(_ settings: RestaurantSettings) async throws -> RestaurantSettings
 }
 
 /// Saisie back-office d'un article.

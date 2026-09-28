@@ -47,7 +47,7 @@ public final class CatalogStore {
             missingLayouts.removeAll()
             await loadCurrentLayout()
         } catch {
-            notifier.error("Erreur de chargement du catalogue")
+            notifier.error(L10n.string("order.catalog_load_error"))
         }
     }
 
@@ -200,8 +200,10 @@ public final class HappyHourStore {
     }
 
     public var bannerTitle: String {
-        let name = (status.activeScheduleName ?? "Happy Hour").uppercased()
-        return status.isOverride ? "Dérogation : \(name)" : "Happy Hour : \(name)"
+        let name = (status.activeScheduleName ?? L10n.string("order.happy_hour_default_name")).uppercased()
+        return status.isOverride
+            ? String(format: L10n.string("order.happy_hour_override_banner"), name)
+            : String(format: L10n.string("order.happy_hour_banner"), name)
     }
 
     /// Prix réduit applicable, `nil` si l'article est au tarif normal.
@@ -218,10 +220,11 @@ public final class HappyHourStore {
     }
 
     public func activateOverride(pin: String, minutes: Int, reason: String) async -> Bool {
-        guard !pin.isEmpty else { notifier.warning("Saisissez le code PIN superviseur"); return false }
+        guard !pin.isEmpty else { notifier.warning(L10n.string("order.happy_hour_pin_required")); return false }
         do {
+            // Motif par défaut envoyé au serveur et journalisé : texte figé, non localisé (cf. règles projet).
             let result = try await api.activateHappyHourOverride(terminalId: terminalId(), pin: pin, minutes: minutes, reason: reason.isEmpty ? "Dérogation responsable" : reason)
-            notifier.success(result.message ?? "Happy Hour prolongé de \(minutes) min")
+            notifier.success(result.message ?? String(format: L10n.string("order.happy_hour_extended"), minutes))
             await refresh()
             return true
         } catch {
@@ -231,10 +234,11 @@ public final class HappyHourStore {
     }
 
     public func stopOverride(pin: String, reason: String) async -> Bool {
-        guard !pin.isEmpty else { notifier.warning("Saisissez le code PIN superviseur"); return false }
+        guard !pin.isEmpty else { notifier.warning(L10n.string("order.happy_hour_pin_required")); return false }
         do {
+            // Motif par défaut envoyé au serveur et journalisé : texte figé, non localisé (cf. règles projet).
             _ = try await api.stopHappyHourOverride(terminalId: terminalId(), pin: pin, reason: reason.isEmpty ? "Arrêt anticipé" : reason)
-            notifier.info("Happy Hour arrêté")
+            notifier.info(L10n.string("order.happy_hour_stopped"))
             await refresh()
             return true
         } catch {

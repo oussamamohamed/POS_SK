@@ -48,7 +48,7 @@ public final class TicketStore {
         return totals.totalTtc
     }
 
-    public var title: String { isCounter ? "Comptoir" : "Table \(tableNumber)" }
+    public var title: String { isCounter ? L10n.string("order.counter_title") : String(format: L10n.string("order.table_title"), tableNumber) }
 
     // MARK: - Chargement
 
@@ -68,7 +68,7 @@ public final class TicketStore {
         } catch APIError.unauthorized {
             session.handleUnauthorized()
         } catch {
-            notifier.error("Impossible de charger \(title)")
+            notifier.error(String(format: L10n.string("order.load_error"), title))
         }
     }
 
@@ -161,7 +161,7 @@ public final class TicketStore {
     public func decrement(_ lineId: UUID) {
         guard let index = lines.firstIndex(where: { $0.id == lineId }) else { return }
         guard lines[index].isDraft else {
-            notifier.warning("Article déjà enregistré : utilisez « Offrir » pour l'annuler.")
+            notifier.warning(L10n.string("order.line_already_sent"))
             return
         }
         lines[index].quantity -= 1
@@ -171,7 +171,7 @@ public final class TicketStore {
     public func remove(_ lineId: UUID) {
         guard let index = lines.firstIndex(where: { $0.id == lineId }) else { return }
         guard lines[index].isDraft else {
-            notifier.warning("Article déjà enregistré : utilisez « Offrir » pour l'annuler.")
+            notifier.warning(L10n.string("order.line_already_sent"))
             return
         }
         lines.remove(at: index)
@@ -186,11 +186,11 @@ public final class TicketStore {
     public func clearDrafts() {
         let removed = draftLines.count
         guard removed > 0 else {
-            if !lines.isEmpty { notifier.warning("Les articles déjà enregistrés ne peuvent pas être vidés.") }
+            if !lines.isEmpty { notifier.warning(L10n.string("order.drafts_locked")) }
             return
         }
         lines.removeAll(where: \.isDraft)
-        notifier.info(lines.isEmpty ? "Ticket vidé" : "\(removed) article(s) retiré(s), articles enregistrés conservés")
+        notifier.info(lines.isEmpty ? L10n.string("order.cleared") : String(format: L10n.string("order.drafts_removed"), removed))
     }
 
     // MARK: - Synchronisation serveur
@@ -245,21 +245,21 @@ public final class TicketStore {
     /// Envoie les articles en cuisine. Renvoie `true` si l'envoi a réussi.
     @discardableResult
     public func sendToKitchen() async -> Bool {
-        guard !lines.isEmpty else { notifier.warning("Ticket vide"); return false }
-        guard hasUndispatched else { notifier.info("Tout est déjà en cuisine"); return false }
+        guard !lines.isEmpty else { notifier.warning(L10n.string("order.empty_ticket")); return false }
+        guard hasUndispatched else { notifier.info(L10n.string("order.already_in_kitchen")); return false }
         let ok = await run {
             try await commitDrafts()
             try await api.dispatch(table: tableNumber)
         }
         guard ok else { return false }
-        notifier.success("\(title) envoyée en cuisine")
+        notifier.success(String(format: L10n.string("order.sent_to_kitchen"), title))
         if let order = try? await api.activeOrder(table: tableNumber) { hydrate(order) }
         return true
     }
 
     public func fireSuite() async {
         let ok = await run { try await api.fireSuite(table: tableNumber) }
-        if ok { notifier.success("Réclame « Suite » envoyée pour \(title)") }
+        if ok { notifier.success(String(format: L10n.string("order.suite_fired"), title)) }
     }
 
     // MARK: - Destination (comptoir)
@@ -270,19 +270,19 @@ public final class TicketStore {
         if let orderId {
             try? await api.setDestination(orderId: orderId, destination: newValue)
         }
-        notifier.info(newValue == .takeaway ? "Mode À emporter (TVA réduite)" : "Mode Sur place")
+        notifier.info(newValue == .takeaway ? L10n.string("order.mode_takeaway") : L10n.string("order.mode_eat_in"))
     }
 
     // MARK: - Remises
 
     public func applyGlobalDiscount(type: DiscountType, value: Decimal, reason: String) async -> Bool {
-        guard value > 0 else { notifier.warning("Montant de remise invalide"); return false }
+        guard value > 0 else { notifier.warning(L10n.string("order.discount_invalid_amount")); return false }
         let ok = await run {
             guard let id = try await commitDrafts() else { throw APIError.notFound("Aucune commande sur ce ticket") }
             try await api.applyDiscount(orderId: id, type: type, value: value, reason: reason, operatorId: session.currentOperator?.id)
             if let order = try await api.activeOrder(table: tableNumber) { hydrate(order) }
         }
-        if ok { notifier.success("Remise appliquée (\(GlobalDiscount(type: type, value: value).label))") }
+        if ok { notifier.success(String(format: L10n.string("order.discount_applied"), GlobalDiscount(type: type, value: value).label)) }
         return ok
     }
 
@@ -292,7 +292,7 @@ public final class TicketStore {
             try await api.removeDiscount(orderId: orderId)
             if let order = try await api.activeOrder(table: tableNumber) { hydrate(order) }
         }
-        if ok { notifier.info("Remise supprimée") }
+        if ok { notifier.info(L10n.string("order.discount_removed")) }
     }
 
     /// Enregistre les brouillons avant d'ouvrir l'écran de remise, pour que chaque ligne
@@ -306,7 +306,7 @@ public final class TicketStore {
 
     public func comp(lineId: UUID, reason: String) async -> Bool {
         guard let line = lines.first(where: { $0.id == lineId }), let serverLineId = line.serverLineId else {
-            notifier.warning("Enregistrez l'article avant de l'offrir")
+            notifier.warning(L10n.string("order.comp_requires_save"))
             return false
         }
         let ok = await run {
@@ -314,7 +314,7 @@ public final class TicketStore {
             try await api.compItem(orderId: orderId, lineId: serverLineId, reason: reason, operatorId: session.currentOperator?.id)
             if let order = try await api.activeOrder(table: tableNumber) { hydrate(order) }
         }
-        if ok { notifier.success("« \(line.name) » offert") }
+        if ok { notifier.success(String(format: L10n.string("order.item_comped"), line.name)) }
         return ok
     }
 
@@ -329,7 +329,7 @@ public final class TicketStore {
             message = result.message
         }
         guard ok else { return false }
-        notifier.success(message ?? "Commande transférée vers \(target)")
+        notifier.success(message ?? String(format: L10n.string("order.transferred"), target))
         await load(table: target)
         return true
     }
@@ -358,9 +358,9 @@ public final class TicketStore {
 
     /// Encaisse `amount` (part de split ou totalité + pourboire) avec le moyen `method`.
     public func pay(method: PaymentMethod, amount: Money, tendered: Money) async -> CheckoutOutcome? {
-        guard amount.cents > 0 else { notifier.warning("Le montant est nul"); return nil }
+        guard amount.cents > 0 else { notifier.warning(L10n.string("payment.zero_amount")); return nil }
         guard tendered >= amount || method != .cash else {
-            notifier.warning("Montant remis insuffisant (\(tendered.formatted) pour \(amount.formatted))")
+            notifier.warning(String(format: L10n.string("payment.insufficient_tendered"), tendered.formatted, amount.formatted))
             return nil
         }
         var outcome: CheckoutOutcome?
@@ -376,11 +376,11 @@ public final class TicketStore {
         }
         guard ok, let outcome else { return nil }
         if outcome.isComplete {
-            notifier.success("Paiement validé — reçu \(outcome.receiptNumber ?? "NF")")
+            notifier.success(String(format: L10n.string("payment.paid_receipt"), outcome.receiptNumber ?? "NF"))
             reset(keepingTable: true)
         } else {
             remainingBalance = outcome.remaining
-            notifier.info("Reste à payer : \(outcome.remaining.formatted)")
+            notifier.info(String(format: L10n.string("payment.remaining_due"), outcome.remaining.formatted))
         }
         return outcome
     }
@@ -388,9 +388,9 @@ public final class TicketStore {
     // MARK: - Encaissement comptoir
 
     public func counterCheckout(method: PaymentMethod, amount: Money, tendered: Money, tip: Money, buzzer: String?, printReceipt: Bool, policy: MealVoucherPolicy) async -> CheckoutOutcome? {
-        guard !lines.isEmpty else { notifier.warning("Ticket vide"); return nil }
+        guard !lines.isEmpty else { notifier.warning(L10n.string("order.empty_ticket")); return nil }
         if method == .cash && tendered < amount {
-            notifier.warning("Montant insuffisant (\(tendered.formatted) pour \(amount.formatted))")
+            notifier.warning(String(format: L10n.string("payment.insufficient_amount"), tendered.formatted, amount.formatted))
             return nil
         }
         var outcome: CheckoutOutcome?
@@ -411,7 +411,7 @@ public final class TicketStore {
         }
         guard ok, let outcome else { return nil }
         if outcome.isComplete {
-            notifier.success("Vente validée — retrait \(outcome.pickupNumber ?? "")")
+            notifier.success(String(format: L10n.string("payment.sale_validated"), outcome.pickupNumber ?? ""))
             reset(keepingTable: true)
         } else {
             remainingBalance = outcome.remaining
@@ -434,7 +434,7 @@ public final class TicketStore {
             message = result.message
         }
         guard ok else { return false }
-        notifier.success(message ?? "Facturation chambre validée")
+        notifier.success(message ?? L10n.string("payment.room_charge_validated"))
         reset(keepingTable: true)
         return true
     }
@@ -454,14 +454,15 @@ public final class TicketStore {
     }
 
     public func hold(label: String) async -> Bool {
-        guard !lines.isEmpty else { notifier.warning("Impossible de mettre en attente un ticket vide"); return false }
+        guard !lines.isEmpty else { notifier.warning(L10n.string("payment.empty_ticket_hold")); return false }
+        // Nom par défaut envoyé au serveur et journalisé : texte figé, non localisé (cf. règles projet).
         let name = label.trimmingCharacters(in: .whitespaces).isEmpty ? "Client comptoir" : label
         let ok = await run {
             guard let id = try await commitDrafts() else { throw APIError.notFound("Commande introuvable") }
             try await api.holdOrder(orderId: id, terminalId: terminalId(), label: name)
         }
         guard ok else { return false }
-        notifier.success("Commande « \(name) » mise en attente")
+        notifier.success(String(format: L10n.string("payment.order_held"), name))
         reset(keepingTable: true)
         await openCounter(destination: destination)
         return true
@@ -469,7 +470,7 @@ public final class TicketStore {
 
     public func recall(_ held: HeldOrder) async -> Bool {
         if hasDrafts, isCounter {
-            notifier.warning("Mettez d'abord le ticket en cours en attente ou encaissez-le.")
+            notifier.warning(L10n.string("payment.hold_current_first"))
             return false
         }
         let ok = await run {
@@ -479,18 +480,19 @@ public final class TicketStore {
             hydrate(order)
         }
         guard ok else { return false }
-        notifier.success("Commande rappelée")
+        notifier.success(L10n.string("payment.order_recalled"))
         await refreshHeldOrders()
         return true
     }
 
     public func voidHeld(_ held: HeldOrder, supervisorPin: String) async -> Bool {
-        guard !supervisorPin.isEmpty else { notifier.warning("PIN superviseur requis"); return false }
+        guard !supervisorPin.isEmpty else { notifier.warning(L10n.string("payment.supervisor_pin_required")); return false }
+        // Motif envoyé au serveur et journalisé : texte figé, non localisé (cf. règles projet).
         let ok = await run {
             try await api.voidHeldOrder(holdId: held.holdId, supervisorPin: supervisorPin, reason: "Annulation au comptoir", terminalId: terminalId())
         }
         guard ok else { return false }
-        notifier.success("Commande en attente annulée (journalisée)")
+        notifier.success(L10n.string("payment.held_order_voided"))
         await refreshHeldOrders()
         return true
     }

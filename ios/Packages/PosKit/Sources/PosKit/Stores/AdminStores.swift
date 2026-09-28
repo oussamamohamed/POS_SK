@@ -16,15 +16,15 @@ public final class CatalogAdminStore {
 
     public func saveCategory(id: String?, name: String, colorHex: String) async -> Bool {
         let trimmed = name.trimmingCharacters(in: .whitespaces)
-        guard !trimmed.isEmpty else { notifier.warning("Le nom de la famille est requis"); return false }
+        guard !trimmed.isEmpty else { notifier.warning(L10n.string("admin.category_name_required")); return false }
         do {
             if let id {
                 let order = catalog.categories.first { $0.id == id }?.displayOrder ?? 0
                 try await api.updateCategory(id: id, name: trimmed, colorHex: colorHex, displayOrder: order)
-                notifier.success("Famille « \(trimmed) » mise à jour")
+                notifier.success(String(format: L10n.string("admin.category_updated"), trimmed))
             } else {
                 try await api.createCategory(name: trimmed, colorHex: colorHex, displayOrder: catalog.categories.count + 1)
-                notifier.success("Famille « \(trimmed) » créée")
+                notifier.success(String(format: L10n.string("admin.category_created"), trimmed))
             }
             await catalog.load()
             return true
@@ -35,16 +35,16 @@ public final class CatalogAdminStore {
     }
 
     public func saveProduct(id: UUID?, draft: ProductDraft) async -> Bool {
-        guard draft.isValid else { notifier.warning("Nom, famille et prix sont obligatoires"); return false }
+        guard draft.isValid else { notifier.warning(L10n.string("admin.product_fields_required")); return false }
         do {
             if let id {
                 try await api.updateProduct(id: id, draft)
-                notifier.success("Article « \(draft.name) » mis à jour")
+                notifier.success(String(format: L10n.string("admin.product_updated"), draft.name))
             } else {
                 var d = draft
                 d.displayOrder = catalog.products.count + 1
                 try await api.createProduct(d)
-                notifier.success("Article « \(draft.name) » créé")
+                notifier.success(String(format: L10n.string("admin.product_created"), draft.name))
             }
             await catalog.load()
             return true
@@ -57,7 +57,7 @@ public final class CatalogAdminStore {
     public func archive(_ product: Product) async {
         do {
             try await api.archiveProduct(id: product.id)
-            notifier.info("Article « \(product.name) » désactivé")
+            notifier.info(String(format: L10n.string("admin.product_archived"), product.name))
             await catalog.load()
         } catch {
             notifier.error(error)
@@ -87,17 +87,17 @@ public final class StaffStore {
 
     public func save(id: UUID?, name: String, role: UserRole, pin: String, isActive: Bool = true) async -> Bool {
         let trimmed = name.trimmingCharacters(in: .whitespaces)
-        guard !trimmed.isEmpty else { notifier.warning("Le nom est requis"); return false }
+        guard !trimmed.isEmpty else { notifier.warning(L10n.string("admin.name_required")); return false }
         if id == nil || !pin.isEmpty {
-            guard Self.isValidPin(pin) else { notifier.warning("Le PIN doit comporter \(SessionStore.pinLength) chiffres"); return false }
+            guard Self.isValidPin(pin) else { notifier.warning(String(format: L10n.string("admin.pin_length"), SessionStore.pinLength)); return false }
         }
         do {
             if let id {
                 try await api.updateStaff(id: id, name: trimmed, role: role, pin: pin.isEmpty ? nil : pin, isActive: isActive)
-                notifier.success("Employé « \(trimmed) » mis à jour")
+                notifier.success(String(format: L10n.string("admin.staff_updated"), trimmed))
             } else {
                 try await api.createStaff(name: trimmed, role: role, pin: pin)
-                notifier.success("Employé « \(trimmed) » créé")
+                notifier.success(String(format: L10n.string("admin.staff_created"), trimmed))
             }
             await load()
             return true
@@ -110,7 +110,7 @@ public final class StaffStore {
     public func deactivate(_ member: StaffMember) async {
         do {
             try await api.deactivateStaff(id: member.id)
-            notifier.info("Employé « \(member.name) » désactivé")
+            notifier.info(String(format: L10n.string("admin.staff_deactivated"), member.name))
             await load()
         } catch {
             notifier.error(error)
@@ -140,11 +140,11 @@ public final class PrinterStore {
     }
 
     public func save(_ printer: Printer, isNew: Bool) async -> Bool {
-        guard !printer.name.trimmingCharacters(in: .whitespaces).isEmpty else { notifier.warning("Le nom est requis"); return false }
-        guard Self.isValidIPv4(printer.ipAddress) else { notifier.warning("Adresse IP invalide"); return false }
+        guard !printer.name.trimmingCharacters(in: .whitespaces).isEmpty else { notifier.warning(L10n.string("admin.name_required")); return false }
+        guard Self.isValidIPv4(printer.ipAddress) else { notifier.warning(L10n.string("admin.ip_invalid")); return false }
         do {
             try await api.savePrinter(printer, isNew: isNew)
-            notifier.success("Imprimante « \(printer.name) » enregistrée")
+            notifier.success(String(format: L10n.string("admin.printer_saved"), printer.name))
             await load()
             return true
         } catch {
@@ -231,7 +231,7 @@ public final class GridEditorStore {
                                         customLabel: product == nil ? nil : (label?.isEmpty == false ? label : nil),
                                         customColorHex: product == nil ? nil : colorHex))
         if await save(slots: items) {
-            notifier.success(product == nil ? "Emplacement libéré" : "« \(product!.name) » placé")
+            notifier.success(product == nil ? L10n.string("admin.slot_cleared") : String(format: L10n.string("admin.slot_placed"), product!.name))
         }
     }
 
@@ -243,7 +243,7 @@ public final class GridEditorStore {
             let swapped = try await api.swapGridSlots(layoutId: layout.id, from: source, to: target)
             self.layout = swapped
             catalog.apply(layout: swapped)
-            notifier.success("Positions permutées")
+            notifier.success(L10n.string("admin.positions_swapped"))
         } catch {
             notifier.error(error)
         }
@@ -255,7 +255,7 @@ public final class GridEditorStore {
             let updated = try await api.updateGridDimensions(categoryId: categoryId, columns: c, rows: r, applyToAll: applyToAll)
             updated.forEach(catalog.apply(layout:))
             if applyToAll { catalog.invalidateLayouts() }
-            notifier.success("Format \(c) × \(r) appliqué")
+            notifier.success(String(format: L10n.string("admin.grid_size_applied"), c, r))
             await reload()
         } catch {
             notifier.error(error)
@@ -269,7 +269,7 @@ public final class GridEditorStore {
         if await save(slots: emptySlots, page: newPage) {
             pageIndex = newPage
             await reload()
-            notifier.success("Page \(newPage + 1) ajoutée")
+            notifier.success(String(format: L10n.string("admin.page_added"), newPage + 1))
         }
     }
 
@@ -280,7 +280,7 @@ public final class GridEditorStore {
         let items = (0..<(columns * rows)).map { index in
             UpdateGridSlotItem(rowIndex: index / columns, columnIndex: index % columns, productId: products[safe: index]?.id)
         }
-        if await save(slots: items) { notifier.success("Grille réinitialisée") }
+        if await save(slots: items) { notifier.success(L10n.string("admin.grid_reset")) }
     }
 }
 
@@ -314,11 +314,11 @@ public final class HappyHourAdminStore {
     }
 
     public func create(_ schedule: HappyHourSchedule) async -> Bool {
-        guard !schedule.name.trimmingCharacters(in: .whitespaces).isEmpty else { notifier.warning("Nom de plage requis"); return false }
-        guard !schedule.daysOfWeek.isEmpty else { notifier.warning("Sélectionnez au moins un jour"); return false }
+        guard !schedule.name.trimmingCharacters(in: .whitespaces).isEmpty else { notifier.warning(L10n.string("admin.schedule_name_required")); return false }
+        guard !schedule.daysOfWeek.isEmpty else { notifier.warning(L10n.string("admin.schedule_days_required")); return false }
         do {
             let id = try await api.createHappyHourSchedule(schedule)
-            notifier.success("Plage « \(schedule.name) » créée")
+            notifier.success(String(format: L10n.string("admin.schedule_created"), schedule.name))
             await load()
             if let id { selectedScheduleId = id }
             await happyHour.refresh()
@@ -333,7 +333,7 @@ public final class HappyHourAdminStore {
         guard let id = schedule.id else { return }
         do {
             try await api.deleteHappyHourSchedule(id: id)
-            notifier.info("Plage « \(schedule.name) » supprimée")
+            notifier.info(String(format: L10n.string("admin.schedule_deleted"), schedule.name))
             if selectedScheduleId == id { selectedScheduleId = nil }
             await load()
             await happyHour.refresh()
@@ -343,9 +343,9 @@ public final class HappyHourAdminStore {
     }
 
     public func applyToProducts(_ ids: Set<UUID>, mode: HappyHourPricingMode, value: Decimal) async -> Bool {
-        guard let scheduleId = selectedScheduleId else { notifier.warning("Choisissez d'abord une plage"); return false }
-        guard !ids.isEmpty else { notifier.warning("Sélectionnez au moins un article"); return false }
-        guard value > 0, mode == .fixedPrice || value <= 100 else { notifier.error("Tarif ou remise invalide"); return false }
+        guard let scheduleId = selectedScheduleId else { notifier.warning(L10n.string("admin.schedule_select_first")); return false }
+        guard !ids.isEmpty else { notifier.warning(L10n.string("admin.products_required")); return false }
+        guard value > 0, mode == .fixedPrice || value <= 100 else { notifier.error(L10n.string("admin.price_or_discount_invalid")); return false }
         let request = BatchPriceRulesRequest(
             targetType: .product, targetIds: ids.map { $0.uuidString.lowercased() }.sorted(), pricingMode: mode,
             fixedPrice: mode == .fixedPrice ? Money(euros: value) : nil,
@@ -355,16 +355,16 @@ public final class HappyHourAdminStore {
     }
 
     public func applyToCategories(_ ids: Set<String>, percent: Decimal) async -> Bool {
-        guard let scheduleId = selectedScheduleId else { notifier.warning("Choisissez d'abord une plage"); return false }
-        guard !ids.isEmpty else { notifier.warning("Sélectionnez au moins une famille"); return false }
-        guard percent > 0, percent <= 100 else { notifier.error("La remise doit être comprise entre 1 et 100 %"); return false }
+        guard let scheduleId = selectedScheduleId else { notifier.warning(L10n.string("admin.schedule_select_first")); return false }
+        guard !ids.isEmpty else { notifier.warning(L10n.string("admin.categories_required")); return false }
+        guard percent > 0, percent <= 100 else { notifier.error(L10n.string("admin.discount_range")); return false }
         return await apply(BatchPriceRulesRequest(targetType: .category, targetIds: ids.sorted(), pricingMode: .percentageDiscount, fixedPrice: nil, discountPercent: percent), scheduleId: scheduleId)
     }
 
     private func apply(_ request: BatchPriceRulesRequest, scheduleId: UUID) async -> Bool {
         do {
             let count = try await api.applyHappyHourRules(scheduleId: scheduleId, request)
-            notifier.success("\(count) règle(s) appliquée(s)")
+            notifier.success(String(format: L10n.string("admin.rules_applied"), count))
             await load()
             await happyHour.refresh()
             return true
@@ -378,7 +378,7 @@ public final class HappyHourAdminStore {
         guard let scheduleId = selectedScheduleId, !ids.isEmpty else { return }
         do {
             try await api.deleteHappyHourRules(scheduleId: scheduleId, ruleIds: Array(ids))
-            notifier.info("\(ids.count) règle(s) supprimée(s)")
+            notifier.info(String(format: L10n.string("admin.rules_deleted"), ids.count))
             await load()
             await happyHour.refresh()
         } catch {
@@ -440,7 +440,7 @@ public final class NetworkStore {
             let latency = try await api.health()
             lastLatency = latency
             isOnline = true
-            notifier.success("Connexion au serveur établie (\(Int(latency * 1000)) ms)")
+            notifier.success(String(format: L10n.string("admin.connection_established"), Int(latency * 1000)))
             return true
         } catch {
             isOnline = false
@@ -452,8 +452,35 @@ public final class NetworkStore {
     public func forceSync() async {
         do {
             try await api.forceSync()
-            notifier.success("Synchronisation réussie")
+            notifier.success(L10n.string("admin.sync_success"))
             await refresh()
+        } catch {
+            notifier.error(error)
+        }
+    }
+}
+
+/// Back-office : réglages restaurant (langue des tickets).
+@MainActor @Observable
+public final class SettingsStore {
+    public private(set) var settings: RestaurantSettings?
+
+    private let api: PosAPI
+    private let notifier: Notifier
+
+    public init(api: PosAPI, notifier: Notifier) {
+        self.api = api
+        self.notifier = notifier
+    }
+
+    public func load() async {
+        do { settings = try await api.settings() } catch { notifier.error(error) }
+    }
+
+    public func setReceiptLanguage(_ lang: String) async {
+        do {
+            settings = try await api.saveSettings(RestaurantSettings(receiptLanguage: lang))
+            notifier.success(L10n.string("admin.receipt_language_saved"))
         } catch {
             notifier.error(error)
         }

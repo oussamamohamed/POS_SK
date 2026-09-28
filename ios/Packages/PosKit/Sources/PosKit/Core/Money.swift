@@ -56,21 +56,22 @@ public struct Money: Hashable, Comparable, Sendable, Codable, CustomStringConver
 
     public var description: String { formatted }
 
+    /// « 19,50 € » dans la locale donnée, chiffres occidentaux forcés.
+    public func formatted(locale: Locale = .current) -> String {
+        let f = NumberFormatter()
+        f.numberStyle = .currency
+        f.currencyCode = "EUR" // devise : sous-projet B
+        f.locale = Locale(identifier: locale.identifier + "@numbers=latn")
+        f.minimumFractionDigits = 2
+        f.maximumFractionDigits = 2
+        return f.string(from: euros as NSDecimalNumber) ?? "\(euros) €"
+    }
+
     /// « 19,50 € »
-    public var formatted: String { Money.formatter.string(from: euros as NSDecimalNumber) ?? "\(euros) €" }
+    public var formatted: String { formatted(locale: .current) }
 
     /// « 19.50 » — utile pour les champs de saisie.
     public var plain: String { String(format: "%.2f", doubleValue) }
-
-    private static let formatter: NumberFormatter = {
-        let f = NumberFormatter()
-        f.numberStyle = .currency
-        f.currencyCode = "EUR"
-        f.locale = Locale(identifier: "fr_FR")
-        f.minimumFractionDigits = 2
-        f.maximumFractionDigits = 2
-        return f
-    }()
 
     static func roundAwayFromZero(_ value: Decimal) -> Int {
         var input = value

@@ -28,19 +28,19 @@ public final class FloorStore {
     public func load() async {
         isLoading = true
         defer { isLoading = false }
-        do { tables = try await api.tables() } catch { notifier.error("Erreur de chargement du plan de salle") }
+        do { tables = try await api.tables() } catch { notifier.error(L10n.string("floor.load_error")) }
     }
 
     public func addTable(number: String, capacity: Int) async -> Bool {
         let trimmed = number.trimmingCharacters(in: .whitespaces)
-        guard !trimmed.isEmpty else { notifier.warning("Le numéro de table est requis"); return false }
+        guard !trimmed.isEmpty else { notifier.warning(L10n.string("floor.number_required")); return false }
         guard !tables.contains(where: { $0.tableNumber.caseInsensitiveCompare(trimmed) == .orderedSame }) else {
-            notifier.warning("La table \(trimmed) existe déjà")
+            notifier.warning(String(format: L10n.string("floor.table_exists"), trimmed))
             return false
         }
         do {
             try await api.createTable(number: trimmed, capacity: max(1, capacity))
-            notifier.success("Table \(trimmed) créée")
+            notifier.success(String(format: L10n.string("floor.table_created"), trimmed))
             await load()
             return true
         } catch {
@@ -90,7 +90,7 @@ public final class KitchenStore {
             tickets = try await api.kitchenTickets()
             lastRefresh = Date()
         } catch {
-            notifier.error("Erreur de chargement des bons cuisine")
+            notifier.error(L10n.string("kitchen.load_error"))
         }
     }
 
@@ -98,7 +98,8 @@ public final class KitchenStore {
     public func bump(_ ticket: KitchenTicket) async {
         do {
             try await api.bumpTicket(id: ticket.id)
-            notifier.success("Bon \(ticket.tableNumber) : \(ticket.status == .ready ? "servi" : "avancé")")
+            let status = ticket.status == .ready ? L10n.string("kitchen.status_served") : L10n.string("kitchen.status_advanced")
+            notifier.success(String(format: L10n.string("kitchen.ticket_bumped"), ticket.tableNumber, status))
             await load()
         } catch {
             notifier.error(error)
@@ -151,7 +152,7 @@ public final class FiscalStore {
 
     public func executeZ() async -> Bool {
         guard let op = session.currentOperator, op.role.isManager else {
-            notifier.error("Clôture Z réservée aux responsables")
+            notifier.error(L10n.string("fiscal.z_closure_forbidden"))
             return false
         }
         isWorking = true
@@ -161,7 +162,7 @@ public final class FiscalStore {
             closure.terminalId = closure.terminalId ?? settings.terminalId
             report = closure
             isSealed = true
-            notifier.success("Clôture Z n°\(closure.closureSequence ?? 0) exécutée et scellée")
+            notifier.success(String(format: L10n.string("fiscal.z_closure_done"), closure.closureSequence ?? 0))
             return true
         } catch {
             notifier.error(error)
@@ -171,20 +172,20 @@ public final class FiscalStore {
 
     public func exportFec(from: Date, to: Date) async {
         isWorking = true
-        fecStatus = "Génération du fichier FEC…"
+        fecStatus = L10n.string("fiscal.fec_generating")
         defer { isWorking = false }
         do {
             let (name, data) = try await api.exportFec(from: from, to: to, siren: settings.siren)
             let url = FileManager.default.temporaryDirectory.appendingPathComponent(name)
             try data.write(to: url, options: .atomic)
             exportedFile = url
-            fecStatus = "Fichier \(name) généré"
-            notifier.success("Fichier FEC \(name) prêt")
+            fecStatus = String(format: L10n.string("fiscal.fec_generated"), name)
+            notifier.success(String(format: L10n.string("fiscal.fec_ready"), name))
         } catch APIError.forbidden, APIError.unauthorized {
-            fecStatus = "Privilèges insuffisants (responsable requis)"
-            notifier.error("Export FEC refusé : privilèges insuffisants")
+            fecStatus = L10n.string("fiscal.fec_forbidden_status")
+            notifier.error(L10n.string("fiscal.fec_forbidden"))
         } catch {
-            fecStatus = "Erreur lors de la génération du FEC"
+            fecStatus = L10n.string("fiscal.fec_error")
             notifier.error(error)
         }
     }

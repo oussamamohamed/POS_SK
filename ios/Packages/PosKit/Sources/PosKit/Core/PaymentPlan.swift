@@ -52,7 +52,7 @@ public struct PaymentPlan: Hashable, Sendable {
 
     public var partLabel: String? {
         guard let guests = splitGuests else { return nil }
-        return "Part \(min(paidParts + 1, guests))/\(guests)"
+        return String(format: L10n.string("payment.part_label"), min(paidParts + 1, guests), guests)
     }
 
     public mutating func markPartPaid() { paidParts += 1 }

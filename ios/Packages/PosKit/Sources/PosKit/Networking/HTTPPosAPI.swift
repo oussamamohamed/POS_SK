@@ -42,6 +42,7 @@ public actor HTTPPosAPI: PosAPI {
         var request = URLRequest(url: url)
         request.httpMethod = method
         request.setValue("application/json", forHTTPHeaderField: "Accept")
+        request.setValue(Self.acceptLanguage, forHTTPHeaderField: "Accept-Language")
         if let body {
             request.httpBody = body
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -80,6 +81,12 @@ public actor HTTPPosAPI: PosAPI {
 
     static func errorCode(in data: Data) -> String? {
         (try? JSONSerialization.jsonObject(with: data) as? [String: Any])?["code"] as? String
+    }
+
+    /// Langue de l'app choisie par iOS parmi celles qu'elle déclare (réglage par app).
+    static var acceptLanguage: String {
+        let lang = Bundle.main.preferredLocalizations.first.map { String($0.prefix(2)) } ?? "en"
+        return ["en", "fr", "ar"].contains(lang) ? lang : "en"
     }
 
     private func call<Response: Decodable>(_ method: String, _ path: String, query: [String: String] = [:], as type: Response.Type = Response.self) async throws -> Response {
@@ -422,4 +429,9 @@ public actor HTTPPosAPI: PosAPI {
 
     struct SyncBody: Encodable { let messages: [String] }
     public func forceSync() async throws { try await perform("POST", "sync/batch", body: SyncBody(messages: [])) }
+
+    // MARK: - Réglages
+
+    public func settings() async throws -> RestaurantSettings { try await call("GET", "settings") }
+    public func saveSettings(_ s: RestaurantSettings) async throws -> RestaurantSettings { try await call("PUT", "settings", body: s) }
 }

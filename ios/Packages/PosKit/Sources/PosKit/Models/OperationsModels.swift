@@ -256,10 +256,10 @@ public enum DashboardRange: String, CaseIterable, Identifiable, Sendable {
 
     public var label: String {
         switch self {
-        case .today: "Aujourd'hui"
-        case .yesterday: "Hier"
-        case .week: "7 jours"
-        case .month: "30 jours"
+        case .today: L10n.string("admin.dash_today")
+        case .yesterday: L10n.string("admin.dash_yesterday")
+        case .week: L10n.string("admin.dash_week")
+        case .month: L10n.string("admin.dash_month")
         }
     }
 
@@ -340,6 +340,15 @@ public struct SyncStatus: Codable, Hashable, Sendable {
     public var pendingMessages: Int
     public var status: String?
     public var lastSyncUtc: Date?
+}
+
+/// Réglages restaurant (`GET/PUT /api/settings`), gérés par le back-office. `receiptLanguage` : `en`/`fr`/`ar`.
+public struct RestaurantSettings: Codable, Hashable, Sendable {
+    public var receiptLanguage: String
+
+    public init(receiptLanguage: String) {
+        self.receiptLanguage = receiptLanguage
+    }
 }
 
 // MARK: - Happy Hour

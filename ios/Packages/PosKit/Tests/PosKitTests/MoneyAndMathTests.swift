@@ -11,9 +11,17 @@ struct MoneyTests {
     }
 
     @Test func formatsInFrench() {
-        let text = Money(cents: 1950).formatted
+        let text = Money(cents: 1950).formatted(locale: Locale(identifier: "fr_FR"))
         #expect(text.contains("19,50"))
         #expect(text.contains("€"))
+    }
+
+    @Test func formatsWithWesternDigitsInArabic() {
+        let text = Money(cents: 1950).formatted(locale: Locale(identifier: "ar"))
+        // `String.contains(_:)` (Foundation) fait du repli de chiffres (« 1 » ≈ « ١ ») pour ce texte
+        // formaté en locale arabe : on compare donc les scalaires Unicode bruts, sans ambiguïté.
+        #expect(text.unicodeScalars.contains(where: { $0.value == 0x31 }) && text.unicodeScalars.contains(where: { $0.value == 0x39 }))
+        #expect(!text.unicodeScalars.contains(where: { (0x0660...0x0669).contains($0.value) }))
     }
 
     @Test(arguments: [("12,5", 1250), ("12.50", 1250), ("7", 700), (" 3,99 € ", 399)])

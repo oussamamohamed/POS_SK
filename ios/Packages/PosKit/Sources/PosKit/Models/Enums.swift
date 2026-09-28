@@ -31,10 +31,10 @@ public enum TableStatus: Int, TolerantIntEnum {
 
     public var label: String {
         switch self {
-        case .free: "Libre"
-        case .occupied: "Occupée"
-        case .billRequested: "Addition"
-        case .paid: "Encaissée"
+        case .free: L10n.string("common.table_status_free")
+        case .occupied: L10n.string("common.table_status_occupied")
+        case .billRequested: L10n.string("common.table_status_bill_requested")
+        case .paid: L10n.string("common.table_status_paid")
         }
     }
 }
@@ -45,10 +45,10 @@ public enum TicketStatus: Int, TolerantIntEnum {
 
     public var label: String {
         switch self {
-        case .pending: "En attente"
-        case .inPreparation: "En préparation"
-        case .ready: "Prêt"
-        case .served: "Servi"
+        case .pending: L10n.string("common.ticket_status_pending")
+        case .inPreparation: L10n.string("common.ticket_status_in_preparation")
+        case .ready: L10n.string("common.ticket_status_ready")
+        case .served: L10n.string("common.ticket_status_served")
         }
     }
 }
@@ -60,9 +60,9 @@ public enum OrderDestination: Int, TolerantIntEnum {
 
     public var label: String {
         switch self {
-        case .takeaway: "À emporter"
-        case .eatIn: "Sur place"
-        case .delivery: "Livraison"
+        case .takeaway: L10n.string("common.destination_takeaway")
+        case .eatIn: L10n.string("common.destination_eat_in")
+        case .delivery: L10n.string("common.destination_delivery")
         }
     }
 }
@@ -73,10 +73,10 @@ public enum CourseType: Int, TolerantIntEnum {
 
     public var label: String {
         switch self {
-        case .direct: "Direct"
-        case .suite: "Suite"
-        case .dessert: "Dessert"
-        case .onDemand: "À la demande"
+        case .direct: L10n.string("common.course_direct")
+        case .suite: L10n.string("common.course_suite")
+        case .dessert: L10n.string("common.course_dessert")
+        case .onDemand: L10n.string("common.course_on_demand")
         }
     }
 
@@ -101,11 +101,11 @@ public enum PaymentMethod: Int, TolerantIntEnum {
 
     public var label: String {
         switch self {
-        case .cash: "Espèces"
-        case .creditCard: "Carte bancaire"
-        case .mealVoucher: "Titre-restaurant"
-        case .giftCard: "Carte cadeau"
-        case .roomCharge: "Note de chambre"
+        case .cash: L10n.string("common.payment_method_cash")
+        case .creditCard: L10n.string("common.payment_method_credit_card")
+        case .mealVoucher: L10n.string("common.payment_method_meal_voucher")
+        case .giftCard: L10n.string("common.payment_method_gift_card")
+        case .roomCharge: L10n.string("common.payment_method_room_charge")
         }
     }
 
@@ -121,9 +121,9 @@ public enum MealVoucherPolicy: Int, TolerantIntEnum {
 
     public var label: String {
         switch self {
-        case .capAtBalance: "Plafonner (pas de rendu)"
-        case .strictRejection: "Refuser tout dépassement"
-        case .customerCreditVoucher: "Émettre un avoir"
+        case .capAtBalance: L10n.string("common.voucher_policy_cap")
+        case .strictRejection: L10n.string("common.voucher_policy_reject")
+        case .customerCreditVoucher: L10n.string("common.voucher_policy_credit_voucher")
         }
     }
 }
@@ -153,11 +153,11 @@ public enum UserRole: String, Codable, Sendable, CaseIterable, Hashable {
 
     public var label: String {
         switch self {
-        case .waiter: "Serveur"
-        case .cashier: "Caissier"
-        case .kitchenStaff: "Cuisine"
-        case .floorManager: "Responsable"
-        case .admin: "Administrateur"
+        case .waiter: L10n.string("common.role_waiter")
+        case .cashier: L10n.string("common.role_cashier")
+        case .kitchenStaff: L10n.string("common.role_kitchen_staff")
+        case .floorManager: L10n.string("common.role_floor_manager")
+        case .admin: L10n.string("common.role_admin")
         }
     }
 

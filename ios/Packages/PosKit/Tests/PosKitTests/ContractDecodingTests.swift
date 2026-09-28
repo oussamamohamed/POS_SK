@@ -73,7 +73,7 @@ struct ContractDecodingTests {
         let x = try decode(FiscalReport.self, "x_report")
         #expect(x.receiptCount == 3)
         #expect(x.sortedVat.map(\.rate) == ["10.0", "20.0"])
-        #expect(x.sortedPayments.contains { $0.method == "Carte bancaire" })
+        #expect(x.sortedPayments.contains { $0.method == PaymentMethod.creditCard.label })
         let z = try decode(FiscalReport.self, "z_closure")
         #expect(z.closureSequence == 1)
         #expect(z.signatureHash?.count == 64)
@@ -142,5 +142,10 @@ struct ContractDecodingTests {
         let statuses = try JSONDecoder().decode([TableStatus].self, from: Data("[0, 3, 42]".utf8))
         #expect(statuses == [.free, .paid, .free])
         #expect(try JSONDecoder().decode(UserRole.self, from: Data(#""admin""#.utf8)) == .admin)
+    }
+
+    @Test func settings() throws {
+        let settings = try decode(RestaurantSettings.self, "settings")
+        #expect(["en", "fr", "ar"].contains(settings.receiptLanguage))
     }
 }

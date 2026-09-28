@@ -32,6 +32,7 @@ public actor InMemoryPosAPI: PosAPI {
     private var receiptCounter = 0
     private var token: String?
     private var failedLogins = 0
+    private var settingsStore = RestaurantSettings(receiptLanguage: "fr")
 
     /// Journal des appels (utile pour vérifier dans les tests qu'un endpoint a bien été sollicité).
     public private(set) var calls: [String] = []
@@ -707,6 +708,19 @@ public actor InMemoryPosAPI: PosAPI {
     }
 
     public func forceSync() async throws { try await step("forceSync") }
+
+    // MARK: - Réglages
+
+    public func settings() async throws -> RestaurantSettings { try await step("settings"); try requireAuth(); return settingsStore }
+
+    public func saveSettings(_ s: RestaurantSettings) async throws -> RestaurantSettings {
+        try await step("saveSettings"); try requireManager()
+        guard ["en", "fr", "ar"].contains(s.receiptLanguage) else {
+            throw APIError.server(status: 400, message: "Langue non prise en charge.")
+        }
+        settingsStore = s
+        return settingsStore
+    }
 }
 
 // MARK: - Données d'amorçage (miroir de `Program.SeedDatabase`)

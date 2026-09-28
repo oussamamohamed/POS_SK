@@ -180,7 +180,7 @@ public struct GlobalDiscount: Hashable, Sendable {
         switch type {
         case .percentage: "-\(value)%"
         case .fixedAmount: "-\(Money(euros: value).formatted)"
-        case .comp: "Offert"
+        case .comp: L10n.string("common.comp_label")
         }
     }
 }

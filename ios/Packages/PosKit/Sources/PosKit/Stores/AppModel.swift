@@ -21,6 +21,7 @@ public final class AppModel {
     public let happyHourAdmin: HappyHourAdminStore
     public let dashboard: DashboardStore
     public let network: NetworkStore
+    public let settingsStore: SettingsStore
 
     public private(set) var isRealtimeConnected = false
     public private(set) var isBootstrapped = false
@@ -53,6 +54,7 @@ public final class AppModel {
         happyHourAdmin = HappyHourAdminStore(api: api, notifier: notifier, happyHour: happyHour)
         dashboard = DashboardStore(api: api, notifier: notifier)
         network = NetworkStore(api: api, notifier: notifier)
+        settingsStore = SettingsStore(api: api, notifier: notifier)
     }
 
     /// Chargement initial après le premier déverrouillage.

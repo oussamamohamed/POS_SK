@@ -64,10 +64,10 @@ public struct ModifierGroup: Codable, Identifiable, Hashable, Sendable {
     }
 
     public var ruleLabel: String {
-        if isSingleChoice { return isMandatory ? "1 choix obligatoire" : "1 choix max" }
-        if minSelections > 0 { return "Min. \(minSelections)" }
-        if maxSelections > 0 { return "Jusqu'à \(maxSelections)" }
-        return "Optionnel"
+        if isSingleChoice { return isMandatory ? L10n.string("common.modifier_rule_required_choice") : L10n.string("common.modifier_rule_max_choice") }
+        if minSelections > 0 { return String(format: L10n.string("common.modifier_rule_min"), minSelections) }
+        if maxSelections > 0 { return String(format: L10n.string("common.modifier_rule_max"), maxSelections) }
+        return L10n.string("common.modifier_rule_optional")
     }
 }
 

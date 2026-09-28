@@ -143,7 +143,7 @@ struct TicketStoreTests {
         let saved = model.ticket.lines[0]
         model.ticket.decrement(saved.id)
         #expect(model.ticket.lines.count == 1)
-        #expect(model.notifier.lastMessage?.contains("Offrir") == true)
+        #expect(model.notifier.lastMessage == L10n.string("order.line_already_sent"))
         model.ticket.increment(saved.id)
         #expect(model.ticket.lines.count == 2)
         #expect(model.ticket.lines[1].isDraft)
