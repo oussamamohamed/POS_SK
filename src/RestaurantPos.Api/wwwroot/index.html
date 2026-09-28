@@ -174,12 +174,12 @@
                             <!-- Populated dynamically -->
                         </div>
                         <div class="grid-pagination-bar" id="gridPaginationBar" style="display:none;">
-                            <button type="button" class="btn-grid-page-nav" id="btnPrevGridPage" data-i18n="order.grid_prev_label" data-i18n-title="order.grid_prev_title" title="Page précédente">◀ Précédent</button>
+                            <button type="button" class="btn-grid-page-nav" id="btnPrevGridPage" data-i18n-title="order.grid_prev_title" title="Page précédente"><span class="icon-directional">◀</span> <span data-i18n="order.grid_prev_label">Précédent</span></button>
                             <div class="grid-page-indicator-container">
                                 <span class="grid-page-label" id="gridPageLabel"></span>
                                 <div class="grid-page-dots" id="gridPageDots"></div>
                             </div>
-                            <button type="button" class="btn-grid-page-nav" id="btnNextGridPage" data-i18n="order.grid_next_label" data-i18n-title="order.grid_next_title" title="Page suivante">Suivant ▶</button>
+                            <button type="button" class="btn-grid-page-nav" id="btnNextGridPage" data-i18n-title="order.grid_next_title" title="Page suivante"><span data-i18n="order.grid_next_label">Suivant</span> <span class="icon-directional">▶</span></button>
                         </div>
                     </div>
                 </div>
@@ -766,7 +766,7 @@
                                                 <button type="button" id="btnHhModePercent" class="btn-mode" style="padding:6px 12px; border:none; background:rgba(255,255,255,0.06); color:var(--text-muted); cursor:pointer;" data-i18n="admin.hh_mode_percent">Remise (%)</button>
                                             </div>
                                             <div style="display:flex; align-items:center; gap:6px;">
-                                                <input type="number" step="0.10" id="inputHhBatchValue" value="5.00" style="width:90px; padding:6px 10px; border-radius:6px; background:var(--bg-main); color:#fff; border:1px solid var(--border-color); text-align:right;">
+                                                <input type="number" step="0.10" id="inputHhBatchValue" value="5.00" dir="ltr" style="width:90px; padding:6px 10px; border-radius:6px; background:var(--bg-main); color:#fff; border:1px solid var(--border-color); text-align:end;">
                                                 <span id="hhBatchValueUnit" style="font-weight:bold;">€</span>
                                             </div>
                                             <button type="button" id="btnApplyBatchArticles" class="btn-primary" style="padding:8px 16px;" data-i18n="admin.hh_apply_to_selected_articles">Appliquer aux articles sélectionnés</button>
@@ -802,7 +802,7 @@
                                         <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
                                             <div style="display:flex; align-items:center; gap:6px;">
                                                 <label style="font-size:0.85rem; color:var(--text-muted);" data-i18n="admin.hh_discount_label">Remise :</label>
-                                                <input type="number" step="1" min="1" max="100" id="inputHhFamilyDiscount" value="20" style="width:70px; padding:6px 10px; border-radius:6px; background:var(--bg-main); color:#fff; border:1px solid var(--border-color); text-align:right;">
+                                                <input type="number" step="1" min="1" max="100" id="inputHhFamilyDiscount" value="20" dir="ltr" style="width:70px; padding:6px 10px; border-radius:6px; background:var(--bg-main); color:#fff; border:1px solid var(--border-color); text-align:end;">
                                                 <span style="font-weight:bold;">%</span>
                                             </div>
                                             <button type="button" id="btnApplyBatchFamilies" class="btn-primary" style="padding:8px 16px;" data-i18n="admin.hh_apply_to_selection">Appliquer à la sélection</button>
@@ -991,7 +991,7 @@
                     <input type="text" id="inputModifiersComment" data-i18n-placeholder="order.kitchen_note_placeholder" placeholder="Ex: Sans sel, bien chaud, sauce à part..." style="width:100%; padding:10px 14px; background:#0f172a; border:1px solid #334155; color:#f8fafc; border-radius:8px; font-size:0.9rem;" />
                 </div>
             </div>
-            <div class="modal-footer" style="padding: 16px 20px; border-top: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: space-between; align-items: center; background: rgba(15, 23, 42, 0.4); border-bottom-left-radius: 12px; border-bottom-right-radius: 12px;">
+            <div class="modal-footer" style="padding: 16px 20px; border-top: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: space-between; align-items: center; background: rgba(15, 23, 42, 0.4); border-end-start-radius: 12px; border-end-end-radius: 12px;">
                 <div>
                     <div style="font-size:0.8rem; color:#94a3b8;"><span data-i18n="order.extras_label">Suppléments :</span> <strong id="lblModifiersExtraTotal" style="color:#10b981; font-size:0.95rem;">+0.00 €</strong></div>
                     <div style="font-size:1.15rem; font-weight:700; color:#f8fafc;"><span data-i18n="order.final_price_label">Prix final :</span> <span id="lblModifiersEffectivePrice" style="color:#38bdf8;">0.00 €</span></div>
@@ -1047,7 +1047,7 @@
                 <!-- Meal Voucher Overpayment Policy (US3) -->
                 <div class="form-group" id="mealVoucherPolicyGroup" style="margin-top: 10px;">
                     <label style="font-size:0.85rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;" data-i18n="payment.meal_voucher_policy_label">🍽️ Politique Titre-Restaurant (Surpaiement) :</label>
-                    <select id="selectMealVoucherPolicy" style="width:100%; padding:8px 12px; border-radius:4px; background:var(--bg-main); border:1px solid var(--border-color); color:white; font-size:0.9rem;">
+                    <select id="selectMealVoucherPolicy" dir="ltr" style="width:100%; padding:8px 12px; border-radius:4px; background:var(--bg-main); border:1px solid var(--border-color); color:white; font-size:0.9rem;">
                         <option value="0" selected data-i18n="payment.meal_voucher_solution_a">Solution A (Défaut : Écrêtage au solde dû, Rendu 0.00 €)</option>
                         <option value="1" data-i18n="payment.meal_voucher_solution_b">Solution B (Rejet strict en cas de dépassement)</option>
                         <option value="2" data-i18n="payment.meal_voucher_solution_c">Solution C (Émission d'un Bon d'avoir pour le reliquat)</option>
@@ -1119,8 +1119,8 @@
                 <h3 style="color:#ef4444;" data-i18n="common.supervisor_authorization">🔒 Autorisation Superviseur</h3>
             </div>
             <p style="font-size:0.9rem; color:var(--text-muted); margin-bottom:16px;" data-i18n="common.supervisor_pin_hint">Entrez le code PIN manager (ex: 9999) pour valider l'annulation.</p>
-            <input type="password" id="supervisorPinInput" readonly style="width:100%; text-align:center; font-size:2rem; letter-spacing:8px; padding:10px; border-radius:6px; background:var(--bg-main); border:1px solid var(--border-color); color:white; margin-bottom:16px;" />
-            <div class="supervisor-pin-grid" style="display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; margin-bottom:16px;">
+            <input type="password" id="supervisorPinInput" readonly dir="ltr" style="width:100%; text-align:center; font-size:2rem; letter-spacing:8px; padding:10px; border-radius:6px; background:var(--bg-main); border:1px solid var(--border-color); color:white; margin-bottom:16px;" />
+            <div class="supervisor-pin-grid" dir="ltr" style="display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; margin-bottom:16px;">
                 <button type="button" class="btn-key" data-key="1">1</button>
                 <button type="button" class="btn-key" data-key="2">2</button>
                 <button type="button" class="btn-key" data-key="3">3</button>
@@ -1288,9 +1288,9 @@
                         <div style="font-weight:700; color:#bae6fd; font-size:1.05rem;" id="roomGuestName">-</div>
                         <div style="font-size:0.8rem; color:var(--text-muted);" data-i18n="payment.resident_active_stay">Résident en séjour actif</div>
                     </div>
-                    <div style="text-align:right;">
+                    <div style="text-align:end;">
                         <div style="font-size:0.8rem; color:var(--text-muted);" data-i18n="payment.available_credit_label">Plafond disponible :</div>
-                        <div style="font-weight:700; color:#34d399; font-family:var(--font-mono);" id="roomCreditAvailable">- €</div>
+                        <div style="font-weight:700; color:#34d399; font-family:var(--font-mono); direction:ltr; unicode-bidi:isolate;" id="roomCreditAvailable">- €</div>
                     </div>
                 </div>
                 <div class="pay-amount-box" style="padding:10px;">
@@ -1301,7 +1301,7 @@
                     <label data-i18n="payment.resident_signature_label">Signature du Résident (Tactile / Écran) * :</label>
                     <div style="border:1px dashed var(--border-color); border-radius: 2px; background:rgba(0,0,0,0.3); position:relative; overflow:hidden;">
                         <canvas id="signatureCanvas" width="430" height="130" style="touch-action:none; width:100%; height:130px; cursor:crosshair;"></canvas>
-                        <button type="button" id="btnClearSignature" style="position:absolute; top:6px; right:6px; background:rgba(255,255,255,0.1); border:none; color:var(--text-muted); font-size:0.75rem; padding:4px 8px; border-radius: 2px; cursor:pointer;" data-i18n="common.clear">Effacer</button>
+                        <button type="button" id="btnClearSignature" style="position:absolute; top:6px; inset-inline-end:6px; background:rgba(255,255,255,0.1); border:none; color:var(--text-muted); font-size:0.75rem; padding:4px 8px; border-radius: 2px; cursor:pointer;" data-i18n="common.clear">Effacer</button>
                     </div>
                 </div>
                 <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:6px;">

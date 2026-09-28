@@ -266,7 +266,7 @@ body.pos-dark {
     width: 380px;
     min-width: 340px;
     background: var(--bg-panel);
-    border-right: 1px solid var(--border-color);
+    border-inline-end: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
     height: 100%;
@@ -336,12 +336,12 @@ body.pos-dark {
 }
 
 .cart-item-row.dispatched {
-    border-left: 4px solid #10b981;
+    border-inline-start: 4px solid #10b981;
     background: rgba(16, 185, 129, 0.05);
 }
 
 .cart-item-row.pending {
-    border-left: 4px solid #f59e0b;
+    border-inline-start: 4px solid #f59e0b;
     background: rgba(245, 158, 11, 0.05);
 }
 
@@ -403,7 +403,7 @@ body.pos-dark {
     font-weight: 700;
     font-size: 0.92rem;
     min-width: 60px;
-    text-align: right;
+    text-align: end;
 }
 
 .cart-summary {
@@ -880,7 +880,7 @@ body.pos-dark {
     font-weight: 800;
     padding: 2px 5px;
     border-radius: 3px;
-    margin-left: 6px;
+    margin-inline-start: 6px;
     letter-spacing: 0.5px;
     display: inline-block;
 }
@@ -1097,7 +1097,7 @@ body.pos-dark {
 
 .admin-catalog-item-draggable.placed {
     opacity: 0.55;
-    border-left: 3px solid #10b981;
+    border-inline-start: 3px solid #10b981;
 }
 
 /* ==================== FLOOR PLAN ==================== */
@@ -1297,7 +1297,7 @@ body.pos-dark {
 .kds-ticket-card {
     background: var(--bg-card);
     border-radius: var(--radius-sm);
-    border-left: 5px solid var(--accent);
+    border-inline-start: 5px solid var(--accent);
     padding: 12px;
     cursor: pointer;
     transition: transform 0.15s ease;
@@ -1332,7 +1332,7 @@ body.pos-dark {
 .admin-sidebar {
     width: 260px;
     background: var(--bg-panel);
-    border-right: 1px solid var(--border-color);
+    border-inline-end: 1px solid var(--border-color);
     padding: 20px 14px;
     display: flex;
     flex-direction: column;
@@ -1357,7 +1357,7 @@ body.pos-dark {
     font-weight: 600;
     font-size: 0.9rem;
     cursor: pointer;
-    text-align: left;
+    text-align: start;
     transition: all 0.2s ease;
 }
 
@@ -1596,7 +1596,7 @@ body.pos-dark {
 .modal-overlay {
     position: fixed;
     top: 0;
-    left: 0;
+    inset-inline-start: 0;
     width: 100vw;
     height: 100vh;
     background: rgba(15, 23, 42, 0.8);
@@ -1761,7 +1761,7 @@ body.pos-dark {
     font-weight: 700;
     font-size: 1rem;
     cursor: pointer;
-    text-align: left;
+    text-align: start;
     transition: transform 0.1s ease;
 }
 
@@ -1817,7 +1817,7 @@ body.pos-dark {
 .toast-container {
     position: fixed;
     bottom: 24px;
-    right: 24px;
+    inset-inline-end: 24px;
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -1826,13 +1826,29 @@ body.pos-dark {
 
 .toast {
     background: var(--bg-panel);
-    border-left: 4px solid var(--primary);
+    border-inline-start: 4px solid var(--primary);
     border-radius: var(--radius-sm);
     padding: 12px 18px;
     color: white;
     font-size: 0.9rem;
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
     animation: slideIn 0.25s ease;
+}
+
+[dir="rtl"] .toast {
+    animation-name: slideInRtl;
+}
+
+@keyframes slideInRtl {
+    from {
+        transform: translateX(-100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
 }
 
 .toast.success {
@@ -2132,5 +2148,34 @@ body.pos-dark {
     height: 18px;
     accent-color: #38bdf8;
     cursor: pointer;
+}
+
+/* ==================== RTL (arabe) ==================== */
+/* Montants, prix, numéros de table/ticket : toujours gauche-droite quelle que soit la langue. */
+.cart-item-price,
+.total-amount,
+.table-total,
+.pay-amount-box .amount,
+#payTotalWithTip,
+.partition-row strong,
+.product-price,
+.product-price-hh,
+.product-price-strike,
+.table-num,
+.ticket-header span,
+#summaryHt,
+#summaryVat,
+#kpiSalesTtc,
+#kpiAvgCover,
+#kpiAvgOrder,
+#lblModifiersExtraTotal,
+#lblModifiersEffectivePrice {
+    direction: ltr;
+    unicode-bidi: isolate;
+}
+
+/* Icônes directionnelles (chevrons de pagination) : miroir en RTL. */
+[dir="rtl"] .icon-directional {
+    transform: scaleX(-1);
 }
 

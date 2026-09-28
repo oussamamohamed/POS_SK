@@ -468,8 +468,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         // All items button
         const allBtn = document.createElement('button');
         allBtn.className = `btn-cat-tab ${state.activeCategory === 'ALL' ? 'active' : ''}`;
-        allBtn.style.borderLeftColor = '#3b82f6';
-        allBtn.style.borderLeftWidth = '6px';
+        allBtn.style.borderInlineStartColor = '#3b82f6';
+        allBtn.style.borderInlineStartWidth = '6px';
         allBtn.innerHTML = `<span>🍽️</span> <span>${t('order.all_menu_tab')}</span>`;
         allBtn.addEventListener('click', () => {
             state.activeCategory = 'ALL';
@@ -482,12 +482,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         state.categories.forEach(cat => {
             const tabBtn = document.createElement('button');
             tabBtn.className = `btn-cat-tab ${cat.id === state.activeCategory ? 'active' : ''}`;
-            tabBtn.style.borderLeftColor = cat.colorHex || '#4A90E2';
-            tabBtn.style.borderLeftWidth = '6px';
+            tabBtn.style.borderInlineStartColor = cat.colorHex || '#4A90E2';
+            tabBtn.style.borderInlineStartWidth = '6px';
             tabBtn.innerHTML = `
                 <span>${getCategoryIcon(cat.iconName || cat.name.toLowerCase())}</span>
                 <span>${cat.name}</span>
-                <span class="btn-edit-cat-trigger" data-cat-id="${cat.id}" title="${t('common.edit')}" style="margin-left:auto; font-size:0.75rem; opacity:0.6; padding:2px 4px;">✏️</span>
+                <span class="btn-edit-cat-trigger" data-cat-id="${cat.id}" title="${t('common.edit')}" style="margin-inline-start:auto; font-size:0.75rem; opacity:0.6; padding:2px 4px;">✏️</span>
             `;
 
             tabBtn.addEventListener('click', (e) => {
@@ -1208,7 +1208,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 ? `<span class="badge-pending" title="${t('order.pending_saved_title')}">${t('order.pending_saved_badge')}</span>`
                                 : `<span class="badge-pending" title="${t('order.pending_new_title')}">${t('order.pending_new_badge')}</span>`}
                     </div>
-                    <span class="cart-item-meta">${unitPrice.toFixed(2)} € × ${item.quantity} ${item.originalUnitPrice ? `<span style="text-decoration:line-through; color:#94a3b8; margin-left:4px;">(${Number(item.originalUnitPrice).toFixed(2)} €)</span>` : ''} ${item.modifiersPriceExtra ? `<span style="color:#10b981; font-weight:600;">${t('order.modifiers_extra_note', { amount: Number(item.modifiersPriceExtra).toFixed(2) })}</span>` : ''} ${t('order.cart_item_vat_suffix', { vat: effectiveVatPercent })}</span>
+                    <span class="cart-item-meta">${unitPrice.toFixed(2)} € × ${item.quantity} ${item.originalUnitPrice ? `<span style="text-decoration:line-through; color:#94a3b8; margin-inline-start:4px;">(${Number(item.originalUnitPrice).toFixed(2)} €)</span>` : ''} ${item.modifiersPriceExtra ? `<span style="color:#10b981; font-weight:600;">${t('order.modifiers_extra_note', { amount: Number(item.modifiersPriceExtra).toFixed(2) })}</span>` : ''} ${t('order.cart_item_vat_suffix', { vat: effectiveVatPercent })}</span>
                     ${item.modifiers && item.modifiers.length > 0 ? `<div style="font-size:0.75rem;color:#f59e0b;margin-top:2px;">↳ ${item.modifiers.join(', ')}</div>` : ''}
                     ${item.kitchenComment ? `<div style="font-size:0.72rem;color:#94a3b8;font-style:italic;margin-top:1px;">💬 ${item.kitchenComment}</div>` : ''}
                 </div>
@@ -2647,7 +2647,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <div style="background:rgba(255,255,255,0.03); padding:12px; border-radius:8px; border:1px solid rgba(255,255,255,0.06);">
                         <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
                             <strong>${s.serviceName}</strong>
-                            <strong style="color:#10b981;">${s.salesTtc.toFixed(2)} €</strong>
+                            <strong style="color:#10b981; direction:ltr; unicode-bidi:isolate;">${s.salesTtc.toFixed(2)} €</strong>
                         </div>
                         <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:#94a3b8;">
                             <span>${t('admin.dash_service_summary', { orders: s.ordersCount, covers: s.coversCount })}</span>
@@ -2668,7 +2668,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <div style="background:rgba(255,255,255,0.03); padding:10px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.06);">
                         <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:0.88rem;">
                             <span>${p.methodName} <span style="color:#94a3b8; font-size:0.78rem;">(${p.transactionsCount} tx)</span></span>
-                            <strong>${p.totalAmount.toFixed(2)} € <span style="color:#38bdf8; font-size:0.8rem;">(${p.percentageOfTotal}%)</span></strong>
+                            <strong style="direction:ltr; unicode-bidi:isolate;">${p.totalAmount.toFixed(2)} € <span style="color:#38bdf8; font-size:0.8rem;">(${p.percentageOfTotal}%)</span></strong>
                         </div>
                         <div style="background:rgba(255,255,255,0.08); height:6px; border-radius:3px; overflow:hidden;">
                             <div style="background:#38bdf8; height:100%; width:${Math.min(100, Math.max(0, p.percentageOfTotal))}%;"></div>
@@ -2687,8 +2687,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 elTopProds.innerHTML = data.topProducts.map((prod, idx) => `
                     <div style="background:rgba(255,255,255,0.03); padding:10px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.06);">
                         <div style="display:flex; justify-content:space-between; margin-bottom:4px; font-size:0.88rem;">
-                            <span><strong style="color:#fbbf24; margin-right:6px;">#${idx + 1}</strong> ${prod.productName} <span style="color:#94a3b8; font-size:0.8rem;">(x${prod.quantitySold})</span></span>
-                            <strong style="color:#10b981;">${prod.totalSalesTtc.toFixed(2)} € <span style="color:#94a3b8; font-size:0.75rem;">(${prod.percentageOfTotal}%)</span></strong>
+                            <span><strong style="color:#fbbf24; margin-inline-end:6px;">#${idx + 1}</strong> ${prod.productName} <span style="color:#94a3b8; font-size:0.8rem;">(x${prod.quantitySold})</span></span>
+                            <strong style="color:#10b981; direction:ltr; unicode-bidi:isolate;">${prod.totalSalesTtc.toFixed(2)} € <span style="color:#94a3b8; font-size:0.75rem;">(${prod.percentageOfTotal}%)</span></strong>
                         </div>
                         <div style="background:rgba(255,255,255,0.08); height:6px; border-radius:3px; overflow:hidden;">
                             <div style="background:#10b981; height:100%; width:${Math.min(100, Math.max(0, prod.percentageOfTotal))}%;"></div>
@@ -2710,8 +2710,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                             <strong>👤 ${s.serverName}</strong>
                             <div style="font-size:0.78rem; color:#94a3b8; margin-top:2px;">${t('admin.dash_staff_summary', { tables: s.tablesServedCount, amount: s.averageTableTtc.toFixed(2) })}</div>
                         </div>
-                        <div style="text-align:right;">
-                            <strong style="color:#c084fc; font-size:1.05rem;">${s.totalSalesTtc.toFixed(2)} €</strong>
+                        <div style="text-align:end;">
+                            <strong style="color:#c084fc; font-size:1.05rem; direction:ltr; unicode-bidi:isolate;">${s.totalSalesTtc.toFixed(2)} €</strong>
                         </div>
                     </div>
                 `).join('');
@@ -3064,7 +3064,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <input type="checkbox" class="cb-active-rule" data-rule-id="${r.id}" ${hhAdminState.selectedActiveRuleIds.has(r.id) ? 'checked' : ''}>
                         <div>
                             <strong>🏷️ ${r.targetName || t('admin.hh_category_fallback_name')}</strong>
-                            <span style="color:#f59e0b; margin-left:6px; font-weight:bold;">-${r.discountPercent}%</span>
+                            <span style="color:#f59e0b; margin-inline-start:6px; font-weight:bold;">-${r.discountPercent}%</span>
                         </div>
                     </div>
                     <button type="button" class="btn-archive btn-del-single-rule" data-rule-id="${r.id}" style="color:#f87171; border-color:rgba(239,68,68,0.3); padding:4px 8px; font-size:0.8rem;">🗑️</button>
@@ -3081,7 +3081,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <input type="checkbox" class="cb-active-rule" data-rule-id="${r.id}" ${hhAdminState.selectedActiveRuleIds.has(r.id) ? 'checked' : ''}>
                         <div>
                             <strong>🍺 ${r.targetName || t('admin.hh_product_fallback_name')}</strong>
-                            <span style="color:#38bdf8; margin-left:6px; font-weight:bold;">${r.fixedPrice ? r.fixedPrice.toFixed(2) + ' €' : '-' + r.discountPercent + '%'}</span>
+                            <span style="color:#38bdf8; margin-inline-start:6px; font-weight:bold;">${r.fixedPrice ? r.fixedPrice.toFixed(2) + ' €' : '-' + r.discountPercent + '%'}</span>
                         </div>
                     </div>
                     <button type="button" class="btn-archive btn-del-single-rule" data-rule-id="${r.id}" style="color:#f87171; border-color:rgba(239,68,68,0.3); padding:4px 8px; font-size:0.8rem;">🗑️</button>
@@ -3126,8 +3126,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <div style="background:rgba(255,255,255,0.03); padding:12px; border-radius:8px; border:1px solid ${isSelected ? 'var(--primary)' : 'rgba(255,255,255,0.06)'}; display:flex; justify-content:space-between; align-items:center;">
                     <div>
                         <strong>🍻 ${s.name}</strong>
-                        <span style="font-size:0.75rem; color:#f59e0b; margin-left:6px;">${s.startTime} - ${s.endTime}</span>
-                        <span style="font-size:0.72rem; background:rgba(59,130,246,0.2); color:#60a5fa; border:1px solid rgba(59,130,246,0.3); padding:2px 6px; border-radius:10px; margin-left:6px;">${t('admin.hh_priority_value', { value: s.priority || 1 })}</span>
+                        <span style="font-size:0.75rem; color:#f59e0b; margin-inline-start:6px;">${s.startTime} - ${s.endTime}</span>
+                        <span style="font-size:0.72rem; background:rgba(59,130,246,0.2); color:#60a5fa; border:1px solid rgba(59,130,246,0.3); padding:2px 6px; border-radius:10px; margin-inline-start:6px;">${t('admin.hh_priority_value', { value: s.priority || 1 })}</span>
                         <div style="font-size:0.8rem; color:#94a3b8; margin-top:2px;">${t('admin.hh_days_value', { days: dayLabels })} ${s.appliesToTakeaway ? t('admin.hh_takeaway_included') : t('admin.hh_dine_in_only')}</div>
                         <div style="font-size:0.78rem; color:#38bdf8; margin-top:2px;">${t('admin.hh_rules_configured_count', { count: rulesCount })}</div>
                     </div>
@@ -4491,7 +4491,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             } else {
                 slotEl.classList.add('empty-slot');
                 slotEl.innerHTML = `
-                    <span class="admin-slot-coord" style="position:absolute; top:4px; left:6px;">[P${pageIndex + 1}:${row + 1},${col + 1}]</span>
+                    <span class="admin-slot-coord" style="position:absolute; top:4px; inset-inline-start:6px;">[P${pageIndex + 1}:${row + 1},${col + 1}]</span>
                     <span style="color:var(--text-dim); font-size:0.8rem; font-weight:600;">${t('admin.grid_slot_assign_label')}</span>
                 `;
                 slotEl.addEventListener('click', () => {

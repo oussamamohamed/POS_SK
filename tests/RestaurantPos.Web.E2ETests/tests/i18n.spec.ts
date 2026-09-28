@@ -32,6 +32,36 @@ test.describe('Langue de l\'interface', () => {
     expect(one!.x).toBeLessThan(three!.x);
   });
 
+  test('arabe : montants gauche-droite, icônes de pagination inversées, en-tête miroir', async ({ page }) => {
+    // Note : contrairement au brouillon de la brief, la démo se connecte automatiquement
+    // (PIN 1234) au chargement (cf. Task 5) : le modal PIN n'apparaît pas tant qu'on ne
+    // verrouille pas explicitement. On teste donc directement l'UI principale déjà connectée.
+    await page.goto('/');
+    await page.evaluate(() => localStorage.setItem('pos_lang', 'ar'));
+    await page.reload();
+    await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+    await expect(page.locator('#pinLockModal')).not.toHaveClass(/active/);
+
+    // Montants : toujours gauche-droite malgré la page RTL.
+    const amounts = page.locator('.cart-item-price, .total-amount, .table-total, .pay-amount-box .amount, .product-price, #summaryHt, #summaryVat');
+    const count = await amounts.count();
+    expect(count).toBeGreaterThan(0);
+    for (let i = 0; i < Math.min(count, 5); i++) {
+      await expect(amounts.nth(i)).toHaveCSS('direction', 'ltr');
+    }
+
+    // Icônes de pagination du grid produits : miroir en RTL (la barre n'est affichée
+    // que s'il y a plusieurs pages ; on force sa visibilité pour vérifier la règle CSS).
+    await page.evaluate(() => { document.getElementById('gridPaginationBar')!.style.display = 'flex'; });
+    const prevIcon = page.locator('#btnPrevGridPage .icon-directional');
+    await expect(prevIcon).toHaveCSS('transform', 'matrix(-1, 0, 0, 1, 0, 0)');
+
+    // En-tête : le bloc marque (logo) passe à droite en RTL (miroir du flex natif).
+    const header = await page.locator('.app-header').boundingBox();
+    const brand = await page.locator('.brand-section').boundingBox();
+    expect(brand!.x + brand!.width).toBeGreaterThan(header!.x + header!.width / 2);
+  });
+
   test('le choix est mémorisé et envoyé au serveur', async ({ page }) => {
     await page.goto('/');
     await page.click('#btnLockTerminal');
