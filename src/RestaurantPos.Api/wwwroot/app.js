@@ -1,5 +1,6 @@
 // Restaurant POS Web Client Interactive Application
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    await window.i18nReady;
     // App State
     const state = {
         operator: { name: 'Alexandre Dupont (Manager)', role: 'FloorManager', id: null },
@@ -92,6 +93,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if (config.headers instanceof Headers) config.headers.set('X-Device-Token', state.device.token);
             else if (Array.isArray(config.headers)) config.headers.push(['X-Device-Token', state.device.token]);
             else config.headers['X-Device-Token'] = state.device.token;
+        }
+        if (target.origin === location.origin && target.pathname.startsWith('/api/')) {
+            config = config || {};
+            config.headers = config.headers || {};
+            if (config.headers instanceof Headers) config.headers.set('Accept-Language', window.i18n.lang);
+            else if (Array.isArray(config.headers)) config.headers.push(['Accept-Language', window.i18n.lang]);
+            else config.headers['Accept-Language'] = window.i18n.lang;
         }
         const res = await originalFetch(resource, config);
         if (res.status === 401) {
@@ -361,6 +369,9 @@ document.addEventListener('DOMContentLoaded', () => {
     async function init() {
         setupNavListeners();
         setupPinKeypad();
+        const languageSelect = document.getElementById('languageSelect');
+        languageSelect.value = window.i18n.lang;
+        languageSelect.addEventListener('change', e => window.i18n.setLanguage(e.target.value));
         setupAdminTabs();
         setupDashboardHandlers();
         setupModals();

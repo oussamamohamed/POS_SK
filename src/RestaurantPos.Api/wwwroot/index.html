@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
@@ -932,10 +932,10 @@
         <div class="pin-modal-card">
             <div class="pin-header">
                 <span class="pin-lock-icon">🔒</span>
-                <h3>Caisse Verrouillée</h3>
-                <p>Composez votre code PIN (4-6 chiffres) :</p>
+                <h3 data-i18n="login.locked_title">Caisse verrouillée</h3>
+                <p data-i18n="login.enter_pin">Composez votre code PIN (4-6 chiffres) :</p>
             </div>
-            <div class="pin-display">
+            <div class="pin-display" dir="ltr">
                 <span class="pin-bullet" id="pinDot0"></span>
                 <span class="pin-bullet" id="pinDot1"></span>
                 <span class="pin-bullet" id="pinDot2"></span>
@@ -943,7 +943,7 @@
                 <span class="pin-bullet" id="pinDot4"></span>
                 <span class="pin-bullet" id="pinDot5"></span>
             </div>
-            <div class="pin-keypad">
+            <div class="pin-keypad" dir="ltr">
                 <button class="btn-num" data-val="1">1</button>
                 <button class="btn-num" data-val="2">2</button>
                 <button class="btn-num" data-val="3">3</button>
@@ -957,6 +957,14 @@
                 <button class="btn-num" data-val="0">0</button>
                 <button class="btn-num btn-back" id="btnPinDel">⌫</button>
             </div>
+            <label class="pin-language">
+                <span data-i18n="login.language">Langue</span>
+                <select id="languageSelect" aria-describedby="languageHint">
+                    <option value="en">English</option>
+                    <option value="fr">Français</option>
+                    <option value="ar">العربية</option>
+                </select>
+            </label>
             <div class="pin-quick-hints">
                 <small>Comptes démo : Alexandre (<code>1234</code>) | Sophie (<code>2468</code>) | Admin
                     (<code>9999</code>)</small>
@@ -1585,6 +1593,7 @@
     <div class="toast-container" id="toastContainer"></div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+    <script src="i18n.js?v=20260927_1"></script>
     <script src="app.js?v=20260902_9"></script>
 </body>
 </html>

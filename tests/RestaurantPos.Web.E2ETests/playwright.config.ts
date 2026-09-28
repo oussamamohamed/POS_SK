@@ -13,6 +13,7 @@ export default defineConfig({
     baseURL: process.env.POS_WEB_URL ?? 'http://localhost:5000',
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
+    locale: 'fr-FR',
   },
   projects: [
     {
