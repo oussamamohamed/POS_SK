@@ -4,7 +4,10 @@
 import { readFileSync } from 'node:fs';
 
 const root = new URL('../src/RestaurantPos.Api/wwwroot/', import.meta.url);
-const read = p => readFileSync(new URL(p, root), 'utf8');
+// Normalise les fins de ligne CRLF -> LF : sans ça, `\/\/.*$` (sans flag m) ne peut
+// jamais consommer le `\r` final d'une ligne (terminateur de ligne pour `.`), donc les
+// commentaires `//` ne sont jamais retirés et déclenchent de faux positifs.
+const read = p => readFileSync(new URL(p, root), 'utf8').replace(/\r\n/g, '\n');
 const args = process.argv.slice(2);
 const langsFlagIndex = args.indexOf('--langs');
 const langs = (args.find(a => a.startsWith('--langs='))?.split('=')[1] ?? (langsFlagIndex === -1 ? undefined : args[langsFlagIndex + 1]) ?? 'en,fr,ar').split(',');
@@ -35,7 +38,7 @@ if (args.includes('--no-french')) {
   // Heuristique : chaîne littérale contenant un accent français ou un mot FR courant, hors commentaires.
   const FR = /['"`>][^'"`<]*(?:[éèêàùçôî]|\b(?:le|la|les|des|du|une|pour|avec|introuvable|commande|annuler|valider|enregistrer)\b)[^'"`<]*['"`<]/i;
   const scan = (name, text, { skipI18nAttr = false } = {}) => text.split('\n').forEach((line, i) => {
-    const code = line.replace(/\/\/.*$/, '').replace(/<!--.*?-->/g, '');
+    const code = line.replace(/\/\/.*$/, '').replace(/\/\*.*?\*\//g, '').replace(/<!--.*?-->/g, '');
     if (/console\.(warn|error|log)/.test(code)) return;
     // Texte figé envoyé au serveur et stocké tel quel dans le journal NF525 (append-only) : la
     // traçabilité fiscale doit rester stable, indépendante de la langue de l'opérateur qui saisit.

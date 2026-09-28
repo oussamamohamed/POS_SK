@@ -2631,17 +2631,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         const elTotalOrders = document.getElementById('kpiTotalOrders');
 
         if (elSalesTtc) elSalesTtc.textContent = `${data.kpis.totalSalesTtc.toFixed(2)} €`;
-        if (elSalesHt) elSalesHt.textContent = `HT : ${data.kpis.totalSalesHt.toFixed(2)} €`;
+        if (elSalesHt) elSalesHt.textContent = t('admin.kpi_sales_ht_value', { amount: data.kpis.totalSalesHt.toFixed(2) });
         if (elAvgCover) elAvgCover.textContent = `${data.kpis.averageCoverTtc.toFixed(2)} €`;
-        if (elTotalCovers) elTotalCovers.textContent = `${data.kpis.totalCoversCount} couverts servis`;
+        if (elTotalCovers) elTotalCovers.textContent = t('admin.kpi_total_covers_value', { count: data.kpis.totalCoversCount });
         if (elAvgOrder) elAvgOrder.textContent = `${data.kpis.averageOrderTtc.toFixed(2)} €`;
-        if (elTotalOrders) elTotalOrders.textContent = `${data.kpis.totalOrdersCount} commande(s)`;
+        if (elTotalOrders) elTotalOrders.textContent = t('admin.kpi_total_orders_value', { count: data.kpis.totalOrdersCount });
 
         // 2. Services
         const elServices = document.getElementById('dashServicesList');
         if (elServices) {
             if (!data.services || data.services.length === 0) {
-                elServices.innerHTML = '<p class="text-muted">Aucune donnée de service pour la période.</p>';
+                elServices.innerHTML = `<p class="text-muted">${t('admin.dash_no_services')}</p>`;
             } else {
                 elServices.innerHTML = data.services.map(s => `
                     <div style="background:rgba(255,255,255,0.03); padding:12px; border-radius:8px; border:1px solid rgba(255,255,255,0.06);">
@@ -2650,8 +2650,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                             <strong style="color:#10b981;">${s.salesTtc.toFixed(2)} €</strong>
                         </div>
                         <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:#94a3b8;">
-                            <span>${s.ordersCount} commande(s) • ${s.coversCount} couvert(s)</span>
-                            <span>Moy/couvert : ${s.averageCoverTtc.toFixed(2)} €</span>
+                            <span>${t('admin.dash_service_summary', { orders: s.ordersCount, covers: s.coversCount })}</span>
+                            <span>${t('admin.dash_avg_per_cover', { amount: s.averageCoverTtc.toFixed(2) })}</span>
                         </div>
                     </div>
                 `).join('');
@@ -2662,7 +2662,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const elPayments = document.getElementById('dashPaymentsList');
         if (elPayments) {
             if (!data.paymentMethods || data.paymentMethods.length === 0) {
-                elPayments.innerHTML = '<p class="text-muted">Aucun encaissement sur la période.</p>';
+                elPayments.innerHTML = `<p class="text-muted">${t('admin.dash_no_payments')}</p>`;
             } else {
                 elPayments.innerHTML = data.paymentMethods.map(p => `
                     <div style="background:rgba(255,255,255,0.03); padding:10px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.06);">
@@ -2682,7 +2682,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const elTopProds = document.getElementById('dashTopProductsList');
         if (elTopProds) {
             if (!data.topProducts || data.topProducts.length === 0) {
-                elTopProds.innerHTML = '<p class="text-muted">Aucune vente enregistrée.</p>';
+                elTopProds.innerHTML = `<p class="text-muted">${t('admin.dash_no_sales')}</p>`;
             } else {
                 elTopProds.innerHTML = data.topProducts.map((prod, idx) => `
                     <div style="background:rgba(255,255,255,0.03); padding:10px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.06);">
@@ -2702,13 +2702,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         const elStaff = document.getElementById('dashStaffList');
         if (elStaff) {
             if (!data.staffPerformance || data.staffPerformance.length === 0) {
-                elStaff.innerHTML = '<p class="text-muted">Aucune activité serveur enregistrée.</p>';
+                elStaff.innerHTML = `<p class="text-muted">${t('admin.dash_no_staff_activity')}</p>`;
             } else {
                 elStaff.innerHTML = data.staffPerformance.map(s => `
                     <div style="background:rgba(255,255,255,0.03); padding:10px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.06); display:flex; justify-content:space-between; align-items:center;">
                         <div>
                             <strong>👤 ${s.serverName}</strong>
-                            <div style="font-size:0.78rem; color:#94a3b8; margin-top:2px;">${s.tablesServedCount} table(s) • Moy/table: ${s.averageTableTtc.toFixed(2)} €</div>
+                            <div style="font-size:0.78rem; color:#94a3b8; margin-top:2px;">${t('admin.dash_staff_summary', { tables: s.tablesServedCount, amount: s.averageTableTtc.toFixed(2) })}</div>
                         </div>
                         <div style="text-align:right;">
                             <strong style="color:#c084fc; font-size:1.05rem;">${s.totalSalesTtc.toFixed(2)} €</strong>
@@ -2730,12 +2730,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             row.className = 'item-list-row';
             row.innerHTML = `
                 <div>
-                    <strong>${p.name}</strong> (${p.price.toFixed(2)} € - TVA ${p.taxRatePercent}%)
-                    <small style="display:block;color:#94a3b8;">Station: ${p.preparationStationId || 'HOT'}${p.isQuickKey ? ' | ⭐ Touche Rapide' : ''}</small>
+                    <strong>${p.name}</strong> ${t('admin.catalog_row_price_vat', { price: p.price.toFixed(2), rate: p.taxRatePercent })}
+                    <small style="display:block;color:#94a3b8;">${t('admin.catalog_row_station', { station: p.preparationStationId || 'HOT' })}${p.isQuickKey ? ' | ' + t('admin.catalog_row_quick_key') : ''}</small>
                 </div>
                 <div style="display:flex; gap:6px;">
-                    <button class="btn-archive btn-edit-product" data-id="${p.id}" style="background:rgba(59,130,246,0.2); border-color:rgba(59,130,246,0.4); color:#60a5fa;">✏️ Modifier</button>
-                    <button class="btn-archive btn-del-product" data-id="${p.id}">Désactiver</button>
+                    <button class="btn-archive btn-edit-product" data-id="${p.id}" style="background:rgba(59,130,246,0.2); border-color:rgba(59,130,246,0.4); color:#60a5fa;">${t('admin.btn_edit_row')}</button>
+                    <button class="btn-archive btn-del-product" data-id="${p.id}">${t('admin.btn_deactivate')}</button>
                 </div>
             `;
             row.querySelector('.btn-edit-product').addEventListener('click', () => {
@@ -2752,12 +2752,37 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
             row.querySelector('.btn-del-product').addEventListener('click', async () => {
                 await fetch(`/api/catalog/products/${p.id}`, { method: 'DELETE' });
-                showToast(`Article '${p.name}' désactivé`, 'info');
+                showToast(t('admin.product_deactivated_toast', { name: p.name }), 'info');
                 await loadCatalogData();
                 await loadAdminCatalog();
             });
             elements.adminCatalogList.appendChild(row);
         });
+    }
+
+    // Rôles opérateur (enum serveur) -> clé i18n d'affichage. La valeur envoyée au serveur ne change pas.
+    const OPERATOR_ROLE_LABEL_KEYS = {
+        Waiter: 'admin.role_waiter',
+        Cashier: 'admin.role_cashier',
+        KitchenStaff: 'admin.role_kitchen_staff',
+        FloorManager: 'admin.role_floor_manager',
+        Admin: 'admin.role_admin'
+    };
+    function operatorRoleLabel(role) {
+        const key = OPERATOR_ROLE_LABEL_KEYS[role];
+        return key ? t(key) : role;
+    }
+
+    // Rôles appareil (enum serveur, valeurs françaises) -> clé i18n d'affichage.
+    const DEVICE_ROLE_LABEL_KEYS = {
+        Caisse: 'admin.device_role_caisse',
+        Serveur: 'admin.device_role_serveur',
+        Cuisine: 'admin.device_role_cuisine',
+        BackOffice: 'admin.device_role_backoffice'
+    };
+    function deviceRoleLabel(role) {
+        const key = DEVICE_ROLE_LABEL_KEYS[role];
+        return key ? t(key) : role;
     }
 
     async function loadAdminStaff() {
@@ -2773,11 +2798,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 row.innerHTML = `
                     <div>
                         <strong>${s.name}</strong>
-                        <small style="display:block;color:#94a3b8;">Rôle: ${s.role}</small>
+                        <small style="display:block;color:#94a3b8;">${t('admin.staff_row_role', { role: operatorRoleLabel(s.role) })}</small>
                     </div>
                     <div style="display:flex; gap:6px;">
-                        <button class="btn-archive btn-edit-staff" data-id="${s.id}" style="background:rgba(59,130,246,0.2); border-color:rgba(59,130,246,0.4); color:#60a5fa;">✏️ Modifier</button>
-                        <button class="btn-archive btn-del-staff" data-id="${s.id}">Désactiver</button>
+                        <button class="btn-archive btn-edit-staff" data-id="${s.id}" style="background:rgba(59,130,246,0.2); border-color:rgba(59,130,246,0.4); color:#60a5fa;">${t('admin.btn_edit_row')}</button>
+                        <button class="btn-archive btn-del-staff" data-id="${s.id}">${t('admin.btn_deactivate')}</button>
                     </div>
                 `;
                 row.querySelector('.btn-edit-staff').addEventListener('click', () => {
@@ -2788,7 +2813,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 });
                 row.querySelector('.btn-del-staff').addEventListener('click', async () => {
                     await fetch(`/api/staff/operators/${s.id}`, { method: 'DELETE' });
-                    showToast(`Employé '${s.name}' désactivé`, 'info');
+                    showToast(t('admin.staff_deactivated_toast', { name: s.name }), 'info');
                     await loadAdminStaff();
                 });
                 elements.adminStaffList.appendChild(row);
@@ -2810,12 +2835,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 row.className = 'item-list-row';
                 row.innerHTML = `
                     <div>
-                        <strong>${pr.name}</strong> (${pr.ipAddress}:${pr.port})${pr.isActive === false ? ' <span style="color:#f87171;">— désactivée</span>' : ''}
-                        <small style="display:block;color:#94a3b8;">Postes: ${(pr.assignedStationIds || []).join(', ') || '—'} | Tiroir: ${pr.openCashDrawerOnReceipt ? 'Oui' : 'Non'}</small>
+                        <strong>${pr.name}</strong> (${pr.ipAddress}:${pr.port})${pr.isActive === false ? ` <span style="color:#f87171;">${t('admin.printer_row_inactive_suffix')}</span>` : ''}
+                        <small style="display:block;color:#94a3b8;">${t('admin.printer_row_meta', { stations: (pr.assignedStationIds || []).join(', ') || '—', drawer: pr.openCashDrawerOnReceipt ? t('common.yes') : t('common.no') })}</small>
                     </div>
                     <div style="display:flex; gap:6px;">
-                        <button class="btn-archive btn-edit-printer" data-id="${pr.id}" style="background:rgba(59,130,246,0.2); border-color:rgba(59,130,246,0.4); color:#60a5fa;">✏️ Modifier</button>
-                        <button class="btn-archive btn-del-printer" data-id="${pr.id}">${pr.isActive === false ? 'Réactiver' : 'Désactiver'}</button>
+                        <button class="btn-archive btn-edit-printer" data-id="${pr.id}" style="background:rgba(59,130,246,0.2); border-color:rgba(59,130,246,0.4); color:#60a5fa;">${t('admin.btn_edit_row')}</button>
+                        <button class="btn-archive btn-del-printer" data-id="${pr.id}">${pr.isActive === false ? t('admin.btn_reactivate') : t('admin.btn_deactivate')}</button>
                     </div>
                 `;
                 row.querySelector('.btn-edit-printer').addEventListener('click', () => {
@@ -2831,7 +2856,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const activate = pr.isActive === false;
                     const res = await savePrinter(pr.id, { ...printerToUpdatePayload(pr), isActive: activate });
                     if (res.ok) {
-                        showToast(`Imprimante '${pr.name}' ${activate ? 'réactivée' : 'désactivée'}`, 'info');
+                        showToast(activate ? t('admin.printer_reactivated_toast', { name: pr.name }) : t('admin.printer_deactivated_toast', { name: pr.name }), 'info');
                         await loadAdminPrinters();
                     }
                 });
@@ -2868,7 +2893,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Populate schedule select dropdown
                 if (selectSched) {
                     if (hhAdminState.schedules.length === 0) {
-                        selectSched.innerHTML = '<option value="">-- Aucun créneau --</option>';
+                        selectSched.innerHTML = `<option value="">${t('admin.hh_no_schedule_option')}</option>`;
                         hhAdminState.selectedScheduleId = null;
                     } else {
                         selectSched.innerHTML = hhAdminState.schedules.map(s => 
@@ -2896,7 +2921,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const container = document.getElementById('hhArticleCategoryFilters');
         if (!container) return;
 
-        let html = `<button type="button" class="hh-pill-filter ${hhAdminState.articleFilterCatId === null ? 'active' : ''}" data-cat-id="all">Toutes les catégories</button>`;
+        let html = `<button type="button" class="hh-pill-filter ${hhAdminState.articleFilterCatId === null ? 'active' : ''}" data-cat-id="all">${t('admin.hh_all_categories')}</button>`;
         if (state.categories) {
             html += state.categories.map(c => 
                 `<button type="button" class="hh-pill-filter ${hhAdminState.articleFilterCatId === c.id ? 'active' : ''}" data-cat-id="${c.id}">${c.name}</button>`
@@ -2933,7 +2958,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         if (filtered.length === 0) {
-            grid.innerHTML = '<p class="text-muted" style="grid-column:1/-1; padding:20px; text-align:center;">Aucun article trouvé.</p>';
+            grid.innerHTML = `<p class="text-muted" style="grid-column:1/-1; padding:20px; text-align:center;">${t('admin.hh_no_articles_found')}</p>`;
             return;
         }
 
@@ -2944,7 +2969,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <input type="checkbox" ${isChecked ? 'checked' : ''} data-prod-id="${p.id}">
                     <div class="hh-select-card-info">
                         <div class="hh-select-card-title">${p.name}</div>
-                        <div class="hh-select-card-sub">Std: ${p.price.toFixed(2)} €</div>
+                        <div class="hh-select-card-sub">${t('admin.hh_std_price', { price: p.price.toFixed(2) })}</div>
                     </div>
                 </div>
             `;
@@ -2980,7 +3005,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const cats = state.categories || [];
         if (cats.length === 0) {
-            grid.innerHTML = '<p class="text-muted" style="grid-column:1/-1; padding:20px; text-align:center;">Aucune famille définie dans le catalogue.</p>';
+            grid.innerHTML = `<p class="text-muted" style="grid-column:1/-1; padding:20px; text-align:center;">${t('admin.hh_no_families_defined')}</p>`;
             return;
         }
 
@@ -2992,7 +3017,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <input type="checkbox" ${isChecked ? 'checked' : ''} data-cat-id="${c.id}">
                     <div class="hh-select-card-info">
                         <div class="hh-select-card-title">${c.name}</div>
-                        <div class="hh-select-card-sub">${prodsInCat.length} article(s) inclus</div>
+                        <div class="hh-select-card-sub">${t('admin.hh_products_included_count', { count: prodsInCat.length })}</div>
                     </div>
                 </div>
             `;
@@ -3031,14 +3056,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         const prodRules = rules.filter(r => r.targetType === 0 || r.targetType === 'Product');
 
         if (catRules.length === 0) {
-            catList.innerHTML = '<p class="text-muted" style="font-size:0.85rem;">Aucune règle famille active.</p>';
+            catList.innerHTML = `<p class="text-muted" style="font-size:0.85rem;">${t('admin.hh_no_category_rules')}</p>`;
         } else {
             catList.innerHTML = catRules.map(r => `
                 <div class="hh-active-rule-item">
                     <div style="display:flex; align-items:center; gap:10px;">
                         <input type="checkbox" class="cb-active-rule" data-rule-id="${r.id}" ${hhAdminState.selectedActiveRuleIds.has(r.id) ? 'checked' : ''}>
                         <div>
-                            <strong>🏷️ ${r.targetName || 'Famille'}</strong>
+                            <strong>🏷️ ${r.targetName || t('admin.hh_category_fallback_name')}</strong>
                             <span style="color:#f59e0b; margin-left:6px; font-weight:bold;">-${r.discountPercent}%</span>
                         </div>
                     </div>
@@ -3048,14 +3073,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         if (prodRules.length === 0) {
-            prodList.innerHTML = '<p class="text-muted" style="font-size:0.85rem;">Aucune règle article active.</p>';
+            prodList.innerHTML = `<p class="text-muted" style="font-size:0.85rem;">${t('admin.hh_no_product_rules')}</p>`;
         } else {
             prodList.innerHTML = prodRules.map(r => `
                 <div class="hh-active-rule-item">
                     <div style="display:flex; align-items:center; gap:10px;">
                         <input type="checkbox" class="cb-active-rule" data-rule-id="${r.id}" ${hhAdminState.selectedActiveRuleIds.has(r.id) ? 'checked' : ''}>
                         <div>
-                            <strong>🍺 ${r.targetName || 'Article'}</strong>
+                            <strong>🍺 ${r.targetName || t('admin.hh_product_fallback_name')}</strong>
                             <span style="color:#38bdf8; margin-left:6px; font-weight:bold;">${r.fixedPrice ? r.fixedPrice.toFixed(2) + ' €' : '-' + r.discountPercent + '%'}</span>
                         </div>
                     </div>
@@ -3087,12 +3112,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!listEl) return;
 
         if (hhAdminState.schedules.length === 0) {
-            listEl.innerHTML = '<p class="text-muted">Aucune plage Happy Hour configurée.</p>';
+            listEl.innerHTML = `<p class="text-muted">${t('admin.hh_no_schedules_configured')}</p>`;
             return;
         }
 
         listEl.innerHTML = hhAdminState.schedules.map(s => {
-            const daysMap = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+            const daysMap = [t('admin.day_sun'), t('admin.day_mon'), t('admin.day_tue'), t('admin.day_wed'), t('admin.day_thu'), t('admin.day_fri'), t('admin.day_sat')];
             const dayLabels = (s.daysOfWeek || []).map(d => daysMap[d] || d).join(', ');
             const rulesCount = (s.priceRules || []).length;
             const isSelected = s.id === hhAdminState.selectedScheduleId;
@@ -3100,14 +3125,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             return `
                 <div style="background:rgba(255,255,255,0.03); padding:12px; border-radius:8px; border:1px solid ${isSelected ? 'var(--primary)' : 'rgba(255,255,255,0.06)'}; display:flex; justify-content:space-between; align-items:center;">
                     <div>
-                        <strong>🍻 ${s.name}</strong> 
+                        <strong>🍻 ${s.name}</strong>
                         <span style="font-size:0.75rem; color:#f59e0b; margin-left:6px;">${s.startTime} - ${s.endTime}</span>
-                        <span style="font-size:0.72rem; background:rgba(59,130,246,0.2); color:#60a5fa; border:1px solid rgba(59,130,246,0.3); padding:2px 6px; border-radius:10px; margin-left:6px;">Priorité: ${s.priority || 1}</span>
-                        <div style="font-size:0.8rem; color:#94a3b8; margin-top:2px;">Jours : ${dayLabels} ${s.appliesToTakeaway ? '• Emporté inclus' : '• Sur place uniquement'}</div>
-                        <div style="font-size:0.78rem; color:#38bdf8; margin-top:2px;">${rulesCount} règle(s) tarifaire(s) configurée(s)</div>
+                        <span style="font-size:0.72rem; background:rgba(59,130,246,0.2); color:#60a5fa; border:1px solid rgba(59,130,246,0.3); padding:2px 6px; border-radius:10px; margin-left:6px;">${t('admin.hh_priority_value', { value: s.priority || 1 })}</span>
+                        <div style="font-size:0.8rem; color:#94a3b8; margin-top:2px;">${t('admin.hh_days_value', { days: dayLabels })} ${s.appliesToTakeaway ? t('admin.hh_takeaway_included') : t('admin.hh_dine_in_only')}</div>
+                        <div style="font-size:0.78rem; color:#38bdf8; margin-top:2px;">${t('admin.hh_rules_configured_count', { count: rulesCount })}</div>
                     </div>
                     <div style="display:flex; gap:8px;">
-                        <button class="btn-primary btn-select-hh-sched" data-id="${s.id}" style="padding:6px 12px; font-size:0.8rem;">Gérer les tarifs</button>
+                        <button class="btn-primary btn-select-hh-sched" data-id="${s.id}" style="padding:6px 12px; font-size:0.8rem;">${t('admin.hh_manage_pricing')}</button>
                         <button class="btn-archive btn-del-hh-sched" data-id="${s.id}" style="color:#f87171; border-color:rgba(239,68,68,0.3); padding:6px 10px; font-size:0.8rem;">🗑️</button>
                     </div>
                 </div>
@@ -3129,7 +3154,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             btn.addEventListener('click', async () => {
                 const schedId = btn.getAttribute('data-id');
                 await fetch(`/api/happy-hour/schedules/${schedId}`, { method: 'DELETE' });
-                showToast('Plage Happy Hour supprimée', 'info');
+                showToast(t('admin.hh_schedule_deleted_toast'), 'info');
                 await loadAdminHappyHour();
                 await checkHappyHourStatus();
             });
@@ -3148,18 +3173,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function applyBatchArticles() {
         if (!hhAdminState.selectedScheduleId) {
-            showToast('Veuillez sélectionner ou créer un créneau Happy Hour d\'abord', 'warning');
+            showToast(t('admin.hh_select_schedule_first_warning'), 'warning');
             return;
         }
         if (hhAdminState.selectedArticleIds.size === 0) {
-            showToast('Veuillez sélectionner au moins un article', 'warning');
+            showToast(t('admin.hh_select_article_warning'), 'warning');
             return;
         }
 
         const valInput = document.getElementById('inputHhBatchValue');
         const value = parseFloat(valInput ? valInput.value : 0);
         if (isNaN(value) || value <= 0) {
-            showToast('Veuillez saisir un tarif ou une remise valide (> 0)', 'error');
+            showToast(t('admin.hh_invalid_price_error'), 'error');
             return;
         }
 
@@ -3181,34 +3206,34 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (res.ok) {
                 const data = await res.json();
-                showToast(`✓ ${data.appliedCount || payload.targetIds.length} règle(s) appliquée(s) avec succès !`, 'success');
+                showToast(t('admin.hh_rules_applied_toast', { count: data.appliedCount || payload.targetIds.length }), 'success');
                 hhAdminState.selectedArticleIds.clear();
                 await loadAdminHappyHour();
                 await checkHappyHourStatus();
             } else {
                 const err = await res.json().catch(() => ({}));
-                showToast(err.message || 'Erreur lors de l\'application des règles groupées', 'error');
+                showToast(err.message || t('admin.hh_batch_apply_error'), 'error');
             }
         } catch (err) {
             console.error('Erreur batch rules articles:', err);
-            showToast('Erreur réseau lors de l\'enregistrement', 'error');
+            showToast(t('admin.hh_save_network_error'), 'error');
         }
     }
 
     async function applyBatchFamilies() {
         if (!hhAdminState.selectedScheduleId) {
-            showToast('Veuillez sélectionner ou créer un créneau Happy Hour d\'abord', 'warning');
+            showToast(t('admin.hh_select_schedule_first_warning'), 'warning');
             return;
         }
         if (hhAdminState.selectedFamilyIds.size === 0) {
-            showToast('Veuillez sélectionner au moins une famille', 'warning');
+            showToast(t('admin.hh_select_family_warning'), 'warning');
             return;
         }
 
         const discountInput = document.getElementById('inputHhFamilyDiscount');
         const discount = parseFloat(discountInput ? discountInput.value : 0);
         if (isNaN(discount) || discount <= 0 || discount > 100) {
-            showToast('La remise doit être comprise entre 1% et 100%', 'error');
+            showToast(t('admin.hh_discount_range_error'), 'error');
             return;
         }
 
@@ -3229,24 +3254,24 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (res.ok) {
                 const data = await res.json();
-                showToast(`✓ ${data.appliedRulesCount || payload.targetIds.length} famille(s) configurée(s) à -${discount}% !`, 'success');
+                showToast(t('admin.hh_families_configured_toast', { count: data.appliedRulesCount || payload.targetIds.length, discount }), 'success');
                 hhAdminState.selectedFamilyIds.clear();
                 await loadAdminHappyHour();
                 await checkHappyHourStatus();
             } else {
                 const err = await res.json().catch(() => ({}));
-                showToast(err.message || 'Erreur lors de l\'application aux familles', 'error');
+                showToast(err.message || t('admin.hh_batch_families_error'), 'error');
             }
         } catch (err) {
             console.error('Erreur batch rules familles:', err);
-            showToast('Erreur réseau lors de l\'enregistrement', 'error');
+            showToast(t('admin.hh_save_network_error'), 'error');
         }
     }
 
     async function deleteRulesBatch(ruleIds) {
         if (!hhAdminState.selectedScheduleId) return;
         if (!ruleIds || ruleIds.length === 0) {
-            showToast('Aucune règle sélectionnée pour la suppression', 'warning');
+            showToast(t('admin.hh_no_rule_selected_warning'), 'warning');
             return;
         }
 
@@ -3258,16 +3283,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
 
             if (res.ok) {
-                showToast(`✓ ${ruleIds.length} règle(s) supprimée(s)`, 'info');
+                showToast(t('admin.hh_rules_deleted_toast', { count: ruleIds.length }), 'info');
                 ruleIds.forEach(id => hhAdminState.selectedActiveRuleIds.delete(id));
                 await loadAdminHappyHour();
                 await checkHappyHourStatus();
             } else {
-                showToast('Erreur lors de la suppression des règles', 'error');
+                showToast(t('admin.hh_delete_rules_error'), 'error');
             }
         } catch (err) {
             console.error('Erreur suppression lot règles:', err);
-            showToast('Erreur réseau', 'error');
+            showToast(t('admin.hh_delete_rules_network_error'), 'error');
         }
     }
 
@@ -3400,7 +3425,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (btnDeleteSelected) {
             btnDeleteSelected.addEventListener('click', async () => {
                 if (hhAdminState.selectedActiveRuleIds.size === 0) {
-                    showToast('Veuillez cocher au moins une règle à supprimer', 'warning');
+                    showToast(t('admin.hh_check_rule_warning'), 'warning');
                     return;
                 }
                 await deleteRulesBatch(Array.from(hhAdminState.selectedActiveRuleIds));
@@ -3439,14 +3464,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 if (res.ok) {
                     const newSched = await res.json();
-                    showToast('Plage Happy Hour créée avec succès !', 'success');
+                    showToast(t('admin.hh_schedule_created_toast'), 'success');
                     formHh.reset();
                     if (containerForm) containerForm.style.display = 'none';
                     hhAdminState.selectedScheduleId = newSched.id;
                     await loadAdminHappyHour();
                     await checkHappyHourStatus();
                 } else {
-                    showToast('Erreur création plage Happy Hour', 'error');
+                    showToast(t('admin.hh_schedule_create_error'), 'error');
                 }
             });
         }
@@ -3464,7 +3489,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
 
             if (res.ok) {
-                showToast(`Famille '${name}' créée !`, 'success');
+                showToast(t('admin.category_created_toast', { name }), 'success');
                 document.getElementById('inputCatName').value = '';
                 await loadCatalogData();
             }
@@ -3500,7 +3525,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
 
             if (res.ok) {
-                showToast(`Article '${name}' créé !`, 'success');
+                showToast(t('admin.product_created_toast', { name }), 'success');
                 document.getElementById('inputProdName').value = '';
                 document.getElementById('inputProdPrice').value = '';
                 await loadCatalogData();
@@ -3523,12 +3548,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
 
             if (res.ok) {
-                showToast(`Employé '${name}' créé !`, 'success');
+                showToast(t('admin.staff_created_toast', { name }), 'success');
                 document.getElementById('inputStaffName').value = '';
                 document.getElementById('inputStaffPin').value = '';
                 await loadAdminStaff();
             } else {
-                showToast(await readApiError(res, 'Création de l\'employé refusée'), 'error');
+                showToast(await readApiError(res, t('admin.staff_create_error')), 'error');
             }
         });
 
@@ -3554,7 +3579,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
 
             if (res.ok) {
-                showToast(`Imprimante '${name}' enregistrée !`, 'success');
+                showToast(t('admin.printer_created_toast', { name }), 'success');
                 document.getElementById('inputPrinterName').value = '';
                 document.getElementById('inputPrinterIp').value = '';
                 await loadAdminPrinters();
@@ -3565,7 +3590,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (elements.btnPreviewX) {
             elements.btnPreviewX.addEventListener('click', async () => {
                 await previewXReport();
-                showToast('Aperçu du Rapport X actualisé en direct ! 👁️', 'info');
+                showToast(t('fiscal.x_report_refreshed_toast'), 'info');
             });
         }
 
@@ -3591,14 +3616,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                     if (res.ok) {
                         const closure = await res.json();
                         renderFiscalSlip(closure, true);
-                        showToast('Clôture journalière Rapport Z exécutée & scellée ! 📜', 'success');
+                        showToast(t('fiscal.z_closure_success_toast'), 'success');
                     } else {
-                        const err = await res.json().catch(() => ({ message: 'Erreur clôture Z' }));
-                        showToast(err.message || 'Erreur clôture Z', 'error');
+                        const err = await res.json().catch(() => ({ message: t('fiscal.z_closure_error') }));
+                        showToast(err.message || t('fiscal.z_closure_error'), 'error');
                     }
                 } catch (err) {
                     console.error('Erreur clôture Z:', err);
-                    showToast('Erreur communication clôture Z', 'error');
+                    showToast(t('fiscal.z_closure_network_error'), 'error');
                 }
             });
         }
@@ -3620,7 +3645,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const siren = elements.fecSiren ? elements.fecSiren.value.trim() : '123456789';
 
                 if (elements.fecStatusMessage) {
-                    elements.fecStatusMessage.textContent = 'Génération du fichier FEC en cours...';
+                    elements.fecStatusMessage.textContent = t('fiscal.fec_generating_status');
                     elements.fecStatusMessage.style.color = '#38bdf8';
                 }
 
@@ -3653,30 +3678,30 @@ document.addEventListener('DOMContentLoaded', async () => {
                         a.remove();
 
                         if (elements.fecStatusMessage) {
-                            elements.fecStatusMessage.textContent = `✓ Fichier ${filename} généré avec succès !`;
+                            elements.fecStatusMessage.textContent = t('fiscal.fec_generated_status', { filename });
                             elements.fecStatusMessage.style.color = '#10b981';
                         }
-                        showToast(`Fichier FEC ${filename} téléchargé ! 📜`, 'success');
+                        showToast(t('fiscal.fec_downloaded_toast', { filename }), 'success');
                     } else if (res.status === 401 || res.status === 403) {
                         if (elements.fecStatusMessage) {
-                            elements.fecStatusMessage.textContent = '❌ Privilèges insuffisants (Rôle Manager ou Admin requis).';
+                            elements.fecStatusMessage.textContent = t('fiscal.fec_insufficient_privileges_status');
                             elements.fecStatusMessage.style.color = '#ef4444';
                         }
-                        showToast('Export FEC refusé : privilèges insuffisants', 'error');
+                        showToast(t('fiscal.fec_export_denied_toast'), 'error');
                     } else {
                         if (elements.fecStatusMessage) {
-                            elements.fecStatusMessage.textContent = `❌ Erreur ${res.status} lors de la génération du FEC.`;
+                            elements.fecStatusMessage.textContent = t('fiscal.fec_generation_error_status', { status: res.status });
                             elements.fecStatusMessage.style.color = '#ef4444';
                         }
-                        showToast('Erreur génération FEC', 'error');
+                        showToast(t('fiscal.fec_generation_error_toast'), 'error');
                     }
                 } catch (err) {
                     console.error('Erreur export FEC:', err);
                     if (elements.fecStatusMessage) {
-                        elements.fecStatusMessage.textContent = '❌ Erreur de communication avec le serveur.';
+                        elements.fecStatusMessage.textContent = t('fiscal.fec_communication_error_status');
                         elements.fecStatusMessage.style.color = '#ef4444';
                     }
-                    showToast('Erreur téléchargement FEC', 'error');
+                    showToast(t('fiscal.fec_download_error_toast'), 'error');
                 }
             });
         }
@@ -3723,17 +3748,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (elements.slipTitle) {
             elements.slipTitle.textContent = isZClosure
-                ? `*** CLÔTURE JOURNALIÈRE DU JOUR (RAPPORT Z #${data.closureSequence || 1}) ***`
-                : `*** RAPPORT FINANCIER EN COURS (RAPPORT X) ***`;
+                ? t('fiscal.slip_title_z', { sequence: data.closureSequence || 1 })
+                : t('fiscal.slip_title_x');
         }
 
         if (elements.slipDate) {
             const d = data.closedAtUtc || data.periodEndUtc || new Date().toISOString();
-            elements.slipDate.textContent = `Date: ${d.replace('T', ' ').substring(0, 19)} UTC`;
+            elements.slipDate.textContent = t('fiscal.slip_date_value', { date: d.replace('T', ' ').substring(0, 19) });
         }
 
         if (elements.slipTerminal) {
-            elements.slipTerminal.textContent = `Terminal: ${data.terminalId || 'POS_MAIN_TERM'}`;
+            elements.slipTerminal.textContent = t('fiscal.slip_terminal_value', { id: data.terminalId || 'POS_MAIN_TERM' });
         }
 
         if (elements.slipTotalTtc) {
@@ -3753,13 +3778,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         if (elements.slipHash) {
-            elements.slipHash.textContent = data.signatureHash || 'GÉNÉRÉ À LA CLÔTURE Z';
+            elements.slipHash.textContent = data.signatureHash || t('fiscal.slip_hash_pending_z');
         }
 
         if (elements.slipTag) {
             elements.slipTag.textContent = isZClosure
-                ? '✓ Chaîne d\'Audit Fiscale Scellée & Valide (NF525)'
-                : 'ℹ️ Données en direct du service en cours (Non scellé)';
+                ? t('fiscal.slip_chain_sealed')
+                : t('fiscal.slip_live_data_unsealed');
             elements.slipTag.style.color = isZClosure ? '#10b981' : '#38bdf8';
         }
 
@@ -3768,7 +3793,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (data.vatBreakdown && Object.keys(data.vatBreakdown).length > 0) {
                 elements.slipVatBreakdown.innerHTML = Object.entries(data.vatBreakdown).map(([rate, amount]) => `
                     <div class="slip-row" style="font-size:0.85rem; color:#94a3b8;">
-                        <span>TVA ${rate}% :</span>
+                        <span>${t('fiscal.slip_vat_row_label', { rate })}</span>
                         <span>${Number(amount).toFixed(2)} €</span>
                     </div>
                 `).join('');
@@ -3782,7 +3807,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (data.paymentTotals && Object.keys(data.paymentTotals).length > 0) {
                 elements.slipPaymentBreakdown.innerHTML = Object.entries(data.paymentTotals).map(([method, amount]) => `
                     <div class="slip-row" style="font-size:0.85rem; color:#94a3b8;">
-                        <span>${method} :</span>
+                        <span>${t('fiscal.slip_payment_row_label', { method })}</span>
                         <span>${Number(amount).toFixed(2)} €</span>
                     </div>
                 `).join('');
@@ -3810,16 +3835,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const pendingEl = document.getElementById('syncPendingCount');
                 const completedEl = document.getElementById('syncCompletedCount');
                 const timeEl = document.getElementById('syncLastTime');
-                if (pendingEl) pendingEl.textContent = `${syncData.pendingMessages} message(s)`;
-                if (completedEl) completedEl.textContent = `${syncData.completedMessages} transaction(s)`;
-                if (timeEl) timeEl.textContent = new Date(syncData.lastSyncUtc).toLocaleTimeString();
+                if (pendingEl) pendingEl.textContent = t('admin.sync_pending_value', { count: syncData.pendingMessages });
+                if (completedEl) completedEl.textContent = t('admin.sync_completed_value', { count: syncData.completedMessages });
+                if (timeEl) timeEl.textContent = new Date(syncData.lastSyncUtc).toLocaleTimeString(window.i18n.locale);
             }
         } catch (err) {
             console.error('Erreur chargement statut réseau/synchro:', err);
             const badge = document.getElementById('connectionBadge');
             if (badge) {
                 badge.className = 'status-badge offline';
-                badge.innerHTML = `<span class="pulse-dot" style="background:#ef4444;"></span><span class="status-text">Mode Hors-Ligne (Standalone)</span>`;
+                badge.innerHTML = `<span class="pulse-dot" style="background:#ef4444;"></span><span class="status-text">${t('admin.sync_offline_mode')}</span>`;
             }
         }
     }
@@ -3841,7 +3866,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const code = document.getElementById('devicePairingCodeInput').value.trim().toUpperCase();
             const errorEl = document.getElementById('devicePairingError');
             if (!code) {
-                errorEl.textContent = 'Saisissez le code';
+                errorEl.textContent = t('admin.device_pairing_enter_code_error');
                 return;
             }
             const res = await fetch('/api/devices/pair', {
@@ -3851,12 +3876,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
             const data = await res.json().catch(() => ({}));
             if (!res.ok) {
-                errorEl.textContent = data.message || 'Code invalide ou expiré';
+                errorEl.textContent = data.message || t('admin.device_pairing_invalid_code_error');
                 return;
             }
             storeDevice({ token: data.token, terminalId: data.terminalId, name: data.name });
             modal.classList.remove('active');
-            showToast(`Poste couplé : ${data.name} (${data.terminalId}). Relancez l'encaissement.`, 'success');
+            showToast(t('admin.device_paired_toast', { name: data.name, terminalId: data.terminalId }), 'success');
         });
     }
 
@@ -3867,29 +3892,29 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!list) return;
         const res = await fetch('/api/devices');
         if (!res.ok) {
-            list.innerHTML = '<div style="color:var(--text-muted);">Réservé aux responsables</div>';
+            list.innerHTML = `<div style="color:var(--text-muted);">${t('admin.devices_managers_only')}</div>`;
             return;
         }
         const devices = await res.json();
         list.innerHTML = devices.length === 0
-            ? '<div style="color:var(--text-muted);">Aucun appareil appairé</div>'
+            ? `<div style="color:var(--text-muted);">${t('admin.devices_none_paired')}</div>`
             : devices.map(d => `
                 <div class="item-list-row" data-device-id="${d.id}">
                     <div>
                         <strong>${escapeHtml(d.name)}</strong>
-                        <span style="color:var(--text-muted);">${escapeHtml(d.terminalId)} · ${escapeHtml(d.role)}</span>
-                        <div style="font-size:0.8rem; color:#94a3b8;">${d.isRevoked ? 'Révoqué' : (d.lastSeenUtc ? 'Dernier encaissement : ' + new Date(d.lastSeenUtc).toLocaleString() : 'Jamais utilisé')}</div>
+                        <span style="color:var(--text-muted);">${escapeHtml(d.terminalId)} · ${escapeHtml(deviceRoleLabel(d.role))}</span>
+                        <div style="font-size:0.8rem; color:#94a3b8;">${d.isRevoked ? t('admin.device_revoked') : (d.lastSeenUtc ? t('admin.device_last_seen', { date: new Date(d.lastSeenUtc).toLocaleString(window.i18n.locale) }) : t('admin.device_never_used'))}</div>
                     </div>
-                    ${d.isRevoked ? '' : `<button type="button" class="btn-archive btn-revoke-device" data-device-id="${d.id}">Révoquer</button>`}
+                    ${d.isRevoked ? '' : `<button type="button" class="btn-archive btn-revoke-device" data-device-id="${d.id}">${t('admin.device_revoke_btn')}</button>`}
                 </div>`).join('');
         list.querySelectorAll('.btn-revoke-device').forEach(btn => btn.addEventListener('click', async () => {
-            if (!confirm('Révoquer cet appareil ? Il ne pourra plus encaisser.')) return;
+            if (!confirm(t('admin.device_revoke_confirm'))) return;
             const r = await fetch(`/api/devices/${btn.dataset.deviceId}/revoke`, { method: 'POST' });
             if (r.ok) {
-                showToast('Appareil révoqué', 'success');
+                showToast(t('admin.device_revoked_toast'), 'success');
                 await loadAdminDevices();
             } else {
-                showToast('Révocation impossible', 'error');
+                showToast(t('admin.device_revoke_error'), 'error');
             }
         }));
     }
@@ -3908,7 +3933,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
             const data = await res.json().catch(() => ({}));
             if (!res.ok) {
-                showToast(data.message || 'Génération du code impossible', 'error');
+                showToast(data.message || t('admin.device_pairing_code_gen_error'), 'error');
                 return;
             }
             document.getElementById('devicePairingQr').src = `data:image/png;base64,${data.qrPngBase64}`;
@@ -3919,8 +3944,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             const tick = () => {
                 const seconds = Math.max(0, Math.round((new Date(data.expiresAtUtc) - Date.now()) / 1000));
                 expiry.textContent = seconds > 0
-                    ? `Expire dans ${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`
-                    : 'Code expiré';
+                    ? t('admin.device_pairing_expires_in', { time: `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}` })
+                    : t('admin.device_pairing_code_expired');
                 if (seconds === 0) clearInterval(pairingCountdown);
             };
             tick();
@@ -3941,12 +3966,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const res = await fetch(`${url}/api/health`, { method: 'GET' });
                     const duration = Math.round(performance.now() - start);
                     if (res.ok) {
-                        showToast(`✓ Connexion au serveur établie (${duration} ms)`, 'success');
+                        showToast(t('admin.server_connection_success_toast', { duration }), 'success');
                     } else {
-                        showToast(`Erreur HTTP: ${res.status}`, 'error');
+                        showToast(t('admin.server_connection_http_error_toast', { status: res.status }), 'error');
                     }
                 } catch (err) {
-                    showToast(`Impossible de joindre le serveur ${url}`, 'error');
+                    showToast(t('admin.server_unreachable_toast', { url }), 'error');
                 }
             });
         }
@@ -3956,7 +3981,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 e.preventDefault();
                 const url = document.getElementById('inputManualServerUrl').value.trim();
                 localStorage.setItem('pos_master_server_url', url);
-                showToast(`Adresse du serveur enregistrée : ${url}`, 'success');
+                showToast(t('admin.server_address_saved_toast', { url }), 'success');
                 loadNetworkSyncData();
             });
         }
@@ -3970,11 +3995,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                         body: JSON.stringify({ messages: [] })
                     });
                     if (res.ok) {
-                        showToast('Synchronisation Outbox réussie ! 100% à jour.', 'success');
+                        showToast(t('admin.sync_outbox_success_toast'), 'success');
                         await loadNetworkSyncData();
                     }
                 } catch (err) {
-                    showToast('Erreur lors de la synchronisation', 'error');
+                    showToast(t('admin.sync_error_toast'), 'error');
                 }
             });
         }
@@ -4058,11 +4083,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 })
             });
             if (!res.ok) {
-                showToast(await readApiError(res, 'Modification de l\'article refusée'), 'error');
+                showToast(await readApiError(res, t('admin.product_edit_error')), 'error');
                 return;
             }
             elements.editProductModal.classList.remove('active');
-            showToast('Article mis à jour ✏️', 'success');
+            showToast(t('admin.product_updated_toast'), 'success');
             state.gridLayouts = {};
             await loadCatalogData();
             await loadAdminCatalog();
@@ -4084,11 +4109,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 })
             });
             if (!res.ok) {
-                showToast(await readApiError(res, 'Modification de la famille refusée'), 'error');
+                showToast(await readApiError(res, t('admin.category_edit_error')), 'error');
                 return;
             }
             elements.editCategoryModal.classList.remove('active');
-            showToast('Famille mise à jour ✏️', 'success');
+            showToast(t('admin.category_updated_toast'), 'success');
             await loadCatalogData();
         });
 
@@ -4097,7 +4122,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const id = document.getElementById('editStaffId').value;
             const pin = document.getElementById('editStaffPin').value.trim();
             if (pin && !/^\d{4,6}$/.test(pin)) {
-                showToast('Le code PIN doit comporter 4 à 6 chiffres', 'warning');
+                showToast(t('admin.staff_pin_length_warning'), 'warning');
                 return;
             }
             const res = await fetch(`/api/staff/${id}`, {
@@ -4111,12 +4136,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 })
             });
             if (!res.ok) {
-                showToast(await readApiError(res, 'Modification de l\'employé refusée'), 'error');
+                showToast(await readApiError(res, t('admin.staff_edit_error')), 'error');
                 return;
             }
             document.getElementById('editStaffPin').value = '';
             elements.editStaffModal.classList.remove('active');
-            showToast('Employé mis à jour ✏️', 'success');
+            showToast(t('admin.staff_updated_toast'), 'success');
             await loadAdminStaff();
         });
 
@@ -4132,11 +4157,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 hasCashDrawer: document.getElementById('editPrinterDrawer').checked
             });
             if (!res.ok) {
-                showToast(await readApiError(res, 'Modification de l\'imprimante refusée'), 'error');
+                showToast(await readApiError(res, t('admin.printer_edit_error')), 'error');
                 return;
             }
             elements.editPrinterModal.classList.remove('active');
-            showToast('Imprimante mise à jour ✏️', 'success');
+            showToast(t('admin.printer_updated_toast'), 'success');
             await loadAdminPrinters();
         });
     }
@@ -4200,11 +4225,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 localStorage.setItem('pos_jwt_token', data.token);
                 state.operator = { name: data.operatorName, role: data.role, id: data.operatorId };
                 elements.currentOperatorName.textContent = data.operatorName;
-                elements.currentOperatorRole.textContent = data.role;
+                elements.currentOperatorRole.textContent = operatorRoleLabel(data.role);
                 elements.pinLockModal.classList.remove('active');
                 state.pinInput = '';
                 updatePinDots();
-                showToast(`Session déverrouillée: ${data.operatorName}`, 'success');
+                showToast(t('common.session_unlocked_toast', { name: data.operatorName }), 'success');
 
                 // Reload active table with newly issued token
                 if (state.activeTable === 'Comptoir') {
@@ -4213,12 +4238,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                     await loadActiveTableOrder(state.activeTable);
                 }
             } else {
-                showToast('Code PIN invalide', 'error');
+                showToast(t('common.pin_invalid_toast'), 'error');
                 state.pinInput = '';
                 updatePinDots();
             }
         } catch (err) {
-            showToast('Erreur validation PIN', 'error');
+            showToast(t('common.pin_validation_error_toast'), 'error');
         }
     }
 
@@ -4280,17 +4305,17 @@ document.addEventListener('DOMContentLoaded', async () => {
                             localStorage.setItem(`grid_layout_${l.categoryId}_page_${l.pageIndex}`, JSON.stringify(l));
                         });
 
-                        showToast(`Format ${cols} × ${rows} appliqué ! 📐`, 'success');
+                        showToast(t('admin.grid_format_applied_toast', { cols, rows }), 'success');
                         await renderAdminGridEditor(categoryId, state.activeAdminGridPage);
                         if (state.activeCategory === categoryId || applyAll) {
                             await renderProductsGrid();
                         }
                     } else {
-                        showToast('Erreur lors du changement de format', 'error');
+                        showToast(t('admin.grid_format_change_error'), 'error');
                     }
                 } catch (err) {
                     console.error('Erreur changement format:', err);
-                    showToast('Erreur réseau lors du changement de format', 'error');
+                    showToast(t('admin.grid_format_change_network_error'), 'error');
                 }
             });
         }
@@ -4300,10 +4325,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!elements.selectAdminGridCat) return;
         elements.selectAdminGridCat.innerHTML = '';
 
-        // Add 'Tout le Menu' option
+        // Add 'Entire Menu' option
         const allOpt = document.createElement('option');
         allOpt.value = 'ALL';
-        allOpt.textContent = '🍽️ Tout le Menu (Vue Globale)';
+        allOpt.textContent = t('admin.grid_all_menu_option');
         elements.selectAdminGridCat.appendChild(allOpt);
 
         state.categories.forEach(cat => {
@@ -4328,7 +4353,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const btn = document.createElement('button');
             btn.type = 'button';
             btn.className = `btn-admin-page-tab ${p === activePage ? 'active' : ''}`;
-            btn.textContent = `Page ${p + 1}`;
+            btn.textContent = t('admin.grid_page_tab', { number: p + 1 });
             btn.addEventListener('click', async () => {
                 state.activeAdminGridPage = p;
                 await renderAdminGridEditor(categoryId, p);
@@ -4339,8 +4364,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         const addBtn = document.createElement('button');
         addBtn.type = 'button';
         addBtn.className = 'btn-admin-add-page';
-        addBtn.innerHTML = '➕ Nouvelle Page';
-        addBtn.title = 'Ajouter une nouvelle page de grille pour cette catégorie';
+        addBtn.innerHTML = t('admin.grid_add_page_btn');
+        addBtn.title = t('admin.grid_add_page_title');
         addBtn.addEventListener('click', async () => {
             await addNewGridPage(categoryId, totalPages);
         });
@@ -4367,7 +4392,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         await saveAdminGridLayout(categoryId, newPageIndex, cols, rows, emptySlots);
         state.activeAdminGridPage = newPageIndex;
         await renderAdminGridEditor(categoryId, newPageIndex);
-        showToast(`Page ${newPageIndex + 1} ajoutée pour la catégorie ! 📄`, 'success');
+        showToast(t('admin.grid_page_added_toast', { number: newPageIndex + 1 }), 'success');
     }
 
     async function renderAdminGridEditor(categoryId, pageIndex = 0) {
@@ -4398,7 +4423,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         if (elements.adminGridLayoutVersion) {
-            elements.adminGridLayoutVersion.textContent = `Format ${cols}×${rows} • Page ${pageIndex + 1}/${totalPages} • v${layout.version || 1}`;
+            elements.adminGridLayoutVersion.textContent = t('admin.grid_layout_version_value', { cols, rows, page: pageIndex + 1, total: totalPages, version: layout.version || 1 });
         }
 
         elements.adminMatrixGrid.innerHTML = '';
@@ -4438,8 +4463,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     </div>
                     <div class="admin-slot-title">${displayName}</div>
                     <div class="admin-slot-actions">
-                        <button type="button" class="btn-slot-icon btn-edit-slot-trigger" title="Personnaliser">✏️</button>
-                        <button type="button" class="btn-slot-icon delete btn-del-slot-trigger" title="Libérer">✕</button>
+                        <button type="button" class="btn-slot-icon btn-edit-slot-trigger" title="${t('admin.grid_slot_customize_title')}">✏️</button>
+                        <button type="button" class="btn-slot-icon delete btn-del-slot-trigger" title="${t('admin.grid_slot_release_title')}">✕</button>
                     </div>
                 `;
 
@@ -4467,7 +4492,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 slotEl.classList.add('empty-slot');
                 slotEl.innerHTML = `
                     <span class="admin-slot-coord" style="position:absolute; top:4px; left:6px;">[P${pageIndex + 1}:${row + 1},${col + 1}]</span>
-                    <span style="color:var(--text-dim); font-size:0.8rem; font-weight:600;">+ Assigner</span>
+                    <span style="color:var(--text-dim); font-size:0.8rem; font-weight:600;">${t('admin.grid_slot_assign_label')}</span>
                 `;
                 slotEl.addEventListener('click', () => {
                     openEditSlotModal(row, col, slot);
@@ -4509,14 +4534,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                             const cacheKey = `${categoryId}_page_${pageIndex}`;
                             state.gridLayouts[cacheKey] = updatedLayout;
                             localStorage.setItem(`grid_layout_${categoryId}_page_${pageIndex}`, JSON.stringify(updatedLayout));
-                            showToast('Positions permutées avec succès ! 🔄', 'success');
+                            showToast(t('admin.grid_positions_swapped_toast'), 'success');
                             await renderAdminGridEditor(categoryId, pageIndex);
                             if (state.activeCategory === categoryId && state.activeGridPage === pageIndex) {
                                 await renderProductsGrid();
                             }
                         }
                     } catch (err) {
-                        showToast('Erreur lors de la permutation', 'error');
+                        showToast(t('admin.grid_swap_error'), 'error');
                     }
                 } else if (state.draggedCatalogItem) {
                     const prod = state.draggedCatalogItem;
@@ -4547,7 +4572,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <div style="font-weight:700;">${prod.name}</div>
                     <div style="font-size:0.75rem; color:var(--text-muted);">${Number(prod.price).toFixed(2)} € • ${prod.preparationStationId || 'HOT'}</div>
                 </div>
-                <span>${isPlaced ? '✓ Placé' : '⠿'}</span>
+                <span>${isPlaced ? t('admin.grid_catalog_placed_label') : '⠿'}</span>
             `;
 
             itemEl.addEventListener('dragstart', (e) => {
@@ -4567,10 +4592,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!elements.editSlotModal) return;
         elements.editSlotRow.value = row;
         elements.editSlotCol.value = col;
-        document.getElementById('editSlotModalTitle').textContent = `🔲 Éditer l'Emplacement [P${state.activeAdminGridPage + 1}:${row + 1}, ${col + 1}]`;
+        document.getElementById('editSlotModalTitle').textContent = t('admin.grid_edit_slot_title', { page: state.activeAdminGridPage + 1, row: row + 1, col: col + 1 });
 
         // Populate products select
-        elements.selectSlotProduct.innerHTML = '<option value="">(Emplacement Vide)</option>';
+        elements.selectSlotProduct.innerHTML = `<option value="">${t('admin.grid_slot_empty_option')}</option>`;
         const categoryProducts = state.products.filter(p => p.categoryId === state.activeAdminGridCategory);
         categoryProducts.forEach(prod => {
             const opt = document.createElement('option');
@@ -4616,7 +4641,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         await saveAdminGridLayout(categoryId, pageIndex, layout.columnsCount || 4, layout.rowsCount || 4, updatedSlots);
-        showToast('Article assigné avec succès ! ✨', 'success');
+        showToast(t('admin.grid_item_assigned_toast'), 'success');
     }
 
     async function unassignSlot(categoryId, row, col) {
@@ -4638,7 +4663,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
 
         await saveAdminGridLayout(categoryId, pageIndex, layout.columnsCount || 4, layout.rowsCount || 4, updatedSlots);
-        showToast('Emplacement libéré ! 🗑️', 'info');
+        showToast(t('admin.grid_slot_released_toast'), 'info');
     }
 
     async function saveSlotCustomizationFromModal() {
@@ -4676,7 +4701,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         await saveAdminGridLayout(categoryId, pageIndex, layout.columnsCount || 4, layout.rowsCount || 4, updatedSlots);
         elements.editSlotModal.classList.remove('active');
-        showToast('Emplacement mis à jour ! 💾', 'success');
+        showToast(t('admin.grid_slot_updated_toast'), 'success');
     }
 
     async function saveAdminGridLayout(categoryId, pageIndex, columnsCount, rowsCount, slots) {
@@ -4711,11 +4736,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                     await renderProductsGrid();
                 }
             } else {
-                showToast('Erreur lors de la sauvegarde de la grille', 'error');
+                showToast(t('admin.grid_save_error'), 'error');
             }
         } catch (err) {
             console.error('Erreur sauvegarde grille:', err);
-            showToast('Erreur réseau sauvegarde grille', 'error');
+            showToast(t('admin.grid_save_network_error'), 'error');
         }
     }
 
@@ -4740,7 +4765,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         await saveAdminGridLayout(categoryId, state.activeAdminGridPage, cols, rows, slots);
-        showToast('Grille réinitialisée avec les articles par défaut ! ↺', 'success');
+        showToast(t('admin.grid_reset_toast'), 'success');
     }
 
     // ==================== REAL-TIME SIGNALR SYNC (US5) ====================
@@ -4842,10 +4867,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!elements.happyHourBanner) return;
         elements.happyHourBanner.style.display = 'block';
         if (elements.hhBannerTitle) {
-            elements.hhBannerTitle.textContent = isOverride ? `⚡ DÉROGATION : ${title.toUpperCase()}` : `🍻 HAPPY HOUR : ${title.toUpperCase()}`;
+            elements.hhBannerTitle.textContent = isOverride ? t('common.hh_override_banner_title', { title: title.toUpperCase() }) : t('common.hh_active_banner_title', { title: title.toUpperCase() });
         }
         if (elements.hhBannerSubtitle) {
-            elements.hhBannerSubtitle.textContent = isOverride ? 'Tarifs réduits forcés par superviseur' : 'Tarifs préférentiels actifs';
+            elements.hhBannerSubtitle.textContent = isOverride ? t('common.hh_override_subtitle') : t('common.happy_hour_subtitle');
         }
 
         let secondsRemaining = Math.max(0, remainingMinutes * 60);
@@ -4917,10 +4942,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function handleHhOverride(durationMinutes) {
         const pin = elements.inputHhPin ? elements.inputHhPin.value.trim() : '';
-        const reason = elements.inputHhReason ? elements.inputHhReason.value.trim() : 'Dérogation responsable';
+        const reason = elements.inputHhReason ? elements.inputHhReason.value.trim() : t('admin.hh_override_fallback_reason');
 
         if (!pin) {
-            showToast('Veuillez saisir votre code PIN superviseur', 'warning');
+            showToast(t('admin.hh_pin_required_warning'), 'warning');
             return;
         }
 
@@ -4938,25 +4963,25 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (res.ok) {
                 const data = await res.json();
-                showToast(data.message || `Happy Hour prolongé de ${durationMinutes} min`, 'success');
+                showToast(data.message || t('admin.hh_extended_toast', { minutes: durationMinutes }), 'success');
                 if (elements.hhOverrideModal) elements.hhOverrideModal.classList.remove('active');
                 await checkHappyHourStatus();
             } else {
                 const err = await res.json();
-                showToast(err.message || 'Autorisation refusée : PIN superviseur invalide', 'error');
+                showToast(err.message || t('admin.hh_override_denied_error'), 'error');
             }
         } catch (e) {
             console.error('Erreur forçage Happy Hour:', e);
-            showToast('Erreur réseau lors de la dérogation Happy Hour', 'error');
+            showToast(t('admin.hh_override_network_error'), 'error');
         }
     }
 
     async function handleHhStop() {
         const pin = elements.inputHhPin ? elements.inputHhPin.value.trim() : '';
-        const reason = elements.inputHhReason ? elements.inputHhReason.value.trim() : 'Arrêt anticipé';
+        const reason = elements.inputHhReason ? elements.inputHhReason.value.trim() : t('admin.hh_stop_reason_default');
 
         if (!pin) {
-            showToast('Veuillez saisir votre code PIN superviseur', 'warning');
+            showToast(t('admin.hh_pin_required_warning'), 'warning');
             return;
         }
 
@@ -4972,16 +4997,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
 
             if (res.ok) {
-                showToast('Happy Hour arrêté avec succès.', 'info');
+                showToast(t('admin.hh_stopped_toast'), 'info');
                 if (elements.hhOverrideModal) elements.hhOverrideModal.classList.remove('active');
                 await checkHappyHourStatus();
             } else {
                 const err = await res.json();
-                showToast(err.message || 'Autorisation refusée', 'error');
+                showToast(err.message || t('admin.hh_stop_denied_error'), 'error');
             }
         } catch (e) {
             console.error('Erreur arrêt Happy Hour:', e);
-            showToast('Erreur réseau lors de l\'arrêt Happy Hour', 'error');
+            showToast(t('admin.hh_stop_network_error'), 'error');
         }
     }
 
@@ -5004,11 +5029,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function getTableStatusLabel(status) {
-        if (status === 0 || status === 'Free') return 'Libre';
-        if (status === 1 || status === 'Occupied') return 'Occupée';
-        if (status === 2 || status === 'BillPrinted' || status === 'BillRequested') return 'Addition';
-        if (status === 3 || status === 'Paid') return 'Encaissée';
-        return 'Libre';
+        if (status === 0 || status === 'Free') return t('floor.legend_free');
+        if (status === 1 || status === 'Occupied') return t('floor.legend_occupied');
+        if (status === 2 || status === 'BillPrinted' || status === 'BillRequested') return t('floor.legend_bill_requested');
+        if (status === 3 || status === 'Paid') return t('floor.legend_paid');
+        return t('floor.legend_free');
     }
 
     function showToast(msg, type = 'info') {
