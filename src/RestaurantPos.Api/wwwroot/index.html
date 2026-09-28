@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Restaurant POS — Système Tactile & Local-First</title>
+    <title data-i18n="common.app_title">Restaurant POS — Système Tactile & Local-First</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -24,30 +24,30 @@
             </div>
             <div class="status-badge online" id="connectionBadge">
                 <span class="pulse-dot"></span>
-                <span class="status-text">En Ligne</span>
+                <span class="status-text" data-i18n="common.online">En Ligne</span>
             </div>
         </div>
 
         <nav class="nav-tabs">
             <button class="nav-btn active" data-view="posView" id="btnNavPos">
                 <span class="nav-icon">🛒</span>
-                <span>Caisse</span>
+                <span data-i18n="common.nav_pos">Caisse</span>
             </button>
             <button class="nav-btn" data-view="floorPlanView" id="btnNavFloor">
                 <span class="nav-icon">🗺️</span>
-                <span>Plan de Salle</span>
+                <span data-i18n="common.nav_floor">Plan de Salle</span>
             </button>
             <button class="nav-btn" data-view="kdsView" id="btnNavKds">
                 <span class="nav-icon">👨‍🍳</span>
-                <span>Cuisine KDS</span>
+                <span data-i18n="common.nav_kitchen">Cuisine KDS</span>
             </button>
             <button class="nav-btn" data-view="adminView" id="btnNavAdmin">
                 <span class="nav-icon">⚙️</span>
-                <span>Paramétrage</span>
+                <span data-i18n="common.nav_admin">Paramétrage</span>
             </button>
             <button class="nav-btn" data-view="fiscalView" id="btnNavFiscal">
                 <span class="nav-icon">📜</span>
-                <span>Fiscalité NF525</span>
+                <span data-i18n="common.nav_fiscal">Fiscalité NF525</span>
             </button>
         </nav>
 
@@ -59,7 +59,7 @@
                     <span class="operator-role" id="currentOperatorRole">FloorManager</span>
                 </div>
             </div>
-            <button class="btn-lock" id="btnLockTerminal" title="Verrouiller la caisse">
+            <button class="btn-lock" id="btnLockTerminal" data-i18n-title="common.lock_terminal_title" title="Verrouiller la caisse">
                 <span class="lock-icon">🔒</span>
             </button>
         </div>
@@ -70,13 +70,13 @@
         <div class="hh-banner-content">
             <span class="hh-badge-icon">🍻</span>
             <div class="hh-banner-info">
-                <strong class="hh-banner-title" id="hhBannerTitle">HAPPY HOUR EN COURS</strong>
-                <span class="hh-banner-subtitle" id="hhBannerSubtitle">Tarifs préférentiels actifs</span>
+                <strong class="hh-banner-title" id="hhBannerTitle" data-i18n="common.happy_hour_active">HAPPY HOUR EN COURS</strong>
+                <span class="hh-banner-subtitle" id="hhBannerSubtitle" data-i18n="common.happy_hour_subtitle">Tarifs préférentiels actifs</span>
             </div>
             <div class="hh-countdown-pill" id="hhCountdownPill">
-                ⏱️ Fin dans <strong id="hhCountdownTime">--:--</strong>
+                <span data-i18n="common.happy_hour_ends_in">⏱️ Fin dans</span> <strong id="hhCountdownTime">--:--</strong>
             </div>
-            <button type="button" class="btn-hh-override" id="btnHhOverrideQuickAction" title="Forçage / Prolongation Superviseur">
+            <button type="button" class="btn-hh-override" id="btnHhOverrideQuickAction" data-i18n="common.hh_override" data-i18n-title="common.hh_override_title" title="Forçage / Prolongation Superviseur">
                 ⚙️ Dérogation
             </button>
         </div>
@@ -94,16 +94,16 @@
                         <div class="table-info" style="display:flex; align-items:center; gap:8px;">
                             <span class="table-badge" id="activeTableBadge">Comptoir</span>
                             <div class="destination-toggle-group" id="destinationToggleGroup">
-                                <button type="button" class="btn-dest active" id="btnDestTakeaway" data-dest="Takeaway" title="Passer en À Emporter (TVA 5.5%/10%)">🥡 À Emporter</button>
-                                <button type="button" class="btn-dest" id="btnDestEatIn" data-dest="EatIn" title="Passer en Sur Place (TVA 10%)">🍽️ Sur Place</button>
+                                <button type="button" class="btn-dest active" id="btnDestTakeaway" data-dest="Takeaway" data-i18n="order.dest_takeaway" data-i18n-title="order.dest_takeaway_title" title="Passer en À Emporter (TVA 5.5%/10%)">🥡 À Emporter</button>
+                                <button type="button" class="btn-dest" id="btnDestEatIn" data-dest="EatIn" data-i18n="order.dest_eatin" data-i18n-title="order.dest_eatin_title" title="Passer en Sur Place (TVA 10%)">🍽️ Sur Place</button>
                             </div>
-                            <span class="covers-badge" id="activeCoversBadge" style="display:none;">👥 1 Couvert</span>
+                            <span class="covers-badge" id="activeCoversBadge" style="display:none;" data-i18n="order.covers_badge">👥 1 Couvert</span>
                         </div>
                         <div style="display:flex; align-items:center; gap:6px;">
-                            <button type="button" class="btn-held-badge" id="btnHeldQueue" title="File d'attente : voir les commandes en pause">
+                            <button type="button" class="btn-held-badge" id="btnHeldQueue" data-i18n-title="order.held_queue_title" title="File d'attente : voir les commandes en pause">
                                 ⏸️ <span id="heldBadgeCount">0</span>
                             </button>
-                            <button class="btn-clear-cart" id="btnClearCart" title="Vider le panier">🗑️</button>
+                            <button class="btn-clear-cart" id="btnClearCart" data-i18n-title="order.clear_cart_title" title="Vider le panier">🗑️</button>
                         </div>
                     </div>
 
@@ -113,15 +113,15 @@
 
                     <div class="cart-summary">
                         <div class="summary-line">
-                            <span>Total HT :</span>
+                            <span data-i18n="order.total_ht_label">Total HT :</span>
                             <span id="summaryHt">0.00 €</span>
                         </div>
                         <div class="summary-line">
-                            <span id="summaryVatLabel">TVA (5.5% / 10% / 20%) :</span>
+                            <span id="summaryVatLabel" data-i18n="order.vat_label">TVA (5.5% / 10% / 20%) :</span>
                             <span id="summaryVat">0.00 €</span>
                         </div>
                         <div class="summary-total">
-                            <span>TOTAL TTC</span>
+                            <span data-i18n="order.total_ttc_label">TOTAL TTC</span>
                             <span class="total-amount" id="summaryTtc">0.00 €</span>
                         </div>
 
@@ -130,27 +130,27 @@
                             <button type="button" class="btn-quick-cash" data-cash="10">10 €</button>
                             <button type="button" class="btn-quick-cash" data-cash="20">20 €</button>
                             <button type="button" class="btn-quick-cash" data-cash="50">50 €</button>
-                            <button type="button" class="btn-quick-cash" data-cash="exact">Exact</button>
+                            <button type="button" class="btn-quick-cash" data-cash="exact" data-i18n="order.quick_cash_exact">Exact</button>
                         </div>
 
                         <div class="cart-action-buttons">
-                            <button class="btn-action btn-send-kitchen" id="btnSendKitchen" title="Envoyer en cuisine">
-                                <span>📤</span> Cuisine
+                            <button class="btn-action btn-send-kitchen" id="btnSendKitchen" data-i18n-title="order.send_kitchen_title" title="Envoyer en cuisine">
+                                <span>📤</span> <span data-i18n="order.send_kitchen_label">Cuisine</span>
                             </button>
-                            <button class="btn-action btn-hold-cart" id="btnHoldCart" title="Mettre la commande en attente (Park)">
-                                <span>⏸️</span> Attente
+                            <button class="btn-action btn-hold-cart" id="btnHoldCart" data-i18n-title="order.hold_title" title="Mettre la commande en attente (Park)">
+                                <span>⏸️</span> <span data-i18n="order.hold_label">Attente</span>
                             </button>
-                            <button class="btn-action btn-discount" id="btnDiscountModal" title="Appliquer une remise ou offrir un article">
-                                <span>🏷️</span> Remise
+                            <button class="btn-action btn-discount" id="btnDiscountModal" data-i18n-title="order.discount_title" title="Appliquer une remise ou offrir un article">
+                                <span>🏷️</span> <span data-i18n="order.discount_label">Remise</span>
                             </button>
-                            <button class="btn-action btn-transfer" id="btnTransferModal" title="Transférer ou fusionner la table">
-                                <span>🔄</span> Transférer
+                            <button class="btn-action btn-transfer" id="btnTransferModal" data-i18n-title="order.transfer_title" title="Transférer ou fusionner la table">
+                                <span>🔄</span> <span data-i18n="order.transfer_label">Transférer</span>
                             </button>
-                            <button class="btn-action btn-split-bill" id="btnSplitBill" title="Partager la note">
-                                <span>➗</span> Split
+                            <button class="btn-action btn-split-bill" id="btnSplitBill" data-i18n-title="order.split_title" title="Partager la note">
+                                <span>➗</span> <span data-i18n="order.split_label">Split</span>
                             </button>
-                            <button class="btn-action btn-pay" id="btnPayModal" title="Régler l'addition">
-                                <span>💳</span> Encaisser
+                            <button class="btn-action btn-pay" id="btnPayModal" data-i18n-title="order.pay_title" title="Régler l'addition">
+                                <span>💳</span> <span data-i18n="order.pay_label">Encaisser</span>
                             </button>
                         </div>
                     </div>
@@ -174,12 +174,12 @@
                             <!-- Populated dynamically -->
                         </div>
                         <div class="grid-pagination-bar" id="gridPaginationBar" style="display:none;">
-                            <button type="button" class="btn-grid-page-nav" id="btnPrevGridPage" title="Page précédente">◀ Précédent</button>
+                            <button type="button" class="btn-grid-page-nav" id="btnPrevGridPage" data-i18n="order.grid_prev_label" data-i18n-title="order.grid_prev_title" title="Page précédente">◀ Précédent</button>
                             <div class="grid-page-indicator-container">
-                                <span class="grid-page-label" id="gridPageLabel">Page 1 / 1</span>
+                                <span class="grid-page-label" id="gridPageLabel" data-i18n="order.grid_page_label">Page 1 / 1</span>
                                 <div class="grid-page-dots" id="gridPageDots"></div>
                             </div>
-                            <button type="button" class="btn-grid-page-nav" id="btnNextGridPage" title="Page suivante">Suivant ▶</button>
+                            <button type="button" class="btn-grid-page-nav" id="btnNextGridPage" data-i18n="order.grid_next_label" data-i18n-title="order.grid_next_title" title="Page suivante">Suivant ▶</button>
                         </div>
                     </div>
                 </div>
@@ -191,16 +191,16 @@
             <div class="floor-plan-container">
                 <div class="floor-header">
                     <div style="display: flex; align-items: center; gap: 16px;">
-                        <h2>Plan de Salle Interactif 2D</h2>
+                        <h2 data-i18n="floor.title">Plan de Salle Interactif 2D</h2>
                         <button id="btnOpenAddTableModal" class="btn-primary" style="padding: 7px 16px; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 6px; border-radius: 2px; font-weight: 600; cursor: pointer;">
-                            <span>➕</span> Nouvelle Table
+                            <span>➕</span> <span data-i18n="floor.add_table">Nouvelle Table</span>
                         </button>
                     </div>
                     <div class="legend">
-                        <span class="legend-item"><span class="dot dot-free"></span> Libre</span>
-                        <span class="legend-item"><span class="dot dot-occupied"></span> Occupée</span>
-                        <span class="legend-item"><span class="dot dot-bill"></span> Addition</span>
-                        <span class="legend-item"><span class="dot dot-paid"></span> Encaissée</span>
+                        <span class="legend-item"><span class="dot dot-free"></span> <span data-i18n="floor.legend_free">Libre</span></span>
+                        <span class="legend-item"><span class="dot dot-occupied"></span> <span data-i18n="floor.legend_occupied">Occupée</span></span>
+                        <span class="legend-item"><span class="dot dot-bill"></span> <span data-i18n="floor.legend_bill">Addition</span></span>
+                        <span class="legend-item"><span class="dot dot-paid"></span> <span data-i18n="floor.legend_paid">Encaissée</span></span>
                     </div>
                 </div>
                 <div class="tables-grid" id="floorTablesGrid">
@@ -213,19 +213,19 @@
         <section class="view-panel" id="kdsView">
             <div class="kds-container">
                 <div class="kds-header">
-                    <h2>Écran de Cuisine KDS (Temps Réel)</h2>
+                    <h2 data-i18n="kitchen.title">Écran de Cuisine KDS (Temps Réel)</h2>
                     <div class="kds-filters">
-                        <button class="kds-filter-btn active" data-station="ALL">Toutes Stations</button>
-                        <button class="kds-filter-btn" data-station="HOT_KITCHEN">Chaud / Grill</button>
-                        <button class="kds-filter-btn" data-station="COLD">Froid / Entrées</button>
-                        <button class="kds-filter-btn" data-station="BAR">Bar & Boissons</button>
+                        <button class="kds-filter-btn active" data-station="ALL" data-i18n="kitchen.filter_all">Toutes Stations</button>
+                        <button class="kds-filter-btn" data-station="HOT_KITCHEN" data-i18n="kitchen.filter_hot">Chaud / Grill</button>
+                        <button class="kds-filter-btn" data-station="COLD" data-i18n="kitchen.filter_cold">Froid / Entrées</button>
+                        <button class="kds-filter-btn" data-station="BAR" data-i18n="kitchen.filter_bar">Bar & Boissons</button>
                     </div>
                 </div>
 
                 <div class="kds-kanban-board">
                     <div class="kds-column" id="colPending">
                         <div class="column-header">
-                            <span class="col-title">En Attente</span>
+                            <span class="col-title" data-i18n="kitchen.col_pending">En Attente</span>
                             <span class="col-count" id="countPending">0</span>
                         </div>
                         <div class="ticket-cards-container" id="kdsPendingCards"></div>
@@ -233,7 +233,7 @@
 
                     <div class="kds-column" id="colInPrep">
                         <div class="column-header">
-                            <span class="col-title">En Préparation</span>
+                            <span class="col-title" data-i18n="kitchen.col_in_prep">En Préparation</span>
                             <span class="col-count" id="countInPrep">0</span>
                         </div>
                         <div class="ticket-cards-container" id="kdsInPrepCards"></div>
@@ -241,7 +241,7 @@
 
                     <div class="kds-column" id="colReady">
                         <div class="column-header">
-                            <span class="col-title">Prêt à Servir</span>
+                            <span class="col-title" data-i18n="kitchen.col_ready">Prêt à Servir</span>
                             <span class="col-count" id="countReady">0</span>
                         </div>
                         <div class="ticket-cards-container" id="kdsReadyCards"></div>
@@ -254,30 +254,30 @@
         <section class="view-panel" id="adminView">
             <div class="admin-container">
                 <div class="admin-sidebar">
-                    <h3>⚙️ Paramétrage POS</h3>
+                    <h3 data-i18n="admin.title">⚙️ Paramétrage POS</h3>
                     <button class="admin-tab-btn active" data-admin-tab="tabCatalog">
-                        <span>🏷️</span> Familles & Articles
+                        <span>🏷️</span> <span data-i18n="admin.tab_catalog">Familles & Articles</span>
                     </button>
                     <button class="admin-tab-btn" data-admin-tab="tabStaff">
-                        <span>👥</span> Serveurs & Codes PIN
+                        <span>👥</span> <span data-i18n="admin.tab_staff">Serveurs & Codes PIN</span>
                     </button>
                     <button class="admin-tab-btn" data-admin-tab="tabPrinters">
-                        <span>🖨️</span> Imprimantes Réseau
+                        <span>🖨️</span> <span data-i18n="admin.tab_printers">Imprimantes Réseau</span>
                     </button>
                     <button class="admin-tab-btn" data-admin-tab="tabLayout">
-                        <span>📱</span> Disposition de l'Écran
+                        <span>📱</span> <span data-i18n="admin.tab_layout">Disposition de l'Écran</span>
                     </button>
                     <button class="admin-tab-btn" data-admin-tab="tabNetworkSync">
-                        <span>🌐</span> Réseau & Synchronisation
+                        <span>🌐</span> <span data-i18n="admin.tab_network">Réseau & Synchronisation</span>
                     </button>
                     <button class="admin-tab-btn" data-admin-tab="tabDevices">
-                        <span>📲</span> Appareils
+                        <span>📲</span> <span data-i18n="admin.tab_devices">Appareils</span>
                     </button>
                     <button class="admin-tab-btn" data-admin-tab="tabDashboard">
-                        <span>📊</span> Tableaux de Bord & KPIs
+                        <span>📊</span> <span data-i18n="admin.tab_dashboard">Tableaux de Bord & KPIs</span>
                     </button>
                     <button class="admin-tab-btn" data-admin-tab="tabHappyHour">
-                        <span>🍻</span> Plages Happy Hour
+                        <span>🍻</span> <span data-i18n="admin.tab_happy_hour">Plages Happy Hour</span>
                     </button>
                 </div>
 
@@ -286,68 +286,68 @@
                     <div class="admin-tab-pane active" id="tabCatalog">
                         <div class="admin-split">
                             <div class="admin-card">
-                                <h4>➕ Ajouter une Famille / Catégorie</h4>
+                                <h4 data-i18n="admin.add_category_title">➕ Ajouter une Famille / Catégorie</h4>
                                 <form id="formAddCategory" class="admin-form">
                                     <div class="form-group">
-                                        <label>Nom de la Famille :</label>
-                                        <input type="text" id="inputCatName" placeholder="Ex: Vins Rouges, Burgers"
+                                        <label data-i18n="admin.category_name_label">Nom de la Famille :</label>
+                                        <input type="text" id="inputCatName" data-i18n-placeholder="admin.category_name_placeholder" placeholder="Ex: Vins Rouges, Burgers"
                                             required>
                                     </div>
                                     <div class="form-group">
-                                        <label>Couleur du Badge :</label>
+                                        <label data-i18n="admin.badge_color_label">Couleur du Badge :</label>
                                         <input type="color" id="inputCatColor" value="#E74C3C">
                                     </div>
-                                    <button type="submit" class="btn-primary">Créer la Famille</button>
+                                    <button type="submit" class="btn-primary" data-i18n="admin.create_category">Créer la Famille</button>
                                 </form>
 
                                 <hr class="divider">
 
-                                <h4>➕ Ajouter un Article</h4>
+                                <h4 data-i18n="admin.add_product_title">➕ Ajouter un Article</h4>
                                 <form id="formAddProduct" class="admin-form">
                                     <div class="form-group">
-                                        <label>Famille parente :</label>
+                                        <label data-i18n="admin.parent_category_label">Famille parente :</label>
                                         <select id="selectProductCat" required></select>
                                     </div>
                                     <div class="form-group">
-                                        <label>Nom de l'article :</label>
-                                        <input type="text" id="inputProdName" placeholder="Ex: Côte de Bœuf 500g"
+                                        <label data-i18n="admin.product_name_label">Nom de l'article :</label>
+                                        <input type="text" id="inputProdName" data-i18n-placeholder="admin.product_name_placeholder" placeholder="Ex: Côte de Bœuf 500g"
                                             required>
                                     </div>
                                     <div class="form-row">
                                         <div class="form-group">
-                                            <label>Prix TTC (€) :</label>
+                                            <label data-i18n="admin.price_label">Prix TTC (€) :</label>
                                             <input type="number" step="0.10" id="inputProdPrice" value="15.00" required>
                                         </div>
                                         <div class="form-group">
-                                            <label>TVA (%) :</label>
+                                            <label data-i18n="admin.vat_percent_label">TVA (%) :</label>
                                             <select id="selectProdVat">
-                                                <option value="10.0">10.0 % (Restauration)</option>
-                                                <option value="20.0">20.0 % (Alcools)</option>
-                                                <option value="5.5">5.5 % (Emporté)</option>
+                                                <option value="10.0" data-i18n="admin.catalog_vat_10">10.0 % (Restauration)</option>
+                                                <option value="20.0" data-i18n="admin.catalog_vat_20">20.0 % (Alcools)</option>
+                                                <option value="5.5" data-i18n="admin.catalog_vat_55">5.5 % (Emporté)</option>
                                             </select>
                                         </div>
                                     </div>
                                     <div class="form-group">
-                                        <label>Poste de préparation :</label>
+                                        <label data-i18n="admin.station_label">Poste de préparation :</label>
                                         <select id="selectProdStation">
-                                            <option value="HOT_KITCHEN">Cuisine Chaude / Grill</option>
-                                            <option value="COLD">Cuisine Froide / Entrées</option>
-                                            <option value="DESSERT">Pâtisserie / Desserts</option>
-                                            <option value="BAR">Bar & Boissons</option>
+                                            <option value="HOT_KITCHEN" data-i18n="admin.station_hot_kitchen">Cuisine Chaude / Grill</option>
+                                            <option value="COLD" data-i18n="admin.station_cold">Cuisine Froide / Entrées</option>
+                                            <option value="DESSERT" data-i18n="admin.station_dessert">Pâtisserie / Desserts</option>
+                                            <option value="BAR" data-i18n="admin.station_bar">Bar & Boissons</option>
                                         </select>
                                     </div>
                                     <div class="form-group checkbox-group">
                                         <label>
-                                            <input type="checkbox" id="checkQuickKey"> Épingler dans les Touches Rapides
-                                            ("Coup de feu")
+                                            <input type="checkbox" id="checkQuickKey"> <span data-i18n="admin.quick_key_pin">Épingler dans les Touches Rapides
+                                            ("Coup de feu")</span>
                                         </label>
                                     </div>
-                                    <button type="submit" class="btn-primary">Ajouter au Catalogue</button>
+                                    <button type="submit" class="btn-primary" data-i18n="admin.add_to_catalog">Ajouter au Catalogue</button>
                                 </form>
                             </div>
 
                             <div class="admin-card">
-                                <h4>Catalogue Actif</h4>
+                                <h4 data-i18n="admin.active_catalog_title">Catalogue Actif</h4>
                                 <div class="catalog-list-view" id="adminCatalogList">
                                     <!-- Populated dynamically -->
                                 </div>
@@ -359,32 +359,32 @@
                     <div class="admin-tab-pane" id="tabStaff">
                         <div class="admin-split">
                             <div class="admin-card">
-                                <h4>➕ Nouvel Employé / Serveur</h4>
+                                <h4 data-i18n="admin.add_staff_title">➕ Nouvel Employé / Serveur</h4>
                                 <form id="formAddStaff" class="admin-form">
                                     <div class="form-group">
-                                        <label>Nom complet :</label>
-                                        <input type="text" id="inputStaffName" placeholder="Ex: Claire Dufour" required>
+                                        <label data-i18n="admin.full_name_label">Nom complet :</label>
+                                        <input type="text" id="inputStaffName" data-i18n-placeholder="admin.staff_name_placeholder" placeholder="Ex: Claire Dufour" required>
                                     </div>
                                     <div class="form-group">
-                                        <label>Rôle :</label>
+                                        <label data-i18n="admin.role_label">Rôle :</label>
                                         <select id="selectStaffRole">
-                                            <option value="Waiter">Serveur / Salle</option>
-                                            <option value="Cashier">Caissier</option>
-                                            <option value="KitchenStaff">Cuisinier / Chef</option>
-                                            <option value="FloorManager">Manager de Salle</option>
-                                            <option value="Admin">Administrateur</option>
+                                            <option value="Waiter" data-i18n="admin.role_waiter">Serveur / Salle</option>
+                                            <option value="Cashier" data-i18n="admin.role_cashier">Caissier</option>
+                                            <option value="KitchenStaff" data-i18n="admin.role_kitchen_staff">Cuisinier / Chef</option>
+                                            <option value="FloorManager" data-i18n="admin.role_floor_manager">Manager de Salle</option>
+                                            <option value="Admin" data-i18n="admin.role_admin">Administrateur</option>
                                         </select>
                                     </div>
                                     <div class="form-group">
-                                        <label>Code PIN (4 à 6 chiffres) :</label>
+                                        <label data-i18n="admin.pin_code_label">Code PIN (4 à 6 chiffres) :</label>
                                         <input type="password" maxlength="6" id="inputStaffPin" placeholder="1357"
                                             required>
                                     </div>
-                                    <button type="submit" class="btn-primary">Créer l'Accès Employé</button>
+                                    <button type="submit" class="btn-primary" data-i18n="admin.create_staff_access">Créer l'Accès Employé</button>
                                 </form>
                             </div>
                             <div class="admin-card">
-                                <h4>Équipe & Accès PIN Déclarés</h4>
+                                <h4 data-i18n="admin.staff_list_title">Équipe & Accès PIN Déclarés</h4>
                                 <div class="staff-list-view" id="adminStaffList"></div>
                             </div>
                         </div>
@@ -394,34 +394,34 @@
                     <div class="admin-tab-pane" id="tabPrinters">
                         <div class="admin-split">
                             <div class="admin-card">
-                                <h4>➕ Déclarer une Imprimante Réseau</h4>
+                                <h4 data-i18n="admin.add_printer_title">➕ Déclarer une Imprimante Réseau</h4>
                                 <form id="formAddPrinter" class="admin-form">
                                     <div class="form-group">
-                                        <label>Nom de l'imprimante :</label>
+                                        <label data-i18n="admin.printer_name_label">Nom de l'imprimante :</label>
                                         <input type="text" id="inputPrinterName"
-                                            placeholder="Ex: Imprimante Passe Cuisine" required>
+                                            data-i18n-placeholder="admin.printer_name_placeholder" placeholder="Ex: Imprimante Passe Cuisine" required>
                                     </div>
                                     <div class="form-row">
                                         <div class="form-group">
-                                            <label>Adresse IP :</label>
+                                            <label data-i18n="admin.ip_address_label">Adresse IP :</label>
                                             <input type="text" id="inputPrinterIp" placeholder="192.168.1.150" required>
                                         </div>
                                         <div class="form-group">
-                                            <label>Port :</label>
+                                            <label data-i18n="admin.port_label">Port :</label>
                                             <input type="number" id="inputPrinterPort" value="9100">
                                         </div>
                                     </div>
                                     <div class="form-group checkbox-group">
                                         <label>
-                                            <input type="checkbox" id="checkPrinterDrawer"> Déclencher le tiroir-caisse
-                                            (RJ11)
+                                            <input type="checkbox" id="checkPrinterDrawer"> <span data-i18n="admin.printer_drawer_trigger">Déclencher le tiroir-caisse
+                                            (RJ11)</span>
                                         </label>
                                     </div>
-                                    <button type="submit" class="btn-primary">Enregistrer l'Imprimante</button>
+                                    <button type="submit" class="btn-primary" data-i18n="admin.save_printer">Enregistrer l'Imprimante</button>
                                 </form>
                             </div>
                             <div class="admin-card">
-                                <h4>Imprimantes Configurées</h4>
+                                <h4 data-i18n="admin.printers_list_title">Imprimantes Configurées</h4>
                                 <div class="printers-list-view" id="adminPrintersList"></div>
                             </div>
                         </div>
@@ -431,45 +431,45 @@
                     <div class="admin-tab-pane" id="tabLayout">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:12px;">
                             <div>
-                                <h3>🔲 Éditeur de Grille Tactile & Dimensions d'Écran</h3>
-                                <p style="color:var(--text-muted); font-size:0.85rem; margin-top:2px;">
+                                <h3 data-i18n="admin.layout_title">🔲 Éditeur de Grille Tactile & Dimensions d'Écran</h3>
+                                <p style="color:var(--text-muted); font-size:0.85rem; margin-top:2px;" data-i18n="admin.layout_subtitle">
                                     Configurez les dimensions sur-mesure (Colonnes × Lignes) et organisez vos tuiles par glisser-déposer.
                                 </p>
                             </div>
                             <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-                                <label style="font-weight:700; font-size:0.88rem;">Famille :</label>
+                                <label style="font-weight:700; font-size:0.88rem;" data-i18n="admin.category_label">Famille :</label>
                                 <select id="selectAdminGridCat" style="padding:8px 14px; border-radius:var(--radius-sm); background:var(--bg-card); color:white; border:1px solid var(--border-color); font-size:0.9rem;"></select>
-                                <button type="button" id="btnResetGridLayout" class="btn-archive" style="padding:8px 14px; font-size:0.82rem;">↺ Réinitialiser</button>
+                                <button type="button" id="btnResetGridLayout" class="btn-archive" style="padding:8px 14px; font-size:0.82rem;" data-i18n="admin.reset_layout">↺ Réinitialiser</button>
                             </div>
                         </div>
 
                         <!-- Dimensions Toolbar (Customizable Matrix Screen Size) -->
                         <div class="grid-dimensions-toolbar" style="display:flex; align-items:center; justify-content:space-between; background:rgba(30,41,59,0.7); border:1px solid var(--border-color); border-radius:var(--radius-sm); padding:10px 16px; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
                             <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
-                                <span style="font-weight:700; font-size:0.88rem; color:var(--text-main);">📐 Format / Écran :</span>
+                                <span style="font-weight:700; font-size:0.88rem; color:var(--text-main);" data-i18n="admin.format_screen_label">📐 Format / Écran :</span>
                                 <select id="selectGridDimensionsPreset" style="padding:6px 12px; border-radius:var(--radius-sm); background:var(--bg-panel); color:white; border:1px solid var(--border-color); font-size:0.85rem;">
-                                    <option value="3x3">3 × 3 (9 touches — Grandes touches / 8"-10")</option>
-                                    <option value="4x4" selected>4 × 4 (16 touches — Standard recommandé)</option>
-                                    <option value="5x4">5 × 4 (20 touches — Format équilibré)</option>
-                                    <option value="5x5">5 × 5 (25 touches — Haute densité / 12.9")</option>
-                                    <option value="6x4">6 × 4 (24 touches — Écran large 16:9)</option>
-                                    <option value="6x5">6 × 5 (30 touches — Grand écran 15.6"-21")</option>
-                                    <option value="custom">⚙️ Personnalisé...</option>
+                                    <option value="3x3" data-i18n="admin.grid_preset_3x3">3 × 3 (9 touches — Grandes touches / 8"-10")</option>
+                                    <option value="4x4" selected data-i18n="admin.grid_preset_4x4">4 × 4 (16 touches — Standard recommandé)</option>
+                                    <option value="5x4" data-i18n="admin.grid_preset_5x4">5 × 4 (20 touches — Format équilibré)</option>
+                                    <option value="5x5" data-i18n="admin.grid_preset_5x5">5 × 5 (25 touches — Haute densité / 12.9")</option>
+                                    <option value="6x4" data-i18n="admin.grid_preset_6x4">6 × 4 (24 touches — Écran large 16:9)</option>
+                                    <option value="6x5" data-i18n="admin.grid_preset_6x5">6 × 5 (30 touches — Grand écran 15.6"-21")</option>
+                                    <option value="custom" data-i18n="admin.grid_preset_custom">⚙️ Personnalisé...</option>
                                 </select>
 
                                 <div id="customDimensionsInputs" style="display:none; align-items:center; gap:8px;">
-                                    <label style="font-size:0.82rem; color:var(--text-muted);">Colonnes :</label>
+                                    <label style="font-size:0.82rem; color:var(--text-muted);" data-i18n="admin.columns_label">Colonnes :</label>
                                     <input type="number" id="inputGridCols" min="2" max="8" value="4" style="width:54px; padding:5px 8px; border-radius:var(--radius-sm); background:var(--bg-panel); color:white; border:1px solid var(--border-color); font-size:0.85rem; text-align:center;">
-                                    <label style="font-size:0.82rem; color:var(--text-muted);">Lignes :</label>
+                                    <label style="font-size:0.82rem; color:var(--text-muted);" data-i18n="admin.rows_label">Lignes :</label>
                                     <input type="number" id="inputGridRows" min="2" max="8" value="4" style="width:54px; padding:5px 8px; border-radius:var(--radius-sm); background:var(--bg-panel); color:white; border:1px solid var(--border-color); font-size:0.85rem; text-align:center;">
                                 </div>
                             </div>
 
                             <div style="display:flex; align-items:center; gap:12px;">
                                 <label style="font-size:0.82rem; color:var(--text-muted); display:flex; align-items:center; gap:6px; cursor:pointer;">
-                                    <input type="checkbox" id="checkApplyAllGridDimensions"> Appliquer à tout le menu
+                                    <input type="checkbox" id="checkApplyAllGridDimensions"> <span data-i18n="admin.apply_all_menu">Appliquer à tout le menu</span>
                                 </label>
-                                <button type="button" id="btnApplyGridDimensions" class="btn-primary" style="padding:6px 14px; font-size:0.82rem;">Appliquer le Format</button>
+                                <button type="button" id="btnApplyGridDimensions" class="btn-primary" style="padding:6px 14px; font-size:0.82rem;" data-i18n="admin.apply_format">Appliquer le Format</button>
                             </div>
                         </div>
 
@@ -478,13 +478,13 @@
                             <div style="flex:1; display:flex; flex-direction:column; background:var(--bg-panel); border:1px solid var(--border-color); border-radius:var(--radius-sm); padding:16px;">
                                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
                                     <div style="display:flex; align-items:center; gap:12px;">
-                                        <h4 style="font-size:0.95rem; font-weight:700;">Matrice Tactile de Caisse (4 × 4)</h4>
+                                        <h4 style="font-size:0.95rem; font-weight:700;" data-i18n="admin.matrix_title">Matrice Tactile de Caisse (4 × 4)</h4>
                                         <!-- Multi-Page Tabs (US2) -->
                                         <div class="admin-grid-page-tabs" id="adminGridPageTabs" style="display:flex; gap:6px;">
                                             <!-- Dynamically populated page buttons -->
                                         </div>
                                     </div>
-                                    <span id="adminGridLayoutVersion" style="font-size:0.75rem; color:var(--text-muted); font-family:var(--font-mono);">Version: 1</span>
+                                    <span id="adminGridLayoutVersion" style="font-size:0.75rem; color:var(--text-muted); font-family:var(--font-mono);" data-i18n="admin.layout_version">Version: 1</span>
                                 </div>
                                 <div id="adminMatrixGrid" style="flex:1; display:grid; grid-template-columns:repeat(4, 1fr); grid-auto-rows:1fr; gap:10px; background:rgba(15,23,42,0.45); padding:10px; border:1px dashed var(--border-color); border-radius:var(--radius-sm);">
                                     <!-- Dynamic Slots Rendered Here -->
@@ -493,8 +493,8 @@
 
                             <!-- Right: Category Catalog Items List -->
                             <div style="width:280px; display:flex; flex-direction:column; background:var(--bg-panel); border:1px solid var(--border-color); border-radius:var(--radius-sm); padding:16px;">
-                                <h4 style="font-size:0.92rem; font-weight:700; margin-bottom:4px;">Catalogue de la Famille</h4>
-                                <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:12px;">
+                                <h4 style="font-size:0.92rem; font-weight:700; margin-bottom:4px;" data-i18n="admin.family_catalog_title">Catalogue de la Famille</h4>
+                                <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:12px;" data-i18n="admin.family_catalog_hint">
                                     Glissez un article vers une case vide ou cliquez sur une case vide pour l'assigner.
                                 </p>
                                 <div id="adminCatalogListForGrid" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:8px;">
@@ -508,42 +508,42 @@
                     <div class="admin-tab-pane" id="tabNetworkSync">
                         <div class="admin-split">
                             <div class="admin-card">
-                                <h4>⚙️ Configuration Manuelle du Serveur</h4>
+                                <h4 data-i18n="admin.manual_server_config_title">⚙️ Configuration Manuelle du Serveur</h4>
                                 <form id="formManualServerConfig" class="admin-form">
                                     <div class="form-group">
-                                        <label>Adresse URL du Serveur Maître :</label>
-                                        <input type="text" id="inputManualServerUrl" value="http://127.0.0.1:5000" placeholder="Ex: http://192.168.1.50:5000" required style="width:100%; padding:10px; border-radius: 2px; background:rgba(255,255,255,0.05); border:1px solid var(--border-color); color:white;">
+                                        <label data-i18n="admin.server_url_label">Adresse URL du Serveur Maître :</label>
+                                        <input type="text" id="inputManualServerUrl" value="http://127.0.0.1:5000" data-i18n-placeholder="admin.server_url_placeholder" placeholder="Ex: http://192.168.1.50:5000" required style="width:100%; padding:10px; border-radius: 2px; background:rgba(255,255,255,0.05); border:1px solid var(--border-color); color:white;">
                                     </div>
                                     <div style="display:flex; gap:10px;">
-                                        <button type="button" class="btn-archive" id="btnTestServerConn" style="flex:1; padding:10px; font-weight:700;">📡 Tester Connexion</button>
-                                        <button type="submit" class="btn-primary" style="flex:1; padding:10px; font-weight:700;">Enregistrer</button>
+                                        <button type="button" class="btn-archive" id="btnTestServerConn" style="flex:1; padding:10px; font-weight:700;" data-i18n="admin.test_connection">📡 Tester Connexion</button>
+                                        <button type="submit" class="btn-primary" style="flex:1; padding:10px; font-weight:700;" data-i18n="common.save">Enregistrer</button>
                                     </div>
                                 </form>
                             </div>
 
                             <div class="admin-card">
-                                <h4>📊 État de la Synchronisation (Offline-First)</h4>
+                                <h4 data-i18n="admin.sync_status_title">📊 État de la Synchronisation (Offline-First)</h4>
                                 <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:14px;">
                                     <div style="background:var(--bg-main); padding:12px; border-radius: 2px; border:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
-                                        <span>Mode de fonctionnement :</span>
-                                        <strong style="color:#10b981;" id="syncEngineMode">Connecté au Réseau (Edge)</strong>
+                                        <span data-i18n="admin.operating_mode_label">Mode de fonctionnement :</span>
+                                        <strong style="color:#10b981;" id="syncEngineMode" data-i18n="admin.sync_mode_connected">Connecté au Réseau (Edge)</strong>
                                     </div>
                                     <div style="background:var(--bg-main); padding:12px; border-radius: 2px; border:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
-                                        <span>Messages en attente (Outbox) :</span>
-                                        <strong style="color:#f59e0b;" id="syncPendingCount">0 message</strong>
+                                        <span data-i18n="admin.pending_messages_label">Messages en attente (Outbox) :</span>
+                                        <strong style="color:#f59e0b;" id="syncPendingCount" data-i18n="admin.sync_pending_count">0 message</strong>
                                     </div>
                                     <div style="background:var(--bg-main); padding:12px; border-radius: 2px; border:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
-                                        <span>Transactions synchronisées :</span>
-                                        <strong style="color:#38bdf8;" id="syncCompletedCount">0 transaction</strong>
+                                        <span data-i18n="admin.synced_transactions_label">Transactions synchronisées :</span>
+                                        <strong style="color:#38bdf8;" id="syncCompletedCount" data-i18n="admin.sync_completed_count">0 transaction</strong>
                                     </div>
                                     <div style="background:var(--bg-main); padding:12px; border-radius: 2px; border:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
-                                        <span>Dernière synchronisation :</span>
+                                        <span data-i18n="admin.last_sync_label">Dernière synchronisation :</span>
                                         <strong style="color:var(--text-muted); font-size:0.85rem;" id="syncLastTime">-</strong>
                                     </div>
                                 </div>
 
                                 <button type="button" class="btn-primary" id="btnForceSyncNow" style="background:#10b981; box-shadow:0 4px 14px rgba(16, 185, 129, 0.4); display:flex; align-items:center; justify-content:center; gap:8px;">
-                                    <span>⚡</span> Forcer la Synchronisation Immédiate
+                                    <span>⚡</span> <span data-i18n="admin.force_sync_now">Forcer la Synchronisation Immédiate</span>
                                 </button>
                             </div>
                         </div>
@@ -553,22 +553,22 @@
                     <div class="admin-tab-pane" id="tabDevices">
                         <div class="admin-split">
                             <div class="admin-card">
-                                <h4>➕ Ajouter un appareil</h4>
+                                <h4 data-i18n="admin.add_device_title">➕ Ajouter un appareil</h4>
                                 <form id="formDevicePairingCode" class="admin-form">
                                     <div class="form-group">
-                                        <label>Nom de l'appareil :</label>
-                                        <input type="text" id="inputDeviceName" placeholder="Ex: Caisse comptoir" maxlength="64" required>
+                                        <label data-i18n="admin.device_name_label">Nom de l'appareil :</label>
+                                        <input type="text" id="inputDeviceName" data-i18n-placeholder="admin.device_name_placeholder" placeholder="Ex: Caisse comptoir" maxlength="64" required>
                                     </div>
                                     <div class="form-group">
-                                        <label>Rôle :</label>
+                                        <label data-i18n="admin.role_label">Rôle :</label>
                                         <select id="selectDeviceRole">
-                                            <option value="Caisse">Caisse</option>
-                                            <option value="Serveur">Serveur</option>
-                                            <option value="Cuisine">Cuisine</option>
-                                            <option value="BackOffice">Back-office</option>
+                                            <option value="Caisse" data-i18n="admin.device_role_caisse">Caisse</option>
+                                            <option value="Serveur" data-i18n="admin.device_role_serveur">Serveur</option>
+                                            <option value="Cuisine" data-i18n="admin.device_role_cuisine">Cuisine</option>
+                                            <option value="BackOffice" data-i18n="admin.device_role_backoffice">Back-office</option>
                                         </select>
                                     </div>
-                                    <button type="submit" class="btn-primary">Générer un code d'appairage</button>
+                                    <button type="submit" class="btn-primary" data-i18n="admin.generate_pairing_code">Générer un code d'appairage</button>
                                 </form>
                                 <div id="devicePairingCodeResult" style="display:none; margin-top:14px; text-align:center;">
                                     <img id="devicePairingQr" alt="QR d'appairage" style="width:220px; height:220px; background:white; padding:8px;">
@@ -577,7 +577,7 @@
                                 </div>
                             </div>
                             <div class="admin-card">
-                                <h4>Appareils appairés</h4>
+                                <h4 data-i18n="admin.paired_devices_title">Appareils appairés</h4>
                                 <div id="adminDevicesList" style="display:flex; flex-direction:column; gap:8px;"></div>
                             </div>
                         </div>
@@ -587,16 +587,16 @@
                     <div class="admin-tab-pane" id="tabDashboard">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:12px;">
                             <div>
-                                <h3 style="margin:0; font-size:1.4rem;">📊 Tableaux de Bord & KPIs Financiers</h3>
-                                <p class="text-muted" style="margin:4px 0 0 0; font-size:0.85rem;">Analyse temps réel de la rentabilité, des services et des ventes.</p>
+                                <h3 style="margin:0; font-size:1.4rem;" data-i18n="admin.dashboard_title">📊 Tableaux de Bord & KPIs Financiers</h3>
+                                <p class="text-muted" style="margin:4px 0 0 0; font-size:0.85rem;" data-i18n="admin.dashboard_subtitle">Analyse temps réel de la rentabilité, des services et des ventes.</p>
                             </div>
                             <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-                                <button class="btn-ghost dash-filter-btn active" data-range="today">Aujourd'hui</button>
-                                <button class="btn-ghost dash-filter-btn" data-range="yesterday">Hier</button>
-                                <button class="btn-ghost dash-filter-btn" data-range="week">7 jours</button>
-                                <button class="btn-ghost dash-filter-btn" data-range="month">30 jours</button>
+                                <button class="btn-ghost dash-filter-btn active" data-range="today" data-i18n="admin.range_today">Aujourd'hui</button>
+                                <button class="btn-ghost dash-filter-btn" data-range="yesterday" data-i18n="admin.range_yesterday">Hier</button>
+                                <button class="btn-ghost dash-filter-btn" data-range="week" data-i18n="admin.range_week">7 jours</button>
+                                <button class="btn-ghost dash-filter-btn" data-range="month" data-i18n="admin.range_month">30 jours</button>
                                 <button class="btn-primary" id="btnRefreshDashboard" style="padding:6px 14px; font-size:0.85rem;">
-                                    <span>🔄</span> Actualiser
+                                    <span>🔄</span> <span data-i18n="admin.refresh">Actualiser</span>
                                 </button>
                             </div>
                         </div>
@@ -604,37 +604,37 @@
                         <!-- 3 KPI Metric Cards -->
                         <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:16px; margin-bottom:24px;">
                             <div class="admin-card" style="background:linear-gradient(135deg, rgba(16,185,129,0.15), rgba(16,185,129,0.05)); border:1px solid rgba(16,185,129,0.3); padding:16px; border-radius:12px;">
-                                <div style="font-size:0.8rem; color:#94a3b8; text-transform:uppercase; letter-spacing:0.5px;">Chiffre d'Affaires TTC</div>
+                                <div style="font-size:0.8rem; color:#94a3b8; text-transform:uppercase; letter-spacing:0.5px;" data-i18n="admin.kpi_sales_ttc">Chiffre d'Affaires TTC</div>
                                 <div style="font-size:1.8rem; font-weight:700; color:#10b981; margin:8px 0 4px 0;" id="kpiSalesTtc">0.00 €</div>
-                                <div style="font-size:0.75rem; color:#64748b;" id="kpiSalesHt">HT : 0.00 €</div>
+                                <div style="font-size:0.75rem; color:#64748b;" id="kpiSalesHt" data-i18n="admin.kpi_sales_ht">HT : 0.00 €</div>
                             </div>
 
                             <div class="admin-card" style="background:linear-gradient(135deg, rgba(56,189,248,0.15), rgba(56,189,248,0.05)); border:1px solid rgba(56,189,248,0.3); padding:16px; border-radius:12px;">
-                                <div style="font-size:0.8rem; color:#94a3b8; text-transform:uppercase; letter-spacing:0.5px;">Panier Moyen / Couvert</div>
+                                <div style="font-size:0.8rem; color:#94a3b8; text-transform:uppercase; letter-spacing:0.5px;" data-i18n="admin.kpi_avg_cover">Panier Moyen / Couvert</div>
                                 <div style="font-size:1.8rem; font-weight:700; color:#38bdf8; margin:8px 0 4px 0;" id="kpiAvgCover">0.00 €</div>
-                                <div style="font-size:0.75rem; color:#64748b;" id="kpiTotalCovers">0 couverts servis</div>
+                                <div style="font-size:0.75rem; color:#64748b;" id="kpiTotalCovers" data-i18n="admin.kpi_total_covers">0 couverts servis</div>
                             </div>
 
                             <div class="admin-card" style="background:linear-gradient(135deg, rgba(168,85,247,0.15), rgba(168,85,247,0.05)); border:1px solid rgba(168,85,247,0.3); padding:16px; border-radius:12px;">
-                                <div style="font-size:0.8rem; color:#94a3b8; text-transform:uppercase; letter-spacing:0.5px;">Panier Moyen / Commande</div>
+                                <div style="font-size:0.8rem; color:#94a3b8; text-transform:uppercase; letter-spacing:0.5px;" data-i18n="admin.kpi_avg_order">Panier Moyen / Commande</div>
                                 <div style="font-size:1.8rem; font-weight:700; color:#c084fc; margin:8px 0 4px 0;" id="kpiAvgOrder">0.00 €</div>
-                                <div style="font-size:0.75rem; color:#64748b;" id="kpiTotalOrders">0 commande(s)</div>
+                                <div style="font-size:0.75rem; color:#64748b;" id="kpiTotalOrders" data-i18n="admin.kpi_total_orders">0 commande(s)</div>
                             </div>
                         </div>
 
                         <!-- 2-column Grid: Services & Payments -->
                         <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:20px; margin-bottom:24px;">
                             <div class="admin-card">
-                                <h4>☀️ Comparatif par Service</h4>
+                                <h4 data-i18n="admin.services_comparison_title">☀️ Comparatif par Service</h4>
                                 <div id="dashServicesList" style="display:flex; flex-direction:column; gap:12px; margin-top:14px;">
-                                    <p class="text-muted">Chargement des données...</p>
+                                    <p class="text-muted" data-i18n="admin.loading_data">Chargement des données...</p>
                                 </div>
                             </div>
 
                             <div class="admin-card">
-                                <h4>💳 Ventilation des Règlements</h4>
+                                <h4 data-i18n="admin.payments_breakdown_title">💳 Ventilation des Règlements</h4>
                                 <div id="dashPaymentsList" style="display:flex; flex-direction:column; gap:12px; margin-top:14px;">
-                                    <p class="text-muted">Chargement des données...</p>
+                                    <p class="text-muted" data-i18n="admin.loading_data">Chargement des données...</p>
                                 </div>
                             </div>
                         </div>
@@ -642,16 +642,16 @@
                         <!-- 2-column Grid: Top Products & Staff Productivity -->
                         <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:20px;">
                             <div class="admin-card">
-                                <h4>🏆 Palmarès des Ventes (Top Articles)</h4>
+                                <h4 data-i18n="admin.top_products_title">🏆 Palmarès des Ventes (Top Articles)</h4>
                                 <div id="dashTopProductsList" style="display:flex; flex-direction:column; gap:10px; margin-top:14px;">
-                                    <p class="text-muted">Chargement des données...</p>
+                                    <p class="text-muted" data-i18n="admin.loading_data">Chargement des données...</p>
                                 </div>
                             </div>
 
                             <div class="admin-card">
-                                <h4>👥 Productivité par Serveur</h4>
+                                <h4 data-i18n="admin.staff_productivity_title">👥 Productivité par Serveur</h4>
                                 <div id="dashStaffList" style="display:flex; flex-direction:column; gap:10px; margin-top:14px;">
-                                    <p class="text-muted">Chargement des données...</p>
+                                    <p class="text-muted" data-i18n="admin.loading_data">Chargement des données...</p>
                                 </div>
                             </div>
                         </div>
@@ -663,60 +663,60 @@
                         <div class="admin-card" style="margin-bottom:16px;">
                             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
                                 <div>
-                                    <h4 style="margin:0;">🍻 Configuration Plages & Tarifs Happy Hour</h4>
-                                    <p class="text-muted" style="margin:4px 0 0 0; font-size:0.85rem;">Définissez les créneaux et appliquez des remises par lots sur familles ou articles.</p>
+                                    <h4 style="margin:0;" data-i18n="admin.hh_config_title">🍻 Configuration Plages & Tarifs Happy Hour</h4>
+                                    <p class="text-muted" style="margin:4px 0 0 0; font-size:0.85rem;" data-i18n="admin.hh_config_subtitle">Définissez les créneaux et appliquez des remises par lots sur familles ou articles.</p>
                                 </div>
                                 <div style="display:flex; align-items:center; gap:10px;">
-                                    <label style="font-size:0.85rem; font-weight:600; color:var(--text-muted);">Créneau actif :</label>
+                                    <label style="font-size:0.85rem; font-weight:600; color:var(--text-muted);" data-i18n="admin.hh_active_schedule_label">Créneau actif :</label>
                                     <select id="selectHhActiveSchedule" style="min-width:200px; padding:8px 12px; border-radius:6px; background:var(--bg-main); color:#fff; border:1px solid var(--border-color);"></select>
-                                    <button type="button" id="btnToggleNewScheduleForm" class="btn-primary" style="padding:8px 14px; font-size:0.85rem;">➕ Nouveau Créneau</button>
+                                    <button type="button" id="btnToggleNewScheduleForm" class="btn-primary" style="padding:8px 14px; font-size:0.85rem;" data-i18n="admin.hh_new_schedule">➕ Nouveau Créneau</button>
                                 </div>
                             </div>
 
                             <!-- Formulaire Collapsible de création de créneau -->
                             <div id="containerNewScheduleForm" style="display:none; margin-top:16px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.08);">
-                                <h5>Nouveau Créneau Horaire</h5>
+                                <h5 data-i18n="admin.hh_new_schedule_title">Nouveau Créneau Horaire</h5>
                                 <form id="formAddHappyHourSchedule" class="admin-form" style="margin-top:10px;">
                                     <div class="form-row">
                                         <div class="form-group" style="flex:2;">
-                                            <label>Nom du créneau :</label>
-                                            <input type="text" id="inputHhScheduleName" placeholder="Ex: Afterwork Standard" required>
+                                            <label data-i18n="admin.hh_schedule_name_label">Nom du créneau :</label>
+                                            <input type="text" id="inputHhScheduleName" data-i18n-placeholder="admin.hh_schedule_name_placeholder" placeholder="Ex: Afterwork Standard" required>
                                         </div>
                                         <div class="form-group" style="flex:1;">
-                                            <label>Heure Début :</label>
+                                            <label data-i18n="admin.hh_start_time_label">Heure Début :</label>
                                             <input type="time" id="inputHhStartTime" value="17:00" required>
                                         </div>
                                         <div class="form-group" style="flex:1;">
-                                            <label>Heure Fin :</label>
+                                            <label data-i18n="admin.hh_end_time_label">Heure Fin :</label>
                                             <input type="time" id="inputHhEndTime" value="20:00" required>
                                         </div>
                                     </div>
                                     <div class="form-group">
-                                        <label>Jours Applicables :</label>
+                                        <label data-i18n="admin.hh_applicable_days_label">Jours Applicables :</label>
                                         <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:4px;">
-                                            <label><input type="checkbox" name="hhDays" value="1" checked> Lun</label>
-                                            <label><input type="checkbox" name="hhDays" value="2" checked> Mar</label>
-                                            <label><input type="checkbox" name="hhDays" value="3" checked> Mer</label>
-                                            <label><input type="checkbox" name="hhDays" value="4" checked> Jeu</label>
-                                            <label><input type="checkbox" name="hhDays" value="5" checked> Ven</label>
-                                            <label><input type="checkbox" name="hhDays" value="6"> Sam</label>
-                                            <label><input type="checkbox" name="hhDays" value="0"> Dim</label>
+                                            <label><input type="checkbox" name="hhDays" value="1" checked> <span data-i18n="admin.day_mon">Lun</span></label>
+                                            <label><input type="checkbox" name="hhDays" value="2" checked> <span data-i18n="admin.day_tue">Mar</span></label>
+                                            <label><input type="checkbox" name="hhDays" value="3" checked> <span data-i18n="admin.day_wed">Mer</span></label>
+                                            <label><input type="checkbox" name="hhDays" value="4" checked> <span data-i18n="admin.day_thu">Jeu</span></label>
+                                            <label><input type="checkbox" name="hhDays" value="5" checked> <span data-i18n="admin.day_fri">Ven</span></label>
+                                            <label><input type="checkbox" name="hhDays" value="6"> <span data-i18n="admin.day_sat">Sam</span></label>
+                                            <label><input type="checkbox" name="hhDays" value="0"> <span data-i18n="admin.day_sun">Dim</span></label>
                                         </div>
                                     </div>
                                     <div class="form-row" style="align-items:center;">
                                         <div class="form-group checkbox-group" style="flex:2;">
                                             <label>
-                                                <input type="checkbox" id="checkHhTakeaway"> Valable aussi à emporter (Takeaway)
+                                                <input type="checkbox" id="checkHhTakeaway"> <span data-i18n="admin.hh_valid_takeaway">Valable aussi à emporter (Takeaway)</span>
                                             </label>
                                         </div>
                                         <div class="form-group" style="flex:1;">
-                                            <label title="En cas de chevauchement d'horaires, la priorité la plus élevée l'emporte">Priorité (Conflit d'horaire) :</label>
+                                            <label data-i18n="admin.hh_priority_label" data-i18n-title="admin.hh_priority_title" title="En cas de chevauchement d'horaires, la priorité la plus élevée l'emporte">Priorité (Conflit d'horaire) :</label>
                                             <input type="number" id="inputHhPriority" value="1" min="1" max="100" style="width:100px;">
                                         </div>
                                     </div>
                                     <div style="display:flex; gap:10px; justify-content:flex-end;">
-                                        <button type="button" id="btnCancelNewSchedule" class="btn-archive">Annuler</button>
-                                        <button type="submit" class="btn-primary">Créer le Créneau</button>
+                                        <button type="button" id="btnCancelNewSchedule" class="btn-archive" data-i18n="common.cancel">Annuler</button>
+                                        <button type="submit" class="btn-primary" data-i18n="admin.hh_create_schedule">Créer le Créneau</button>
                                     </div>
                                 </form>
                             </div>
@@ -726,10 +726,10 @@
                         <div id="hhRulesManagerSection">
                             <!-- Sous-navigation onglets tactiles pour les règles -->
                             <div class="hh-subtabs-nav" style="display:flex; gap:8px; margin-bottom:16px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:8px;">
-                                <button type="button" class="hh-subtab-btn active" id="btnSubtabHhArticles" data-hh-subtab="hhSubtabArticles">🍺 Articles spécifiques</button>
-                                <button type="button" class="hh-subtab-btn" id="btnSubtabHhFamilies" data-hh-subtab="hhSubtabFamilies">🏷️ Familles éligibles</button>
-                                <button type="button" class="hh-subtab-btn" id="btnSubtabHhActiveRules" data-hh-subtab="hhSubtabActiveRules">📋 Règles actives (<span id="hhRulesCountBadge">0</span>)</button>
-                                <button type="button" class="hh-subtab-btn" id="btnSubtabHhAllSchedules" data-hh-subtab="hhSubtabAllSchedules">📅 Tous les créneaux</button>
+                                <button type="button" class="hh-subtab-btn active" id="btnSubtabHhArticles" data-hh-subtab="hhSubtabArticles" data-i18n="admin.hh_subtab_articles">🍺 Articles spécifiques</button>
+                                <button type="button" class="hh-subtab-btn" id="btnSubtabHhFamilies" data-hh-subtab="hhSubtabFamilies" data-i18n="admin.hh_subtab_families">🏷️ Familles éligibles</button>
+                                <button type="button" class="hh-subtab-btn" id="btnSubtabHhActiveRules" data-hh-subtab="hhSubtabActiveRules"><span data-i18n="admin.hh_subtab_active_rules">📋 Règles actives (</span><span id="hhRulesCountBadge">0</span>)</button>
+                                <button type="button" class="hh-subtab-btn" id="btnSubtabHhAllSchedules" data-hh-subtab="hhSubtabAllSchedules" data-i18n="admin.hh_subtab_all_schedules">📅 Tous les créneaux</button>
                             </div>
 
                             <!-- Sous-onglet 1 : Articles spécifiques (US2) -->
@@ -737,11 +737,11 @@
                                 <div class="admin-card">
                                     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
                                         <div style="display:flex; align-items:center; gap:8px; flex:1; min-width:240px;">
-                                            <input type="text" id="inputHhArticleSearch" placeholder="🔍 Rechercher un article..." style="padding:8px 12px; border-radius:6px; background:var(--bg-main); color:#fff; border:1px solid var(--border-color); width:100%; max-width:300px;">
+                                            <input type="text" id="inputHhArticleSearch" data-i18n-placeholder="admin.hh_article_search_placeholder" placeholder="🔍 Rechercher un article..." style="padding:8px 12px; border-radius:6px; background:var(--bg-main); color:#fff; border:1px solid var(--border-color); width:100%; max-width:300px;">
                                         </div>
                                         <div style="display:flex; gap:8px;">
-                                            <button type="button" id="btnHhSelectAllArticles" class="btn-archive" style="padding:6px 12px; font-size:0.85rem;">Tout sélectionner</button>
-                                            <button type="button" id="btnHhDeselectAllArticles" class="btn-archive" style="padding:6px 12px; font-size:0.85rem;">Tout désélectionner</button>
+                                            <button type="button" id="btnHhSelectAllArticles" class="btn-archive" style="padding:6px 12px; font-size:0.85rem;" data-i18n="admin.select_all">Tout sélectionner</button>
+                                            <button type="button" id="btnHhDeselectAllArticles" class="btn-archive" style="padding:6px 12px; font-size:0.85rem;" data-i18n="admin.deselect_all">Tout désélectionner</button>
                                         </div>
                                     </div>
 
@@ -758,18 +758,18 @@
                                     <!-- Barre d'action groupée pour articles -->
                                     <div class="hh-batch-action-bar" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; background:rgba(255,255,255,0.04); padding:12px 16px; border-radius:8px; border:1px solid rgba(255,255,255,0.08); margin-top:12px;">
                                         <div style="font-weight:600; color:var(--primary);">
-                                            <span id="hhSelectedArticlesCount">0</span> article(s) sélectionné(s)
+                                            <span id="hhSelectedArticlesCount">0</span> <span data-i18n="admin.hh_articles_selected">article(s) sélectionné(s)</span>
                                         </div>
                                         <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
                                             <div class="hh-price-mode-toggle" style="display:flex; border-radius:6px; overflow:hidden; border:1px solid var(--border-color);">
-                                                <button type="button" id="btnHhModeFixed" class="btn-mode active" style="padding:6px 12px; border:none; background:var(--primary); color:#fff; cursor:pointer;">Prix Fixe (€)</button>
-                                                <button type="button" id="btnHhModePercent" class="btn-mode" style="padding:6px 12px; border:none; background:rgba(255,255,255,0.06); color:var(--text-muted); cursor:pointer;">Remise (%)</button>
+                                                <button type="button" id="btnHhModeFixed" class="btn-mode active" style="padding:6px 12px; border:none; background:var(--primary); color:#fff; cursor:pointer;" data-i18n="admin.hh_mode_fixed">Prix Fixe (€)</button>
+                                                <button type="button" id="btnHhModePercent" class="btn-mode" style="padding:6px 12px; border:none; background:rgba(255,255,255,0.06); color:var(--text-muted); cursor:pointer;" data-i18n="admin.hh_mode_percent">Remise (%)</button>
                                             </div>
                                             <div style="display:flex; align-items:center; gap:6px;">
                                                 <input type="number" step="0.10" id="inputHhBatchValue" value="5.00" style="width:90px; padding:6px 10px; border-radius:6px; background:var(--bg-main); color:#fff; border:1px solid var(--border-color); text-align:right;">
                                                 <span id="hhBatchValueUnit" style="font-weight:bold;">€</span>
                                             </div>
-                                            <button type="button" id="btnApplyBatchArticles" class="btn-primary" style="padding:8px 16px;">Appliquer aux articles sélectionnés</button>
+                                            <button type="button" id="btnApplyBatchArticles" class="btn-primary" style="padding:8px 16px;" data-i18n="admin.hh_apply_to_selected_articles">Appliquer aux articles sélectionnés</button>
                                         </div>
                                     </div>
                                 </div>
@@ -780,12 +780,12 @@
                                 <div class="admin-card">
                                     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
                                         <div>
-                                            <h5 style="margin:0;">🏷️ Appliquer une remise globale sur des familles de produits</h5>
-                                            <p class="text-muted" style="margin:2px 0 0 0; font-size:0.8rem;">Tous les articles de la catégorie bénéficieront de ce pourcentage de réduction.</p>
+                                            <h5 style="margin:0;" data-i18n="admin.hh_family_discount_title">🏷️ Appliquer une remise globale sur des familles de produits</h5>
+                                            <p class="text-muted" style="margin:2px 0 0 0; font-size:0.8rem;" data-i18n="admin.hh_family_discount_hint">Tous les articles de la catégorie bénéficieront de ce pourcentage de réduction.</p>
                                         </div>
                                         <div style="display:flex; gap:8px;">
-                                            <button type="button" id="btnHhSelectAllFamilies" class="btn-archive" style="padding:6px 12px; font-size:0.85rem;">Tout sélectionner</button>
-                                            <button type="button" id="btnHhDeselectAllFamilies" class="btn-archive" style="padding:6px 12px; font-size:0.85rem;">Tout désélectionner</button>
+                                            <button type="button" id="btnHhSelectAllFamilies" class="btn-archive" style="padding:6px 12px; font-size:0.85rem;" data-i18n="admin.select_all">Tout sélectionner</button>
+                                            <button type="button" id="btnHhDeselectAllFamilies" class="btn-archive" style="padding:6px 12px; font-size:0.85rem;" data-i18n="admin.deselect_all">Tout désélectionner</button>
                                         </div>
                                     </div>
 
@@ -797,15 +797,15 @@
                                     <!-- Barre d'action groupée pour familles -->
                                     <div class="hh-batch-action-bar" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; background:rgba(255,255,255,0.04); padding:12px 16px; border-radius:8px; border:1px solid rgba(255,255,255,0.08); margin-top:12px;">
                                         <div style="font-weight:600; color:var(--primary);">
-                                            <span id="hhSelectedFamiliesCount">0</span> famille(s) sélectionnée(s)
+                                            <span id="hhSelectedFamiliesCount">0</span> <span data-i18n="admin.hh_families_selected">famille(s) sélectionnée(s)</span>
                                         </div>
                                         <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
                                             <div style="display:flex; align-items:center; gap:6px;">
-                                                <label style="font-size:0.85rem; color:var(--text-muted);">Remise :</label>
+                                                <label style="font-size:0.85rem; color:var(--text-muted);" data-i18n="admin.hh_discount_label">Remise :</label>
                                                 <input type="number" step="1" min="1" max="100" id="inputHhFamilyDiscount" value="20" style="width:70px; padding:6px 10px; border-radius:6px; background:var(--bg-main); color:#fff; border:1px solid var(--border-color); text-align:right;">
                                                 <span style="font-weight:bold;">%</span>
                                             </div>
-                                            <button type="button" id="btnApplyBatchFamilies" class="btn-primary" style="padding:8px 16px;">Appliquer à la sélection</button>
+                                            <button type="button" id="btnApplyBatchFamilies" class="btn-primary" style="padding:8px 16px;" data-i18n="admin.hh_apply_to_selection">Appliquer à la sélection</button>
                                         </div>
                                     </div>
                                 </div>
@@ -815,16 +815,16 @@
                             <div class="hh-subtab-pane" id="hhSubtabActiveRules" style="display:none;">
                                 <div class="admin-card">
                                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
-                                        <h5 style="margin:0;">📋 Règles actives sur le créneau</h5>
+                                        <h5 style="margin:0;" data-i18n="admin.hh_active_rules_title">📋 Règles actives sur le créneau</h5>
                                         <div style="display:flex; gap:8px;">
-                                            <button type="button" id="btnHhSelectAllActiveRules" class="btn-archive" style="padding:6px 12px; font-size:0.85rem;">Tout cocher</button>
-                                            <button type="button" id="btnDeleteSelectedRules" class="btn-archive" style="color:#f87171; border-color:rgba(239,68,68,0.4); padding:6px 12px; font-size:0.85rem;">🗑️ Supprimer la sélection</button>
+                                            <button type="button" id="btnHhSelectAllActiveRules" class="btn-archive" style="padding:6px 12px; font-size:0.85rem;" data-i18n="admin.hh_check_all">Tout cocher</button>
+                                            <button type="button" id="btnDeleteSelectedRules" class="btn-archive" style="color:#f87171; border-color:rgba(239,68,68,0.4); padding:6px 12px; font-size:0.85rem;" data-i18n="admin.hh_delete_selection">🗑️ Supprimer la sélection</button>
                                         </div>
                                     </div>
 
                                     <!-- Section Familles éligibles -->
                                     <div style="margin-bottom:16px;">
-                                        <h6 style="color:#f59e0b; margin:0 0 8px 0; text-transform:uppercase; font-size:0.75rem; letter-spacing:0.05em;">🏷️ Familles en promotion</h6>
+                                        <h6 style="color:#f59e0b; margin:0 0 8px 0; text-transform:uppercase; font-size:0.75rem; letter-spacing:0.05em;" data-i18n="admin.hh_families_promo">🏷️ Familles en promotion</h6>
                                         <div id="hhActiveCategoryRulesList" style="display:flex; flex-direction:column; gap:6px;">
                                             <!-- Dynamically generated -->
                                         </div>
@@ -832,7 +832,7 @@
 
                                     <!-- Section Articles spécifiques -->
                                     <div>
-                                        <h6 style="color:#38bdf8; margin:0 0 8px 0; text-transform:uppercase; font-size:0.75rem; letter-spacing:0.05em;">🍺 Articles spécifiques</h6>
+                                        <h6 style="color:#38bdf8; margin:0 0 8px 0; text-transform:uppercase; font-size:0.75rem; letter-spacing:0.05em;" data-i18n="admin.hh_subtab_articles">🍺 Articles spécifiques</h6>
                                         <div id="hhActiveProductRulesList" style="display:flex; flex-direction:column; gap:6px;">
                                             <!-- Dynamically generated -->
                                         </div>
@@ -843,9 +843,9 @@
                             <!-- Sous-onglet 4 : Tous les créneaux (Vue historique) -->
                             <div class="hh-subtab-pane" id="hhSubtabAllSchedules" style="display:none;">
                                 <div class="admin-card">
-                                    <h5 style="margin:0 0 12px 0;">Plages Happy Hour Existantes</h5>
+                                    <h5 style="margin:0 0 12px 0;" data-i18n="admin.hh_existing_schedules_title">Plages Happy Hour Existantes</h5>
                                     <div id="adminHappyHourList" style="display:flex; flex-direction:column; gap:10px;">
-                                        <p class="text-muted">Chargement des plannings...</p>
+                                        <p class="text-muted" data-i18n="admin.hh_loading_schedules">Chargement des plannings...</p>
                                     </div>
                                 </div>
                             </div>
@@ -858,65 +858,65 @@
         <!-- ==================== VIEW 5: FISCAL NF525 ==================== -->
         <section class="view-panel" id="fiscalView">
                 <div class="fiscal-card">
-                    <h2>📜 Traçabilité Fiscale NF525 & Clôtures</h2>
-                    <p class="text-muted">Chaînage cryptographique inaltérable SHA-256 des règlements et scellement journalier.</p>
+                    <h2 data-i18n="fiscal.title">📜 Traçabilité Fiscale NF525 & Clôtures</h2>
+                    <p class="text-muted" data-i18n="fiscal.subtitle">Chaînage cryptographique inaltérable SHA-256 des règlements et scellement journalier.</p>
 
                     <div class="fiscal-actions" style="display:flex; gap:12px; margin-bottom:16px; flex-wrap:wrap;">
                         <button class="btn-fiscal" id="btnExecuteZ" style="background:#10b981; color:#fff;">
-                            <span>🔒</span> Exécuter la Clôture Journalière (Rapport Z)
+                            <span>🔒</span> <span data-i18n="fiscal.execute_z">Exécuter la Clôture Journalière (Rapport Z)</span>
                         </button>
                         <button class="btn-fiscal" id="btnPreviewX" style="background:rgba(255,255,255,0.1); color:#fff; border:1px solid rgba(255,255,255,0.2);">
-                            <span>👁️</span> Aperçu du Rapport X (En cours)
+                            <span>👁️</span> <span data-i18n="fiscal.preview_x">Aperçu du Rapport X (En cours)</span>
                         </button>
                     </div>
 
                     <div class="fiscal-report-display" id="fiscalReportDisplay">
                         <div class="ticket-slip">
                             <div class="slip-header">
-                                <h3 id="slipTitle">*** RAPPORT FISCAL NF525 ***</h3>
-                                <p>Norme NF525 — Traçabilité Fiscale Inaltérable</p>
-                                <p id="slipDate">Date: En attente</p>
-                                <p id="slipTerminal">Terminal: POS_MAIN_TERM</p>
+                                <h3 id="slipTitle" data-i18n="fiscal.slip_title">*** RAPPORT FISCAL NF525 ***</h3>
+                                <p data-i18n="fiscal.slip_standard">Norme NF525 — Traçabilité Fiscale Inaltérable</p>
+                                <p id="slipDate" data-i18n="fiscal.slip_date_pending">Date: En attente</p>
+                                <p id="slipTerminal" data-i18n="fiscal.slip_terminal">Terminal: POS_MAIN_TERM</p>
                             </div>
                             <div class="slip-body" id="slipBody">
-                                <div class="slip-row"><span>Total Ventes TTC :</span><strong id="slipTotalTtc">0.00 €</strong></div>
-                                <div class="slip-row"><span>Total Ventes HT :</span><span id="slipTotalHt">0.00 €</span></div>
+                                <div class="slip-row"><span data-i18n="fiscal.slip_total_ttc">Total Ventes TTC :</span><strong id="slipTotalTtc">0.00 €</strong></div>
+                                <div class="slip-row"><span data-i18n="fiscal.slip_total_ht">Total Ventes HT :</span><span id="slipTotalHt">0.00 €</span></div>
                                 <div id="slipVatBreakdown"></div>
                                 <div id="slipPaymentBreakdown"></div>
-                                <div class="slip-row"><span>Nombre de Tickets :</span><span id="slipCount">0</span></div>
-                                <div class="slip-row" id="rowPerpetual" style="border-top:1px dashed #444; margin-top:6px; padding-top:6px;"><span>Grand Total Perpétuel :</span><strong id="slipPerpetual">0.00 €</strong></div>
+                                <div class="slip-row"><span data-i18n="fiscal.slip_count">Nombre de Tickets :</span><span id="slipCount">0</span></div>
+                                <div class="slip-row" id="rowPerpetual" style="border-top:1px dashed #444; margin-top:6px; padding-top:6px;"><span data-i18n="fiscal.slip_perpetual">Grand Total Perpétuel :</span><strong id="slipPerpetual">0.00 €</strong></div>
                             </div>
                             <div class="slip-footer">
-                                <p class="hash-label">Signature Cryptographique SHA-256 :</p>
-                                <code class="sha256-hash" id="slipHash">En attente de scellement</code>
-                                <p class="verified-tag" id="slipTag">✓ Chaîne d'Audit Fiscale Prête</p>
+                                <p class="hash-label" data-i18n="fiscal.hash_label">Signature Cryptographique SHA-256 :</p>
+                                <code class="sha256-hash" id="slipHash" data-i18n="fiscal.hash_pending">En attente de scellement</code>
+                                <p class="verified-tag" id="slipTag" data-i18n="fiscal.chain_ready">✓ Chaîne d'Audit Fiscale Prête</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="fiscal-card" style="margin-top: 24px;">
-                    <h2>📂 Export Comptable FEC (Article A.47 A-1 LPF)</h2>
-                    <p class="text-muted">Génération du Fichier des Écritures Comptables normalisé (18 colonnes DGFIP) pour l'administration fiscale et l'expert-comptable.</p>
+                    <h2 data-i18n="fiscal.fec_title">📂 Export Comptable FEC (Article A.47 A-1 LPF)</h2>
+                    <p class="text-muted" data-i18n="fiscal.fec_subtitle">Génération du Fichier des Écritures Comptables normalisé (18 colonnes DGFIP) pour l'administration fiscale et l'expert-comptable.</p>
 
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin: 16px 0; background: rgba(255,255,255,0.03); padding: 16px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.08);">
                         <div>
-                            <label style="display:block; font-size: 0.82rem; color: #94a3b8; margin-bottom: 6px;">Date de début</label>
+                            <label style="display:block; font-size: 0.82rem; color: #94a3b8; margin-bottom: 6px;" data-i18n="fiscal.fec_start_date">Date de début</label>
                             <input type="date" id="fecStartDate" class="form-input" style="width: 100%; padding: 8px 12px; border-radius: 6px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); color: #fff;">
                         </div>
                         <div>
-                            <label style="display:block; font-size: 0.82rem; color: #94a3b8; margin-bottom: 6px;">Date de fin</label>
+                            <label style="display:block; font-size: 0.82rem; color: #94a3b8; margin-bottom: 6px;" data-i18n="fiscal.fec_end_date">Date de fin</label>
                             <input type="date" id="fecEndDate" class="form-input" style="width: 100%; padding: 8px 12px; border-radius: 6px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); color: #fff;">
                         </div>
                         <div>
-                            <label style="display:block; font-size: 0.82rem; color: #94a3b8; margin-bottom: 6px;">Numéro SIREN (9 chiffres)</label>
+                            <label style="display:block; font-size: 0.82rem; color: #94a3b8; margin-bottom: 6px;" data-i18n="fiscal.fec_siren">Numéro SIREN (9 chiffres)</label>
                             <input type="text" id="fecSiren" maxlength="9" placeholder="123456789" value="123456789" class="form-input" style="width: 100%; padding: 8px 12px; border-radius: 6px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); color: #fff;">
                         </div>
                     </div>
 
                     <div class="fiscal-actions" style="margin-top: 12px;">
                         <button class="btn-fiscal" id="btnExportFec" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
-                            <span>📥</span> Télécharger le Fichier FEC (.txt)
+                            <span>📥</span> <span data-i18n="fiscal.download_fec">Télécharger le Fichier FEC (.txt)</span>
                         </button>
                     </div>
                     <div id="fecStatusMessage" style="margin-top: 12px; font-size: 0.85rem; color: #94a3b8;"></div>
@@ -966,7 +966,7 @@
                 </select>
             </label>
             <div class="pin-quick-hints">
-                <small>Comptes démo : Alexandre (<code>1234</code>) | Sophie (<code>2468</code>) | Admin
+                <small><span data-i18n="login.demo_accounts_label">Comptes démo :</span> Alexandre (<code>1234</code>) | Sophie (<code>2468</code>) | Admin
                     (<code>9999</code>)</small>
             </div>
         </div>
@@ -977,8 +977,8 @@
         <div class="modal-card" style="width: 540px; max-width: 95vw; background: #1e293b; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);">
             <div class="modal-header" style="border-bottom: 1px solid rgba(255,255,255,0.08); padding: 16px 20px; display: flex; justify-content: space-between; align-items: center;">
                 <div>
-                    <h3 id="modifiersModalTitle" style="margin:0; font-size:1.2rem; color:#f8fafc; font-weight:700;">Personnalisation & Options</h3>
-                    <div id="modifiersModalSubtitle" style="font-size:0.85rem; color:#94a3b8; margin-top:2px;">Sélectionnez un article</div>
+                    <h3 id="modifiersModalTitle" style="margin:0; font-size:1.2rem; color:#f8fafc; font-weight:700;" data-i18n="order.modifiers_title">Personnalisation & Options</h3>
+                    <div id="modifiersModalSubtitle" style="font-size:0.85rem; color:#94a3b8; margin-top:2px;" data-i18n="order.select_item">Sélectionnez un article</div>
                 </div>
                 <button class="btn-close-modal" id="btnCloseModifiersModal" style="background:none; border:none; color:#94a3b8; font-size:1.4rem; cursor:pointer;">✕</button>
             </div>
@@ -987,19 +987,19 @@
                     <!-- Dynamically populated modifier groups -->
                 </div>
                 <div style="margin-top: 18px; padding-top: 16px; border-top: 1px dashed rgba(255,255,255,0.1);">
-                    <label style="font-size:0.85rem; font-weight:600; color:#cbd5e1; display:block; margin-bottom:6px;">💬 Remarque spéciale cuisine :</label>
-                    <input type="text" id="inputModifiersComment" placeholder="Ex: Sans sel, bien chaud, sauce à part..." style="width:100%; padding:10px 14px; background:#0f172a; border:1px solid #334155; color:#f8fafc; border-radius:8px; font-size:0.9rem;" />
+                    <label style="font-size:0.85rem; font-weight:600; color:#cbd5e1; display:block; margin-bottom:6px;" data-i18n="order.kitchen_note_label">💬 Remarque spéciale cuisine :</label>
+                    <input type="text" id="inputModifiersComment" data-i18n-placeholder="order.kitchen_note_placeholder" placeholder="Ex: Sans sel, bien chaud, sauce à part..." style="width:100%; padding:10px 14px; background:#0f172a; border:1px solid #334155; color:#f8fafc; border-radius:8px; font-size:0.9rem;" />
                 </div>
             </div>
             <div class="modal-footer" style="padding: 16px 20px; border-top: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: space-between; align-items: center; background: rgba(15, 23, 42, 0.4); border-bottom-left-radius: 12px; border-bottom-right-radius: 12px;">
                 <div>
-                    <div style="font-size:0.8rem; color:#94a3b8;">Suppléments : <strong id="lblModifiersExtraTotal" style="color:#10b981; font-size:0.95rem;">+0.00 €</strong></div>
-                    <div style="font-size:1.15rem; font-weight:700; color:#f8fafc;">Prix final : <span id="lblModifiersEffectivePrice" style="color:#38bdf8;">0.00 €</span></div>
+                    <div style="font-size:0.8rem; color:#94a3b8;"><span data-i18n="order.extras_label">Suppléments :</span> <strong id="lblModifiersExtraTotal" style="color:#10b981; font-size:0.95rem;">+0.00 €</strong></div>
+                    <div style="font-size:1.15rem; font-weight:700; color:#f8fafc;"><span data-i18n="order.final_price_label">Prix final :</span> <span id="lblModifiersEffectivePrice" style="color:#38bdf8;">0.00 €</span></div>
                 </div>
                 <div style="display: flex; gap: 10px;">
-                    <button type="button" class="btn-secondary" id="btnCancelModifiers" style="padding:10px 16px; border-radius:6px; background:#334155; color:#cbd5e1; border:none; cursor:pointer; font-weight:600;">Annuler</button>
+                    <button type="button" class="btn-secondary" id="btnCancelModifiers" style="padding:10px 16px; border-radius:6px; background:#334155; color:#cbd5e1; border:none; cursor:pointer; font-weight:600;" data-i18n="common.cancel">Annuler</button>
                     <button type="button" class="btn-primary" id="btnConfirmModifiers" style="padding:10px 22px; border-radius:6px; background:linear-gradient(135deg, #0284c7, #2563eb); color:white; border:none; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:8px; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.4);">
-                        <span>✓ Ajouter au Panier</span>
+                        <span data-i18n="order.add_to_cart">✓ Ajouter au Panier</span>
                     </button>
                 </div>
             </div>
@@ -1010,54 +1010,54 @@
     <div class="modal-overlay" id="paymentModal">
         <div class="modal-card">
             <div class="modal-header">
-                <h3>Règlement & Encaissement</h3>
+                <h3 data-i18n="payment.title">Règlement & Encaissement</h3>
                 <button class="btn-close-modal" id="btnClosePayModal">✕</button>
             </div>
             <div class="payment-body">
                 <div class="pay-amount-box">
-                    <span class="label">Total Note :</span>
+                    <span class="label" data-i18n="payment.total_bill_label">Total Note :</span>
                     <span class="amount" id="payRemainingAmount">0.00 €</span>
                 </div>
 
                 <!-- Tip Suggestions (US4) -->
                 <div class="tip-section" style="margin-top: 10px;">
-                    <span style="font-size:0.85rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:6px;">✨ Pourboire au serveur :</span>
+                    <span style="font-size:0.85rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:6px;" data-i18n="payment.tip_label">✨ Pourboire au serveur :</span>
                     <div class="tip-pills-bar" style="display:flex; gap:8px;">
-                        <button type="button" class="btn-tip-pill active" data-tip-percent="0">0% (0.00 €)</button>
+                        <button type="button" class="btn-tip-pill active" data-tip-percent="0" data-i18n="payment.tip_0">0% (0.00 €)</button>
                         <button type="button" class="btn-tip-pill" data-tip-percent="5">5%</button>
                         <button type="button" class="btn-tip-pill" data-tip-percent="10">10%</button>
                         <button type="button" class="btn-tip-pill" data-tip-percent="15">15%</button>
-                        <button type="button" class="btn-tip-pill" id="btnTipCustom">Libre €</button>
+                        <button type="button" class="btn-tip-pill" id="btnTipCustom" data-i18n="payment.tip_custom">Libre €</button>
                     </div>
                     <div id="tipCustomInputRow" style="display:none; margin-top:8px;">
-                        <input type="number" step="0.50" id="inputCustomTip" placeholder="Montant du pourboire (€)" style="width:100%; padding:8px; border-radius: 2px; background:var(--bg-main); border:1px solid var(--border-color); color:white;" />
+                        <input type="number" step="0.50" id="inputCustomTip" data-i18n-placeholder="payment.tip_custom_placeholder" placeholder="Montant du pourboire (€)" style="width:100%; padding:8px; border-radius: 2px; background:var(--bg-main); border:1px solid var(--border-color); color:white;" />
                     </div>
                     <div class="tip-summary-row" style="display:flex; justify-content:space-between; margin-top:8px; font-weight:700; font-size:0.9rem; color:#a7f3d0;">
-                        <span>Total avec pourboire :</span>
+                        <span data-i18n="payment.total_with_tip_label">Total avec pourboire :</span>
                         <span id="payTotalWithTip">0.00 €</span>
                     </div>
                 </div>
 
                 <!-- Pager / Buzzer (US5) -->
                 <div class="form-group" style="margin-top: 10px;">
-                    <label style="font-size:0.85rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">📟 N° Bipeur / Client (facultatif) :</label>
-                    <input type="text" id="inputPickupBuzzer" placeholder="Ex: BIP-12 ou Nom client" style="width:100%; padding:8px 12px; border-radius:4px; background:var(--bg-main); border:1px solid var(--border-color); color:white; font-size:0.95rem;" />
+                    <label style="font-size:0.85rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;" data-i18n="payment.buzzer_label">📟 N° Bipeur / Client (facultatif) :</label>
+                    <input type="text" id="inputPickupBuzzer" data-i18n-placeholder="payment.buzzer_placeholder" placeholder="Ex: BIP-12 ou Nom client" style="width:100%; padding:8px 12px; border-radius:4px; background:var(--bg-main); border:1px solid var(--border-color); color:white; font-size:0.95rem;" />
                 </div>
 
                 <!-- Meal Voucher Overpayment Policy (US3) -->
                 <div class="form-group" id="mealVoucherPolicyGroup" style="margin-top: 10px;">
-                    <label style="font-size:0.85rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">🍽️ Politique Titre-Restaurant (Surpaiement) :</label>
+                    <label style="font-size:0.85rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;" data-i18n="payment.meal_voucher_policy_label">🍽️ Politique Titre-Restaurant (Surpaiement) :</label>
                     <select id="selectMealVoucherPolicy" style="width:100%; padding:8px 12px; border-radius:4px; background:var(--bg-main); border:1px solid var(--border-color); color:white; font-size:0.9rem;">
-                        <option value="0" selected>Solution A (Défaut : Écrêtage au solde dû, Rendu 0.00 €)</option>
-                        <option value="1">Solution B (Rejet strict en cas de dépassement)</option>
-                        <option value="2">Solution C (Émission d'un Bon d'avoir pour le reliquat)</option>
+                        <option value="0" selected data-i18n="payment.meal_voucher_solution_a">Solution A (Défaut : Écrêtage au solde dû, Rendu 0.00 €)</option>
+                        <option value="1" data-i18n="payment.meal_voucher_solution_b">Solution B (Rejet strict en cas de dépassement)</option>
+                        <option value="2" data-i18n="payment.meal_voucher_solution_c">Solution C (Émission d'un Bon d'avoir pour le reliquat)</option>
                     </select>
                 </div>
 
                 <!-- Anti-Waste AGEC Option (US5) -->
                 <div class="form-group" style="margin-top: 12px; display:flex; align-items:center; gap:8px;">
                     <input type="checkbox" id="chkPrintFiscalReceipt" style="width:18px; height:18px; cursor:pointer;" />
-                    <label for="chkPrintFiscalReceipt" style="font-size:0.85rem; cursor:pointer; color:#e2e8f0;">🧾 Imprimer la facturette fiscale (Loi AGEC - Optionnel)</label>
+                    <label for="chkPrintFiscalReceipt" style="font-size:0.85rem; cursor:pointer; color:#e2e8f0;" data-i18n="payment.print_fiscal_receipt">🧾 Imprimer la facturette fiscale (Loi AGEC - Optionnel)</label>
                 </div>
 
                 <div class="fast-cash-buttons">
@@ -1067,10 +1067,10 @@
                     <button class="btn-cash-bill" data-cash="100">100 €</button>
                 </div>
                 <div class="tender-types-grid">
-                    <button class="btn-tender" data-tender="Card">💳 Carte Bancaire</button>
-                    <button class="btn-tender" data-tender="Cash">💶 Espèces</button>
-                    <button class="btn-tender" data-tender="MealVoucher">🍽️ Titre Restaurant</button>
-                    <button class="btn-tender btn-tender-hotel" id="btnOpenRoomChargeModal" style="border-color:#38bdf8; background:rgba(56, 189, 248, 0.15); color:#bae6fd;">🏨 Imputer sur Chambre Hôtel (PMS)</button>
+                    <button class="btn-tender" data-tender="Card" data-i18n="payment.tender_card">💳 Carte Bancaire</button>
+                    <button class="btn-tender" data-tender="Cash" data-i18n="payment.tender_cash">💶 Espèces</button>
+                    <button class="btn-tender" data-tender="MealVoucher" data-i18n="payment.tender_meal_voucher">🍽️ Titre Restaurant</button>
+                    <button class="btn-tender btn-tender-hotel" id="btnOpenRoomChargeModal" style="border-color:#38bdf8; background:rgba(56, 189, 248, 0.15); color:#bae6fd;" data-i18n="payment.tender_room_charge">🏨 Imputer sur Chambre Hôtel (PMS)</button>
                 </div>
             </div>
         </div>
@@ -1080,20 +1080,20 @@
     <div class="modal-overlay" id="changeOverlayModal" style="z-index:9999;">
         <div class="modal-card" style="max-width:440px; text-align:center; padding:30px; border:2px solid #10b981; box-shadow:0 10px 40px rgba(16,185,129,0.3);">
             <div style="font-size:3rem; margin-bottom:10px;">✅</div>
-            <div style="font-size:1.1rem; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:1px;">Monnaie à rendre</div>
+            <div style="font-size:1.1rem; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:1px;" data-i18n="payment.change_due">Monnaie à rendre</div>
             <div id="changeOverlayAmount" style="font-size:3.5rem; font-weight:900; color:#10b981; margin:10px 0; font-family:monospace;">0.00 €</div>
-            <div id="changeOverlayDetails" style="font-size:1rem; color:#cbd5e1; margin-bottom:16px;">Reçu : 0.00 € — Total : 0.00 €</div>
+            <div id="changeOverlayDetails" style="font-size:1rem; color:#cbd5e1; margin-bottom:16px;" data-i18n="payment.change_details">Reçu : 0.00 € — Total : 0.00 €</div>
             <div id="changeOverlayPickupBox" style="background:rgba(56,189,248,0.15); border:1px solid #38bdf8; border-radius:8px; padding:12px; margin-bottom:20px;">
-                <div style="font-size:0.8rem; color:#38bdf8; font-weight:700; text-transform:uppercase;">Numéro de retrait</div>
+                <div style="font-size:0.8rem; color:#38bdf8; font-weight:700; text-transform:uppercase;" data-i18n="payment.pickup_number">Numéro de retrait</div>
                 <div id="changeOverlayPickupNumber" style="font-size:2.2rem; font-weight:900; color:#ffffff;">--</div>
-                <div id="changeOverlayBuzzer" style="font-size:0.9rem; color:#bae6fd; font-weight:600; display:none;">📟 Bipeur : <span id="changeOverlayBuzzerVal"></span></div>
+                <div id="changeOverlayBuzzer" style="font-size:0.9rem; color:#bae6fd; font-weight:600; display:none;"><span data-i18n="payment.buzzer_value_label">📟 Bipeur :</span> <span id="changeOverlayBuzzerVal"></span></div>
             </div>
             <div id="changeOverlayCreditVoucherBox" style="display:none; background:rgba(245,158,11,0.15); border:1px solid #f59e0b; border-radius:8px; padding:12px; margin-bottom:20px;">
-                <div style="font-size:0.8rem; color:#f59e0b; font-weight:700;">🎁 BON D'AVOIR GÉNÉRÉ</div>
+                <div style="font-size:0.8rem; color:#f59e0b; font-weight:700;" data-i18n="payment.credit_voucher_generated">🎁 BON D'AVOIR GÉNÉRÉ</div>
                 <div id="changeOverlayCreditVoucherCode" style="font-size:1.4rem; font-weight:800; color:#ffffff; font-family:monospace;">CR-XXXXXX</div>
-                <div id="changeOverlayCreditVoucherAmount" style="font-size:0.9rem; color:#fde68a;">Montant : 0.00 € (Valable 90 jours)</div>
+                <div id="changeOverlayCreditVoucherAmount" style="font-size:0.9rem; color:#fde68a;" data-i18n="payment.credit_voucher_amount">Montant : 0.00 € (Valable 90 jours)</div>
             </div>
-            <button type="button" class="btn-action btn-pay" id="btnChangeDone" style="width:100%; padding:16px; font-size:1.2rem; font-weight:800;">
+            <button type="button" class="btn-action btn-pay" id="btnChangeDone" style="width:100%; padding:16px; font-size:1.2rem; font-weight:800;" data-i18n="payment.new_sale">
                 OK — Nouvelle Vente
             </button>
         </div>
@@ -1103,7 +1103,7 @@
     <div class="modal-overlay" id="heldOrdersModal" style="z-index:9990;">
         <div class="modal-card" style="max-width:550px; width:90%; max-height:85vh; display:flex; flex-direction:column;">
             <div class="modal-header">
-                <h3>⏸️ Commandes en attente (Hold)</h3>
+                <h3 data-i18n="order.held_orders_title">⏸️ Commandes en attente (Hold)</h3>
                 <button class="btn-close-modal" id="btnCloseHeldModal">✕</button>
             </div>
             <div class="held-orders-list" id="heldOrdersList" style="flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:12px;">
@@ -1116,9 +1116,9 @@
     <div class="modal-overlay" id="supervisorPinModal" style="z-index:9995;">
         <div class="modal-card" style="max-width:360px; text-align:center; padding:24px;">
             <div class="modal-header" style="justify-content:center; margin-bottom:12px;">
-                <h3 style="color:#ef4444;">🔒 Autorisation Superviseur</h3>
+                <h3 style="color:#ef4444;" data-i18n="common.supervisor_authorization">🔒 Autorisation Superviseur</h3>
             </div>
-            <p style="font-size:0.9rem; color:var(--text-muted); margin-bottom:16px;">Entrez le code PIN manager (ex: 9999) pour valider l'annulation.</p>
+            <p style="font-size:0.9rem; color:var(--text-muted); margin-bottom:16px;" data-i18n="common.supervisor_pin_hint">Entrez le code PIN manager (ex: 9999) pour valider l'annulation.</p>
             <input type="password" id="supervisorPinInput" readonly style="width:100%; text-align:center; font-size:2rem; letter-spacing:8px; padding:10px; border-radius:6px; background:var(--bg-main); border:1px solid var(--border-color); color:white; margin-bottom:16px;" />
             <div class="supervisor-pin-grid" style="display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; margin-bottom:16px;">
                 <button type="button" class="btn-key" data-key="1">1</button>
@@ -1135,8 +1135,8 @@
                 <button type="button" class="btn-key" data-key="back">⌫</button>
             </div>
             <div style="display:flex; gap:10px;">
-                <button type="button" class="btn-secondary" id="btnCancelSupervisorPin" style="flex:1; padding:12px;">Annuler</button>
-                <button type="button" class="btn-action btn-pay" id="btnConfirmSupervisorPin" style="flex:1; padding:12px; background:#ef4444;">Confirmer</button>
+                <button type="button" class="btn-secondary" id="btnCancelSupervisorPin" style="flex:1; padding:12px;" data-i18n="common.cancel">Annuler</button>
+                <button type="button" class="btn-action btn-pay" id="btnConfirmSupervisorPin" style="flex:1; padding:12px; background:#ef4444;" data-i18n="common.confirm">Confirmer</button>
             </div>
         </div>
     </div>
@@ -1145,14 +1145,14 @@
     <div class="modal-overlay" id="devicePairingModal" style="z-index:9996;">
         <div class="modal-card" style="max-width:380px; text-align:center; padding:24px;">
             <div class="modal-header" style="justify-content:center; margin-bottom:12px;">
-                <h3>📲 Coupler ce poste</h3>
+                <h3 data-i18n="common.pair_device_title">📲 Coupler ce poste</h3>
             </div>
-            <p style="font-size:0.9rem; color:var(--text-muted); margin-bottom:16px;">Ce poste doit être appairé pour encaisser. Saisissez le code généré dans Gestion → Appareils.</p>
+            <p style="font-size:0.9rem; color:var(--text-muted); margin-bottom:16px;" data-i18n="common.pair_device_hint">Ce poste doit être appairé pour encaisser. Saisissez le code généré dans Gestion → Appareils.</p>
             <input type="text" id="devicePairingCodeInput" maxlength="12" autocomplete="off" style="width:100%; text-align:center; font-size:1.6rem; letter-spacing:6px; padding:10px; border-radius:6px; background:var(--bg-main); border:1px solid var(--border-color); color:white; margin-bottom:10px; text-transform:uppercase;">
             <div id="devicePairingError" style="color:#ef4444; min-height:1.2em; font-size:0.85rem; margin-bottom:10px;"></div>
             <div style="display:flex; gap:10px;">
-                <button type="button" class="btn-secondary" id="btnCancelDevicePairing" style="flex:1; padding:12px;">Annuler</button>
-                <button type="button" class="btn-action btn-pay" id="btnConfirmDevicePairing" style="flex:1; padding:12px;">Coupler</button>
+                <button type="button" class="btn-secondary" id="btnCancelDevicePairing" style="flex:1; padding:12px;" data-i18n="common.cancel">Annuler</button>
+                <button type="button" class="btn-action btn-pay" id="btnConfirmDevicePairing" style="flex:1; padding:12px;" data-i18n="common.pair">Coupler</button>
             </div>
         </div>
     </div>
@@ -1161,14 +1161,14 @@
     <div class="modal-overlay" id="agecPromptModal" style="z-index:9998;">
         <div class="modal-card" style="max-width:420px; text-align:center; padding:24px;">
             <div style="font-size:2.5rem; margin-bottom:8px;">🧾</div>
-            <h3 style="margin-bottom:8px;">Demander la facturette ?</h3>
-            <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:20px;">Loi Anti-Gaspillage (AGEC) : l'impression du reçu fiscal n'est plus systématique.</p>
+            <h3 style="margin-bottom:8px;" data-i18n="payment.agec_prompt_title">Demander la facturette ?</h3>
+            <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:20px;" data-i18n="payment.agec_prompt_hint">Loi Anti-Gaspillage (AGEC) : l'impression du reçu fiscal n'est plus systématique.</p>
             <div style="display:flex; flex-direction:column; gap:10px;">
-                <button type="button" class="btn-action btn-pay" id="btnAgecYes" style="padding:14px; font-size:1rem;">
+                <button type="button" class="btn-action btn-pay" id="btnAgecYes" style="padding:14px; font-size:1rem;" data-i18n="payment.agec_yes">
                     Oui — Facturette + Bon de retrait
                 </button>
                 <button type="button" class="btn-secondary" id="btnAgecNo" style="padding:14px; font-size:1rem;">
-                    Non — Bon de retrait seul (<span id="agecCountdown">3</span>s)
+                    <span data-i18n="payment.agec_no">Non — Bon de retrait seul (</span><span id="agecCountdown">3</span><span data-i18n="payment.agec_seconds_suffix">s)</span>
                 </button>
             </div>
         </div>
@@ -1178,34 +1178,34 @@
     <div class="modal-overlay" id="transferTableModal">
         <div class="modal-card">
             <div class="modal-header">
-                <h3>🔄 Transférer ou Fusionner la Table</h3>
+                <h3 data-i18n="order.transfer_modal_title">🔄 Transférer ou Fusionner la Table</h3>
                 <button class="btn-close-modal" id="btnCloseTransferModal">✕</button>
             </div>
             <form id="formTransferTable" class="admin-form" style="display:flex; flex-direction:column; gap:14px;">
                 <div class="form-group">
-                    <label>Table Source Actuelle :</label>
+                    <label data-i18n="order.transfer_source_label">Table Source Actuelle :</label>
                     <input type="text" id="transferSourceTable" readonly style="background:rgba(255,255,255,0.05); font-weight:700; color:#fbbf24;" />
                 </div>
                 <div class="form-group">
-                    <label>Table Cible :</label>
+                    <label data-i18n="order.transfer_target_label">Table Cible :</label>
                     <select id="selectTargetTable" required style="width:100%; padding:10px; border-radius: 2px; background:var(--bg-card); border:1px solid var(--border-color); color:white; font-size:1rem;"></select>
                 </div>
                 <div class="form-group">
-                    <label>Type d'opération :</label>
+                    <label data-i18n="order.transfer_operation_type_label">Type d'opération :</label>
                     <div style="display:flex; gap:16px; margin-top:4px;">
                         <label style="cursor:pointer; display:flex; align-items:center; gap:6px;">
                             <input type="radio" name="transferMode" value="transfer" checked />
-                            <span>Déplacement (Table Libre)</span>
+                            <span data-i18n="order.transfer_mode_move">Déplacement (Table Libre)</span>
                         </label>
                         <label style="cursor:pointer; display:flex; align-items:center; gap:6px;">
                             <input type="radio" name="transferMode" value="merge" />
-                            <span>Fusionner les Couverts</span>
+                            <span data-i18n="order.transfer_mode_merge">Fusionner les Couverts</span>
                         </label>
                     </div>
                 </div>
                 <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:10px;">
-                    <button type="button" class="btn-archive" id="btnCancelTransfer">Annuler</button>
-                    <button type="submit" class="btn-primary" style="padding:10px 20px; font-weight:700;">Confirmer l'opération</button>
+                    <button type="button" class="btn-archive" id="btnCancelTransfer" data-i18n="common.cancel">Annuler</button>
+                    <button type="submit" class="btn-primary" style="padding:10px 20px; font-weight:700;" data-i18n="order.confirm_operation">Confirmer l'opération</button>
                 </div>
             </form>
         </div>
@@ -1215,19 +1215,19 @@
     <div class="modal-overlay" id="discountModal">
         <div class="modal-card">
             <div class="modal-header">
-                <h3>🏷️ Remises & Articles Offerts</h3>
+                <h3 data-i18n="order.discount_modal_title">🏷️ Remises & Articles Offerts</h3>
                 <button class="btn-close-modal" id="btnCloseDiscountModal">✕</button>
             </div>
             <form id="formApplyDiscount" class="admin-form" style="display:flex; flex-direction:column; gap:14px;">
                 <div class="form-group">
-                    <label>Cible de la Remise :</label>
+                    <label data-i18n="order.discount_target_label">Cible de la Remise :</label>
                     <select id="selectDiscountTarget" style="width:100%; padding:10px; border-radius: 2px; background:var(--bg-card); border:1px solid var(--border-color); color:white;">
-                        <option value="global">Remise Globale sur la Note</option>
+                        <option value="global" data-i18n="order.discount_target_global">Remise Globale sur la Note</option>
                         <!-- Populated with item comps dynamically -->
                     </select>
                 </div>
                 <div id="groupDiscountType" class="form-group">
-                    <label>Type de Remise :</label>
+                    <label data-i18n="order.discount_type_label">Type de Remise :</label>
                     <div style="display:flex; gap:12px; margin-top:4px;">
                         <button type="button" class="btn-cap-quick active" data-disc-type="Percent" data-disc-val="10">10%</button>
                         <button type="button" class="btn-cap-quick" data-disc-type="Percent" data-disc-val="20">20%</button>
@@ -1238,33 +1238,33 @@
                 </div>
                 <div id="groupDiscountValue" class="form-row" style="display:flex; gap:12px;">
                     <div class="form-group" style="flex:1;">
-                        <label>Valeur :</label>
+                        <label data-i18n="order.discount_value_label">Valeur :</label>
                         <input type="number" step="0.5" id="inputDiscountVal" value="10" required style="width:100%; padding:10px; border-radius: 2px; background:rgba(255,255,255,0.05); border:1px solid var(--border-color); color:white;" />
                     </div>
                     <div class="form-group" style="flex:1;">
-                        <label>Unité :</label>
+                        <label data-i18n="order.discount_unit_label">Unité :</label>
                         <select id="selectDiscountUnit" style="width:100%; padding:10px; border-radius: 2px; background:var(--bg-card); border:1px solid var(--border-color); color:white;">
-                            <option value="Percentage">Pourcentage (%)</option>
-                            <option value="FixedAmount">Montant (€)</option>
+                            <option value="Percentage" data-i18n="order.discount_unit_percentage">Pourcentage (%)</option>
+                            <option value="FixedAmount" data-i18n="order.discount_unit_fixed">Montant (€)</option>
                         </select>
                     </div>
                 </div>
                 <div class="form-group">
-                    <label>Motif obligatoire (Audit Fiscal NF525) * :</label>
+                    <label data-i18n="order.discount_reason_label">Motif obligatoire (Audit Fiscal NF525) * :</label>
                     <select id="selectDiscountReason" style="width:100%; padding:10px; border-radius: 2px; background:var(--bg-card); border:1px solid var(--border-color); color:white;">
-                        <option value="Geste commercial / Retard cuisine">Geste commercial / Retard cuisine</option>
-                        <option value="Guide Touristique / Partenaire">Guide Touristique / Partenaire</option>
-                        <option value="Remise Personnel / Équipe">Remise Personnel / Équipe</option>
-                        <option value="VIP / Direction">VIP / Direction</option>
-                        <option value="Autre motif">Autre motif (préciser ci-dessous)</option>
+                        <option value="Geste commercial / Retard cuisine" data-i18n="order.discount_reason_goodwill">Geste commercial / Retard cuisine</option>
+                        <option value="Guide Touristique / Partenaire" data-i18n="order.discount_reason_partner">Guide Touristique / Partenaire</option>
+                        <option value="Remise Personnel / Équipe" data-i18n="order.discount_reason_staff">Remise Personnel / Équipe</option>
+                        <option value="VIP / Direction" data-i18n="order.discount_reason_vip">VIP / Direction</option>
+                        <option value="Autre motif" data-i18n="order.discount_reason_other">Autre motif (préciser ci-dessous)</option>
                     </select>
-                    <input type="text" id="inputDiscountCustomReason" placeholder="Préciser le motif..." style="margin-top:6px; display:none; width:100%; padding:8px; border-radius: 2px; background:rgba(255,255,255,0.05); border:1px solid var(--border-color); color:white;" />
+                    <input type="text" id="inputDiscountCustomReason" data-i18n-placeholder="order.discount_reason_custom_placeholder" placeholder="Préciser le motif..." style="margin-top:6px; display:none; width:100%; padding:8px; border-radius: 2px; background:rgba(255,255,255,0.05); border:1px solid var(--border-color); color:white;" />
                 </div>
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
-                    <button type="button" class="btn-archive" id="btnResetDiscount">Supprimer Remise</button>
+                    <button type="button" class="btn-archive" id="btnResetDiscount" data-i18n="order.remove_discount">Supprimer Remise</button>
                     <div style="display:flex; gap:10px;">
-                        <button type="button" class="btn-archive" id="btnCancelDiscount">Annuler</button>
-                        <button type="submit" class="btn-primary" style="padding:10px 20px; font-weight:700;">Valider</button>
+                        <button type="button" class="btn-archive" id="btnCancelDiscount" data-i18n="common.cancel">Annuler</button>
+                        <button type="submit" class="btn-primary" style="padding:10px 20px; font-weight:700;" data-i18n="common.validate">Valider</button>
                     </div>
                 </div>
             </form>
@@ -1275,38 +1275,38 @@
     <div class="modal-overlay" id="roomChargeModal">
         <div class="modal-card" style="width:480px;">
             <div class="modal-header">
-                <h3>🏨 Facturation sur Chambre Hôtel</h3>
+                <h3 data-i18n="payment.room_charge_title">🏨 Facturation sur Chambre Hôtel</h3>
                 <button class="btn-close-modal" id="btnCloseRoomChargeModal">✕</button>
             </div>
             <form id="formRoomCharge" class="admin-form" style="display:flex; flex-direction:column; gap:14px;">
                 <div class="form-group">
-                    <label>Sélectionner la Chambre :</label>
+                    <label data-i18n="payment.select_room_label">Sélectionner la Chambre :</label>
                     <select id="selectHotelRoom" required style="width:100%; padding:10px; border-radius: 2px; background:var(--bg-card); border:1px solid var(--border-color); color:white; font-size:1rem;"></select>
                 </div>
                 <div class="room-guest-card" id="roomGuestInfoCard" style="background:rgba(56, 189, 248, 0.1); border:1px solid rgba(56, 189, 248, 0.3); border-radius: 2px; padding:12px; display:flex; justify-content:space-between; align-items:center;">
                     <div>
                         <div style="font-weight:700; color:#bae6fd; font-size:1.05rem;" id="roomGuestName">-</div>
-                        <div style="font-size:0.8rem; color:var(--text-muted);">Résident en séjour actif</div>
+                        <div style="font-size:0.8rem; color:var(--text-muted);" data-i18n="payment.resident_active_stay">Résident en séjour actif</div>
                     </div>
                     <div style="text-align:right;">
-                        <div style="font-size:0.8rem; color:var(--text-muted);">Plafond disponible :</div>
+                        <div style="font-size:0.8rem; color:var(--text-muted);" data-i18n="payment.available_credit_label">Plafond disponible :</div>
                         <div style="font-weight:700; color:#34d399; font-family:var(--font-mono);" id="roomCreditAvailable">- €</div>
                     </div>
                 </div>
                 <div class="pay-amount-box" style="padding:10px;">
-                    <span class="label">Montant Total à imputer (avec pourboire) :</span>
+                    <span class="label" data-i18n="payment.room_charge_total_label">Montant Total à imputer (avec pourboire) :</span>
                     <span class="amount" id="roomChargeTotalAmount" style="font-size:1.6rem; color:#38bdf8;">0.00 €</span>
                 </div>
                 <div class="form-group">
-                    <label>Signature du Résident (Tactile / Écran) * :</label>
+                    <label data-i18n="payment.resident_signature_label">Signature du Résident (Tactile / Écran) * :</label>
                     <div style="border:1px dashed var(--border-color); border-radius: 2px; background:rgba(0,0,0,0.3); position:relative; overflow:hidden;">
                         <canvas id="signatureCanvas" width="430" height="130" style="touch-action:none; width:100%; height:130px; cursor:crosshair;"></canvas>
-                        <button type="button" id="btnClearSignature" style="position:absolute; top:6px; right:6px; background:rgba(255,255,255,0.1); border:none; color:var(--text-muted); font-size:0.75rem; padding:4px 8px; border-radius: 2px; cursor:pointer;">Effacer</button>
+                        <button type="button" id="btnClearSignature" style="position:absolute; top:6px; right:6px; background:rgba(255,255,255,0.1); border:none; color:var(--text-muted); font-size:0.75rem; padding:4px 8px; border-radius: 2px; cursor:pointer;" data-i18n="common.clear">Effacer</button>
                     </div>
                 </div>
                 <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:6px;">
-                    <button type="button" class="btn-archive" id="btnCancelRoomCharge">Annuler</button>
-                    <button type="submit" class="btn-primary" style="background:#0284c7; box-shadow:0 4px 14px rgba(2, 132, 199, 0.4); padding:10px 20px; font-weight:700;">Enregistrer la Note Folio</button>
+                    <button type="button" class="btn-archive" id="btnCancelRoomCharge" data-i18n="common.cancel">Annuler</button>
+                    <button type="submit" class="btn-primary" style="background:#0284c7; box-shadow:0 4px 14px rgba(2, 132, 199, 0.4); padding:10px 20px; font-weight:700;" data-i18n="payment.save_folio">Enregistrer la Note Folio</button>
                 </div>
             </form>
         </div>
@@ -1316,18 +1316,18 @@
     <div class="modal-overlay" id="splitBillModal">
         <div class="modal-card">
             <div class="modal-header">
-                <h3>Partage d'Addition (Split Bill)</h3>
+                <h3 data-i18n="payment.split_bill_title">Partage d'Addition (Split Bill)</h3>
                 <button class="btn-close-modal" id="btnCloseSplitModal">✕</button>
             </div>
             <div class="split-body">
-                <p>Division équitable sans perte de centimes :</p>
+                <p data-i18n="payment.split_bill_hint">Division équitable sans perte de centimes :</p>
                 <div class="stepper-box">
                     <button class="btn-stepper" id="btnSplitMinus">-</button>
-                    <span class="stepper-val" id="splitGuestsCount">2 Convives</span>
+                    <span class="stepper-val" id="splitGuestsCount" data-i18n="payment.split_guests_count">2 Convives</span>
                     <button class="btn-stepper" id="btnSplitPlus">+</button>
                 </div>
                 <div class="split-partitions-list" id="splitPartitionsList"></div>
-                <button class="btn-primary btn-confirm-split" id="btnConfirmSplit">Encaisser la part</button>
+                <button class="btn-primary btn-confirm-split" id="btnConfirmSplit" data-i18n="payment.pay_share">Encaisser la part</button>
             </div>
         </div>
     </div>
@@ -1336,16 +1336,16 @@
     <div class="modal-overlay" id="addTableModal">
         <div class="modal-card">
             <div class="modal-header">
-                <h3>➕ Créer une Nouvelle Table</h3>
+                <h3 data-i18n="floor.add_table_modal_title">➕ Créer une Nouvelle Table</h3>
                 <button class="btn-close-modal" id="btnCloseAddTableModal">✕</button>
             </div>
             <form id="formAddNewTable" class="admin-form" style="display:flex; flex-direction:column; gap:16px; padding:20px;">
                 <div class="form-group">
-                    <label for="inputNewTableNum">Numéro / Nom de la Table * :</label>
-                    <input type="text" id="inputNewTableNum" placeholder="Ex: T9, T10, Terrasse 1, Bar 2" required style="width:100%; padding:10px; border-radius: 2px; background:rgba(255,255,255,0.05); border:1px solid var(--border-color); color:white; font-size:1rem;" />
+                    <label for="inputNewTableNum" data-i18n="floor.table_number_label">Numéro / Nom de la Table * :</label>
+                    <input type="text" id="inputNewTableNum" data-i18n-placeholder="floor.table_number_placeholder" placeholder="Ex: T9, T10, Terrasse 1, Bar 2" required style="width:100%; padding:10px; border-radius: 2px; background:rgba(255,255,255,0.05); border:1px solid var(--border-color); color:white; font-size:1rem;" />
                 </div>
                 <div class="form-group">
-                    <label for="inputNewTableCap">Capacité (nombre de places) :</label>
+                    <label for="inputNewTableCap" data-i18n="floor.table_capacity_label">Capacité (nombre de places) :</label>
                     <div style="display:flex; align-items:center; gap:10px;">
                         <input type="number" id="inputNewTableCap" value="4" min="1" max="30" required style="width:100px; padding:10px; border-radius: 2px; background:rgba(255,255,255,0.05); border:1px solid var(--border-color); color:white; font-size:1rem;" />
                         <div style="display:flex; gap:6px;">
@@ -1357,8 +1357,8 @@
                     </div>
                 </div>
                 <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:10px;">
-                    <button type="button" class="btn-archive" id="btnCancelAddTable">Annuler</button>
-                    <button type="submit" class="btn-primary" style="padding:10px 20px; font-weight:700;">Créer la Table</button>
+                    <button type="button" class="btn-archive" id="btnCancelAddTable" data-i18n="common.cancel">Annuler</button>
+                    <button type="submit" class="btn-primary" style="padding:10px 20px; font-weight:700;" data-i18n="floor.create_table">Créer la Table</button>
                 </div>
             </form>
         </div>
@@ -1368,53 +1368,53 @@
     <div class="modal-overlay" id="editProductModal">
         <div class="modal-card">
             <div class="modal-header">
-                <h3>✏️ Modifier l'Article</h3>
+                <h3 data-i18n="admin.edit_product_title">✏️ Modifier l'Article</h3>
                 <button class="btn-close-modal" id="btnCloseEditProductModal">✕</button>
             </div>
             <form id="formEditProduct" class="admin-form" style="display:flex; flex-direction:column; gap:14px; padding:20px;">
                 <input type="hidden" id="editProdId" />
                 <div class="form-group">
-                    <label for="editProdName">Nom de l'article * :</label>
+                    <label for="editProdName" data-i18n="admin.product_name_required_label">Nom de l'article * :</label>
                     <input type="text" id="editProdName" required style="width:100%; padding:10px; border-radius: 2px; background:rgba(255,255,255,0.05); border:1px solid var(--border-color); color:white;" />
                 </div>
                 <div class="form-row" style="display:flex; gap:12px;">
                     <div class="form-group" style="flex:1;">
-                        <label for="editProdCat">Famille :</label>
+                        <label for="editProdCat" data-i18n="admin.category_label">Famille :</label>
                         <select id="editProdCat" style="width:100%; padding:10px; border-radius: 2px; background:var(--bg-card); border:1px solid var(--border-color); color:white;"></select>
                     </div>
                     <div class="form-group" style="flex:1;">
-                        <label for="editProdPrice">Prix TTC (€) * :</label>
+                        <label for="editProdPrice" data-i18n="admin.price_required_label">Prix TTC (€) * :</label>
                         <input type="number" step="0.10" id="editProdPrice" required style="width:100%; padding:10px; border-radius: 2px; background:rgba(255,255,255,0.05); border:1px solid var(--border-color); color:white;" />
                     </div>
                 </div>
                 <div class="form-row" style="display:flex; gap:12px;">
                     <div class="form-group" style="flex:1;">
-                        <label for="editProdTax">TVA (%) :</label>
+                        <label for="editProdTax" data-i18n="admin.vat_percent_label">TVA (%) :</label>
                         <select id="editProdTax" style="width:100%; padding:10px; border-radius: 2px; background:var(--bg-card); border:1px solid var(--border-color); color:white;">
-                            <option value="10">10.0% (Restauration)</option>
-                            <option value="20">20.0% (Alcools)</option>
-                            <option value="5.5">5.5% (À emporter)</option>
+                            <option value="10" data-i18n="admin.edit_product_vat_10">10.0% (Restauration)</option>
+                            <option value="20" data-i18n="admin.edit_product_vat_20">20.0% (Alcools)</option>
+                            <option value="5.5" data-i18n="admin.edit_product_vat_55">5.5% (À emporter)</option>
                         </select>
                     </div>
                     <div class="form-group" style="flex:1;">
-                        <label for="editProdStation">Poste de Cuisine :</label>
+                        <label for="editProdStation" data-i18n="admin.kitchen_station_label">Poste de Cuisine :</label>
                         <select id="editProdStation" style="width:100%; padding:10px; border-radius: 2px; background:var(--bg-card); border:1px solid var(--border-color); color:white;">
-                            <option value="HOT_KITCHEN">Chaud / Grill</option>
-                            <option value="COLD">Froid / Entrées</option>
-                            <option value="BAR">Bar & Boissons</option>
-                            <option value="DESSERT">Dessert</option>
+                            <option value="HOT_KITCHEN" data-i18n="admin.edit_station_hot">Chaud / Grill</option>
+                            <option value="COLD" data-i18n="admin.edit_station_cold">Froid / Entrées</option>
+                            <option value="BAR" data-i18n="admin.station_bar">Bar & Boissons</option>
+                            <option value="DESSERT" data-i18n="admin.edit_station_dessert">Dessert</option>
                         </select>
                     </div>
                 </div>
                 <div class="form-group checkbox-group" style="display:flex; align-items:center; gap:8px;">
                     <label style="cursor:pointer; display:flex; align-items:center; gap:8px;">
                         <input type="checkbox" id="editProdQuickKey" style="width:18px; height:18px;" />
-                        <span>Épingler dans les Touches Rapides ("Coup de feu")</span>
+                        <span data-i18n="admin.quick_key_pin">Épingler dans les Touches Rapides ("Coup de feu")</span>
                     </label>
                 </div>
                 <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:10px;">
-                    <button type="button" class="btn-archive" id="btnCancelEditProduct">Annuler</button>
-                    <button type="submit" class="btn-primary" style="padding:10px 20px; font-weight:700;">Enregistrer les Modifications</button>
+                    <button type="button" class="btn-archive" id="btnCancelEditProduct" data-i18n="common.cancel">Annuler</button>
+                    <button type="submit" class="btn-primary" style="padding:10px 20px; font-weight:700;" data-i18n="admin.save_changes">Enregistrer les Modifications</button>
                 </div>
             </form>
         </div>
@@ -1424,22 +1424,22 @@
     <div class="modal-overlay" id="editCategoryModal">
         <div class="modal-card">
             <div class="modal-header">
-                <h3>✏️ Modifier la Famille</h3>
+                <h3 data-i18n="admin.edit_category_title">✏️ Modifier la Famille</h3>
                 <button class="btn-close-modal" id="btnCloseEditCatModal">✕</button>
             </div>
             <form id="formEditCategory" class="admin-form" style="display:flex; flex-direction:column; gap:14px; padding:20px;">
                 <input type="hidden" id="editCatId" />
                 <div class="form-group">
-                    <label for="editCatName">Nom de la famille * :</label>
+                    <label for="editCatName" data-i18n="admin.category_name_required_label">Nom de la famille * :</label>
                     <input type="text" id="editCatName" required style="width:100%; padding:10px; border-radius: 2px; background:rgba(255,255,255,0.05); border:1px solid var(--border-color); color:white;" />
                 </div>
                 <div class="form-group">
-                    <label for="editCatColor">Couleur du Badge :</label>
+                    <label for="editCatColor" data-i18n="admin.badge_color_label">Couleur du Badge :</label>
                     <input type="color" id="editCatColor" value="#4A90E2" style="width:100%; height:42px; border-radius: 2px; background:transparent; border:1px solid var(--border-color); cursor:pointer;" />
                 </div>
                 <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:10px;">
-                    <button type="button" class="btn-archive" id="btnCancelEditCat">Annuler</button>
-                    <button type="submit" class="btn-primary" style="padding:10px 20px; font-weight:700;">Enregistrer</button>
+                    <button type="button" class="btn-archive" id="btnCancelEditCat" data-i18n="common.cancel">Annuler</button>
+                    <button type="submit" class="btn-primary" style="padding:10px 20px; font-weight:700;" data-i18n="common.save">Enregistrer</button>
                 </div>
             </form>
         </div>
@@ -1449,32 +1449,32 @@
     <div class="modal-overlay" id="editStaffModal">
         <div class="modal-card">
             <div class="modal-header">
-                <h3>✏️ Modifier l'Employé</h3>
+                <h3 data-i18n="admin.edit_staff_title">✏️ Modifier l'Employé</h3>
                 <button class="btn-close-modal" id="btnCloseEditStaffModal">✕</button>
             </div>
             <form id="formEditStaff" class="admin-form" style="display:flex; flex-direction:column; gap:14px; padding:20px;">
                 <input type="hidden" id="editStaffId" />
                 <div class="form-group">
-                    <label for="editStaffName">Nom de l'employé * :</label>
+                    <label for="editStaffName" data-i18n="admin.staff_name_required_label">Nom de l'employé * :</label>
                     <input type="text" id="editStaffName" required style="width:100%; padding:10px; border-radius: 2px; background:rgba(255,255,255,0.05); border:1px solid var(--border-color); color:white;" />
                 </div>
                 <div class="form-group">
-                    <label for="editStaffRole">Rôle / Profil :</label>
+                    <label for="editStaffRole" data-i18n="admin.role_profile_label">Rôle / Profil :</label>
                     <select id="editStaffRole" style="width:100%; padding:10px; border-radius: 2px; background:var(--bg-card); border:1px solid var(--border-color); color:white;">
-                        <option value="Waiter">Serveur / Serveuse</option>
-                        <option value="FloorManager">Responsable de Salle</option>
-                        <option value="Cashier">Caissier</option>
-                        <option value="KitchenStaff">Chef Cuisinier</option>
-                        <option value="Admin">Administrateur / Gérant</option>
+                        <option value="Waiter" data-i18n="admin.edit_role_waiter">Serveur / Serveuse</option>
+                        <option value="FloorManager" data-i18n="admin.edit_role_floor_manager">Responsable de Salle</option>
+                        <option value="Cashier" data-i18n="admin.role_cashier">Caissier</option>
+                        <option value="KitchenStaff" data-i18n="admin.edit_role_kitchen_staff">Chef Cuisinier</option>
+                        <option value="Admin" data-i18n="admin.edit_role_admin">Administrateur / Gérant</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="editStaffPin">Nouveau Code PIN (4 à 6 chiffres, laisser vide pour conserver l'actuel) :</label>
+                    <label for="editStaffPin" data-i18n="admin.new_pin_label">Nouveau Code PIN (4 à 6 chiffres, laisser vide pour conserver l'actuel) :</label>
                     <input type="password" maxlength="6" id="editStaffPin" placeholder="Ex: 5678" style="width:100%; padding:10px; border-radius: 2px; background:rgba(255,255,255,0.05); border:1px solid var(--border-color); color:white;" />
                 </div>
                 <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:10px;">
-                    <button type="button" class="btn-archive" id="btnCancelEditStaff">Annuler</button>
-                    <button type="submit" class="btn-primary" style="padding:10px 20px; font-weight:700;">Enregistrer</button>
+                    <button type="button" class="btn-archive" id="btnCancelEditStaff" data-i18n="common.cancel">Annuler</button>
+                    <button type="submit" class="btn-primary" style="padding:10px 20px; font-weight:700;" data-i18n="common.save">Enregistrer</button>
                 </div>
             </form>
         </div>
@@ -1484,34 +1484,34 @@
     <div class="modal-overlay" id="editPrinterModal">
         <div class="modal-card">
             <div class="modal-header">
-                <h3>✏️ Modifier l'Imprimante Réseau</h3>
+                <h3 data-i18n="admin.edit_printer_title">✏️ Modifier l'Imprimante Réseau</h3>
                 <button class="btn-close-modal" id="btnCloseEditPrinterModal">✕</button>
             </div>
             <form id="formEditPrinter" class="admin-form" style="display:flex; flex-direction:column; gap:14px; padding:20px;">
                 <input type="hidden" id="editPrinterId" />
                 <div class="form-group">
-                    <label for="editPrinterName">Nom de l'imprimante * :</label>
+                    <label for="editPrinterName" data-i18n="admin.printer_name_required_label">Nom de l'imprimante * :</label>
                     <input type="text" id="editPrinterName" required style="width:100%; padding:10px; border-radius: 2px; background:rgba(255,255,255,0.05); border:1px solid var(--border-color); color:white;" />
                 </div>
                 <div class="form-row" style="display:flex; gap:12px;">
                     <div class="form-group" style="flex:2;">
-                        <label for="editPrinterIp">Adresse IP Réseau * :</label>
+                        <label for="editPrinterIp" data-i18n="admin.printer_ip_required_label">Adresse IP Réseau * :</label>
                         <input type="text" id="editPrinterIp" required style="width:100%; padding:10px; border-radius: 2px; background:rgba(255,255,255,0.05); border:1px solid var(--border-color); color:white;" />
                     </div>
                     <div class="form-group" style="flex:1;">
-                        <label for="editPrinterPort">Port TCP :</label>
+                        <label for="editPrinterPort" data-i18n="admin.printer_tcp_port_label">Port TCP :</label>
                         <input type="number" id="editPrinterPort" value="9100" style="width:100%; padding:10px; border-radius: 2px; background:rgba(255,255,255,0.05); border:1px solid var(--border-color); color:white;" />
                     </div>
                 </div>
                 <div class="form-group checkbox-group" style="display:flex; align-items:center; gap:8px;">
                     <label style="cursor:pointer; display:flex; align-items:center; gap:8px;">
                         <input type="checkbox" id="editPrinterDrawer" style="width:18px; height:18px;" />
-                        <span>Déclencher le tiroir-caisse (RJ11)</span>
+                        <span data-i18n="admin.printer_drawer_trigger">Déclencher le tiroir-caisse (RJ11)</span>
                     </label>
                 </div>
                 <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:10px;">
-                    <button type="button" class="btn-archive" id="btnCancelEditPrinter">Annuler</button>
-                    <button type="submit" class="btn-primary" style="padding:10px 20px; font-weight:700;">Enregistrer</button>
+                    <button type="button" class="btn-archive" id="btnCancelEditPrinter" data-i18n="common.cancel">Annuler</button>
+                    <button type="submit" class="btn-primary" style="padding:10px 20px; font-weight:700;" data-i18n="common.save">Enregistrer</button>
                 </div>
             </form>
         </div>
@@ -1521,31 +1521,31 @@
     <div class="modal-overlay" id="editSlotModal">
         <div class="modal-card" style="width:440px;">
             <div class="modal-header">
-                <h3 id="editSlotModalTitle">🔲 Éditer l'Emplacement</h3>
+                <h3 id="editSlotModalTitle" data-i18n="admin.edit_slot_title">🔲 Éditer l'Emplacement</h3>
                 <button class="btn-close-modal" id="btnCloseEditSlotModal">✕</button>
             </div>
             <form id="formEditSlot" class="admin-form" style="display:flex; flex-direction:column; gap:14px; padding:16px;">
                 <input type="hidden" id="editSlotRow" />
                 <input type="hidden" id="editSlotCol" />
-                
+
                 <div class="form-group">
-                    <label for="selectSlotProduct">Article Assigné :</label>
+                    <label for="selectSlotProduct" data-i18n="admin.assigned_item_label">Article Assigné :</label>
                     <select id="selectSlotProduct" style="width:100%; padding:10px; border-radius:var(--radius-sm); background:var(--bg-card); color:white; border:1px solid var(--border-color); font-size:0.95rem;"></select>
                 </div>
 
                 <div class="form-group">
-                    <label for="inputSlotCustomLabel">Libellé Court Personnalisé (Optionnel) :</label>
-                    <input type="text" id="inputSlotCustomLabel" placeholder="Ex: MARGHERITA" style="width:100%; padding:10px; border-radius:var(--radius-sm); background:rgba(255,255,255,0.05); color:white; border:1px solid var(--border-color);" />
+                    <label for="inputSlotCustomLabel" data-i18n="admin.custom_short_label_label">Libellé Court Personnalisé (Optionnel) :</label>
+                    <input type="text" id="inputSlotCustomLabel" data-i18n-placeholder="admin.custom_short_label_placeholder" placeholder="Ex: MARGHERITA" style="width:100%; padding:10px; border-radius:var(--radius-sm); background:rgba(255,255,255,0.05); color:white; border:1px solid var(--border-color);" />
                 </div>
 
                 <div class="form-group">
-                    <label for="inputSlotCustomColor">Couleur d'accentuation (Optionnel) :</label>
+                    <label for="inputSlotCustomColor" data-i18n="admin.accent_color_label">Couleur d'accentuation (Optionnel) :</label>
                     <input type="color" id="inputSlotCustomColor" value="#3b82f6" style="width:100%; height:40px; border-radius:var(--radius-sm); background:transparent; border:1px solid var(--border-color); cursor:pointer;" />
                 </div>
 
                 <div style="display:flex; gap:10px; margin-top:10px;">
-                    <button type="submit" class="btn-primary" style="flex:1; padding:12px; font-weight:700;">Enregistrer</button>
-                    <button type="button" id="btnUnassignSlot" class="btn-archive" style="padding:12px 16px; font-size:0.85rem;">Libérer la case</button>
+                    <button type="submit" class="btn-primary" style="flex:1; padding:12px; font-weight:700;" data-i18n="common.save">Enregistrer</button>
+                    <button type="button" id="btnUnassignSlot" class="btn-archive" style="padding:12px 16px; font-size:0.85rem;" data-i18n="admin.unassign_slot">Libérer la case</button>
                 </div>
             </form>
         </div>
@@ -1555,34 +1555,34 @@
     <div class="modal-overlay" id="hhOverrideModal">
         <div class="modal-card" style="width:460px;">
             <div class="modal-header">
-                <h3>🍻 Dérogation Happy Hour</h3>
+                <h3 data-i18n="admin.hh_override_modal_title">🍻 Dérogation Happy Hour</h3>
                 <button class="btn-close-modal" id="btnCloseHhOverrideModal">✕</button>
             </div>
             <div style="padding:16px; display:flex; flex-direction:column; gap:16px;">
-                <p style="font-size:0.9rem; color:var(--text-secondary); margin:0;">
+                <p style="font-size:0.9rem; color:var(--text-secondary); margin:0;" data-i18n="admin.hh_override_hint">
                     Action réservée aux responsables (FloorManager / Admin). Dérogation tracée au journal NF525.
                 </p>
 
                 <div class="form-group">
-                    <label>Code PIN Superviseur :</label>
+                    <label data-i18n="admin.hh_supervisor_pin_label">Code PIN Superviseur :</label>
                     <input type="password" id="inputHhPin" placeholder="••••" maxlength="6" style="width:100%; text-align:center; font-size:1.5rem; letter-spacing:6px; padding:10px; border-radius:var(--radius-sm); background:rgba(255,255,255,0.05); color:white; border:1px solid var(--border-color);" />
                 </div>
 
                 <div class="form-group">
-                    <label>Motif de dérogation :</label>
-                    <input type="text" id="inputHhReason" placeholder="Ex: Prolongation affluence match" value="Prolongation affluence" style="width:100%; padding:10px; border-radius:var(--radius-sm); background:rgba(255,255,255,0.05); color:white; border:1px solid var(--border-color);" />
+                    <label data-i18n="admin.hh_override_reason_label">Motif de dérogation :</label>
+                    <input type="text" id="inputHhReason" data-i18n-placeholder="admin.hh_override_reason_placeholder" placeholder="Ex: Prolongation affluence match" value="Prolongation affluence" style="width:100%; padding:10px; border-radius:var(--radius-sm); background:rgba(255,255,255,0.05); color:white; border:1px solid var(--border-color);" />
                 </div>
 
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                    <button type="button" class="btn-primary" id="btnHhExtend30" style="background:#f59e0b; color:black; font-weight:700; padding:14px;">
+                    <button type="button" class="btn-primary" id="btnHhExtend30" style="background:#f59e0b; color:black; font-weight:700; padding:14px;" data-i18n="admin.hh_extend_30">
                         ➕ Prolonger +30 min
                     </button>
-                    <button type="button" class="btn-primary" id="btnHhForce60" style="background:#d97706; color:white; font-weight:700; padding:14px;">
+                    <button type="button" class="btn-primary" id="btnHhForce60" style="background:#d97706; color:white; font-weight:700; padding:14px;" data-i18n="admin.hh_force_60">
                         ⚡ Forcer 1 heure
                     </button>
                 </div>
 
-                <button type="button" class="btn-danger" id="btnHhForceStop" style="width:100%; padding:12px; font-weight:600;">
+                <button type="button" class="btn-danger" id="btnHhForceStop" style="width:100%; padding:12px; font-weight:600;" data-i18n="admin.hh_force_stop">
                     ⏹️ Arrêter immédiatement l'Happy Hour
                 </button>
             </div>

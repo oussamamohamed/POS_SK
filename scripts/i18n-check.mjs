@@ -29,13 +29,17 @@ for (const lang of langs) {
 if (args.includes('--no-french')) {
   // Heuristique : chaîne littérale contenant un accent français ou un mot FR courant, hors commentaires.
   const FR = /['"`>][^'"`<]*(?:[éèêàùçôî]|\b(?:le|la|les|des|du|une|pour|avec|introuvable|commande|annuler|valider|enregistrer)\b)[^'"`<]*['"`<]/i;
-  const scan = (name, text) => text.split('\n').forEach((line, i) => {
+  const scan = (name, text, { skipI18nAttr = false } = {}) => text.split('\n').forEach((line, i) => {
     const code = line.replace(/\/\/.*$/, '').replace(/<!--.*?-->/g, '');
     if (/console\.(warn|error|log)/.test(code)) return;
+    // index.html garde volontairement le texte français comme contenu initial des éléments
+    // data-i18n* (lu avant l'exécution de apply()) : une ligne portant cet attribut est déjà
+    // couverte par une clé, ce n'est pas du français non extrait.
+    if (skipI18nAttr && code.includes('data-i18n')) return;
     if (FR.test(code)) fail(`${name}:${i + 1} français en dur : ${code.trim().slice(0, 100)}`);
   });
   scan('app.js', js);
-  scan('index.html', html.replace(/<option value="fr">Français<\/option>/, ''));
+  scan('index.html', html.replace(/<option value="fr">Français<\/option>/, ''), { skipI18nAttr: true });
 }
 
 console.log(errors ? `${errors} problème(s)` : `✔ ${used.size} clés OK (${langs.join(', ')})`);
