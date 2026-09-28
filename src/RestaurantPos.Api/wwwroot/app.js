@@ -805,7 +805,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 optBtn.setAttribute('data-option-id', opt.id);
                 optBtn.style.cssText = `
                     display:flex; flex-direction:column; align-items:flex-start; justify-content:center;
-                    padding:10px 12px; border-radius:8px; cursor:pointer; text-align:left; transition:all 0.15s ease;
+                    padding:10px 12px; border-radius:8px; cursor:pointer; text-align:start; transition:all 0.15s ease;
                     border: 1px solid ${isPreSelected ? '#38bdf8' : 'rgba(255,255,255,0.1)'};
                     background: ${isPreSelected ? 'rgba(56, 189, 248, 0.15)' : 'rgba(15, 23, 42, 0.6)'};
                     color: ${isPreSelected ? '#38bdf8' : '#e2e8f0'};
