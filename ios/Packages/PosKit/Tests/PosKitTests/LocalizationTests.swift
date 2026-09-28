@@ -15,8 +15,8 @@ struct LocalizationTests {
         return dict
     }
 
-    @Test func sourceLanguageIsEnglish() throws {
-        // `defaultLocalization` du Package.swift est "en" ; le fichier anglais doit exister et être complet.
+    @Test func englishCatalogIsNotEmpty() throws {
+        // `defaultLocalization` du Package.swift est "en" ; le fichier anglais (référence) doit exister et ne pas être vide.
         #expect(!(try Self.stringsFile("en")).isEmpty)
     }
 

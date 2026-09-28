@@ -38,7 +38,7 @@ public actor HTTPPosAPI: PosAPI {
         if !query.isEmpty {
             components.queryItems = query.sorted { $0.key < $1.key }.map { URLQueryItem(name: $0.key, value: $0.value) }
         }
-        guard let url = components.url else { throw APIError.transport("URL invalide") }
+        guard let url = components.url else { throw APIError.transport(L10n.string("errors.invalid_url")) }
         var request = URLRequest(url: url)
         request.httpMethod = method
         request.setValue("application/json", forHTTPHeaderField: "Accept")
@@ -60,7 +60,7 @@ public actor HTTPPosAPI: PosAPI {
         } catch {
             throw APIError.transport(error.localizedDescription)
         }
-        guard let http = response as? HTTPURLResponse else { throw APIError.transport("Réponse non HTTP") }
+        guard let http = response as? HTTPURLResponse else { throw APIError.transport(L10n.string("errors.non_http_response")) }
         guard (200..<300).contains(http.statusCode) else {
             let message = Self.extractMessage(from: data)
             switch http.statusCode {

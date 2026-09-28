@@ -73,6 +73,8 @@
 "errors.decoding" = "Réponse inattendue du serveur : %@";
 "errors.device_not_paired" = "Ce poste n'est pas appairé au serveur. Générez un code dans Gestion → Appareils.";
 "errors.forbidden" = "Action réservée à un responsable.";
+"errors.invalid_url" = "URL invalide";
+"errors.non_http_response" = "Réponse non HTTP";
 "errors.not_found" = "Élément introuvable.";
 "errors.rate_limited" = "Trop de tentatives, patientez.";
 "errors.server" = "Erreur serveur (%d).";
@@ -94,10 +96,13 @@
 "kitchen.status_advanced" = "avancé";
 "kitchen.status_served" = "servi";
 "kitchen.ticket_bumped" = "Bon %@ : %@";
+"login.default_operator_name" = "Opérateur";
+"login.invalid_pin" = "Code PIN invalide";
 "order.already_in_kitchen" = "Tout est déjà en cuisine";
 "order.catalog_load_error" = "Erreur de chargement du catalogue";
 "order.cleared" = "Ticket vidé";
 "order.comp_requires_save" = "Enregistrez l'article avant de l'offrir";
+"order.counter_order_not_found" = "Commande comptoir introuvable";
 "order.counter_title" = "Comptoir";
 "order.discount_applied" = "Remise appliquée (%@)";
 "order.discount_invalid_amount" = "Montant de remise invalide";
@@ -116,6 +121,9 @@
 "order.load_error" = "Impossible de charger %@";
 "order.mode_eat_in" = "Mode Sur place";
 "order.mode_takeaway" = "Mode À emporter (TVA réduite)";
+"order.modifier_selection_required" = "Sélectionnez au moins %d option(s) pour « %@ ».";
+"order.no_active_order" = "Aucune commande sur ce ticket";
+"order.order_not_found" = "Commande introuvable";
 "order.sent_to_kitchen" = "%@ envoyée en cuisine";
 "order.suite_fired" = "Réclame « Suite » envoyée pour %@";
 "order.table_title" = "Table %@";

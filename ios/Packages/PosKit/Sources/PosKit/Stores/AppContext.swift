@@ -142,13 +142,13 @@ public final class SessionStore {
         do {
             let result = try await api.login(pin: pinEntry)
             if result.success, let id = result.operatorId {
-                currentOperator = Operator(id: id, name: result.operatorName ?? "Opérateur", role: result.role ?? .waiter)
+                currentOperator = Operator(id: id, name: result.operatorName ?? L10n.string("login.default_operator_name"), role: result.role ?? .waiter)
                 token = result.token
                 await api.setToken(result.token)
                 pinEntry = ""
                 pinError = nil
             } else {
-                pinError = result.errorMessage ?? "Code PIN invalide"
+                pinError = result.errorMessage ?? L10n.string("login.invalid_pin")
                 pinEntry = ""
             }
         } catch {

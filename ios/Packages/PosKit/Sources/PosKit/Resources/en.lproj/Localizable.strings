@@ -73,6 +73,8 @@
 "errors.decoding" = "Unexpected server response: %@";
 "errors.device_not_paired" = "This device is not paired with the server. Generate a code in Management → Devices.";
 "errors.forbidden" = "Action reserved for a manager.";
+"errors.invalid_url" = "Invalid URL";
+"errors.non_http_response" = "Non-HTTP response";
 "errors.not_found" = "Item not found.";
 "errors.rate_limited" = "Too many attempts, please wait.";
 "errors.server" = "Server error (%d).";
@@ -94,10 +96,13 @@
 "kitchen.status_advanced" = "advanced";
 "kitchen.status_served" = "served";
 "kitchen.ticket_bumped" = "Ticket %@: %@";
+"login.default_operator_name" = "Operator";
+"login.invalid_pin" = "Invalid PIN code";
 "order.already_in_kitchen" = "Everything is already in the kitchen";
 "order.catalog_load_error" = "Error loading the catalog";
 "order.cleared" = "Ticket cleared";
 "order.comp_requires_save" = "Save the item before comping it";
+"order.counter_order_not_found" = "Counter order not found";
 "order.counter_title" = "Counter";
 "order.discount_applied" = "Discount applied (%@)";
 "order.discount_invalid_amount" = "Invalid discount amount";
@@ -116,6 +121,9 @@
 "order.load_error" = "Unable to load %@";
 "order.mode_eat_in" = "Eat-in mode";
 "order.mode_takeaway" = "Takeaway mode (reduced VAT)";
+"order.modifier_selection_required" = "Select at least %d option(s) for “%@”.";
+"order.no_active_order" = "No order on this ticket";
+"order.order_not_found" = "Order not found";
 "order.sent_to_kitchen" = "%@ sent to the kitchen";
 "order.suite_fired" = "“Next course” fired for %@";
 "order.table_title" = "Table %@";

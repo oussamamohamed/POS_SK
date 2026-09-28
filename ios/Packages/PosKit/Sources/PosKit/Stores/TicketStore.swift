@@ -278,7 +278,7 @@ public final class TicketStore {
     public func applyGlobalDiscount(type: DiscountType, value: Decimal, reason: String) async -> Bool {
         guard value > 0 else { notifier.warning(L10n.string("order.discount_invalid_amount")); return false }
         let ok = await run {
-            guard let id = try await commitDrafts() else { throw APIError.notFound("Aucune commande sur ce ticket") }
+            guard let id = try await commitDrafts() else { throw APIError.notFound(L10n.string("order.no_active_order")) }
             try await api.applyDiscount(orderId: id, type: type, value: value, reason: reason, operatorId: session.currentOperator?.id)
             if let order = try await api.activeOrder(table: tableNumber) { hydrate(order) }
         }
@@ -310,7 +310,7 @@ public final class TicketStore {
             return false
         }
         let ok = await run {
-            guard let orderId else { throw APIError.notFound("Aucune commande sur ce ticket") }
+            guard let orderId else { throw APIError.notFound(L10n.string("order.no_active_order")) }
             try await api.compItem(orderId: orderId, lineId: serverLineId, reason: reason, operatorId: session.currentOperator?.id)
             if let order = try await api.activeOrder(table: tableNumber) { hydrate(order) }
         }
@@ -395,7 +395,7 @@ public final class TicketStore {
         }
         var outcome: CheckoutOutcome?
         let ok = await run {
-            guard let id = try await commitDrafts() else { throw APIError.notFound("Commande comptoir introuvable") }
+            guard let id = try await commitDrafts() else { throw APIError.notFound(L10n.string("order.counter_order_not_found")) }
             let trimmedBuzzer = buzzer?.trimmingCharacters(in: .whitespaces)
             let result = try await api.counterCheckout(CounterCheckoutRequest(
                 orderId: id, terminalId: terminalId(), destination: destination,
@@ -458,7 +458,7 @@ public final class TicketStore {
         // Nom par défaut envoyé au serveur et journalisé : texte figé, non localisé (cf. règles projet).
         let name = label.trimmingCharacters(in: .whitespaces).isEmpty ? "Client comptoir" : label
         let ok = await run {
-            guard let id = try await commitDrafts() else { throw APIError.notFound("Commande introuvable") }
+            guard let id = try await commitDrafts() else { throw APIError.notFound(L10n.string("order.order_not_found")) }
             try await api.holdOrder(orderId: id, terminalId: terminalId(), label: name)
         }
         guard ok else { return false }

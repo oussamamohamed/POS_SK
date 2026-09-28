@@ -13,7 +13,7 @@ public struct ModifierSelection: Hashable, Sendable {
         public var errorDescription: String? {
             switch self {
             case let .missingSelection(group, minimum):
-                "Sélectionnez au moins \(minimum) option(s) pour « \(group) »."
+                String(format: L10n.string("order.modifier_selection_required"), minimum, group)
             }
         }
     }
