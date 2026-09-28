@@ -4942,7 +4942,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function handleHhOverride(durationMinutes) {
         const pin = elements.inputHhPin ? elements.inputHhPin.value.trim() : '';
-        const reason = elements.inputHhReason ? elements.inputHhReason.value.trim() : t('admin.hh_override_fallback_reason');
+        const reason = elements.inputHhReason?.value.trim() || 'Dérogation responsable'; // nf525-texte-fixe : motif envoyé au serveur et stocké dans HappyHourOverrideSession.Reason, jamais traduit
 
         if (!pin) {
             showToast(t('admin.hh_pin_required_warning'), 'warning');
@@ -4978,7 +4978,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function handleHhStop() {
         const pin = elements.inputHhPin ? elements.inputHhPin.value.trim() : '';
-        const reason = elements.inputHhReason ? elements.inputHhReason.value.trim() : t('admin.hh_stop_reason_default');
+        const reason = elements.inputHhReason?.value.trim() || 'Arrêt anticipé'; // nf525-texte-fixe : motif envoyé au serveur et stocké dans HappyHourOverrideSession.Reason, jamais traduit
 
         if (!pin) {
             showToast(t('admin.hh_pin_required_warning'), 'warning');
@@ -5031,7 +5031,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     function getTableStatusLabel(status) {
         if (status === 0 || status === 'Free') return t('floor.legend_free');
         if (status === 1 || status === 'Occupied') return t('floor.legend_occupied');
-        if (status === 2 || status === 'BillPrinted' || status === 'BillRequested') return t('floor.legend_bill_requested');
+        if (status === 2 || status === 'BillPrinted' || status === 'BillRequested') return t('floor.legend_bill');
         if (status === 3 || status === 'Paid') return t('floor.legend_paid');
         return t('floor.legend_free');
     }
