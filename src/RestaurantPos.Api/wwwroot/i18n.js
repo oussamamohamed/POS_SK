@@ -24,7 +24,7 @@
         return text;
     }
 
-    const ATTRS = [['data-i18n-placeholder', 'placeholder'], ['data-i18n-aria-label', 'aria-label'], ['data-i18n-title', 'title']];
+    const ATTRS = [['data-i18n-placeholder', 'placeholder'], ['data-i18n-aria-label', 'aria-label'], ['data-i18n-title', 'title'], ['data-i18n-alt', 'alt'], ['data-i18n-value', 'value']];
     function apply(root = document) {
         root.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
         for (const [data, attr] of ATTRS) root.querySelectorAll(`[${data}]`).forEach(el => el.setAttribute(attr, t(el.getAttribute(data))));

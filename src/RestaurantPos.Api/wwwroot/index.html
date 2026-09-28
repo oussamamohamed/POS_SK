@@ -571,7 +571,7 @@
                                     <button type="submit" class="btn-primary" data-i18n="admin.generate_pairing_code">Générer un code d'appairage</button>
                                 </form>
                                 <div id="devicePairingCodeResult" style="display:none; margin-top:14px; text-align:center;">
-                                    <img id="devicePairingQr" alt="QR d'appairage" style="width:220px; height:220px; background:white; padding:8px;">
+                                    <img id="devicePairingQr" data-i18n-alt="admin.pairing_qr_alt" alt="QR d'appairage" style="width:220px; height:220px; background:white; padding:8px;">
                                     <div id="devicePairingCode" style="font-size:2rem; letter-spacing:6px; font-weight:800; margin-top:8px;"></div>
                                     <div id="devicePairingExpiry" style="font-size:0.85rem; color:var(--text-muted);"></div>
                                 </div>
@@ -1570,7 +1570,7 @@
 
                 <div class="form-group">
                     <label data-i18n="admin.hh_override_reason_label">Motif de dérogation :</label>
-                    <input type="text" id="inputHhReason" data-i18n-placeholder="admin.hh_override_reason_placeholder" placeholder="Ex: Prolongation affluence match" value="Prolongation affluence" style="width:100%; padding:10px; border-radius:var(--radius-sm); background:rgba(255,255,255,0.05); color:white; border:1px solid var(--border-color);" />
+                    <input type="text" id="inputHhReason" data-i18n-placeholder="admin.hh_override_reason_placeholder" placeholder="Ex: Prolongation affluence match" data-i18n-value="admin.hh_override_reason_default" value="Prolongation affluence" style="width:100%; padding:10px; border-radius:var(--radius-sm); background:rgba(255,255,255,0.05); color:white; border:1px solid var(--border-color);" />
                 </div>
 
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">

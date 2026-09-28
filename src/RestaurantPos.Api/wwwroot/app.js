@@ -458,7 +458,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             renderCategorySelectOptions();
         } catch (err) {
             console.error('Erreur chargement catalogue:', err);
-            showToast('Erreur chargement catalogue', 'error');
+            showToast(t('order.catalog_load_error'), 'error');
         }
     }
 
@@ -470,7 +470,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         allBtn.className = `btn-cat-tab ${state.activeCategory === 'ALL' ? 'active' : ''}`;
         allBtn.style.borderLeftColor = '#3b82f6';
         allBtn.style.borderLeftWidth = '6px';
-        allBtn.innerHTML = `<span>🍽️</span> <span>Tout le Menu</span>`;
+        allBtn.innerHTML = `<span>🍽️</span> <span>${t('order.all_menu_tab')}</span>`;
         allBtn.addEventListener('click', () => {
             state.activeCategory = 'ALL';
             state.activeGridPage = 0;
@@ -487,7 +487,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             tabBtn.innerHTML = `
                 <span>${getCategoryIcon(cat.iconName || cat.name.toLowerCase())}</span>
                 <span>${cat.name}</span>
-                <span class="btn-edit-cat-trigger" data-cat-id="${cat.id}" title="Modifier" style="margin-left:auto; font-size:0.75rem; opacity:0.6; padding:2px 4px;">✏️</span>
+                <span class="btn-edit-cat-trigger" data-cat-id="${cat.id}" title="${t('common.edit')}" style="margin-left:auto; font-size:0.75rem; opacity:0.6; padding:2px 4px;">✏️</span>
             `;
 
             tabBtn.addEventListener('click', (e) => {
@@ -630,7 +630,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         elements.gridPaginationBar.style.display = 'flex';
-        elements.gridPageLabel.textContent = `Page ${currentPage + 1} / ${totalPages}`;
+        elements.gridPageLabel.textContent = t('order.grid_page_label', { page: currentPage + 1, total: totalPages });
         elements.btnPrevGridPage.disabled = currentPage <= 0;
         elements.btnNextGridPage.disabled = currentPage >= totalPages - 1;
 
@@ -638,7 +638,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         for (let p = 0; p < totalPages; p++) {
             const dot = document.createElement('div');
             dot.className = `grid-page-dot ${p === currentPage ? 'active' : ''}`;
-            dot.title = `Page ${p + 1}`;
+            dot.title = t('order.grid_page_dot_title', { page: p + 1 });
             dot.addEventListener('click', () => {
                 state.activeGridPage = p;
                 renderProductsGrid();
@@ -765,7 +765,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         currentSelectedModifiers = [];
 
         elements.modifiersModalTitle.textContent = prod.name;
-        elements.modifiersModalSubtitle.textContent = `Prix de base : ${Number(prod.price).toFixed(2)} € | TVA ${prod.taxRatePercent || 10}%`;
+        elements.modifiersModalSubtitle.textContent = t('order.modifier_base_price', { price: Number(prod.price).toFixed(2), vat: prod.taxRatePercent || 10 });
         elements.inputModifiersComment.value = '';
         elements.modifiersGroupsContainer.innerHTML = '';
 
@@ -779,7 +779,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             header.innerHTML = `
                 <div style="font-weight:700; color:#f1f5f9; font-size:0.95rem;">${group.groupName}</div>
                 <span style="font-size:0.75rem; font-weight:600; padding:2px 8px; border-radius:4px; ${group.isMandatory ? 'background:rgba(245, 158, 11, 0.15); color:#fbbf24; border:1px solid rgba(245, 158, 11, 0.3);' : 'background:rgba(148, 163, 184, 0.1); color:#94a3b8;'}">
-                    ${group.isSingleChoice ? (group.isMandatory ? '1 choix obligatoire' : '1 choix max') : (group.minSelections > 0 ? `Min. ${group.minSelections}` : 'Optionnel')}
+                    ${group.isSingleChoice ? (group.isMandatory ? t('order.modifier_choice_required') : t('order.modifier_choice_max')) : (group.minSelections > 0 ? t('order.modifier_min_selections', { min: group.minSelections }) : t('order.modifier_optional'))}
                 </span>
             `;
             groupCard.appendChild(header);
@@ -813,7 +813,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 optBtn.innerHTML = `
                     <span style="font-weight:600; font-size:0.85rem; line-height:1.2;">${opt.name}</span>
-                    ${Number(opt.extraPrice) > 0 ? `<span style="font-size:0.75rem; color:#10b981; font-weight:700; margin-top:4px;">+${Number(opt.extraPrice).toFixed(2)} €</span>` : '<span style="font-size:0.7rem; color:#64748b; margin-top:4px;">Inclus</span>'}
+                    ${Number(opt.extraPrice) > 0 ? `<span style="font-size:0.75rem; color:#10b981; font-weight:700; margin-top:4px;">+${Number(opt.extraPrice).toFixed(2)} €</span>` : `<span style="font-size:0.7rem; color:#64748b; margin-top:4px;">${t('order.modifier_included')}</span>`}
                 `;
 
                 optBtn.addEventListener('click', () => {
@@ -834,7 +834,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         } else {
                             const currentCount = currentSelectedModifiers.filter(m => m.groupId === group.id).length;
                             if (group.maxSelections > 0 && currentCount >= group.maxSelections) {
-                                showToast(`Maximum ${group.maxSelections} option(s) pour ${group.groupName}`, 'warning');
+                                showToast(t('order.modifier_max_warning', { max: group.maxSelections, group: group.groupName }), 'warning');
                                 return;
                             }
                             currentSelectedModifiers.push({
@@ -937,7 +937,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         }
         renderCart();
-        showToast(`+1 ${product.name} [${course}]`, 'success');
+        showToast(t('order.item_added_toast', { name: product.name, course: course }), 'success');
     }
 
     // ==================== AUTO-SAVE & TABLE RECALL ====================
@@ -1009,7 +1009,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 keepalive: !!options.keepalive
             });
             if (!res.ok) {
-                if (!options.keepalive) showToast(`Erreur ${res.status} lors de l'enregistrement du ticket`, 'error');
+                if (!options.keepalive) showToast(t('order.save_ticket_error', { status: res.status }), 'error');
                 return false;
             }
             if (options.keepalive) return true;
@@ -1032,7 +1032,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             return true;
         } catch (err) {
             console.error('Erreur enregistrement du ticket:', err);
-            if (!options.keepalive) showToast('Erreur réseau : ticket non enregistré', 'error');
+            if (!options.keepalive) showToast(t('order.save_ticket_network_error'), 'error');
             return false;
         }
     }
@@ -1054,7 +1054,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         state.activeTable = tableNumber;
-        elements.activeTableBadge.textContent = `Table ${tableNumber}`;
+        elements.activeTableBadge.textContent = t('order.table_label', { number: tableNumber });
 
         try {
             await ensureAuthToken();
@@ -1063,7 +1063,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (res.ok) {
                 const orderData = await res.json();
                 state.activeCovers = orderData.coversCount || 2;
-                elements.activeCoversBadge.textContent = `👥 ${state.activeCovers} Couverts`;
+                elements.activeCoversBadge.textContent = t('order.covers_badge', { count: state.activeCovers });
                 hydrateCartFromOrder(orderData, true);
                 renderCart();
             } else if (res.status === 404) {
@@ -1072,17 +1072,17 @@ document.addEventListener('DOMContentLoaded', async () => {
                 state.globalDiscount = null;
                 state.amountPaid = 0;
                 state.cart = state.cart.filter(i => !i.lineId);
-                elements.activeCoversBadge.textContent = `👥 2 Couverts (Libre)`;
+                elements.activeCoversBadge.textContent = t('order.covers_badge_free', { count: 2 });
                 renderCart();
             } else if (res.status === 401) {
                 // Non authentifié : on ne vide pas le panier, le terminal redemande le PIN.
                 console.warn(`Rappel table ${tableNumber} refusé (401 Non Authentifié). Authentification requise.`);
             } else {
-                showToast(`Erreur ${res.status} lors du rappel de la table ${tableNumber}`, 'error');
+                showToast(t('order.table_recall_error', { status: res.status, table: tableNumber }), 'error');
             }
         } catch (err) {
             console.error('Erreur rappel table:', err);
-            showToast(`Erreur chargement table ${tableNumber}`, 'error');
+            showToast(t('order.table_load_error', { table: tableNumber }), 'error');
         }
     }
 
@@ -1157,8 +1157,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             elements.cartItemsList.innerHTML = `
                 <div style="text-align:center;color:#64748b;padding:40px 10px;">
                     <div style="font-size:2.5rem;margin-bottom:8px;">🍽️</div>
-                    <strong>Table ${state.activeTable} vide</strong>
-                    <div style="font-size:0.8rem;margin-top:4px;">Touchez un article ou une touche rapide pour démarrer la commande</div>
+                    <strong>${t('order.cart_empty_title', { table: state.activeTable })}</strong>
+                    <div style="font-size:0.8rem;margin-top:4px;">${t('order.cart_empty_hint')}</div>
                 </div>
             `;
         }
@@ -1191,16 +1191,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <div class="cart-item-info">
                     <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
                         <span class="cart-item-title">${item.product.name}</span>
-                        ${item.isHappyHourApplied ? '<span class="cart-item-badge-hh" title="Tarif Happy Hour appliqué">🍻 [HH]</span>' : ''}
-                        <span class="course-badge ${courseClass}" data-idx="${index}" title="Cliquer pour changer de service (Direct / Suite / Dessert)">${item.course || 'Direct'}</span>
-                        ${item.isComp ? '<span class="comp-badge">🎁 Offert</span>' : ''}
+                        ${item.isHappyHourApplied ? `<span class="cart-item-badge-hh" title="${t('order.hh_badge_title')}">🍻 [HH]</span>` : ''}
+                        <span class="course-badge ${courseClass}" data-idx="${index}" title="${t('order.course_badge_title')}">${item.course || 'Direct'}</span>
+                        ${item.isComp ? `<span class="comp-badge">${t('order.comp_badge')}</span>` : ''}
                         ${item.isDispatched
-                            ? '<span class="badge-dispatched" title="Déjà transmis en préparation">👨‍🍳 Cuisine</span>'
+                            ? `<span class="badge-dispatched" title="${t('order.dispatched_badge_title')}">${t('order.dispatched_badge')}</span>`
                             : item.lineId
-                                ? '<span class="badge-pending" title="Enregistré, pas encore envoyé en cuisine">💾 Enregistré</span>'
-                                : '<span class="badge-pending" title="Nouvel article à envoyer">➕ Nouveau</span>'}
+                                ? `<span class="badge-pending" title="${t('order.pending_saved_title')}">${t('order.pending_saved_badge')}</span>`
+                                : `<span class="badge-pending" title="${t('order.pending_new_title')}">${t('order.pending_new_badge')}</span>`}
                     </div>
-                    <span class="cart-item-meta">${unitPrice.toFixed(2)} € × ${item.quantity} ${item.originalUnitPrice ? `<span style="text-decoration:line-through; color:#94a3b8; margin-left:4px;">(${Number(item.originalUnitPrice).toFixed(2)} €)</span>` : ''} ${item.modifiersPriceExtra ? `<span style="color:#10b981; font-weight:600;">(+${Number(item.modifiersPriceExtra).toFixed(2)}€ options)</span>` : ''} (TVA ${effectiveVatPercent}%)</span>
+                    <span class="cart-item-meta">${unitPrice.toFixed(2)} € × ${item.quantity} ${item.originalUnitPrice ? `<span style="text-decoration:line-through; color:#94a3b8; margin-left:4px;">(${Number(item.originalUnitPrice).toFixed(2)} €)</span>` : ''} ${item.modifiersPriceExtra ? `<span style="color:#10b981; font-weight:600;">${t('order.modifiers_extra_note', { amount: Number(item.modifiersPriceExtra).toFixed(2) })}</span>` : ''} ${t('order.cart_item_vat_suffix', { vat: effectiveVatPercent })}</span>
                     ${item.modifiers && item.modifiers.length > 0 ? `<div style="font-size:0.75rem;color:#f59e0b;margin-top:2px;">↳ ${item.modifiers.join(', ')}</div>` : ''}
                     ${item.kitchenComment ? `<div style="font-size:0.72rem;color:#94a3b8;font-style:italic;margin-top:1px;">💬 ${item.kitchenComment}</div>` : ''}
                 </div>
@@ -1228,8 +1228,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         elements.summaryVat.textContent = `${totalVat.toFixed(2)} €`;
         if (document.getElementById('summaryVatLabel')) {
             document.getElementById('summaryVatLabel').textContent = isTakeawayMode()
-                ? 'TVA (5.5% / 10% / 20%) :'
-                : 'TVA (10% / 20%) :';
+                ? t('order.vat_label')
+                : t('order.vat_label_eatin');
         }
         elements.summaryTtc.textContent = `${totalTtc.toFixed(2)} €`;
 
@@ -1256,7 +1256,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     }
                 } else if (action === 'minus') {
                     if (item.lineId) {
-                        showToast('Article déjà enregistré : utilisez « Remise → Offrir » pour l\'annuler.', 'warning');
+                        showToast(t('order.item_locked_warning'), 'warning');
                         return;
                     }
                     item.quantity -= 1;
@@ -1275,7 +1275,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (state.cart[idx] && !state.cart[idx].lineId) {
                     state.cart[idx].course = cycleCourse(state.cart[idx].course || 'Direct');
                     renderCart();
-                    showToast(`Service passé à : ${state.cart[idx].course}`, 'info');
+                    showToast(t('order.course_changed_toast', { course: state.cart[idx].course }), 'info');
                 }
             });
         });
@@ -1289,18 +1289,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         const saved = state.cart.filter(i => i.lineId);
 
         if (drafts.length === 0) {
-            showToast('Les articles déjà enregistrés ne peuvent pas être vidés (utilisez « Offrir »).', 'error');
+            showToast(t('order.clear_locked_error'), 'error');
             return;
         }
         state.cart = saved;
         renderCart();
-        showToast(saved.length > 0 ? `${drafts.length} article(s) retiré(s). Articles enregistrés conservés.` : 'Panier vidé', 'info');
+        showToast(saved.length > 0 ? t('order.items_removed_toast', { count: drafts.length }) : t('order.cart_cleared_toast'), 'info');
     });
 
     // 1. Send to Kitchen
     elements.btnSendKitchen.addEventListener('click', async () => {
         if (state.cart.length === 0) {
-            showToast('Panier vide !', 'error');
+            showToast(t('order.cart_empty_error'), 'error');
             return;
         }
 
@@ -1309,10 +1309,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const dispatchRes = await fetch(`/api/tables/${encodeURIComponent(state.activeTable)}/dispatch`, { method: 'POST' });
             if (!dispatchRes.ok) {
-                showToast(`Erreur ${dispatchRes.status} lors de l'envoi en cuisine`, 'error');
+                showToast(t('order.kitchen_send_status_error', { status: dispatchRes.status }), 'error');
                 return;
             }
-            showToast(`Commande ${state.activeTable} envoyée en cuisine ! 👨‍🍳`, 'success');
+            showToast(t('order.kitchen_sent_toast', { table: state.activeTable }), 'success');
 
             if (state.activeTable === 'Comptoir') {
                 await loadActiveTableOrder('Comptoir');
@@ -1327,7 +1327,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             await loadKdsData();
         } catch (err) {
             console.error('Erreur envoi cuisine:', err);
-            showToast('Erreur envoi cuisine', 'error');
+            showToast(t('order.kitchen_send_error'), 'error');
         }
     });
 
@@ -1338,13 +1338,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             try {
                 const res = await fetch(`/api/tables/${state.activeTable}/fire-suite`, { method: 'POST' });
                 if (res.ok) {
-                    showToast(`🔔 RÉCLAME SUITE envoyée en cuisine pour la table ${state.activeTable} !`, 'success');
+                    showToast(t('order.fire_suite_toast', { table: state.activeTable }), 'success');
                     await loadKdsData();
                 } else {
-                    showToast('Échec de la réclame suite', 'error');
+                    showToast(t('order.fire_suite_failed'), 'error');
                 }
             } catch (err) {
-                showToast('Erreur réclame suite', 'error');
+                showToast(t('order.fire_suite_error'), 'error');
             }
         });
     }
@@ -1373,7 +1373,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     if (group.isMandatory) {
                         const count = currentSelectedModifiers.filter(m => m.groupId === group.id).length;
                         if (count < (group.minSelections || 1)) {
-                            showToast(`Veuillez sélectionner au moins ${group.minSelections || 1} option pour "${group.groupName}"`, 'warning');
+                            showToast(t('order.modifier_min_warning', { min: group.minSelections || 1, group: group.groupName }), 'warning');
                             return;
                         }
                     }
@@ -1403,7 +1403,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (t.tableNumber !== state.activeTable) {
                     const opt = document.createElement('option');
                     opt.value = t.tableNumber;
-                    opt.textContent = `Table ${t.tableNumber} (${t.status === 0 || t.status === 'Free' ? 'Libre' : 'Occupée - Fusion'})`;
+                    opt.textContent = window.t('floor.table_option_label', { number: t.tableNumber, status: t.status === 0 || t.status === 'Free' ? window.t('floor.legend_free') : window.t('floor.table_option_status_merge') });
                     elements.selectTargetTable.appendChild(opt);
                 }
             });
@@ -1436,15 +1436,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                 });
                 const data = await res.json();
                 if (res.ok && data.success) {
-                    showToast(data.message || `Table transférée vers ${targetTable}`, 'success');
+                    showToast(data.message || t('floor.table_transferred', { to: targetTable }), 'success');
                     elements.transferTableModal.classList.remove('active');
                     await loadFloorPlanData();
                     await loadActiveTableOrder(targetTable);
                 } else {
-                    showToast(data.message || 'Erreur transfert/fusion', 'error');
+                    showToast(data.message || t('floor.transfer_merge_error'), 'error');
                 }
             } catch (err) {
-                showToast('Erreur réseau transfert table', 'error');
+                showToast(t('floor.transfer_network_error'), 'error');
             }
         });
 
@@ -1453,12 +1453,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (state.cart.length > 0) {
                 await saveActiveCartToServer();
             }
-            elements.selectDiscountTarget.innerHTML = '<option value="global">Remise Globale sur la Note</option>';
+            elements.selectDiscountTarget.innerHTML = `<option value="global">${t('order.discount_target_global')}</option>`;
             state.cart.filter(item => item.lineId && !item.isComp).forEach(item => {
                 const opt = document.createElement('option');
                 opt.value = item.lineId;
                 const lineTotal = (Number(item.product.price) + Number(item.modifiersPriceExtra || 0)) * item.quantity;
-                opt.textContent = `Offrir : ${item.quantity}x ${item.product.name} (${lineTotal.toFixed(2)} €)`;
+                opt.textContent = t('order.discount_target_comp', { qty: item.quantity, name: item.product.name, total: lineTotal.toFixed(2) });
                 elements.selectDiscountTarget.appendChild(opt);
             });
             elements.discountModal.classList.add('active');
@@ -1494,7 +1494,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (state.activeOrderId) {
                 await fetch(`/api/orders/${state.activeOrderId}/discount`, { method: 'DELETE' });
                 state.globalDiscount = null;
-                showToast('Remise supprimée', 'info');
+                showToast(t('order.discount_removed_toast'), 'info');
                 elements.discountModal.classList.remove('active');
                 await loadActiveTableOrder(state.activeTable);
             }
@@ -1506,14 +1506,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 await saveActiveCartToServer();
             }
             if (!state.activeOrderId) {
-                showToast('Aucune commande active enregistrée sur cette table', 'error');
+                showToast(t('order.no_active_order_error'), 'error');
                 return;
             }
 
             const target = elements.selectDiscountTarget.value;
             let reason = elements.selectDiscountReason.value;
             if (reason === 'Autre motif') {
-                reason = elements.inputDiscountCustomReason.value.trim() || 'Remise accordée';
+                reason = elements.inputDiscountCustomReason.value.trim() || t('order.discount_default_reason');
             }
 
             try {
@@ -1528,7 +1528,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         body: JSON.stringify({ type: type, value: val, reason: reason })
                     });
                     if (res.ok) {
-                        showToast(`Remise appliquée (${val}${type === 0 ? '%' : '€'}) !`, 'success');
+                        showToast(t('order.discount_applied_toast', { val: val, unit: type === 0 ? '%' : '€' }), 'success');
                     }
                 } else {
                     // Comp item
@@ -1539,20 +1539,20 @@ document.addEventListener('DOMContentLoaded', async () => {
                         body: JSON.stringify({ reason: reason })
                     });
                     if (res.ok) {
-                        showToast('Article marqué offert ! 🎁', 'success');
+                        showToast(t('order.item_comped_toast'), 'success');
                     }
                 }
                 elements.discountModal.classList.remove('active');
                 await loadActiveTableOrder(state.activeTable);
             } catch (err) {
-                showToast('Erreur application remise', 'error');
+                showToast(t('order.discount_apply_error'), 'error');
             }
         });
 
         // Payment Modal & Tips (US4)
         elements.btnPayModal.addEventListener('click', async () => {
             if (getAmountDue() <= 0) {
-                showToast('Le montant est nul.', 'error');
+                showToast(t('order.amount_zero_error'), 'error');
                 return;
             }
             if (!(await saveActiveCartToServer())) return;
@@ -1656,30 +1656,30 @@ document.addEventListener('DOMContentLoaded', async () => {
                         amount: baseAmount,
                         tipAmount: tipAmount,
                         signatureDataUrl: sigData,
-                        notes: `Facturation chambre ${roomNum}`
+                        notes: t('payment.room_charge_note', { room: roomNum })
                     })
                 });
 
                 const data = await res.json();
                 if (res.ok && data.success) {
-                    showToast(data.message || 'Facturation chambre validée ! 🏨', 'success');
+                    showToast(data.message || t('payment.room_charge_success_toast'), 'success');
                     elements.roomChargeModal.classList.remove('active');
                     state.cart = [];
                     state.activeOrderId = null;
                     renderCart();
                     await loadFloorPlanData();
                 } else {
-                    showToast(data.message || 'Échec de facturation chambre', 'error');
+                    showToast(data.message || t('payment.room_charge_failed_toast'), 'error');
                 }
             } catch (err) {
-                showToast('Erreur réseau facturation chambre', 'error');
+                showToast(t('payment.room_charge_network_error'), 'error');
             }
         });
 
         // Split Bill Modal
         elements.btnSplitBill.addEventListener('click', async () => {
             if (getAmountDue() <= 0) {
-                showToast('Panier vide pour le split', 'error');
+                showToast(t('payment.split_bill_empty_error'), 'error');
                 return;
             }
             if (!(await saveActiveCartToServer())) return;
@@ -1746,7 +1746,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             state.hotelRooms.forEach(room => {
                 const opt = document.createElement('option');
                 opt.value = room.roomNumber;
-                opt.textContent = `Chambre ${room.roomNumber} - ${room.guestName}`;
+                opt.textContent = t('payment.hotel_room_option', { room: room.roomNumber, guest: room.guestName });
                 elements.selectHotelRoom.appendChild(opt);
             });
             if (state.hotelRooms.length > 0) {
@@ -1777,7 +1777,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const finalTotal = total + tip;
 
         elements.payRemainingAmount.textContent = `${total.toFixed(2)} €`;
-        elements.payTotalWithTip.textContent = `${finalTotal.toFixed(2)} € (+${tip.toFixed(2)} € tip)`;
+        elements.payTotalWithTip.textContent = t('payment.total_with_tip_value', { total: finalTotal.toFixed(2), tip: tip.toFixed(2) });
     }
 
     function setupSignatureCanvas() {
@@ -1870,13 +1870,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         state.splitActivePart = plan.parts[plan.index] / 100;
         state.selectedTipPercent = 0;
         state.customTipAmount = 0;
-        elements.payRemainingAmount.textContent = `${state.splitActivePart.toFixed(2)} € (Part ${plan.index + 1}/${plan.parts.length})`;
+        elements.payRemainingAmount.textContent = t('payment.split_part_amount', { amount: state.splitActivePart.toFixed(2), index: plan.index + 1, total: plan.parts.length });
         elements.payTotalWithTip.textContent = `${state.splitActivePart.toFixed(2)} €`;
         elements.paymentModal.classList.add('active');
     }
 
     function updateSplitPartitions() {
-        elements.splitGuestsCount.textContent = `${state.splitGuests} Convives`;
+        elements.splitGuestsCount.textContent = t('payment.split_guests_count', { count: state.splitGuests });
         elements.splitPartitionsList.innerHTML = '';
         const totalCents = Math.round(getAmountDue() * 100);
         const base = Math.floor(totalCents / state.splitGuests);
@@ -1887,7 +1887,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (remainder > 0) remainder--;
             const row = document.createElement('div');
             row.className = 'partition-row';
-            row.innerHTML = `<span>Convive #${i} :</span> <strong>${(cents / 100).toFixed(2)} €</strong>`;
+            row.innerHTML = `<span>${t('payment.split_guest_label', { n: i })}</span> <strong>${(cents / 100).toFixed(2)} €</strong>`;
             elements.splitPartitionsList.appendChild(row);
         }
     }
@@ -1902,7 +1902,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const isSplit = (typeof state.splitActivePart === 'number' && state.splitActivePart > 0);
         const total = Math.round((isSplit ? state.splitActivePart : getFinalPayTotal()) * 100) / 100;
         if (tenderMethod === 0 && tendered + 0.001 < total) {
-            showToast(`Montant remis insuffisant (${tendered.toFixed(2)} € pour ${total.toFixed(2)} €)`, 'warning');
+            showToast(t('payment.insufficient_tendered', { tendered: tendered.toFixed(2), total: total.toFixed(2) }), 'warning');
             return;
         }
         // Hors espèces, le montant remis est exactement le montant encaissé (pas de rendu).
@@ -1938,12 +1938,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (res.ok) {
                 const resData = await res.json();
-                showToast(`Paiement validé ! Reçu #${resData.receiptNumber || 'NF'} - Rendu: ${change.toFixed(2)} €`, 'success');
+                showToast(t('payment.paid_toast', { receipt: resData.receiptNumber || 'NF', change: change.toFixed(2) }), 'success');
                 elements.paymentModal.classList.remove('active');
 
                 if (resData.remainingBalance > 0.001) {
                     state.amountPaid = (state.amountPaid || 0) + Number(resData.totalPaid ?? total);
-                    showToast(`Reste à payer : ${resData.remainingBalance.toFixed(2)} €`, 'info');
+                    showToast(t('payment.remaining_balance_toast', { balance: resData.remainingBalance.toFixed(2) }), 'info');
                     const plan = state.splitPlan;
                     if (plan && plan.index + 1 < plan.parts.length) {
                         // Part suivante du partage.
@@ -1967,7 +1967,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     switchView('floorPlanView');
                 }
             } else {
-                let errMsg = 'Erreur validation paiement';
+                let errMsg = t('payment.pay_error_generic');
                 try {
                     const errData = await res.json();
                     if (errData && errData.message) errMsg = errData.message;
@@ -1976,7 +1976,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         } catch (err) {
             console.error('Erreur paiement:', err);
-            showToast('Erreur paiement', 'error');
+            showToast(t('payment.pay_error_catch'), 'error');
         }
     }
 
@@ -2069,7 +2069,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         renderCart();
-        showToast(`Mode passé en ${newDest === 'Takeaway' ? 'À Emporter (TVA 5.5%/10%)' : 'Sur Place (TVA 10%)'}`, 'info');
+        showToast(t('order.destination_switched_toast', { mode: newDest === 'Takeaway' ? t('order.destination_takeaway_label') : t('order.destination_eatin_label') }), 'info');
     }
 
     async function updateHeldQueueCount() {
@@ -2090,17 +2090,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function holdCurrentCart() {
         if (state.cart.length === 0) {
-            showToast('Impossible de mettre en attente un panier vide', 'warning');
+            showToast(t('order.hold_cart_empty_warning'), 'warning');
             return;
         }
 
         // Nom proposé : premier « Client #N » pas encore utilisé (même règle que l'app iPad).
         const usedLabels = new Set(state.heldOrders.map(h => h.customerLabel));
         let number = 1;
-        while (usedLabels.has(`Client #${number}`)) number++;
-        const suggested = `Client #${number}`;
+        while (usedLabels.has(t('order.hold_customer_label', { n: number }))) number++;
+        const suggested = t('order.hold_customer_label', { n: number });
 
-        const input = prompt('Nom ou repère pour cette commande en attente :', suggested);
+        const input = prompt(t('order.hold_prompt'), suggested);
         if (input === null) return; // Annuler : le panier reste en cours
         const label = input.trim() || suggested;
 
@@ -2119,17 +2119,17 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
 
             if (res.ok) {
-                showToast(`Commande "${label}" mise en attente ! ⏸️`, 'success');
+                showToast(t('order.hold_success_toast', { label: label }), 'success');
                 state.cart = [];
                 state.activeOrderId = null;
                 await updateHeldQueueCount();
                 await openDirectCounterOrder(state.destination);
             } else {
                 const errData = await res.json().catch(() => ({}));
-                showToast(errData.message || 'Erreur mise en attente', 'error');
+                showToast(errData.message || t('order.hold_error_generic'), 'error');
             }
         } catch (err) {
-            showToast('Erreur réseau mise en attente', 'error');
+            showToast(t('order.hold_network_error'), 'error');
         }
     }
 
@@ -2142,8 +2142,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             elements.heldOrdersList.innerHTML = `
                 <div style="text-align:center; padding:30px; color:var(--text-muted);">
                     <div style="font-size:2.5rem; margin-bottom:8px;">⏸️</div>
-                    <strong>Aucune commande en attente</strong>
-                    <div style="font-size:0.85rem; margin-top:4px;">Utilisez le bouton "Attente" pour parquer un panier actif.</div>
+                    <strong>${t('order.held_list_empty_title')}</strong>
+                    <div style="font-size:0.85rem; margin-top:4px;">${t('order.held_list_empty_hint')}</div>
                 </div>
             `;
             elements.heldOrdersModal.classList.add('active');
@@ -2153,7 +2153,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         state.heldOrders.forEach(h => {
             const card = document.createElement('div');
             card.className = 'held-order-card';
-            const heldTime = new Date(h.heldAtUtc).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const heldTime = new Date(h.heldAtUtc).toLocaleTimeString(window.i18n.locale, { hour: '2-digit', minute: '2-digit' });
             const holdId = h.id || h.holdId;
             let totalAmount = 0;
             if (typeof h.totalTtc === 'object' && h.totalTtc !== null) {
@@ -2163,17 +2163,17 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
             card.innerHTML = `
                 <div>
-                    <div style="font-weight:700; font-size:1rem; color:#f8fafc;">${h.customerLabel || 'Client'}</div>
+                    <div style="font-weight:700; font-size:1rem; color:#f8fafc;">${h.customerLabel || t('order.held_card_default_name')}</div>
                     <div style="font-size:0.8rem; color:var(--text-muted); margin-top:2px;">
-                        ${h.itemCount} article(s) • <span style="color:#10b981; font-weight:700;">${totalAmount.toFixed(2)} €</span> • Parké à ${heldTime}
+                        ${t('order.held_card_meta', { count: h.itemCount, amount: totalAmount.toFixed(2), time: heldTime })}
                     </div>
                 </div>
                 <div class="held-card-actions">
                     <button type="button" class="btn-action btn-pay btn-recall-held" data-id="${holdId}" style="padding:8px 14px; font-size:0.85rem;">
-                        Rappeler ↺
+                        ${t('order.held_recall_btn')}
                     </button>
                     <button type="button" class="btn-secondary btn-void-held" data-id="${holdId}" style="padding:8px 12px; font-size:0.85rem; color:#ef4444; border-color:rgba(239,68,68,0.3);">
-                        Annuler ✕
+                        ${t('order.held_void_btn')}
                     </button>
                 </div>
             `;
@@ -2216,12 +2216,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 elements.heldOrdersModal.classList.remove('active');
                 renderCart();
                 await updateHeldQueueCount();
-                showToast('Commande rappelée avec succès ! ↺', 'success');
+                showToast(t('order.recall_success_toast'), 'success');
             } else {
-                showToast('Impossible de rappeler la commande', 'error');
+                showToast(t('order.recall_failed_toast'), 'error');
             }
         } catch (err) {
-            showToast('Erreur rappel commande', 'error');
+            showToast(t('order.recall_error_toast'), 'error');
         }
     }
 
@@ -2229,7 +2229,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!state.pendingVoidHoldId) return;
         const pin = state.supervisorPinInput;
         if (!pin) {
-            showToast('PIN superviseur requis', 'warning');
+            showToast(t('order.supervisor_pin_required'), 'warning');
             return;
         }
 
@@ -2240,31 +2240,31 @@ document.addEventListener('DOMContentLoaded', async () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     supervisorPin: pin,
-                    voidReason: 'Annulation au comptoir',
+                    voidReason: t('payment.void_reason_counter'),
                     terminalId: state.terminalId || 'POS_A'
                 })
             });
 
             if (res.ok) {
-                showToast('Commande en attente annulée (Audit JET journalisé) 🗑️', 'success');
+                showToast(t('order.void_success_toast'), 'success');
                 elements.supervisorPinModal.classList.remove('active');
                 state.pendingVoidHoldId = null;
                 state.supervisorPinInput = '';
                 await updateHeldQueueCount();
             } else {
                 const data = await res.json().catch(() => ({}));
-                showToast(data.message || 'Code PIN superviseur invalide ou non autorisé', 'error');
+                showToast(data.message || t('order.pin_invalid_toast'), 'error');
                 state.supervisorPinInput = '';
                 elements.supervisorPinInput.value = '';
             }
         } catch (err) {
-            showToast('Erreur annulation commande', 'error');
+            showToast(t('order.void_error_toast'), 'error');
         }
     }
 
     async function executeCounterCheckout(tenderMethod, tenderedAmount, facialValue = null, requestFiscalPrint = false) {
         if (state.cart.length === 0) {
-            showToast('Panier vide', 'warning');
+            showToast(t('payment.cart_empty_warning'), 'warning');
             return;
         }
 
@@ -2307,7 +2307,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 // Fill Change Overlay
                 elements.changeOverlayAmount.textContent = `${Number(data.changeGiven || 0).toFixed(2)} €`;
-                elements.changeOverlayDetails.textContent = `Reçu : ${tenderedAmount.toFixed(2)} € — Total : ${Number(data.totalPaid || 0).toFixed(2)} €`;
+                elements.changeOverlayDetails.textContent = t('payment.change_details', { tendered: tenderedAmount.toFixed(2), total: Number(data.totalPaid || 0).toFixed(2) });
                 elements.changeOverlayPickupNumber.textContent = data.pickupNumber || '#A-01';
 
                 if (buzzer) {
@@ -2320,7 +2320,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (data.issuedCreditVoucher) {
                     elements.changeOverlayCreditVoucherBox.style.display = 'block';
                     elements.changeOverlayCreditVoucherCode.textContent = data.issuedCreditVoucher.voucherCode;
-                    elements.changeOverlayCreditVoucherAmount.textContent = `Montant : ${Number(data.issuedCreditVoucher.amount).toFixed(2)} € (Valable 90 jours)`;
+                    elements.changeOverlayCreditVoucherAmount.textContent = t('payment.credit_voucher_amount', { amount: Number(data.issuedCreditVoucher.amount).toFixed(2) });
                 } else {
                     elements.changeOverlayCreditVoucherBox.style.display = 'none';
                 }
@@ -2334,13 +2334,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 state.activeOrderId = null;
                 renderCart();
 
-                showToast(`Vente validée ! Retrait ${data.pickupNumber} — Monnaie: ${Number(data.changeGiven || 0).toFixed(2)} €`, 'success');
+                showToast(t('payment.sale_confirmed_toast', { pickup: data.pickupNumber, change: Number(data.changeGiven || 0).toFixed(2) }), 'success');
             } else {
-                showToast(data.message || 'Erreur lors du règlement comptoir', 'error');
+                showToast(data.message || t('payment.checkout_error_generic'), 'error');
             }
         } catch (err) {
             console.error('Erreur executeCounterCheckout:', err);
-            showToast('Erreur réseau règlement comptoir', 'error');
+            showToast(t('payment.checkout_network_error'), 'error');
         }
     }
 
@@ -2407,12 +2407,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const cashVal = btn.getAttribute('data-cash');
                     const finalTotal = getFinalPayTotal();
                     if (finalTotal <= 0) {
-                        showToast('Panier vide', 'warning');
+                        showToast(t('payment.cart_empty_warning'), 'warning');
                         return;
                     }
                     const amount = cashVal === 'exact' ? finalTotal : parseFloat(cashVal);
                     if (amount < finalTotal && cashVal !== 'exact') {
-                        showToast(`Montant insuffisant (${amount.toFixed(2)} € pour ${finalTotal.toFixed(2)} €)`, 'warning');
+                        showToast(t('payment.insufficient_amount_toast', { amount: amount.toFixed(2), total: finalTotal.toFixed(2) }), 'warning');
                         return;
                     }
                     await executeCounterCheckout(0, amount);
@@ -2441,21 +2441,21 @@ document.addEventListener('DOMContentLoaded', async () => {
             const total = Number(table.activeOrderTotalTtc || 0);
             const totalHtml = total > 0
                 ? `<div class="table-total">💶 ${total.toFixed(2)} €</div>`
-                : (table.status !== 0 ? `<div class="table-sub" style="font-weight:700;color:var(--text-muted);margin-top:4px;">Total : 0.00 €</div>` : '');
+                : (table.status !== 0 ? `<div class="table-sub" style="font-weight:700;color:var(--text-muted);margin-top:4px;">${t('floor.table_total_zero')}</div>` : '');
 
             card.innerHTML = `
                 <div class="table-num">${table.tableNumber}</div>
-                <div class="table-sub">Capacité : ${table.capacity} pers.</div>
-                <div class="table-sub">Statut : ${getTableStatusLabel(table.status)}</div>
-                <div class="table-sub">Serveur : ${table.assignedWaiterName || '—'}</div>
-                ${table.coversCount > 0 ? `<div style="font-size:0.75rem;color:#10b981;font-weight:700;margin-top:4px;">👥 ${table.coversCount} Couverts actifs</div>` : ''}
+                <div class="table-sub">${t('floor.table_capacity', { capacity: table.capacity })}</div>
+                <div class="table-sub">${t('floor.table_status_label', { status: getTableStatusLabel(table.status) })}</div>
+                <div class="table-sub">${t('floor.table_waiter', { name: table.assignedWaiterName || '—' })}</div>
+                ${table.coversCount > 0 ? `<div style="font-size:0.75rem;color:#10b981;font-weight:700;margin-top:4px;">${t('floor.table_covers_active', { count: table.coversCount })}</div>` : ''}
                 ${totalHtml}
             `;
 
             card.addEventListener('click', async () => {
                 await loadActiveTableOrder(table.tableNumber);
                 switchView('posView');
-                showToast(`Table ${table.tableNumber} rappelée !`, 'info');
+                showToast(t('floor.table_recalled_toast', { number: table.tableNumber }), 'info');
             });
             elements.floorTablesGrid.appendChild(card);
         });
@@ -2490,13 +2490,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <small>${ticket.stationId || 'HOT'}</small>
                 </div>
                 <div class="ticket-items">
-                    ${ticket.items ? ticket.items.map(i => `<div>• ${i.quantity}x ${i.productName}</div>`).join('') : '1x Plat du jour'}
+                    ${ticket.items ? ticket.items.map(i => `<div>• ${i.quantity}x ${i.productName}</div>`).join('') : t('kitchen.default_dish')}
                 </div>
             `;
 
             card.addEventListener('click', async () => {
                 await fetch(`/api/kds/tickets/${ticket.id}/bump`, { method: 'POST' });
-                showToast(`Ticket ${ticket.tableNumber} avancé !`, 'success');
+                showToast(t('kitchen.ticket_bumped_toast', { table: ticket.tableNumber }), 'success');
                 loadKdsData();
             });
 
