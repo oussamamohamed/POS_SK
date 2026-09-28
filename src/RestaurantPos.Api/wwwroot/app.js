@@ -63,6 +63,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
+    function setHeader(config, name, value) {
+        if (config.headers instanceof Headers) config.headers.set(name, value);
+        else if (Array.isArray(config.headers)) config.headers.push([name, value]);
+        else config.headers[name] = value;
+    }
+
     // Auto attach JWT bearer token to API requests & handle 401
     const originalFetch = window.fetch;
     window.fetch = async (...args) => {
@@ -85,21 +91,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             }
         }
-        // Le jeton du poste ne part que vers l'API de ce serveur, jamais vers un autre domaine.
+        // Le jeton du poste et la langue ne partent que vers l'API de ce serveur, jamais vers un autre domaine.
         const target = new URL(resource instanceof Request ? resource.url : String(resource), location.href);
-        if (state.device?.token && target.origin === location.origin && target.pathname.startsWith('/api/')) {
-            config = config || {};
-            config.headers = config.headers || {};
-            if (config.headers instanceof Headers) config.headers.set('X-Device-Token', state.device.token);
-            else if (Array.isArray(config.headers)) config.headers.push(['X-Device-Token', state.device.token]);
-            else config.headers['X-Device-Token'] = state.device.token;
-        }
         if (target.origin === location.origin && target.pathname.startsWith('/api/')) {
             config = config || {};
             config.headers = config.headers || {};
-            if (config.headers instanceof Headers) config.headers.set('Accept-Language', window.i18n.lang);
-            else if (Array.isArray(config.headers)) config.headers.push(['Accept-Language', window.i18n.lang]);
-            else config.headers['Accept-Language'] = window.i18n.lang;
+            if (state.device?.token) setHeader(config, 'X-Device-Token', state.device.token);
+            setHeader(config, 'Accept-Language', window.i18n.lang);
         }
         const res = await originalFetch(resource, config);
         if (res.status === 401) {
