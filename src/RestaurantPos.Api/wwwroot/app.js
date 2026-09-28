@@ -937,7 +937,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         }
         renderCart();
-        showToast(t('order.item_added_toast', { name: product.name, course: course }), 'success');
+        showToast(t('order.item_added_toast', { name: product.name, course: courseLabel(course) }), 'success');
     }
 
     // ==================== AUTO-SAVE & TABLE RECALL ====================
@@ -1147,6 +1147,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         return order[nextIdx];
     }
 
+    /** Libellé affiché pour un service : la valeur interne (envoyée au serveur) n'est pas traduite. */
+    function courseLabel(course) {
+        if (course === 'Suite') return t('order.course_suite');
+        if (course === 'Dessert') return t('order.course_dessert');
+        if (course === 'OnDemand') return t('order.course_ondemand');
+        return t('order.course_direct');
+    }
+
     function renderCart() {
         elements.cartItemsList.innerHTML = '';
         let totalHt = 0;
@@ -1192,7 +1200,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
                         <span class="cart-item-title">${item.product.name}</span>
                         ${item.isHappyHourApplied ? `<span class="cart-item-badge-hh" title="${t('order.hh_badge_title')}">🍻 [HH]</span>` : ''}
-                        <span class="course-badge ${courseClass}" data-idx="${index}" title="${t('order.course_badge_title')}">${item.course || 'Direct'}</span>
+                        <span class="course-badge ${courseClass}" data-idx="${index}" title="${t('order.course_badge_title')}">${courseLabel(item.course || 'Direct')}</span>
                         ${item.isComp ? `<span class="comp-badge">${t('order.comp_badge')}</span>` : ''}
                         ${item.isDispatched
                             ? `<span class="badge-dispatched" title="${t('order.dispatched_badge_title')}">${t('order.dispatched_badge')}</span>`
@@ -1275,7 +1283,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (state.cart[idx] && !state.cart[idx].lineId) {
                     state.cart[idx].course = cycleCourse(state.cart[idx].course || 'Direct');
                     renderCart();
-                    showToast(t('order.course_changed_toast', { course: state.cart[idx].course }), 'info');
+                    showToast(t('order.course_changed_toast', { course: courseLabel(state.cart[idx].course) }), 'info');
                 }
             });
         });
@@ -1513,7 +1521,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const target = elements.selectDiscountTarget.value;
             let reason = elements.selectDiscountReason.value;
             if (reason === 'Autre motif') {
-                reason = elements.inputDiscountCustomReason.value.trim() || t('order.discount_default_reason');
+                reason = elements.inputDiscountCustomReason.value.trim() || 'Remise accordée'; // nf525-texte-fixe : motif écrit dans le journal d'audit, jamais traduit
             }
 
             try {
@@ -1656,7 +1664,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         amount: baseAmount,
                         tipAmount: tipAmount,
                         signatureDataUrl: sigData,
-                        notes: t('payment.room_charge_note', { room: roomNum })
+                        notes: `Facturation chambre ${roomNum}` // nf525-texte-fixe : note stockée telle quelle côté serveur
                     })
                 });
 
@@ -2240,7 +2248,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     supervisorPin: pin,
-                    voidReason: t('payment.void_reason_counter'),
+                    voidReason: 'Annulation au comptoir', // nf525-texte-fixe : motif écrit dans le journal d'audit, jamais traduit
                     terminalId: state.terminalId || 'POS_A'
                 })
             });

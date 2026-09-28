@@ -97,7 +97,7 @@
                                 <button type="button" class="btn-dest active" id="btnDestTakeaway" data-dest="Takeaway" data-i18n="order.dest_takeaway" data-i18n-title="order.dest_takeaway_title" title="Passer en À Emporter (TVA 5.5%/10%)">🥡 À Emporter</button>
                                 <button type="button" class="btn-dest" id="btnDestEatIn" data-dest="EatIn" data-i18n="order.dest_eatin" data-i18n-title="order.dest_eatin_title" title="Passer en Sur Place (TVA 10%)">🍽️ Sur Place</button>
                             </div>
-                            <span class="covers-badge" id="activeCoversBadge" style="display:none;" data-i18n="order.covers_badge">👥 1 Couvert</span>
+                            <span class="covers-badge" id="activeCoversBadge" style="display:none;"></span>
                         </div>
                         <div style="display:flex; align-items:center; gap:6px;">
                             <button type="button" class="btn-held-badge" id="btnHeldQueue" data-i18n-title="order.held_queue_title" title="File d'attente : voir les commandes en pause">
@@ -176,7 +176,7 @@
                         <div class="grid-pagination-bar" id="gridPaginationBar" style="display:none;">
                             <button type="button" class="btn-grid-page-nav" id="btnPrevGridPage" data-i18n="order.grid_prev_label" data-i18n-title="order.grid_prev_title" title="Page précédente">◀ Précédent</button>
                             <div class="grid-page-indicator-container">
-                                <span class="grid-page-label" id="gridPageLabel" data-i18n="order.grid_page_label">Page 1 / 1</span>
+                                <span class="grid-page-label" id="gridPageLabel"></span>
                                 <div class="grid-page-dots" id="gridPageDots"></div>
                             </div>
                             <button type="button" class="btn-grid-page-nav" id="btnNextGridPage" data-i18n="order.grid_next_label" data-i18n-title="order.grid_next_title" title="Page suivante">Suivant ▶</button>
@@ -1082,7 +1082,7 @@
             <div style="font-size:3rem; margin-bottom:10px;">✅</div>
             <div style="font-size:1.1rem; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:1px;" data-i18n="payment.change_due">Monnaie à rendre</div>
             <div id="changeOverlayAmount" style="font-size:3.5rem; font-weight:900; color:#10b981; margin:10px 0; font-family:monospace;">0.00 €</div>
-            <div id="changeOverlayDetails" style="font-size:1rem; color:#cbd5e1; margin-bottom:16px;" data-i18n="payment.change_details">Reçu : 0.00 € — Total : 0.00 €</div>
+            <div id="changeOverlayDetails" style="font-size:1rem; color:#cbd5e1; margin-bottom:16px;"></div>
             <div id="changeOverlayPickupBox" style="background:rgba(56,189,248,0.15); border:1px solid #38bdf8; border-radius:8px; padding:12px; margin-bottom:20px;">
                 <div style="font-size:0.8rem; color:#38bdf8; font-weight:700; text-transform:uppercase;" data-i18n="payment.pickup_number">Numéro de retrait</div>
                 <div id="changeOverlayPickupNumber" style="font-size:2.2rem; font-weight:900; color:#ffffff;">--</div>
@@ -1091,7 +1091,7 @@
             <div id="changeOverlayCreditVoucherBox" style="display:none; background:rgba(245,158,11,0.15); border:1px solid #f59e0b; border-radius:8px; padding:12px; margin-bottom:20px;">
                 <div style="font-size:0.8rem; color:#f59e0b; font-weight:700;" data-i18n="payment.credit_voucher_generated">🎁 BON D'AVOIR GÉNÉRÉ</div>
                 <div id="changeOverlayCreditVoucherCode" style="font-size:1.4rem; font-weight:800; color:#ffffff; font-family:monospace;">CR-XXXXXX</div>
-                <div id="changeOverlayCreditVoucherAmount" style="font-size:0.9rem; color:#fde68a;" data-i18n="payment.credit_voucher_amount">Montant : 0.00 € (Valable 90 jours)</div>
+                <div id="changeOverlayCreditVoucherAmount" style="font-size:0.9rem; color:#fde68a;"></div>
             </div>
             <button type="button" class="btn-action btn-pay" id="btnChangeDone" style="width:100%; padding:16px; font-size:1.2rem; font-weight:800;" data-i18n="payment.new_sale">
                 OK — Nouvelle Vente
@@ -1323,7 +1323,7 @@
                 <p data-i18n="payment.split_bill_hint">Division équitable sans perte de centimes :</p>
                 <div class="stepper-box">
                     <button class="btn-stepper" id="btnSplitMinus">-</button>
-                    <span class="stepper-val" id="splitGuestsCount" data-i18n="payment.split_guests_count">2 Convives</span>
+                    <span class="stepper-val" id="splitGuestsCount"></span>
                     <button class="btn-stepper" id="btnSplitPlus">+</button>
                 </div>
                 <div class="split-partitions-list" id="splitPartitionsList"></div>

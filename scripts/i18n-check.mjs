@@ -10,9 +10,10 @@ const langsFlagIndex = args.indexOf('--langs');
 const langs = (args.find(a => a.startsWith('--langs='))?.split('=')[1] ?? (langsFlagIndex === -1 ? undefined : args[langsFlagIndex + 1]) ?? 'en,fr,ar').split(',');
 const js = read('app.js'), html = read('index.html');
 
-const used = new Set();
+const usedHtmlAttr = new Set();
+for (const m of html.matchAll(/data-i18n(?:-[a-z-]+)?="([a-z_]+\.[a-z0-9_.]+)"/g)) usedHtmlAttr.add(m[1]);
+const used = new Set(usedHtmlAttr);
 for (const m of js.matchAll(/\bt\(\s*['"`]([a-z_]+\.[a-z0-9_.]+)['"`]/g)) used.add(m[1]);
-for (const m of html.matchAll(/data-i18n(?:-[a-z-]+)?="([a-z_]+\.[a-z0-9_.]+)"/g)) used.add(m[1]);
 
 let errors = 0;
 const fail = msg => { errors++; console.error('✘ ' + msg); };
@@ -24,6 +25,10 @@ for (const lang of langs) {
     if (!used.has(k)) fail(`${lang}: clé orpheline ${k}`);
     if (typeof v !== 'string' || !v.trim()) fail(`${lang}: valeur vide ${k}`);
   }
+  // apply() lit data-i18n* sans passer de params : une clé rendue ainsi ne peut pas contenir de placeholder.
+  for (const k of usedHtmlAttr) {
+    if (typeof dict[k] === 'string' && dict[k].includes('{')) fail(`${lang}: clé ${k} utilisée par data-i18n* contient un placeholder non substitué`);
+  }
 }
 
 if (args.includes('--no-french')) {
@@ -32,6 +37,9 @@ if (args.includes('--no-french')) {
   const scan = (name, text, { skipI18nAttr = false } = {}) => text.split('\n').forEach((line, i) => {
     const code = line.replace(/\/\/.*$/, '').replace(/<!--.*?-->/g, '');
     if (/console\.(warn|error|log)/.test(code)) return;
+    // Texte figé envoyé au serveur et stocké tel quel dans le journal NF525 (append-only) : la
+    // traçabilité fiscale doit rester stable, indépendante de la langue de l'opérateur qui saisit.
+    if (line.includes('nf525-texte-fixe')) return;
     // index.html garde volontairement le texte français comme contenu initial des éléments
     // data-i18n* (lu avant l'exécution de apply()) : une ligne portant cet attribut est déjà
     // couverte par une clé, ce n'est pas du français non extrait.
