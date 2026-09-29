@@ -4,6 +4,12 @@
     "admin.activate": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تفعيل"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -21,6 +27,12 @@
     "admin.active_toggle": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "نشط"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -38,6 +50,12 @@
     "admin.address_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "العنوان"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -55,6 +73,12 @@
     "admin.all_families_toggle": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "كل الفئات"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -72,6 +96,12 @@
     "admin.appearance_dark": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الخدمة (داكن)"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -89,6 +119,12 @@
     "admin.appearance_light": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "النهار (فاتح)"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -106,6 +142,12 @@
     "admin.appearance_section": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "المظهر"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -123,6 +165,12 @@
     "admin.appearance_system": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "إعداد iPad"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -140,6 +188,12 @@
     "admin.apply_button": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تطبيق"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -157,6 +211,12 @@
     "admin.cash_drawer_badge": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الدرج"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -174,6 +234,12 @@
     "admin.category_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الفئة"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -191,6 +257,12 @@
     "admin.category_name_placeholder": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "اسم الفئة"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -208,6 +280,12 @@
     "admin.change_server_button": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تغيير الخادم…"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -225,6 +303,12 @@
     "admin.color_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "اللون"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -242,6 +326,12 @@
     "admin.columns_stepper %lld": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الأعمدة %lld"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -259,6 +349,12 @@
     "admin.connected_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "متصل"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -276,6 +372,12 @@
     "admin.custom_label_placeholder": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تسمية مخصصة (اختياري)"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -293,6 +395,12 @@
     "admin.deactivate": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تعطيل"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -310,6 +418,12 @@
     "admin.deactivated_badge": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "معطّلة"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -327,6 +441,12 @@
     "admin.demo_data_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "بيانات تجريبية"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -344,6 +464,12 @@
     "admin.description_placeholder": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الوصف"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -361,6 +487,12 @@
     "admin.disconnected_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "غير متصل"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -378,6 +510,12 @@
     "admin.edit_category": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تعديل الفئة"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -395,6 +533,12 @@
     "admin.edit_printer": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تعديل الطابعة"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -412,6 +556,12 @@
     "admin.edit_product": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تعديل الصنف"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -429,6 +579,12 @@
     "admin.edit_staff": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تعديل الموظف"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -446,6 +602,12 @@
     "admin.empty_slot_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "(خانة فارغة)"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -463,6 +625,12 @@
     "admin.filter_all": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الكل"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -480,6 +648,12 @@
     "admin.force_sync_button": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "فرض المزامنة"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -497,6 +671,12 @@
     "admin.full_name_placeholder": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الاسم الكامل"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -514,6 +694,12 @@
     "admin.grid_format %lld%lld%lld": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "التنسيق %lld×%lld · v%lld"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -531,6 +717,12 @@
     "admin.grid_products_section": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الأصناف — اسحب إلى خانة"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -548,6 +740,12 @@
     "admin.hh_applies_takeaway_toggle": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "يُطبَّق أيضًا على السفري"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -565,6 +763,12 @@
     "admin.hh_apply_families %lld": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تطبيق على %lld فئة"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -582,6 +786,12 @@
     "admin.hh_apply_products %lld": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تطبيق على %lld صنف"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -599,6 +809,12 @@
     "admin.hh_create_button": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "إنشاء"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -616,6 +832,12 @@
     "admin.hh_days_section": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الأيام"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -633,6 +855,12 @@
     "admin.hh_delete_rules %lld": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "حذف %lld قاعدة"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -650,6 +878,12 @@
     "admin.hh_dine_in_only": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "في المطعم فقط"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -667,6 +901,12 @@
     "admin.hh_discount_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الخصم"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -684,6 +924,12 @@
     "admin.hh_discount_percent_option": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "خصم (%)"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -701,6 +947,12 @@
     "admin.hh_end_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "النهاية"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -718,6 +970,12 @@
     "admin.hh_family_item_count %lld": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld صنف"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -735,6 +993,12 @@
     "admin.hh_fixed_price_option": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "سعر ثابت (€)"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -752,6 +1016,12 @@
     "admin.hh_hours_section": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الأوقات"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -769,6 +1039,12 @@
     "admin.hh_new_schedule_title": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "فترة Happy Hour جديدة"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -786,6 +1062,12 @@
     "admin.hh_no_schedule_message": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "أنشئ فترة Happy Hour لإعداد الأسعار."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -803,6 +1085,12 @@
     "admin.hh_no_schedule_title": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "لم يتم اختيار أي فترة"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -820,6 +1108,12 @@
     "admin.hh_normal_price %@": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "السعر العادي ⁦%@⁩"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -837,6 +1131,12 @@
     "admin.hh_price_mode_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الوضع"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -854,6 +1154,12 @@
     "admin.hh_priority_stepper %lld": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الأولوية %lld"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -871,6 +1177,12 @@
     "admin.hh_rules_priority %lld %lld": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld قاعدة · الأولوية %lld"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -888,6 +1200,12 @@
     "admin.hh_schedule_name_placeholder": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "اسم الفترة"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -905,6 +1223,12 @@
     "admin.hh_schedules_header": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الفترات الزمنية"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -922,6 +1246,12 @@
     "admin.hh_select_all_rules": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تحديد الكل"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -939,6 +1269,12 @@
     "admin.hh_selected_count %lld": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld محدد"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -956,6 +1292,12 @@
     "admin.hh_start_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "البداية"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -973,6 +1315,12 @@
     "admin.hh_tab_families": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الفئات"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -990,6 +1338,12 @@
     "admin.hh_tab_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "التبويب"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1007,6 +1361,12 @@
     "admin.hh_tab_products": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الأصناف"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1024,6 +1384,12 @@
     "admin.hh_tab_rules": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "القواعد النشطة"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1041,6 +1407,12 @@
     "admin.hh_takeaway_included": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "السفري مشمول"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1058,6 +1430,12 @@
     "admin.host_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "المضيف"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1075,6 +1453,12 @@
     "admin.identifier_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "المعرّف"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1092,6 +1476,12 @@
     "admin.inactive_badge": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "غير نشط"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1109,6 +1499,12 @@
     "admin.ip_address_placeholder": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "عنوان IP"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1126,6 +1522,12 @@
     "admin.item_section": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الصنف"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1143,6 +1545,12 @@
     "admin.kpi_average_cover": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "المتوسط / شخص"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1160,6 +1568,12 @@
     "admin.kpi_average_order": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "متوسط الطلب"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1177,6 +1591,12 @@
     "admin.kpi_covers_count %lld": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld شخص"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1194,6 +1614,12 @@
     "admin.kpi_orders_count %lld": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld طلب"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1211,6 +1637,12 @@
     "admin.kpi_sales_ht %@": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "بدون ضريبة ⁦%@⁩"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1228,6 +1660,12 @@
     "admin.kpi_sales_ttc": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الإيرادات شاملة الضريبة"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1245,6 +1683,12 @@
     "admin.last_sync_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "آخر مزامنة"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1262,6 +1706,12 @@
     "admin.latency_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "زمن الاستجابة"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1279,6 +1729,12 @@
     "admin.new_category": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "فئة جديدة"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1296,6 +1752,12 @@
     "admin.new_page": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "صفحة جديدة"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1313,6 +1775,12 @@
     "admin.new_pin_placeholder": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "رمز PIN جديد (اتركه فارغًا للإبقاء عليه)"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1330,6 +1798,12 @@
     "admin.new_printer": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "طابعة جديدة"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1347,6 +1821,12 @@
     "admin.new_product": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "صنف جديد"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1364,6 +1844,12 @@
     "admin.new_staff": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "موظف جديد"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1381,6 +1867,12 @@
     "admin.no_activity": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "لا يوجد نشاط"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1398,6 +1890,12 @@
     "admin.no_payments": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "لا توجد مدفوعات"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1415,6 +1913,12 @@
     "admin.no_sales": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "لا توجد مبيعات"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1432,6 +1936,12 @@
     "admin.open_cash_drawer_toggle": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "يفتح درج النقود"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1449,6 +1959,12 @@
     "admin.options_count %lld": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld خيار"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1466,6 +1982,12 @@
     "admin.page_chip %lld": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "صفحة %lld"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1483,6 +2005,12 @@
     "admin.paper_width_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "عرض الورق"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1500,6 +2028,12 @@
     "admin.payment_method_row %@ %lld": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ (%lld)"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1517,6 +2051,12 @@
     "admin.payment_methods_title": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "طرق الدفع"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1534,6 +2074,12 @@
     "admin.pending_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "في الانتظار"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1551,6 +2097,12 @@
     "admin.pending_messages %lld": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld رسالة"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1568,6 +2120,12 @@
     "admin.period_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الفترة"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1585,6 +2143,12 @@
     "admin.pin_code_placeholder %lld": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "رمز PIN (%lld أرقام)"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1602,6 +2166,12 @@
     "admin.port_stepper %lld": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "المنفذ %lld"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1619,6 +2189,12 @@
     "admin.preparation_section": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "التحضير"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1636,6 +2212,12 @@
     "admin.price_ttc_placeholder": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "السعر شامل الضريبة (€)"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1653,6 +2235,12 @@
     "admin.printer_section": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الطابعة"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1670,6 +2258,12 @@
     "admin.quick_key_toggle": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "مفتاح سريع"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1687,6 +2281,12 @@
     "admin.realtime_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "مباشر (SignalR)"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1704,6 +2304,12 @@
     "admin.receipt_language": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "لغة الإيصالات"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1721,6 +2327,12 @@
     "admin.receipt_language_hint": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الطابعات التي لا تدعم العربية يجب أن تبقى بالإنجليزية أو الفرنسية."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1738,6 +2350,12 @@
     "admin.reset_button": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "إعادة تعيين"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1755,6 +2373,12 @@
     "admin.role_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الدور"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1772,6 +2396,12 @@
     "admin.rows_stepper %lld": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الصفوف %lld"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1789,6 +2419,12 @@
     "admin.search_placeholder": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "بحث"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1806,6 +2442,12 @@
     "admin.search_product_prompt": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "البحث عن صنف"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1823,6 +2465,12 @@
     "admin.section_catalog": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الكتالوج"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1840,6 +2488,12 @@
     "admin.section_dashboard": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "لوحة المعلومات"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1857,6 +2511,12 @@
     "admin.section_grid": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الشبكة اللمسية"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1874,6 +2534,12 @@
     "admin.section_happy_hour": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Happy Hour"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1891,6 +2557,12 @@
     "admin.section_network": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الشبكة والجهاز"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1908,6 +2580,12 @@
     "admin.section_printers": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الطابعات"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1925,6 +2603,12 @@
     "admin.section_staff": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الفريق"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1942,6 +2626,12 @@
     "admin.select_all_button": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الكل"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1959,6 +2649,12 @@
     "admin.select_none_button": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "لا شيء"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1976,6 +2672,12 @@
     "admin.served_stations_section": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الأقسام المخدومة"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1993,6 +2695,12 @@
     "admin.service_summary %lld %lld": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld طلب · %lld شخص"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2010,6 +2718,12 @@
     "admin.services_title": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الخدمات"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2027,6 +2741,12 @@
     "admin.slot_product_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الصنف"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2044,6 +2764,12 @@
     "admin.slot_title %lld%lld": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الخانة ص%lld · ع%lld"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2061,6 +2787,12 @@
     "admin.staff_productivity_title": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "إنتاجية النُدُل"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2078,6 +2810,12 @@
     "admin.staff_summary %lld %@": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld طاولة · المتوسط ⁦%@⁩"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2095,6 +2833,12 @@
     "admin.station_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "القسم"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2112,6 +2856,12 @@
     "admin.station_vat %@ %@": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ · VAT %@%%"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2129,6 +2879,12 @@
     "admin.status_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الحالة"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2146,6 +2902,12 @@
     "admin.sync_section": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "المزامنة (قائمة Outbox)"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2163,6 +2925,12 @@
     "admin.synced_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تمت مزامنتها"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2180,6 +2948,12 @@
     "admin.synced_transactions %lld": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld معاملة"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2197,6 +2971,12 @@
     "admin.terminal_section": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الجهاز"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2214,6 +2994,12 @@
     "admin.test_button": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "اختبار"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2231,6 +3017,12 @@
     "admin.theme_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "السمة"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2248,6 +3040,12 @@
     "admin.tile_color_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "لون المربع"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2265,6 +3063,12 @@
     "admin.top_sales_title": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الأكثر مبيعًا"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2282,6 +3086,12 @@
     "admin.vat_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "VAT"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2299,6 +3109,12 @@
     "admin.version_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الإصدار"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2316,6 +3132,12 @@
     "admin.voucher_overflow_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "قسائم الوجبات: التجاوز"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2333,6 +3155,12 @@
     "common.cancel": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "إلغاء"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2350,6 +3178,12 @@
     "common.clear": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "مسح"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2367,6 +3201,12 @@
     "common.close_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "إغلاق"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2384,6 +3224,12 @@
     "common.delete": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "حذف"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2401,6 +3247,12 @@
     "common.field_name": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الاسم"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2418,6 +3270,12 @@
     "common.field_server": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الخادم"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2435,6 +3293,12 @@
     "common.field_terminal": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الجهاز"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2452,6 +3316,12 @@
     "common.happy_hour_active_subtitle": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "أسعار تفضيلية سارية"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2469,6 +3339,12 @@
     "common.happy_hour_extend_30": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "+30 دقيقة"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2486,6 +3362,12 @@
     "common.happy_hour_force_60": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "فرض ساعة"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2503,6 +3385,12 @@
     "common.happy_hour_override_button": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "استثناء"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2520,6 +3408,12 @@
     "common.happy_hour_override_pin_hint": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "يلزم رمز PIN لمسؤول"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2537,6 +3431,12 @@
     "common.happy_hour_override_subtitle": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "أسعار مخفّضة مفروضة من مسؤول"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2554,6 +3454,12 @@
     "common.happy_hour_override_title": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "استثناء Happy Hour"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2571,6 +3477,12 @@
     "common.happy_hour_reason_placeholder": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "السبب (اختياري)"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2588,6 +3500,12 @@
     "common.happy_hour_stop": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "إيقاف"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2605,6 +3523,12 @@
     "common.invalid_address": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "عنوان غير صالح"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2622,6 +3546,12 @@
     "common.keypad_clear": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "مسح الكل"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2639,6 +3569,12 @@
     "common.keypad_decimal": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الفاصلة العشرية"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2656,6 +3592,12 @@
     "common.keypad_delete": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "حذف"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2673,6 +3615,12 @@
     "common.master_server_section": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الخادم الرئيسي"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2690,6 +3638,12 @@
     "common.nav_admin": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الإدارة"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2707,6 +3661,12 @@
     "common.nav_connection": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الاتصال"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2724,6 +3684,12 @@
     "common.nav_fiscal": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الإقفال"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2741,6 +3707,12 @@
     "common.nav_floor": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الصالة"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2758,6 +3730,12 @@
     "common.nav_kitchen": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "المطبخ"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2775,6 +3753,12 @@
     "common.nav_lock": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "قفل"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2792,6 +3776,12 @@
     "common.nav_order": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الصندوق"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2809,6 +3799,12 @@
     "common.pairing_camera_unavailable": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الكاميرا غير متاحة: أدخل الرمز يدويًا."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2826,6 +3822,12 @@
     "common.pairing_cannot_reach %@": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تعذّر الوصول إلى «%@»"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2843,6 +3845,12 @@
     "common.pairing_code_placeholder": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "رمز الربط"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2860,6 +3868,12 @@
     "common.pairing_discovered_servers": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الخوادم التي تم العثور عليها"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2877,6 +3891,12 @@
     "common.pairing_hint": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "أنشئ رمزًا في الإدارة ← الأجهزة على جهاز المسؤول."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2894,6 +3914,12 @@
     "common.pairing_manual_entry_section": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الإدخال اليدوي"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2911,6 +3937,12 @@
     "common.pairing_nav_title": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الربط"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2928,6 +3960,12 @@
     "common.pairing_qr_not_recognized": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "لم يتم التعرف على رمز QR"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2945,6 +3983,12 @@
     "common.pairing_register_failed": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تعذّر تسجيل هوية iPad. أعد المحاولة برمز جديد."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2962,6 +4006,12 @@
     "common.pairing_scan_qr": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "امسح رمز QR من الإدارة الخلفية"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2979,6 +4029,12 @@
     "common.pairing_searching_network": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "جارٍ البحث في الشبكة المحلية…"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2996,6 +4052,12 @@
     "common.pairing_submit_button": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ربط هذا iPad"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3013,6 +4075,12 @@
     "common.pin_dots_value %lld %lld": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld من %lld"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3030,6 +4098,12 @@
     "common.refresh_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تحديث"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3047,6 +4121,12 @@
     "common.save": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "حفظ"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3064,6 +4144,12 @@
     "common.server_reachable %lld": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "✓ الخادم متاح (%lld ms)"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3081,6 +4167,12 @@
     "common.server_unreachable %@": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "✗ %@"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3098,6 +4190,12 @@
     "common.status_offline": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "غير متصل"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3115,6 +4213,12 @@
     "common.status_online %@": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "متصل · %@"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3132,6 +4236,12 @@
     "common.status_online_simple": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "متصل"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3149,6 +4259,12 @@
     "common.test_connection": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "اختبار الاتصال"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3166,6 +4282,12 @@
     "common.this_ipad_section": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "هذا iPad"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3183,6 +4305,12 @@
     "common.unpair_ipad": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "إلغاء ربط هذا iPad"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3200,6 +4328,12 @@
     "fiscal.confirm_z_button": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "إقفال اليوم وختمه"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3217,6 +4351,12 @@
     "fiscal.confirm_z_dialog_title": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تنفيذ إقفال Z؟"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3234,6 +4374,12 @@
     "fiscal.confirm_z_message": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "عملية لا رجعة فيها: تُختم مبيعات الفترة (NF525)."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3251,6 +4397,12 @@
     "fiscal.execute_z_button": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "إقفال Z اليومي"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3268,6 +4420,12 @@
     "fiscal.fec_export_title": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "التصدير المحاسبي FEC"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3285,6 +4443,12 @@
     "fiscal.fec_from": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "من"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3302,6 +4466,12 @@
     "fiscal.fec_to": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "إلى"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3319,6 +4489,12 @@
     "fiscal.generate_fec_button": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "إنشاء FEC"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3336,6 +4512,12 @@
     "fiscal.preview_x_button": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "معاينة تقرير X"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3353,6 +4535,12 @@
     "fiscal.reports_title": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تقارير الصندوق"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3370,6 +4558,12 @@
     "fiscal.share_file %@": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "مشاركة %@"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3387,6 +4581,12 @@
     "fiscal.siren_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SIREN"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3404,6 +4604,12 @@
     "fiscal.slip_date_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "التاريخ"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3421,6 +4627,12 @@
     "fiscal.slip_hash_pending": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "يُنشأ عند إقفال Z"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3438,6 +4650,12 @@
     "fiscal.slip_perpetual_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الإجمالي العام الدائم"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3455,6 +4673,12 @@
     "fiscal.slip_sealed_status": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "سلسلة التدقيق الضريبي مختومة وصالحة (NF525)"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3472,6 +4696,12 @@
     "fiscal.slip_signature_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "التوقيع"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3489,6 +4719,12 @@
     "fiscal.slip_tickets_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الإيصالات"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3506,6 +4742,12 @@
     "fiscal.slip_title_x": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "*** التقرير المالي الجاري — تقرير X ***"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3523,6 +4765,12 @@
     "fiscal.slip_title_z %lld": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "*** الإقفال اليومي — تقرير Z رقم %lld ***"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3540,6 +4788,12 @@
     "fiscal.slip_total_ht_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الإجمالي بدون ضريبة"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3557,6 +4811,12 @@
     "fiscal.slip_total_ttc_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الإجمالي شامل الضريبة"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3574,6 +4834,12 @@
     "fiscal.slip_unsealed_status": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "بيانات الخدمة المباشرة (غير مختومة)"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3591,6 +4857,12 @@
     "fiscal.slip_vat_row %@": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "VAT %@ %%"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3608,6 +4880,12 @@
     "fiscal.x_z_explanation": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تقرير X معاينة مباشرة غير مختومة. إقفال Z يختم اليوم بتسلسل SHA-256 ويعيد العدادات إلى الصفر."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3625,6 +4903,12 @@
     "floor.add_table": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "طاولة جديدة"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3642,6 +4926,12 @@
     "floor.capacity_stepper %lld": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "السعة: %lld أشخاص"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3659,6 +4949,12 @@
     "floor.covers_count": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "عدد الأشخاص"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3676,6 +4972,12 @@
     "floor.create_table": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "إنشاء الطاولة"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3693,6 +4995,12 @@
     "floor.filter_all": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الكل"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3710,6 +5018,12 @@
     "floor.filter_bill": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الفاتورة"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3727,6 +5041,12 @@
     "floor.filter_free": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "شاغرة"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3744,6 +5064,12 @@
     "floor.filter_occupied": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "مشغولة"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3761,6 +5087,12 @@
     "floor.kpi_occupied_tables": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الطاولات المشغولة"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3778,6 +5110,12 @@
     "floor.kpi_open_total": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "جارية"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3795,6 +5133,12 @@
     "floor.new_table_title": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "طاولة جديدة"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3812,6 +5156,12 @@
     "floor.number_placeholder": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الرقم أو الاسم (مثال: T9، التراس 1)"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3829,6 +5179,12 @@
     "floor.open_table_subtitle %lld": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "السعة %lld أشخاص"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3846,6 +5202,12 @@
     "floor.open_table_title %@": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "فتح الطاولة %@"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3863,6 +5225,12 @@
     "floor.open_with_covers %lld": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "فتح بـ %lld شخص"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3880,6 +5248,12 @@
     "floor.table_capacity %@%lld%@": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@%lld أشخاص%@"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3897,6 +5271,12 @@
     "floor.tap_to_open": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "المس للفتح"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3914,6 +5294,12 @@
     "kitchen.filter_all_stations": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "كل الأقسام"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3931,6 +5317,12 @@
     "kitchen.quoted_comment %@": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "«%@»"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3948,6 +5340,12 @@
     "kitchen.readonly_notice": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "للقراءة فقط: المطبخ والمسؤولون فقط يمكنهم تحديث حالة التذاكر."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3965,6 +5363,12 @@
     "kitchen.updated_at %@": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "آخر تحديث %@"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3982,6 +5386,12 @@
     "login.change_server": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تغيير"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3999,6 +5409,12 @@
     "login.demo_mode_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الوضع التجريبي (بيانات محلية)"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4016,6 +5432,12 @@
     "login.enter_pin_subtitle": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "أدخل رمز PIN"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4056,6 +5478,12 @@
     "order.add_as_dessert": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "إضافة كحلوى"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4073,6 +5501,12 @@
     "order.add_as_suite": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "إضافة كطبق تالٍ"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4090,6 +5524,12 @@
     "order.add_to_ticket_button": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "إضافة إلى التذكرة"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4107,6 +5547,12 @@
     "order.all_menu": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "القائمة كاملة"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4124,6 +5570,12 @@
     "order.already_paid_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "مدفوع مسبقًا"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4141,6 +5593,12 @@
     "order.apply_discount_button": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تطبيق الخصم"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4158,6 +5616,12 @@
     "order.clear_action": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "إفراغ"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4175,6 +5639,12 @@
     "order.comp_badge": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "مجاني"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4192,6 +5662,12 @@
     "order.comp_item_button": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تقديم الصنف مجانًا"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4209,6 +5685,12 @@
     "order.confirm_void_button": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تأكيد الإلغاء"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4226,6 +5708,12 @@
     "order.counter_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الكاونتر"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4243,6 +5731,12 @@
     "order.covers_count %lld": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld شخص"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4260,6 +5754,12 @@
     "order.custom_reason_placeholder": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "حدّد السبب"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4277,6 +5777,12 @@
     "order.customize": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تخصيص…"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4294,6 +5800,12 @@
     "order.default_customer_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "زبون"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4311,6 +5823,12 @@
     "order.destination_eat_in": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "في المطعم"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4328,6 +5846,12 @@
     "order.destination_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الوجهة"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4345,6 +5869,12 @@
     "order.destination_takeaway": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "سفري"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4362,6 +5892,12 @@
     "order.dine_in_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "في المطعم"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4379,6 +5915,12 @@
     "order.discount_action": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "خصم"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4396,6 +5938,12 @@
     "order.discount_comp_option %lld %@ %@": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "مجاني: %lld× %@ (⁦%@⁩)"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4413,6 +5961,12 @@
     "order.discount_global_option": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "خصم شامل على الفاتورة"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4430,6 +5984,12 @@
     "order.discount_reason_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "السبب"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4447,6 +6007,12 @@
     "order.discount_row_label %@": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "خصم %@"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4464,6 +6030,12 @@
     "order.discount_sheet_title": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "خصم ومجاني"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4481,6 +6053,12 @@
     "order.discount_target_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الهدف"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4498,6 +6076,12 @@
     "order.discount_unit_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الوحدة"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4515,6 +6099,12 @@
     "order.discount_value_placeholder": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "القيمة"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4532,6 +6122,12 @@
     "order.empty_ticket_message": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "المس صنفًا لبدء الطلب"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4549,6 +6145,12 @@
     "order.empty_ticket_title %@": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ فارغة"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4566,6 +6168,12 @@
     "order.exact_amount": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "المبلغ بالضبط"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4583,6 +6191,12 @@
     "order.extra_price_prefix %@": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "+⁦%@⁩"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4600,6 +6214,12 @@
     "order.fire_suite_action": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الطبق التالي"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4617,6 +6237,12 @@
     "order.floor_plan_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "مخطط الصالة"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4634,6 +6260,12 @@
     "order.held_order_summary %lld %@ %@": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld صنف · ⁦%@⁩ · %@"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4651,6 +6283,12 @@
     "order.held_orders_count %lld": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld طلب"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4668,6 +6306,12 @@
     "order.held_orders_title": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الطلبات المعلّقة"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4685,6 +6329,12 @@
     "order.held_queue_label %lld": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الطلبات المعلّقة: %lld"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4702,6 +6352,12 @@
     "order.hold_action": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تعليق"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4719,6 +6375,12 @@
     "order.hold_label_placeholder": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "اسم الزبون أو مرجعه"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4736,6 +6398,12 @@
     "order.hold_sheet_subtitle": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "يُحرّر الصندوق للزبون التالي"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4753,6 +6421,12 @@
     "order.hold_sheet_title": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تعليق الطلب"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4770,6 +6444,12 @@
     "order.in_kitchen_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "في المطبخ"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4787,6 +6467,12 @@
     "order.included_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "مشمول"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4804,6 +6490,12 @@
     "order.instead_of_price %@": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " (بدلًا من ⁦%@⁩)"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4821,6 +6513,12 @@
     "order.invalid_discount_value": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "قيمة خصم غير صالحة"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4838,6 +6536,12 @@
     "order.kitchen_comment_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ملاحظة للمطبخ"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4855,6 +6559,12 @@
     "order.kitchen_comment_placeholder": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "مثال: بدون بصل، حساسية…"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4872,6 +6582,12 @@
     "order.max_options_error %lld %@": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld خيار كحد أقصى لـ «%@»"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4889,6 +6605,12 @@
     "order.modifier_subtitle %@ %@": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "السعر الأساسي ⁦%@⁩ · VAT %@%%"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4906,6 +6628,12 @@
     "order.no_held_orders_message": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "استخدم «تعليق» لتعليق تذكرة."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4923,6 +6651,12 @@
     "order.no_held_orders_title": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "لا توجد طلبات معلّقة"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4940,6 +6674,12 @@
     "order.not_sent_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "لم يُرسل"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4957,6 +6697,12 @@
     "order.options_total %@%@": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الخيارات %@⁦%@⁩"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4974,6 +6720,12 @@
     "order.page_indicator %lld/%lld": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "صفحة %lld/%lld"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4991,6 +6743,12 @@
     "order.pay_button %@": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تحصيل ⁦%@⁩"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5008,6 +6766,12 @@
     "order.product_tile_hint_add": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "يُضيف إلى التذكرة"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5025,6 +6789,12 @@
     "order.product_tile_hint_options": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "يفتح الخيارات"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5042,6 +6812,12 @@
     "order.product_tile_quantity_value %lld": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld في التذكرة"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5059,6 +6835,12 @@
     "order.quick_products": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "سريع"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5076,6 +6858,12 @@
     "order.recall_button": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "استرجاع"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5093,6 +6881,12 @@
     "order.remaining_due_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "المتبقي للدفع"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5110,6 +6904,12 @@
     "order.remove_discount_button": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "حذف الخصم"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5127,6 +6927,12 @@
     "order.send_kitchen_button": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "المطبخ"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5144,6 +6950,12 @@
     "order.service_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "مرحلة التقديم"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5161,6 +6973,12 @@
     "order.subtotal_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "المجموع الفرعي"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5178,6 +6996,12 @@
     "order.supervisor_auth_title": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تفويض المشرف"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5195,6 +7019,12 @@
     "order.total_ht_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الإجمالي بدون ضريبة"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5212,6 +7042,12 @@
     "order.total_ttc_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الإجمالي شامل الضريبة"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5229,6 +7065,12 @@
     "order.transfer_action": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "نقل"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5246,6 +7088,12 @@
     "order.transfer_merge_button": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "دمج"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5263,6 +7111,12 @@
     "order.transfer_mode_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الوضع"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5280,6 +7134,12 @@
     "order.transfer_move_button": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "نقل"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5297,6 +7157,12 @@
     "order.transfer_option_merge": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "دمج (طاولة مشغولة)"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5314,6 +7180,12 @@
     "order.transfer_option_move": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "نقل (طاولة شاغرة)"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5331,6 +7203,12 @@
     "order.transfer_sheet_subtitle": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "اختر طاولة الوجهة"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5348,6 +7226,12 @@
     "order.transfer_sheet_title %@": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "نقل %@"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5365,6 +7249,12 @@
     "order.unit_price_times_qty %@ %lld": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "⁦%@⁩ × %lld"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5382,6 +7272,12 @@
     "order.vat_rate_suffix %@": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " · VAT %@%%"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5399,6 +7295,12 @@
     "order.vat_row_label %@": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "VAT %@ %%"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5416,6 +7318,12 @@
     "order.void_confirmation_subtitle %@": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "إلغاء «%@»"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5433,6 +7341,12 @@
     "payment.available_credit %@": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الرصيد المتاح ⁦%@⁩"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5450,6 +7364,12 @@
     "payment.buzzer_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "جهاز النداء"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5467,6 +7387,12 @@
     "payment.buzzer_placeholder": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "رقم جهاز النداء (اختياري)"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5484,6 +7410,12 @@
     "payment.cash_tendered_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "المبلغ المدفوع"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5501,6 +7433,12 @@
     "payment.change_due %@": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الباقي ⁦%@⁩"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5518,6 +7456,12 @@
     "payment.change_due_title": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الباقي المستحق"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5535,6 +7479,12 @@
     "payment.change_to_give": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الباقي المُعاد"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5552,6 +7502,12 @@
     "payment.confirm_room_charge_button": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تأكيد التحميل"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5569,6 +7525,12 @@
     "payment.continue_button": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "متابعة التحصيل"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5586,6 +7548,12 @@
     "payment.customer_signature_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "توقيع الزبون"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5603,6 +7571,12 @@
     "payment.finish_button": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "إنهاء"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5620,6 +7594,12 @@
     "payment.guests_count %lld": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld ضيوف"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5637,6 +7617,12 @@
     "payment.method_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "طريقة الدفع"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5654,6 +7640,12 @@
     "payment.next_customer_button": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الزبون التالي"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5671,6 +7663,12 @@
     "payment.pickup_number_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "رقم الاستلام"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5688,6 +7686,12 @@
     "payment.print_receipt_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "طباعة الإيصال (قانون AGEC: عند الطلب)"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5705,6 +7709,12 @@
     "payment.receipt_number %@": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الإيصال %@"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5722,6 +7732,12 @@
     "payment.remaining_due %@": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "المتبقي للدفع: ⁦%@⁩"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5739,6 +7755,12 @@
     "payment.result_paid": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تم تأكيد الدفع"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5756,6 +7778,12 @@
     "payment.result_partial": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تم تسجيل دفع جزئي"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5773,6 +7801,12 @@
     "payment.room_charge_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "غرفة فندق"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5790,6 +7824,12 @@
     "payment.room_charge_title": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "التحميل على غرفة"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5807,6 +7847,12 @@
     "payment.room_charge_total %@": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الإجمالي ⁦%@⁩"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5824,6 +7870,12 @@
     "payment.room_option %@ %@": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الغرفة %@ — %@"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5841,6 +7893,12 @@
     "payment.room_picker_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الغرفة"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5858,6 +7916,12 @@
     "payment.sheet_title": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "التحصيل"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5875,6 +7939,12 @@
     "payment.sign_here_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "وقّع هنا"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5892,6 +7962,12 @@
     "payment.split_equal_parts": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تقسيم بالتساوي"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5909,6 +7985,12 @@
     "payment.split_full_bill": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الفاتورة كاملة"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5926,6 +8008,12 @@
     "payment.split_mode_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الوضع"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5943,6 +8031,12 @@
     "payment.tip_custom_placeholder": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "مبلغ آخر €"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5960,6 +8054,12 @@
     "payment.tip_included %@": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "منها بقشيش ⁦%@⁩"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5977,6 +8077,12 @@
     "payment.tip_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "بقشيش"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5994,6 +8100,12 @@
     "payment.tip_none": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "بدون"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -6011,6 +8123,12 @@
     "payment.tip_percent %lld": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld %%"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -6028,6 +8146,12 @@
     "payment.to_collect_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "للتحصيل"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -6045,6 +8169,12 @@
     "payment.validate_method %@": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تأكيد %@"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -6062,6 +8192,12 @@
     "payment.validate_with_change %@": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تأكيد · الباقي ⁦%@⁩"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -6079,6 +8215,12 @@
     "payment.voucher_amount_validity %@": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "المبلغ ⁦%@⁩ · صالحة 90 يومًا"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -6096,6 +8238,12 @@
     "payment.voucher_face_value_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "القيمة الاسمية للقسيمة"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -6113,6 +8261,12 @@
     "payment.voucher_issued_label": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تم إصدار قسيمة رصيد للزبون"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
