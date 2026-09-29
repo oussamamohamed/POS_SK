@@ -70,7 +70,7 @@ struct SidebarRail: View {
             } label: {
                 VStack(spacing: 4) {
                     Image(systemName: "lock.fill").font(.system(size: 20, weight: .semibold))
-                    Text("nav.lock_button").font(.system(size: 12, weight: .semibold))
+                    Text("common.nav_lock").font(.system(size: 12, weight: .semibold))
                 }
                 .frame(width: 72, height: 64)
                 .foregroundStyle(Theme.inkMuted)
@@ -189,7 +189,7 @@ struct HappyHourBanner: View {
             VStack(alignment: .leading, spacing: 0) {
                 Text(model.happyHour.bannerTitle).font(.system(size: 15, weight: .bold))
                     .accessibilityIdentifier("happyhour.banner")
-                Text(model.happyHour.status.isOverride ? "happyhour.override_subtitle" : "happyhour.active_subtitle")
+                Text(model.happyHour.status.isOverride ? "common.happy_hour_override_subtitle" : "common.happy_hour_active_subtitle")
                     .font(.system(size: 12, weight: .semibold))
             }
             Spacer()
@@ -197,7 +197,7 @@ struct HappyHourBanner: View {
                 .font(.system(size: 22, weight: .semibold, design: .monospaced))
                 .accessibilityIdentifier("happyhour.countdown")
             Button { showsOverride = true } label: {
-                Text("happyhour.override_button")
+                Text("common.happy_hour_override_button")
                     .font(.system(size: 15, weight: .bold))
                     .padding(.horizontal, Theme.Space.l)
                     .frame(minHeight: Theme.touchMin)
@@ -222,21 +222,21 @@ struct HappyHourOverrideSheet: View {
 
     var body: some View {
         VStack(spacing: 20) {
-            SheetHeader(title: String(localized: "happyhour.override_title"), subtitle: String(localized: "happyhour.override_pin_hint")) { dismiss() }
+            SheetHeader(title: String(localized: "common.happy_hour_override_title"), subtitle: String(localized: "common.happy_hour_override_pin_hint")) { dismiss() }
             SupervisorPinPad(pin: $pin, identifierPrefix: "hh.pin")
-            TextField("happyhour.reason_placeholder", text: $reason)
+            TextField("common.happy_hour_reason_placeholder", text: $reason)
                 .textFieldStyle(.roundedBorder)
                 .accessibilityIdentifier("hh.reason")
             HStack(spacing: 12) {
-                ActionButton(title: String(localized: "happyhour.extend_30"), systemImage: "plus.circle", kind: .tonal) {
+                ActionButton(title: String(localized: "common.happy_hour_extend_30"), systemImage: "plus.circle", kind: .tonal) {
                     Task { if await model.happyHour.activateOverride(pin: pin, minutes: 30, reason: reason) { dismiss() } }
                 }
                 .accessibilityIdentifier("hh.extend30")
-                ActionButton(title: String(localized: "happyhour.force_60"), systemImage: "bolt", kind: .primary) {
+                ActionButton(title: String(localized: "common.happy_hour_force_60"), systemImage: "bolt", kind: .primary) {
                     Task { if await model.happyHour.activateOverride(pin: pin, minutes: 60, reason: reason) { dismiss() } }
                 }
                 .accessibilityIdentifier("hh.force60")
-                ActionButton(title: String(localized: "happyhour.stop"), systemImage: "stop.circle", kind: .danger) {
+                ActionButton(title: String(localized: "common.happy_hour_stop"), systemImage: "stop.circle", kind: .danger) {
                     Task { if await model.happyHour.stopOverride(pin: pin, reason: reason) { dismiss() } }
                 }
                 .accessibilityIdentifier("hh.stop")

@@ -206,6 +206,7 @@ struct KPIView: View {
                     .foregroundStyle(Theme.ink)
                     .lineLimit(1).minimumScaleFactor(0.6)
                     .contentTransition(.numericText())
+                    .environment(\.layoutDirection, .leftToRight)
                 if let subtitle { Text(subtitle).font(.posCaption).foregroundStyle(Theme.inkSubtle) }
             }
         }
@@ -317,7 +318,7 @@ struct PinDots: View {
         }
         .accessibilityElement()
         .accessibilityIdentifier("pin.dots")
-        .accessibilityValue("\(filled) sur \(count)")
+        .accessibilityValue("common.pin_dots_value \(filled) \(count)")
     }
 }
 

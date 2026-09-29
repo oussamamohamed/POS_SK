@@ -142,7 +142,7 @@ struct TableCard: View {
                     }
                     Spacer(minLength: 0)
                     if table.activeOrderTotalTtc.cents > 0 {
-                        Text(table.activeOrderTotalTtc.formatted).font(.posAmount).foregroundStyle(Theme.ink)
+                        Text(table.activeOrderTotalTtc.formatted).font(.posAmount).foregroundStyle(Theme.ink).environment(\.layoutDirection, .leftToRight)
                     }
                 }
                 .lineLimit(1)

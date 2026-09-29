@@ -823,13 +823,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Normal price %@"
+            "value": "Normal price ⁦%@⁩"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Prix normal %@"
+            "value": "Prix normal ⁦%@⁩"
           }
         }
       }
@@ -1214,13 +1214,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "excl. tax %@"
+            "value": "excl. tax ⁦%@⁩"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "HT %@"
+            "value": "HT ⁦%@⁩"
           }
         }
       }
@@ -2081,13 +2081,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld table(s) · avg. %@"
+            "value": "%lld table(s) · avg. ⁦%@⁩"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld table(s) · moy. %@"
+            "value": "%lld table(s) · moy. ⁦%@⁩"
           }
         }
       }
@@ -2449,6 +2449,159 @@
         }
       }
     },
+    "common.happy_hour_active_subtitle": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preferential rates active"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tarifs préférentiels actifs"
+          }
+        }
+      }
+    },
+    "common.happy_hour_extend_30": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "+30 min"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "+30 min"
+          }
+        }
+      }
+    },
+    "common.happy_hour_force_60": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Force 1 h"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Forcer 1 h"
+          }
+        }
+      }
+    },
+    "common.happy_hour_override_button": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Override"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dérogation"
+          }
+        }
+      }
+    },
+    "common.happy_hour_override_pin_hint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Manager PIN code required"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Code PIN d'un responsable requis"
+          }
+        }
+      }
+    },
+    "common.happy_hour_override_subtitle": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reduced rates forced by a manager"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tarifs réduits forcés par un responsable"
+          }
+        }
+      }
+    },
+    "common.happy_hour_override_title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Happy Hour Override"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dérogation Happy Hour"
+          }
+        }
+      }
+    },
+    "common.happy_hour_reason_placeholder": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reason (optional)"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Motif (facultatif)"
+          }
+        }
+      }
+    },
+    "common.happy_hour_stop": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stop"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arrêter"
+          }
+        }
+      }
+    },
     "common.invalid_address": {
       "extractionState": "manual",
       "localizations": {
@@ -2534,6 +2687,23 @@
         }
       }
     },
+    "common.nav_admin": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Admin"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gestion"
+          }
+        }
+      }
+    },
     "common.nav_connection": {
       "extractionState": "manual",
       "localizations": {
@@ -2547,6 +2717,312 @@
           "stringUnit": {
             "state": "translated",
             "value": "Connexion"
+          }
+        }
+      }
+    },
+    "common.nav_fiscal": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Closure"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clôture"
+          }
+        }
+      }
+    },
+    "common.nav_floor": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Floor"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Salle"
+          }
+        }
+      }
+    },
+    "common.nav_kitchen": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kitchen"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cuisine"
+          }
+        }
+      }
+    },
+    "common.nav_lock": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lock"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verrouiller"
+          }
+        }
+      }
+    },
+    "common.nav_order": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Order"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Caisse"
+          }
+        }
+      }
+    },
+    "common.pairing_camera_unavailable": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Camera unavailable: enter the code manually."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Caméra indisponible : saisissez le code manuellement."
+          }
+        }
+      }
+    },
+    "common.pairing_cannot_reach %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Could not reach “%@”"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossible de joindre « %@ »"
+          }
+        }
+      }
+    },
+    "common.pairing_code_placeholder": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pairing code"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Code d'appairage"
+          }
+        }
+      }
+    },
+    "common.pairing_discovered_servers": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Servers found"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Serveurs trouvés"
+          }
+        }
+      }
+    },
+    "common.pairing_hint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Generate a code in Management → Devices on the manager's station."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Générez un code dans Gestion → Appareils sur le poste du responsable."
+          }
+        }
+      }
+    },
+    "common.pairing_manual_entry_section": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Manual entry"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saisie manuelle"
+          }
+        }
+      }
+    },
+    "common.pairing_nav_title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pairing"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Appairage"
+          }
+        }
+      }
+    },
+    "common.pairing_qr_not_recognized": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "QR code not recognized"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "QR non reconnu"
+          }
+        }
+      }
+    },
+    "common.pairing_register_failed": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Could not register the iPad's identity. Try again with a new code."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossible d'enregistrer l'identité de l'iPad. Réessayez avec un nouveau code."
+          }
+        }
+      }
+    },
+    "common.pairing_scan_qr": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scan the back-office QR code"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scanner le QR du back-office"
+          }
+        }
+      }
+    },
+    "common.pairing_searching_network": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Searching the local network…"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recherche sur le réseau local…"
+          }
+        }
+      }
+    },
+    "common.pairing_submit_button": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pair this iPad"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Appairer cet iPad"
+          }
+        }
+      }
+    },
+    "common.pin_dots_value %lld %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld of %lld"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld sur %lld"
           }
         }
       }
@@ -3435,159 +3911,6 @@
         }
       }
     },
-    "happyhour.active_subtitle": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Preferential rates active"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tarifs préférentiels actifs"
-          }
-        }
-      }
-    },
-    "happyhour.extend_30": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "+30 min"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "+30 min"
-          }
-        }
-      }
-    },
-    "happyhour.force_60": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Force 1 h"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Forcer 1 h"
-          }
-        }
-      }
-    },
-    "happyhour.override_button": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Override"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Dérogation"
-          }
-        }
-      }
-    },
-    "happyhour.override_pin_hint": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Manager PIN code required"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Code PIN d'un responsable requis"
-          }
-        }
-      }
-    },
-    "happyhour.override_subtitle": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Reduced rates forced by a manager"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tarifs réduits forcés par un responsable"
-          }
-        }
-      }
-    },
-    "happyhour.override_title": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Happy Hour Override"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Dérogation Happy Hour"
-          }
-        }
-      }
-    },
-    "happyhour.reason_placeholder": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Reason (optional)"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Motif (facultatif)"
-          }
-        }
-      }
-    },
-    "happyhour.stop": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Stop"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Arrêter"
-          }
-        }
-      }
-    },
     "kitchen.filter_all_stations": {
       "extractionState": "manual",
       "localizations": {
@@ -3726,108 +4049,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Caisse verrouillée"
-          }
-        }
-      }
-    },
-    "nav.admin": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Admin"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Gestion"
-          }
-        }
-      }
-    },
-    "nav.fiscal": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Closure"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Clôture"
-          }
-        }
-      }
-    },
-    "nav.floor": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Floor"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Salle"
-          }
-        }
-      }
-    },
-    "nav.kitchen": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Kitchen"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cuisine"
-          }
-        }
-      }
-    },
-    "nav.lock_button": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Lock"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Verrouiller"
-          }
-        }
-      }
-    },
-    "nav.order": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Order"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Caisse"
           }
         }
       }
@@ -4178,13 +4399,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Comp: %lld× %@ (%@)"
+            "value": "Comp: %lld× %@ (⁦%@⁩)"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Offrir : %lld× %@ (%@)"
+            "value": "Offrir : %lld× %@ (⁦%@⁩)"
           }
         }
       }
@@ -4365,13 +4586,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "+%@"
+            "value": "+⁦%@⁩"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "+%@"
+            "value": "+⁦%@⁩"
           }
         }
       }
@@ -4416,13 +4637,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld item(s) · %@ · %@"
+            "value": "%lld item(s) · ⁦%@⁩ · %@"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld article(s) · %@ · %@"
+            "value": "%lld article(s) · ⁦%@⁩ · %@"
           }
         }
       }
@@ -4586,13 +4807,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": " (instead of %@)"
+            "value": " (instead of ⁦%@⁩)"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": " (au lieu de %@)"
+            "value": " (au lieu de ⁦%@⁩)"
           }
         }
       }
@@ -4671,13 +4892,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Base price %@ · VAT %@%%"
+            "value": "Base price ⁦%@⁩ · VAT %@%%"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Prix de base %@ · TVA %@ %%"
+            "value": "Prix de base ⁦%@⁩ · TVA %@ %%"
           }
         }
       }
@@ -4739,13 +4960,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Options %@%@"
+            "value": "Options %@⁦%@⁩"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Options %@%@"
+            "value": "Options %@⁦%@⁩"
           }
         }
       }
@@ -4773,13 +4994,64 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Pay %@"
+            "value": "Pay ⁦%@⁩"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Encaisser %@"
+            "value": "Encaisser ⁦%@⁩"
+          }
+        }
+      }
+    },
+    "order.product_tile_hint_add": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adds to the ticket"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajoute au ticket"
+          }
+        }
+      }
+    },
+    "order.product_tile_hint_options": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opens the options"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ouvre les options"
+          }
+        }
+      }
+    },
+    "order.product_tile_quantity_value %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld in the ticket"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld au ticket"
           }
         }
       }
@@ -5096,13 +5368,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ × %lld"
+            "value": "⁦%@⁩ × %lld"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ × %lld"
+            "value": "⁦%@⁩ × %lld"
           }
         }
       }
@@ -5158,223 +5430,19 @@
         }
       }
     },
-    "pairing.camera_unavailable": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Camera unavailable: enter the code manually."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Caméra indisponible : saisissez le code manuellement."
-          }
-        }
-      }
-    },
-    "pairing.cannot_reach %@": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Could not reach “%@”"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Impossible de joindre « %@ »"
-          }
-        }
-      }
-    },
-    "pairing.code_placeholder": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Pairing code"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Code d'appairage"
-          }
-        }
-      }
-    },
-    "pairing.discovered_servers": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Servers found"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Serveurs trouvés"
-          }
-        }
-      }
-    },
-    "pairing.hint": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Generate a code in Management → Devices on the manager's station."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Générez un code dans Gestion → Appareils sur le poste du responsable."
-          }
-        }
-      }
-    },
-    "pairing.manual_entry_section": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Manual entry"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Saisie manuelle"
-          }
-        }
-      }
-    },
-    "pairing.nav_title": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Pairing"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Appairage"
-          }
-        }
-      }
-    },
-    "pairing.qr_not_recognized": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "QR code not recognized"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "QR non reconnu"
-          }
-        }
-      }
-    },
-    "pairing.register_failed": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Could not register the iPad's identity. Try again with a new code."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Impossible d'enregistrer l'identité de l'iPad. Réessayez avec un nouveau code."
-          }
-        }
-      }
-    },
-    "pairing.scan_qr": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Scan the back-office QR code"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Scanner le QR du back-office"
-          }
-        }
-      }
-    },
-    "pairing.searching_network": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Searching the local network…"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Recherche sur le réseau local…"
-          }
-        }
-      }
-    },
-    "pairing.submit_button": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Pair this iPad"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Appairer cet iPad"
-          }
-        }
-      }
-    },
     "payment.available_credit %@": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Available credit %@"
+            "value": "Available credit ⁦%@⁩"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Crédit disponible %@"
+            "value": "Crédit disponible ⁦%@⁩"
           }
         }
       }
@@ -5436,13 +5504,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Change %@"
+            "value": "Change ⁦%@⁩"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Rendu %@"
+            "value": "Rendu ⁦%@⁩"
           }
         }
       }
@@ -5657,13 +5725,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Remaining due: %@"
+            "value": "Remaining due: ⁦%@⁩"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Reste à payer : %@"
+            "value": "Reste à payer : ⁦%@⁩"
           }
         }
       }
@@ -5742,13 +5810,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Total %@"
+            "value": "Total ⁦%@⁩"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Total %@"
+            "value": "Total ⁦%@⁩"
           }
         }
       }
@@ -5895,13 +5963,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "including tip %@"
+            "value": "including tip ⁦%@⁩"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "dont pourboire %@"
+            "value": "dont pourboire ⁦%@⁩"
           }
         }
       }
@@ -5997,13 +6065,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Confirm · change %@"
+            "value": "Confirm · change ⁦%@⁩"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Valider · rendu %@"
+            "value": "Valider · rendu ⁦%@⁩"
           }
         }
       }
@@ -6014,13 +6082,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Amount %@ · valid 90 days"
+            "value": "Amount ⁦%@⁩ · valid 90 days"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Montant %@ · valable 90 jours"
+            "value": "Montant ⁦%@⁩ · valable 90 jours"
           }
         }
       }

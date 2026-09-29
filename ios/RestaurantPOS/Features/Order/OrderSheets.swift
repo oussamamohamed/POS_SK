@@ -61,7 +61,7 @@ struct ModifierSheet: View {
             HStack(spacing: 16) {
                 VStack(alignment: .leading) {
                     Text("order.options_total \(selection.extraTotal.cents > 0 ? "+" : "")\(selection.extraTotal.formatted)").font(.subheadline).foregroundStyle(Theme.inkMuted)
-                    Text(selection.effectiveUnitPrice(base: product.price).formatted).font(.title2.weight(.bold)).monospacedDigit()
+                    Text(selection.effectiveUnitPrice(base: product.price).formatted).font(.title2.weight(.bold)).monospacedDigit().environment(\.layoutDirection, .leftToRight)
                         .accessibilityIdentifier("modifiers.price")
                 }
                 if let error {

@@ -176,7 +176,7 @@ struct GridEditorView: View {
                     HStack {
                         VStack(alignment: .leading) {
                             Text(product.name).font(.subheadline.weight(.semibold))
-                            Text(product.price.formatted).font(.caption).foregroundStyle(Theme.inkMuted)
+                            Text(product.price.formatted).font(.caption).foregroundStyle(Theme.inkMuted).environment(\.layoutDirection, .leftToRight)
                         }
                         Spacer()
                         Image(systemName: editor.placedProductIds.contains(product.id) ? "checkmark.circle.fill" : "line.3.horizontal")
@@ -206,7 +206,7 @@ struct SlotEditorSheet: View {
                 Picker("admin.slot_product_label", selection: $productId) {
                     Text("admin.empty_slot_label").tag(UUID?.none)
                     ForEach(editor.candidateProducts) { product in
-                        Text("\(product.name) — \(product.price.formatted)").tag(Optional(product.id))
+                        Text("\(product.name) — \u{2066}\(product.price.formatted)\u{2069}").tag(Optional(product.id))
                     }
                 }
                 .accessibilityIdentifier("slot.product")

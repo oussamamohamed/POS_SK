@@ -133,7 +133,7 @@ struct FiscalSlip: View {
         HStack {
             Text(label)
             Spacer()
-            Text(value).monospacedDigit()
+            Text(value).monospacedDigit().environment(\.layoutDirection, .leftToRight)
         }
         .font(bold ? .headline.monospaced() : .subheadline.monospaced())
         .accessibilityElement(children: .combine)

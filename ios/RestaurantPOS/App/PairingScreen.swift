@@ -16,9 +16,9 @@ struct PairingScreen: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("pairing.discovered_servers") {
+                Section("common.pairing_discovered_servers") {
                     if browser.servers.isEmpty {
-                        Label("pairing.searching_network", systemImage: "antenna.radiowaves.left.and.right")
+                        Label("common.pairing_searching_network", systemImage: "antenna.radiowaves.left.and.right")
                             .foregroundStyle(.secondary)
                     }
                     ForEach(browser.servers) { server in
@@ -28,18 +28,18 @@ struct PairingScreen: View {
                 }
                 Section {
                     Button { showsScanner = true } label: {
-                        Label("pairing.scan_qr", systemImage: "qrcode.viewfinder")
+                        Label("common.pairing_scan_qr", systemImage: "qrcode.viewfinder")
                     }
                     .disabled(!DataScannerViewController.isSupported)
                     .accessibilityIdentifier("pairing.scan")
                 }
-                Section("pairing.manual_entry_section") {
+                Section("common.pairing_manual_entry_section") {
                     TextField("http://192.168.1.10:5080", text: $url)
                         .keyboardType(.URL)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
                         .accessibilityIdentifier("pairing.url")
-                    TextField("pairing.code_placeholder", text: $code)
+                    TextField("common.pairing_code_placeholder", text: $code)
                         .textInputAutocapitalization(.characters)
                         .autocorrectionDisabled()
                         .accessibilityIdentifier("pairing.code")
@@ -50,7 +50,7 @@ struct PairingScreen: View {
                         Task { await pair() }
                     } label: {
                         HStack {
-                            Text("pairing.submit_button")
+                            Text("common.pairing_submit_button")
                             if isPairing { Spacer(); ProgressView() }
                         }
                     }
@@ -58,12 +58,12 @@ struct PairingScreen: View {
                     .accessibilityIdentifier("pairing.submit")
                 }
                 Section {
-                    Text("pairing.hint")
+                    Text("common.pairing_hint")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }
             }
-            .navigationTitle("pairing.nav_title")
+            .navigationTitle("common.pairing_nav_title")
         }
         .onAppear {
             url = model.settings.serverURL
@@ -73,13 +73,13 @@ struct PairingScreen: View {
         .sheet(isPresented: $showsScanner) {
             QRScannerView(onScan: { payload in
                 showsScanner = false
-                guard let link = PairingLink(string: payload) else { error = String(localized: "pairing.qr_not_recognized"); return }
+                guard let link = PairingLink(string: payload) else { error = String(localized: "common.pairing_qr_not_recognized"); return }
                 url = link.serverURL.absoluteString
                 code = link.code
                 Task { await pair() }
             }, onFailure: {
                 showsScanner = false
-                error = String(localized: "pairing.camera_unavailable")
+                error = String(localized: "common.pairing_camera_unavailable")
             })
             .ignoresSafeArea()
         }
@@ -90,7 +90,7 @@ struct PairingScreen: View {
             url = resolved.absoluteString
             error = nil
         } else {
-            error = String(localized: "pairing.cannot_reach \(server.name)")
+            error = String(localized: "common.pairing_cannot_reach \(server.name)")
         }
     }
 
@@ -106,7 +106,7 @@ struct PairingScreen: View {
         do {
             let response = try await api.pair(code: code.trimmingCharacters(in: .whitespaces))
             if await !environment.completePairing(serverURL: serverURL, response: response) {
-                error = String(localized: "pairing.register_failed")
+                error = String(localized: "common.pairing_register_failed")
             }
         } catch {
             self.error = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription

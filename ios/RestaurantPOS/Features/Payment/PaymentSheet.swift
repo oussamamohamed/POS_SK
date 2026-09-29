@@ -155,7 +155,7 @@ struct PaymentSheet: View {
                         ForEach(Array(plan.parts.enumerated()), id: \.offset) { index, part in
                             VStack(spacing: 2) {
                                 Text("#\(index + 1)").font(.caption.weight(.bold))
-                                Text(part.formatted).font(.subheadline.monospacedDigit())
+                                Text(part.formatted).font(.subheadline.monospacedDigit()).environment(\.layoutDirection, .leftToRight)
                             }
                             .padding(10)
                             .background(RoundedRectangle(cornerRadius: 10).fill(index < plan.paidParts ? Theme.success.opacity(0.2) : index == plan.paidParts ? Theme.primary.opacity(0.2) : Theme.raised))
@@ -220,12 +220,14 @@ struct PaymentSheet: View {
                 ForEach(OrderMath.suggestedCashAmounts(for: plan.amountToCollect), id: \.self) { amount in
                     Button(amount == plan.amountToCollect ? String(localized: "order.exact_amount") : amount.formatted) { tenderedText = amount.plain }
                         .buttonStyle(.bordered)
+                        .environment(\.layoutDirection, .leftToRight)
                         .accessibilityIdentifier(amount == plan.amountToCollect ? "payment.cash.exact" : "payment.cash.\(amount.cents / 100)")
                 }
             }
             HStack {
                 Text(tenderedText.isEmpty ? plan.amountToCollect.formatted : (Money.parse(tenderedText)?.formatted ?? tenderedText))
                     .font(.title2.monospacedDigit().weight(.semibold))
+                    .environment(\.layoutDirection, .leftToRight)
                     .accessibilityIdentifier("payment.tendered")
                 Spacer()
                 if method == .cash {
@@ -288,6 +290,7 @@ struct PaymentSheet: View {
             if outcome.change.cents > 0 {
                 Text("payment.change_due_title").font(.title3).foregroundStyle(Theme.inkMuted)
                 Text(outcome.change.formatted).font(.system(size: 64, weight: .bold, design: .rounded)).foregroundStyle(Theme.success)
+                    .environment(\.layoutDirection, .leftToRight)
                     .accessibilityIdentifier("result.change")
             }
             if !outcome.isComplete {
@@ -323,6 +326,7 @@ struct ChangeOverlay: View {
             Text(outcome.change.formatted)
                 .font(.system(size: 96, weight: .heavy, design: .rounded))
                 .foregroundStyle(Theme.success)
+                .environment(\.layoutDirection, .leftToRight)
                 .accessibilityIdentifier("change.amount")
             HStack(spacing: 40) {
                 VStack {

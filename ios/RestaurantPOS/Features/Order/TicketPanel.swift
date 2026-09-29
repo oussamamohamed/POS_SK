@@ -182,7 +182,7 @@ struct TicketPanel: View {
         HStack {
             Text(label).lineLimit(1).font(.posLabel)
             Spacer()
-            Text(value).font(.system(size: 13, weight: .medium, design: .monospaced))
+            Text(value).font(.system(size: 13, weight: .medium, design: .monospaced)).environment(\.layoutDirection, .leftToRight)
         }
         .foregroundStyle(color)
     }
@@ -279,6 +279,7 @@ struct FastCashBar: View {
                 .font(.system(size: 13, weight: .bold, design: .monospaced))
                 .buttonStyle(.bordered)
                 .tint(Theme.success)
+                .environment(\.layoutDirection, .leftToRight)
                 .accessibilityIdentifier(amount == due ? "fastcash.exact" : "fastcash.\(amount.cents / 100)")
             }
         }
@@ -350,6 +351,7 @@ struct TicketLineRow: View {
             Text(OrderMath.lineTotal(line).formatted)
                 .font(.posAmountSmall)
                 .foregroundStyle(Theme.ink)
+                .environment(\.layoutDirection, .leftToRight)
         }
         .opacity(line.isDispatched ? 0.85 : 1)
         .accessibilityElement(children: .contain)

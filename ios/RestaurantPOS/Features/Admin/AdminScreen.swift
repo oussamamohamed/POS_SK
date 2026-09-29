@@ -118,7 +118,7 @@ struct DashboardView: View {
                                             Text("admin.service_summary \(s.ordersCount) \(s.coversCount)").font(.caption).foregroundStyle(Theme.inkMuted)
                                         }
                                         Spacer()
-                                        Text(s.salesTtc.formatted).font(.headline.monospacedDigit())
+                                        Text(s.salesTtc.formatted).font(.headline.monospacedDigit()).environment(\.layoutDirection, .leftToRight)
                                     }
                                 }
                             }
@@ -134,7 +134,7 @@ struct DashboardView: View {
                                             Text("admin.staff_summary \(s.tablesServedCount) \(s.averageTableTtc.formatted)").font(.caption).foregroundStyle(Theme.inkMuted)
                                         }
                                         Spacer()
-                                        Text(s.totalSalesTtc.formatted).font(.headline.monospacedDigit())
+                                        Text(s.totalSalesTtc.formatted).font(.headline.monospacedDigit()).environment(\.layoutDirection, .leftToRight)
                                     }
                                 }
                             }
@@ -161,7 +161,7 @@ struct ShareBar: View {
             HStack {
                 Text(label).font(.subheadline).lineLimit(1)
                 Spacer()
-                Text(value).font(.subheadline.monospacedDigit().weight(.semibold))
+                Text(value).font(.subheadline.monospacedDigit().weight(.semibold)).environment(\.layoutDirection, .leftToRight)
             }
             GeometryReader { proxy in
                 Capsule().fill(Theme.raised)
@@ -220,7 +220,7 @@ struct CatalogAdminView: View {
                             Text("admin.station_vat \(product.station) \(product.taxRatePercent.formatted())").font(.caption).foregroundStyle(Theme.inkMuted)
                         }
                         Spacer()
-                        Text(product.price.formatted).font(.headline.monospacedDigit())
+                        Text(product.price.formatted).font(.headline.monospacedDigit()).environment(\.layoutDirection, .leftToRight)
                     }
                     .contentShape(Rectangle())
                     .onTapGesture { editingProduct = ProductEditor(productId: product.id, draft: ProductDraft(product: product)) }

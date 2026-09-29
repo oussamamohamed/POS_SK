@@ -71,7 +71,7 @@ struct CatalogPane: View {
                             Button {
                                 onSelect(product, .direct)
                             } label: {
-                                Text("\(product.name) · \(effectivePrice(product).formatted)")
+                                Text("\(product.name) · \u{2066}\(effectivePrice(product).formatted)\u{2069}")
                                     .font(.posLabel)
                                     .foregroundStyle(Theme.ink)
                                     .lineLimit(1)
@@ -194,11 +194,11 @@ struct ProductTile: View {
                 .multilineTextAlignment(.leading)
             if let hh {
                 HStack(spacing: 6) {
-                    Text(hh.standardPrice.formatted).strikethrough().font(.system(size: 13, design: .monospaced)).foregroundStyle(Theme.inkSubtle)
-                    Text(hh.happyHourPrice.formatted).font(.system(size: 15, weight: .semibold, design: .monospaced)).foregroundStyle(Theme.happyInk)
+                    Text(hh.standardPrice.formatted).strikethrough().font(.system(size: 13, design: .monospaced)).foregroundStyle(Theme.inkSubtle).environment(\.layoutDirection, .leftToRight)
+                    Text(hh.happyHourPrice.formatted).font(.system(size: 15, weight: .semibold, design: .monospaced)).foregroundStyle(Theme.happyInk).environment(\.layoutDirection, .leftToRight)
                 }
             } else {
-                Text(product.price.formatted).font(.posAmountSmall).foregroundStyle(Theme.inkMuted)
+                Text(product.price.formatted).font(.posAmountSmall).foregroundStyle(Theme.inkMuted).environment(\.layoutDirection, .leftToRight)
             }
         }
         .padding(Theme.Space.m)
@@ -211,8 +211,8 @@ struct ProductTile: View {
         .contentShape(shape)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(label), \((hh?.happyHourPrice ?? product.price).formatted)")
-        .accessibilityValue(quantity > 0 ? "\(quantity) au ticket" : "")
-        .accessibilityHint(product.hasModifiers ? "Ouvre les options" : "Ajoute au ticket")
+        .accessibilityValue(quantity > 0 ? "order.product_tile_quantity_value \(quantity)" : "")
+        .accessibilityHint(product.hasModifiers ? "order.product_tile_hint_options" : "order.product_tile_hint_add")
         .accessibilityAddTraits(.isButton)
         .accessibilityIdentifier("product.\(product.name)")
     }
