@@ -61,7 +61,7 @@ public struct Money: Hashable, Comparable, Sendable, Codable, CustomStringConver
         let f = NumberFormatter()
         f.numberStyle = .currency
         f.currencyCode = "EUR" // devise : sous-projet B
-        f.locale = Locale(identifier: locale.identifier + "@numbers=latn")
+        f.locale = Money.latinDigitsLocale(locale)
         f.minimumFractionDigits = 2
         f.maximumFractionDigits = 2
         return f.string(from: euros as NSDecimalNumber) ?? "\(euros) €"
@@ -69,6 +69,16 @@ public struct Money: Hashable, Comparable, Sendable, Codable, CustomStringConver
 
     /// « 19,50 € »
     public var formatted: String { formatted(locale: .current) }
+
+    /// Reconstruit `locale` en forçant `numberingSystem = "latn"` (chiffres occidentaux).
+    /// `Locale(identifier: locale.identifier + "@numbers=latn")` est ignoré silencieusement
+    /// quand l'identifiant porte déjà un mot-clé (ex. `ar_SA@numbers=arab`) : `Locale.Components`
+    /// remplace le mot-clé au lieu de l'ajouter en doublon.
+    public static func latinDigitsLocale(_ locale: Locale) -> Locale {
+        var components = Locale.Components(locale: locale)
+        components.numberingSystem = "latn"
+        return Locale(components: components)
+    }
 
     /// « 19.50 » — utile pour les champs de saisie.
     public var plain: String { String(format: "%.2f", doubleValue) }

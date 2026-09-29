@@ -24,6 +24,17 @@ struct MoneyTests {
         #expect(!text.unicodeScalars.contains(where: { (0x0660...0x0669).contains($0.value) }))
     }
 
+    // Régression I2(a) : `ar_SA@numbers=arab` porte déjà un mot-clé `@numbers=` (chiffres arabo-indiens
+    // par défaut) et `ar_EG` bascule sur `arab` par défaut même sans mot-clé explicite. Ajouter
+    // `@numbers=latn` en concaténant la chaîne (ancien code) est ignoré silencieusement dès qu'un
+    // mot-clé existe déjà : ce test échoue sur l'ancien code et passe avec `Locale.Components`.
+    @Test(arguments: ["ar_SA@numbers=arab", "ar_EG"])
+    func formatsWithWesternDigitsOnArabicRegionLocales(identifier: String) {
+        let text = Money(cents: 1950).formatted(locale: Locale(identifier: identifier))
+        #expect(text.unicodeScalars.contains(where: { $0.value == 0x31 }) && text.unicodeScalars.contains(where: { $0.value == 0x39 }))
+        #expect(!text.unicodeScalars.contains(where: { (0x0660...0x0669).contains($0.value) }))
+    }
+
     @Test(arguments: [("12,5", 1250), ("12.50", 1250), ("7", 700), (" 3,99 € ", 399)])
     func parsesUserInput(input: String, cents: Int) {
         #expect(Money.parse(input)?.cents == cents)
