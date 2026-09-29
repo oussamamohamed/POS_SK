@@ -20,8 +20,10 @@ test.describe('Langue de l\'interface', () => {
     // (le terminal s'authentifie automatiquement au démarrage en environnement de démo).
     await page.goto('/');
     await page.click('#btnLockTerminal');
+    // setLanguage() recharge la page : attendre CE rechargement (waitForLoadState rend la main tout de suite).
+    const reloaded = page.waitForEvent('load');
     await page.locator('#languageSelect').selectOption('ar');
-    await page.waitForLoadState('load');
+    await reloaded;
     await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
     await page.click('#btnLockTerminal');
     await expect(page.locator('#pinLockModal h3')).toHaveText('الصندوق مقفل');
@@ -83,8 +85,10 @@ test.describe('Langue de l\'interface', () => {
   test('le choix est mémorisé et envoyé au serveur', async ({ page }) => {
     await page.goto('/');
     await page.click('#btnLockTerminal');
+    // setLanguage() recharge la page : attendre CE rechargement (waitForLoadState rend la main tout de suite).
+    const reloaded = page.waitForEvent('load');
     await page.locator('#languageSelect').selectOption('en');
-    await page.waitForLoadState('load');
+    await reloaded;
     const request = page.waitForRequest(r => r.url().includes('/api/'));
     await page.reload();
     expect((await request).headers()['accept-language']).toBe('en');
