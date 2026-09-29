@@ -304,4 +304,16 @@
   <data name="errors.receipt_printer_invalid" xml:space="preserve">
     <value>Device or printer not found.</value>
   </data>
+  <data name="receipt.test_title" xml:space="preserve">
+    <value>PRINT TEST</value>
+  </data>
+  <data name="receipt.test_printer" xml:space="preserve">
+    <value>Printer</value>
+  </data>
+  <data name="receipt.test_address" xml:space="preserve">
+    <value>Address</value>
+  </data>
+  <data name="receipt.test_paper" xml:space="preserve">
+    <value>Paper</value>
+  </data>
 </root>

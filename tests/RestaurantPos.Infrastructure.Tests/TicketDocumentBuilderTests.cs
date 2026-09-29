@@ -96,4 +96,15 @@ public class TicketDocumentBuilderTests
             (CultureInfo.CurrentCulture, CultureInfo.CurrentUICulture) = original;
         }
     }
+
+    [Theory]
+    [InlineData("en", "PRINT TEST")]
+    [InlineData("fr", "TEST D'IMPRESSION")]
+    [InlineData("ar", "اختبار الطباعة")]
+    public void TestPage_IsLocalized_AndShowsPrinter(string lang, string title)
+    {
+        var printer = new PrinterConfiguration { Name = "Cuisine", IpAddress = "10.0.0.5", Port = 9100, PaperWidthMm = 58 };
+        var text = AllText(TicketDocumentBuilder.TestPage(printer, lang, DateTimeOffset.UnixEpoch));
+        text.Should().Contain(title).And.Contain("Cuisine").And.Contain("10.0.0.5:9100").And.Contain("58 mm");
+    }
 }

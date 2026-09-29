@@ -70,6 +70,25 @@ public static class TicketDocumentBuilder
         lines.Add(new TicketText(Texts.Get(c, "receipt.keep_until_pickup"), TicketAlign.Center));
     }
 
+    public static TicketDocument TestPage(PrinterConfiguration printer, string language, DateTimeOffset nowUtc)
+    {
+        ArgumentNullException.ThrowIfNull(printer);
+        var (lang, c) = Resolve(language);
+        List<TicketLine> lines =
+        [
+            new TicketText(Texts.Get(c, "receipt.test_title"), TicketAlign.Center, Bold: true, Large: true),
+            new TicketSeparator(),
+            new TicketColumns(Texts.Get(c, "receipt.test_printer"), printer.Name),
+            new TicketColumns(Texts.Get(c, "receipt.test_address"), $"{printer.IpAddress}:{printer.Port}"),
+            new TicketColumns(Texts.Get(c, "receipt.test_paper"), $"{printer.PaperWidthMm} mm"),
+            new TicketColumns(Texts.Get(c, "receipt.date"), nowUtc.ToString("dd/MM/yyyy HH:mm:ss", CultureInfo.InvariantCulture)),
+            new TicketSeparator(),
+            // Échantillon fixe : vérifie accents et liaison arabe quelle que soit la langue.
+            new TicketText("àâçéèêëîïôùû ÀÉÈ — مرحبا بكم — 0123456789", TicketAlign.Center)
+        ];
+        return new TicketDocument(lang, lang == "ar", lines);
+    }
+
     private static (string Lang, CultureInfo Culture) Resolve(string language)
     {
         var lang = Array.IndexOf(Texts.SupportedLanguages, language) >= 0 ? language : "en";

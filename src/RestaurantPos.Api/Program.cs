@@ -22,6 +22,7 @@ using RestaurantPos.Domain.Entities;
 using RestaurantPos.Domain.ValueObjects;
 using RestaurantPos.Infrastructure.Localization;
 using RestaurantPos.Infrastructure.Persistence;
+using RestaurantPos.Infrastructure.Printing;
 using RestaurantPos.Infrastructure.Security;
 using RestaurantPos.Infrastructure.Services;
 
@@ -79,6 +80,7 @@ public partial class Program
         builder.Services.AddScoped<IBackOfficeCatalogService, BackOfficeCatalogService>();
         builder.Services.AddScoped<IStaffManagementService, StaffManagementService>();
         builder.Services.AddScoped<IPrinterConfigurationService, PrinterConfigurationService>();
+        builder.Services.AddSingleton<IPrinterTransport, EscPosPrinterTransport>();
         builder.Services.AddScoped<ITerminalLayoutService, TerminalLayoutService>();
         builder.Services.AddScoped<ICheckoutPaymentService, CheckoutPaymentService>();
         builder.Services.AddScoped<INF525FiscalAuditService, NF525FiscalAuditService>();
