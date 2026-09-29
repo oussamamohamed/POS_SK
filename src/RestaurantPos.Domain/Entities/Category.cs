@@ -8,6 +8,8 @@ public class Category
     public required string Name { get; set; }
     public string? IconName { get; set; }
     public string? ColorHex { get; set; }
+    /// <summary>Poste par défaut des articles de la famille (null = cuisine chaude).</summary>
+    public string? PreparationStationId { get; set; }
     public int DisplayOrder { get; set; }
     public bool IsActive { get; set; } = true;
     public DateTimeOffset CreatedAtUtc { get; init; } = DateTimeOffset.UtcNow;

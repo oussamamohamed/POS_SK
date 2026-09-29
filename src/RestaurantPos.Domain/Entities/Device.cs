@@ -15,6 +15,8 @@ public class Device
     public DateTimeOffset PairedAtUtc { get; init; }
     public DateTimeOffset? LastSeenUtc { get; set; }
     public DateTimeOffset? RevokedAtUtc { get; set; }
+    /// <summary>Imprimante des tickets client de ce poste (null = imprimante du poste RECEIPT).</summary>
+    public Guid? ReceiptPrinterId { get; set; }
 }
 
 /// <summary>Code d'appairage à usage unique généré depuis le back-office.</summary>

@@ -8,5 +8,6 @@ public class RestaurantSettings
     public const int SingletonId = 1;
     public int Id { get; init; } = SingletonId;
     public required string ReceiptLanguage { get; set; }
+    public required string KitchenTicketLanguage { get; set; }
     public DateTimeOffset UpdatedAtUtc { get; set; } = DateTimeOffset.UtcNow;
 }

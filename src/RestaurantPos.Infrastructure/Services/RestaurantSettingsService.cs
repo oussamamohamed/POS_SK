@@ -35,7 +35,8 @@ public class RestaurantSettingsService : IRestaurantSettingsService
         var settings = await _db.RestaurantSettings.FindAsync([RestaurantSettings.SingletonId], ct).ConfigureAwait(false);
         if (settings is not null) return settings;
         var hasOrders = await _db.Orders.AnyAsync(ct).ConfigureAwait(false);
-        settings = new RestaurantSettings { ReceiptLanguage = hasOrders ? "fr" : "en" };
+        var lang = hasOrders ? "fr" : "en";
+        settings = new RestaurantSettings { ReceiptLanguage = lang, KitchenTicketLanguage = lang };
         _db.RestaurantSettings.Add(settings);
         try
         {

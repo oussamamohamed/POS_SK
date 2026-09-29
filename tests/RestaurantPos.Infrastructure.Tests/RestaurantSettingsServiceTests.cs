@@ -87,7 +87,7 @@ public class RestaurantSettingsServiceTests
         var interceptor = new ThrowDbUpdateExceptionOnFirstSaveInterceptor(() =>
         {
             using var winner = new AppDbContext(new DbContextOptionsBuilder<AppDbContext>().UseInMemoryDatabase(dbName).Options);
-            winner.RestaurantSettings.Add(new RestaurantSettings { ReceiptLanguage = "ar" });
+            winner.RestaurantSettings.Add(new RestaurantSettings { ReceiptLanguage = "ar", KitchenTicketLanguage = "ar" });
             winner.SaveChanges();
         });
         using var db = new AppDbContext(new DbContextOptionsBuilder<AppDbContext>()

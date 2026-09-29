@@ -44,6 +44,7 @@ public class AppDbContext : DbContext
     // Appairage des postes
     public DbSet<Device> Devices => Set<Device>();
     public DbSet<DevicePairingCode> DevicePairingCodes => Set<DevicePairingCode>();
+    public DbSet<PrintJob> PrintJobs => Set<PrintJob>();
 
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
     {
@@ -302,6 +303,12 @@ public class AppDbContext : DbContext
             entity.Property(h => h.TotalTtc)
                   .HasConversion(m => m.AmountInCents, cents => new Money(cents, "EUR"));
             entity.HasIndex(h => new { h.TerminalId, h.IsRecalled, h.IsVoided });
+        });
+
+        modelBuilder.Entity<PrintJob>(entity =>
+        {
+            entity.HasKey(j => j.Id);
+            entity.HasIndex(j => new { j.Status, j.NextAttemptAtUtc });
         });
 
         modelBuilder.Entity<Device>(entity =>
