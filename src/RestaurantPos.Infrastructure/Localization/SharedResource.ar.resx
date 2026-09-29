@@ -211,6 +211,9 @@
   <data name="messages.happy_hour_deactivated" xml:space="preserve">
     <value>تم إلغاء تفعيل استثناء Happy Hour.</value>
   </data>
+  <data name="messages.happy_hour_override_fallback_name" xml:space="preserve">
+    <value>استثناء المسؤول</value>
+  </data>
   <data name="errors.happy_hour_schedule_not_found" xml:space="preserve">
     <value>لم يتم العثور على جدول Happy Hour.</value>
   </data>
@@ -276,5 +279,23 @@
   </data>
   <data name="receipt.fiscal_signature" xml:space="preserve">
     <value>التوقيع الضريبي NF525</value>
+  </data>
+  <data name="admin.payment_method_cash" xml:space="preserve">
+    <value>نقدًا</value>
+  </data>
+  <data name="admin.payment_method_credit_card" xml:space="preserve">
+    <value>بطاقة بنكية (CB)</value>
+  </data>
+  <data name="admin.payment_method_meal_voucher" xml:space="preserve">
+    <value>قسائم مطعم</value>
+  </data>
+  <data name="admin.payment_method_gift_card" xml:space="preserve">
+    <value>بطاقة هدايا</value>
+  </data>
+  <data name="admin.payment_method_room_charge" xml:space="preserve">
+    <value>التحميل على غرفة الفندق (PMS)</value>
+  </data>
+  <data name="admin.payment_method_other" xml:space="preserve">
+    <value>دفع آخر</value>
   </data>
 </root>

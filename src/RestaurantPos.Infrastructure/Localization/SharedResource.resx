@@ -211,6 +211,9 @@
   <data name="messages.happy_hour_deactivated" xml:space="preserve">
     <value>Happy Hour override deactivated.</value>
   </data>
+  <data name="messages.happy_hour_override_fallback_name" xml:space="preserve">
+    <value>Manager Override</value>
+  </data>
   <data name="errors.happy_hour_schedule_not_found" xml:space="preserve">
     <value>Happy Hour schedule not found.</value>
   </data>
@@ -276,5 +279,23 @@
   </data>
   <data name="receipt.fiscal_signature" xml:space="preserve">
     <value>NF525 FISCAL SIGNATURE</value>
+  </data>
+  <data name="admin.payment_method_cash" xml:space="preserve">
+    <value>Cash</value>
+  </data>
+  <data name="admin.payment_method_credit_card" xml:space="preserve">
+    <value>Card (CB)</value>
+  </data>
+  <data name="admin.payment_method_meal_voucher" xml:space="preserve">
+    <value>Meal Vouchers</value>
+  </data>
+  <data name="admin.payment_method_gift_card" xml:space="preserve">
+    <value>Gift Card</value>
+  </data>
+  <data name="admin.payment_method_room_charge" xml:space="preserve">
+    <value>Room Charge (PMS)</value>
+  </data>
+  <data name="admin.payment_method_other" xml:space="preserve">
+    <value>Other Payment</value>
   </data>
 </root>

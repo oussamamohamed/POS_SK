@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using RestaurantPos.Application.Common.Interfaces;
 using RestaurantPos.Application.DTOs;
 using RestaurantPos.Domain.Entities;
+using RestaurantPos.Infrastructure.Localization;
 using RestaurantPos.Infrastructure.Persistence;
 
 namespace RestaurantPos.Infrastructure.Services;
@@ -262,12 +263,12 @@ public sealed class FinancialDashboardService : IFinancialDashboardService
     {
         return method switch
         {
-            PaymentMethod.CreditCard => "Carte Bancaire (CB)",
-            PaymentMethod.Cash => "Espèces",
-            PaymentMethod.MealVoucher => "Titres Restaurant",
-            PaymentMethod.RoomCharge => "Note de Chambre (PMS)",
-            PaymentMethod.GiftCard => "Carte Cadeau",
-            _ => "Autre Règlement"
+            PaymentMethod.CreditCard => Texts.T("admin.payment_method_credit_card"),
+            PaymentMethod.Cash => Texts.T("admin.payment_method_cash"),
+            PaymentMethod.MealVoucher => Texts.T("admin.payment_method_meal_voucher"),
+            PaymentMethod.RoomCharge => Texts.T("admin.payment_method_room_charge"),
+            PaymentMethod.GiftCard => Texts.T("admin.payment_method_gift_card"),
+            _ => Texts.T("admin.payment_method_other")
         };
     }
 }

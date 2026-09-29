@@ -58,7 +58,7 @@ public class HappyHourPricingService : IHappyHourPricingService
             return new HappyHourStatusDto(
                 IsActive: true,
                 IsOverride: true,
-                ActiveScheduleName: firstSchedule?.Name ?? "Dérogation Responsable",
+                ActiveScheduleName: firstSchedule?.Name ?? Texts.T("messages.happy_hour_override_fallback_name"),
                 ActiveScheduleId: firstSchedule?.Id,
                 AppliesToTakeaway: firstSchedule?.AppliesToTakeaway ?? false,
                 CurrentWindow: new HappyHourWindowDto(

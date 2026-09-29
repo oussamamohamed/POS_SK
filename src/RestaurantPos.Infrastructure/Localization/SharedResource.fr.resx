@@ -211,6 +211,9 @@
   <data name="messages.happy_hour_deactivated" xml:space="preserve">
     <value>Dérogation Happy Hour désactivée.</value>
   </data>
+  <data name="messages.happy_hour_override_fallback_name" xml:space="preserve">
+    <value>Dérogation Responsable</value>
+  </data>
   <data name="errors.happy_hour_schedule_not_found" xml:space="preserve">
     <value>Planning Happy Hour introuvable.</value>
   </data>
@@ -276,5 +279,23 @@
   </data>
   <data name="receipt.fiscal_signature" xml:space="preserve">
     <value>SIGNATURE FISCALE NF525</value>
+  </data>
+  <data name="admin.payment_method_cash" xml:space="preserve">
+    <value>Espèces</value>
+  </data>
+  <data name="admin.payment_method_credit_card" xml:space="preserve">
+    <value>Carte Bancaire (CB)</value>
+  </data>
+  <data name="admin.payment_method_meal_voucher" xml:space="preserve">
+    <value>Titres Restaurant</value>
+  </data>
+  <data name="admin.payment_method_gift_card" xml:space="preserve">
+    <value>Carte Cadeau</value>
+  </data>
+  <data name="admin.payment_method_room_charge" xml:space="preserve">
+    <value>Note de Chambre (PMS)</value>
+  </data>
+  <data name="admin.payment_method_other" xml:space="preserve">
+    <value>Autre Règlement</value>
   </data>
 </root>
