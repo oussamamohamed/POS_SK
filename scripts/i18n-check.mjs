@@ -21,12 +21,18 @@ for (const m of js.matchAll(/\bt\(\s*['"`]([a-z_]+\.[a-z0-9_.]+)['"`]/g)) used.a
 let errors = 0;
 const fail = msg => { errors++; console.error('✘ ' + msg); };
 
+const reference = JSON.parse(read('i18n/en.json'));
 for (const lang of langs) {
   const dict = JSON.parse(read(`i18n/${lang}.json`));
   for (const k of used) if (!(k in dict)) fail(`${lang}: clé manquante ${k}`);
   for (const [k, v] of Object.entries(dict)) {
     if (!used.has(k)) fail(`${lang}: clé orpheline ${k}`);
     if (typeof v !== 'string' || !v.trim()) fail(`${lang}: valeur vide ${k}`);
+  }
+  // Une traduction doit garder exactement les placeholders {x} de l'anglais (sinon valeur non substituée ou perdue).
+  const placeholders = s => (typeof s === 'string' ? s.match(/\{[a-zA-Z_]+\}/g) ?? [] : []).sort().join(',');
+  for (const [k, v] of Object.entries(dict)) {
+    if (k in reference && placeholders(v) !== placeholders(reference[k])) fail(`${lang}: placeholders différents de en pour ${k}`);
   }
   // apply() lit data-i18n* sans passer de params : une clé rendue ainsi ne peut pas contenir de placeholder.
   for (const k of usedHtmlAttr) {
