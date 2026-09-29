@@ -13,7 +13,7 @@ namespace RestaurantPos.Infrastructure.Tests;
 
 public class MultiStationRoutingTests
 {
-    private static readonly string[] ExpectedStations = ["STATION-BAR", "STATION-HOT", "STATION-PASTRY"];
+    private static readonly string[] ExpectedStations = ["BAR", "HOT_KITCHEN", "DESSERT"];
 
     [Fact]
     public async Task SplitAndRouteOrderAsyncRoutesThreeCourseMealToThreeDistinctStations()
@@ -30,6 +30,8 @@ public class MultiStationRoutingTests
         var burger = new Product { Name = "Burger Gourmet", CategoryId = "CAT-MAINS", Price = Money.FromDecimal(18m) };
         var dessert = new Product { Name = "Tiramisu", CategoryId = "CAT-DESSERTS", Price = Money.FromDecimal(7m) };
 
+        dbContext.Categories.Add(new Category { Id = "CAT-DRINKS", Name = "Boissons", PreparationStationId = "BAR" });
+        dbContext.Categories.Add(new Category { Id = "CAT-DESSERTS", Name = "Desserts", PreparationStationId = "DESSERT" });
         dbContext.Products.Add(cocktail);
         dbContext.Products.Add(burger);
         dbContext.Products.Add(dessert);

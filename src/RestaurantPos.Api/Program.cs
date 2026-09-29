@@ -485,11 +485,11 @@ public partial class Program
 
         if (!await db.Categories.AnyAsync())
         {
-            var catEntrees = await catalogService.CreateCategoryAsync("Entrées Fraîches", "#2ECC71", 1, "salad");
+            var catEntrees = await catalogService.CreateCategoryAsync("Entrées Fraîches", "#2ECC71", 1, "salad", preparationStationId: "COLD");
             var catPlats = await catalogService.CreateCategoryAsync("Plats & Grillades", "#E74C3C", 2, "meat");
             var catPizzas = await catalogService.CreateCategoryAsync("Pizzas Artisanales", "#E67E22", 3, "pizza");
-            var catDesserts = await catalogService.CreateCategoryAsync("Desserts Maison", "#9B59B6", 4, "cake");
-            var catBoissons = await catalogService.CreateCategoryAsync("Boissons & Vins", "#3498DB", 5, "glass");
+            var catDesserts = await catalogService.CreateCategoryAsync("Desserts Maison", "#9B59B6", 4, "cake", preparationStationId: "DESSERT");
+            var catBoissons = await catalogService.CreateCategoryAsync("Boissons & Vins", "#3498DB", 5, "glass", preparationStationId: "BAR");
 
             prodSalade = await catalogService.CreateProductAsync("Salade César Poulet", catEntrees.Id, 9.50m, 10.0m, "Poulet mariné, parmesan, croûtons", "#27AE60", 1, true, "COLD");
             await catalogService.CreateProductAsync("Tartare de Saumon Frais", catEntrees.Id, 12.00m, 10.0m, "Saumon d'Islande, aneth, agrumes", "#2ECC71", 2, false, "COLD");

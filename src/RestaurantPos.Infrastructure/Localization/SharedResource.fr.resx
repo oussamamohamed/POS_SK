@@ -325,4 +325,40 @@
   <data name="errors.print_job_not_cancellable" xml:space="preserve">
     <value>Cette impression ne peut plus être annulée.</value>
   </data>
+  <data name="kitchen_ticket.table" xml:space="preserve">
+    <value>TABLE {table}</value>
+  </data>
+  <data name="kitchen_ticket.takeaway" xml:space="preserve">
+    <value>À EMPORTER</value>
+  </data>
+  <data name="kitchen_ticket.pickup" xml:space="preserve">
+    <value>Retrait n° {number}</value>
+  </data>
+  <data name="kitchen_ticket.buzzer" xml:space="preserve">
+    <value>Bipeur {buzzer}</value>
+  </data>
+  <data name="kitchen_ticket.server" xml:space="preserve">
+    <value>Serveur</value>
+  </data>
+  <data name="kitchen_ticket.covers" xml:space="preserve">
+    <value>Couverts</value>
+  </data>
+  <data name="kitchen_ticket.time" xml:space="preserve">
+    <value>Heure</value>
+  </data>
+  <data name="kitchen_ticket.comment" xml:space="preserve">
+    <value>Note : {comment}</value>
+  </data>
+  <data name="kitchen_ticket.course_direct" xml:space="preserve">
+    <value>Direct</value>
+  </data>
+  <data name="kitchen_ticket.course_suite" xml:space="preserve">
+    <value>Suite</value>
+  </data>
+  <data name="kitchen_ticket.course_dessert" xml:space="preserve">
+    <value>Dessert</value>
+  </data>
+  <data name="kitchen_ticket.course_on_demand" xml:space="preserve">
+    <value>À la demande</value>
+  </data>
 </root>
