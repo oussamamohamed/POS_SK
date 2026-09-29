@@ -452,19 +452,19 @@ public partial class Program
         {
             if (!await db.Users.AnyAsync(u => u.Name.Contains("Alexandre Dupont")))
             {
-                try { await staffService.CreateStaffMemberAsync("Alexandre Dupont (Manager)", UserRole.FloorManager, "1234"); } catch { }
+                try { await staffService.CreateStaffMemberAsync("Alexandre Dupont (Manager)", UserRole.FloorManager, "1234"); } catch {}
             }
             if (!await db.Users.AnyAsync(u => u.Name.Contains("Sophie Martin")))
             {
-                try { await staffService.CreateStaffMemberAsync("Sophie Martin (Serveuse)", UserRole.Waiter, "2468"); } catch { }
+                try { await staffService.CreateStaffMemberAsync("Sophie Martin (Serveuse)", UserRole.Waiter, "2468"); } catch {}
             }
             if (!await db.Users.AnyAsync(u => u.Name.Contains("Thomas Bernard")))
             {
-                try { await staffService.CreateStaffMemberAsync("Thomas Bernard (Chef)", UserRole.KitchenStaff, "5678"); } catch { }
+                try { await staffService.CreateStaffMemberAsync("Thomas Bernard (Chef)", UserRole.KitchenStaff, "5678"); } catch {}
             }
             if (!await db.Users.AnyAsync(u => u.Name.Contains("Admin Système")))
             {
-                try { await staffService.CreateStaffMemberAsync("Admin Système", UserRole.Admin, "9999"); } catch { }
+                try { await staffService.CreateStaffMemberAsync("Admin Système", UserRole.Admin, "9999"); } catch {}
             }
         }
 
