@@ -1,3 +1,4 @@
+using System.Linq;
 using FluentAssertions;
 using RestaurantPos.Infrastructure.Printing;
 using Xunit;
@@ -17,6 +18,11 @@ public class TicketDocumentJsonTests
         ]);
         var json = TicketDocumentJson.Serialize(doc);
         json.Should().Contain("\"type\":\"TicketText\"");
-        TicketDocumentJson.Deserialize(json).Should().BeEquivalentTo(doc);
+        json.Should().Contain("\"TicketColumns\"").And.Contain("\"TicketSeparator\"");
+        var back = TicketDocumentJson.Deserialize(json);
+        back.Language.Should().Be(doc.Language);
+        back.RightToLeft.Should().Be(doc.RightToLeft);
+        back.Lines.Select(l => l.GetType()).Should().Equal(typeof(TicketText), typeof(TicketColumns), typeof(TicketSeparator));
+        for (var i = 0; i < doc.Lines.Count; i++) back.Lines[i].Should().Be(doc.Lines[i]);
     }
 }
