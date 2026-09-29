@@ -132,7 +132,21 @@ struct DiscountSheet: View {
     enum Target: Hashable { case global, line(UUID) }
     enum Unit: String, CaseIterable { case percent = "%", euro = "€" }
 
+    // nf525-texte-fixe : motifs envoyés au serveur et stockés dans l'audit, toujours en français.
     static let reasons = ["Geste commercial", "Client fidèle", "Erreur de service", "Attente prolongée", "Repas du personnel", "Autre motif"]
+
+    /// Clé de catalogue pour l'affichage localisé d'un motif ; la valeur envoyée au serveur (`reasons`)
+    /// reste le littéral français fixe ci-dessus, jamais traduite (règle d'audit NF525).
+    static func reasonLabelKey(for reason: String) -> String {
+        switch reason {
+        case "Geste commercial": "order.discount_reason_goodwill_gesture"
+        case "Client fidèle": "order.discount_reason_loyal_customer"
+        case "Erreur de service": "order.discount_reason_service_error"
+        case "Attente prolongée": "order.discount_reason_long_wait"
+        case "Repas du personnel": "order.discount_reason_staff_meal"
+        default: "order.discount_reason_other_motif"
+        }
+    }
 
     @State private var target: Target = .global
     @State private var unit: Unit = .percent
@@ -178,7 +192,7 @@ struct DiscountSheet: View {
             }
 
             Picker("order.discount_reason_label", selection: $reason) {
-                ForEach(Self.reasons, id: \.self) { Text($0) }
+                ForEach(Self.reasons, id: \.self) { Text(LocalizedStringKey(Self.reasonLabelKey(for: $0))) }
             }
             .pickerStyle(.menu)
             if reason == "Autre motif" {
