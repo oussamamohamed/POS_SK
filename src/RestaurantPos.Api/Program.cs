@@ -303,6 +303,11 @@ public partial class Program
                 ReceiptLanguage TEXT NOT NULL,
                 UpdatedAtUtc TEXT NOT NULL
             );"); } catch { }
+
+            // Initialise ReceiptLanguage au démarrage plutôt qu'à la première lecture paresseuse :
+            // sinon une installation EN/AR fraîche qui prend des commandes avant l'ouverture de
+            // l'admin se retrouve avec "fr" persisté (règle : fr si des commandes existent déjà, sinon en).
+            schemaScope.ServiceProvider.GetRequiredService<IRestaurantSettingsService>().GetAsync().GetAwaiter().GetResult();
         }
 
         app.UseCors();
