@@ -193,9 +193,9 @@ enum AppearancePreference: String, CaseIterable, Identifiable {
     var id: String { rawValue }
     var label: String {
         switch self {
-        case .dark: "Service (sombre)"
-        case .light: "Jour (clair)"
-        case .system: "Réglage de l'iPad"
+        case .dark: String(localized: "admin.appearance_dark")
+        case .light: String(localized: "admin.appearance_light")
+        case .system: String(localized: "admin.appearance_system")
         }
     }
     var colorScheme: ColorScheme? {

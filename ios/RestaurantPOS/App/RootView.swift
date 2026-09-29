@@ -47,8 +47,9 @@ struct LockScreen: View {
                         .frame(width: 88, height: 88)
                         .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.lg, style: .continuous))
                         .accessibilityHidden(true)
-                    Text("AGY POS").font(.system(size: 34, weight: .heavy)).foregroundStyle(Theme.ink)
-                    Text("Saisissez votre code PIN").font(.system(size: 17, weight: .medium)).foregroundStyle(Theme.inkMuted)
+                    Text(verbatim: "AGY POS").font(.system(size: 34, weight: .heavy)).foregroundStyle(Theme.ink)
+                    Text("login.locked_title").font(.system(size: 17, weight: .semibold)).foregroundStyle(Theme.ink)
+                    Text("login.enter_pin_subtitle").font(.system(size: 15, weight: .medium)).foregroundStyle(Theme.inkMuted)
                 }
 
                 PinDots(count: SessionStore.pinLength, filled: session.pinEntry.count, isError: session.pinError != nil)
@@ -77,10 +78,10 @@ struct LockScreen: View {
             VStack {
                 Spacer()
                 HStack {
-                    Label(environment.launch.isUITest ? "Mode démo (données locales)" : model.settings.serverURL, systemImage: "server.rack")
+                    Label(environment.launch.isUITest ? String(localized: "login.demo_mode_label") : model.settings.serverURL, systemImage: "server.rack")
                         .font(.footnote)
                         .foregroundStyle(Theme.inkMuted)
-                    Button("Changer") { showsServerSettings = true }
+                    Button("login.change_server") { showsServerSettings = true }
                         .font(.footnote.weight(.semibold))
                         .accessibilityIdentifier("lock.server")
                 }
@@ -118,7 +119,7 @@ struct ServerSettingsSheet: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Serveur maître") {
+                Section("common.master_server_section") {
                     TextField("http://192.168.1.10:5080", text: $url)
                         .keyboardType(.URL)
                         .textInputAutocapitalization(.never)
@@ -128,18 +129,18 @@ struct ServerSettingsSheet: View {
                         Task { await test() }
                     } label: {
                         HStack {
-                            Text("Tester la connexion")
+                            Text("common.test_connection")
                             if isTesting { Spacer(); ProgressView() }
                         }
                     }
                     if let testResult { Text(testResult).font(.footnote).foregroundStyle(.secondary) }
                 }
                 if let device = environment.settings.credentials {
-                    Section("Cet iPad") {
-                        LabeledContent("Nom", value: device.name)
-                        LabeledContent("Terminal", value: device.terminalId)
-                        LabeledContent("Serveur", value: device.serverName)
-                        Button("Dissocier cet iPad", role: .destructive) {
+                    Section("common.this_ipad_section") {
+                        LabeledContent("common.field_name", value: device.name)
+                        LabeledContent("common.field_terminal", value: device.terminalId)
+                        LabeledContent("common.field_server", value: device.serverName)
+                        Button("common.unpair_ipad", role: .destructive) {
                             environment.settings.unpair()
                             dismiss()
                         }
@@ -147,12 +148,12 @@ struct ServerSettingsSheet: View {
                     }
                 }
             }
-            .navigationTitle("Connexion")
+            .navigationTitle("common.nav_connection")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("Annuler") { dismiss() } }
+                ToolbarItem(placement: .cancellationAction) { Button("common.cancel") { dismiss() } }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Enregistrer") {
+                    Button("common.save") {
                         environment.settings.serverURL = url
                         environment.reconnect()
                         dismiss()
@@ -167,14 +168,16 @@ struct ServerSettingsSheet: View {
     }
 
     private func test() async {
-        guard let parsed = URL(string: url), parsed.host != nil else { testResult = "Adresse invalide"; return }
+        guard let parsed = URL(string: url), parsed.host != nil else { testResult = String(localized: "common.invalid_address"); return }
         isTesting = true
         defer { isTesting = false }
         do {
             let latency = try await HTTPPosAPI(baseURL: parsed, deviceToken: environment.settings.credentials?.token).health()
-            testResult = "✓ Serveur joignable (\(Int(latency * 1000)) ms)"
+            let ms = Int(latency * 1000)
+            testResult = String(localized: "common.server_reachable \(ms)")
         } catch {
-            testResult = "✗ \((error as? LocalizedError)?.errorDescription ?? error.localizedDescription)"
+            let message = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
+            testResult = String(localized: "common.server_unreachable \(message)")
         }
     }
 }

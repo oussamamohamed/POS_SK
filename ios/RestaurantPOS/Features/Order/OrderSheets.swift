@@ -19,7 +19,7 @@ struct ModifierSheet: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            SheetHeader(title: product.name, subtitle: "Prix de base \(product.price.formatted) · TVA \(product.taxRatePercent.formatted()) %") { dismiss() }
+            SheetHeader(title: product.name, subtitle: String(localized: "order.modifier_subtitle \(product.price.formatted) \(product.taxRatePercent.formatted())")) { dismiss() }
                 .padding(24)
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
@@ -39,8 +39,8 @@ struct ModifierSheet: View {
                     }
 
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Service").font(.headline)
-                        Picker("Service", selection: $course) {
+                        Text("order.service_label").font(.headline)
+                        Picker("order.service_label", selection: $course) {
                             ForEach([CourseType.direct, .suite, .dessert], id: \.self) { Text($0.label).tag($0) }
                         }
                         .pickerStyle(.segmented)
@@ -48,8 +48,8 @@ struct ModifierSheet: View {
                     }
 
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Commentaire cuisine").font(.headline)
-                        TextField("Ex. sans oignons, allergie…", text: $selection.kitchenComment, axis: .vertical)
+                        Text("order.kitchen_comment_label").font(.headline)
+                        TextField("order.kitchen_comment_placeholder", text: $selection.kitchenComment, axis: .vertical)
                             .textFieldStyle(.roundedBorder)
                             .lineLimit(1...3)
                             .accessibilityIdentifier("modifiers.comment")
@@ -60,7 +60,7 @@ struct ModifierSheet: View {
             Divider()
             HStack(spacing: 16) {
                 VStack(alignment: .leading) {
-                    Text("Options \(selection.extraTotal.cents > 0 ? "+" : "")\(selection.extraTotal.formatted)").font(.subheadline).foregroundStyle(Theme.inkMuted)
+                    Text("order.options_total \(selection.extraTotal.cents > 0 ? "+" : "")\(selection.extraTotal.formatted)").font(.subheadline).foregroundStyle(Theme.inkMuted)
                     Text(selection.effectiveUnitPrice(base: product.price).formatted).font(.title2.weight(.bold)).monospacedDigit()
                         .accessibilityIdentifier("modifiers.price")
                 }
@@ -68,7 +68,7 @@ struct ModifierSheet: View {
                     Text(error).font(.footnote.weight(.medium)).foregroundStyle(Theme.danger).accessibilityIdentifier("modifiers.error")
                 }
                 Spacer()
-                ActionButton(title: "Ajouter au ticket", systemImage: "plus.circle.fill", kind: .primary) { confirm() }
+                ActionButton(title: String(localized: "order.add_to_ticket_button"), systemImage: "plus.circle.fill", kind: .primary) { confirm() }
                     .frame(maxWidth: 260)
                     .accessibilityIdentifier("modifiers.confirm")
             }
@@ -84,13 +84,13 @@ struct ModifierSheet: View {
                 try selection.toggle(option, in: group)
                 error = nil
             } catch {
-                if case let .maximumReached(name, max) = error { self.error = "Maximum \(max) option(s) pour « \(name) »" }
+                if case let .maximumReached(name, max) = error { self.error = String(localized: "order.max_options_error \(max) \(name)") }
                 Haptics.error()
             }
         } label: {
             VStack(alignment: .leading, spacing: 4) {
                 Text(option.name).font(.subheadline.weight(.semibold)).multilineTextAlignment(.leading)
-                Text(option.extraPrice.cents > 0 ? "+\(option.extraPrice.formatted)" : "Inclus")
+                Text(option.extraPrice.cents > 0 ? "order.extra_price_prefix \(option.extraPrice.formatted)" : "order.included_label")
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(option.extraPrice.cents > 0 ? .green : .secondary)
             }
@@ -143,12 +143,12 @@ struct DiscountSheet: View {
     var body: some View {
         let ticket = model.ticket
         VStack(alignment: .leading, spacing: 20) {
-            SheetHeader(title: "Remise & gratuité", subtitle: ticket.title) { dismiss() }
+            SheetHeader(title: String(localized: "order.discount_sheet_title"), subtitle: ticket.title) { dismiss() }
 
-            Picker("Cible", selection: $target) {
-                Text("Remise globale sur la note").tag(Target.global)
+            Picker("order.discount_target_label", selection: $target) {
+                Text("order.discount_global_option").tag(Target.global)
                 ForEach(ticket.compEligibleLines) { line in
-                    Text("Offrir : \(line.quantity)× \(line.name) (\(OrderMath.lineTotal(line).formatted))").tag(Target.line(line.id))
+                    Text("order.discount_comp_option \(line.quantity) \(line.name) \(OrderMath.lineTotal(line).formatted)").tag(Target.line(line.id))
                 }
             }
             .pickerStyle(.menu)
@@ -164,12 +164,12 @@ struct DiscountSheet: View {
                     }
                 }
                 HStack {
-                    TextField("Valeur", text: $valueText)
+                    TextField("order.discount_value_placeholder", text: $valueText)
                         .keyboardType(.decimalPad)
                         .textFieldStyle(.roundedBorder)
                         .font(.title3)
                         .accessibilityIdentifier("discount.value")
-                    Picker("Unité", selection: $unit) {
+                    Picker("order.discount_unit_label", selection: $unit) {
                         ForEach(Unit.allCases, id: \.self) { Text($0.rawValue) }
                     }
                     .pickerStyle(.segmented)
@@ -177,23 +177,23 @@ struct DiscountSheet: View {
                 }
             }
 
-            Picker("Motif", selection: $reason) {
+            Picker("order.discount_reason_label", selection: $reason) {
                 ForEach(Self.reasons, id: \.self) { Text($0) }
             }
             .pickerStyle(.menu)
             if reason == "Autre motif" {
-                TextField("Précisez le motif", text: $customReason).textFieldStyle(.roundedBorder)
+                TextField("order.custom_reason_placeholder", text: $customReason).textFieldStyle(.roundedBorder)
             }
 
             Spacer()
             HStack(spacing: 12) {
                 if ticket.discount != nil {
-                    ActionButton(title: "Supprimer la remise", systemImage: "arrow.uturn.backward", kind: .danger) {
+                    ActionButton(title: String(localized: "order.remove_discount_button"), systemImage: "arrow.uturn.backward", kind: .danger) {
                         Task { await ticket.removeDiscount(); dismiss() }
                     }
                     .accessibilityIdentifier("discount.remove")
                 }
-                ActionButton(title: target == .global ? "Appliquer la remise" : "Offrir l'article", systemImage: "checkmark", kind: .primary) {
+                ActionButton(title: String(localized: target == .global ? "order.apply_discount_button" : "order.comp_item_button"), systemImage: "checkmark", kind: .primary) {
                     Task { await apply() }
                 }
                 .accessibilityIdentifier("discount.apply")
@@ -204,12 +204,13 @@ struct DiscountSheet: View {
     }
 
     private func apply() async {
+        // Motif envoyé au serveur et stocké dans l'audit : toujours en français, jamais traduit.
         let finalReason = reason == "Autre motif" ? (customReason.isEmpty ? "Remise accordée" : customReason) : reason
         let ok: Bool
         switch target {
         case .global:
             guard let value = Decimal(string: valueText.replacingOccurrences(of: ",", with: "."), locale: Locale(identifier: "en_US_POSIX")) else {
-                model.notifier.warning("Valeur de remise invalide")
+                model.notifier.warning(String(localized: "order.invalid_discount_value"))
                 return
             }
             ok = await model.ticket.applyGlobalDiscount(type: unit == .percent ? .percentage : .fixedAmount, value: value, reason: finalReason)
@@ -232,10 +233,10 @@ struct TransferSheet: View {
         let ticket = model.ticket
         let candidates = model.floor.diningTables.filter { $0.tableNumber != ticket.tableNumber }
         VStack(alignment: .leading, spacing: 20) {
-            SheetHeader(title: "Transférer \(ticket.title)", subtitle: "Choisissez la table de destination") { dismiss() }
-            Picker("Mode", selection: $merge) {
-                Text("Transférer (table libre)").tag(false)
-                Text("Fusionner (table occupée)").tag(true)
+            SheetHeader(title: String(localized: "order.transfer_sheet_title \(ticket.title)"), subtitle: String(localized: "order.transfer_sheet_subtitle")) { dismiss() }
+            Picker("order.transfer_mode_label", selection: $merge) {
+                Text("order.transfer_option_move").tag(false)
+                Text("order.transfer_option_merge").tag(true)
             }
             .pickerStyle(.segmented)
             .accessibilityIdentifier("transfer.mode")
@@ -258,7 +259,7 @@ struct TransferSheet: View {
                     }
                 }
             }
-            ActionButton(title: merge ? "Fusionner" : "Transférer", systemImage: "arrow.left.arrow.right", kind: .primary) {
+            ActionButton(title: String(localized: merge ? "order.transfer_merge_button" : "order.transfer_move_button"), systemImage: "arrow.left.arrow.right", kind: .primary) {
                 guard let target else { return }
                 Task { if await ticket.transfer(to: target, merge: merge) { dismiss() } }
             }
@@ -279,12 +280,12 @@ struct HoldSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
-            SheetHeader(title: "Mettre en attente", subtitle: "Libère la caisse pour le client suivant") { dismiss() }
-            TextField("Nom ou repère du client", text: $label)
+            SheetHeader(title: String(localized: "order.hold_sheet_title"), subtitle: String(localized: "order.hold_sheet_subtitle")) { dismiss() }
+            TextField("order.hold_label_placeholder", text: $label)
                 .textFieldStyle(.roundedBorder)
                 .font(.title3)
                 .accessibilityIdentifier("hold.label")
-            ActionButton(title: "Mettre en attente", systemImage: "pause.circle.fill", kind: .primary) {
+            ActionButton(title: String(localized: "order.hold_sheet_title"), systemImage: "pause.circle.fill", kind: .primary) {
                 Task { if await model.ticket.hold(label: label.isEmpty ? model.ticket.suggestedHoldLabel : label) { dismiss() } }
             }
             .accessibilityIdentifier("hold.confirm")
@@ -305,24 +306,24 @@ struct HeldOrdersSheet: View {
     var body: some View {
         let ticket = model.ticket
         VStack(alignment: .leading, spacing: 16) {
-            SheetHeader(title: "Commandes en attente", subtitle: "\(ticket.heldOrders.count) commande(s)") { dismiss() }
+            SheetHeader(title: String(localized: "order.held_orders_title"), subtitle: String(localized: "order.held_orders_count \(ticket.heldOrders.count)")) { dismiss() }
             if ticket.heldOrders.isEmpty {
-                EmptyStateView(title: "Aucune commande en attente", systemImage: "pause.circle", message: "Utilisez « Attente » pour parquer un ticket.")
+                EmptyStateView(title: String(localized: "order.no_held_orders_title"), systemImage: "pause.circle", message: String(localized: "order.no_held_orders_message"))
             } else {
                 List(ticket.heldOrders) { held in
                     HStack {
                         VStack(alignment: .leading, spacing: 4) {
-                            Text(held.customerLabel ?? "Client").font(.headline)
-                            Text("\(held.itemCount) article(s) · \(held.totalTtc.money.formatted) · \(held.heldAtUtc.formatted(date: .omitted, time: .shortened))")
+                            Text(held.customerLabel ?? String(localized: "order.default_customer_label")).font(.headline)
+                            Text("order.held_order_summary \(held.itemCount) \(held.totalTtc.money.formatted) \(held.heldAtUtc.formatted(date: .omitted, time: .shortened))")
                                 .font(.subheadline).foregroundStyle(Theme.inkMuted)
                         }
                         Spacer()
-                        Button("Rappeler") {
+                        Button("order.recall_button") {
                             Task { if await ticket.recall(held) { dismiss() } }
                         }
                         .buttonStyle(.borderedProminent)
                         .accessibilityIdentifier("held.recall.\(held.customerLabel ?? "")")
-                        Button("Annuler", role: .destructive) {
+                        Button("common.cancel", role: .destructive) {
                             supervisorPin = ""
                             voiding = held
                         }
@@ -337,9 +338,9 @@ struct HeldOrdersSheet: View {
         .padding(28)
         .sheet(item: $voiding) { held in
             VStack(spacing: 20) {
-                SheetHeader(title: "Autorisation superviseur", subtitle: "Annulation de « \(held.customerLabel ?? "Client") »") { voiding = nil }
+                SheetHeader(title: String(localized: "order.supervisor_auth_title"), subtitle: String(localized: "order.void_confirmation_subtitle \(held.customerLabel ?? String(localized: "order.default_customer_label"))")) { voiding = nil }
                 SupervisorPinPad(pin: $supervisorPin, identifierPrefix: "void.pin")
-                ActionButton(title: "Confirmer l'annulation", systemImage: "trash", kind: .danger) {
+                ActionButton(title: String(localized: "order.confirm_void_button"), systemImage: "trash", kind: .danger) {
                     Task { if await ticket.voidHeld(held, supervisorPin: supervisorPin) { voiding = nil } else { supervisorPin = "" } }
                 }
                 .accessibilityIdentifier("void.confirm")

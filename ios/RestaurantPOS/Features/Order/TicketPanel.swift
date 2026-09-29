@@ -19,7 +19,7 @@ struct TicketPanel: View {
             header
             Theme.line.frame(height: 1)
             if ticket.isEmpty {
-                EmptyStateView(title: "\(ticket.title) vide", systemImage: "fork.knife", message: "Touchez un article pour démarrer la commande")
+                EmptyStateView(title: String(localized: "order.empty_ticket_title \(ticket.title)"), systemImage: "fork.knife", message: String(localized: "order.empty_ticket_message"))
                     .frame(maxHeight: .infinity)
             } else {
                 List {
@@ -29,7 +29,7 @@ struct TicketPanel: View {
                                 TicketLineRow(line: line, destination: ticket.destination)
                                     .swipeActions(edge: .trailing, allowsFullSwipe: true) {
                                         if line.isDraft {
-                                            Button(role: .destructive) { ticket.remove(line.id) } label: { Label("Supprimer", systemImage: "trash") }
+                                            Button(role: .destructive) { ticket.remove(line.id) } label: { Label("common.delete", systemImage: "trash") }
                                         }
                                     }
                                     .listRowInsets(EdgeInsets(top: Theme.Space.s, leading: Theme.Space.l, bottom: Theme.Space.s, trailing: Theme.Space.l))
@@ -91,7 +91,7 @@ struct TicketPanel: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(ticket.title).font(.system(size: 22, weight: .bold)).foregroundStyle(Theme.ink).accessibilityIdentifier("ticket.title")
                     if !ticket.isCounter {
-                        Text(ticket.covers > 0 ? "\(ticket.covers) couvert(s)" : "Sur place").font(.posLabel).foregroundStyle(Theme.inkMuted)
+                        Text(ticket.covers > 0 ? "order.covers_count \(ticket.covers)" : "order.dine_in_label").font(.posLabel).foregroundStyle(Theme.inkMuted)
                     }
                 }
                 Spacer()
@@ -106,12 +106,12 @@ struct TicketPanel: View {
                     }
                     .buttonStyle(ActionButtonStyle(kind: .neutral))
                     .accessibilityIdentifier("ticket.heldQueue")
-                    .accessibilityLabel("Commandes en attente : \(ticket.heldOrders.count)")
+                    .accessibilityLabel("order.held_queue_label \(ticket.heldOrders.count)")
                 } else {
                     Button {
                         Task { await ticket.openCounter(destination: .takeaway) }
                     } label: {
-                        Label("Comptoir", systemImage: "bag")
+                        Label("order.counter_label", systemImage: "bag")
                             .font(.posLabel)
                             .padding(.horizontal, Theme.Space.m)
                             .frame(minHeight: Theme.touchMin)
@@ -127,13 +127,13 @@ struct TicketPanel: View {
                         .frame(width: Theme.touchMin, height: Theme.touchMin)
                 }
                 .buttonStyle(ActionButtonStyle(kind: .neutral))
-                .accessibilityLabel("Plan de salle")
+                .accessibilityLabel("order.floor_plan_label")
                 .accessibilityIdentifier("ticket.toFloor")
             }
             if ticket.isCounter {
-                Picker("Destination", selection: Binding(get: { ticket.destination }, set: { value in Task { await ticket.switchDestination(value) } })) {
-                    Label("À emporter", systemImage: "bag").tag(OrderDestination.takeaway)
-                    Label("Sur place", systemImage: "fork.knife").tag(OrderDestination.eatIn)
+                Picker("order.destination_label", selection: Binding(get: { ticket.destination }, set: { value in Task { await ticket.switchDestination(value) } })) {
+                    Label("order.destination_takeaway", systemImage: "bag").tag(OrderDestination.takeaway)
+                    Label("order.destination_eat_in", systemImage: "fork.knife").tag(OrderDestination.eatIn)
                 }
                 .pickerStyle(.segmented)
                 .accessibilityIdentifier("ticket.destination")
@@ -149,18 +149,18 @@ struct TicketPanel: View {
         let totals = ticket.totals
         return VStack(spacing: 6) {
             if let discount = ticket.discount {
-                row("Sous-total", totals.subtotalTtc.formatted)
-                row("Remise \(discount.label)\(discount.reason.map { " · \($0)" } ?? "")", "−\(totals.discountAmount.formatted)", color: Theme.success)
+                row(String(localized: "order.subtotal_label"), totals.subtotalTtc.formatted)
+                row(String(localized: "order.discount_row_label \(discount.label)\(discount.reason.map { " · \($0)" } ?? "")"), "−\(totals.discountAmount.formatted)", color: Theme.success)
             }
-            row("Total HT", totals.totalHt.formatted)
+            row(String(localized: "order.total_ht_label"), totals.totalHt.formatted)
             ForEach(totals.vatLines, id: \.ratePercent) { vat in
-                row("TVA \(vat.ratePercent.formatted()) %", vat.vat.formatted)
+                row(String(localized: "order.vat_row_label \(vat.ratePercent.formatted())"), vat.vat.formatted)
             }
             if let remaining = ticket.remainingBalance, remaining != totals.totalTtc {
-                row("Déjà réglé", (totals.totalTtc - remaining).formatted, color: Theme.success)
+                row(String(localized: "order.already_paid_label"), (totals.totalTtc - remaining).formatted, color: Theme.success)
             }
             HStack(alignment: .firstTextBaseline) {
-                Text(ticket.remainingBalance == nil ? "Total TTC" : "Reste à payer").font(.posHeadline).foregroundStyle(Theme.ink)
+                Text(ticket.remainingBalance == nil ? "order.total_ttc_label" : "order.remaining_due_label").font(.posHeadline).foregroundStyle(Theme.ink)
                 Spacer()
                 Text(ticket.amountDue.formatted)
                     .font(.posAmountXL)
@@ -168,6 +168,7 @@ struct TicketPanel: View {
                     .lineLimit(1)
                     .minimumScaleFactor(0.6)
                     .contentTransition(.numericText())
+                    .environment(\.layoutDirection, .leftToRight)
                     .accessibilityIdentifier("ticket.total")
             }
         }
@@ -192,20 +193,20 @@ struct TicketPanel: View {
         let ticket = model.ticket
         return VStack(spacing: Theme.Space.s) {
             HStack(spacing: Theme.Space.s) {
-                smallAction("Remise", "percent", kind: .neutral, id: "ticket.discount", disabled: ticket.isEmpty) {
+                smallAction(String(localized: "order.discount_action"), "percent", kind: .neutral, id: "ticket.discount", disabled: ticket.isEmpty) {
                     Task { if await ticket.prepareForDiscount() { sheet = .discount } }
                 }
                 if ticket.isCounter {
-                    smallAction("Attente", "pause", kind: .neutral, id: "ticket.hold", disabled: ticket.isEmpty) { sheet = .hold }
+                    smallAction(String(localized: "order.hold_action"), "pause", kind: .neutral, id: "ticket.hold", disabled: ticket.isEmpty) { sheet = .hold }
                 } else {
-                    smallAction("Transfert", "arrow.left.arrow.right", kind: .neutral, id: "ticket.transfer", disabled: ticket.isEmpty) {
+                    smallAction(String(localized: "order.transfer_action"), "arrow.left.arrow.right", kind: .neutral, id: "ticket.transfer", disabled: ticket.isEmpty) {
                         Task { await model.floor.load(); sheet = .transfer }
                     }
-                    smallAction("Suite", "bell", kind: .neutral, id: "ticket.fireSuite", disabled: ticket.isEmpty) {
+                    smallAction(String(localized: "order.fire_suite_action"), "bell", kind: .neutral, id: "ticket.fireSuite", disabled: ticket.isEmpty) {
                         Task { await ticket.fireSuite() }
                     }
                 }
-                smallAction("Vider", "trash", kind: .danger, id: "ticket.clear", disabled: !ticket.hasDrafts) { ticket.clearDrafts() }
+                smallAction(String(localized: "order.clear_action"), "trash", kind: .danger, id: "ticket.clear", disabled: !ticket.hasDrafts) { ticket.clearDrafts() }
             }
 
             if ticket.isCounter && !ticket.isEmpty {
@@ -213,7 +214,7 @@ struct TicketPanel: View {
             }
 
             HStack(spacing: Theme.Space.s) {
-                ActionButton(title: "Cuisine", systemImage: "paperplane.fill", isLoading: ticket.isBusy, kind: .tonal, height: Theme.touchLarge) {
+                ActionButton(title: String(localized: "order.send_kitchen_button"), systemImage: "paperplane.fill", isLoading: ticket.isBusy, kind: .tonal, height: Theme.touchLarge) {
                     Task {
                         if await ticket.sendToKitchen(), !ticket.isCounter {
                             Haptics.success()
@@ -225,7 +226,7 @@ struct TicketPanel: View {
                 .accessibilityIdentifier("ticket.send")
                 .frame(maxWidth: 150)
 
-                ActionButton(title: "Encaisser \(ticket.amountDue.formatted)", systemImage: "creditcard.fill", kind: .primary, height: Theme.touchLarge) {
+                ActionButton(title: String(localized: "order.pay_button \(ticket.amountDue.formatted)"), systemImage: "creditcard.fill", kind: .primary, height: Theme.touchLarge) {
                     sheet = .payment
                 }
                 .disabled(ticket.amountDue.cents <= 0)
@@ -266,7 +267,7 @@ struct FastCashBar: View {
         HStack(spacing: 6) {
             Image(systemName: "banknote").foregroundStyle(Theme.success)
             ForEach(OrderMath.suggestedCashAmounts(for: due).prefix(4), id: \.self) { amount in
-                Button(amount == due ? "Exact" : amount.formatted) {
+                Button(amount == due ? String(localized: "order.exact_amount") : amount.formatted) {
                     Task {
                         let outcome = await model.ticket.counterCheckout(method: .cash, amount: due, tendered: amount, tip: .zero, buzzer: nil, printReceipt: false, policy: model.settings.mealVoucherPolicy)
                         if let outcome {
@@ -331,13 +332,13 @@ struct TicketLineRow: View {
                     .accessibilityLabel(line.course.label)
                     .accessibilityIdentifier("line.course.\(line.name)")
                     if line.isHappyHourApplied { Badge(text: "HH", color: Theme.happyInk, systemImage: "wineglass") }
-                    if line.isComp { Badge(text: "Offert", color: Theme.success, systemImage: "gift") }
+                    if line.isComp { Badge(text: String(localized: "order.comp_badge"), color: Theme.success, systemImage: "gift") }
                     if line.isDispatched {
-                        Label("En cuisine", systemImage: "checkmark").font(.system(size: 12, weight: .semibold)).foregroundStyle(Theme.inkSubtle)
+                        Label("order.in_kitchen_label", systemImage: "checkmark").font(.system(size: 12, weight: .semibold)).foregroundStyle(Theme.inkSubtle)
                     } else {
                         HStack(spacing: 4) {
                             Circle().fill(Theme.warning).frame(width: 6, height: 6)
-                            Text("Non envoyé")
+                            Text("order.not_sent_label")
                         }
                         .font(.system(size: 12, weight: .semibold))
                         .foregroundStyle(Theme.warning)
@@ -356,9 +357,9 @@ struct TicketLineRow: View {
     }
 
     private var unitDescription: String {
-        var text = "\(line.effectiveUnitPrice.formatted) × \(line.quantity)"
-        if let original = line.originalUnitPrice { text += " (au lieu de \(original.formatted))" }
-        text += " · TVA \(OrderMath.effectiveTaxRate(line, destination: destination).formatted()) %"
+        var text = String(localized: "order.unit_price_times_qty \(line.effectiveUnitPrice.formatted) \(line.quantity)")
+        if let original = line.originalUnitPrice { text += String(localized: "order.instead_of_price \(original.formatted)") }
+        text += String(localized: "order.vat_rate_suffix \(OrderMath.effectiveTaxRate(line, destination: destination).formatted())")
         return text
     }
 }

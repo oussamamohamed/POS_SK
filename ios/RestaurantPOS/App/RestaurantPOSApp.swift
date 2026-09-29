@@ -123,11 +123,11 @@ final class Router {
 
         var title: String {
             switch self {
-            case .order: "Caisse"
-            case .floor: "Salle"
-            case .kitchen: "Cuisine"
-            case .fiscal: "Clôture"
-            case .admin: "Gestion"
+            case .order: String(localized: "nav.order")
+            case .floor: String(localized: "nav.floor")
+            case .kitchen: String(localized: "nav.kitchen")
+            case .fiscal: String(localized: "nav.fiscal")
+            case .admin: String(localized: "nav.admin")
             }
         }
 

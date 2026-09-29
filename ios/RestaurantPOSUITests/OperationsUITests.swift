@@ -113,6 +113,16 @@ final class OperationsUITests: PosUITestCase {
         waitToast(containing: "Ticket de test envoyé")
     }
 
+    func testAdminSetsReceiptLanguage() {
+        launch(section: "admin")
+        tap("admin.network")
+        let picker = element("admin.receiptLanguage")
+        XCTAssertTrue(picker.waitForExistence(timeout: 5))
+        picker.tap()
+        app.buttons["العربية"].firstMatch.tap()
+        waitToast(containing: "Langue du ticket enregistrée")
+    }
+
     func testDashboardShowsSales() {
         launch()
         addProduct("Café Gourmand")

@@ -50,8 +50,8 @@ struct GridEditorView: View {
     private var toolbar: some View {
         let editor = model.gridEditor
         return HStack(spacing: 12) {
-            Picker("Famille", selection: Binding(get: { editor.categoryId }, set: { id in Task { await editor.select(category: id) } })) {
-                Text("Tout le menu").tag(CatalogStore.allCategoryId)
+            Picker("admin.category_label", selection: Binding(get: { editor.categoryId }, set: { id in Task { await editor.select(category: id) } })) {
+                Text("order.all_menu").tag(CatalogStore.allCategoryId)
                 ForEach(model.catalog.categories) { Text($0.name).tag($0.id) }
             }
             .pickerStyle(.menu)
@@ -66,14 +66,14 @@ struct GridEditorView: View {
                 Label("\(columns) × \(rows)", systemImage: "square.grid.3x3")
             }
             .accessibilityIdentifier("grid.presets")
-            Stepper("Colonnes \(columns)", value: $columns, in: 2...8).labelsHidden()
-            Stepper("Lignes \(rows)", value: $rows, in: 2...8).labelsHidden()
-            Toggle("Toutes les familles", isOn: $applyToAll).fixedSize()
-            Button("Appliquer") { Task { await editor.applyDimensions(columns: columns, rows: rows, applyToAll: applyToAll) } }
+            Stepper("admin.columns_stepper \(columns)", value: $columns, in: 2...8).labelsHidden()
+            Stepper("admin.rows_stepper \(rows)", value: $rows, in: 2...8).labelsHidden()
+            Toggle("admin.all_families_toggle", isOn: $applyToAll).fixedSize()
+            Button("admin.apply_button") { Task { await editor.applyDimensions(columns: columns, rows: rows, applyToAll: applyToAll) } }
                 .buttonStyle(.borderedProminent)
                 .accessibilityIdentifier("grid.applyDimensions")
             Spacer()
-            Button("Réinitialiser", role: .destructive) { Task { await editor.resetWithCatalogOrder() } }
+            Button("admin.reset_button", role: .destructive) { Task { await editor.resetWithCatalogOrder() } }
                 .buttonStyle(.bordered)
                 .accessibilityIdentifier("grid.reset")
         }
@@ -83,16 +83,16 @@ struct GridEditorView: View {
         let editor = model.gridEditor
         return HStack(spacing: 8) {
             ForEach(0..<max(1, layout.totalPages), id: \.self) { page in
-                ChipButton(title: "Page \(page + 1)", isSelected: page == editor.pageIndex) {
+                ChipButton(title: String(localized: "admin.page_chip \(page + 1)"), isSelected: page == editor.pageIndex) {
                     Task { await editor.select(category: editor.categoryId, page: page) }
                 }
                 .accessibilityIdentifier("grid.page.\(page + 1)")
             }
-            Button { Task { await editor.addPage() } } label: { Label("Nouvelle page", systemImage: "plus") }
+            Button { Task { await editor.addPage() } } label: { Label("admin.new_page", systemImage: "plus") }
                 .buttonStyle(.bordered)
                 .accessibilityIdentifier("grid.addPage")
             Spacer()
-            Text("Format \(layout.columnsCount)×\(layout.rowsCount) · v\(layout.version ?? 1)").font(.caption).foregroundStyle(Theme.inkMuted)
+            Text("admin.grid_format \(layout.columnsCount)\(layout.rowsCount)\(layout.version ?? 1)").font(.caption).foregroundStyle(Theme.inkMuted)
         }
     }
 
@@ -171,7 +171,7 @@ struct GridEditorView: View {
     private var productList: some View {
         let editor = model.gridEditor
         return List {
-            Section("Articles — glissez sur une case") {
+            Section("admin.grid_products_section") {
                 ForEach(editor.candidateProducts) { product in
                     HStack {
                         VStack(alignment: .leading) {
@@ -203,22 +203,22 @@ struct SlotEditorSheet: View {
         let editor = model.gridEditor
         NavigationStack {
             Form {
-                Picker("Article", selection: $productId) {
-                    Text("(Case vide)").tag(UUID?.none)
+                Picker("admin.slot_product_label", selection: $productId) {
+                    Text("admin.empty_slot_label").tag(UUID?.none)
                     ForEach(editor.candidateProducts) { product in
                         Text("\(product.name) — \(product.price.formatted)").tag(Optional(product.id))
                     }
                 }
                 .accessibilityIdentifier("slot.product")
-                TextField("Libellé personnalisé (facultatif)", text: $label).accessibilityIdentifier("slot.label")
-                ColorPicker("Couleur", selection: $color, supportsOpacity: false)
+                TextField("admin.custom_label_placeholder", text: $label).accessibilityIdentifier("slot.label")
+                ColorPicker("admin.color_label", selection: $color, supportsOpacity: false)
             }
-            .navigationTitle("Case L\(position.row + 1) · C\(position.column + 1)")
+            .navigationTitle("admin.slot_title \(position.row + 1)\(position.column + 1)")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("Annuler") { dismiss() } }
+                ToolbarItem(placement: .cancellationAction) { Button("common.cancel") { dismiss() } }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Enregistrer") {
+                    Button("common.save") {
                         Task {
                             await editor.assign(product: model.catalog.product(id: productId), at: position, label: label, colorHex: color.hexString)
                             dismiss()

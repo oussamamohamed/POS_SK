@@ -48,7 +48,7 @@ struct CatalogPane: View {
         VStack(spacing: 12) {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
-                    ChipButton(title: "Tout le menu", systemImage: "fork.knife", isSelected: catalog.selectedCategoryId == CatalogStore.allCategoryId) {
+                    ChipButton(title: String(localized: "order.all_menu"), systemImage: "fork.knife", isSelected: catalog.selectedCategoryId == CatalogStore.allCategoryId) {
                         Task { await catalog.selectCategory(CatalogStore.allCategoryId) }
                     }
                     .accessibilityIdentifier("category.ALL")
@@ -66,7 +66,7 @@ struct CatalogPane: View {
             if !catalog.quickKeys.isEmpty {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
-                        Label("Rapide", systemImage: "bolt.fill").font(.posCaption).foregroundStyle(Theme.warning)
+                        Label("order.quick_products", systemImage: "bolt.fill").font(.posCaption).foregroundStyle(Theme.warning)
                         ForEach(catalog.quickKeys) { product in
                             Button {
                                 onSelect(product, .direct)
@@ -125,9 +125,9 @@ struct ProductGrid: View {
                             .frame(height: height)
                             .onTapGesture { onSelect(product, .direct) }
                             .contextMenu {
-                                Button("Ajouter en Suite", systemImage: "arrow.turn.down.right") { onSelect(product, .suite) }
-                                Button("Ajouter en Dessert", systemImage: "birthday.cake") { onSelect(product, .dessert) }
-                                Button("Personnaliser…", systemImage: "slider.horizontal.3") { onCustomize(product, .direct) }
+                                Button("order.add_as_suite", systemImage: "arrow.turn.down.right") { onSelect(product, .suite) }
+                                Button("order.add_as_dessert", systemImage: "birthday.cake") { onSelect(product, .dessert) }
+                                Button("order.customize", systemImage: "slider.horizontal.3") { onCustomize(product, .direct) }
                             }
                     } else {
                         RoundedRectangle(cornerRadius: Theme.smallRadius, style: .continuous)
@@ -234,7 +234,7 @@ struct PageControl: View {
                     .frame(width: 8, height: 8)
                     .onTapGesture { onSelect(index) }
             }
-            Text("Page \(page + 1)/\(count)").font(.posLabel).foregroundStyle(Theme.inkMuted).accessibilityIdentifier("grid.pageLabel")
+            Text("order.page_indicator \(page + 1)/\(count)").font(.posLabel).foregroundStyle(Theme.inkMuted).accessibilityIdentifier("grid.pageLabel")
             Button { onSelect(page + 1) } label: { Image(systemName: "chevron.right") }
                 .disabled(page >= count - 1)
                 .accessibilityIdentifier("grid.next")

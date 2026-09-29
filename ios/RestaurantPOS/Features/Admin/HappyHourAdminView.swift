@@ -14,7 +14,17 @@ struct HappyHourAdminView: View {
     @State private var familyPercent = "20"
     @State private var search = ""
 
-    enum Tab: String, CaseIterable { case products = "Articles", families = "Familles", rules = "Règles actives" }
+    enum Tab: String, CaseIterable {
+        case products = "Articles", families = "Familles", rules = "Règles actives"
+
+        var label: String {
+            switch self {
+            case .products: String(localized: "admin.hh_tab_products")
+            case .families: String(localized: "admin.hh_tab_families")
+            case .rules: String(localized: "admin.hh_tab_rules")
+            }
+        }
+    }
 
     var body: some View {
         let store = model.happyHourAdmin
@@ -27,13 +37,13 @@ struct HappyHourAdminView: View {
                     HStack {
                         VStack(alignment: .leading) {
                             Text(schedule.name).font(.title2.weight(.bold))
-                            Text("\(schedule.daysLabel) · \(schedule.startTime)–\(schedule.endTime) · \(schedule.appliesToTakeaway ? "emporté inclus" : "sur place uniquement")")
+                            Text("\(schedule.daysLabel) · \(schedule.startTime)–\(schedule.endTime) · \(schedule.appliesToTakeaway ? String(localized: "admin.hh_takeaway_included") : String(localized: "admin.hh_dine_in_only"))")
                                 .font(.subheadline).foregroundStyle(Theme.inkMuted)
                         }
                         Spacer()
                     }
-                    Picker("Onglet", selection: $tab) {
-                        ForEach(Tab.allCases, id: \.self) { Text($0.rawValue) }
+                    Picker("admin.hh_tab_label", selection: $tab) {
+                        ForEach(Tab.allCases, id: \.self) { Text($0.label) }
                     }
                     .pickerStyle(.segmented)
                     .accessibilityIdentifier("hh.tab")
@@ -43,7 +53,7 @@ struct HappyHourAdminView: View {
                     case .rules: rulesTab(schedule)
                     }
                 } else {
-                    EmptyStateView(title: "Aucune plage sélectionnée", systemImage: "wineglass", message: "Créez une plage Happy Hour pour configurer des tarifs.")
+                    EmptyStateView(title: String(localized: "admin.hh_no_schedule_title"), systemImage: "wineglass", message: String(localized: "admin.hh_no_schedule_message"))
                 }
             }
             .padding(20)
@@ -61,17 +71,17 @@ struct HappyHourAdminView: View {
                     VStack(alignment: .leading, spacing: 4) {
                         Text(schedule.name).font(.headline)
                         Text("\(schedule.startTime)–\(schedule.endTime) · \(schedule.daysLabel)").font(.caption).foregroundStyle(Theme.inkMuted)
-                        Text("\(schedule.priceRules.count) règle(s) · priorité \(schedule.priority)").font(.caption2).foregroundStyle(.blue)
+                        Text("admin.hh_rules_priority \(schedule.priceRules.count) \(schedule.priority)").font(.caption2).foregroundStyle(.blue)
                     }
                     .tag(schedule.id)
                     .swipeActions {
-                        Button("Supprimer", role: .destructive) { Task { await store.delete(schedule) } }
+                        Button("common.delete", role: .destructive) { Task { await store.delete(schedule) } }
                     }
                     .accessibilityIdentifier("hh.schedule.\(schedule.name)")
                 }
             } header: {
                 HStack {
-                    Text("Plages horaires")
+                    Text("admin.hh_schedules_header")
                     Spacer()
                     Button { showsNewSchedule = true } label: { Image(systemName: "plus.circle.fill") }
                         .accessibilityIdentifier("hh.newSchedule")
@@ -85,16 +95,16 @@ struct HappyHourAdminView: View {
         let products = model.catalog.products.filter { search.isEmpty || $0.name.localizedCaseInsensitiveContains(search) }
         return VStack(alignment: .leading, spacing: 12) {
             HStack {
-                TextField("Rechercher", text: $search).textFieldStyle(.roundedBorder).frame(maxWidth: 260)
-                Button("Tout") { selectedProducts.formUnion(products.map(\.id)) }
-                Button("Aucun") { selectedProducts.removeAll() }
+                TextField("admin.search_placeholder", text: $search).textFieldStyle(.roundedBorder).frame(maxWidth: 260)
+                Button("admin.select_all_button") { selectedProducts.formUnion(products.map(\.id)) }
+                Button("admin.select_none_button") { selectedProducts.removeAll() }
                 Spacer()
-                Text("\(selectedProducts.count) sélectionné(s)").foregroundStyle(Theme.inkMuted).accessibilityIdentifier("hh.selectedCount")
+                Text("admin.hh_selected_count \(selectedProducts.count)").foregroundStyle(Theme.inkMuted).accessibilityIdentifier("hh.selectedCount")
             }
             ScrollView {
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 200), spacing: 10)], spacing: 10) {
                     ForEach(products) { product in
-                        SelectableCard(title: product.name, subtitle: "Prix normal \(product.price.formatted)", isSelected: selectedProducts.contains(product.id)) {
+                        SelectableCard(title: product.name, subtitle: String(localized: "admin.hh_normal_price \(product.price.formatted)"), isSelected: selectedProducts.contains(product.id)) {
                             if selectedProducts.contains(product.id) { selectedProducts.remove(product.id) } else { selectedProducts.insert(product.id) }
                         }
                         .accessibilityIdentifier("hh.product.\(product.name)")
@@ -102,15 +112,15 @@ struct HappyHourAdminView: View {
                 }
             }
             HStack(spacing: 12) {
-                Picker("Mode", selection: $priceMode) {
-                    Text("Prix fixe (€)").tag(HappyHourPricingMode.fixedPrice)
-                    Text("Remise (%)").tag(HappyHourPricingMode.percentageDiscount)
+                Picker("admin.hh_price_mode_label", selection: $priceMode) {
+                    Text("admin.hh_fixed_price_option").tag(HappyHourPricingMode.fixedPrice)
+                    Text("admin.hh_discount_percent_option").tag(HappyHourPricingMode.percentageDiscount)
                 }
                 .pickerStyle(.segmented)
                 .frame(width: 280)
-                TextField("Valeur", text: $valueText).keyboardType(.decimalPad).textFieldStyle(.roundedBorder).frame(width: 100)
+                TextField("order.discount_value_placeholder", text: $valueText).keyboardType(.decimalPad).textFieldStyle(.roundedBorder).frame(width: 100)
                     .accessibilityIdentifier("hh.value")
-                ActionButton(title: "Appliquer aux \(selectedProducts.count) article(s)", systemImage: "checkmark", kind: .primary) {
+                ActionButton(title: String(localized: "admin.hh_apply_products \(selectedProducts.count)"), systemImage: "checkmark", kind: .primary) {
                     Task {
                         if await model.happyHourAdmin.applyToProducts(selectedProducts, mode: priceMode, value: decimal(valueText)) { selectedProducts.removeAll() }
                     }
@@ -125,7 +135,7 @@ struct HappyHourAdminView: View {
             ScrollView {
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 220), spacing: 10)], spacing: 10) {
                     ForEach(model.catalog.categories) { category in
-                        SelectableCard(title: category.name, subtitle: "\(model.catalog.products(in: category.id).count) article(s)", isSelected: selectedCategories.contains(category.id)) {
+                        SelectableCard(title: category.name, subtitle: String(localized: "admin.hh_family_item_count \(model.catalog.products(in: category.id).count)"), isSelected: selectedCategories.contains(category.id)) {
                             if selectedCategories.contains(category.id) { selectedCategories.remove(category.id) } else { selectedCategories.insert(category.id) }
                         }
                         .accessibilityIdentifier("hh.family.\(category.id)")
@@ -133,11 +143,11 @@ struct HappyHourAdminView: View {
                 }
             }
             HStack(spacing: 12) {
-                Text("Remise")
+                Text("admin.hh_discount_label")
                 TextField("%", text: $familyPercent).keyboardType(.decimalPad).textFieldStyle(.roundedBorder).frame(width: 80)
                     .accessibilityIdentifier("hh.familyPercent")
-                Text("%")
-                ActionButton(title: "Appliquer aux \(selectedCategories.count) famille(s)", systemImage: "checkmark", kind: .primary) {
+                Text(verbatim: "%")
+                ActionButton(title: String(localized: "admin.hh_apply_families \(selectedCategories.count)"), systemImage: "checkmark", kind: .primary) {
                     Task {
                         if await model.happyHourAdmin.applyToCategories(selectedCategories, percent: decimal(familyPercent)) { selectedCategories.removeAll() }
                     }
@@ -162,9 +172,9 @@ struct HappyHourAdminView: View {
             .listStyle(.plain)
             .accessibilityIdentifier("hh.rules")
             HStack {
-                Button("Tout sélectionner") { selectedRules = Set(schedule.priceRules.compactMap(\.id)) }
+                Button("admin.hh_select_all_rules") { selectedRules = Set(schedule.priceRules.compactMap(\.id)) }
                 Spacer()
-                ActionButton(title: "Supprimer \(selectedRules.count) règle(s)", systemImage: "trash", kind: .danger) {
+                ActionButton(title: String(localized: "admin.hh_delete_rules \(selectedRules.count)"), systemImage: "trash", kind: .danger) {
                     Task { await model.happyHourAdmin.deleteRules(selectedRules); selectedRules.removeAll() }
                 }
                 .frame(maxWidth: 320)
@@ -216,8 +226,8 @@ struct NewScheduleSheet: View {
     var body: some View {
         NavigationStack {
             Form {
-                TextField("Nom de la plage", text: $name).accessibilityIdentifier("schedule.name")
-                Section("Jours") {
+                TextField("admin.hh_schedule_name_placeholder", text: $name).accessibilityIdentifier("schedule.name")
+                Section("admin.hh_days_section") {
                     HStack {
                         ForEach([1, 2, 3, 4, 5, 6, 0], id: \.self) { day in
                             ChipButton(title: HappyHourSchedule.dayLabels[day], isSelected: days.contains(day)) {
@@ -226,19 +236,19 @@ struct NewScheduleSheet: View {
                         }
                     }
                 }
-                Section("Horaires") {
-                    DatePicker("Début", selection: $start, displayedComponents: .hourAndMinute)
-                    DatePicker("Fin", selection: $end, displayedComponents: .hourAndMinute)
+                Section("admin.hh_hours_section") {
+                    DatePicker("admin.hh_start_label", selection: $start, displayedComponents: .hourAndMinute)
+                    DatePicker("admin.hh_end_label", selection: $end, displayedComponents: .hourAndMinute)
                 }
-                Toggle("S'applique aussi à la vente à emporter", isOn: $takeaway)
-                Stepper("Priorité \(priority)", value: $priority, in: 1...10)
+                Toggle("admin.hh_applies_takeaway_toggle", isOn: $takeaway)
+                Stepper("admin.hh_priority_stepper \(priority)", value: $priority, in: 1...10)
             }
-            .navigationTitle("Nouvelle plage Happy Hour")
+            .navigationTitle("admin.hh_new_schedule_title")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("Annuler") { dismiss() } }
+                ToolbarItem(placement: .cancellationAction) { Button("common.cancel") { dismiss() } }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Créer") {
+                    Button("admin.hh_create_button") {
                         let schedule = HappyHourSchedule(name: name, daysOfWeek: days.sorted(), startTime: format(start), endTime: format(end), appliesToTakeaway: takeaway, priority: priority)
                         Task { if await model.happyHourAdmin.create(schedule) { dismiss() } }
                     }

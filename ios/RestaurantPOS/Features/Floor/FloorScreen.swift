@@ -14,9 +14,9 @@ struct FloorScreen: View {
         let floor = model.floor
         VStack(alignment: .leading, spacing: Theme.Space.l) {
             HStack(spacing: Theme.Space.m) {
-                KPIView(title: "Tables occupées", value: "\(floor.occupiedCount)/\(floor.diningTables.count)", systemImage: "person.2")
+                KPIView(title: String(localized: "floor.kpi_occupied_tables"), value: "\(floor.occupiedCount)/\(floor.diningTables.count)", systemImage: "person.2")
                     .frame(maxWidth: 240)
-                KPIView(title: "En cours", value: floor.openTotal.formatted, systemImage: "eurosign.circle")
+                KPIView(title: String(localized: "floor.kpi_open_total"), value: floor.openTotal.formatted, systemImage: "eurosign.circle")
                     .frame(maxWidth: 260)
                 Spacer()
                 Button { Task { await floor.load() } } label: {
@@ -25,10 +25,10 @@ struct FloorScreen: View {
                         .frame(width: Theme.touchTarget, height: Theme.touchTarget)
                 }
                 .buttonStyle(ActionButtonStyle(kind: .neutral))
-                .accessibilityLabel("Actualiser")
+                .accessibilityLabel("common.refresh_label")
                 .accessibilityIdentifier("floor.refresh")
                 Button { showsAddTable = true } label: {
-                    Label("Nouvelle table", systemImage: "plus")
+                    Label("floor.add_table", systemImage: "plus")
                         .font(.posHeadline)
                         .padding(.horizontal, Theme.Space.xl)
                         .frame(minHeight: Theme.touchTarget)
@@ -40,10 +40,10 @@ struct FloorScreen: View {
 
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: Theme.Space.s) {
-                    filterChip("Toutes", nil, id: "all")
-                    filterChip("Occupées", .occupied, id: "occupied")
-                    filterChip("Addition", .billRequested, id: "bill")
-                    filterChip("Libres", .free, id: "free")
+                    filterChip(String(localized: "floor.filter_all"), nil, id: "all")
+                    filterChip(String(localized: "floor.filter_occupied"), .occupied, id: "occupied")
+                    filterChip(String(localized: "floor.filter_bill"), .billRequested, id: "bill")
+                    filterChip(String(localized: "floor.filter_free"), .free, id: "free")
                 }
             }
 
@@ -105,6 +105,12 @@ struct FloorScreen: View {
 struct TableCard: View {
     let table: DiningTable
 
+    private var capacityLabel: String {
+        let coversPrefix = table.coversCount > 0 ? "\(table.coversCount)/" : ""
+        let waiterSuffix = table.assignedWaiterName.map { " · \($0)" } ?? ""
+        return String(localized: "floor.table_capacity \(coversPrefix)\(table.capacity)\(waiterSuffix)")
+    }
+
     var body: some View {
         let color = Theme.color(for: table.status)
         let isFree = table.status == .free
@@ -120,14 +126,14 @@ struct TableCard: View {
                     Spacer(minLength: Theme.Space.s)
                     Badge(text: table.status.label, color: color)
                 }
-                Label("\(table.coversCount > 0 ? "\(table.coversCount)/" : "")\(table.capacity) pers.\(table.assignedWaiterName.map { " · \($0)" } ?? "")", systemImage: "person.2")
+                Label(capacityLabel, systemImage: "person.2")
                     .font(.posLabel)
                     .foregroundStyle(Theme.inkMuted)
                     .lineLimit(1)
                 Spacer(minLength: 0)
                 HStack(alignment: .firstTextBaseline, spacing: Theme.Space.s) {
                     if isFree {
-                        Text("Touchez pour ouvrir").font(.posLabel).foregroundStyle(Theme.inkSubtle)
+                        Text("floor.tap_to_open").font(.posLabel).foregroundStyle(Theme.inkSubtle)
                     } else if let opened = table.openedAtUtc {
                         let isLate = context.date.timeIntervalSince(opened) > 90 * 60
                         Label(opened.elapsedDescription(now: context.date), systemImage: "clock")
@@ -160,8 +166,8 @@ struct OpenTableSheet: View {
 
     var body: some View {
         VStack(spacing: 24) {
-            SheetHeader(title: "Ouvrir la table \(table.tableNumber)", subtitle: "Capacité \(table.capacity) personnes") { dismiss() }
-            Text("Nombre de couverts").font(.posHeadline).foregroundStyle(Theme.ink)
+            SheetHeader(title: String(localized: "floor.open_table_title \(table.tableNumber)"), subtitle: String(localized: "floor.open_table_subtitle \(table.capacity)")) { dismiss() }
+            Text("floor.covers_count").font(.posHeadline).foregroundStyle(Theme.ink)
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 6), spacing: 10) {
                 ForEach(1...12, id: \.self) { count in
                     Button { covers = count } label: {
@@ -176,7 +182,7 @@ struct OpenTableSheet: View {
                         .accessibilityIdentifier("covers.\(count)")
                 }
             }
-            ActionButton(title: "Ouvrir avec \(covers) couvert(s)", systemImage: "fork.knife", kind: .primary, height: Theme.touchLarge) {
+            ActionButton(title: String(localized: "floor.open_with_covers \(covers)"), systemImage: "fork.knife", kind: .primary, height: Theme.touchLarge) {
                 dismiss()
                 onOpen(covers)
             }
@@ -196,14 +202,14 @@ struct AddTableSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
-            SheetHeader(title: "Nouvelle table", subtitle: nil) { dismiss() }
-            TextField("Numéro ou nom (ex. T9, Terrasse 1)", text: $number)
+            SheetHeader(title: String(localized: "floor.new_table_title"), subtitle: nil) { dismiss() }
+            TextField("floor.number_placeholder", text: $number)
                 .textFieldStyle(.roundedBorder)
                 .font(.title3)
                 .accessibilityIdentifier("addTable.number")
-            Stepper("Capacité : \(capacity) personnes", value: $capacity, in: 1...20)
+            Stepper("floor.capacity_stepper \(capacity)", value: $capacity, in: 1...20)
                 .accessibilityIdentifier("addTable.capacity")
-            ActionButton(title: "Créer la table", systemImage: "plus", kind: .primary) {
+            ActionButton(title: String(localized: "floor.create_table"), systemImage: "plus", kind: .primary) {
                 Task { if await model.floor.addTable(number: number, capacity: capacity) { dismiss() } }
             }
             .disabled(number.trimmingCharacters(in: .whitespaces).isEmpty)

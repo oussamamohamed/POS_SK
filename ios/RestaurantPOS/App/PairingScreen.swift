@@ -16,9 +16,9 @@ struct PairingScreen: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Serveurs trouvés") {
+                Section("pairing.discovered_servers") {
                     if browser.servers.isEmpty {
-                        Label("Recherche sur le réseau local…", systemImage: "antenna.radiowaves.left.and.right")
+                        Label("pairing.searching_network", systemImage: "antenna.radiowaves.left.and.right")
                             .foregroundStyle(.secondary)
                     }
                     ForEach(browser.servers) { server in
@@ -28,18 +28,18 @@ struct PairingScreen: View {
                 }
                 Section {
                     Button { showsScanner = true } label: {
-                        Label("Scanner le QR du back-office", systemImage: "qrcode.viewfinder")
+                        Label("pairing.scan_qr", systemImage: "qrcode.viewfinder")
                     }
                     .disabled(!DataScannerViewController.isSupported)
                     .accessibilityIdentifier("pairing.scan")
                 }
-                Section("Saisie manuelle") {
+                Section("pairing.manual_entry_section") {
                     TextField("http://192.168.1.10:5080", text: $url)
                         .keyboardType(.URL)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
                         .accessibilityIdentifier("pairing.url")
-                    TextField("Code d'appairage", text: $code)
+                    TextField("pairing.code_placeholder", text: $code)
                         .textInputAutocapitalization(.characters)
                         .autocorrectionDisabled()
                         .accessibilityIdentifier("pairing.code")
@@ -50,7 +50,7 @@ struct PairingScreen: View {
                         Task { await pair() }
                     } label: {
                         HStack {
-                            Text("Appairer cet iPad")
+                            Text("pairing.submit_button")
                             if isPairing { Spacer(); ProgressView() }
                         }
                     }
@@ -58,12 +58,12 @@ struct PairingScreen: View {
                     .accessibilityIdentifier("pairing.submit")
                 }
                 Section {
-                    Text("Générez un code dans Gestion → Appareils sur le poste du responsable.")
+                    Text("pairing.hint")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }
             }
-            .navigationTitle("Appairage")
+            .navigationTitle("pairing.nav_title")
         }
         .onAppear {
             url = model.settings.serverURL
@@ -73,13 +73,13 @@ struct PairingScreen: View {
         .sheet(isPresented: $showsScanner) {
             QRScannerView(onScan: { payload in
                 showsScanner = false
-                guard let link = PairingLink(string: payload) else { error = "QR non reconnu"; return }
+                guard let link = PairingLink(string: payload) else { error = String(localized: "pairing.qr_not_recognized"); return }
                 url = link.serverURL.absoluteString
                 code = link.code
                 Task { await pair() }
             }, onFailure: {
                 showsScanner = false
-                error = "Caméra indisponible : saisissez le code manuellement."
+                error = String(localized: "pairing.camera_unavailable")
             })
             .ignoresSafeArea()
         }
@@ -90,13 +90,13 @@ struct PairingScreen: View {
             url = resolved.absoluteString
             error = nil
         } else {
-            error = "Impossible de joindre « \(server.name) »"
+            error = String(localized: "pairing.cannot_reach \(server.name)")
         }
     }
 
     private func pair() async {
         guard let serverURL = URL(string: url.trimmingCharacters(in: .whitespaces)), serverURL.host != nil else {
-            error = "Adresse invalide"
+            error = String(localized: "common.invalid_address")
             return
         }
         isPairing = true
@@ -106,7 +106,7 @@ struct PairingScreen: View {
         do {
             let response = try await api.pair(code: code.trimmingCharacters(in: .whitespaces))
             if await !environment.completePairing(serverURL: serverURL, response: response) {
-                error = "Impossible d'enregistrer l'identité de l'iPad. Réessayez avec un nouveau code."
+                error = String(localized: "pairing.register_failed")
             }
         } catch {
             self.error = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription

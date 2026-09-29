@@ -70,7 +70,7 @@ struct SidebarRail: View {
             } label: {
                 VStack(spacing: 4) {
                     Image(systemName: "lock.fill").font(.system(size: 20, weight: .semibold))
-                    Text("Verrouiller").font(.system(size: 12, weight: .semibold))
+                    Text("nav.lock_button").font(.system(size: 12, weight: .semibold))
                 }
                 .frame(width: 72, height: 64)
                 .foregroundStyle(Theme.inkMuted)
@@ -167,7 +167,7 @@ struct ConnectionBadge: View {
     var body: some View {
         HStack(spacing: Theme.Space.s) {
             Circle().fill(isOnline ? Theme.success : Theme.danger).frame(width: 8, height: 8)
-            Text(isOnline ? "En ligne · \(terminal)" : "Hors ligne").font(.posLabel).foregroundStyle(Theme.ink)
+            Text(isOnline ? "common.status_online \(terminal)" : "common.status_offline").font(.posLabel).foregroundStyle(Theme.ink)
             if isRealtime { Image(systemName: "bolt.fill").font(.caption2).foregroundStyle(Theme.brandCyan) }
         }
         .padding(.horizontal, Theme.Space.m)
@@ -189,7 +189,7 @@ struct HappyHourBanner: View {
             VStack(alignment: .leading, spacing: 0) {
                 Text(model.happyHour.bannerTitle).font(.system(size: 15, weight: .bold))
                     .accessibilityIdentifier("happyhour.banner")
-                Text(model.happyHour.status.isOverride ? "Tarifs réduits forcés par un responsable" : "Tarifs préférentiels actifs")
+                Text(model.happyHour.status.isOverride ? "happyhour.override_subtitle" : "happyhour.active_subtitle")
                     .font(.system(size: 12, weight: .semibold))
             }
             Spacer()
@@ -197,7 +197,7 @@ struct HappyHourBanner: View {
                 .font(.system(size: 22, weight: .semibold, design: .monospaced))
                 .accessibilityIdentifier("happyhour.countdown")
             Button { showsOverride = true } label: {
-                Text("Dérogation")
+                Text("happyhour.override_button")
                     .font(.system(size: 15, weight: .bold))
                     .padding(.horizontal, Theme.Space.l)
                     .frame(minHeight: Theme.touchMin)
@@ -222,21 +222,21 @@ struct HappyHourOverrideSheet: View {
 
     var body: some View {
         VStack(spacing: 20) {
-            SheetHeader(title: "Dérogation Happy Hour", subtitle: "Code PIN d'un responsable requis") { dismiss() }
+            SheetHeader(title: String(localized: "happyhour.override_title"), subtitle: String(localized: "happyhour.override_pin_hint")) { dismiss() }
             SupervisorPinPad(pin: $pin, identifierPrefix: "hh.pin")
-            TextField("Motif (facultatif)", text: $reason)
+            TextField("happyhour.reason_placeholder", text: $reason)
                 .textFieldStyle(.roundedBorder)
                 .accessibilityIdentifier("hh.reason")
             HStack(spacing: 12) {
-                ActionButton(title: "+30 min", systemImage: "plus.circle", kind: .tonal) {
+                ActionButton(title: String(localized: "happyhour.extend_30"), systemImage: "plus.circle", kind: .tonal) {
                     Task { if await model.happyHour.activateOverride(pin: pin, minutes: 30, reason: reason) { dismiss() } }
                 }
                 .accessibilityIdentifier("hh.extend30")
-                ActionButton(title: "Forcer 1 h", systemImage: "bolt", kind: .primary) {
+                ActionButton(title: String(localized: "happyhour.force_60"), systemImage: "bolt", kind: .primary) {
                     Task { if await model.happyHour.activateOverride(pin: pin, minutes: 60, reason: reason) { dismiss() } }
                 }
                 .accessibilityIdentifier("hh.force60")
-                ActionButton(title: "Arrêter", systemImage: "stop.circle", kind: .danger) {
+                ActionButton(title: String(localized: "happyhour.stop"), systemImage: "stop.circle", kind: .danger) {
                     Task { if await model.happyHour.stopOverride(pin: pin, reason: reason) { dismiss() } }
                 }
                 .accessibilityIdentifier("hh.stop")

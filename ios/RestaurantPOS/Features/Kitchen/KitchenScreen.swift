@@ -10,7 +10,7 @@ struct KitchenScreen: View {
         let canBump = model.session.currentOperator?.role.canBumpKitchen ?? false
         VStack(spacing: 0) {
             HStack(spacing: Theme.Space.s) {
-                ChipButton(title: "Tous les postes", isSelected: kitchen.stationFilter == nil) { kitchen.stationFilter = nil }
+                ChipButton(title: String(localized: "kitchen.filter_all_stations"), isSelected: kitchen.stationFilter == nil) { kitchen.stationFilter = nil }
                     .accessibilityIdentifier("kds.filter.all")
                 ForEach(kitchen.stations, id: \.self) { station in
                     ChipButton(title: station.replacingOccurrences(of: "_", with: " "), isSelected: kitchen.stationFilter == station) { kitchen.stationFilter = station }
@@ -18,7 +18,7 @@ struct KitchenScreen: View {
                 }
                 Spacer()
                 if let refresh = kitchen.lastRefresh {
-                    Text("Mis à jour \(refresh.formatted(date: .omitted, time: .standard))").font(.posLabel).foregroundStyle(Theme.inkSubtle)
+                    Text("kitchen.updated_at \(refresh.formatted(date: .omitted, time: .standard))").font(.posLabel).foregroundStyle(Theme.inkSubtle)
                 }
                 Button { Task { await kitchen.load() } } label: {
                     Image(systemName: "arrow.clockwise")
@@ -26,13 +26,13 @@ struct KitchenScreen: View {
                         .frame(width: Theme.touchMin, height: Theme.touchMin)
                 }
                 .buttonStyle(ActionButtonStyle(kind: .neutral))
-                .accessibilityLabel("Actualiser")
+                .accessibilityLabel("common.refresh_label")
                     .accessibilityIdentifier("kds.refresh")
             }
             .padding(Theme.Space.xl)
 
             if !canBump {
-                Label("Lecture seule : seuls la cuisine et les responsables font avancer les bons.", systemImage: "eye")
+                Label("kitchen.readonly_notice", systemImage: "eye")
                     .font(.posLabel)
                     .foregroundStyle(Theme.inkMuted)
                     .padding(.bottom, Theme.Space.s)
@@ -112,7 +112,7 @@ struct KitchenTicketCard: View {
                             Text(mods).font(.system(size: 13, weight: .medium)).foregroundStyle(Theme.warning).padding(.leading, 36)
                         }
                         if let comment = item.kitchenComment, !comment.isEmpty {
-                            Text("« \(comment) »").font(.system(size: 13, weight: .medium)).italic().foregroundStyle(Theme.inkMuted).padding(.leading, 36)
+                            Text("kitchen.quoted_comment \(comment)").font(.system(size: 13, weight: .medium)).italic().foregroundStyle(Theme.inkMuted).padding(.leading, 36)
                         }
                     }
                 }

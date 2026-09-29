@@ -9,13 +9,13 @@ struct AdminScreen: View {
 
         var title: String {
             switch self {
-            case .dashboard: "Tableau de bord"
-            case .catalog: "Catalogue"
-            case .grid: "Grille tactile"
-            case .staff: "Équipe"
-            case .printers: "Imprimantes"
-            case .happyHour: "Happy Hour"
-            case .network: "Réseau & terminal"
+            case .dashboard: String(localized: "admin.section_dashboard")
+            case .catalog: String(localized: "admin.section_catalog")
+            case .grid: String(localized: "admin.section_grid")
+            case .staff: String(localized: "admin.section_staff")
+            case .printers: String(localized: "admin.section_printers")
+            case .happyHour: String(localized: "admin.section_happy_hour")
+            case .network: String(localized: "admin.section_network")
             }
         }
 
@@ -71,36 +71,36 @@ struct DashboardView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 HStack {
-                    Picker("Période", selection: Binding(get: { store.range }, set: { store.range = $0; Task { await store.load() } })) {
+                    Picker("admin.period_label", selection: Binding(get: { store.range }, set: { store.range = $0; Task { await store.load() } })) {
                         ForEach(DashboardRange.allCases) { Text($0.label).tag($0) }
                     }
                     .pickerStyle(.segmented)
                     .frame(maxWidth: 480)
                     .accessibilityIdentifier("dashboard.range")
                     Spacer()
-                    Button { Task { await store.load() } } label: { Label("Actualiser", systemImage: "arrow.clockwise") }.buttonStyle(.bordered)
+                    Button { Task { await store.load() } } label: { Label("common.refresh_label", systemImage: "arrow.clockwise") }.buttonStyle(.bordered)
                 }
                 if let data = store.dashboard {
                     LazyVGrid(columns: [GridItem(.adaptive(minimum: 220), spacing: 16)], spacing: 16) {
-                        KPIView(title: "Chiffre d'affaires TTC", value: data.kpis.totalSalesTtc.formatted, subtitle: "HT \(data.kpis.totalSalesHt.formatted)", systemImage: "eurosign.circle", tint: .green)
+                        KPIView(title: String(localized: "admin.kpi_sales_ttc"), value: data.kpis.totalSalesTtc.formatted, subtitle: String(localized: "admin.kpi_sales_ht \(data.kpis.totalSalesHt.formatted)"), systemImage: "eurosign.circle", tint: .green)
                             .accessibilityIdentifier("kpi.sales")
-                        KPIView(title: "Ticket moyen", value: data.kpis.averageOrderTtc.formatted, subtitle: "\(data.kpis.totalOrdersCount) commande(s)", systemImage: "receipt", tint: .blue)
-                        KPIView(title: "Moyenne / couvert", value: data.kpis.averageCoverTtc.formatted, subtitle: "\(data.kpis.totalCoversCount) couvert(s)", systemImage: "person.2", tint: .orange)
+                        KPIView(title: String(localized: "admin.kpi_average_order"), value: data.kpis.averageOrderTtc.formatted, subtitle: String(localized: "admin.kpi_orders_count \(data.kpis.totalOrdersCount)"), systemImage: "receipt", tint: .blue)
+                        KPIView(title: String(localized: "admin.kpi_average_cover"), value: data.kpis.averageCoverTtc.formatted, subtitle: String(localized: "admin.kpi_covers_count \(data.kpis.totalCoversCount)"), systemImage: "person.2", tint: .orange)
                     }
                     HStack(alignment: .top, spacing: 16) {
                         Card {
                             VStack(alignment: .leading, spacing: 10) {
-                                Text("Moyens de paiement").font(.headline)
-                                if data.paymentMethods.isEmpty { Text("Aucun encaissement").foregroundStyle(Theme.inkMuted) }
+                                Text("admin.payment_methods_title").font(.headline)
+                                if data.paymentMethods.isEmpty { Text("admin.no_payments").foregroundStyle(Theme.inkMuted) }
                                 ForEach(data.paymentMethods) { p in
-                                    ShareBar(label: "\(PaymentMethod.label(forServerName: p.methodName)) (\(p.transactionsCount))", value: p.totalAmount.formatted, fraction: p.percentageOfTotal / 100, tint: .blue)
+                                    ShareBar(label: String(localized: "admin.payment_method_row \(PaymentMethod.label(forServerName: p.methodName)) \(p.transactionsCount)"), value: p.totalAmount.formatted, fraction: p.percentageOfTotal / 100, tint: .blue)
                                 }
                             }
                         }
                         Card {
                             VStack(alignment: .leading, spacing: 10) {
-                                Text("Meilleures ventes").font(.headline)
-                                if data.topProducts.isEmpty { Text("Aucune vente").foregroundStyle(Theme.inkMuted) }
+                                Text("admin.top_sales_title").font(.headline)
+                                if data.topProducts.isEmpty { Text("admin.no_sales").foregroundStyle(Theme.inkMuted) }
                                 ForEach(data.topProducts.prefix(8)) { p in
                                     ShareBar(label: "\(p.productName) ×\(p.quantitySold)", value: p.totalSalesTtc.formatted, fraction: p.percentageOfTotal / 100, tint: .green)
                                 }
@@ -110,12 +110,12 @@ struct DashboardView: View {
                     HStack(alignment: .top, spacing: 16) {
                         Card {
                             VStack(alignment: .leading, spacing: 10) {
-                                Text("Services").font(.headline)
+                                Text("admin.services_title").font(.headline)
                                 ForEach(data.services) { s in
                                     HStack {
                                         VStack(alignment: .leading) {
                                             Text(s.serviceName).font(.subheadline.weight(.semibold))
-                                            Text("\(s.ordersCount) commande(s) · \(s.coversCount) couvert(s)").font(.caption).foregroundStyle(Theme.inkMuted)
+                                            Text("admin.service_summary \(s.ordersCount) \(s.coversCount)").font(.caption).foregroundStyle(Theme.inkMuted)
                                         }
                                         Spacer()
                                         Text(s.salesTtc.formatted).font(.headline.monospacedDigit())
@@ -125,13 +125,13 @@ struct DashboardView: View {
                         }
                         Card {
                             VStack(alignment: .leading, spacing: 10) {
-                                Text("Productivité serveurs").font(.headline)
-                                if data.staffPerformance.isEmpty { Text("Aucune activité").foregroundStyle(Theme.inkMuted) }
+                                Text("admin.staff_productivity_title").font(.headline)
+                                if data.staffPerformance.isEmpty { Text("admin.no_activity").foregroundStyle(Theme.inkMuted) }
                                 ForEach(data.staffPerformance) { s in
                                     HStack {
                                         VStack(alignment: .leading) {
                                             Text(s.serverName).font(.subheadline.weight(.semibold))
-                                            Text("\(s.tablesServedCount) table(s) · moy. \(s.averageTableTtc.formatted)").font(.caption).foregroundStyle(Theme.inkMuted)
+                                            Text("admin.staff_summary \(s.tablesServedCount) \(s.averageTableTtc.formatted)").font(.caption).foregroundStyle(Theme.inkMuted)
                                         }
                                         Spacer()
                                         Text(s.totalSalesTtc.formatted).font(.headline.monospacedDigit())
@@ -192,16 +192,16 @@ struct CatalogAdminView: View {
         VStack(spacing: 0) {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
-                    ChipButton(title: "Tout", isSelected: filter == CatalogStore.allCategoryId) { filter = CatalogStore.allCategoryId }
+                    ChipButton(title: String(localized: "admin.filter_all"), isSelected: filter == CatalogStore.allCategoryId) { filter = CatalogStore.allCategoryId }
                     ForEach(catalog.categories) { category in
                         ChipButton(title: category.name, isSelected: filter == category.id, tint: Color(hex: category.colorHex) ?? Theme.primary) { filter = category.id }
                             .contextMenu {
-                                Button("Modifier la famille", systemImage: "pencil") {
+                                Button("admin.edit_category", systemImage: "pencil") {
                                     editingCategory = CategoryEditor(categoryId: category.id, name: category.name, color: Color(hex: category.colorHex) ?? .blue)
                                 }
                             }
                     }
-                    Button { editingCategory = CategoryEditor(categoryId: nil, name: "", color: .blue) } label: { Label("Famille", systemImage: "plus") }
+                    Button { editingCategory = CategoryEditor(categoryId: nil, name: "", color: .blue) } label: { Label("admin.category_label", systemImage: "plus") }
                         .buttonStyle(.bordered)
                         .accessibilityIdentifier("catalog.addCategory")
                 }
@@ -215,9 +215,9 @@ struct CatalogAdminView: View {
                             HStack(spacing: 6) {
                                 Text(product.name).font(.headline)
                                 if product.isQuickKey { Image(systemName: "bolt.fill").foregroundStyle(Theme.warning).font(.caption) }
-                                if product.hasModifiers { Badge(text: "\(product.modifierGroups.count) option(s)", color: .blue) }
+                                if product.hasModifiers { Badge(text: String(localized: "admin.options_count \(product.modifierGroups.count)"), color: .blue) }
                             }
-                            Text("\(product.station) · TVA \(product.taxRatePercent.formatted()) %").font(.caption).foregroundStyle(Theme.inkMuted)
+                            Text("admin.station_vat \(product.station) \(product.taxRatePercent.formatted())").font(.caption).foregroundStyle(Theme.inkMuted)
                         }
                         Spacer()
                         Text(product.price.formatted).font(.headline.monospacedDigit())
@@ -225,19 +225,19 @@ struct CatalogAdminView: View {
                     .contentShape(Rectangle())
                     .onTapGesture { editingProduct = ProductEditor(productId: product.id, draft: ProductDraft(product: product)) }
                     .swipeActions {
-                        Button("Désactiver", role: .destructive) { Task { await model.catalogAdmin.archive(product) } }
+                        Button("admin.deactivate", role: .destructive) { Task { await model.catalogAdmin.archive(product) } }
                     }
                     .accessibilityIdentifier("catalog.product.\(product.name)")
                 }
             }
             .listStyle(.insetGrouped)
-            .searchable(text: $search, prompt: "Rechercher un article")
+            .searchable(text: $search, prompt: "admin.search_product_prompt")
         }
         .overlay(alignment: .bottomTrailing) {
             Button {
                 editingProduct = ProductEditor(productId: nil, draft: ProductDraft(categoryId: filter == CatalogStore.allCategoryId ? (catalog.categories.first?.id ?? "") : filter))
             } label: {
-                Label("Nouvel article", systemImage: "plus").font(.headline).padding(.horizontal, 20).frame(height: 54)
+                Label("admin.new_product", systemImage: "plus").font(.headline).padding(.horizontal, 20).frame(height: 54)
             }
             .buttonStyle(.borderedProminent)
             .clipShape(Capsule())
@@ -264,34 +264,34 @@ struct ProductEditorSheet: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Article") {
-                    TextField("Nom", text: $draft.name).accessibilityIdentifier("product.name")
-                    Picker("Famille", selection: $draft.categoryId) {
+                Section("admin.item_section") {
+                    TextField("common.field_name", text: $draft.name).accessibilityIdentifier("product.name")
+                    Picker("admin.category_label", selection: $draft.categoryId) {
                         ForEach(model.catalog.categories) { Text($0.name).tag($0.id) }
                     }
-                    TextField("Prix TTC (€)", text: $priceText)
+                    TextField("admin.price_ttc_placeholder", text: $priceText)
                         .keyboardType(.decimalPad)
                         .accessibilityIdentifier("product.price")
-                    Picker("TVA", selection: $draft.taxRatePercent) {
+                    Picker("admin.vat_label", selection: $draft.taxRatePercent) {
                         ForEach(ProductDraft.vatRates, id: \.self) { Text("\($0.formatted()) %").tag($0) }
                     }
                     .pickerStyle(.segmented)
                 }
-                Section("Préparation") {
-                    Picker("Poste", selection: $draft.stationId) {
+                Section("admin.preparation_section") {
+                    Picker("admin.station_label", selection: $draft.stationId) {
                         ForEach(ProductDraft.stations, id: \.self) { Text($0.replacingOccurrences(of: "_", with: " ")).tag($0) }
                     }
-                    Toggle("Touche rapide", isOn: $draft.isQuickKey).accessibilityIdentifier("product.quickKey")
-                    ColorPicker("Couleur de la tuile", selection: $color, supportsOpacity: false)
-                    TextField("Description", text: $draft.description, axis: .vertical)
+                    Toggle("admin.quick_key_toggle", isOn: $draft.isQuickKey).accessibilityIdentifier("product.quickKey")
+                    ColorPicker("admin.tile_color_label", selection: $color, supportsOpacity: false)
+                    TextField("admin.description_placeholder", text: $draft.description, axis: .vertical)
                 }
             }
-            .navigationTitle(productId == nil ? "Nouvel article" : "Modifier l'article")
+            .navigationTitle(productId == nil ? "admin.new_product" : "admin.edit_product")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("Annuler") { dismiss() } }
+                ToolbarItem(placement: .cancellationAction) { Button("common.cancel") { dismiss() } }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Enregistrer") {
+                    Button("common.save") {
                         draft.price = Money.parse(priceText) ?? .zero
                         draft.colorHex = color.hexString
                         Task { if await model.catalogAdmin.saveProduct(id: productId, draft: draft) { dismiss() } }
@@ -317,15 +317,15 @@ struct CategoryEditorSheet: View {
     var body: some View {
         NavigationStack {
             Form {
-                TextField("Nom de la famille", text: $name).accessibilityIdentifier("category.name")
-                ColorPicker("Couleur", selection: $color, supportsOpacity: false)
+                TextField("admin.category_name_placeholder", text: $name).accessibilityIdentifier("category.name")
+                ColorPicker("admin.color_label", selection: $color, supportsOpacity: false)
             }
-            .navigationTitle(categoryId == nil ? "Nouvelle famille" : "Modifier la famille")
+            .navigationTitle(categoryId == nil ? "admin.new_category" : "admin.edit_category")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("Annuler") { dismiss() } }
+                ToolbarItem(placement: .cancellationAction) { Button("common.cancel") { dismiss() } }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Enregistrer") {
+                    Button("common.save") {
                         Task { if await model.catalogAdmin.saveCategory(id: categoryId, name: name, colorHex: color.hexString) { dismiss() } }
                     }
                     .accessibilityIdentifier("category.save")
@@ -355,13 +355,13 @@ struct StaffAdminView: View {
                         Text(member.role.label).font(.subheadline).foregroundStyle(Theme.inkMuted)
                     }
                     Spacer()
-                    if !member.isActive { Badge(text: "Inactif", color: .red) }
+                    if !member.isActive { Badge(text: String(localized: "admin.inactive_badge"), color: .red) }
                 }
                 .contentShape(Rectangle())
                 .onTapGesture { editing = StaffEditor(member: member) }
                 .swipeActions {
                     if member.isActive {
-                        Button("Désactiver", role: .destructive) { Task { await store.deactivate(member) } }
+                        Button("admin.deactivate", role: .destructive) { Task { await store.deactivate(member) } }
                     }
                 }
                 .accessibilityIdentifier("staff.\(member.name)")
@@ -370,7 +370,7 @@ struct StaffAdminView: View {
         .listStyle(.insetGrouped)
         .overlay(alignment: .bottomTrailing) {
             Button { editing = StaffEditor(member: nil) } label: {
-                Label("Nouvel employé", systemImage: "person.badge.plus").font(.headline).padding(.horizontal, 20).frame(height: 54)
+                Label("admin.new_staff", systemImage: "person.badge.plus").font(.headline).padding(.horizontal, 20).frame(height: 54)
             }
             .buttonStyle(.borderedProminent)
             .clipShape(Capsule())
@@ -396,21 +396,21 @@ struct StaffEditorSheet: View {
     var body: some View {
         NavigationStack {
             Form {
-                TextField("Nom complet", text: $name).accessibilityIdentifier("staff.name")
-                Picker("Rôle", selection: $role) {
+                TextField("admin.full_name_placeholder", text: $name).accessibilityIdentifier("staff.name")
+                Picker("admin.role_label", selection: $role) {
                     ForEach(UserRole.allCases, id: \.self) { Text($0.label).tag($0) }
                 }
-                SecureField(member == nil ? "Code PIN (\(SessionStore.pinLength) chiffres)" : "Nouveau PIN (laisser vide pour conserver)", text: $pin)
+                SecureField(member == nil ? String(localized: "admin.pin_code_placeholder \(SessionStore.pinLength)") : String(localized: "admin.new_pin_placeholder"), text: $pin)
                     .keyboardType(.numberPad)
                     .accessibilityIdentifier("staff.pin")
-                if member != nil { Toggle("Actif", isOn: $isActive) }
+                if member != nil { Toggle("admin.active_toggle", isOn: $isActive) }
             }
-            .navigationTitle(member == nil ? "Nouvel employé" : "Modifier l'employé")
+            .navigationTitle(member == nil ? "admin.new_staff" : "admin.edit_staff")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("Annuler") { dismiss() } }
+                ToolbarItem(placement: .cancellationAction) { Button("common.cancel") { dismiss() } }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Enregistrer") {
+                    Button("common.save") {
                         Task { if await model.staff.save(id: member?.id, name: name, role: role, pin: pin, isActive: isActive) { dismiss() } }
                     }
                     .accessibilityIdentifier("staff.save")
@@ -446,16 +446,16 @@ struct PrintersAdminView: View {
                             .font(.caption).foregroundStyle(Theme.inkMuted)
                     }
                     Spacer()
-                    if printer.openCashDrawerOnReceipt { Badge(text: "Tiroir", color: .green, systemImage: "tray") }
-                    if !printer.isActive { Badge(text: "Désactivée", color: .red) }
-                    Button("Test") { Task { await store.test(printer) } }
+                    if printer.openCashDrawerOnReceipt { Badge(text: String(localized: "admin.cash_drawer_badge"), color: .green, systemImage: "tray") }
+                    if !printer.isActive { Badge(text: String(localized: "admin.deactivated_badge"), color: .red) }
+                    Button("admin.test_button") { Task { await store.test(printer) } }
                         .buttonStyle(.bordered)
                         .accessibilityIdentifier("printer.test.\(printer.name)")
                 }
                 .contentShape(Rectangle())
                 .onTapGesture { editing = PrinterEditor(printer: printer, isNew: false) }
                 .swipeActions {
-                    Button(printer.isActive ? "Désactiver" : "Activer", role: printer.isActive ? .destructive : nil) {
+                    Button(printer.isActive ? "admin.deactivate" : "admin.activate", role: printer.isActive ? .destructive : nil) {
                         Task { await store.setActive(printer, !printer.isActive) }
                     }
                 }
@@ -464,7 +464,7 @@ struct PrintersAdminView: View {
         .listStyle(.insetGrouped)
         .overlay(alignment: .bottomTrailing) {
             Button { editing = PrinterEditor(printer: Printer(name: "", ipAddress: "192.168.1.", assignedStationIds: ["HOT_KITCHEN"]), isNew: true) } label: {
-                Label("Nouvelle imprimante", systemImage: "plus").font(.headline).padding(.horizontal, 20).frame(height: 54)
+                Label("admin.new_printer", systemImage: "plus").font(.headline).padding(.horizontal, 20).frame(height: 54)
             }
             .buttonStyle(.borderedProminent)
             .clipShape(Capsule())
@@ -489,18 +489,18 @@ struct PrinterEditorSheet: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Imprimante") {
-                    TextField("Nom", text: $printer.name).accessibilityIdentifier("printer.name")
-                    TextField("Adresse IP", text: $printer.ipAddress).keyboardType(.decimalPad).accessibilityIdentifier("printer.ip")
-                    Stepper("Port \(printer.port)", value: $printer.port, in: 1...65535)
-                    Picker("Largeur papier", selection: $printer.paperWidthMm) {
-                        Text("58 mm").tag(58)
-                        Text("80 mm").tag(80)
+                Section("admin.printer_section") {
+                    TextField("common.field_name", text: $printer.name).accessibilityIdentifier("printer.name")
+                    TextField("admin.ip_address_placeholder", text: $printer.ipAddress).keyboardType(.decimalPad).accessibilityIdentifier("printer.ip")
+                    Stepper("admin.port_stepper \(printer.port)", value: $printer.port, in: 1...65535)
+                    Picker("admin.paper_width_label", selection: $printer.paperWidthMm) {
+                        Text(verbatim: "58 mm").tag(58)
+                        Text(verbatim: "80 mm").tag(80)
                     }
                     .pickerStyle(.segmented)
-                    Toggle("Ouvre le tiroir-caisse", isOn: $printer.openCashDrawerOnReceipt)
+                    Toggle("admin.open_cash_drawer_toggle", isOn: $printer.openCashDrawerOnReceipt)
                 }
-                Section("Postes desservis") {
+                Section("admin.served_stations_section") {
                     ForEach(Self.stations, id: \.self) { station in
                         Toggle(station.replacingOccurrences(of: "_", with: " "), isOn: Binding(
                             get: { printer.assignedStationIds.contains(station) },
@@ -511,12 +511,12 @@ struct PrinterEditorSheet: View {
                     }
                 }
             }
-            .navigationTitle(isNew ? "Nouvelle imprimante" : "Modifier l'imprimante")
+            .navigationTitle(isNew ? "admin.new_printer" : "admin.edit_printer")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("Annuler") { dismiss() } }
+                ToolbarItem(placement: .cancellationAction) { Button("common.cancel") { dismiss() } }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Enregistrer") { Task { if await model.printers.save(printer, isNew: isNew) { dismiss() } } }
+                    Button("common.save") { Task { if await model.printers.save(printer, isNew: isNew) { dismiss() } } }
                         .accessibilityIdentifier("printer.save")
                 }
             }
@@ -535,38 +535,39 @@ struct NetworkSettingsView: View {
     var body: some View {
         let network = model.network
         Form {
-            Section("Serveur maître") {
-                LabeledContent("Adresse", value: environment.launch.isUITest ? "Données de démonstration" : model.settings.serverURL)
-                LabeledContent("État", value: network.isOnline ? "En ligne" : "Hors ligne")
-                LabeledContent("Temps réel (SignalR)", value: model.isRealtimeConnected ? "Connecté" : "Déconnecté")
+            Section("common.master_server_section") {
+                LabeledContent("admin.address_label", value: environment.launch.isUITest ? String(localized: "admin.demo_data_label") : model.settings.serverURL)
+                LabeledContent("admin.status_label", value: network.isOnline ? String(localized: "common.status_online_simple") : String(localized: "common.status_offline"))
+                LabeledContent("admin.realtime_label", value: model.isRealtimeConnected ? String(localized: "admin.connected_label") : String(localized: "admin.disconnected_label"))
                 if let info = network.info {
-                    LabeledContent("Nom", value: info.serverName ?? "—")
-                    LabeledContent("Hôte", value: "\(info.hostName ?? "—") (\(info.ipAddresses?.joined(separator: ", ") ?? "—"))")
-                    LabeledContent("Version", value: info.version ?? "—")
+                    LabeledContent("common.field_name", value: info.serverName ?? "—")
+                    LabeledContent("admin.host_label", value: "\(info.hostName ?? "—") (\(info.ipAddresses?.joined(separator: ", ") ?? "—"))")
+                    LabeledContent("admin.version_label", value: info.version ?? "—")
                 }
-                if let latency = network.lastLatency { LabeledContent("Latence", value: "\(Int(latency * 1000)) ms") }
-                Button("Tester la connexion") { Task { await network.testConnection() } }
+                if let latency = network.lastLatency { LabeledContent("admin.latency_label", value: "\(Int(latency * 1000)) ms") }
+                Button("common.test_connection") { Task { await network.testConnection() } }
                     .accessibilityIdentifier("network.test")
-                Button("Changer de serveur…") { showsServer = true }
+                Button("admin.change_server_button") { showsServer = true }
             }
-            Section("Synchronisation (file Outbox)") {
+            Section("admin.sync_section") {
                 if let sync = network.sync {
-                    LabeledContent("En attente", value: "\(sync.pendingMessages) message(s)")
-                    LabeledContent("Synchronisés", value: "\(sync.completedMessages) transaction(s)")
-                    if let last = sync.lastSyncUtc { LabeledContent("Dernière synchro", value: last.formatted(date: .omitted, time: .standard)) }
+                    LabeledContent("admin.pending_label", value: String(localized: "admin.pending_messages \(sync.pendingMessages)"))
+                    LabeledContent("admin.synced_label", value: String(localized: "admin.synced_transactions \(sync.completedMessages)"))
+                    if let last = sync.lastSyncUtc { LabeledContent("admin.last_sync_label", value: last.formatted(date: .omitted, time: .standard)) }
                 }
-                Button("Forcer la synchronisation") { Task { await network.forceSync() } }
+                Button("admin.force_sync_button") { Task { await network.forceSync() } }
                     .accessibilityIdentifier("network.forceSync")
             }
-            Section("Terminal") {
-                LabeledContent("Identifiant", value: model.settings.terminalId)
-                Picker("Titres-restaurant : dépassement", selection: Binding(get: { model.settings.mealVoucherPolicy }, set: { model.settings.mealVoucherPolicy = $0 })) {
+            Section("admin.terminal_section") {
+                LabeledContent("admin.identifier_label", value: model.settings.terminalId)
+                Picker("admin.voucher_overflow_label", selection: Binding(get: { model.settings.mealVoucherPolicy }, set: { model.settings.mealVoucherPolicy = $0 })) {
                     ForEach(MealVoucherPolicy.allCases, id: \.self) { Text($0.label).tag($0) }
                 }
                 .accessibilityIdentifier("settings.voucherPolicy")
+                ReceiptLanguagePicker()
             }
-            Section("Apparence") {
-                Picker("Thème", selection: $appearance) {
+            Section("admin.appearance_section") {
+                Picker("admin.theme_label", selection: $appearance) {
                     ForEach(AppearancePreference.allCases) { Text($0.label).tag($0.rawValue) }
                 }
                 .accessibilityIdentifier("settings.appearance")
@@ -574,5 +575,28 @@ struct NetworkSettingsView: View {
         }
         .task { await network.refresh() }
         .sheet(isPresented: $showsServer) { ServerSettingsSheet() }
+    }
+}
+
+/// Réglage back-office : langue des tickets imprimés (indépendante de la langue de l'app).
+struct ReceiptLanguagePicker: View {
+    @Environment(AppModel.self) private var model
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Picker("admin.receipt_language", selection: Binding(
+                get: { model.settingsStore.settings?.receiptLanguage ?? "en" },
+                set: { lang in Task { await model.settingsStore.setReceiptLanguage(lang) } }
+            )) {
+                Text(verbatim: "English").tag("en")
+                Text(verbatim: "Français").tag("fr")
+                Text(verbatim: "العربية").tag("ar")
+            }
+            .accessibilityIdentifier("admin.receiptLanguage")
+            Text("admin.receipt_language_hint")
+                .font(.caption)
+                .foregroundStyle(Theme.inkMuted)
+        }
+        .task { await model.settingsStore.load() }
     }
 }

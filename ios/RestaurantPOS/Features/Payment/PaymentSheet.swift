@@ -50,17 +50,18 @@ struct PaymentSheet: View {
     private var form: some View {
         HStack(alignment: .top, spacing: 28) {
             VStack(alignment: .leading, spacing: 20) {
-                SheetHeader(title: "Encaissement", subtitle: model.ticket.title) { dismiss() }
+                SheetHeader(title: String(localized: "payment.sheet_title"), subtitle: model.ticket.title) { dismiss() }
 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(plan.partLabel ?? "À encaisser").font(.headline).foregroundStyle(Theme.inkMuted)
+                    Text(plan.partLabel ?? String(localized: "payment.to_collect_label")).font(.headline).foregroundStyle(Theme.inkMuted)
                     Text(plan.amountToCollect.formatted)
                         .font(.system(size: 56, weight: .bold, design: .rounded))
                         .monospacedDigit()
                         .contentTransition(.numericText())
+                        .environment(\.layoutDirection, .leftToRight)
                         .accessibilityIdentifier("payment.amount")
                     if plan.tipAmount.cents > 0 {
-                        Text("dont pourboire \(plan.tipAmount.formatted)").font(.subheadline).foregroundStyle(Theme.inkMuted)
+                        Text("payment.tip_included \(plan.tipAmount.formatted)").font(.subheadline).foregroundStyle(Theme.inkMuted)
                     }
                 }
 
@@ -74,7 +75,7 @@ struct PaymentSheet: View {
             Divider()
 
             VStack(alignment: .leading, spacing: 16) {
-                Text("Moyen de paiement").font(.headline)
+                Text("payment.method_label").font(.headline)
                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
                     ForEach(availableMethods, id: \.self) { m in
                         Button {
@@ -92,7 +93,7 @@ struct PaymentSheet: View {
                     }
                     if !isCounter && !plan.isSplit {
                         Button { showsRoomCharge = true } label: {
-                            Label("Chambre d'hôtel", systemImage: "bed.double")
+                            Label("payment.room_charge_label", systemImage: "bed.double")
                                 .font(.headline)
                                 .frame(maxWidth: .infinity, minHeight: 60)
                                 .background(RoundedRectangle(cornerRadius: Theme.smallRadius).fill(Theme.raised))
@@ -122,16 +123,16 @@ struct PaymentSheet: View {
 
     private var validateTitle: String {
         if method == .cash, tendered > plan.amountToCollect {
-            return "Valider · rendu \(OrderMath.change(tendered: tendered, due: plan.amountToCollect).formatted)"
+            return String(localized: "payment.validate_with_change \(OrderMath.change(tendered: tendered, due: plan.amountToCollect).formatted)")
         }
-        return "Valider \(method.label.lowercased())"
+        return String(localized: "payment.validate_method \(method.label.lowercased())")
     }
 
     private var splitSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Picker("Mode", selection: Binding(get: { plan.isSplit }, set: { plan.setGuests($0 ? 2 : nil) })) {
-                Text("Addition complète").tag(false)
-                Text("Partager à parts égales").tag(true)
+            Picker("payment.split_mode_label", selection: Binding(get: { plan.isSplit }, set: { plan.setGuests($0 ? 2 : nil) })) {
+                Text("payment.split_full_bill").tag(false)
+                Text("payment.split_equal_parts").tag(true)
             }
             .pickerStyle(.segmented)
             .disabled(plan.paidParts > 0)
@@ -142,7 +143,7 @@ struct PaymentSheet: View {
                         .buttonStyle(.bordered)
                         .disabled(plan.paidParts > 0 || guests <= PaymentPlan.splitRange.lowerBound)
                         .accessibilityIdentifier("payment.guests.minus")
-                    Text("\(guests) convives").font(.headline).monospacedDigit().accessibilityIdentifier("payment.guests")
+                    Text("payment.guests_count \(guests)").font(.headline).monospacedDigit().accessibilityIdentifier("payment.guests")
                     Button { plan.setGuests(guests + 1) } label: { Image(systemName: "plus").frame(width: 44, height: 44) }
                         .buttonStyle(.bordered)
                         .disabled(plan.paidParts > 0 || guests >= PaymentPlan.splitRange.upperBound)
@@ -170,16 +171,16 @@ struct PaymentSheet: View {
 
     private var tipSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("Pourboire").font(.headline)
+            Text("payment.tip_label").font(.headline)
             HStack(spacing: 8) {
                 ForEach(PaymentPlan.tipPercentages, id: \.self) { percent in
-                    ChipButton(title: percent == 0 ? "Aucun" : "\(percent) %", isSelected: isTipSelected(percent)) {
+                    ChipButton(title: String(localized: percent == 0 ? "payment.tip_none" : "payment.tip_percent \(percent)"), isSelected: isTipSelected(percent)) {
                         plan.tip = percent == 0 ? .none : .percent(percent)
                         customTipText = ""
                     }
                     .accessibilityIdentifier("payment.tip.\(percent)")
                 }
-                TextField("Autre €", text: $customTipText)
+                TextField("payment.tip_custom_placeholder", text: $customTipText)
                     .keyboardType(.decimalPad)
                     .textFieldStyle(.roundedBorder)
                     .frame(width: 100)
@@ -201,12 +202,12 @@ struct PaymentSheet: View {
 
     private var counterOptions: some View {
         VStack(alignment: .leading, spacing: 10) {
-            TextField("N° de buzzer / bipeur (facultatif)", text: $buzzer)
+            TextField("payment.buzzer_placeholder", text: $buzzer)
                 .keyboardType(.numberPad)
                 .textFieldStyle(.roundedBorder)
                 .accessibilityIdentifier("payment.buzzer")
             Toggle(isOn: $printReceipt) {
-                Label("Imprimer le ticket de caisse (loi AGEC : sur demande)", systemImage: "printer")
+                Label("payment.print_receipt_label", systemImage: "printer")
             }
             .accessibilityIdentifier("payment.printReceipt")
         }
@@ -214,10 +215,10 @@ struct PaymentSheet: View {
 
     private var cashSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text(method == .cash ? "Montant remis" : "Valeur faciale du titre").font(.subheadline.weight(.semibold))
+            Text(method == .cash ? "payment.cash_tendered_label" : "payment.voucher_face_value_label").font(.subheadline.weight(.semibold))
             HStack(spacing: 8) {
                 ForEach(OrderMath.suggestedCashAmounts(for: plan.amountToCollect), id: \.self) { amount in
-                    Button(amount == plan.amountToCollect ? "Exact" : amount.formatted) { tenderedText = amount.plain }
+                    Button(amount == plan.amountToCollect ? String(localized: "order.exact_amount") : amount.formatted) { tenderedText = amount.plain }
                         .buttonStyle(.bordered)
                         .accessibilityIdentifier(amount == plan.amountToCollect ? "payment.cash.exact" : "payment.cash.\(amount.cents / 100)")
                 }
@@ -228,7 +229,7 @@ struct PaymentSheet: View {
                     .accessibilityIdentifier("payment.tendered")
                 Spacer()
                 if method == .cash {
-                    Text("Rendu \(OrderMath.change(tendered: tendered, due: plan.amountToCollect).formatted)")
+                    Text("payment.change_due \(OrderMath.change(tendered: tendered, due: plan.amountToCollect).formatted)")
                         .font(.headline)
                         .foregroundStyle(Theme.success)
                         .accessibilityIdentifier("payment.change")
@@ -283,18 +284,18 @@ struct PaymentSheet: View {
             Image(systemName: outcome.isComplete ? "checkmark.circle.fill" : "clock.badge.checkmark")
                 .font(.system(size: 72))
                 .foregroundStyle(Theme.success)
-            Text(outcome.isComplete ? "Paiement validé" : "Paiement partiel enregistré").font(.largeTitle.weight(.bold))
+            Text(outcome.isComplete ? "payment.result_paid" : "payment.result_partial").font(.largeTitle.weight(.bold))
             if outcome.change.cents > 0 {
-                Text("Rendu monnaie").font(.title3).foregroundStyle(Theme.inkMuted)
+                Text("payment.change_due_title").font(.title3).foregroundStyle(Theme.inkMuted)
                 Text(outcome.change.formatted).font(.system(size: 64, weight: .bold, design: .rounded)).foregroundStyle(Theme.success)
                     .accessibilityIdentifier("result.change")
             }
             if !outcome.isComplete {
-                Text("Reste à payer : \(outcome.remaining.formatted)").font(.title2).accessibilityIdentifier("result.remaining")
+                Text("payment.remaining_due \(outcome.remaining.formatted)").font(.title2).accessibilityIdentifier("result.remaining")
             }
-            if let receipt = outcome.receiptNumber { Text("Reçu \(receipt)").font(.subheadline).foregroundStyle(Theme.inkMuted) }
+            if let receipt = outcome.receiptNumber { Text("payment.receipt_number \(receipt)").font(.subheadline).foregroundStyle(Theme.inkMuted) }
             Spacer()
-            ActionButton(title: outcome.isComplete ? "Terminer" : "Continuer l'encaissement", systemImage: outcome.isComplete ? "checkmark" : "arrow.right", kind: .primary) {
+            ActionButton(title: String(localized: outcome.isComplete ? "payment.finish_button" : "payment.continue_button"), systemImage: outcome.isComplete ? "checkmark" : "arrow.right", kind: .primary) {
                 if outcome.isComplete {
                     dismiss()
                     onComplete(outcome)
@@ -318,20 +319,20 @@ struct ChangeOverlay: View {
     var body: some View {
         VStack(spacing: 24) {
             Spacer()
-            Text("Monnaie à rendre").font(.title2).foregroundStyle(Theme.inkMuted)
+            Text("payment.change_to_give").font(.title2).foregroundStyle(Theme.inkMuted)
             Text(outcome.change.formatted)
                 .font(.system(size: 96, weight: .heavy, design: .rounded))
                 .foregroundStyle(Theme.success)
                 .accessibilityIdentifier("change.amount")
             HStack(spacing: 40) {
                 VStack {
-                    Text("N° de retrait").font(.headline).foregroundStyle(Theme.inkMuted)
+                    Text("payment.pickup_number_label").font(.headline).foregroundStyle(Theme.inkMuted)
                     Text(outcome.pickupNumber ?? "—").font(.system(size: 48, weight: .bold, design: .rounded))
                         .accessibilityIdentifier("change.pickup")
                 }
                 if let buzzer = outcome.buzzer {
                     VStack {
-                        Text("Buzzer").font(.headline).foregroundStyle(Theme.inkMuted)
+                        Text("payment.buzzer_label").font(.headline).foregroundStyle(Theme.inkMuted)
                         Text(buzzer).font(.system(size: 48, weight: .bold, design: .rounded))
                     }
                 }
@@ -339,16 +340,16 @@ struct ChangeOverlay: View {
             if let voucher = outcome.creditVoucher {
                 Card {
                     VStack(alignment: .leading, spacing: 4) {
-                        Label("Avoir client émis", systemImage: "ticket").font(.headline)
+                        Label("payment.voucher_issued_label", systemImage: "ticket").font(.headline)
                         Text(voucher.voucherCode).font(.title2.monospaced().weight(.bold)).accessibilityIdentifier("change.voucher")
-                        Text("Montant \(voucher.amount.formatted) · valable 90 jours").font(.subheadline).foregroundStyle(Theme.inkMuted)
+                        Text("payment.voucher_amount_validity \(voucher.amount.formatted)").font(.subheadline).foregroundStyle(Theme.inkMuted)
                     }
                 }
                 .frame(maxWidth: 420)
             }
-            if let receipt = outcome.receiptNumber { Text("Reçu \(receipt)").foregroundStyle(Theme.inkMuted) }
+            if let receipt = outcome.receiptNumber { Text("payment.receipt_number \(receipt)").foregroundStyle(Theme.inkMuted) }
             Spacer()
-            ActionButton(title: "Client suivant", systemImage: "arrow.right.circle.fill", kind: .primary) { onDone() }
+            ActionButton(title: String(localized: "payment.next_customer_button"), systemImage: "arrow.right.circle.fill", kind: .primary) { onDone() }
                 .frame(maxWidth: 360)
                 .accessibilityIdentifier("change.done")
                 .padding(.bottom, 40)
@@ -372,13 +373,13 @@ struct RoomChargeSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
-            SheetHeader(title: "Facturer sur une chambre", subtitle: "Total \((model.ticket.amountDue + tip).formatted)") { dismiss() }
+            SheetHeader(title: String(localized: "payment.room_charge_title"), subtitle: String(localized: "payment.room_charge_total \((model.ticket.amountDue + tip).formatted)")) { dismiss() }
             if rooms.isEmpty {
                 ProgressView().frame(maxWidth: .infinity)
             } else {
-                Picker("Chambre", selection: $selected) {
+                Picker("payment.room_picker_label", selection: $selected) {
                     ForEach(rooms) { room in
-                        Text("Chambre \(room.roomNumber) — \(room.guestName)").tag(Optional(room))
+                        Text("payment.room_option \(room.roomNumber) \(room.guestName)").tag(Optional(room))
                     }
                 }
                 .pickerStyle(.menu)
@@ -387,20 +388,20 @@ struct RoomChargeSheet: View {
                     HStack {
                         Label(selected.guestName, systemImage: "person")
                         Spacer()
-                        Text("Crédit disponible \(selected.availableCredit.formatted)").foregroundStyle(selected.availableCredit >= model.ticket.amountDue + tip ? Theme.success : Theme.danger)
+                        Text("payment.available_credit \(selected.availableCredit.formatted)").foregroundStyle(selected.availableCredit >= model.ticket.amountDue + tip ? Theme.success : Theme.danger)
                     }
                     .font(.subheadline)
                 }
             }
             HStack {
-                Text("Signature du client").font(.headline)
+                Text("payment.customer_signature_label").font(.headline)
                 Spacer()
-                Button("Effacer") { strokes = [] }.accessibilityIdentifier("room.clearSignature")
+                Button("common.clear") { strokes = [] }.accessibilityIdentifier("room.clearSignature")
             }
             SignaturePad(strokes: $strokes)
                 .frame(height: 180)
                 .accessibilityIdentifier("room.signature")
-            ActionButton(title: "Valider la facturation", systemImage: "bed.double.fill", kind: .primary) {
+            ActionButton(title: String(localized: "payment.confirm_room_charge_button"), systemImage: "bed.double.fill", kind: .primary) {
                 Task { await charge() }
             }
             .disabled(selected == nil || strokes.isEmpty)
@@ -442,7 +443,7 @@ struct SignaturePad: View {
         Drawing(strokes: strokes)
             .background(RoundedRectangle(cornerRadius: Theme.smallRadius).fill(Color.white))
             .overlay(RoundedRectangle(cornerRadius: Theme.smallRadius).strokeBorder(Theme.lineStrong))
-            .overlay { if strokes.isEmpty { Text("Signez ici").foregroundStyle(.gray) } }
+            .overlay { if strokes.isEmpty { Text("payment.sign_here_label").foregroundStyle(.gray) } }
             .gesture(
                 DragGesture(minimumDistance: 0)
                     .onChanged { value in

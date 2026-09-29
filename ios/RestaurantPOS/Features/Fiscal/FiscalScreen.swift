@@ -24,14 +24,14 @@ struct FiscalScreen: View {
             VStack(alignment: .leading, spacing: 16) {
                 Card {
                     VStack(alignment: .leading, spacing: 12) {
-                        Label("Rapports de caisse", systemImage: "doc.text").font(.headline)
-                        Text("Le rapport X est un aperçu en direct, non scellé. La clôture Z scelle la journée par chaînage SHA-256 et remet les compteurs à zéro.")
+                        Label("fiscal.reports_title", systemImage: "doc.text").font(.headline)
+                        Text("fiscal.x_z_explanation")
                             .font(.subheadline).foregroundStyle(Theme.inkMuted)
-                        ActionButton(title: "Aperçu rapport X", systemImage: "eye", kind: .tonal) {
+                        ActionButton(title: String(localized: "fiscal.preview_x_button"), systemImage: "eye", kind: .tonal) {
                             Task { await fiscal.previewX() }
                         }
                         .accessibilityIdentifier("fiscal.previewX")
-                        ActionButton(title: "Clôture Z du jour", systemImage: "lock.doc", isLoading: fiscal.isWorking, kind: .danger) {
+                        ActionButton(title: String(localized: "fiscal.execute_z_button"), systemImage: "lock.doc", isLoading: fiscal.isWorking, kind: .danger) {
                             confirmsZ = true
                         }
                         .accessibilityIdentifier("fiscal.executeZ")
@@ -39,17 +39,17 @@ struct FiscalScreen: View {
                 }
                 Card {
                     VStack(alignment: .leading, spacing: 12) {
-                        Label("Export comptable FEC", systemImage: "square.and.arrow.up").font(.headline)
-                        DatePicker("Du", selection: $fecFrom, displayedComponents: .date)
-                        DatePicker("Au", selection: $fecTo, in: fecFrom..., displayedComponents: .date)
+                        Label("fiscal.fec_export_title", systemImage: "square.and.arrow.up").font(.headline)
+                        DatePicker("fiscal.fec_from", selection: $fecFrom, displayedComponents: .date)
+                        DatePicker("fiscal.fec_to", selection: $fecTo, in: fecFrom..., displayedComponents: .date)
                         HStack {
-                            Text("SIREN")
+                            Text("fiscal.siren_label")
                             TextField("123456789", text: Binding(get: { model.settings.siren }, set: { model.settings.siren = $0 }))
                                 .keyboardType(.numberPad)
                                 .textFieldStyle(.roundedBorder)
                                 .accessibilityIdentifier("fec.siren")
                         }
-                        ActionButton(title: "Générer le FEC", systemImage: "doc.badge.gearshape", kind: .tonal) {
+                        ActionButton(title: String(localized: "fiscal.generate_fec_button"), systemImage: "doc.badge.gearshape", kind: .tonal) {
                             let end = Calendar.current.date(bySettingHour: 23, minute: 59, second: 59, of: fecTo) ?? fecTo
                             Task { await fiscal.exportFec(from: Calendar.current.startOfDay(for: fecFrom), to: end) }
                         }
@@ -58,7 +58,7 @@ struct FiscalScreen: View {
                             Text(status).font(.footnote).foregroundStyle(Theme.inkMuted).accessibilityIdentifier("fec.status")
                         }
                         if let file = fiscal.exportedFile {
-                            ShareLink(item: file) { Label("Partager \(file.lastPathComponent)", systemImage: "square.and.arrow.up") }
+                            ShareLink(item: file) { Label("fiscal.share_file \(file.lastPathComponent)", systemImage: "square.and.arrow.up") }
                                 .accessibilityIdentifier("fec.share")
                         }
                     }
@@ -69,11 +69,11 @@ struct FiscalScreen: View {
         }
         .padding(24)
         .task { await fiscal.loadLatest() }
-        .confirmationDialog("Exécuter la clôture Z ?", isPresented: $confirmsZ, titleVisibility: .visible) {
-            Button("Clôturer et sceller la journée", role: .destructive) { Task { await fiscal.executeZ() } }
+        .confirmationDialog("fiscal.confirm_z_dialog_title", isPresented: $confirmsZ, titleVisibility: .visible) {
+            Button("fiscal.confirm_z_button", role: .destructive) { Task { await fiscal.executeZ() } }
                 .accessibilityIdentifier("fiscal.confirmZ")
         } message: {
-            Text("Opération irréversible : les ventes de la période sont scellées (NF525).")
+            Text("fiscal.confirm_z_message")
         }
     }
 }
@@ -85,34 +85,34 @@ struct FiscalSlip: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text(isSealed ? "*** CLÔTURE JOURNALIÈRE — RAPPORT Z n°\(report.closureSequence ?? 1) ***" : "*** RAPPORT FINANCIER EN COURS — RAPPORT X ***")
+            Text(isSealed ? "fiscal.slip_title_z \(report.closureSequence ?? 1)" : "fiscal.slip_title_x")
                 .font(.headline.monospaced())
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: .infinity)
                 .accessibilityIdentifier("slip.title")
             dashed
-            line("Terminal", report.terminalId ?? "—")
-            line("Date", (report.closedAtUtc ?? report.periodEndUtc ?? Date()).formatted(date: .abbreviated, time: .standard))
-            line("Tickets", "\(report.receiptCount)")
+            line(String(localized: "common.field_terminal"), report.terminalId ?? "—")
+            line(String(localized: "fiscal.slip_date_label"), (report.closedAtUtc ?? report.periodEndUtc ?? Date()).formatted(date: .abbreviated, time: .standard))
+            line(String(localized: "fiscal.slip_tickets_label"), "\(report.receiptCount)")
             dashed
-            line("TOTAL TTC", report.totalSalesTtc.formatted, bold: true)
+            line(String(localized: "fiscal.slip_total_ttc_label"), report.totalSalesTtc.formatted, bold: true)
                 .accessibilityIdentifier("slip.totalTtc")
-            line("Total HT", report.totalSalesHt.formatted)
+            line(String(localized: "fiscal.slip_total_ht_label"), report.totalSalesHt.formatted)
             ForEach(report.sortedVat, id: \.rate) { vat in
-                line("TVA \(Double(vat.rate)?.formatted() ?? vat.rate) %", vat.amount.formatted)
+                line(String(localized: "fiscal.slip_vat_row \(Double(vat.rate)?.formatted() ?? vat.rate)"), vat.amount.formatted)
             }
             dashed
             ForEach(report.sortedPayments, id: \.method) { payment in
                 line(payment.method, payment.amount.formatted)
             }
             dashed
-            line("Grand total perpétuel", report.perpetualGrandTotal.formatted)
+            line(String(localized: "fiscal.slip_perpetual_label"), report.perpetualGrandTotal.formatted)
             VStack(alignment: .leading, spacing: 4) {
-                Text("Signature").font(.caption.monospaced())
-                Text(report.signatureHash ?? "GÉNÉRÉE À LA CLÔTURE Z").font(.caption2.monospaced()).textSelection(.enabled)
+                Text("fiscal.slip_signature_label").font(.caption.monospaced())
+                Text(report.signatureHash ?? String(localized: "fiscal.slip_hash_pending")).font(.caption2.monospaced()).textSelection(.enabled)
                     .accessibilityIdentifier("slip.hash")
             }
-            Label(isSealed ? "Chaîne d'audit fiscale scellée et valide (NF525)" : "Données en direct du service (non scellées)", systemImage: isSealed ? "checkmark.seal.fill" : "info.circle")
+            Label(isSealed ? "fiscal.slip_sealed_status" : "fiscal.slip_unsealed_status", systemImage: isSealed ? "checkmark.seal.fill" : "info.circle")
                 .font(.footnote.weight(.semibold))
                 .foregroundStyle(isSealed ? .green : .blue)
                 .padding(.top, 6)

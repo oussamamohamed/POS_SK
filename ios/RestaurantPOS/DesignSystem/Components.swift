@@ -257,6 +257,8 @@ struct NumericKeypad: View {
                 }
             }
         }
+        // Pavé numérique : toujours de gauche à droite, même en arabe (montants, PIN).
+        .environment(\.layoutDirection, .leftToRight)
     }
 
     private func isFunctionKey(_ key: String) -> Bool { key == "C" || key == "⌫" }
@@ -281,9 +283,9 @@ struct NumericKeypad: View {
 
     private func accessibilityLabel(_ key: String) -> String {
         switch key {
-        case "⌫": "Effacer"
-        case "C": "Tout effacer"
-        case ",": "Virgule"
+        case "⌫": String(localized: "common.keypad_delete")
+        case "C": String(localized: "common.keypad_clear")
+        case ",": String(localized: "common.keypad_decimal")
         default: key
         }
     }
@@ -405,7 +407,7 @@ struct SheetHeader: View {
             }
             .buttonStyle(.plain)
             .accessibilityIdentifier("sheet.close")
-            .accessibilityLabel("Fermer")
+            .accessibilityLabel("common.close_label")
         }
     }
 }
