@@ -131,4 +131,14 @@ public sealed class DeviceService : IDeviceService
         await _db.SaveChangesAsync(ct);
         return true;
     }
+
+    public async Task<bool> SetReceiptPrinterAsync(Guid deviceId, Guid? printerId, CancellationToken ct = default)
+    {
+        var device = await _db.Devices.FindAsync([deviceId], ct);
+        if (device is null) return false;
+        if (printerId is { } id && await _db.PrinterConfigurations.FindAsync([id], ct) is null) return false;
+        device.ReceiptPrinterId = printerId;
+        await _db.SaveChangesAsync(ct);
+        return true;
+    }
 }

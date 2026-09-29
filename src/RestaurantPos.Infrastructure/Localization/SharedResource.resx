@@ -298,4 +298,10 @@
   <data name="admin.payment_method_other" xml:space="preserve">
     <value>Other Payment</value>
   </data>
+  <data name="errors.preparation_station_invalid" xml:space="preserve">
+    <value>Unknown preparation station.</value>
+  </data>
+  <data name="errors.receipt_printer_invalid" xml:space="preserve">
+    <value>Device or printer not found.</value>
+  </data>
 </root>

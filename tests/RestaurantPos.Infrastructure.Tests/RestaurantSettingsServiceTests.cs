@@ -36,6 +36,22 @@ public class RestaurantSettingsServiceTests
     }
 
     [Fact]
+    public async Task Get_OnEmptyDatabase_KitchenLanguageIsEnglish()
+    {
+        using var db = NewDb();
+        (await new RestaurantSettingsService(db).GetAsync()).KitchenTicketLanguage.Should().Be("en");
+    }
+
+    [Fact]
+    public async Task Get_WithExistingOrders_KitchenLanguageIsFrench()
+    {
+        using var db = NewDb();
+        db.Orders.Add(new Order());
+        await db.SaveChangesAsync();
+        (await new RestaurantSettingsService(db).GetAsync()).KitchenTicketLanguage.Should().Be("fr");
+    }
+
+    [Fact]
     public async Task Get_IsStable_AfterOrdersAppear()
     {
         using var db = NewDb();

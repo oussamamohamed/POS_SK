@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using RestaurantPos.Application.Common.Interfaces;
 using RestaurantPos.Application.DTOs;
+using RestaurantPos.Domain.Common;
+using RestaurantPos.Infrastructure.Localization;
 
 namespace RestaurantPos.Api.Endpoints;
 
@@ -26,13 +28,17 @@ public static class CatalogEndpoints
 
         group.MapPost("/categories", async (CreateCategoryRequest req, IBackOfficeCatalogService catalog) =>
         {
-            var created = await catalog.CreateCategoryAsync(req.Name, req.ColorHex, req.DisplayOrder, req.IconName);
+            if (!PreparationStations.IsKitchenStationOrEmpty(req.PreparationStationId))
+                return Results.BadRequest(new { Message = Texts.T("errors.preparation_station_invalid") });
+            var created = await catalog.CreateCategoryAsync(req.Name, req.ColorHex, req.DisplayOrder, req.IconName, req.PreparationStationId);
             return Results.Ok(created);
         }).RequireAuthorization("RequireManagerOrAdmin");
 
         group.MapPut("/categories/{id}", async (string id, UpdateCategoryRequest req, IBackOfficeCatalogService catalog) =>
         {
-            var updated = await catalog.UpdateCategoryAsync(id, req.Name, req.ColorHex, req.DisplayOrder, req.IconName, req.IsActive ?? true);
+            if (!PreparationStations.IsKitchenStationOrEmpty(req.PreparationStationId))
+                return Results.BadRequest(new { Message = Texts.T("errors.preparation_station_invalid") });
+            var updated = await catalog.UpdateCategoryAsync(id, req.Name, req.ColorHex, req.DisplayOrder, req.IconName, req.IsActive ?? true, req.PreparationStationId);
             return Results.Ok(updated);
         }).RequireAuthorization("RequireManagerOrAdmin");
 

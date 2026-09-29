@@ -49,7 +49,7 @@ public class BackOfficeCatalogService : IBackOfficeCatalogService
         }) ?? [];
     }
 
-    public async Task<Category> CreateCategoryAsync(string name, string? colorHex, int displayOrder, string? iconName, CancellationToken ct = default)
+    public async Task<Category> CreateCategoryAsync(string name, string? colorHex, int displayOrder, string? iconName, string? preparationStationId = null, CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
@@ -60,6 +60,7 @@ public class BackOfficeCatalogService : IBackOfficeCatalogService
             ColorHex = colorHex ?? "#4A90E2",
             DisplayOrder = displayOrder,
             IconName = iconName,
+            PreparationStationId = PreparationStations.Normalize(preparationStationId),
             IsActive = true,
             CreatedAtUtc = DateTimeOffset.UtcNow,
             UpdatedAtUtc = DateTimeOffset.UtcNow
@@ -71,7 +72,7 @@ public class BackOfficeCatalogService : IBackOfficeCatalogService
         return category;
     }
 
-    public async Task<Category> UpdateCategoryAsync(string categoryId, string name, string? colorHex, int displayOrder, string? iconName, bool isActive, CancellationToken ct = default)
+    public async Task<Category> UpdateCategoryAsync(string categoryId, string name, string? colorHex, int displayOrder, string? iconName, bool isActive, string? preparationStationId = null, CancellationToken ct = default)
     {
         var category = await _dbContext.Categories.FindAsync([categoryId], ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException($"Catégorie introuvable: {categoryId}");
@@ -81,6 +82,7 @@ public class BackOfficeCatalogService : IBackOfficeCatalogService
         category.DisplayOrder = displayOrder;
         category.IconName = iconName;
         category.IsActive = isActive;
+        if (preparationStationId is not null) category.PreparationStationId = PreparationStations.Normalize(preparationStationId);
         category.UpdatedAtUtc = DateTimeOffset.UtcNow;
 
         await _dbContext.SaveChangesAsync(ct).ConfigureAwait(false);

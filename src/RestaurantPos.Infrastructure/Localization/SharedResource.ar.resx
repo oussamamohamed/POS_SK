@@ -298,4 +298,10 @@
   <data name="admin.payment_method_other" xml:space="preserve">
     <value>دفع آخر</value>
   </data>
+  <data name="errors.preparation_station_invalid" xml:space="preserve">
+    <value>محطة التحضير غير معروفة.</value>
+  </data>
+  <data name="errors.receipt_printer_invalid" xml:space="preserve">
+    <value>الجهاز أو الطابعة غير موجود.</value>
+  </data>
 </root>

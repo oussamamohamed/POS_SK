@@ -298,4 +298,10 @@
   <data name="admin.payment_method_other" xml:space="preserve">
     <value>Autre Règlement</value>
   </data>
+  <data name="errors.preparation_station_invalid" xml:space="preserve">
+    <value>Poste de préparation inconnu.</value>
+  </data>
+  <data name="errors.receipt_printer_invalid" xml:space="preserve">
+    <value>Appareil ou imprimante introuvable.</value>
+  </data>
 </root>

@@ -70,11 +70,17 @@ public static class DeviceEndpoints
         group.MapGet("", async (IDeviceService devices, CancellationToken ct) =>
         {
             var list = await devices.ListAsync(ct);
-            return Results.Ok(list.Select(d => new DeviceDto(d.Id, d.Name, d.Role.ToString(), d.TerminalId, d.PairedAtUtc, d.LastSeenUtc, d.RevokedAtUtc is not null)));
+            return Results.Ok(list.Select(d => new DeviceDto(d.Id, d.Name, d.Role.ToString(), d.TerminalId, d.PairedAtUtc, d.LastSeenUtc, d.RevokedAtUtc is not null, d.ReceiptPrinterId)));
         }).RequireAuthorization("RequireManagerOrAdmin");
 
         group.MapPost("/{id:guid}/revoke", async (Guid id, IDeviceService devices, CancellationToken ct) =>
             await devices.RevokeAsync(id, ct) ? Results.NoContent() : Results.NotFound())
+            .RequireAuthorization("RequireManagerOrAdmin");
+
+        group.MapPut("/{id:guid}/receipt-printer", async (Guid id, SetReceiptPrinterRequest req, IDeviceService devices, CancellationToken ct) =>
+            await devices.SetReceiptPrinterAsync(id, req.PrinterId, ct)
+                ? Results.NoContent()
+                : Results.NotFound(new { Message = Texts.T("errors.receipt_printer_invalid") }))
             .RequireAuthorization("RequireManagerOrAdmin");
     }
 
