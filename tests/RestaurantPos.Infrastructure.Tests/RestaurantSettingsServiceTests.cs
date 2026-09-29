@@ -101,6 +101,24 @@ public class RestaurantSettingsServiceTests
         (await db.RestaurantSettings.CountAsync()).Should().Be(1);
     }
 
+    [Fact]
+    public async Task Get_DbUpdateExceptionUnrelatedToSingletonConflict_Rethrows()
+    {
+        // Une DbUpdateException qui n'est pas un conflit sur la ligne singleton (ex. base verrouillée) :
+        // après détachement, la relecture ne trouve toujours rien. Le service doit laisser remonter
+        // l'exception d'origine plutôt que de la masquer derrière un InvalidOperationException générique.
+        var interceptor = new ThrowDbUpdateExceptionOnFirstSaveInterceptor(() => { });
+        using var db = new AppDbContext(new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase($"PosTest_Settings_Rethrow_{Guid.NewGuid()}")
+            .AddInterceptors(interceptor)
+            .Options);
+
+        var act = () => new RestaurantSettingsService(db).GetAsync();
+
+        await act.Should().ThrowAsync<DbUpdateException>()
+            .WithMessage("Conflit de clé primaire simulé (course sur le premier appel).");
+    }
+
     /// <summary>Simule, une seule fois, le conflit de clé primaire (DbUpdateException) qu'un provider
     /// relationnel lèverait réellement sur une course entre deux premiers appels.</summary>
     private sealed class ThrowDbUpdateExceptionOnFirstSaveInterceptor : SaveChangesInterceptor

@@ -46,8 +46,9 @@ public class RestaurantSettingsService : IRestaurantSettingsService
             // Course sur le premier appel (deux terminaux) : un autre a déjà inséré la ligne singleton.
             // On détache notre tentative locale et on relit la ligne gagnante.
             _db.Entry(settings).State = EntityState.Detached;
-            settings = await _db.RestaurantSettings.FindAsync([RestaurantSettings.SingletonId], ct).ConfigureAwait(false)
-                ?? throw new InvalidOperationException("RestaurantSettings singleton row missing after insert conflict.");
+            var winner = await _db.RestaurantSettings.FindAsync([RestaurantSettings.SingletonId], ct).ConfigureAwait(false);
+            if (winner is null) throw; // Pas un conflit sur la ligne singleton : ne pas masquer l'erreur d'origine.
+            settings = winner;
         }
         return settings;
     }
