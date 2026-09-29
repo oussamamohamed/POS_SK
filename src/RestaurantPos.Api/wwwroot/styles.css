@@ -2155,7 +2155,7 @@ body.pos-dark {
 .cart-item-price,
 .total-amount,
 .table-total,
-.pay-amount-box .amount,
+#roomChargeTotalAmount,
 #payTotalWithTip,
 .partition-row strong,
 .product-price,

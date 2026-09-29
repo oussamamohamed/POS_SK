@@ -43,7 +43,7 @@ test.describe('Langue de l\'interface', () => {
     await expect(page.locator('#pinLockModal')).not.toHaveClass(/active/);
 
     // Montants : toujours gauche-droite malgré la page RTL.
-    const amounts = page.locator('.cart-item-price, .total-amount, .table-total, .pay-amount-box .amount, .product-price, #summaryHt, #summaryVat');
+    const amounts = page.locator('.cart-item-price, .total-amount, .table-total, #roomChargeTotalAmount, .product-price, #summaryHt, #summaryVat');
     const count = await amounts.count();
     expect(count).toBeGreaterThan(0);
     for (let i = 0; i < Math.min(count, 5); i++) {
@@ -60,6 +60,24 @@ test.describe('Langue de l\'interface', () => {
     const header = await page.locator('.app-header').boundingBox();
     const brand = await page.locator('.brand-section').boundingBox();
     expect(brand!.x + brand!.width).toBeGreaterThan(header!.x + header!.width / 2);
+  });
+
+  test('arabe : partage d\'addition, seul le montant reste gauche-droite', async ({ page }) => {
+    await page.goto('/');
+    await page.evaluate(() => localStorage.setItem('pos_lang', 'ar'));
+    await page.reload();
+    await page.click('#btnNavPos');
+    await page.locator('.product-card').filter({ hasText: 'Bière Artisanale' }).first().click();
+    await expect(page.locator('#summaryTtc')).not.toHaveText('0.00 €');
+    await page.click('#btnSplitBill');
+    await page.click('#btnConfirmSplit');
+
+    // La phrase suit la page (RTL) ; le montant et son symbole € sont isolés en LTR.
+    const remaining = page.locator('#payRemainingAmount');
+    await expect(remaining).toContainText('الحصة 1/2');
+    await expect(remaining).toHaveCSS('direction', 'rtl');
+    await expect(remaining.locator('bdi')).toHaveCSS('direction', 'ltr');
+    await expect(remaining.locator('bdi')).toHaveText(/^\d+\.\d{2} €$/);
   });
 
   test('le choix est mémorisé et envoyé au serveur', async ({ page }) => {

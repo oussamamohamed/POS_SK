@@ -1640,7 +1640,7 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "بدون ضريبة ⁦%@⁩"
+            "value": "دون الضريبة ⁦%@⁩"
           }
         },
         "en": {
@@ -2560,7 +2560,7 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "الشبكة والجهاز"
+            "value": "الشبكة والصندوق"
           }
         },
         "en": {
@@ -2974,7 +2974,7 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "الجهاز"
+            "value": "الصندوق"
           }
         },
         "en": {
@@ -3296,7 +3296,7 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "الجهاز"
+            "value": "الصندوق"
           }
         },
         "en": {
@@ -3848,7 +3848,7 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "رمز الربط"
+            "value": "رمز الاقتران"
           }
         },
         "en": {
@@ -3940,7 +3940,7 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "الربط"
+            "value": "الاقتران"
           }
         },
         "en": {
@@ -4055,7 +4055,7 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "ربط هذا iPad"
+            "value": "إقران هذا iPad"
           }
         },
         "en": {
@@ -4308,7 +4308,7 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "إلغاء ربط هذا iPad"
+            "value": "إلغاء إقران هذا iPad"
           }
         },
         "en": {
@@ -4791,7 +4791,7 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "الإجمالي بدون ضريبة"
+            "value": "الإجمالي دون الضريبة"
           }
         },
         "en": {
@@ -7022,7 +7022,7 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "الإجمالي بدون ضريبة"
+            "value": "الإجمالي دون الضريبة"
           }
         },
         "en": {

@@ -1784,7 +1784,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const tip = getTipAmount();
         const finalTotal = total + tip;
 
-        elements.payRemainingAmount.textContent = `${total.toFixed(2)} €`;
+        elements.payRemainingAmount.innerHTML = `<bdi dir="ltr">${total.toFixed(2)} €</bdi>`;
         elements.payTotalWithTip.textContent = t('payment.total_with_tip_value', { total: finalTotal.toFixed(2), tip: tip.toFixed(2) });
     }
 
@@ -1878,7 +1878,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         state.splitActivePart = plan.parts[plan.index] / 100;
         state.selectedTipPercent = 0;
         state.customTipAmount = 0;
-        elements.payRemainingAmount.textContent = t('payment.split_part_amount', { amount: state.splitActivePart.toFixed(2), index: plan.index + 1, total: plan.parts.length });
+        // Seul le montant est isolé en LTR : la phrase suit la direction de la page (RTL en arabe).
+        elements.payRemainingAmount.innerHTML = t('payment.split_part_amount', { amount: `<bdi dir="ltr">${state.splitActivePart.toFixed(2)} €</bdi>`, index: plan.index + 1, total: plan.parts.length });
         elements.payTotalWithTip.textContent = `${state.splitActivePart.toFixed(2)} €`;
         elements.paymentModal.classList.add('active');
     }

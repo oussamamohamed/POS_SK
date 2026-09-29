@@ -71,7 +71,7 @@
 "common.voucher_policy_credit_voucher" = "إصدار قسيمة رصيد";
 "common.voucher_policy_reject" = "رفض أي تجاوز";
 "errors.decoding" = "استجابة غير متوقعة من الخادم: %@";
-"errors.device_not_paired" = "هذا الجهاز غير مرتبط بالخادم. أنشئ رمزًا في الإدارة ← الأجهزة.";
+"errors.device_not_paired" = "هذا الجهاز غير مقترن بالخادم. أنشئ رمزًا في الإدارة ← الأجهزة.";
 "errors.forbidden" = "إجراء مخصص للمسؤول.";
 "errors.invalid_url" = "عنوان URL غير صالح";
 "errors.non_http_response" = "استجابة ليست HTTP";
