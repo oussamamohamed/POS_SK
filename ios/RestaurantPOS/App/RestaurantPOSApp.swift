@@ -12,6 +12,11 @@ struct RestaurantPOSApp: App {
                 .environment(environment)
                 .environment(environment.model)
                 .environment(environment.router)
+                // I2(b) : chiffres occidentaux même sur un iPad réglé en région arabe (ex. ar_SA, ar_EG
+                // dont le système de numérotation par défaut est arabo-indien). Ne force que le système
+                // de numérotation : langue et région restent celles de l'appareil, donc la langue de
+                // l'interface (résolue via `Bundle.main.preferredLocalizations`) n'est pas affectée.
+                .environment(\.locale, Money.latinDigitsLocale(.current))
                 .id(environment.generation)
                 .tint(Theme.primary)
                 .preferredColorScheme((AppearancePreference(rawValue: appearance) ?? .dark).colorScheme)
