@@ -316,4 +316,13 @@
   <data name="receipt.test_paper" xml:space="preserve">
     <value>Paper</value>
   </data>
+  <data name="errors.print_job_not_found" xml:space="preserve">
+    <value>Print job not found.</value>
+  </data>
+  <data name="errors.print_job_not_retryable" xml:space="preserve">
+    <value>Only failed print jobs can be retried.</value>
+  </data>
+  <data name="errors.print_job_not_cancellable" xml:space="preserve">
+    <value>This print job can no longer be cancelled.</value>
+  </data>
 </root>

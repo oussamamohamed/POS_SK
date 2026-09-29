@@ -316,4 +316,13 @@
   <data name="receipt.test_paper" xml:space="preserve">
     <value>Papier</value>
   </data>
+  <data name="errors.print_job_not_found" xml:space="preserve">
+    <value>Impression introuvable.</value>
+  </data>
+  <data name="errors.print_job_not_retryable" xml:space="preserve">
+    <value>Seules les impressions en échec peuvent être relancées.</value>
+  </data>
+  <data name="errors.print_job_not_cancellable" xml:space="preserve">
+    <value>Cette impression ne peut plus être annulée.</value>
+  </data>
 </root>

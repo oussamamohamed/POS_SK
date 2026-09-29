@@ -316,4 +316,13 @@
   <data name="receipt.test_paper" xml:space="preserve">
     <value>الورق</value>
   </data>
+  <data name="errors.print_job_not_found" xml:space="preserve">
+    <value>مهمة الطباعة غير موجودة.</value>
+  </data>
+  <data name="errors.print_job_not_retryable" xml:space="preserve">
+    <value>يمكن إعادة محاولة مهام الطباعة الفاشلة فقط.</value>
+  </data>
+  <data name="errors.print_job_not_cancellable" xml:space="preserve">
+    <value>لم يعد بالإمكان إلغاء مهمة الطباعة هذه.</value>
+  </data>
 </root>

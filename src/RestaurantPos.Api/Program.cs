@@ -419,6 +419,7 @@ public partial class Program
 
         // 5. Printers Management
         app.MapPrinterEndpoints();
+        app.MapPrintJobEndpoints();
         app.MapSettingsEndpoints();
 
         // 6. Tables & Floor Plan
