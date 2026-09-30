@@ -129,4 +129,21 @@ public class PrinterConfigurationServiceTests
         updated.OpenCashDrawerOnReceipt.Should().BeTrue();
         updated.AssignedStationIds.Should().Contain("DESSERT");
     }
+
+    [Fact]
+    public async Task TextMode_DefaultsFalse_SetOnRegister_KeptWhenNullOnUpdate()
+    {
+        var (_, _, service) = Create();
+        var plain = await service.RegisterPrinterAsync(new PrinterRegistrationRequest("Caisse", "10.0.0.3", 9100, 80, false, ["RECEIPT"]));
+        plain.TextMode.Should().BeFalse();
+
+        var text = await service.RegisterPrinterAsync(new PrinterRegistrationRequest("Cuisine", "10.0.0.4", 9100, 58, false, ["HOT_KITCHEN"], TextMode: true));
+        text.TextMode.Should().BeTrue();
+
+        var updated = await service.UpdatePrinterAsync(text.Id, new PrinterRegistrationRequest("Cuisine 2", "10.0.0.4", 9100, 58, false, ["HOT_KITCHEN"]), isActive: true);
+        updated.TextMode.Should().BeTrue();
+
+        updated = await service.UpdatePrinterAsync(text.Id, new PrinterRegistrationRequest("Cuisine 2", "10.0.0.4", 9100, 58, false, ["HOT_KITCHEN"], TextMode: false), isActive: true);
+        updated.TextMode.Should().BeFalse();
+    }
 }

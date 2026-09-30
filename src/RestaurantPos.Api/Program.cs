@@ -331,6 +331,7 @@ public partial class Program
                 SentAtUtc TEXT NULL
             );
             CREATE INDEX IF NOT EXISTS IX_PrintJobs_Status_NextAttemptAtUtc ON PrintJobs(Status, NextAttemptAtUtc);"); } catch { }
+            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE PrinterConfigurations ADD COLUMN TextMode INTEGER NOT NULL DEFAULT 0;"); } catch { }
 
             // Initialise ReceiptLanguage au démarrage plutôt qu'à la première lecture paresseuse :
             // sinon une installation EN/AR fraîche qui prend des commandes avant l'ouverture de
@@ -698,7 +699,7 @@ public record UpdateProductRequest(string Name, string CategoryId, decimal Price
 public record CreateStaffRequest(string Name, string Role, string Pin);
 public record UpdateStaffRequest(string Name, string Role, string? Pin, bool? IsActive);
 public record CreateTableRequest(string TableNumber, int Capacity, double? PositionX, double? PositionY);
-public record UpdatePrinterRequest(string Name, string IpAddress, int Port, int PaperWidthMm, bool HasCashDrawer, List<string> TargetStations, bool? IsActive);
+public record UpdatePrinterRequest(string Name, string IpAddress, int Port, int PaperWidthMm, bool HasCashDrawer, List<string> TargetStations, bool? IsActive, bool? TextMode = null);
 public record OpenTableRequest(string? WaiterName, int CoversCount, Guid? OperatorId);
 public record ZClosureRequest(string TerminalId, Guid ManagerId, string ManagerName);
 public record AddOrderItemsRequest(List<OrderItemInputDto> Items);
