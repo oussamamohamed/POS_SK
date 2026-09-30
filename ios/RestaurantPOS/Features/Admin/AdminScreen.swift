@@ -530,12 +530,22 @@ struct PrinterJobsList: View {
     let printerId: UUID
     @State private var isExpanded = false
 
+    /// Types serveur connus ; un type inconnu s'affiche tel quel.
+    static func kindLabel(_ kind: String) -> String {
+        switch kind {
+        case "PickupVoucher": String(localized: "admin.print_job_kind_pickupvoucher")
+        case "Receipt": String(localized: "admin.print_job_kind_receipt")
+        case "KitchenTicket": String(localized: "admin.print_job_kind_kitchenticket")
+        default: kind
+        }
+    }
+
     var body: some View {
         DisclosureGroup(isExpanded: $isExpanded) {
             ForEach(model.printers.jobs[printerId] ?? []) { job in
                 HStack(spacing: 8) {
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(LocalizedStringKey("admin.print_job_kind_\(job.kind.lowercased())")).font(.subheadline.weight(.semibold))
+                        Text(Self.kindLabel(job.kind)).font(.subheadline.weight(.semibold))
                         Text(job.createdAtUtc.formatted(date: .omitted, time: .shortened)).font(.caption).foregroundStyle(Theme.inkMuted)
                         if let error = job.lastError { Text(error).font(.caption).foregroundStyle(Theme.danger) }
                     }

@@ -50,4 +50,27 @@ final class PrintingUITests: PosUITestCase {
         tap("ticket.pay")
         assertExists("payment.printReceipt")
     }
+
+    func testTablePaymentWithoutReceiptCheckboxShowsNoPrintWarning() {
+        launch()
+        tap("nav.floor")
+        tap("table.T1")
+        tap("covers.confirm")
+        addProduct("Pizza Margherita AOP")
+        tap("ticket.pay")
+        tap("payment.validate")
+        assertExists("result.done")
+        let warning = app.descendants(matching: .any).matching(identifier: "toast").matching(NSPredicate(format: "label CONTAINS %@", "Aucune imprimante")).firstMatch
+        XCTAssertFalse(warning.waitForExistence(timeout: 2), "aucun avertissement d'impression sans case cochée")
+    }
+
+    func testFailedJobShowsLocalizedKind() {
+        launch(section: "admin", failedPrintJob: true)
+        tap("admin.printers")
+        let jobs = element("printer.jobs")
+        XCTAssertTrue(jobs.waitForExistence(timeout: 5))
+        jobs.buttons.firstMatch.tap()
+        XCTAssertTrue(app.staticTexts["Ticket de caisse"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["Relancer"].waitForExistence(timeout: 5))
+    }
 }

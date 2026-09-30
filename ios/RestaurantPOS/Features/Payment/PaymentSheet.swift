@@ -263,7 +263,9 @@ struct PaymentSheet: View {
         }
         guard let outcome else { Haptics.error(); return }
         Haptics.success()
-        if model.ticket.lastPrintQueued == false { model.notifier.warning(String(localized: "payment.print_not_queued")) }
+        // Table : le serveur renvoie printQueued=false sans demande ou tant qu'il reste un solde. Comptoir : le bon de retrait est toujours mis en file.
+        let printExpected = isCounter || (printReceipt && outcome.isComplete)
+        if printExpected, model.ticket.lastPrintQueued == false { model.notifier.warning(String(localized: "payment.print_not_queued")) }
         tenderedText = ""
         if isCounter && outcome.isComplete {
             dismiss()

@@ -26,13 +26,14 @@ class PosUITestCase: XCTestCase {
     ///   - paired: démarre avec un poste déjà appairé (sinon écran d'appairage).
     ///   - language: langue de l'app (`-AppleLanguages`/`-AppleLocale`). Les tests existants restent en français.
     @discardableResult
-    func launch(pin: String? = "1234", section: String? = nil, happyHour: Bool = false, paired: Bool = true, language: String = "fr") -> XCUIApplication {
+    func launch(pin: String? = "1234", section: String? = nil, happyHour: Bool = false, failedPrintJob: Bool = false, paired: Bool = true, language: String = "fr") -> XCUIApplication {
         app = XCUIApplication()
         app.launchArguments = ["-UITestMode"]
         if paired { app.launchArguments.append("-UITestPaired") }
         if let pin { app.launchArguments += ["-UITestPin", pin] }
         if let section { app.launchArguments += ["-UITestSection", section] }
         if happyHour { app.launchArguments.append("-UITestHappyHour") }
+        if failedPrintJob { app.launchArguments.append("-UITestFailedPrintJob") }
         app.launchArguments += ["-AppleLanguages", "(\(language))", "-AppleLocale", language == "ar" ? "ar" : "\(language)_FR"]
         app.launch()
         if pin != nil {
