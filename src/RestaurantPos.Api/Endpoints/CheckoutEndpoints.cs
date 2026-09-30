@@ -111,7 +111,21 @@ public static class CheckoutEndpoints
 
             var terminalId = RequireDeviceFilter.PairedDevice(http).TerminalId;
 
-            var result = await checkout.ProcessPaymentTendersAsync(orderId, terminalId, tenderRequests);
+            CheckoutResult result;
+            try
+            {
+                result = await checkout.ProcessPaymentTendersAsync(orderId, terminalId, tenderRequests);
+            }
+            catch when (tippedOrder is not null)
+            {
+                // Paiement en échec : le pourboire enregistré ci-dessus ne doit pas rester sans reçu.
+                // Le suivi EF peut contenir le reçu non écrit : on repart d'un contexte propre.
+                db.ChangeTracker.Clear();
+                var order = await db.Orders.FirstAsync(o => o.Id == orderId);
+                order.TipAmount = Money.FromCents(order.TipAmount.AmountInCents - tipCents);
+                await db.SaveChangesAsync();
+                throw;
+            }
 
             if (!result.IsSuccess)
             {

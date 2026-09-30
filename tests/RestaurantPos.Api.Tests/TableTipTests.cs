@@ -1,10 +1,13 @@
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using RestaurantPos.Application.Common.Interfaces;
@@ -83,6 +86,81 @@ public class TableTipTests
         var order = await db.Orders.AsNoTracking().SingleAsync(o => o.Id == orderId);
         order.TipAmount.AmountInCents.Should().Be(0);
         (await db.FiscalReceipts.AsNoTracking().AnyAsync(r => r.OrderId == orderId)).Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task Pay_SplitThenSettleWithTip_ReceiptExcludesTip()
+    {
+        using var factory = new PosApiApplicationFactory();
+        var (client, operatorId) = await CashierAsync(factory);
+        var orderId = await OpenTableWithItemAsync(client, "T24", operatorId, 100.00m);
+
+        (await client.PostAsJsonAsync("/api/checkout/pay", new PaymentSettlementRequest(
+            Guid.Empty, "T24", Guid.NewGuid(), [new TenderItemRequest(PaymentMethod.CreditCard, 50.00m, 50.00m, 0m)], null, false, 0m)))
+            .StatusCode.Should().Be(HttpStatusCode.OK);
+        var payResp = await client.PostAsJsonAsync("/api/checkout/pay", new PaymentSettlementRequest(
+            Guid.Empty, "T24", Guid.NewGuid(), [new TenderItemRequest(PaymentMethod.CreditCard, 55.00m, 55.00m, 0m)], null, false, 5.00m));
+        payResp.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await payResp.Content.ReadFromJsonAsync<JsonElement>();
+        body.GetProperty("remainingBalance").GetDecimal().Should().Be(0m);
+
+        using var scope = factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var receipts = await db.FiscalReceipts.AsNoTracking().Where(r => r.OrderId == orderId).OrderBy(r => r.SequenceNumber).ToListAsync();
+        receipts.Should().HaveCount(2);
+        receipts[1].TotalTtcAmount.AmountInCents.Should().Be(5000);
+        receipts.Sum(r => r.TotalTtcAmount.AmountInCents).Should().Be(10000);
+        var order = await db.Orders.AsNoTracking().SingleAsync(o => o.Id == orderId);
+        order.TipAmount.AmountInCents.Should().Be(500);
+        order.Status.Should().Be(OrderStatus.Paid);
+    }
+
+    [Fact]
+    public async Task Pay_WithTip_PaymentThrows_TipRestored()
+    {
+        using var factory = new ThrowingCheckoutFactory();
+        var (client, operatorId) = await CashierAsync(factory);
+        var orderId = await OpenTableWithItemAsync(client, "T25", operatorId, 20.00m);
+
+        try
+        {
+            var payResp = await client.PostAsJsonAsync("/api/checkout/pay", new PaymentSettlementRequest(
+                Guid.Empty, "T25", Guid.NewGuid(), [new TenderItemRequest(PaymentMethod.CreditCard, 22.00m, 22.00m, 0m)], null, false, 2.00m));
+            payResp.IsSuccessStatusCode.Should().BeFalse();
+        }
+        catch (InvalidOperationException)
+        {
+            // TestServer propage l'exception non gérée : attendu.
+        }
+
+        using var scope = factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var order = await db.Orders.AsNoTracking().SingleAsync(o => o.Id == orderId);
+        order.TipAmount.AmountInCents.Should().Be(0);
+        order.Status.Should().NotBe(OrderStatus.Paid);
+    }
+
+    /// <summary>Service de paiement qui salit le suivi EF puis lève, comme un échec d'écriture en cours de transaction.</summary>
+    private sealed class ThrowingCheckoutService(AppDbContext db) : ICheckoutPaymentService
+    {
+        public async Task<CheckoutResult> ProcessPaymentTendersAsync(Guid orderId, string terminalId, IReadOnlyList<PaymentTenderRequest> tenders, CancellationToken cancellationToken = default)
+        {
+            (await db.Orders.FirstAsync(o => o.Id == orderId, cancellationToken)).Status = OrderStatus.Paid;
+            throw new InvalidOperationException("échec simulé");
+        }
+
+        public Task<CheckoutResult> VoidReceiptAsync(Guid originalReceiptId, string terminalId, Guid operatorId, CancellationToken cancellationToken = default) => throw new NotSupportedException();
+
+        public IReadOnlyList<long> CalculateEqualSplitPartitions(long totalAmountCents, int numberOfGuests) => throw new NotSupportedException();
+    }
+
+    private sealed class ThrowingCheckoutFactory : PosApiApplicationFactory
+    {
+        protected override void ConfigureWebHost(IWebHostBuilder builder)
+        {
+            base.ConfigureWebHost(builder);
+            builder.ConfigureServices(services => services.AddScoped<ICheckoutPaymentService, ThrowingCheckoutService>());
+        }
     }
 
     [Fact]

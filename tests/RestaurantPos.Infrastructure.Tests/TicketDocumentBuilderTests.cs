@@ -182,7 +182,7 @@ public class TicketDocumentBuilderTests
         doc.Lines[0].Should().BeOfType<TicketText>().Which.Text.Should().Be(title);
         text.Should().Contain(items).And.Contain("3x Tiramisu | 21.00").And.Contain(other).And.Contain(unknown)
             .And.Contain(Texts.Get(CultureInfo.GetCultureInfo(lang), "admin.payment_method_cash"))
-            .And.Contain("26.00").And.Contain("990.00").And.Contain("—");
+            .And.Contain("26.00").And.Contain("990.00").And.Contain(" | -\n").And.NotContain("—");
     }
 
     [Fact]

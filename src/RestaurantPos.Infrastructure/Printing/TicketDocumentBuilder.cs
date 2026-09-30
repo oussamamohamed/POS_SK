@@ -141,7 +141,7 @@ public static class TicketDocumentBuilder
 
     // Heure locale du serveur (restaurant) ; DateTimeOffset.MinValue = premier rapport sans clôture précédente.
     private static string LocalDate(DateTimeOffset utc) =>
-        utc == DateTimeOffset.MinValue ? "—" : utc.ToLocalTime().ToString("dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture);
+        utc == DateTimeOffset.MinValue ? "-" : utc.ToLocalTime().ToString("dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture);
 
     private static List<TicketLine> ReceiptLines(FiscalReceipt receipt, Order order, CultureInfo c)
     {
