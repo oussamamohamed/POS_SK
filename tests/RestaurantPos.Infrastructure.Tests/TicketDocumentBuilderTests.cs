@@ -1,10 +1,13 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using FluentAssertions;
+using RestaurantPos.Application.Common.Interfaces;
 using RestaurantPos.Domain.Entities;
 using RestaurantPos.Domain.Enums;
 using RestaurantPos.Domain.ValueObjects;
+using RestaurantPos.Infrastructure.Localization;
 using RestaurantPos.Infrastructure.Printing;
 using RestaurantPos.Infrastructure.Services;
 using Xunit;
@@ -157,5 +160,42 @@ public class TicketDocumentBuilderTests
         var text = AllText(doc);
         text.Should().Contain("T01-000042").And.Contain("abc123").And.NotContain("RETRAIT");
         doc.Lines.OfType<TicketSeparator>().Should().NotContain(s => s.Cut);
+    }
+
+    private static ReportPrintData SampleReportData(bool withTips = true) => new(
+        [new ReportCategoryGroup("Desserts", [new ReportItemLine("Tiramisu", 3, 2100)], 2100), new ReportCategoryGroup(null, [new ReportItemLine("Vente Comptoir", 1, 500)], 500)],
+        withTips ? [new ReportTipLine("Alex", 150), new ReportTipLine(null, 100)] : [],
+        withTips ? 250 : 0,
+        HasGlobalDiscount: false);
+
+    private static FiscalSummaryDto SampleSummary() => new("POS_MAIN_TERM", DateTimeOffset.MinValue, new DateTimeOffset(2026, 9, 30, 20, 0, 0, TimeSpan.Zero),
+        2600, 2364, 2, new Dictionary<decimal, long> { [10m] = 236 }, new Dictionary<PaymentMethod, long> { [PaymentMethod.Cash] = 2600 }, 99_000);
+
+    [Theory]
+    [InlineData("en", "X REPORT", "ITEMS SOLD", "Other", "Unknown")]
+    [InlineData("fr", "RAPPORT X", "ARTICLES VENDUS", "Autres", "Inconnu")]
+    [InlineData("ar", "تقرير X", "الأصناف المباعة", "أخرى", "غير معروف")]
+    public void XReport_ContainsTotalsItemsAndTips_Localized(string lang, string title, string items, string other, string unknown)
+    {
+        var doc = TicketDocumentBuilder.XReport(SampleSummary(), SampleReportData(), lang, DateTimeOffset.UnixEpoch);
+        var text = AllText(doc);
+        doc.Lines[0].Should().BeOfType<TicketText>().Which.Text.Should().Be(title);
+        text.Should().Contain(items).And.Contain("3x Tiramisu | 21.00").And.Contain(other).And.Contain(unknown)
+            .And.Contain(Texts.Get(CultureInfo.GetCultureInfo(lang), "admin.payment_method_cash"))
+            .And.Contain("26.00").And.Contain("990.00").And.Contain(" | -\n").And.NotContain("—");
+    }
+
+    [Fact]
+    public void XReport_NoTips_OmitsTipsSection() =>
+        AllText(TicketDocumentBuilder.XReport(SampleSummary(), SampleReportData(withTips: false), "fr", DateTimeOffset.UnixEpoch))
+            .Should().NotContain("POURBOIRES");
+
+    [Fact]
+    public void ZClosure_HasSequenceManagerAndSignature()
+    {
+        var closure = new DailyFiscalClosureDto(Guid.NewGuid(), "POS_MAIN_TERM", 12, 2600, 2364, 2, new Dictionary<decimal, long> { [10m] = 236 },
+            new Dictionary<PaymentMethod, long> { [PaymentMethod.CreditCard] = 2600 }, 99_000, "abc123", DateTimeOffset.UnixEpoch, DateTimeOffset.UnixEpoch.AddHours(-10), "Alexandre");
+        var text = AllText(TicketDocumentBuilder.ZClosure(closure, SampleReportData(), "fr"));
+        text.Should().StartWith("CLÔTURE Z n° 12").And.Contain("Alexandre").And.Contain("abc123").And.Contain("ARTICLES VENDUS");
     }
 }

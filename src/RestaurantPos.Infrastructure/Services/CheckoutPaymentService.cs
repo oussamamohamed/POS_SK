@@ -93,9 +93,23 @@ public class CheckoutPaymentService : ICheckoutPaymentService
                 string receiptNumber = $"{terminalId}-{nextSequence:D6}";
                 string prevHash = lastReceipt?.SignatureHash ?? NF525FiscalAuditService.GenesisHash;
 
+                // Montant fiscal de ce paiement : jamais le pourboire. Avec pourboire, la part fiscale est bornée
+                // au TTC restant après les reçus antérieurs (hors avoirs) ; sans pourboire, calcul historique inchangé.
+                long orderTtcCents = order.TotalTtc.AmountInCents;
+                bool hasTip = order.TipAmount.AmountInCents > 0;
+                long priorFiscalTtcCents = priorReceipts
+                    .Where(r => r.VoidedReceiptId == null)
+                    .Sum(r => r.TotalTtcAmount.AmountInCents);
+                long fiscalPaidCents = hasTip
+                    ? Math.Min(totalPaidCents, Math.Max(0, orderTtcCents - priorFiscalTtcCents))
+                    : totalPaidCents;
+                bool isPartialReceipt = hasTip
+                    ? priorFiscalTtcCents > 0 || fiscalPaidCents < orderTtcCents
+                    : totalPaidCents < totalDueCents;
+
                 // For split / partial receipts, calculate proportional VAT breakdown for this receipt
-                decimal paymentRatio = (totalDueCents > 0 && totalPaidCents < totalDueCents)
-                    ? (decimal)totalPaidCents / totalDueCents
+                decimal paymentRatio = (orderTtcCents > 0 && isPartialReceipt)
+                    ? (decimal)fiscalPaidCents / orderTtcCents
                     : 1.0m;
 
                 var vatDict = new Dictionary<decimal, long>();
@@ -118,7 +132,7 @@ public class CheckoutPaymentService : ICheckoutPaymentService
 
                 long receiptTtcCents = paymentRatio == 1.0m
                     ? order.TotalTtc.AmountInCents
-                    : totalPaidCents;
+                    : fiscalPaidCents;
                 long receiptHtCents = paymentRatio == 1.0m
                     ? order.TotalHt.AmountInCents
                     : (long)Math.Round(order.TotalHt.AmountInCents * paymentRatio);

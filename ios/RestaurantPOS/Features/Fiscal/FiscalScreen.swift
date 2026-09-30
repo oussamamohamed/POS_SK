@@ -31,6 +31,19 @@ struct FiscalScreen: View {
                             Task { await fiscal.previewX() }
                         }
                         .accessibilityIdentifier("fiscal.previewX")
+                        if fiscal.report != nil {
+                            if fiscal.isSealed {
+                                ActionButton(title: String(localized: "fiscal.reprint_z"), systemImage: "printer", kind: .tonal) {
+                                    Task { await fiscal.reprintZ() }
+                                }
+                                .accessibilityIdentifier("fiscal.reprintZ")
+                            } else {
+                                ActionButton(title: String(localized: "fiscal.print_x_report"), systemImage: "printer", kind: .tonal) {
+                                    Task { await fiscal.printX() }
+                                }
+                                .accessibilityIdentifier("fiscal.printX")
+                            }
+                        }
                         ActionButton(title: String(localized: "fiscal.execute_z_button"), systemImage: "lock.doc", isLoading: fiscal.isWorking, kind: .danger) {
                             confirmsZ = true
                         }

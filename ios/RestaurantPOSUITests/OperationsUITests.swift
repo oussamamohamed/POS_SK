@@ -43,6 +43,7 @@ final class OperationsUITests: PosUITestCase {
         tap("nav.fiscal")
         waitLabel("slip.title", contains: "RAPPORT X")
         waitLabel("slip.totalTtc", contains: "14,50")
+        XCTAssertTrue(app.buttons["fiscal.printX"].exists)
         tap("fiscal.executeZ")
         let confirm = app.buttons["Clôturer et sceller la journée"].firstMatch
         XCTAssertTrue(confirm.waitForExistence(timeout: 5))

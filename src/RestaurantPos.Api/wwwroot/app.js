@@ -230,6 +230,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         adminPrinterList: document.getElementById('adminPrinterList'),
         selectProductCat: document.getElementById('selectProductCat'),
         btnExecuteZ: document.getElementById('btnExecuteZ'),
+        btnPrintXReport: document.getElementById('btnPrintXReport'),
+        btnReprintZ: document.getElementById('btnReprintZ'),
         btnPreviewX: document.getElementById('btnPreviewX'),
         slipTitle: document.getElementById('slipTitle'),
         slipTerminal: document.getElementById('slipTerminal'),
@@ -1573,6 +1575,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             state.customTipAmount = 0;
             updateTipCalculation();
             syncPaymentPrintRow();
+            syncTipVisibility();
             elements.paymentModal.classList.add('active');
         });
 
@@ -1769,14 +1772,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
+    /** Pourboire calculé une seule fois en centimes : montant encaissé et pourboire envoyés en dérivent (affiché = envoyé). */
+    function getTipCents() {
+        if (state.customTipAmount > 0) return Math.round(state.customTipAmount * 100);
+        return Math.round(Math.round(getAmountDue() * 100) * state.selectedTipPercent / 100);
+    }
+
     function getTipAmount() {
-        if (state.customTipAmount > 0) return state.customTipAmount;
-        const total = getAmountDue();
-        return (total * (state.selectedTipPercent / 100.0));
+        return getTipCents() / 100;
     }
 
     function getFinalPayTotal() {
-        return getAmountDue() + getTipAmount();
+        return (Math.round(getAmountDue() * 100) + getTipCents()) / 100;
     }
 
     function updateTipCalculation() {
@@ -1786,7 +1793,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         const total = getAmountDue();
         const tip = getTipAmount();
-        const finalTotal = total + tip;
+        const finalTotal = getFinalPayTotal();
 
         elements.payRemainingAmount.innerHTML = `<bdi dir="ltr">${total.toFixed(2)} €</bdi>`;
         elements.payTotalWithTip.textContent = t('payment.total_with_tip_value', { total: finalTotal.toFixed(2), tip: tip.toFixed(2) });
@@ -1886,6 +1893,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         elements.payRemainingAmount.innerHTML = t('payment.split_part_amount', { amount: `<bdi dir="ltr">${state.splitActivePart.toFixed(2)} €</bdi>`, index: plan.index + 1, total: plan.parts.length });
         elements.payTotalWithTip.textContent = `${state.splitActivePart.toFixed(2)} €`;
         syncPaymentPrintRow();
+        syncTipVisibility();
         elements.paymentModal.classList.add('active');
     }
 
@@ -1910,6 +1918,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     function syncPaymentPrintRow() {
         const row = document.getElementById('paymentPrintReceiptRow');
         if (row) row.style.display = state.activeTable === 'Comptoir' ? 'none' : '';
+    }
+
+    /** Pas de pourboire en partage : le serveur ne l'accepte que sur le paiement qui solde. */
+    function syncTipVisibility() {
+        const section = elements.tipPills[0]?.closest('.tip-section');
+        if (section) section.style.display = state.splitPlan ? 'none' : '';
+        if (state.splitPlan) {
+            elements.inputCustomTip.value = '';
+            elements.tipCustomInputRow.style.display = 'none';
+            elements.tipPills.forEach((p, i) => p.classList.toggle('active', i === 0));
+        }
     }
 
     function warnIfNotQueued(resData) {
@@ -1952,6 +1971,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         changeGiven: change
                     }
                 ],
+                tipAmount: isSplit ? 0 : Math.round(getTipAmount() * 100) / 100,
                 requestReceiptPrint: document.getElementById('paymentPrintReceipt')?.checked === true
             };
 
@@ -1981,6 +2001,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         // Solde restant (arrondis, paiement partiel libre) : encaissement classique.
                         state.splitPlan = null;
                         state.splitActivePart = null;
+                        syncTipVisibility();
                         renderCart();
                     }
                 } else {
@@ -2872,7 +2893,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         const kinds = {
             pickupvoucher: t('admin.print_job_kind_pickupvoucher'),
             receipt: t('admin.print_job_kind_receipt'),
-            kitchenticket: t('admin.print_job_kind_kitchenticket')
+            kitchenticket: t('admin.print_job_kind_kitchenticket'),
+            report: t('admin.print_job_kind_report')
         };
         const box = document.createElement('div');
         box.className = 'printer-jobs';
@@ -2914,7 +2936,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 row.className = 'item-list-row';
                 row.innerHTML = `
                     <div>
-                        <strong>${escapeHtml(pr.name)}</strong> (${escapeHtml(pr.ipAddress)}:${pr.port})${pr.isActive === false ? ` <span style="color:#f87171;">${t('admin.printer_row_inactive_suffix')}</span>` : ''}
+                        <strong>${escapeHtml(pr.name)}</strong> (${escapeHtml(pr.ipAddress)}:${pr.port})${pr.textMode ? ` · ${t('admin.printer_text_mode_badge')}` : ''}${pr.isActive === false ? ` <span style="color:#f87171;">${t('admin.printer_row_inactive_suffix')}</span>` : ''}
                         <span class="printer-status">${status}${pending}</span>
                         <small style="display:block;color:#94a3b8;">${t('admin.printer_row_meta', { stations: (pr.assignedStationIds || []).join(', ') || '—', drawer: pr.openCashDrawerOnReceipt ? t('common.yes') : t('common.no') })}</small>
                     </div>
@@ -2931,6 +2953,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     document.getElementById('editPrinterIp').value = pr.ipAddress;
                     document.getElementById('editPrinterPort').value = pr.port;
                     document.getElementById('editPrinterDrawer').checked = !!pr.openCashDrawerOnReceipt;
+                    document.getElementById('editPrinterTextMode').checked = !!pr.textMode;
                     elements.editPrinterModal.classList.add('active');
                 });
                 row.querySelector('.btn-del-printer').addEventListener('click', async () => {
@@ -3656,6 +3679,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     port: 9100,
                     paperWidthMm: 80,
                     openCashDrawerOnReceipt: drawer,
+                    textMode: document.getElementById('newPrinterTextMode')?.checked === true,
                     assignedStationIds: ["HOT_KITCHEN", "RECEIPT"]
                 })
             });
@@ -3664,6 +3688,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 showToast(t('admin.printer_created_toast', { name }), 'success');
                 document.getElementById('inputPrinterName').value = '';
                 document.getElementById('inputPrinterIp').value = '';
+                document.getElementById('newPrinterTextMode').checked = false;
                 await loadAdminPrinters();
             }
         });
@@ -3699,6 +3724,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         const closure = await res.json();
                         renderFiscalSlip(closure, true);
                         showToast(t('fiscal.z_closure_success_toast'), 'success');
+                        if (closure.printQueued === false) showToast(t('payment.print_not_queued'), 'warning');
                     } else {
                         const err = await res.json().catch(() => ({ message: t('fiscal.z_closure_error') }));
                         showToast(err.message || t('fiscal.z_closure_error'), 'error');
@@ -3709,6 +3735,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             });
         }
+
+        if (elements.btnPrintXReport) elements.btnPrintXReport.addEventListener('click', () => postFiscalPrint('/api/fiscal/x-report/print'));
+        if (elements.btnReprintZ) elements.btnReprintZ.addEventListener('click', () => postFiscalPrint('/api/fiscal/latest-closure/print'));
 
         // FEC Export Handler
         if (elements.btnExportFec) {
@@ -3809,6 +3838,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         } catch {
             await previewXReport();
         }
+    }
+
+    async function postFiscalPrint(path) {
+        await ensureAuthToken();
+        const headers = state.token ? { 'Authorization': `Bearer ${state.token}` } : {};
+        const res = await fetch(`${path}?terminalId=POS_MAIN_TERM`, { method: 'POST', headers });
+        if (!res.ok) {
+            showToast(await readApiError(res, t('fiscal.print_error')), 'error');
+            return;
+        }
+        const data = await res.json();
+        showToast(data.printQueued ? t('fiscal.print_queued') : t('payment.print_not_queued'), data.printQueued ? 'success' : 'warning');
     }
 
     async function previewXReport() {
@@ -4133,7 +4174,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             paperWidthMm: pr.paperWidthMm || 80,
             hasCashDrawer: !!pr.openCashDrawerOnReceipt,
             targetStations: pr.assignedStationIds || [],
-            isActive: pr.isActive !== false
+            isActive: pr.isActive !== false,
+            textMode: !!pr.textMode
         };
     }
 
@@ -4254,7 +4296,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 name: document.getElementById('editPrinterName').value.trim(),
                 ipAddress: document.getElementById('editPrinterIp').value.trim(),
                 port: parseInt(document.getElementById('editPrinterPort').value, 10) || 9100,
-                hasCashDrawer: document.getElementById('editPrinterDrawer').checked
+                hasCashDrawer: document.getElementById('editPrinterDrawer').checked,
+                textMode: document.getElementById('editPrinterTextMode').checked
             });
             if (!res.ok) {
                 showToast(await readApiError(res, t('admin.printer_edit_error')), 'error');

@@ -225,6 +225,11 @@ public static class CounterSaleEndpoints
             order.Destination = req.Destination;
             order.PickupBuzzer = req.PickupBuzzer;
             order.PickupScheduledAtUtc = req.PickupScheduledAtUtc;
+            var cashierIdClaim = http.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? http.User.FindFirst("sub")?.Value;
+            if (order.OperatorId == Guid.Empty && Guid.TryParse(cashierIdClaim, out var cashierId))
+            {
+                order.OperatorId = cashierId;   // pourboire comptoir attribué à l'opérateur qui encaisse
+            }
             if (req.TipAmount > 0)
             {
                 order.TipAmount = Money.FromDecimal(req.TipAmount, "EUR");

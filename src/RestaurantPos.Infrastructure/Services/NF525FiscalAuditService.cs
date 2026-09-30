@@ -19,6 +19,7 @@ namespace RestaurantPos.Infrastructure.Services;
 public class NF525FiscalAuditService : INF525FiscalAuditService
 {
     public const string GenesisHash = "GENESIS_0000000000000000000000000000000000000000000000000000000000000000";
+    private static readonly string[] MainTerminalIds = ["", "POS_MAIN_TERM", "POS01"];
     private readonly AppDbContext _dbContext;
 
     public NF525FiscalAuditService(AppDbContext dbContext)
@@ -193,7 +194,9 @@ public class NF525FiscalAuditService : INF525FiscalAuditService
                     xSummary.PaymentTotalsCents,
                     closure.PerpetualGrandTotalCents,
                     closure.SignatureHash,
-                    closure.PeriodEndUtc
+                    closure.PeriodEndUtc,
+                    closure.PeriodStartUtc,
+                    closure.SealedByUserName
                 );
             },
             System.Data.IsolationLevel.Serializable,
@@ -269,7 +272,9 @@ public class NF525FiscalAuditService : INF525FiscalAuditService
             tenderMap,
             closure.PerpetualGrandTotalCents,
             closure.SignatureHash,
-            closure.PeriodEndUtc
+            closure.PeriodEndUtc,
+            closure.PeriodStartUtc,
+            closure.SealedByUserName ?? string.Empty
         );
     }
 
@@ -325,5 +330,45 @@ public class NF525FiscalAuditService : INF525FiscalAuditService
         }
 
         return new AuditValidationResult(true, receipts.Count, null, null);
+    }
+
+    public async Task<IReadOnlyList<OpenOrderDto>> FindOpenOrdersAsync(CancellationToken cancellationToken = default)
+    {
+        var orders = (await _dbContext.Orders.AsNoTracking().Include(o => o.Items)
+                .Where(o => o.Status != OrderStatus.Paid && o.Status != OrderStatus.Cancelled)
+                .ToListAsync(cancellationToken).ConfigureAwait(false))
+            .Where(o => o.Items.Count > 0)
+            .ToList();
+        if (orders.Count == 0) return [];
+
+        var ids = orders.Select(o => o.Id).ToList();
+        var held = await _dbContext.HeldOrders.AsNoTracking().Where(h => ids.Contains(h.OrderId)).ToListAsync(cancellationToken).ConfigureAwait(false);
+        var paid = (await _dbContext.FiscalReceipts.AsNoTracking().Include(r => r.Tenders)
+                .Where(r => ids.Contains(r.OrderId) && !r.IsVoid).ToListAsync(cancellationToken).ConfigureAwait(false))
+            .GroupBy(r => r.OrderId)
+            .ToDictionary(g => g.Key, g => g.SelectMany(r => r.Tenders).Sum(t => t.Amount.AmountInCents));
+
+        var result = new List<OpenOrderDto>();
+        foreach (var order in orders)
+        {
+            var hold = held.Where(h => h.OrderId == order.Id).OrderByDescending(h => h.HeldAtUtc).FirstOrDefault();
+            if (hold is { IsVoided: true }) continue;   // panier annulé au code superviseur : la commande reste Open mais n'est plus à encaisser
+            var remaining = order.TotalTtc.AmountInCents + order.TipAmount.AmountInCents - paid.GetValueOrDefault(order.Id);
+            if (remaining <= 0) continue;               // commande entièrement offerte : rien à encaisser
+            var label = hold is { IsRecalled: false } && !string.IsNullOrWhiteSpace(hold.CustomerLabel) ? hold.CustomerLabel : order.TableNumber;
+            result.Add(new OpenOrderDto(order.Id, label, remaining));
+        }
+        return result.OrderBy(o => o.Label, StringComparer.OrdinalIgnoreCase).ToList();
+    }
+
+    public async Task<bool> IsInClosedPeriodAsync(string terminalId, DateTimeOffset createdAtUtc, CancellationToken cancellationToken = default)
+    {
+        var term = terminalId ?? string.Empty;
+        // La Z du terminal principal couvre les reçus de tous les terminaux (même périmètre que GenerateXReportAsync).
+        var ends = (await _dbContext.DailyFiscalClosures.AsNoTracking().ToListAsync(cancellationToken).ConfigureAwait(false))
+            .Where(c => c.TerminalId == term || MainTerminalIds.Contains(c.TerminalId))
+            .Select(c => c.PeriodEndUtc)
+            .ToList();
+        return ends.Count > 0 && createdAtUtc <= ends.Max();
     }
 }

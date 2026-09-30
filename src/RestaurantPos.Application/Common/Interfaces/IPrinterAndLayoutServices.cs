@@ -12,7 +12,8 @@ public record PrinterRegistrationRequest(
     int Port,
     int PaperWidthMm,
     bool OpenCashDrawerOnReceipt,
-    List<string> AssignedStationIds
+    List<string> AssignedStationIds,
+    bool? TextMode = null
 );
 
 public record TestPrintResult(

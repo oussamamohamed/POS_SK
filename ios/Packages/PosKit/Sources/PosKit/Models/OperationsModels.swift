@@ -136,8 +136,10 @@ public struct FiscalReport: Codable, Hashable, Sendable {
     public var signatureHash: String?
     public var closedAtUtc: Date?
     public var periodEndUtc: Date?
+    /// Présent seulement sur la réponse de `POST /api/fiscal/z-closure` : la Z a-t-elle été mise en file d'impression.
+    public var printQueued: Bool?
 
-    public init(terminalId: String?, closureSequence: Int? = nil, totalSalesTtc: Money, totalSalesHt: Money, receiptCount: Int, vatBreakdown: [String: Money], paymentTotals: [String: Money], perpetualGrandTotal: Money, signatureHash: String? = nil, closedAtUtc: Date? = nil, periodEndUtc: Date? = nil) {
+    public init(terminalId: String?, closureSequence: Int? = nil, totalSalesTtc: Money, totalSalesHt: Money, receiptCount: Int, vatBreakdown: [String: Money], paymentTotals: [String: Money], perpetualGrandTotal: Money, signatureHash: String? = nil, closedAtUtc: Date? = nil, periodEndUtc: Date? = nil, printQueued: Bool? = nil) {
         self.terminalId = terminalId
         self.closureSequence = closureSequence
         self.totalSalesTtc = totalSalesTtc
@@ -149,6 +151,7 @@ public struct FiscalReport: Codable, Hashable, Sendable {
         self.signatureHash = signatureHash
         self.closedAtUtc = closedAtUtc
         self.periodEndUtc = periodEndUtc
+        self.printQueued = printQueued
     }
 
     public init(from decoder: Decoder) throws {
@@ -164,6 +167,7 @@ public struct FiscalReport: Codable, Hashable, Sendable {
         signatureHash = try c.decodeIfPresent(String.self, forKey: .signatureHash)
         closedAtUtc = try c.decodeIfPresent(Date.self, forKey: .closedAtUtc)
         periodEndUtc = try c.decodeIfPresent(Date.self, forKey: .periodEndUtc)
+        printQueued = try c.decodeIfPresent(Bool.self, forKey: .printQueued)
     }
 
     /// Lignes de TVA triées par taux croissant (« 5.5 », « 10.0 », « 20.0 »).
@@ -304,8 +308,9 @@ public struct Printer: Codable, Identifiable, Hashable, Sendable {
     public var openCashDrawerOnReceipt: Bool
     public var assignedStationIds: [String]
     public var isActive: Bool
+    public var textMode: Bool
 
-    public init(id: UUID = UUID(), name: String, ipAddress: String, port: Int = 9100, paperWidthMm: Int = 80, openCashDrawerOnReceipt: Bool = false, assignedStationIds: [String] = [], isActive: Bool = true) {
+    public init(id: UUID = UUID(), name: String, ipAddress: String, port: Int = 9100, paperWidthMm: Int = 80, openCashDrawerOnReceipt: Bool = false, assignedStationIds: [String] = [], isActive: Bool = true, textMode: Bool = false) {
         self.id = id
         self.name = name
         self.ipAddress = ipAddress
@@ -314,6 +319,20 @@ public struct Printer: Codable, Identifiable, Hashable, Sendable {
         self.openCashDrawerOnReceipt = openCashDrawerOnReceipt
         self.assignedStationIds = assignedStationIds
         self.isActive = isActive
+        self.textMode = textMode
+    }
+
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decode(UUID.self, forKey: .id)
+        name = try c.decode(String.self, forKey: .name)
+        ipAddress = try c.decode(String.self, forKey: .ipAddress)
+        port = try c.decode(Int.self, forKey: .port)
+        paperWidthMm = try c.decode(Int.self, forKey: .paperWidthMm)
+        openCashDrawerOnReceipt = try c.decode(Bool.self, forKey: .openCashDrawerOnReceipt)
+        assignedStationIds = try c.decode([String].self, forKey: .assignedStationIds)
+        isActive = try c.decode(Bool.self, forKey: .isActive)
+        textMode = try c.decodeIfPresent(Bool.self, forKey: .textMode) ?? false
     }
 }
 

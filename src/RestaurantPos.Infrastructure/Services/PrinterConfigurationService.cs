@@ -50,6 +50,7 @@ public class PrinterConfigurationService : IPrinterConfigurationService
             PaperWidthMm = request.PaperWidthMm is 58 or 80 ? request.PaperWidthMm : 80,
             OpenCashDrawerOnReceipt = request.OpenCashDrawerOnReceipt,
             AssignedStationIds = request.AssignedStationIds ?? [],
+            TextMode = request.TextMode ?? false,
             IsActive = true,
             CreatedAtUtc = DateTimeOffset.UtcNow,
             UpdatedAtUtc = DateTimeOffset.UtcNow
@@ -71,6 +72,7 @@ public class PrinterConfigurationService : IPrinterConfigurationService
         printer.PaperWidthMm = request.PaperWidthMm is 58 or 80 ? request.PaperWidthMm : 80;
         printer.OpenCashDrawerOnReceipt = request.OpenCashDrawerOnReceipt;
         printer.AssignedStationIds = request.AssignedStationIds ?? [];
+        if (request.TextMode is { } textMode) printer.TextMode = textMode;
         printer.IsActive = isActive;
         printer.UpdatedAtUtc = DateTimeOffset.UtcNow;
 

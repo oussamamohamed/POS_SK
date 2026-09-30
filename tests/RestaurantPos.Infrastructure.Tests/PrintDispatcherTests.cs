@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -20,7 +21,7 @@ public class PrintDispatcherTests
     private static (PrintDispatcher Dispatcher, AppDbContext Db) Create()
     {
         var db = new AppDbContext(new DbContextOptionsBuilder<AppDbContext>().UseInMemoryDatabase("Dispatch_" + Guid.NewGuid().ToString("N")).Options);
-        var dispatcher = new PrintDispatcher(db, new PrintQueue(db, new PrintSignal(), TimeProvider.System), new RestaurantSettingsService(db), TimeProvider.System, NullLogger<PrintDispatcher>.Instance);
+        var dispatcher = new PrintDispatcher(db, new PrintQueue(db, new PrintSignal(), TimeProvider.System), new RestaurantSettingsService(db), new ReportPrintDataService(db), TimeProvider.System, NullLogger<PrintDispatcher>.Instance);
         return (dispatcher, db);
     }
 
@@ -164,6 +165,34 @@ public class PrintDispatcherTests
 
         await d.QueueKitchenTicketsAsync([ticket.Id]);
 
+        db.PrintJobs.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task ZClosure_QueuesReportOnReceiptPrinter_InReceiptLanguage_NoDrawer()
+    {
+        var (d, db) = Create();
+        var caisse = Printer(db, "Caisse", ["RECEIPT"], drawer: true);
+        await new RestaurantSettingsService(db).UpdateAsync(new UpdateRestaurantSettingsRequest("en", "fr"));
+        var closure = new DailyFiscalClosureDto(Guid.NewGuid(), "POS_MAIN_TERM", 3, 0, 0, 0, new Dictionary<decimal, long>(), new Dictionary<PaymentMethod, long>(), 0, "sig", DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddHours(-8), "Gérant");
+
+        (await d.QueueZClosureAsync(closure)).Should().BeTrue();
+
+        var job = db.PrintJobs.Single();
+        job.PrinterId.Should().Be(caisse.Id);
+        job.Kind.Should().Be(PrintJobKind.Report);
+        job.OpenCashDrawer.Should().BeFalse();
+        var doc = TicketDocumentJson.Deserialize(job.DocumentJson);
+        doc.Language.Should().Be("en");
+        ((TicketText)doc.Lines[0]).Text.Should().Be("Z CLOSURE #3");
+    }
+
+    [Fact]
+    public async Task XReport_NoReceiptPrinter_ReturnsFalse_NoJob()
+    {
+        var (d, db) = Create();
+        var summary = new FiscalSummaryDto("POS_MAIN_TERM", DateTimeOffset.MinValue, DateTimeOffset.UtcNow, 0, 0, 0, new Dictionary<decimal, long>(), new Dictionary<PaymentMethod, long>(), 0);
+        (await d.QueueXReportAsync(summary)).Should().BeFalse();
         db.PrintJobs.Should().BeEmpty();
     }
 }

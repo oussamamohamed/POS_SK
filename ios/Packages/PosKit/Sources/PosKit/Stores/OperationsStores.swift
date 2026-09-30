@@ -163,10 +163,23 @@ public final class FiscalStore {
             report = closure
             isSealed = true
             notifier.success(String(format: L10n.string("fiscal.z_closure_done"), closure.closureSequence ?? 0))
+            if closure.printQueued == false { notifier.warning(L10n.string("payment.print_not_queued")) }
             return true
         } catch {
             notifier.error(error)
             return false
+        }
+    }
+
+    public func printX() async { await sendPrint { try await self.api.printXReport(terminalId: self.settings.terminalId) } }
+    public func reprintZ() async { await sendPrint { try await self.api.reprintLatestClosure(terminalId: self.settings.terminalId) } }
+
+    private func sendPrint(_ send: () async throws -> Bool) async {
+        do {
+            if try await send() { notifier.success(L10n.string("fiscal.print_queued")) }
+            else { notifier.warning(L10n.string("payment.print_not_queued")) }
+        } catch {
+            notifier.error(error)
         }
     }
 

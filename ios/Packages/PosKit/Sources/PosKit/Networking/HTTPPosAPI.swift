@@ -324,6 +324,16 @@ public actor HTTPPosAPI: PosAPI {
         try await call("POST", "fiscal/z-closure", body: ZBody(terminalId: terminalId, managerId: managerId, managerName: managerName))
     }
 
+    private struct PrintQueuedResponse: Decodable { let printQueued: Bool }
+
+    public func printXReport(terminalId: String) async throws -> Bool {
+        try await call("POST", "fiscal/x-report/print", query: ["terminalId": terminalId], as: PrintQueuedResponse.self).printQueued
+    }
+
+    public func reprintLatestClosure(terminalId: String) async throws -> Bool {
+        try await call("POST", "fiscal/latest-closure/print", query: ["terminalId": terminalId], as: PrintQueuedResponse.self).printQueued
+    }
+
     public func exportFec(from: Date, to: Date, siren: String) async throws -> (fileName: String, data: Data) {
         let request = try makeRequest("GET", "fiscal/fec", query: ["from": Self.iso(from), "to": Self.iso(to), "siren": siren])
         let (data, response) = try await send(request)
@@ -360,14 +370,14 @@ public actor HTTPPosAPI: PosAPI {
 
     public func printers() async throws -> [Printer] { try await call("GET", "printers") }
 
-    struct PrinterCreateBody: Encodable { let name: String; let ipAddress: String; let port: Int; let paperWidthMm: Int; let openCashDrawerOnReceipt: Bool; let assignedStationIds: [String] }
-    struct PrinterUpdateBody: Encodable { let name: String; let ipAddress: String; let port: Int; let paperWidthMm: Int; let hasCashDrawer: Bool; let targetStations: [String]; let isActive: Bool }
+    struct PrinterCreateBody: Encodable { let name: String; let ipAddress: String; let port: Int; let paperWidthMm: Int; let openCashDrawerOnReceipt: Bool; let assignedStationIds: [String]; let textMode: Bool }
+    struct PrinterUpdateBody: Encodable { let name: String; let ipAddress: String; let port: Int; let paperWidthMm: Int; let hasCashDrawer: Bool; let targetStations: [String]; let isActive: Bool; let textMode: Bool }
 
     public func savePrinter(_ p: Printer, isNew: Bool) async throws {
         if isNew {
-            try await perform("POST", "printers", body: PrinterCreateBody(name: p.name, ipAddress: p.ipAddress, port: p.port, paperWidthMm: p.paperWidthMm, openCashDrawerOnReceipt: p.openCashDrawerOnReceipt, assignedStationIds: p.assignedStationIds))
+            try await perform("POST", "printers", body: PrinterCreateBody(name: p.name, ipAddress: p.ipAddress, port: p.port, paperWidthMm: p.paperWidthMm, openCashDrawerOnReceipt: p.openCashDrawerOnReceipt, assignedStationIds: p.assignedStationIds, textMode: p.textMode))
         } else {
-            try await perform("PUT", "printers/\(p.id.uuidString.lowercased())", body: PrinterUpdateBody(name: p.name, ipAddress: p.ipAddress, port: p.port, paperWidthMm: p.paperWidthMm, hasCashDrawer: p.openCashDrawerOnReceipt, targetStations: p.assignedStationIds, isActive: p.isActive))
+            try await perform("PUT", "printers/\(p.id.uuidString.lowercased())", body: PrinterUpdateBody(name: p.name, ipAddress: p.ipAddress, port: p.port, paperWidthMm: p.paperWidthMm, hasCashDrawer: p.openCashDrawerOnReceipt, targetStations: p.assignedStationIds, isActive: p.isActive, textMode: p.textMode))
         }
     }
 

@@ -16,7 +16,16 @@ public sealed class EscPosPrinterTransport : IPrinterTransport
     public Task SendAsync(PrinterConfiguration printer, TicketDocument document, bool openCashDrawer, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(printer);
-        var images = EscPosRasterRenderer.Render(document, EscPosRasterRenderer.DotsFor(printer.PaperWidthMm));
-        return EscPosSender.SendAsync(printer.IpAddress, printer.Port, EscPosCommands.Build(images, openCashDrawer), ct);
+        return EscPosSender.SendAsync(printer.IpAddress, printer.Port, BuildPayload(printer, document, openCashDrawer), ct);
+    }
+
+    /// <summary>Texte si l'imprimante est en mode texte et le document LTR ; sinon image (l'arabe exige la mise en forme HarfBuzz).</summary>
+    public static byte[] BuildPayload(PrinterConfiguration printer, TicketDocument document, bool openCashDrawer)
+    {
+        ArgumentNullException.ThrowIfNull(printer);
+        ArgumentNullException.ThrowIfNull(document);
+        return printer.TextMode && !document.RightToLeft
+            ? EscPosTextRenderer.Render(document, printer.PaperWidthMm, openCashDrawer)
+            : EscPosCommands.Build(EscPosRasterRenderer.Render(document, EscPosRasterRenderer.DotsFor(printer.PaperWidthMm)), openCashDrawer);
     }
 }

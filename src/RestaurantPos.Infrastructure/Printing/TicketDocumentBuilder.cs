@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using RestaurantPos.Application.Common.Interfaces;
 using RestaurantPos.Domain.Entities;
 using RestaurantPos.Domain.Enums;
 using RestaurantPos.Infrastructure.Localization;
@@ -42,6 +43,105 @@ public static class TicketDocumentBuilder
         AppendPickup(lines, c, order, pickupNumber, buzzer, receipt.CreatedAtUtc);
         return new TicketDocument(lang, lang == "ar", lines);
     }
+
+    public static TicketDocument XReport(FiscalSummaryDto summary, ReportPrintData data, string language, DateTimeOffset nowUtc)
+    {
+        ArgumentNullException.ThrowIfNull(summary);
+        ArgumentNullException.ThrowIfNull(data);
+        var (lang, c) = Resolve(language);
+        var lines = new List<TicketLine>
+        {
+            new TicketText(Texts.Get(c, "report.x_title"), TicketAlign.Center, Large: true),
+            new TicketSeparator(),
+            new TicketColumns(Texts.Get(c, "receipt.terminal"), summary.TerminalId),
+            new TicketColumns(Texts.Get(c, "report.period_start"), LocalDate(summary.PeriodStartUtc)),
+            new TicketColumns(Texts.Get(c, "report.period_end"), LocalDate(summary.PeriodEndUtc)),
+            new TicketColumns(Texts.Get(c, "report.printed_at"), LocalDate(nowUtc))
+        };
+        AppendReportTotals(lines, c, summary.ReceiptCount, summary.TotalSalesTtcCents, summary.TotalSalesHtCents, summary.VatBreakdownCents, summary.PaymentTotalsCents, summary.PerpetualGrandTotalCents);
+        AppendReportDetails(lines, c, data);
+        return new TicketDocument(lang, lang == "ar", lines);
+    }
+
+    public static TicketDocument ZClosure(DailyFiscalClosureDto closure, ReportPrintData data, string language)
+    {
+        ArgumentNullException.ThrowIfNull(closure);
+        ArgumentNullException.ThrowIfNull(data);
+        var (lang, c) = Resolve(language);
+        var lines = new List<TicketLine>
+        {
+            new TicketText(Texts.Get(c, "report.z_title", ("sequence", closure.ClosureSequence)), TicketAlign.Center, Large: true),
+            new TicketSeparator(),
+            new TicketColumns(Texts.Get(c, "receipt.terminal"), closure.TerminalId),
+            new TicketColumns(Texts.Get(c, "report.period_start"), LocalDate(closure.PeriodStartUtc)),
+            new TicketColumns(Texts.Get(c, "report.closed_at"), LocalDate(closure.ClosedAtUtc)),
+            new TicketColumns(Texts.Get(c, "report.manager"), closure.SealedByUserName)
+        };
+        AppendReportTotals(lines, c, closure.ReceiptCount, closure.TotalSalesTtcCents, closure.TotalSalesHtCents, closure.VatBreakdownCents, closure.PaymentTotalsCents, closure.PerpetualGrandTotalCents);
+        AppendReportDetails(lines, c, data);
+        lines.Add(new TicketSeparator());
+        lines.Add(new TicketText(Texts.Get(c, "report.signature"), Bold: true));
+        lines.Add(new TicketText(closure.SignatureHash));
+        return new TicketDocument(lang, lang == "ar", lines);
+    }
+
+    private static void AppendReportTotals(List<TicketLine> lines, CultureInfo c, int receiptCount, long ttc, long ht,
+        IReadOnlyDictionary<decimal, long> vat, IReadOnlyDictionary<PaymentMethod, long> payments, long grandTotal)
+    {
+        lines.Add(new TicketSeparator());
+        lines.Add(new TicketColumns(Texts.Get(c, "report.receipt_count"), receiptCount.ToString(CultureInfo.InvariantCulture)));
+        lines.Add(new TicketColumns(Texts.Get(c, "receipt.total_ttc"), Amount(ttc)));
+        lines.Add(new TicketColumns(Texts.Get(c, "receipt.total_ht"), Amount(ht)));
+        lines.Add(new TicketSeparator());
+        lines.Add(new TicketText(Texts.Get(c, "receipt.vat_breakdown"), Bold: true));
+        foreach (var (rate, cents) in vat.OrderBy(v => v.Key))
+            lines.Add(new TicketColumns($"{rate.ToString("0.##", CultureInfo.InvariantCulture)} %", Amount(cents)));
+        lines.Add(new TicketSeparator());
+        lines.Add(new TicketText(Texts.Get(c, "report.payments"), Bold: true));
+        foreach (var (method, cents) in payments.OrderBy(p => p.Key))
+            lines.Add(new TicketColumns(PaymentLabel(c, method), Amount(cents)));
+        lines.Add(new TicketSeparator());
+        lines.Add(new TicketColumns(Texts.Get(c, "report.grand_total"), Amount(grandTotal)));
+    }
+
+    private static void AppendReportDetails(List<TicketLine> lines, CultureInfo c, ReportPrintData data)
+    {
+        if (data.Categories.Count > 0)
+        {
+            lines.Add(new TicketSeparator());
+            lines.Add(new TicketText(Texts.Get(c, "report.items_sold"), TicketAlign.Center, Bold: true));
+            if (data.HasGlobalDiscount) lines.Add(new TicketText(Texts.Get(c, "report.items_before_discount")));
+            foreach (var group in data.Categories)
+            {
+                lines.Add(new TicketText(group.CategoryName ?? Texts.Get(c, "report.other_category"), Bold: true));
+                foreach (var item in group.Items)
+                    lines.Add(new TicketColumns($"{item.Quantity}x {item.ProductName}", Amount(item.TotalTtcCents)));
+                lines.Add(new TicketColumns(Texts.Get(c, "report.subtotal"), Amount(group.SubtotalTtcCents)));
+            }
+        }
+        if (data.TotalTipsCents > 0)
+        {
+            lines.Add(new TicketSeparator());
+            lines.Add(new TicketText(Texts.Get(c, "report.tips_by_server"), TicketAlign.Center, Bold: true));
+            foreach (var tip in data.Tips)
+                lines.Add(new TicketColumns(tip.ServerName ?? Texts.Get(c, "report.unknown_server"), Amount(tip.TipCents)));
+            lines.Add(new TicketColumns(Texts.Get(c, "report.tips_total"), Amount(data.TotalTipsCents)));
+        }
+    }
+
+    private static string PaymentLabel(CultureInfo c, PaymentMethod method) => Texts.Get(c, method switch
+    {
+        PaymentMethod.Cash => "admin.payment_method_cash",
+        PaymentMethod.CreditCard => "admin.payment_method_credit_card",
+        PaymentMethod.MealVoucher => "admin.payment_method_meal_voucher",
+        PaymentMethod.GiftCard => "admin.payment_method_gift_card",
+        PaymentMethod.RoomCharge => "admin.payment_method_room_charge",
+        _ => "admin.payment_method_other"
+    });
+
+    // Heure locale du serveur (restaurant) ; DateTimeOffset.MinValue = premier rapport sans clôture précédente.
+    private static string LocalDate(DateTimeOffset utc) =>
+        utc == DateTimeOffset.MinValue ? "-" : utc.ToLocalTime().ToString("dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture);
 
     private static List<TicketLine> ReceiptLines(FiscalReceipt receipt, Order order, CultureInfo c)
     {

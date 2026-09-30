@@ -145,3 +145,5 @@
 "admin.kitchen_language_saved" = "تم حفظ لغة تذكرة المطبخ";
 "messages.printer_back_online" = "عادت الطابعة %@ للعمل";
 "messages.printer_offline" = "الطابعة %@ غير متصلة — %lld تذاكر في الانتظار";
+"fiscal.print_queued" = "أُرسل إلى الطابعة";
+"payment.print_not_queued" = "لا توجد طابعة متاحة: لم تتم الطباعة";

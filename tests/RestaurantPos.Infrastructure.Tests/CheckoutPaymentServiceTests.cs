@@ -140,6 +140,38 @@ public class CheckoutPaymentServiceTests
     }
 
     [Fact]
+    public async Task FullPayment_WithTip_ReceiptTtcExcludesTip()
+    {
+        // Arrange — commande 20.00 € TTC, pourboire 2.00 € déjà porté sur la commande
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase(databaseName: "CheckoutTipReceiptDb_" + Guid.NewGuid().ToString("N"))
+            .Options;
+
+        using var dbContext = new AppDbContext(options);
+        var checkoutService = new CheckoutPaymentService(dbContext, new NF525FiscalAuditService(dbContext));
+
+        var order = new Order { TableNumber = "T01" };
+        order.Items.Add(new OrderItem
+        {
+            ProductName = "Menu",
+            Quantity = 1,
+            UnitPrice = Money.FromDecimal(20.00m),
+            TaxRatePercent = 10m
+        });
+        order.TipAmount = Money.FromCents(200);
+        dbContext.Orders.Add(order);
+        await dbContext.SaveChangesAsync();
+
+        // Act — règlement complet : 20.00 € de note + 2.00 € de pourboire = 22.00 €
+        var result = await checkoutService.ProcessPaymentTendersAsync(order.Id, "T01", [new PaymentTenderRequest(PaymentMethod.CreditCard, 2200, 2200)]);
+
+        // Assert — le reçu fiscal (TTC) ne doit jamais inclure le pourboire
+        result.RemainingBalanceCents.Should().Be(0);
+        var receipt = await dbContext.FiscalReceipts.SingleAsync(r => r.ReceiptNumber == result.ReceiptNumber);
+        receipt.TotalTtcAmount.AmountInCents.Should().Be(2000);
+    }
+
+    [Fact]
     public async Task ProcessPaymentTendersAsync_SplitBillTwoTickets_SettlesBothAndClosesTable()
     {
         // Arrange : Commande de 30.00 € partagée entre 2 convives (15.00 € chacun)

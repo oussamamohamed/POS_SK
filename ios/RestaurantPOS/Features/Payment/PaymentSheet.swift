@@ -259,7 +259,7 @@ struct PaymentSheet: View {
         if isCounter {
             outcome = await model.ticket.counterCheckout(method: method, amount: amount, tendered: tendered, tip: plan.tipAmount, buzzer: buzzer, printReceipt: printReceipt, policy: model.settings.mealVoucherPolicy)
         } else {
-            outcome = await model.ticket.pay(method: method, amount: amount, tendered: tendered, printReceipt: printReceipt)
+            outcome = await model.ticket.pay(method: method, amount: amount, tendered: tendered, printReceipt: printReceipt, tip: plan.tipAmount)
         }
         guard let outcome else { Haptics.error(); return }
         Haptics.success()

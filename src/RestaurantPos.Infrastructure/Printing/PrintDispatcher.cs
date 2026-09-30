@@ -21,14 +21,16 @@ public sealed class PrintDispatcher
     private readonly AppDbContext _db;
     private readonly PrintQueue _queue;
     private readonly IRestaurantSettingsService _settings;
+    private readonly ReportPrintDataService _reports;
     private readonly TimeProvider _time;
     private readonly ILogger<PrintDispatcher> _logger;
 
-    public PrintDispatcher(AppDbContext db, PrintQueue queue, IRestaurantSettingsService settings, TimeProvider time, ILogger<PrintDispatcher> logger)
+    public PrintDispatcher(AppDbContext db, PrintQueue queue, IRestaurantSettingsService settings, ReportPrintDataService reports, TimeProvider time, ILogger<PrintDispatcher> logger)
     {
         _db = db;
         _queue = queue;
         _settings = settings;
+        _reports = reports;
         _time = time;
         _logger = logger;
     }
@@ -109,6 +111,43 @@ public sealed class PrintDispatcher
         catch (Exception ex)
         {
             PrintLog.QueueFailed(_logger, ex);
+        }
+    }
+
+    public Task<bool> QueueXReportAsync(FiscalSummaryDto summary, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(summary);
+        return QueueReportAsync(summary.TerminalId, async language =>
+        {
+            var data = await _reports.BuildAsync(summary.TerminalId, summary.PeriodStartUtc, summary.PeriodEndUtc, ct).ConfigureAwait(false);
+            return TicketDocumentBuilder.XReport(summary, data, language, _time.GetUtcNow());
+        }, ct);
+    }
+
+    public Task<bool> QueueZClosureAsync(DailyFiscalClosureDto closure, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(closure);
+        return QueueReportAsync(closure.TerminalId, async language =>
+        {
+            var data = await _reports.BuildAsync(closure.TerminalId, closure.PeriodStartUtc, closure.ClosedAtUtc, ct).ConfigureAwait(false);
+            return TicketDocumentBuilder.ZClosure(closure, data, language);
+        }, ct);
+    }
+
+    private async Task<bool> QueueReportAsync(string terminalId, Func<string, Task<TicketDocument>> build, CancellationToken ct)
+    {
+        try
+        {
+            var printer = await ReceiptPrinterAsync(terminalId, ct).ConfigureAwait(false);
+            if (printer is null) return false;
+            var language = (await _settings.GetAsync(ct).ConfigureAwait(false)).ReceiptLanguage;
+            await _queue.EnqueueAsync(printer.Id, PrintJobKind.Report, await build(language).ConfigureAwait(false), false, ct).ConfigureAwait(false);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            PrintLog.QueueFailed(_logger, ex);
+            return false;
         }
     }
 

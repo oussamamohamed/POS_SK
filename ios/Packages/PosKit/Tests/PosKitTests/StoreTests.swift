@@ -139,7 +139,7 @@ struct TicketStoreTests {
         let (model, _) = await makeModel()
         await model.ticket.load(table: "T4")
         model.ticket.add(product(model, "Café Gourmand"))
-        await model.ticket.sendToKitchen()
+        _ = await model.ticket.sendToKitchen()
         let saved = model.ticket.lines[0]
         model.ticket.decrement(saved.id)
         #expect(model.ticket.lines.count == 1)
@@ -393,6 +393,32 @@ struct OperationsTests {
         #expect(await model.fiscal.executeZ())
         #expect(model.fiscal.isSealed)
         #expect(model.fiscal.report?.closureSequence == 1)
+    }
+
+    @Test func fiscalPrintXCallsApi() async {
+        let (model, api) = await makeModel()
+        await model.fiscal.printX()
+        #expect(await api.calls.contains("printXReport"))
+        #expect(model.notifier.toasts.last?.kind == .success)
+    }
+
+    @Test func zClosureRefusedWithOpenOrdersShowsMessage() async {
+        let (model, _) = await makeModel()
+        await model.ticket.load(table: "T1")
+        model.ticket.add(model.catalog.products.first { $0.name == "Pizza 4 Fromages" }!)
+        await model.ticket.sendToKitchen()
+        #expect(await model.fiscal.executeZ() == false)
+        #expect(model.notifier.toasts.last?.message.contains("T1") == true)
+    }
+
+    @Test func tablePaymentSendsTip() async {
+        let (model, api) = await makeModel()
+        await model.ticket.load(table: "T1")
+        model.ticket.add(model.catalog.products.first { $0.name == "Pizza 4 Fromages" }!)
+        let total = Money(cents: 1450)
+        let due = total + Money(cents: 200)
+        _ = await model.ticket.pay(method: .creditCard, amount: due, tendered: due, tip: Money(cents: 200))
+        #expect(await api.lastPaymentRequest?.tipAmount == Money(cents: 200))
     }
 
     @Test func zClosureRefusedForWaiter() async {

@@ -14,6 +14,7 @@ namespace RestaurantPos.Api.Tests;
 
 public class PrintingConfigEndpointsTests : IClassFixture<PosApiApplicationFactory>
 {
+    private static readonly string[] ReceiptStation = ["RECEIPT"];
     private readonly PosApiApplicationFactory _factory;
     public PrintingConfigEndpointsTests(PosApiApplicationFactory factory) => _factory = factory;
 
@@ -107,5 +108,21 @@ public class PrintingConfigEndpointsTests : IClassFixture<PosApiApplicationFacto
     {
         var waiter = await ClientAsync("2468");
         (await waiter.PutAsJsonAsync($"/api/devices/{Guid.NewGuid()}/receipt-printer", new SetReceiptPrinterRequest(null))).StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task PutPrinter_WithoutTextMode_KeepsIt()
+    {
+        var admin = await ClientAsync("9999");
+        var created = await (await admin.PostAsJsonAsync("/api/printers", new { name = "Texte", ipAddress = "10.0.0.8", port = 9100, paperWidthMm = 80, openCashDrawerOnReceipt = false, assignedStationIds = ReceiptStation, textMode = true }))
+            .Content.ReadFromJsonAsync<JsonElement>();
+        var id = created.GetProperty("id").GetGuid();
+        created.GetProperty("textMode").GetBoolean().Should().BeTrue();
+
+        (await admin.PutAsJsonAsync($"/api/printers/{id}", new { name = "Texte", ipAddress = "10.0.0.8", port = 9100, paperWidthMm = 80, hasCashDrawer = false, targetStations = ReceiptStation, isActive = true }))
+            .StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var list = await admin.GetFromJsonAsync<JsonElement>("/api/printers");
+        list.EnumerateArray().Single(p => p.GetProperty("id").GetGuid() == id).GetProperty("textMode").GetBoolean().Should().BeTrue();
     }
 }

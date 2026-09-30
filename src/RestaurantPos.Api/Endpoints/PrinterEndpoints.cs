@@ -29,7 +29,7 @@ public static class PrinterEndpoints
 
         group.MapPut("/{id:guid}", async (Guid id, UpdatePrinterRequest req, IPrinterConfigurationService printerService) =>
         {
-            var regReq = new PrinterRegistrationRequest(req.Name, req.IpAddress, req.Port, req.PaperWidthMm, req.HasCashDrawer, req.TargetStations ?? []);
+            var regReq = new PrinterRegistrationRequest(req.Name, req.IpAddress, req.Port, req.PaperWidthMm, req.HasCashDrawer, req.TargetStations ?? [], req.TextMode);
             var updated = await printerService.UpdatePrinterAsync(id, regReq, req.IsActive ?? true);
             return Results.Ok(updated);
         });

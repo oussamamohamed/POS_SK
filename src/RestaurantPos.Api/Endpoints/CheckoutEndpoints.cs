@@ -87,12 +87,53 @@ public static class CheckoutEndpoints
                 (long)Math.Round(t.Tendered * 100)
             )).ToList();
 
+            if (req.TipAmount < 0)
+            {
+                return Results.BadRequest(new { Message = Texts.T("errors.tip_invalid") });
+            }
+
+            Order? tippedOrder = null;
+            long tipCents = (long)Math.Round(req.TipAmount * 100);
+            if (tipCents > 0)
+            {
+                tippedOrder = await db.Orders.Include(o => o.Items).FirstAsync(o => o.Id == orderId);
+                var paidCents = (await db.FiscalReceipts.Include(r => r.Tenders).Where(r => r.OrderId == orderId && !r.IsVoid).ToListAsync())
+                    .SelectMany(r => r.Tenders).Sum(t => t.Amount.AmountInCents);
+                var remainingCents = tippedOrder.TotalTtc.AmountInCents + tippedOrder.TipAmount.AmountInCents - paidCents;
+                // Un pourboire sur un paiement partiel entrerait dans le montant fiscal du reçu (ratio) : refusé.
+                if (tenderRequests.Sum(t => t.AmountInCents) < remainingCents + tipCents)
+                {
+                    return Results.BadRequest(new { Message = Texts.T("errors.tip_only_on_final_payment") });
+                }
+                tippedOrder.TipAmount = Money.FromCents(tippedOrder.TipAmount.AmountInCents + tipCents);
+                await db.SaveChangesAsync();
+            }
+
             var terminalId = RequireDeviceFilter.PairedDevice(http).TerminalId;
 
-            var result = await checkout.ProcessPaymentTendersAsync(orderId, terminalId, tenderRequests);
+            CheckoutResult result;
+            try
+            {
+                result = await checkout.ProcessPaymentTendersAsync(orderId, terminalId, tenderRequests);
+            }
+            catch when (tippedOrder is not null)
+            {
+                // Paiement en échec : le pourboire enregistré ci-dessus ne doit pas rester sans reçu.
+                // Le suivi EF peut contenir le reçu non écrit : on repart d'un contexte propre.
+                db.ChangeTracker.Clear();
+                var order = await db.Orders.FirstAsync(o => o.Id == orderId);
+                order.TipAmount = Money.FromCents(order.TipAmount.AmountInCents - tipCents);
+                await db.SaveChangesAsync();
+                throw;
+            }
 
             if (!result.IsSuccess)
             {
+                if (tippedOrder is not null)
+                {
+                    tippedOrder.TipAmount = Money.FromCents(tippedOrder.TipAmount.AmountInCents - tipCents);
+                    await db.SaveChangesAsync();
+                }
                 return Results.BadRequest(new { Message = Texts.T("errors.payment_failed") });
             }
 
@@ -113,11 +154,17 @@ public static class CheckoutEndpoints
         }).RequirePairedDevice();
 
         // Void receipt endpoint
-        group.MapPost("/void/{receiptId:guid}", async (Guid receiptId, VoidReceiptRequest req, ICheckoutPaymentService checkout, HttpContext http) =>
+        group.MapPost("/void/{receiptId:guid}", async (Guid receiptId, VoidReceiptRequest req, ICheckoutPaymentService checkout, AppDbContext db, INF525FiscalAuditService fiscal, HttpContext http) =>
         {
             if (req.OperatorId == Guid.Empty)
             {
                 return Results.BadRequest(new { Message = Texts.T("errors.operator_required_for_void") });
+            }
+
+            var original = await db.FiscalReceipts.AsNoTracking().FirstOrDefaultAsync(r => r.Id == receiptId);
+            if (original is not null && await fiscal.IsInClosedPeriodAsync(original.TerminalId, original.CreatedAtUtc))
+            {
+                return Results.Json(new { code = "void_after_closure", message = Texts.T("errors.void_after_closure") }, statusCode: StatusCodes.Status409Conflict);
             }
 
             var result = await checkout.VoidReceiptAsync(receiptId, RequireDeviceFilter.PairedDevice(http).TerminalId, req.OperatorId);
