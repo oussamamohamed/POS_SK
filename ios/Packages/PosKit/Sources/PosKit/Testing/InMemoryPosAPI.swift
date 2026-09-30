@@ -125,7 +125,7 @@ public actor InMemoryPosAPI: PosAPI {
         guard let i = categoriesStore.firstIndex(where: { $0.id == id }) else { throw APIError.notFound(nil) }
         categoriesStore[i].name = name
         categoriesStore[i].colorHex = colorHex
-        categoriesStore[i].preparationStationId = preparationStationId
+        if let preparationStationId { categoriesStore[i].preparationStationId = preparationStationId.isEmpty ? nil : preparationStationId }
     }
 
     public func createProduct(_ d: ProductDraft) async throws {

@@ -161,14 +161,14 @@ public actor HTTPPosAPI: PosAPI {
         try await perform("POST", "catalog/categories", body: CategoryBody(name: name, colorHex: colorHex, displayOrder: displayOrder, iconName: "utensils", isActive: nil, preparationStationId: nil))
     }
 
-    /// `preparationStationId` : nil = poste effacé (envoyé `""`, comme le serveur l'attend).
+    /// `preparationStationId` : nil = inchangé (clé omise), `""` = effacé, valeur = défini (sémantique du serveur).
     public func updateCategory(id: String, name: String, colorHex: String, displayOrder: Int, preparationStationId: String?) async throws {
-        try await perform("PUT", "catalog/categories/\(id)", body: CategoryBody(name: name, colorHex: colorHex, displayOrder: displayOrder, iconName: nil, isActive: true, preparationStationId: preparationStationId ?? ""))
+        try await perform("PUT", "catalog/categories/\(id)", body: CategoryBody(name: name, colorHex: colorHex, displayOrder: displayOrder, iconName: nil, isActive: true, preparationStationId: preparationStationId))
     }
 
     struct ProductBody: Encodable {
         let name: String, categoryId: String, price: Money, taxRatePercent: Decimal, description: String, colorHex: String
-        let displayOrder: Int, isQuickKey: Bool, stationId: String, isAvailable: Bool?, isActive: Bool?
+        let displayOrder: Int, isQuickKey: Bool, stationId: String?, isAvailable: Bool?, isActive: Bool?
         init(_ d: ProductDraft, update: Bool) {
             name = d.name; categoryId = d.categoryId; price = d.price; taxRatePercent = d.taxRatePercent
             description = d.description; colorHex = d.colorHex; displayOrder = d.displayOrder

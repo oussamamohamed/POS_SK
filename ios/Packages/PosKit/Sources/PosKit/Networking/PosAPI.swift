@@ -129,13 +129,13 @@ public struct ProductDraft: Hashable, Sendable {
     public var categoryId: String
     public var price: Money
     public var taxRatePercent: Decimal
-    public var stationId: String
+    public var stationId: String?
     public var isQuickKey: Bool
     public var colorHex: String
     public var displayOrder: Int
     public var description: String
 
-    public init(name: String = "", categoryId: String = "", price: Money = .zero, taxRatePercent: Decimal = 10, stationId: String = "HOT_KITCHEN", isQuickKey: Bool = false, colorHex: String = "#3B82F6", displayOrder: Int = 0, description: String = "") {
+    public init(name: String = "", categoryId: String = "", price: Money = .zero, taxRatePercent: Decimal = 10, stationId: String? = "HOT_KITCHEN", isQuickKey: Bool = false, colorHex: String = "#3B82F6", displayOrder: Int = 0, description: String = "") {
         self.name = name
         self.categoryId = categoryId
         self.price = price
@@ -150,7 +150,7 @@ public struct ProductDraft: Hashable, Sendable {
     public init(product: Product) {
         self.init(
             name: product.name, categoryId: product.categoryId, price: product.price,
-            taxRatePercent: product.taxRatePercent, stationId: product.station ?? "HOT_KITCHEN", isQuickKey: product.isQuickKey,
+            taxRatePercent: product.taxRatePercent, stationId: product.station, isQuickKey: product.isQuickKey,
             colorHex: product.colorHex ?? "#3B82F6", displayOrder: product.displayOrder ?? 0,
             description: product.description ?? ""
         )

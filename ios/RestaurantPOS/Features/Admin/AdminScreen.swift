@@ -279,7 +279,8 @@ struct ProductEditorSheet: View {
                 }
                 Section("admin.preparation_section") {
                     Picker("admin.station_label", selection: $draft.stationId) {
-                        ForEach(ProductDraft.stations, id: \.self) { Text($0.replacingOccurrences(of: "_", with: " ")).tag($0) }
+                        Text("—").tag(String?.none)
+                        ForEach(ProductDraft.stations, id: \.self) { Text($0.replacingOccurrences(of: "_", with: " ")).tag(Optional($0)) }
                     }
                     Toggle("admin.quick_key_toggle", isOn: $draft.isQuickKey).accessibilityIdentifier("product.quickKey")
                     ColorPicker("admin.tile_color_label", selection: $color, supportsOpacity: false)
