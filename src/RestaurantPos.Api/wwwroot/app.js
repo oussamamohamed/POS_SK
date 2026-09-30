@@ -382,6 +382,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Ensure active authentication session
         await ensureAuthToken();
+        startPosHub();
 
         await loadCatalogData();
         // Le terminal démarre sur le comptoir : on charge sa commande en cours (articles, destination).
@@ -954,6 +955,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const data = await res.json();
                 state.token = data.token;
                 localStorage.setItem('pos_jwt_token', data.token);
+                startPosHub();
                 state.operator = { name: data.operatorName, role: data.role, id: data.operatorId };
                 return data.token;
             }
@@ -2912,7 +2914,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 row.className = 'item-list-row';
                 row.innerHTML = `
                     <div>
-                        <strong>${pr.name}</strong> (${pr.ipAddress}:${pr.port})${pr.isActive === false ? ` <span style="color:#f87171;">${t('admin.printer_row_inactive_suffix')}</span>` : ''}
+                        <strong>${escapeHtml(pr.name)}</strong> (${escapeHtml(pr.ipAddress)}:${pr.port})${pr.isActive === false ? ` <span style="color:#f87171;">${t('admin.printer_row_inactive_suffix')}</span>` : ''}
                         <span class="printer-status">${status}${pending}</span>
                         <small style="display:block;color:#94a3b8;">${t('admin.printer_row_meta', { stations: (pr.assignedStationIds || []).join(', ') || '—', drawer: pr.openCashDrawerOnReceipt ? t('common.yes') : t('common.no') })}</small>
                     </div>
@@ -4321,6 +4323,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (data.success) {
                 state.token = data.token;
                 localStorage.setItem('pos_jwt_token', data.token);
+                startPosHub();
                 state.operator = { name: data.operatorName, role: data.role, id: data.operatorId };
                 elements.currentOperatorName.textContent = data.operatorName;
                 elements.currentOperatorRole.textContent = operatorRoleLabel(data.role);
@@ -4867,6 +4870,33 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // ==================== REAL-TIME SIGNALR SYNC (US5) ====================
+    // L'état des imprimantes est diffusé sur /hubs/pos (le reste de ce client écoute /hubs/kitchen).
+    // Hub [Authorize] : démarré seulement une fois un jeton disponible (connexion ou renouvellement), et relancé si le démarrage a échoué.
+    let posConnection = null;
+    let posConnectionStarted = false;
+    function startPosHub() {
+        if (typeof signalR === 'undefined' || posConnectionStarted) return;
+        const token = state.token || localStorage.getItem('pos_jwt_token');
+        if (!token) return;
+        if (!posConnection) {
+            posConnection = new signalR.HubConnectionBuilder()
+                .withUrl('/hubs/pos', { accessTokenFactory: () => state.token || localStorage.getItem('pos_jwt_token') || '' })
+                .withAutomaticReconnect()
+                .build();
+            posConnection.on('OnPrinterStatusChanged', (printerId, printerName, isOnline, pendingCount) => {
+                showToast(isOnline
+                    ? t('messages.printer_back_online', { name: printerName })
+                    : t('messages.printer_offline', { name: printerName, count: pendingCount }), isOnline ? 'success' : 'warning');
+                if (document.getElementById('adminPrintersList')?.offsetParent) loadAdminPrinters();
+            });
+        }
+        posConnectionStarted = true;
+        posConnection.start().catch(err => {
+            posConnectionStarted = false; // sera retenté à la prochaine authentification
+            console.log('SignalR hub /hubs/pos non connecté:', err);
+        });
+    }
+
     function setupSignalR() {
         if (typeof signalR === 'undefined') return;
         try {
@@ -4902,21 +4932,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             connection.start().catch(err => {
                 console.log('SignalR hub non connecté (mode standalone):', err);
-            });
-
-            // L'état des imprimantes est diffusé sur /hubs/pos (le reste de ce client écoute /hubs/kitchen).
-            const posConnection = new signalR.HubConnectionBuilder()
-                .withUrl('/hubs/pos')
-                .withAutomaticReconnect()
-                .build();
-            posConnection.on('OnPrinterStatusChanged', (printerId, printerName, isOnline, pendingCount) => {
-                showToast(isOnline
-                    ? t('messages.printer_back_online', { name: printerName })
-                    : t('messages.printer_offline', { name: printerName, count: pendingCount }), isOnline ? 'success' : 'warning');
-                if (document.getElementById('adminPrintersList')?.offsetParent) loadAdminPrinters();
-            });
-            posConnection.start().catch(err => {
-                console.log('SignalR hub /hubs/pos non connecté:', err);
             });
         } catch (e) {
             console.warn('SignalR initialisation passée:', e);
