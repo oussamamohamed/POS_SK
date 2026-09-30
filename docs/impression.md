@@ -61,7 +61,49 @@ Déclarer une imprimante sur `127.0.0.1:9100`, puis `nc -lk 9100 > /tmp/print.bi
 `xxd /tmp/print.bin | head -2` : le flux commence par `1b40 1d76 30` (`ESC @`, `GS v 0`). Procédure vérifiée
 lors du développement (Task 8) ; cela ne remplace pas l'essai ci-dessous.
 
-## 5. Essai manuel sur imprimante réelle (à dérouler par l'exploitant)
+## 5. Mode texte
+
+- Case « Mode texte (fr/en, plus rapide) » par imprimante (Gestion → Imprimantes). Décochée (défaut) : rendu image, comme décrit en 1.
+  Cochée : le ticket part en texte ESC/POS (page de code PC858), nettement plus rapide sur les imprimantes lentes.
+- Langues `fr` et `en` seulement. L'arabe (`ar`, écriture de droite à gauche) reste toujours en image, même case
+  cochée : il exige la mise en forme des lettres liées. Le choix se fait par document (`PrinterTransport.BuildPayload`).
+- Colonnes : 32 en 58 mm, 48 en 80 mm. Les libellés longs sont repliés sur plusieurs lignes, sans perte.
+- Caractère absent de PC858 : imprimé `?`. Si les accents ou « € » sortent faux, la page de code de l'imprimante ne
+  correspond pas : décocher la case et vérifier avec l'impression de test.
+
+## 6. Rapports imprimés
+
+- **Rapport X** : bouton « Imprimer le rapport X » (web et iPad), `POST /api/fiscal/x-report/print`.
+- **Clôture Z** : imprimée automatiquement à la clôture (`PrintQueued` dans la réponse) ; bouton « Réimprimer la dernière clôture » pour
+  la dernière Z du poste (`POST /api/fiscal/latest-closure/print`). Manager/admin.
+- **Imprimante** : celle du poste (Gestion → Appareils), sinon première imprimante active du poste `RECEIPT`.
+  Aucune imprimante : `printQueued: false`. Pas de tiroir. Langue des tickets.
+- **Contenu** : poste, période, nombre de tickets, total TTC et HT, TVA par taux, règlements par moyen, cumul
+  perpétuel ; puis articles vendus par famille avec sous-totaux (famille inconnue : « Autres »), puis pourboires par
+  serveur avec total. Z : gestionnaire et signature en plus.
+- Articles et pourboires sont informatifs : ils n'entrent ni dans les totaux fiscaux ni dans la signature Z.
+  Articles en TTC, offerts à 0. Une remise sur la note entière n'est pas répartie : les montants articles sont avant
+  remise, et le rapport l'indique.
+
+## 7. Règles de clôture
+
+- **Tout encaisser avant la Z** : tant qu'une commande avec des lignes reste à encaisser (table ou panier en attente),
+  `POST /api/fiscal/z-closure` répond `409 {"code":"open_orders"}` avec un message listant tables et paniers et les
+  montants restants. Ne comptent pas : commandes vides, payées ou annulées, paniers annulés au code superviseur,
+  commandes entièrement offertes.
+- **Pas d'annulation après Z** : un ticket d'une période déjà clôturée ne peut plus être annulé
+  (`409 {"code":"void_after_closure"}`). La Z du terminal principal couvre les tickets de tous les terminaux : un ticket
+  d'iPad couvert par cette Z n'est plus annulable non plus. Corriger par avoir.
+
+## 8. Pourboire à table
+
+- Saisi sur le paiement qui solde la note, pas sur une part de partage : sinon
+  refus 400 « Le pourboire ne peut être ajouté qu'au paiement qui solde la note » (les règlements doivent couvrir le
+  reste dû plus le pourboire).
+- Attribué au serveur de la table (opérateur de la commande). Au comptoir : à l'opérateur qui encaisse.
+- Le rapport X/Z le regroupe par serveur (section 6).
+
+## 9. Essai manuel sur imprimante réelle (à dérouler par l'exploitant)
 
 Non exécuté pendant le développement (pas de matériel). Noter modèle et résultats.
 
@@ -78,7 +120,11 @@ Imprimante : ______  Largeur : ______
       rebrancher : les 3 bons sortent dans l'ordre, notification « rétablie ».
 - [ ] Chronométrer un ticket de caisse de 15 lignes. Modèle : ______ Durée : ______ s. Au-delà de ~3 s, ouvrir le
       sous-projet « mode texte `en`/`fr` » prévu par la spec A.
+- [ ] Impression de test en mode texte, `fr` : accents et « € » corrects ; `ar` : sortie en image.
+- [ ] Même ticket de caisse de 15 lignes en image puis en texte : noter les deux durées et le modèle d'imprimante.
+- [ ] Rapport X en 58 mm et en 80 mm : colonnes alignées, signature et libellés longs repliés sans perte.
+- [ ] Clôture Z avec une table ouverte : refus et liste ; après encaissement : Z imprimée automatiquement.
 
-## 6. Licence des polices
+## 10. Licence des polices
 
 Noto Sans et Noto Sans Arabic, licence OFL : `src/RestaurantPos.Infrastructure/Printing/Fonts/OFL.txt`.
