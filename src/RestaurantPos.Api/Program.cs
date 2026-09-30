@@ -86,6 +86,7 @@ public partial class Program
         builder.Services.AddSingleton<IPrinterStatusNotifier, SignalRPrinterStatusNotifier>();
         builder.Services.AddSingleton<PrintQueueProcessor>();
         builder.Services.AddScoped<PrintQueue>();
+        builder.Services.AddScoped<ReportPrintDataService>();
         builder.Services.AddScoped<PrintDispatcher>();
         builder.Services.AddScoped<ITerminalLayoutService, TerminalLayoutService>();
         builder.Services.AddScoped<ICheckoutPaymentService, CheckoutPaymentService>();

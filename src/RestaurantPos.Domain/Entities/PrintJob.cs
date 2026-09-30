@@ -3,7 +3,7 @@ using RestaurantPos.Domain.Common;
 
 namespace RestaurantPos.Domain.Entities;
 
-public enum PrintJobKind { PickupVoucher = 0, Receipt = 1, KitchenTicket = 2 }
+public enum PrintJobKind { PickupVoucher = 0, Receipt = 1, KitchenTicket = 2, Report = 3 }
 
 public enum PrintJobStatus { Pending = 0, Sent = 1, Failed = 2, Cancelled = 3 }
 
