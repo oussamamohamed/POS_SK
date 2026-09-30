@@ -7,7 +7,7 @@ Spec : `docs/superpowers/specs/2026-09-29-impression-design.md`.
 - Après un paiement ou un envoi en cuisine, `PrintDispatcher` met des jobs en file dans la table `PrintJobs`.
   La mise en file ne peut jamais faire échouer la vente ; en cas d'erreur elle est journalisée.
 - `PrintWorker` (service d'arrière-plan, absent en environnement `Testing`) traite chaque imprimante à part, dans
-  l'ordre de création (FIFO). Un job en échec bloque les suivants de la même imprimante ; les autres imprimantes
+  l'ordre de création (FIFO). Un job en attente de relance bloque les suivants de la même imprimante ; les autres imprimantes
   continuent. Le rendu est une image 1 bit (`Infrastructure/Printing/EscPosRasterRenderer.cs`) envoyée en ESC/POS
   par TCP (port 9100 par défaut ; connexion 3 s, écriture 10 s).
 - Relances après échec : +5 s, +15 s, +30 s, puis toutes les 60 s. Échéance : 30 min après la création (ou la
@@ -43,11 +43,12 @@ Spec : `docs/superpowers/specs/2026-09-29-impression-design.md`.
 
 - **Gestion → Imprimantes** : état de chaque imprimante (en ligne / hors ligne depuis HH:MM / inconnu), jobs en
   attente et en échec, boutons Relancer (`Failed` → `Pending`, nouvelle échéance +30 min) et Annuler.
-- API (manager/admin sauf `status`, ouvert à tout utilisateur authentifié) :
-  `GET /api/printers/status`, `GET /api/printers/{id}/jobs?status=`, `POST /api/print-jobs/{id}/retry`,
-  `POST /api/print-jobs/{id}/cancel`. Impression de test : `POST /api/printers/{id}/test`.
+- API : `GET /api/printers/{id}/jobs?status=`, `POST /api/print-jobs/{id}/retry` et
+  `POST /api/print-jobs/{id}/cancel` exigent manager/admin ; `GET /api/printers/status` et
+  `POST /api/printers/{id}/test` (impression de test) sont ouverts à tout utilisateur authentifié.
 - `printQueued: false` dans la réponse d'un paiement : aucune imprimante résolue (caisse sans imprimante de ticket
-  et aucune imprimante active sur `RECEIPT`), ou erreur de mise en file (voir les journaux du serveur).
+  et aucune imprimante active sur `RECEIPT`), erreur de mise en file (voir les journaux du serveur), paiement
+  partiel (comptoir ou table), ou paiement à table sans ticket demandé.
 - Bons cuisine absents : le poste n'a aucune imprimante active (avertissement dans les journaux), ou le poste
   résolu n'est pas celui attendu (vérifier famille et article).
 - Notification « hors ligne — n bons en attente » : l'imprimante ne répond plus ; les bons sortent dans l'ordre
