@@ -277,6 +277,29 @@
         }
       }
     },
+    "admin.category_station_label": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "محطة التحضير"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preparation station"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Poste de préparation"
+          }
+        }
+      }
+    },
     "admin.change_server_button": {
       "extractionState": "manual",
       "localizations": {
@@ -1542,6 +1565,29 @@
         }
       }
     },
+    "admin.kitchen_ticket_language": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "لغة تذاكر المطبخ"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kitchen ticket language"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Langue des bons cuisine"
+          }
+        }
+      }
+    },
     "admin.kpi_average_cover": {
       "extractionState": "manual",
       "localizations": {
@@ -2232,6 +2278,167 @@
         }
       }
     },
+    "admin.print_job_cancel": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "إلغاء"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancel"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Annuler"
+          }
+        }
+      }
+    },
+    "admin.print_job_kind_kitchenticket": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تذكرة المطبخ"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kitchen ticket"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bon cuisine"
+          }
+        }
+      }
+    },
+    "admin.print_job_kind_pickupvoucher": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "قسيمة الاستلام"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pickup voucher"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bon de retrait"
+          }
+        }
+      }
+    },
+    "admin.print_job_kind_receipt": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الإيصال"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Receipt"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ticket de caisse"
+          }
+        }
+      }
+    },
+    "admin.print_job_retry": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "إعادة المحاولة"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Retry"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Relancer"
+          }
+        }
+      }
+    },
+    "admin.printer_jobs_btn": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "مهام الطباعة"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Print jobs"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impressions"
+          }
+        }
+      }
+    },
+    "admin.printer_pending %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld قيد الانتظار"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld pending"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld en attente"
+          }
+        }
+      }
+    },
     "admin.printer_section": {
       "extractionState": "manual",
       "localizations": {
@@ -2251,6 +2458,75 @@
           "stringUnit": {
             "state": "translated",
             "value": "Imprimante"
+          }
+        }
+      }
+    },
+    "admin.printer_status_offline_since %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "غير متصلة منذ %@"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Offline since %@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hors ligne depuis %@"
+          }
+        }
+      }
+    },
+    "admin.printer_status_online": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "متصلة"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Online"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "En ligne"
+          }
+        }
+      }
+    },
+    "admin.printer_status_unknown": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الحالة غير معروفة"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Status unknown"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "État inconnu"
           }
         }
       }
@@ -2826,6 +3102,52 @@
           "stringUnit": {
             "state": "translated",
             "value": "%lld table(s) · moy. ⁦%@⁩"
+          }
+        }
+      }
+    },
+    "admin.station_default_hot": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "المطبخ الساخن (افتراضي)"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hot kitchen (default)"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cuisine chaude (défaut)"
+          }
+        }
+      }
+    },
+    "admin.station_from_category": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "محطة الفئة"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Category station"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Poste de la famille"
           }
         }
       }
@@ -5981,29 +6303,6 @@
         }
       }
     },
-    "order.discount_reason_label": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "السبب"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Reason"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Motif"
-          }
-        }
-      }
-    },
     "order.discount_reason_goodwill_gesture": {
       "extractionState": "manual",
       "localizations": {
@@ -6027,48 +6326,25 @@
         }
       }
     },
-    "order.discount_reason_loyal_customer": {
+    "order.discount_reason_label": {
       "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "عميل مخلص"
+            "value": "السبب"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Loyal Customer"
+            "value": "Reason"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Client fidèle"
-          }
-        }
-      }
-    },
-    "order.discount_reason_service_error": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "خطأ في الخدمة"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Service Error"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Erreur de service"
+            "value": "Motif"
           }
         }
       }
@@ -6096,25 +6372,25 @@
         }
       }
     },
-    "order.discount_reason_staff_meal": {
+    "order.discount_reason_loyal_customer": {
       "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "وجبة الموظفين"
+            "value": "عميل مخلص"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Staff Meal"
+            "value": "Loyal Customer"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Repas du personnel"
+            "value": "Client fidèle"
           }
         }
       }
@@ -6138,6 +6414,52 @@
           "stringUnit": {
             "state": "translated",
             "value": "Autre motif"
+          }
+        }
+      }
+    },
+    "order.discount_reason_service_error": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "خطأ في الخدمة"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Service Error"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Erreur de service"
+          }
+        }
+      }
+    },
+    "order.discount_reason_staff_meal": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "وجبة الموظفين"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Staff Meal"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Repas du personnel"
           }
         }
       }
@@ -7817,6 +8139,52 @@
           "stringUnit": {
             "state": "translated",
             "value": "N° de retrait"
+          }
+        }
+      }
+    },
+    "payment.print_not_queued": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "لا توجد طابعة متاحة: لم تتم الطباعة"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No printer available: nothing was printed"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aucune imprimante disponible : rien n'a été imprimé"
+          }
+        }
+      }
+    },
+    "payment.print_receipt": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "طباعة الإيصال"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Print receipt"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Imprimer le ticket de caisse"
           }
         }
       }

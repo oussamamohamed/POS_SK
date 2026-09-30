@@ -184,7 +184,7 @@ struct CatalogAdminView: View {
     @State private var search = ""
 
     struct ProductEditor: Identifiable { let id = UUID(); var productId: UUID?; var draft: ProductDraft }
-    struct CategoryEditor: Identifiable { let id = UUID(); var categoryId: String?; var name: String; var color: Color }
+    struct CategoryEditor: Identifiable { let id = UUID(); var categoryId: String?; var name: String; var color: Color; var station: String = "" }
 
     var body: some View {
         let catalog = model.catalog
@@ -197,9 +197,11 @@ struct CatalogAdminView: View {
                         ChipButton(title: category.name, isSelected: filter == category.id, tint: Color(hex: category.colorHex) ?? Theme.primary) { filter = category.id }
                             .contextMenu {
                                 Button("admin.edit_category", systemImage: "pencil") {
-                                    editingCategory = CategoryEditor(categoryId: category.id, name: category.name, color: Color(hex: category.colorHex) ?? .blue)
+                                    editingCategory = CategoryEditor(categoryId: category.id, name: category.name, color: Color(hex: category.colorHex) ?? .blue, station: category.preparationStationId ?? "")
                                 }
+                                .accessibilityIdentifier("category.edit")
                             }
+                            .accessibilityIdentifier("category.chip.\(category.id)")
                     }
                     Button { editingCategory = CategoryEditor(categoryId: nil, name: "", color: .blue) } label: { Label("admin.category_label", systemImage: "plus") }
                         .buttonStyle(.bordered)
@@ -248,7 +250,7 @@ struct CatalogAdminView: View {
             ProductEditorSheet(productId: editor.productId, draft: editor.draft)
         }
         .sheet(item: $editingCategory) { editor in
-            CategoryEditorSheet(categoryId: editor.categoryId, name: editor.name, color: editor.color)
+            CategoryEditorSheet(categoryId: editor.categoryId, name: editor.name, color: editor.color, station: editor.station)
         }
     }
 }
@@ -279,9 +281,10 @@ struct ProductEditorSheet: View {
                 }
                 Section("admin.preparation_section") {
                     Picker("admin.station_label", selection: $draft.stationId) {
-                        Text("—").tag(String?.none)
+                        Text("admin.station_from_category").tag(String?.none)
                         ForEach(ProductDraft.stations, id: \.self) { Text($0.replacingOccurrences(of: "_", with: " ")).tag(Optional($0)) }
                     }
+                    .accessibilityIdentifier("product.station")
                     Toggle("admin.quick_key_toggle", isOn: $draft.isQuickKey).accessibilityIdentifier("product.quickKey")
                     ColorPicker("admin.tile_color_label", selection: $color, supportsOpacity: false)
                     TextField("admin.description_placeholder", text: $draft.description, axis: .vertical)
@@ -314,12 +317,30 @@ struct CategoryEditorSheet: View {
     let categoryId: String?
     @State var name: String
     @State var color: Color
+    /// "" = cuisine chaude (poste vide côté serveur).
+    @State var station: String
+    private let initialStation: String
+
+    init(categoryId: String?, name: String, color: Color, station: String) {
+        self.categoryId = categoryId
+        _name = State(initialValue: name)
+        _color = State(initialValue: color)
+        _station = State(initialValue: station)
+        initialStation = station
+    }
 
     var body: some View {
         NavigationStack {
             Form {
                 TextField("admin.category_name_placeholder", text: $name).accessibilityIdentifier("category.name")
                 ColorPicker("admin.color_label", selection: $color, supportsOpacity: false)
+                if categoryId != nil {
+                    Picker("admin.category_station_label", selection: $station) {
+                        Text("admin.station_default_hot").tag("")
+                        ForEach(ProductDraft.stations, id: \.self) { Text($0.replacingOccurrences(of: "_", with: " ")).tag($0) }
+                    }
+                    .accessibilityIdentifier("category.station")
+                }
             }
             .navigationTitle(categoryId == nil ? "admin.new_category" : "admin.edit_category")
             .navigationBarTitleDisplayMode(.inline)
@@ -327,7 +348,7 @@ struct CategoryEditorSheet: View {
                 ToolbarItem(placement: .cancellationAction) { Button("common.cancel") { dismiss() } }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("common.save") {
-                        Task { if await model.catalogAdmin.saveCategory(id: categoryId, name: name, colorHex: color.hexString) { dismiss() } }
+                        Task { if await model.catalogAdmin.saveCategory(id: categoryId, name: name, colorHex: color.hexString, preparationStationId: station == initialStation ? nil : station) { dismiss() } }
                     }
                     .accessibilityIdentifier("category.save")
                 }
@@ -445,6 +466,14 @@ struct PrintersAdminView: View {
                         Text(printer.name).font(.headline)
                         Text("\(printer.ipAddress):\(printer.port) · \(printer.paperWidthMm) mm · \(printer.assignedStationIds.joined(separator: ", "))")
                             .font(.caption).foregroundStyle(Theme.inkMuted)
+                        let status = store.statuses.first { $0.printerId == printer.id }
+                        Text(Self.statusText(status))
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(status?.isOnline == false ? Theme.danger : Theme.inkMuted)
+                            .accessibilityIdentifier("printer.status")
+                        if let status, status.pendingCount + status.failedCount > 0 {
+                            PrinterJobsList(printerId: printer.id)
+                        }
                     }
                     Spacer()
                     if printer.openCashDrawerOnReceipt { Badge(text: String(localized: "admin.cash_drawer_badge"), color: .green, systemImage: "tray") }
@@ -472,10 +501,62 @@ struct PrintersAdminView: View {
             .padding(24)
             .accessibilityIdentifier("printer.add")
         }
-        .task { await store.load() }
+        .task { await store.load(); await store.loadStatuses() }
         .sheet(item: $editing) { editor in
             PrinterEditorSheet(printer: editor.printer, isNew: editor.isNew)
         }
+    }
+}
+
+extension PrintersAdminView {
+    /// « En ligne » / « Hors ligne depuis HH:mm » / « État inconnu », suivi du nombre de bons en attente.
+    static func statusText(_ status: PrinterStatus?) -> String {
+        var text: String
+        switch status?.isOnline {
+        case .none: text = String(localized: "admin.printer_status_unknown")
+        case .some(true): text = String(localized: "admin.printer_status_online")
+        case .some(false):
+            let time = status?.sinceUtc?.formatted(date: .omitted, time: .shortened) ?? "—"
+            text = String(localized: "admin.printer_status_offline_since \(time)")
+        }
+        if let pending = status?.pendingCount, pending > 0 { text += " · " + String(localized: "admin.printer_pending \(pending)") }
+        return text
+    }
+}
+
+/// Jobs `Failed` (Relancer) et `Pending` (Annuler) d'une imprimante, chargés à l'ouverture.
+struct PrinterJobsList: View {
+    @Environment(AppModel.self) private var model
+    let printerId: UUID
+    @State private var isExpanded = false
+
+    var body: some View {
+        DisclosureGroup(isExpanded: $isExpanded) {
+            ForEach(model.printers.jobs[printerId] ?? []) { job in
+                HStack(spacing: 8) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(LocalizedStringKey("admin.print_job_kind_\(job.kind.lowercased())")).font(.subheadline.weight(.semibold))
+                        Text(job.createdAtUtc.formatted(date: .omitted, time: .shortened)).font(.caption).foregroundStyle(Theme.inkMuted)
+                        if let error = job.lastError { Text(error).font(.caption).foregroundStyle(Theme.danger) }
+                    }
+                    Spacer()
+                    if job.status == "Failed" {
+                        Button("admin.print_job_retry") { Task { await model.printers.retry(job) } }
+                            .buttonStyle(.bordered)
+                            .accessibilityIdentifier("printjob.retry")
+                    }
+                    if job.status == "Pending" {
+                        Button("admin.print_job_cancel", role: .destructive) { Task { await model.printers.cancel(job) } }
+                            .buttonStyle(.bordered)
+                            .accessibilityIdentifier("printjob.cancel")
+                    }
+                }
+            }
+        } label: {
+            Text("admin.printer_jobs_btn").font(.caption.weight(.semibold))
+        }
+        .accessibilityIdentifier("printer.jobs")
+        .onChange(of: isExpanded) { _, open in if open { Task { await model.printers.loadJobs(printerId: printerId) } } }
     }
 }
 
@@ -566,6 +647,7 @@ struct NetworkSettingsView: View {
                 }
                 .accessibilityIdentifier("settings.voucherPolicy")
                 ReceiptLanguagePicker()
+                KitchenTicketLanguagePicker()
             }
             Section("admin.appearance_section") {
                 Picker("admin.theme_label", selection: $appearance) {
@@ -599,5 +681,22 @@ struct ReceiptLanguagePicker: View {
                 .foregroundStyle(Theme.inkMuted)
         }
         .task { await model.settingsStore.load() }
+    }
+}
+
+/// Réglage back-office : langue des bons cuisine (indépendante de celle des tickets clients).
+struct KitchenTicketLanguagePicker: View {
+    @Environment(AppModel.self) private var model
+
+    var body: some View {
+        Picker("admin.kitchen_ticket_language", selection: Binding(
+            get: { model.settingsStore.settings?.kitchenTicketLanguage ?? "en" },
+            set: { lang in Task { await model.settingsStore.setKitchenTicketLanguage(lang) } }
+        )) {
+            Text(verbatim: "English").tag("en")
+            Text(verbatim: "Français").tag("fr")
+            Text(verbatim: "العربية").tag("ar")
+        }
+        .accessibilityIdentifier("admin.kitchenTicketLanguage")
     }
 }

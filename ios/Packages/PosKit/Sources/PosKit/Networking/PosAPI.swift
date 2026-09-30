@@ -135,7 +135,7 @@ public struct ProductDraft: Hashable, Sendable {
     public var displayOrder: Int
     public var description: String
 
-    public init(name: String = "", categoryId: String = "", price: Money = .zero, taxRatePercent: Decimal = 10, stationId: String? = "HOT_KITCHEN", isQuickKey: Bool = false, colorHex: String = "#3B82F6", displayOrder: Int = 0, description: String = "") {
+    public init(name: String = "", categoryId: String = "", price: Money = .zero, taxRatePercent: Decimal = 10, stationId: String? = nil, isQuickKey: Bool = false, colorHex: String = "#3B82F6", displayOrder: Int = 0, description: String = "") {
         self.name = name
         self.categoryId = categoryId
         self.price = price
