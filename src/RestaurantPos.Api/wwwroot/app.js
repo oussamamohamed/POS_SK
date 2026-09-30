@@ -1772,14 +1772,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
+    /** Pourboire calculé une seule fois en centimes : montant encaissé et pourboire envoyés en dérivent (affiché = envoyé). */
+    function getTipCents() {
+        if (state.customTipAmount > 0) return Math.round(state.customTipAmount * 100);
+        return Math.round(Math.round(getAmountDue() * 100) * state.selectedTipPercent / 100);
+    }
+
     function getTipAmount() {
-        if (state.customTipAmount > 0) return state.customTipAmount;
-        const total = getAmountDue();
-        return (total * (state.selectedTipPercent / 100.0));
+        return getTipCents() / 100;
     }
 
     function getFinalPayTotal() {
-        return getAmountDue() + getTipAmount();
+        return (Math.round(getAmountDue() * 100) + getTipCents()) / 100;
     }
 
     function updateTipCalculation() {
@@ -1789,7 +1793,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         const total = getAmountDue();
         const tip = getTipAmount();
-        const finalTotal = total + tip;
+        const finalTotal = getFinalPayTotal();
 
         elements.payRemainingAmount.innerHTML = `<bdi dir="ltr">${total.toFixed(2)} €</bdi>`;
         elements.payTotalWithTip.textContent = t('payment.total_with_tip_value', { total: finalTotal.toFixed(2), tip: tip.toFixed(2) });
@@ -1918,8 +1922,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     /** Pas de pourboire en partage : le serveur ne l'accepte que sur le paiement qui solde. */
     function syncTipVisibility() {
-        const box = elements.tipPills[0]?.parentElement;
-        if (box) box.style.display = state.splitPlan ? 'none' : '';
+        const section = elements.tipPills[0]?.closest('.tip-section');
+        if (section) section.style.display = state.splitPlan ? 'none' : '';
+        if (state.splitPlan) {
+            elements.inputCustomTip.value = '';
+            elements.tipCustomInputRow.style.display = 'none';
+            elements.tipPills.forEach((p, i) => p.classList.toggle('active', i === 0));
+        }
     }
 
     function warnIfNotQueued(resData) {
@@ -1992,6 +2001,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         // Solde restant (arrondis, paiement partiel libre) : encaissement classique.
                         state.splitPlan = null;
                         state.splitActivePart = null;
+                        syncTipVisibility();
                         renderCart();
                     }
                 } else {

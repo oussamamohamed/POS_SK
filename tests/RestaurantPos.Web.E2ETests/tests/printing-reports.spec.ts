@@ -122,9 +122,31 @@ test.describe('Impression des rapports', () => {
     await expect(page.locator('#paymentModal')).toHaveClass(/active/);
     await page.locator('[data-tip-percent="10"]').click();
     const req = page.waitForRequest(r => r.url().endsWith('/api/checkout/pay'));
+    const resp = page.waitForResponse(r => r.url().endsWith('/api/checkout/pay'));
     await page.click('.tender-types-grid button[data-tender="Card"]');
     const body = (await req).postDataJSON();
-    expect(body.tipAmount).toBeCloseTo(linePrice * 0.1, 2);
-    expect(body.tenders[0].amount).toBeCloseTo(linePrice + body.tipAmount, 2);
+    // Pourboire calculé une fois en centimes : encaissement = dû + pourboire, au centime près.
+    const dueCents = Math.round(linePrice * 100);
+    const tipCents = Math.round(dueCents * 10 / 100);
+    expect(Math.round(body.tipAmount * 100)).toBe(tipCents);
+    expect(Math.abs(body.tipAmount * 100 - tipCents)).toBeLessThan(1e-6);
+    expect(Math.round(body.tenders[0].amount * 100)).toBe(dueCents + tipCents);
+    expect(Math.abs(body.tenders[0].amount * 100 - (dueCents + tipCents))).toBeLessThan(1e-6);
+    expect((await resp).status()).toBe(200);
+  });
+
+  test('paiement partagé : pas de pourboire pendant une part', async ({ page }) => {
+    await login(page, '2468');
+    await openTableWithOneLine(page);
+    await page.click('#btnSplitBill');
+    await expect(page.locator('#splitBillModal')).toHaveClass(/active/);
+    await page.click('#btnConfirmSplit');
+    await expect(page.locator('#paymentModal')).toHaveClass(/active/);
+    await expect(page.locator('#payRemainingAmount')).toContainText('1/2');
+    await expect(page.locator('#paymentModal .tip-section')).toBeHidden();
+    const req = page.waitForRequest(r => r.url().endsWith('/api/checkout/pay'));
+    await page.click('.tender-types-grid button[data-tender="Card"]');
+    const body = (await req).postDataJSON();
+    expect(body.tipAmount).toBe(0);
   });
 });
