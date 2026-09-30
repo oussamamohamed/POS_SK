@@ -7,14 +7,17 @@ public struct MenuCategory: Codable, Identifiable, Hashable, Sendable {
     public var colorHex: String?
     public var displayOrder: Int?
     public var isActive: Bool?
+    /// Poste de préparation par défaut de la famille (repli quand l'article n'a pas le sien).
+    public var preparationStationId: String?
 
-    public init(id: String, name: String, iconName: String? = nil, colorHex: String? = nil, displayOrder: Int? = nil, isActive: Bool? = true) {
+    public init(id: String, name: String, iconName: String? = nil, colorHex: String? = nil, displayOrder: Int? = nil, isActive: Bool? = true, preparationStationId: String? = nil) {
         self.id = id
         self.name = name
         self.iconName = iconName
         self.colorHex = colorHex
         self.displayOrder = displayOrder
         self.isActive = isActive
+        self.preparationStationId = preparationStationId
     }
 
     public var symbolName: String {
@@ -128,7 +131,8 @@ public struct Product: Codable, Identifiable, Hashable, Sendable {
     }
 
     public var hasModifiers: Bool { !modifierGroups.isEmpty }
-    public var station: String { preparationStationId ?? "HOT_KITCHEN" }
+    /// Poste propre à l'article ; nil = le serveur retombe sur le poste de la famille.
+    public var station: String? { preparationStationId }
 }
 
 // MARK: - Grille tactile

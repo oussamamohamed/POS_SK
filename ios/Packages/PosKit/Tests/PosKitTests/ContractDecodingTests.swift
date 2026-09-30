@@ -57,8 +57,8 @@ struct ContractDecodingTests {
 
     @Test func payment() throws {
         let result = try decode(PaymentResult.self, "pay_partial")
-        #expect(result.totalPaid == Money(cents: 1000))
-        #expect(result.remainingBalance == Money(cents: 1000))
+        #expect(result.totalPaid == Money(cents: 500))
+        #expect(result.remainingBalance == Money(cents: 700))
     }
 
     @Test func kitchen() throws {
@@ -147,5 +147,35 @@ struct ContractDecodingTests {
     @Test func settings() throws {
         let settings = try decode(RestaurantSettings.self, "settings")
         #expect(["en", "fr", "ar"].contains(settings.receiptLanguage))
+    }
+
+    @Test func decodesSettingsWithKitchenLanguage() throws {
+        let s = try decode(RestaurantSettings.self, "settings")
+        #expect(["en", "fr", "ar"].contains(s.kitchenTicketLanguage))
+    }
+
+    @Test func settingsWithoutKitchenLanguageFallsBackToReceipt() throws {
+        let s = try JSONDecoder().decode(RestaurantSettings.self, from: Data(#"{"receiptLanguage":"ar"}"#.utf8))
+        #expect(s.kitchenTicketLanguage == "ar")
+    }
+
+    @Test func decodesCategoryStation() throws {
+        let cats = try decode([MenuCategory].self, "categories")
+        #expect(cats.contains { $0.preparationStationId == "BAR" })
+        #expect(cats.contains { $0.preparationStationId == nil })
+    }
+
+    @Test func decodesPrinterStatusAndJobs() throws {
+        let statuses = try decode([PrinterStatus].self, "printer_status")
+        #expect(!statuses.isEmpty)
+        #expect(statuses.contains { $0.isOnline == nil })
+        #expect(statuses.contains { $0.isOnline == false && $0.pendingCount > 0 && $0.sinceUtc != nil })
+        let jobs = try decode([PrintJobInfo].self, "print_jobs")
+        #expect(!jobs.isEmpty)
+        #expect(jobs.allSatisfy { ["Pending", "Failed", "Sent", "Cancelled"].contains($0.status) })
+    }
+
+    @Test func decodesPrintQueuedOnPayment() throws {
+        #expect(try decode(PaymentResult.self, "pay_partial").printQueued == false)
     }
 }

@@ -39,7 +39,7 @@ public protocol PosAPI: Sendable {
     func categories() async throws -> [MenuCategory]
     func products() async throws -> [Product]
     func createCategory(name: String, colorHex: String, displayOrder: Int) async throws
-    func updateCategory(id: String, name: String, colorHex: String, displayOrder: Int) async throws
+    func updateCategory(id: String, name: String, colorHex: String, displayOrder: Int, preparationStationId: String?) async throws
     func createProduct(_ draft: ProductDraft) async throws
     func updateProduct(id: UUID, _ draft: ProductDraft) async throws
     func archiveProduct(id: UUID) async throws
@@ -96,6 +96,10 @@ public protocol PosAPI: Sendable {
     func printers() async throws -> [Printer]
     func savePrinter(_ printer: Printer, isNew: Bool) async throws
     func testPrinter(id: UUID) async throws -> TestPrintResult
+    func printerStatuses() async throws -> [PrinterStatus]
+    func printJobs(printerId: UUID) async throws -> [PrintJobInfo]
+    func retryPrintJob(id: UUID) async throws
+    func cancelPrintJob(id: UUID) async throws
 
     // Happy Hour
     func happyHourStatus(terminalId: String) async throws -> HappyHourStatus
@@ -146,7 +150,7 @@ public struct ProductDraft: Hashable, Sendable {
     public init(product: Product) {
         self.init(
             name: product.name, categoryId: product.categoryId, price: product.price,
-            taxRatePercent: product.taxRatePercent, stationId: product.station, isQuickKey: product.isQuickKey,
+            taxRatePercent: product.taxRatePercent, stationId: product.station ?? "HOT_KITCHEN", isQuickKey: product.isQuickKey,
             colorHex: product.colorHex ?? "#3B82F6", displayOrder: product.displayOrder ?? 0,
             description: product.description ?? ""
         )

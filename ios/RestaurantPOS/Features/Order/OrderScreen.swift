@@ -168,7 +168,7 @@ struct ProductTile: View {
         VStack(alignment: .leading, spacing: Theme.Space.xs) {
             HStack(spacing: 6) {
                 Circle().fill(tint).frame(width: 10, height: 10)
-                Text(product.station.replacingOccurrences(of: "_", with: " ").uppercased())
+                Text((product.station ?? "").replacingOccurrences(of: "_", with: " ").uppercased())
                     .font(.system(size: 11, weight: .bold))
                     .tracking(0.4)
                     .foregroundStyle(Theme.inkMuted)

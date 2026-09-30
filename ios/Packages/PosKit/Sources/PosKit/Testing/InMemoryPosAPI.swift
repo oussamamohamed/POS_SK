@@ -23,6 +23,7 @@ public actor InMemoryPosAPI: PosAPI {
     private var held: [HeldOrder] = []
     private var rooms: [HotelRoom]
     private var printersStore: [Printer]
+    private var printJobsStore: [PrintJobInfo] = []
     private var layouts: [String: TouchGridLayout] = [:]
     private var schedules: [HappyHourSchedule]
     private var overrideUntil: Date?
@@ -36,6 +37,8 @@ public actor InMemoryPosAPI: PosAPI {
 
     /// Journal des appels (utile pour vérifier dans les tests qu'un endpoint a bien été sollicité).
     public private(set) var calls: [String] = []
+    /// Dernière requête de paiement reçue (tests).
+    public private(set) var lastPaymentRequest: PaymentRequest?
     /// Latence artificielle pour simuler le réseau dans les aperçus.
     public var latency: Duration = .zero
     /// Si défini, chaque appel échoue avec cette erreur (tests de résilience).
@@ -117,11 +120,12 @@ public actor InMemoryPosAPI: PosAPI {
         categoriesStore.append(MenuCategory(id: "CAT_\(UUID().uuidString.prefix(8))", name: name, iconName: "utensils", colorHex: colorHex, displayOrder: displayOrder))
     }
 
-    public func updateCategory(id: String, name: String, colorHex: String, displayOrder: Int) async throws {
+    public func updateCategory(id: String, name: String, colorHex: String, displayOrder: Int, preparationStationId: String?) async throws {
         try await step("updateCategory"); try requireManager()
         guard let i = categoriesStore.firstIndex(where: { $0.id == id }) else { throw APIError.notFound(nil) }
         categoriesStore[i].name = name
         categoriesStore[i].colorHex = colorHex
+        categoriesStore[i].preparationStationId = preparationStationId
     }
 
     public func createProduct(_ d: ProductDraft) async throws {
@@ -419,11 +423,12 @@ public actor InMemoryPosAPI: PosAPI {
 
     public func pay(_ request: PaymentRequest) async throws -> PaymentResult {
         try await step("pay"); try requireAuth()
+        lastPaymentRequest = request
         var id = request.orderId
         if id == nil || orders[id!] == nil, let i = tableIndex(request.tableNumber) { id = tablesStore[i].activeOrderId }
         guard let orderId = id else { throw APIError.server(status: 400, message: "Commande introuvable pour ce règlement.") }
         let result = try settle(orderId: orderId, terminal: request.terminalId, tenders: request.tenders.map { ($0.method, $0.amount.cents, $0.tendered.cents) })
-        return PaymentResult(receiptNumber: result.receipt, totalPaid: Money(cents: result.paid), changeGiven: Money(cents: result.change), remainingBalance: Money(cents: result.remaining), fiscalSignature: String(repeating: "A", count: 64))
+        return PaymentResult(receiptNumber: result.receipt, totalPaid: Money(cents: result.paid), changeGiven: Money(cents: result.change), remainingBalance: Money(cents: result.remaining), fiscalSignature: String(repeating: "A", count: 64), printQueued: request.requestReceiptPrint && result.remaining == 0 && hasReceiptPrinter)
     }
 
     public func hotelRooms() async throws -> [HotelRoom] { try await step("hotelRooms"); return rooms }
@@ -509,7 +514,7 @@ public actor InMemoryPosAPI: PosAPI {
             }
         }
         let result = try settle(orderId: request.orderId, terminal: request.terminalId, tenders: request.tenders.map { ($0.method, $0.amount.cents, $0.method == .mealVoucher ? $0.amount.cents : $0.tendered.cents) })
-        return CounterCheckoutResult(orderId: request.orderId, pickupNumber: pickup, totalPaid: Money(cents: result.paid), changeGiven: Money(cents: result.change), remainingBalance: Money(cents: result.remaining), receiptNumber: result.receipt, fiscalSignature: String(repeating: "B", count: 64), issuedCreditVoucher: voucher, openCashDrawer: request.tenders.contains { $0.method == .cash })
+        return CounterCheckoutResult(orderId: request.orderId, pickupNumber: pickup, totalPaid: Money(cents: result.paid), changeGiven: Money(cents: result.change), remainingBalance: Money(cents: result.remaining), receiptNumber: result.receipt, fiscalSignature: String(repeating: "B", count: 64), issuedCreditVoucher: voucher, openCashDrawer: request.tenders.contains { $0.method == .cash }, printQueued: request.requestFiscalReceiptPrint && result.remaining == 0 && hasReceiptPrinter)
     }
 
     // MARK: Cuisine
@@ -611,6 +616,43 @@ public actor InMemoryPosAPI: PosAPI {
         } else if let i = printersStore.firstIndex(where: { $0.id == printer.id }) {
             printersStore[i] = printer
         }
+    }
+
+    private var hasReceiptPrinter: Bool { printersStore.contains { $0.isActive && $0.assignedStationIds.contains("RECEIPT") } }
+
+    /// Ajoute une impression en échec sur l'imprimante (tests).
+    public func seedFailedPrintJob(printerId: UUID) {
+        printJobsStore.append(PrintJobInfo(printerId: printerId, kind: "Receipt", status: "Failed", attempts: 5, lastError: "Connection refused"))
+    }
+
+    public func printerStatuses() async throws -> [PrinterStatus] {
+        try await step("printerStatuses"); try requireAuth()
+        return printersStore.map { p in
+            let jobs = printJobsStore.filter { $0.printerId == p.id }
+            return PrinterStatus(printerId: p.id, name: p.name, isActive: p.isActive, isOnline: nil,
+                                 pendingCount: jobs.filter { $0.status == "Pending" }.count,
+                                 failedCount: jobs.filter { $0.status == "Failed" }.count)
+        }
+    }
+
+    public func printJobs(printerId: UUID) async throws -> [PrintJobInfo] {
+        try await step("printJobs"); try requireManager()
+        return printJobsStore.filter { $0.printerId == printerId && ["Pending", "Failed"].contains($0.status) }
+    }
+
+    public func retryPrintJob(id: UUID) async throws {
+        try await step("retryPrintJob"); try requireManager()
+        guard let i = printJobsStore.firstIndex(where: { $0.id == id }) else { throw APIError.notFound(nil) }
+        guard printJobsStore[i].status == "Failed" else { throw APIError.server(status: 409, message: "Impression non réessayable.") }
+        printJobsStore[i].status = "Pending"
+        printJobsStore[i].attempts = 0
+    }
+
+    public func cancelPrintJob(id: UUID) async throws {
+        try await step("cancelPrintJob"); try requireManager()
+        guard let i = printJobsStore.firstIndex(where: { $0.id == id }) else { throw APIError.notFound(nil) }
+        guard ["Pending", "Failed"].contains(printJobsStore[i].status) else { throw APIError.server(status: 409, message: "Impression non annulable.") }
+        printJobsStore[i].status = "Cancelled"
     }
 
     public func testPrinter(id: UUID) async throws -> TestPrintResult {
@@ -715,7 +757,7 @@ public actor InMemoryPosAPI: PosAPI {
 
     public func saveSettings(_ s: RestaurantSettings) async throws -> RestaurantSettings {
         try await step("saveSettings"); try requireManager()
-        guard ["en", "fr", "ar"].contains(s.receiptLanguage) else {
+        guard ["en", "fr", "ar"].contains(s.receiptLanguage), ["en", "fr", "ar"].contains(s.kitchenTicketLanguage) else {
             throw APIError.server(status: 400, message: "Langue non prise en charge.")
         }
         settingsStore = s

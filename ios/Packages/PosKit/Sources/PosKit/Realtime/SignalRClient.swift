@@ -83,6 +83,7 @@ public enum RealtimeEvent: Equatable, Sendable {
     case gridLayoutUpdated(TouchGridLayout?)
     case happyHourChanged(HappyHourStatus?)
     case tablesChanged
+    case printerStatusChanged(printerId: UUID?, name: String, isOnline: Bool, pendingCount: Int)
     case connectionChanged(isConnected: Bool)
 
     static func from(target: String, arguments: [JSONValue]) -> RealtimeEvent? {
@@ -95,6 +96,13 @@ public enum RealtimeEvent: Equatable, Sendable {
             return .happyHourChanged(arguments.first?.decode(HappyHourStatus.self))
         case "OnTableStatusChanged":
             return .tablesChanged
+        case "OnPrinterStatusChanged":
+            guard arguments.count >= 4 else { return nil }
+            return .printerStatusChanged(
+                printerId: arguments[0].decode(UUID.self),
+                name: arguments[1].decode(String.self) ?? "",
+                isOnline: arguments[2].decode(Bool.self) ?? false,
+                pendingCount: arguments[3].decode(Int.self) ?? 0)
         default:
             return nil
         }

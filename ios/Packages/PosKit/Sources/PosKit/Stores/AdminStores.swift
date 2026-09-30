@@ -14,13 +14,13 @@ public final class CatalogAdminStore {
         self.catalog = catalog
     }
 
-    public func saveCategory(id: String?, name: String, colorHex: String) async -> Bool {
+    public func saveCategory(id: String?, name: String, colorHex: String, preparationStationId: String? = nil) async -> Bool {
         let trimmed = name.trimmingCharacters(in: .whitespaces)
         guard !trimmed.isEmpty else { notifier.warning(L10n.string("admin.category_name_required")); return false }
         do {
             if let id {
                 let order = catalog.categories.first { $0.id == id }?.displayOrder ?? 0
-                try await api.updateCategory(id: id, name: trimmed, colorHex: colorHex, displayOrder: order)
+                try await api.updateCategory(id: id, name: trimmed, colorHex: colorHex, displayOrder: order, preparationStationId: preparationStationId)
                 notifier.success(String(format: L10n.string("admin.category_updated"), trimmed))
             } else {
                 try await api.createCategory(name: trimmed, colorHex: colorHex, displayOrder: catalog.categories.count + 1)
@@ -122,6 +122,8 @@ public final class StaffStore {
 @MainActor @Observable
 public final class PrinterStore {
     public private(set) var printers: [Printer] = []
+    public private(set) var statuses: [PrinterStatus] = []
+    public private(set) var jobs: [UUID: [PrintJobInfo]] = [:]
     private let api: PosAPI
     private let notifier: Notifier
 
@@ -132,6 +134,28 @@ public final class PrinterStore {
 
     public func load() async {
         do { printers = try await api.printers().sorted { $0.name < $1.name } } catch { notifier.error(error) }
+    }
+
+    public func loadStatuses() async {
+        do { statuses = try await api.printerStatuses() } catch { notifier.error(error) }
+    }
+
+    public func loadJobs(printerId: UUID) async {
+        do { jobs[printerId] = try await api.printJobs(printerId: printerId) } catch { notifier.error(error) }
+    }
+
+    public func retry(_ job: PrintJobInfo) async {
+        await act(job) { try await self.api.retryPrintJob(id: job.id) }
+    }
+
+    public func cancel(_ job: PrintJobInfo) async {
+        await act(job) { try await self.api.cancelPrintJob(id: job.id) }
+    }
+
+    private func act(_ job: PrintJobInfo, _ action: () async throws -> Void) async {
+        do { try await action() } catch { notifier.error(error) }
+        await loadJobs(printerId: job.printerId)
+        await loadStatuses()
     }
 
     public static func isValidIPv4(_ ip: String) -> Bool {
@@ -479,8 +503,17 @@ public final class SettingsStore {
 
     public func setReceiptLanguage(_ lang: String) async {
         do {
-            settings = try await api.saveSettings(RestaurantSettings(receiptLanguage: lang))
+            settings = try await api.saveSettings(RestaurantSettings(receiptLanguage: lang, kitchenTicketLanguage: settings?.kitchenTicketLanguage))
             notifier.success(L10n.string("admin.receipt_language_saved"))
+        } catch {
+            notifier.error(error)
+        }
+    }
+
+    public func setKitchenTicketLanguage(_ lang: String) async {
+        do {
+            settings = try await api.saveSettings(RestaurantSettings(receiptLanguage: settings?.receiptLanguage ?? "en", kitchenTicketLanguage: lang))
+            notifier.success(L10n.string("admin.kitchen_language_saved"))
         } catch {
             notifier.error(error)
         }

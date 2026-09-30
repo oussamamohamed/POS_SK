@@ -217,7 +217,7 @@ struct CatalogAdminView: View {
                                 if product.isQuickKey { Image(systemName: "bolt.fill").foregroundStyle(Theme.warning).font(.caption) }
                                 if product.hasModifiers { Badge(text: String(localized: "admin.options_count \(product.modifierGroups.count)"), color: .blue) }
                             }
-                            Text("admin.station_vat \(product.station) \(product.taxRatePercent.formatted())").font(.caption).foregroundStyle(Theme.inkMuted)
+                            Text("admin.station_vat \(product.station ?? "—") \(product.taxRatePercent.formatted())").font(.caption).foregroundStyle(Theme.inkMuted)
                         }
                         Spacer()
                         Text(product.price.formatted).font(.headline.monospacedDigit()).environment(\.layoutDirection, .leftToRight)

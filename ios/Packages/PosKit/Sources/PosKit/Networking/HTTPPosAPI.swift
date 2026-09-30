@@ -155,14 +155,15 @@ public actor HTTPPosAPI: PosAPI {
     public func categories() async throws -> [MenuCategory] { try await call("GET", "catalog/categories") }
     public func products() async throws -> [Product] { try await call("GET", "catalog/products") }
 
-    struct CategoryBody: Encodable { let name: String; let colorHex: String; let displayOrder: Int; let iconName: String?; let isActive: Bool? }
+    struct CategoryBody: Encodable { let name: String; let colorHex: String; let displayOrder: Int; let iconName: String?; let isActive: Bool?; let preparationStationId: String? }
 
     public func createCategory(name: String, colorHex: String, displayOrder: Int) async throws {
-        try await perform("POST", "catalog/categories", body: CategoryBody(name: name, colorHex: colorHex, displayOrder: displayOrder, iconName: "utensils", isActive: nil))
+        try await perform("POST", "catalog/categories", body: CategoryBody(name: name, colorHex: colorHex, displayOrder: displayOrder, iconName: "utensils", isActive: nil, preparationStationId: nil))
     }
 
-    public func updateCategory(id: String, name: String, colorHex: String, displayOrder: Int) async throws {
-        try await perform("PUT", "catalog/categories/\(id)", body: CategoryBody(name: name, colorHex: colorHex, displayOrder: displayOrder, iconName: nil, isActive: true))
+    /// `preparationStationId` : nil = poste effacé (envoyé `""`, comme le serveur l'attend).
+    public func updateCategory(id: String, name: String, colorHex: String, displayOrder: Int, preparationStationId: String?) async throws {
+        try await perform("PUT", "catalog/categories/\(id)", body: CategoryBody(name: name, colorHex: colorHex, displayOrder: displayOrder, iconName: nil, isActive: true, preparationStationId: preparationStationId ?? ""))
     }
 
     struct ProductBody: Encodable {
@@ -373,6 +374,16 @@ public actor HTTPPosAPI: PosAPI {
     public func testPrinter(id: UUID) async throws -> TestPrintResult {
         try await call("POST", "printers/\(id.uuidString.lowercased())/test", body: Empty())
     }
+
+    public func printerStatuses() async throws -> [PrinterStatus] { try await call("GET", "printers/status") }
+
+    /// Impressions ouvertes (En attente / Échec), défaut serveur : ce sont les seules réessayables ou annulables.
+    public func printJobs(printerId: UUID) async throws -> [PrintJobInfo] {
+        try await call("GET", "printers/\(printerId.uuidString.lowercased())/jobs")
+    }
+
+    public func retryPrintJob(id: UUID) async throws { try await perform("POST", "print-jobs/\(id.uuidString.lowercased())/retry") }
+    public func cancelPrintJob(id: UUID) async throws { try await perform("POST", "print-jobs/\(id.uuidString.lowercased())/cancel") }
 
     // MARK: - Happy Hour
 

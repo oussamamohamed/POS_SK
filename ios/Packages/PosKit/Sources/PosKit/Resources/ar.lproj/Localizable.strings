@@ -142,3 +142,6 @@
 "payment.sale_validated" = "تم قبول البيع — الاستلام %@";
 "payment.supervisor_pin_required" = "رمز PIN المشرف مطلوب";
 "payment.zero_amount" = "المبلغ صفر";
+"admin.kitchen_language_saved" = "تم حفظ لغة تذكرة المطبخ";
+"messages.printer_back_online" = "عادت الطابعة %@ للعمل";
+"messages.printer_offline" = "الطابعة %@ غير متصلة — %lld تذاكر في الانتظار";

@@ -317,6 +317,51 @@ public struct Printer: Codable, Identifiable, Hashable, Sendable {
     }
 }
 
+/// État d'une imprimante (`GET /api/printers/status`). `isOnline` nil = aucun envoi depuis le démarrage du serveur.
+public struct PrinterStatus: Codable, Identifiable, Hashable, Sendable {
+    public var printerId: UUID
+    public var name: String
+    public var isActive: Bool
+    public var isOnline: Bool?
+    public var sinceUtc: Date?
+    public var pendingCount: Int
+    public var failedCount: Int
+    public var id: UUID { printerId }
+
+    public init(printerId: UUID, name: String, isActive: Bool = true, isOnline: Bool? = nil, sinceUtc: Date? = nil, pendingCount: Int = 0, failedCount: Int = 0) {
+        self.printerId = printerId
+        self.name = name
+        self.isActive = isActive
+        self.isOnline = isOnline
+        self.sinceUtc = sinceUtc
+        self.pendingCount = pendingCount
+        self.failedCount = failedCount
+    }
+}
+
+/// Impression en file (`GET /api/printers/{id}/jobs`). `kind` : PickupVoucher/Receipt/KitchenTicket ; `status` : Pending/Sent/Failed/Cancelled.
+public struct PrintJobInfo: Codable, Identifiable, Hashable, Sendable {
+    public var id: UUID
+    public var printerId: UUID
+    public var kind: String
+    public var status: String
+    public var attempts: Int
+    public var createdAtUtc: Date
+    public var sentAtUtc: Date?
+    public var lastError: String?
+
+    public init(id: UUID = UUID(), printerId: UUID, kind: String, status: String, attempts: Int = 0, createdAtUtc: Date = Date(), sentAtUtc: Date? = nil, lastError: String? = nil) {
+        self.id = id
+        self.printerId = printerId
+        self.kind = kind
+        self.status = status
+        self.attempts = attempts
+        self.createdAtUtc = createdAtUtc
+        self.sentAtUtc = sentAtUtc
+        self.lastError = lastError
+    }
+}
+
 public struct TestPrintResult: Codable, Hashable, Sendable {
     public var success: Bool
     public var message: String
@@ -345,9 +390,17 @@ public struct SyncStatus: Codable, Hashable, Sendable {
 /// Réglages restaurant (`GET/PUT /api/settings`), gérés par le back-office. `receiptLanguage` : `en`/`fr`/`ar`.
 public struct RestaurantSettings: Codable, Hashable, Sendable {
     public var receiptLanguage: String
+    public var kitchenTicketLanguage: String
 
-    public init(receiptLanguage: String) {
+    public init(receiptLanguage: String, kitchenTicketLanguage: String? = nil) {
         self.receiptLanguage = receiptLanguage
+        self.kitchenTicketLanguage = kitchenTicketLanguage ?? receiptLanguage
+    }
+
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        receiptLanguage = try c.decode(String.self, forKey: .receiptLanguage)
+        kitchenTicketLanguage = try c.decodeIfPresent(String.self, forKey: .kitchenTicketLanguage) ?? receiptLanguage
     }
 }
 
