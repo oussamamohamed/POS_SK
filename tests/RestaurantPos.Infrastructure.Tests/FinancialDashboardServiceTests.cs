@@ -113,6 +113,56 @@ public sealed class FinancialDashboardServiceTests
     }
 
     [Fact]
+    public async Task GetFinancialDashboardAsync_VoidedSale_ExcludesOriginalAndCreditNote()
+    {
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase(databaseName: "DashDb_" + Guid.NewGuid().ToString("N"))
+            .Options;
+
+        using var dbContext = new AppDbContext(options);
+
+        var now = new DateTimeOffset(2026, 9, 3, 12, 30, 0, TimeSpan.Zero);
+
+        var kept = new Order { TableNumber = "T1", Status = OrderStatus.Paid, CreatedAtUtc = now };
+        var voided = new Order { TableNumber = "T2", Status = OrderStatus.Cancelled, CreatedAtUtc = now };
+        dbContext.Orders.AddRange(kept, voided);
+
+        FiscalReceipt Receipt(Guid orderId, long sequence, long cents, bool isVoid = false, Guid? voidedReceiptId = null)
+        {
+            var r = new FiscalReceipt
+            {
+                TerminalId = "POS01",
+                ReceiptNumber = $"POS01-{sequence:D6}",
+                OrderId = orderId,
+                SequenceNumber = sequence,
+                TotalTtcAmount = Money.FromCents(cents),
+                TotalHtAmount = Money.FromCents(cents * 10 / 11),
+                CreatedAtUtc = now,
+                IsVoid = isVoid,
+                VoidedReceiptId = voidedReceiptId
+            };
+            r.Tenders.Add(new PaymentTender { FiscalReceiptId = r.Id, Method = PaymentMethod.CreditCard, Amount = Money.FromCents(cents), Tendered = Money.FromCents(cents) });
+            return r;
+        }
+
+        var original = Receipt(voided.Id, 2, 3000, isVoid: true);
+        dbContext.FiscalReceipts.AddRange(
+            Receipt(kept.Id, 1, 5000),
+            original,
+            Receipt(voided.Id, 3, -3000, voidedReceiptId: original.Id));
+        await dbContext.SaveChangesAsync();
+
+        var result = await new FinancialDashboardService(dbContext).GetFinancialDashboardAsync(new FinancialDashboardFilterDto(
+            now.AddDays(-1),
+            now.AddDays(1)
+        ));
+
+        result.Kpis.TotalSalesTtc.Should().Be(50.00m);
+        result.Kpis.TotalOrdersCount.Should().Be(1);
+        result.PaymentMethods.Should().ContainSingle().Which.TotalAmount.Should().Be(50.00m);
+    }
+
+    [Fact]
     public async Task GetFinancialDashboardAsync_SegmentsServicesByHour()
     {
         // Arrange
