@@ -157,6 +157,12 @@
   <data name="errors.payment_failed" xml:space="preserve">
     <value>Payment failed.</value>
   </data>
+  <data name="errors.tip_invalid" xml:space="preserve">
+    <value>Invalid tip amount.</value>
+  </data>
+  <data name="errors.tip_only_on_final_payment" xml:space="preserve">
+    <value>A tip can only be added to the payment that settles the bill.</value>
+  </data>
   <data name="errors.operator_required_for_void" xml:space="preserve">
     <value>OperatorId is required to void.</value>
   </data>

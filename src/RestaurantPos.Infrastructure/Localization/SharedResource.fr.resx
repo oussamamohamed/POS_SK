@@ -157,6 +157,12 @@
   <data name="errors.payment_failed" xml:space="preserve">
     <value>Échec de l'encaissement.</value>
   </data>
+  <data name="errors.tip_invalid" xml:space="preserve">
+    <value>Montant de pourboire invalide.</value>
+  </data>
+  <data name="errors.tip_only_on_final_payment" xml:space="preserve">
+    <value>Le pourboire ne peut être ajouté qu'au paiement qui solde la note.</value>
+  </data>
   <data name="errors.operator_required_for_void" xml:space="preserve">
     <value>OperatorId est obligatoire pour l'annulation.</value>
   </data>

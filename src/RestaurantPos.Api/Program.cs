@@ -703,7 +703,7 @@ public record UpdatePrinterRequest(string Name, string IpAddress, int Port, int 
 public record OpenTableRequest(string? WaiterName, int CoversCount, Guid? OperatorId);
 public record ZClosureRequest(string TerminalId, Guid ManagerId, string ManagerName);
 public record AddOrderItemsRequest(List<OrderItemInputDto> Items);
-public record PaymentSettlementRequest(Guid OrderId, string? TableNumber, Guid? OperatorId, List<TenderItemRequest> Tenders, string? TerminalId = null, bool RequestReceiptPrint = false);
+public record PaymentSettlementRequest(Guid OrderId, string? TableNumber, Guid? OperatorId, List<TenderItemRequest> Tenders, string? TerminalId = null, bool RequestReceiptPrint = false, decimal TipAmount = 0m);
 public record TenderItemRequest(PaymentMethod Method, decimal Amount, decimal Tendered, decimal ChangeGiven);
 public record TransferTableRequest(string TargetTableNumber);
 public record MergeTablesRequest(string TargetTableNumber);

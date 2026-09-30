@@ -157,6 +157,12 @@
   <data name="errors.payment_failed" xml:space="preserve">
     <value>فشل الدفع.</value>
   </data>
+  <data name="errors.tip_invalid" xml:space="preserve">
+    <value>مبلغ الإكرامية غير صالح.</value>
+  </data>
+  <data name="errors.tip_only_on_final_payment" xml:space="preserve">
+    <value>لا يمكن إضافة الإكرامية إلا إلى الدفعة التي تسدد الفاتورة.</value>
+  </data>
   <data name="errors.operator_required_for_void" xml:space="preserve">
     <value>معرّف المشغّل مطلوب للإلغاء.</value>
   </data>

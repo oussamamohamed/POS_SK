@@ -87,12 +87,39 @@ public static class CheckoutEndpoints
                 (long)Math.Round(t.Tendered * 100)
             )).ToList();
 
+            if (req.TipAmount < 0)
+            {
+                return Results.BadRequest(new { Message = Texts.T("errors.tip_invalid") });
+            }
+
+            Order? tippedOrder = null;
+            long tipCents = (long)Math.Round(req.TipAmount * 100);
+            if (tipCents > 0)
+            {
+                tippedOrder = await db.Orders.Include(o => o.Items).FirstAsync(o => o.Id == orderId);
+                var paidCents = (await db.FiscalReceipts.Include(r => r.Tenders).Where(r => r.OrderId == orderId && !r.IsVoid).ToListAsync())
+                    .SelectMany(r => r.Tenders).Sum(t => t.Amount.AmountInCents);
+                var remainingCents = tippedOrder.TotalTtc.AmountInCents + tippedOrder.TipAmount.AmountInCents - paidCents;
+                // Un pourboire sur un paiement partiel entrerait dans le montant fiscal du reçu (ratio) : refusé.
+                if (tenderRequests.Sum(t => t.AmountInCents) < remainingCents + tipCents)
+                {
+                    return Results.BadRequest(new { Message = Texts.T("errors.tip_only_on_final_payment") });
+                }
+                tippedOrder.TipAmount = Money.FromCents(tippedOrder.TipAmount.AmountInCents + tipCents);
+                await db.SaveChangesAsync();
+            }
+
             var terminalId = RequireDeviceFilter.PairedDevice(http).TerminalId;
 
             var result = await checkout.ProcessPaymentTendersAsync(orderId, terminalId, tenderRequests);
 
             if (!result.IsSuccess)
             {
+                if (tippedOrder is not null)
+                {
+                    tippedOrder.TipAmount = Money.FromCents(tippedOrder.TipAmount.AmountInCents - tipCents);
+                    await db.SaveChangesAsync();
+                }
                 return Results.BadRequest(new { Message = Texts.T("errors.payment_failed") });
             }
 
