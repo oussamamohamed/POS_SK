@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -7,6 +8,7 @@ using RestaurantPos.Application.Common.Interfaces;
 using RestaurantPos.Application.DTOs;
 using RestaurantPos.Infrastructure.Localization;
 using RestaurantPos.Infrastructure.Persistence;
+using RestaurantPos.Infrastructure.Printing;
 
 namespace RestaurantPos.Api.Endpoints;
 
@@ -54,7 +56,7 @@ public static class TableEndpoints
             return Results.Ok(updated);
         });
 
-        group.MapPost("/{tableNumber}/dispatch", async (string tableNumber, ITableManagementService tableService, IKitchenRoutingService kds, AppDbContext db) =>
+        group.MapPost("/{tableNumber}/dispatch", async (string tableNumber, ITableManagementService tableService, IKitchenRoutingService kds, AppDbContext db, PrintDispatcher printing) =>
         {
             var table = await db.DiningTables.FirstOrDefaultAsync(t => t.TableNumber == tableNumber);
             if (table is null)
@@ -72,7 +74,8 @@ public static class TableEndpoints
 
             if (table?.ActiveOrderId is not null)
             {
-                await kds.SplitAndRouteOrderAsync(table.ActiveOrderId.Value);
+                var tickets = await kds.SplitAndRouteOrderAsync(table.ActiveOrderId.Value);
+                await printing.QueueKitchenTicketsAsync(tickets.Select(t => t.TicketId).ToList());
             }
 
             var ok = await tableService.DispatchOrderLinesAsync(tableNumber);

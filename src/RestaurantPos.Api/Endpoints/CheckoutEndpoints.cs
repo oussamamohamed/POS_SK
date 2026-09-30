@@ -10,6 +10,7 @@ using RestaurantPos.Domain.Entities;
 using RestaurantPos.Domain.ValueObjects;
 using RestaurantPos.Infrastructure.Localization;
 using RestaurantPos.Infrastructure.Persistence;
+using RestaurantPos.Infrastructure.Printing;
 
 namespace RestaurantPos.Api.Endpoints;
 
@@ -21,7 +22,7 @@ public static class CheckoutEndpoints
                        .WithTags("Checkout & Payments")
                        .RequireAuthorization();
 
-        group.MapPost("/pay", async (PaymentSettlementRequest req, ICheckoutPaymentService checkout, AppDbContext db, HttpContext http) =>
+        group.MapPost("/pay", async (PaymentSettlementRequest req, ICheckoutPaymentService checkout, AppDbContext db, PrintDispatcher printing, HttpContext http) =>
         {
             var orderId = req.OrderId;
             if (orderId == Guid.Empty || !await db.Orders.AnyAsync(o => o.Id == orderId))
@@ -95,6 +96,10 @@ public static class CheckoutEndpoints
                 return Results.BadRequest(new { Message = Texts.T("errors.payment_failed") });
             }
 
+            var hasCash = (req.Tenders ?? []).Any(t => t.Method == PaymentMethod.Cash);
+            var printQueued = req.RequestReceiptPrint && result.RemainingBalanceCents == 0
+                && await printing.QueueTableReceiptAsync(orderId, terminalId, result.ReceiptNumber, hasCash);
+
             return Results.Ok(new
             {
                 result.ReceiptNumber,
@@ -102,7 +107,8 @@ public static class CheckoutEndpoints
                 ChangeGiven = result.ChangeGivenCents / 100.0m,
                 RemainingBalance = result.RemainingBalanceCents / 100.0m,
                 result.FiscalSignature,
-                FiscalTimestampUtc = DateTimeOffset.UtcNow
+                FiscalTimestampUtc = DateTimeOffset.UtcNow,
+                PrintQueued = printQueued
             });
         }).RequirePairedDevice();
 

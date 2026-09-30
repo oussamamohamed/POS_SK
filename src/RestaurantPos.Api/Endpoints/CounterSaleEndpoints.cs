@@ -16,6 +16,7 @@ using RestaurantPos.Domain.Enums;
 using RestaurantPos.Domain.ValueObjects;
 using RestaurantPos.Infrastructure.Localization;
 using RestaurantPos.Infrastructure.Persistence;
+using RestaurantPos.Infrastructure.Printing;
 
 namespace RestaurantPos.Api.Endpoints;
 
@@ -205,7 +206,7 @@ public static class CounterSaleEndpoints
         });
 
         // 7. Counter & Takeaway Multi-Tender Checkout
-        group.MapPost("/checkout", async (CounterCheckoutRequest req, AppDbContext db, ICheckoutPaymentService checkout, ITakeawayCounterService counterService, IMealVoucherPolicyService mealVoucherPolicyService, HttpContext http) =>
+        group.MapPost("/checkout", async (CounterCheckoutRequest req, AppDbContext db, ICheckoutPaymentService checkout, ITakeawayCounterService counterService, IMealVoucherPolicyService mealVoucherPolicyService, PrintDispatcher printing, HttpContext http) =>
         {
             var order = await db.Orders
                 .Include(o => o.Items)
@@ -274,6 +275,9 @@ public static class CounterSaleEndpoints
             bool printPickupVoucher = true; // Systematic takeaway pickup coupon
             bool printFiscalReceipt = req.RequestFiscalReceiptPrint; // Anti-waste AGEC: only if requested
 
+            bool printQueued = checkoutResult.IsSuccess && checkoutResult.RemainingBalanceCents == 0
+                && await printing.QueueCounterSaleAsync(order.Id, terminalId, checkoutResult.ReceiptNumber, printFiscalReceipt, hasCash);
+
             return Results.Ok(new CounterCheckoutResponse(
                 order.Id,
                 pickupNumber,
@@ -285,7 +289,8 @@ public static class CounterSaleEndpoints
                 issuedCreditVoucher,
                 printPickupVoucher,
                 printFiscalReceipt,
-                hasCash
+                hasCash,
+                printQueued
             ));
         }).RequirePairedDevice();
     }
