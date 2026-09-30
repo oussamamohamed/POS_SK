@@ -36,6 +36,9 @@ public record AuditValidationResult(
     string? BrokenLinkReceiptNumber,
     string? ErrorDetails);
 
+/// <summary>Commande qui empêche la clôture Z : Label = table, ou libellé du panier comptoir en attente.</summary>
+public record OpenOrderDto(Guid OrderId, string Label, long RemainingTtcCents);
+
 public interface INF525FiscalAuditService
 {
     string ComputeReceiptHashSignature(
@@ -63,4 +66,10 @@ public interface INF525FiscalAuditService
     Task<AuditValidationResult> ValidateAuditChainIntegrityAsync(
         string terminalId,
         CancellationToken cancellationToken = default);
+
+    /// <summary>Commandes à encaisser avant une clôture Z (tout le restaurant).</summary>
+    Task<IReadOnlyList<OpenOrderDto>> FindOpenOrdersAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>Vrai si un reçu de ce terminal émis à cette date est couvert par une clôture Z (du terminal ou du terminal principal).</summary>
+    Task<bool> IsInClosedPeriodAsync(string terminalId, DateTimeOffset createdAtUtc, CancellationToken cancellationToken = default);
 }

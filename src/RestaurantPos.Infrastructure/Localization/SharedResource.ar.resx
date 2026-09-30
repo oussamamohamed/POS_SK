@@ -172,6 +172,12 @@
   <data name="errors.z_closure_manager_required" xml:space="preserve">
     <value>معرّف المدير واسمه مطلوبان لإقفال Z.</value>
   </data>
+  <data name="errors.z_closure_open_orders" xml:space="preserve">
+    <value>لا يمكن الإغلاق Z: يجب أولاً تحصيل {count} طلب(ات) مفتوحة: {orders}</value>
+  </data>
+  <data name="errors.void_after_closure" xml:space="preserve">
+    <value>هذا الإيصال ضمن فترة مغلقة (Z) ولا يمكن إلغاؤه.</value>
+  </data>
   <data name="errors.no_closure_found" xml:space="preserve">
     <value>لم يتم العثور على أي إقفال.</value>
   </data>

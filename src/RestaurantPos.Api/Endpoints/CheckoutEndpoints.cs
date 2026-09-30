@@ -140,11 +140,17 @@ public static class CheckoutEndpoints
         }).RequirePairedDevice();
 
         // Void receipt endpoint
-        group.MapPost("/void/{receiptId:guid}", async (Guid receiptId, VoidReceiptRequest req, ICheckoutPaymentService checkout, HttpContext http) =>
+        group.MapPost("/void/{receiptId:guid}", async (Guid receiptId, VoidReceiptRequest req, ICheckoutPaymentService checkout, AppDbContext db, INF525FiscalAuditService fiscal, HttpContext http) =>
         {
             if (req.OperatorId == Guid.Empty)
             {
                 return Results.BadRequest(new { Message = Texts.T("errors.operator_required_for_void") });
+            }
+
+            var original = await db.FiscalReceipts.AsNoTracking().FirstOrDefaultAsync(r => r.Id == receiptId);
+            if (original is not null && await fiscal.IsInClosedPeriodAsync(original.TerminalId, original.CreatedAtUtc))
+            {
+                return Results.Json(new { code = "void_after_closure", message = Texts.T("errors.void_after_closure") }, statusCode: StatusCodes.Status409Conflict);
             }
 
             var result = await checkout.VoidReceiptAsync(receiptId, RequireDeviceFilter.PairedDevice(http).TerminalId, req.OperatorId);

@@ -25,6 +25,18 @@ public static class FiscalEndpoints
                 return Results.BadRequest(new { Message = Texts.T("errors.z_closure_manager_required") });
             }
 
+            var open = await fiscal.FindOpenOrdersAsync();
+            if (open.Count > 0)
+            {
+                var list = string.Join(", ", open.Select(o => $"{o.Label} ({(o.RemainingTtcCents / 100m).ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)})"));
+                return Results.Json(new
+                {
+                    code = "open_orders",
+                    message = Texts.T("errors.z_closure_open_orders", ("count", open.Count), ("orders", list)),
+                    openOrders = open.Select(o => new { tableNumber = o.Label, remainingTtc = o.RemainingTtcCents / 100m })
+                }, statusCode: StatusCodes.Status409Conflict);
+            }
+
             var closure = await fiscal.ExecuteDailyZClosureAsync(terminalId, req.ManagerId, req.ManagerName);
             return Results.Ok(new
             {

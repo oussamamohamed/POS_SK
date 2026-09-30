@@ -172,6 +172,12 @@
   <data name="errors.z_closure_manager_required" xml:space="preserve">
     <value>ManagerId and ManagerName are required for the Z closure.</value>
   </data>
+  <data name="errors.z_closure_open_orders" xml:space="preserve">
+    <value>Z closure not possible: settle the {count} open order(s) first: {orders}</value>
+  </data>
+  <data name="errors.void_after_closure" xml:space="preserve">
+    <value>This receipt belongs to a closed period (Z) and can no longer be voided.</value>
+  </data>
   <data name="errors.no_closure_found" xml:space="preserve">
     <value>No closure found.</value>
   </data>
