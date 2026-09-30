@@ -28,7 +28,9 @@ public record DailyFiscalClosureDto(
     IReadOnlyDictionary<PaymentMethod, long> PaymentTotalsCents,
     long PerpetualGrandTotalCents,
     string SignatureHash,
-    DateTimeOffset ClosedAtUtc);
+    DateTimeOffset ClosedAtUtc,
+    DateTimeOffset PeriodStartUtc,
+    string SealedByUserName);
 
 public record AuditValidationResult(
     bool IsChainValid,

@@ -194,7 +194,9 @@ public class NF525FiscalAuditService : INF525FiscalAuditService
                     xSummary.PaymentTotalsCents,
                     closure.PerpetualGrandTotalCents,
                     closure.SignatureHash,
-                    closure.PeriodEndUtc
+                    closure.PeriodEndUtc,
+                    closure.PeriodStartUtc,
+                    closure.SealedByUserName
                 );
             },
             System.Data.IsolationLevel.Serializable,
@@ -270,7 +272,9 @@ public class NF525FiscalAuditService : INF525FiscalAuditService
             tenderMap,
             closure.PerpetualGrandTotalCents,
             closure.SignatureHash,
-            closure.PeriodEndUtc
+            closure.PeriodEndUtc,
+            closure.PeriodStartUtc,
+            closure.SealedByUserName ?? string.Empty
         );
     }
 

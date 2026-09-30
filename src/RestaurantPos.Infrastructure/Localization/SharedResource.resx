@@ -373,4 +373,58 @@
   <data name="kitchen_ticket.course_on_demand" xml:space="preserve">
     <value>On demand</value>
   </data>
+  <data name="report.x_title" xml:space="preserve">
+    <value>X REPORT</value>
+  </data>
+  <data name="report.z_title" xml:space="preserve">
+    <value>Z CLOSURE #{sequence}</value>
+  </data>
+  <data name="report.period_start" xml:space="preserve">
+    <value>From</value>
+  </data>
+  <data name="report.period_end" xml:space="preserve">
+    <value>To</value>
+  </data>
+  <data name="report.printed_at" xml:space="preserve">
+    <value>Printed</value>
+  </data>
+  <data name="report.closed_at" xml:space="preserve">
+    <value>Closed</value>
+  </data>
+  <data name="report.manager" xml:space="preserve">
+    <value>Manager</value>
+  </data>
+  <data name="report.receipt_count" xml:space="preserve">
+    <value>Receipts</value>
+  </data>
+  <data name="report.payments" xml:space="preserve">
+    <value>PAYMENTS</value>
+  </data>
+  <data name="report.grand_total" xml:space="preserve">
+    <value>Perpetual grand total</value>
+  </data>
+  <data name="report.items_sold" xml:space="preserve">
+    <value>ITEMS SOLD</value>
+  </data>
+  <data name="report.items_before_discount" xml:space="preserve">
+    <value>Amounts before bill discounts</value>
+  </data>
+  <data name="report.subtotal" xml:space="preserve">
+    <value>Subtotal</value>
+  </data>
+  <data name="report.other_category" xml:space="preserve">
+    <value>Other</value>
+  </data>
+  <data name="report.tips_by_server" xml:space="preserve">
+    <value>TIPS BY SERVER</value>
+  </data>
+  <data name="report.tips_total" xml:space="preserve">
+    <value>Total tips</value>
+  </data>
+  <data name="report.unknown_server" xml:space="preserve">
+    <value>Unknown</value>
+  </data>
+  <data name="report.signature" xml:space="preserve">
+    <value>Signature</value>
+  </data>
 </root>

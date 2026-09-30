@@ -373,4 +373,58 @@
   <data name="kitchen_ticket.course_on_demand" xml:space="preserve">
     <value>عند الطلب</value>
   </data>
+  <data name="report.x_title" xml:space="preserve">
+    <value>تقرير X</value>
+  </data>
+  <data name="report.z_title" xml:space="preserve">
+    <value>إغلاق Z رقم {sequence}</value>
+  </data>
+  <data name="report.period_start" xml:space="preserve">
+    <value>من</value>
+  </data>
+  <data name="report.period_end" xml:space="preserve">
+    <value>إلى</value>
+  </data>
+  <data name="report.printed_at" xml:space="preserve">
+    <value>طُبع في</value>
+  </data>
+  <data name="report.closed_at" xml:space="preserve">
+    <value>أُغلق في</value>
+  </data>
+  <data name="report.manager" xml:space="preserve">
+    <value>المدير</value>
+  </data>
+  <data name="report.receipt_count" xml:space="preserve">
+    <value>عدد الإيصالات</value>
+  </data>
+  <data name="report.payments" xml:space="preserve">
+    <value>المدفوعات</value>
+  </data>
+  <data name="report.grand_total" xml:space="preserve">
+    <value>الإجمالي الدائم</value>
+  </data>
+  <data name="report.items_sold" xml:space="preserve">
+    <value>الأصناف المباعة</value>
+  </data>
+  <data name="report.items_before_discount" xml:space="preserve">
+    <value>المبالغ قبل خصومات الفاتورة</value>
+  </data>
+  <data name="report.subtotal" xml:space="preserve">
+    <value>المجموع الفرعي</value>
+  </data>
+  <data name="report.other_category" xml:space="preserve">
+    <value>أخرى</value>
+  </data>
+  <data name="report.tips_by_server" xml:space="preserve">
+    <value>الإكراميات حسب النادل</value>
+  </data>
+  <data name="report.tips_total" xml:space="preserve">
+    <value>مجموع الإكراميات</value>
+  </data>
+  <data name="report.unknown_server" xml:space="preserve">
+    <value>غير معروف</value>
+  </data>
+  <data name="report.signature" xml:space="preserve">
+    <value>التوقيع</value>
+  </data>
 </root>
