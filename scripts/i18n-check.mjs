@@ -56,7 +56,7 @@ if (args.includes('--no-french')) {
     if (FR.test(code)) fail(`${name}:${i + 1} français en dur : ${code.trim().slice(0, 100)}`);
   });
   scan('app.js', js);
-  scan('index.html', html.replace(/<option value="fr">Français<\/option>/, ''), { skipI18nAttr: true });
+  scan('index.html', html.replace(/<option value="fr">Français<\/option>/g, ''), { skipI18nAttr: true });
 }
 
 console.log(errors ? `${errors} problème(s)` : `✔ ${used.size} clés OK (${langs.join(', ')})`);

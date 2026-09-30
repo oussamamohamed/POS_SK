@@ -18,6 +18,12 @@ struct RootView: View {
             }
             ToastOverlay(notifier: model.notifier)
         }
+        // Alerte imprimante (temps réel) : affichée en toast puis effacée, pour qu'une alerte identique se redéclenche.
+        .onChange(of: model.printerAlert) { _, alert in
+            guard let alert else { return }
+            model.notifier.warning(alert)
+            model.printerAlert = nil
+        }
         .animation(.easeInOut(duration: 0.25), value: model.session.isUnlocked)
         .animation(.easeInOut(duration: 0.25), value: model.settings.isPaired)
         .task(id: model.session.currentOperator?.id) {

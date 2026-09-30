@@ -16,18 +16,22 @@ public class RestaurantSettingsService : IRestaurantSettingsService
     public RestaurantSettingsService(AppDbContext db) => _db = db;
 
     public async Task<RestaurantSettingsDto> GetAsync(CancellationToken ct = default) =>
-        new((await LoadOrCreateAsync(ct).ConfigureAwait(false)).ReceiptLanguage);
+        ToDto(await LoadOrCreateAsync(ct).ConfigureAwait(false));
 
     public async Task<RestaurantSettingsDto?> UpdateAsync(UpdateRestaurantSettingsRequest request, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
-        if (!Texts.SupportedLanguages.Contains(request.ReceiptLanguage, StringComparer.Ordinal)) return null;
+        if (!IsSupported(request.ReceiptLanguage) || (request.KitchenTicketLanguage is { } k && !IsSupported(k))) return null;
         var settings = await LoadOrCreateAsync(ct).ConfigureAwait(false);
         settings.ReceiptLanguage = request.ReceiptLanguage;
+        if (request.KitchenTicketLanguage is not null) settings.KitchenTicketLanguage = request.KitchenTicketLanguage;
         settings.UpdatedAtUtc = DateTimeOffset.UtcNow;
         await _db.SaveChangesAsync(ct).ConfigureAwait(false);
-        return new(settings.ReceiptLanguage);
+        return ToDto(settings);
     }
+
+    private static bool IsSupported(string language) => Texts.SupportedLanguages.Contains(language, StringComparer.Ordinal);
+    private static RestaurantSettingsDto ToDto(RestaurantSettings s) => new(s.ReceiptLanguage, s.KitchenTicketLanguage);
 
     // Première lecture : une base qui a déjà des commandes est une installation française existante.
     private async Task<RestaurantSettings> LoadOrCreateAsync(CancellationToken ct)
@@ -35,7 +39,8 @@ public class RestaurantSettingsService : IRestaurantSettingsService
         var settings = await _db.RestaurantSettings.FindAsync([RestaurantSettings.SingletonId], ct).ConfigureAwait(false);
         if (settings is not null) return settings;
         var hasOrders = await _db.Orders.AnyAsync(ct).ConfigureAwait(false);
-        settings = new RestaurantSettings { ReceiptLanguage = hasOrders ? "fr" : "en" };
+        var lang = hasOrders ? "fr" : "en";
+        settings = new RestaurantSettings { ReceiptLanguage = lang, KitchenTicketLanguage = lang };
         _db.RestaurantSettings.Add(settings);
         try
         {

@@ -67,7 +67,7 @@ struct PaymentSheet: View {
 
                 splitSection
                 if !plan.isSplit { tipSection }
-                if isCounter { counterOptions }
+                if isCounter { counterOptions } else { printReceiptToggle }
                 Spacer(minLength: 0)
             }
             .frame(maxWidth: .infinity)
@@ -206,11 +206,15 @@ struct PaymentSheet: View {
                 .keyboardType(.numberPad)
                 .textFieldStyle(.roundedBorder)
                 .accessibilityIdentifier("payment.buzzer")
-            Toggle(isOn: $printReceipt) {
-                Label("payment.print_receipt_label", systemImage: "printer")
-            }
-            .accessibilityIdentifier("payment.printReceipt")
+            printReceiptToggle
         }
+    }
+
+    private var printReceiptToggle: some View {
+        Toggle(isOn: $printReceipt) {
+            Label(isCounter ? "payment.print_receipt_label" : "payment.print_receipt", systemImage: "printer")
+        }
+        .accessibilityIdentifier("payment.printReceipt")
     }
 
     private var cashSection: some View {
@@ -255,10 +259,13 @@ struct PaymentSheet: View {
         if isCounter {
             outcome = await model.ticket.counterCheckout(method: method, amount: amount, tendered: tendered, tip: plan.tipAmount, buzzer: buzzer, printReceipt: printReceipt, policy: model.settings.mealVoucherPolicy)
         } else {
-            outcome = await model.ticket.pay(method: method, amount: amount, tendered: tendered)
+            outcome = await model.ticket.pay(method: method, amount: amount, tendered: tendered, printReceipt: printReceipt)
         }
         guard let outcome else { Haptics.error(); return }
         Haptics.success()
+        // Table : le serveur renvoie printQueued=false sans demande ou tant qu'il reste un solde. Comptoir : le bon de retrait est toujours mis en file.
+        let printExpected = isCounter || (printReceipt && outcome.isComplete)
+        if printExpected, model.ticket.lastPrintQueued == false { model.notifier.warning(String(localized: "payment.print_not_queued")) }
         tenderedText = ""
         if isCounter && outcome.isComplete {
             dismiss()

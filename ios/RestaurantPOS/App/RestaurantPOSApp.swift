@@ -28,12 +28,14 @@ struct RestaurantPOSApp: App {
 /// - `-UITestMode` : backend en mémoire, réglages éphémères, animations coupées (tests XCUITest).
 /// - `-UITestHappyHour` : Happy Hour forcé dès le lancement (mode test).
 /// - `POS_SERVER_URL` (variable d'environnement) : force l'adresse du serveur.
+/// - `-UITestFailedPrintJob` : une impression en échec sur l'imprimante cuisine (mode test).
 /// - `-UITestPin 1234` : déverrouillage automatique (mode test uniquement).
 /// - `-UITestSection floor` : écran affiché après connexion (mode test uniquement).
 /// - `-UITestPaired` : poste déjà appairé (sinon écran d'appairage, mode test uniquement).
 struct LaunchConfiguration {
     let isUITest: Bool
     let forceHappyHour: Bool
+    let seedsFailedPrintJob: Bool
     let serverOverride: String?
     let autoPin: String?
     let initialSection: Router.Section?
@@ -46,6 +48,7 @@ struct LaunchConfiguration {
         return LaunchConfiguration(
             isUITest: isUITest,
             forceHappyHour: args.contains("-UITestHappyHour"),
+            seedsFailedPrintJob: args.contains("-UITestFailedPrintJob"),
             serverOverride: ProcessInfo.processInfo.environment["POS_SERVER_URL"],
             autoPin: isUITest ? defaults.string(forKey: "UITestPin") : nil,
             initialSection: isUITest ? defaults.string(forKey: "UITestSection").flatMap(Router.Section.init(rawValue:)) : nil,
@@ -86,6 +89,9 @@ final class AppEnvironment {
         if launch.isUITest {
             let api = InMemoryPosAPI()
             if launch.forceHappyHour { Task { await api.forceHappyHour(minutes: 45) } }
+            if launch.seedsFailedPrintJob {
+                Task { if let kitchen = try? await api.printers().first(where: { $0.name.contains("Cuisine") }) { await api.seedFailedPrintJob(printerId: kitchen.id) } }
+            }
             return AppModel(api: api, settings: settings)
         }
         let url = settings.url ?? URL(string: "http://localhost:5080")!

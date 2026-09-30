@@ -1,11 +1,16 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
+using System.Net.Sockets;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using RestaurantPos.Application.Common.Interfaces;
+using RestaurantPos.Domain.Entities;
 using RestaurantPos.Infrastructure.Persistence;
+using RestaurantPos.Infrastructure.Printing;
 using RestaurantPos.Infrastructure.Services;
 using Xunit;
 
@@ -21,11 +26,56 @@ public class PrinterConfigurationServiceTests
         return new AppDbContext(options);
     }
 
+    private sealed class FakeTransport : IPrinterTransport
+    {
+        public Exception? Failure { get; set; }
+        public List<(PrinterConfiguration Printer, TicketDocument Document, bool Drawer)> Sent { get; } = [];
+        public Task SendAsync(PrinterConfiguration printer, TicketDocument document, bool openCashDrawer, CancellationToken ct)
+        {
+            if (Failure is not null) throw Failure;
+            Sent.Add((printer, document, openCashDrawer));
+            return Task.CompletedTask;
+        }
+    }
+
+    private static (AppDbContext Db, FakeTransport Transport, PrinterConfigurationService Service) Create()
+    {
+        var db = CreateInMemoryDbContext();
+        var transport = new FakeTransport();
+        return (db, transport, new PrinterConfigurationService(db, transport, new RestaurantSettingsService(db)));
+    }
+
+    [Fact]
+    public async Task SendTestPrint_RendersTestPage_InReceiptLanguage()
+    {
+        var (db, transport, service) = Create();
+        using var _ = db;
+        await new RestaurantSettingsService(db).UpdateAsync(new UpdateRestaurantSettingsRequest("ar"));
+        var printer = await service.RegisterPrinterAsync(new PrinterRegistrationRequest("Caisse", "10.0.0.3", 9100, 80, true, ["RECEIPT"]));
+
+        var result = await service.SendTestPrintAsync(printer.Id);
+
+        result.Success.Should().BeTrue();
+        transport.Sent.Single().Document.Language.Should().Be("ar");
+        transport.Sent.Single().Drawer.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task SendTestPrint_TransportFailure_ReturnsFailure()
+    {
+        var (db, transport, service) = Create();
+        using var _ = db;
+        var printer = await service.RegisterPrinterAsync(new PrinterRegistrationRequest("Caisse", "10.0.0.3", 9100, 80, false, ["RECEIPT"]));
+        transport.Failure = new SocketException((int)SocketError.ConnectionRefused);
+
+        (await service.SendTestPrintAsync(printer.Id)).Success.Should().BeFalse();
+    }
+
     [Fact]
     public async Task RegisterPrinter_ShouldPersist_AndRetrieve()
     {
         using var context = CreateInMemoryDbContext();
-        var service = new PrinterConfigurationService(context);
+        var service = new PrinterConfigurationService(context, new EscPosPrinterTransport(), new RestaurantSettingsService(context));
 
         var request = new PrinterRegistrationRequest(
             Name: "Imprimante Cuisine Chaud",
@@ -50,7 +100,7 @@ public class PrinterConfigurationServiceTests
     {
         CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("en");
         using var context = CreateInMemoryDbContext();
-        var service = new PrinterConfigurationService(context);
+        var service = new PrinterConfigurationService(context, new EscPosPrinterTransport(), new RestaurantSettingsService(context));
 
         var request = new PrinterRegistrationRequest("Test Unreachable", "127.0.0.1", 59999, 80, true, []);
         var printer = await service.RegisterPrinterAsync(request);
@@ -65,7 +115,7 @@ public class PrinterConfigurationServiceTests
     public async Task UpdatePrinter_ShouldModifySettingsCorrectly()
     {
         using var context = CreateInMemoryDbContext();
-        var service = new PrinterConfigurationService(context);
+        var service = new PrinterConfigurationService(context, new EscPosPrinterTransport(), new RestaurantSettingsService(context));
 
         var reg = new PrinterRegistrationRequest("Old Name", "192.168.1.100", 9100, 80, false, ["BAR"]);
         var printer = await service.RegisterPrinterAsync(reg);

@@ -2,8 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Net.Sockets;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -12,16 +10,21 @@ using RestaurantPos.Domain.Common;
 using RestaurantPos.Domain.Entities;
 using RestaurantPos.Infrastructure.Localization;
 using RestaurantPos.Infrastructure.Persistence;
+using RestaurantPos.Infrastructure.Printing;
 
 namespace RestaurantPos.Infrastructure.Services;
 
 public class PrinterConfigurationService : IPrinterConfigurationService
 {
     private readonly AppDbContext _dbContext;
+    private readonly IPrinterTransport _transport;
+    private readonly IRestaurantSettingsService _settings;
 
-    public PrinterConfigurationService(AppDbContext dbContext)
+    public PrinterConfigurationService(AppDbContext dbContext, IPrinterTransport transport, IRestaurantSettingsService settings)
     {
         _dbContext = dbContext;
+        _transport = transport;
+        _settings = settings;
     }
 
     public async Task<IReadOnlyList<PrinterConfiguration>> GetAllPrintersAsync(CancellationToken ct = default)
@@ -90,20 +93,13 @@ public class PrinterConfigurationService : IPrinterConfigurationService
         var printer = await _dbContext.PrinterConfigurations.FindAsync([printerId], ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException($"Imprimante introuvable: {printerId}");
 
+        var language = (await _settings.GetAsync(ct).ConfigureAwait(false)).ReceiptLanguage;
         var sw = Stopwatch.StartNew();
 
         try
         {
-            byte[] testPayload = BuildTestPrintPayload(printer);
-
-            using var client = new TcpClient();
-            using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-            cts.CancelAfter(TimeSpan.FromSeconds(3));
-
-            await client.ConnectAsync(printer.IpAddress, printer.Port, cts.Token).ConfigureAwait(false);
-            await using var stream = client.GetStream();
-            await stream.WriteAsync(testPayload, cts.Token).ConfigureAwait(false);
-            await stream.FlushAsync(cts.Token).ConfigureAwait(false);
+            var page = TicketDocumentBuilder.TestPage(printer, language, DateTimeOffset.UtcNow);
+            await _transport.SendAsync(printer, page, printer.OpenCashDrawerOnReceipt, ct).ConfigureAwait(false);
 
             sw.Stop();
             return new TestPrintResult(true, Texts.T("messages.test_print_ok", ("name", printer.Name), ("ip", printer.IpAddress), ("port", printer.Port)), sw.Elapsed);
@@ -113,25 +109,5 @@ public class PrinterConfigurationService : IPrinterConfigurationService
             sw.Stop();
             return new TestPrintResult(false, Texts.T("errors.test_print_failed", ("ip", printer.IpAddress), ("port", printer.Port), ("error", ex.Message)), sw.Elapsed);
         }
-    }
-
-    private static byte[] BuildTestPrintPayload(PrinterConfiguration printer)
-    {
-        List<byte> bytes =
-        [
-            0x1B, 0x40, // ESC @ (Initialize printer)
-            0x1B, 0x61, 0x01 // ESC a 1 (Center alignment)
-        ];
-
-        string text = $"\n=== TEST D'IMPRESSION POS ===\n{printer.Name}\nIP: {printer.IpAddress}:{printer.Port}\nLargeur: {printer.PaperWidthMm}mm\nDate: {DateTimeOffset.UtcNow:yyyy-MM-dd HH:mm:ss} UTC\n=============================\n\n\n";
-        bytes.AddRange(Encoding.UTF8.GetBytes(text));
-
-        if (printer.OpenCashDrawerOnReceipt)
-        {
-            bytes.AddRange([0x1B, 0x70, 0x00, 0x19, 0xFA]); // ESC p 0 25 250 (Drawer kick)
-        }
-
-        bytes.AddRange([0x1D, 0x56, 0x42, 0x00]); // GS V 66 0 (Cut paper)
-        return [.. bytes];
     }
 }

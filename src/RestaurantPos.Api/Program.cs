@@ -22,6 +22,7 @@ using RestaurantPos.Domain.Entities;
 using RestaurantPos.Domain.ValueObjects;
 using RestaurantPos.Infrastructure.Localization;
 using RestaurantPos.Infrastructure.Persistence;
+using RestaurantPos.Infrastructure.Printing;
 using RestaurantPos.Infrastructure.Security;
 using RestaurantPos.Infrastructure.Services;
 
@@ -79,6 +80,13 @@ public partial class Program
         builder.Services.AddScoped<IBackOfficeCatalogService, BackOfficeCatalogService>();
         builder.Services.AddScoped<IStaffManagementService, StaffManagementService>();
         builder.Services.AddScoped<IPrinterConfigurationService, PrinterConfigurationService>();
+        builder.Services.AddSingleton<IPrinterTransport, EscPosPrinterTransport>();
+        builder.Services.AddSingleton<PrintSignal>();
+        builder.Services.AddSingleton<PrinterStatusTracker>();
+        builder.Services.AddSingleton<IPrinterStatusNotifier, SignalRPrinterStatusNotifier>();
+        builder.Services.AddSingleton<PrintQueueProcessor>();
+        builder.Services.AddScoped<PrintQueue>();
+        builder.Services.AddScoped<PrintDispatcher>();
         builder.Services.AddScoped<ITerminalLayoutService, TerminalLayoutService>();
         builder.Services.AddScoped<ICheckoutPaymentService, CheckoutPaymentService>();
         builder.Services.AddScoped<INF525FiscalAuditService, NF525FiscalAuditService>();
@@ -99,6 +107,7 @@ public partial class Program
         if (!builder.Environment.IsEnvironment("Testing"))
         {
             builder.Services.AddHostedService<BonjourAdvertiserService>();
+            builder.Services.AddHostedService<PrintWorker>();
         }
 
         // JWT Authentication Configuration
@@ -303,6 +312,25 @@ public partial class Program
                 ReceiptLanguage TEXT NOT NULL,
                 UpdatedAtUtc TEXT NOT NULL
             );"); } catch { }
+            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE RestaurantSettings ADD COLUMN KitchenTicketLanguage TEXT NULL;"); } catch { }
+            try { dbContext.Database.ExecuteSqlRaw("UPDATE RestaurantSettings SET KitchenTicketLanguage = ReceiptLanguage WHERE KitchenTicketLanguage IS NULL;"); } catch { }
+            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE Categories ADD COLUMN PreparationStationId TEXT NULL;"); } catch { }
+            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE Devices ADD COLUMN ReceiptPrinterId TEXT NULL;"); } catch { }
+            try { dbContext.Database.ExecuteSqlRaw(@"CREATE TABLE IF NOT EXISTS PrintJobs (
+                Id TEXT PRIMARY KEY,
+                PrinterId TEXT NOT NULL,
+                Kind INTEGER NOT NULL,
+                DocumentJson TEXT NOT NULL,
+                OpenCashDrawer INTEGER NOT NULL,
+                Status INTEGER NOT NULL,
+                Attempts INTEGER NOT NULL,
+                NextAttemptAtUtc TEXT NOT NULL,
+                DeadlineAtUtc TEXT NOT NULL,
+                LastError TEXT NULL,
+                CreatedAtUtc TEXT NOT NULL,
+                SentAtUtc TEXT NULL
+            );
+            CREATE INDEX IF NOT EXISTS IX_PrintJobs_Status_NextAttemptAtUtc ON PrintJobs(Status, NextAttemptAtUtc);"); } catch { }
 
             // Initialise ReceiptLanguage au démarrage plutôt qu'à la première lecture paresseuse :
             // sinon une installation EN/AR fraîche qui prend des commandes avant l'ouverture de
@@ -392,6 +420,7 @@ public partial class Program
 
         // 5. Printers Management
         app.MapPrinterEndpoints();
+        app.MapPrintJobEndpoints();
         app.MapSettingsEndpoints();
 
         // 6. Tables & Floor Plan
@@ -433,19 +462,19 @@ public partial class Program
         {
             if (!await db.Users.AnyAsync(u => u.Name.Contains("Alexandre Dupont")))
             {
-                try { await staffService.CreateStaffMemberAsync("Alexandre Dupont (Manager)", UserRole.FloorManager, "1234"); } catch {}
+                try { await staffService.CreateStaffMemberAsync("Alexandre Dupont (Manager)", UserRole.FloorManager, "1234"); } catch { }
             }
             if (!await db.Users.AnyAsync(u => u.Name.Contains("Sophie Martin")))
             {
-                try { await staffService.CreateStaffMemberAsync("Sophie Martin (Serveuse)", UserRole.Waiter, "2468"); } catch {}
+                try { await staffService.CreateStaffMemberAsync("Sophie Martin (Serveuse)", UserRole.Waiter, "2468"); } catch { }
             }
             if (!await db.Users.AnyAsync(u => u.Name.Contains("Thomas Bernard")))
             {
-                try { await staffService.CreateStaffMemberAsync("Thomas Bernard (Chef)", UserRole.KitchenStaff, "5678"); } catch {}
+                try { await staffService.CreateStaffMemberAsync("Thomas Bernard (Chef)", UserRole.KitchenStaff, "5678"); } catch { }
             }
             if (!await db.Users.AnyAsync(u => u.Name.Contains("Admin Système")))
             {
-                try { await staffService.CreateStaffMemberAsync("Admin Système", UserRole.Admin, "9999"); } catch {}
+                try { await staffService.CreateStaffMemberAsync("Admin Système", UserRole.Admin, "9999"); } catch { }
             }
         }
 
@@ -457,11 +486,11 @@ public partial class Program
 
         if (!await db.Categories.AnyAsync())
         {
-            var catEntrees = await catalogService.CreateCategoryAsync("Entrées Fraîches", "#2ECC71", 1, "salad");
+            var catEntrees = await catalogService.CreateCategoryAsync("Entrées Fraîches", "#2ECC71", 1, "salad", preparationStationId: "COLD");
             var catPlats = await catalogService.CreateCategoryAsync("Plats & Grillades", "#E74C3C", 2, "meat");
             var catPizzas = await catalogService.CreateCategoryAsync("Pizzas Artisanales", "#E67E22", 3, "pizza");
-            var catDesserts = await catalogService.CreateCategoryAsync("Desserts Maison", "#9B59B6", 4, "cake");
-            var catBoissons = await catalogService.CreateCategoryAsync("Boissons & Vins", "#3498DB", 5, "glass");
+            var catDesserts = await catalogService.CreateCategoryAsync("Desserts Maison", "#9B59B6", 4, "cake", preparationStationId: "DESSERT");
+            var catBoissons = await catalogService.CreateCategoryAsync("Boissons & Vins", "#3498DB", 5, "glass", preparationStationId: "BAR");
 
             prodSalade = await catalogService.CreateProductAsync("Salade César Poulet", catEntrees.Id, 9.50m, 10.0m, "Poulet mariné, parmesan, croûtons", "#27AE60", 1, true, "COLD");
             await catalogService.CreateProductAsync("Tartare de Saumon Frais", catEntrees.Id, 12.00m, 10.0m, "Saumon d'Islande, aneth, agrumes", "#2ECC71", 2, false, "COLD");
@@ -662,8 +691,8 @@ public partial class Program
         }
     }
 }
-public record CreateCategoryRequest(string Name, string? ColorHex, int DisplayOrder, string? IconName);
-public record UpdateCategoryRequest(string Name, string? ColorHex, int DisplayOrder, string? IconName, bool? IsActive);
+public record CreateCategoryRequest(string Name, string? ColorHex, int DisplayOrder, string? IconName, string? PreparationStationId = null);
+public record UpdateCategoryRequest(string Name, string? ColorHex, int DisplayOrder, string? IconName, bool? IsActive, string? PreparationStationId = null);
 public record CreateProductRequest(string Name, string CategoryId, decimal Price, decimal TaxRatePercent, string? Description, string? ColorHex, int DisplayOrder, bool IsQuickKey, string? StationId);
 public record UpdateProductRequest(string Name, string CategoryId, decimal Price, decimal TaxRatePercent, string? Description, string? ColorHex, int DisplayOrder, bool? IsAvailable, bool? IsActive, bool IsQuickKey, string? StationId);
 public record CreateStaffRequest(string Name, string Role, string Pin);
@@ -673,7 +702,7 @@ public record UpdatePrinterRequest(string Name, string IpAddress, int Port, int 
 public record OpenTableRequest(string? WaiterName, int CoversCount, Guid? OperatorId);
 public record ZClosureRequest(string TerminalId, Guid ManagerId, string ManagerName);
 public record AddOrderItemsRequest(List<OrderItemInputDto> Items);
-public record PaymentSettlementRequest(Guid OrderId, string? TableNumber, Guid? OperatorId, List<TenderItemRequest> Tenders, string? TerminalId = null);
+public record PaymentSettlementRequest(Guid OrderId, string? TableNumber, Guid? OperatorId, List<TenderItemRequest> Tenders, string? TerminalId = null, bool RequestReceiptPrint = false);
 public record TenderItemRequest(PaymentMethod Method, decimal Amount, decimal Tendered, decimal ChangeGiven);
 public record TransferTableRequest(string TargetTableNumber);
 public record MergeTablesRequest(string TargetTableNumber);

@@ -155,19 +155,20 @@ public actor HTTPPosAPI: PosAPI {
     public func categories() async throws -> [MenuCategory] { try await call("GET", "catalog/categories") }
     public func products() async throws -> [Product] { try await call("GET", "catalog/products") }
 
-    struct CategoryBody: Encodable { let name: String; let colorHex: String; let displayOrder: Int; let iconName: String?; let isActive: Bool? }
+    struct CategoryBody: Encodable { let name: String; let colorHex: String; let displayOrder: Int; let iconName: String?; let isActive: Bool?; let preparationStationId: String? }
 
     public func createCategory(name: String, colorHex: String, displayOrder: Int) async throws {
-        try await perform("POST", "catalog/categories", body: CategoryBody(name: name, colorHex: colorHex, displayOrder: displayOrder, iconName: "utensils", isActive: nil))
+        try await perform("POST", "catalog/categories", body: CategoryBody(name: name, colorHex: colorHex, displayOrder: displayOrder, iconName: "utensils", isActive: nil, preparationStationId: nil))
     }
 
-    public func updateCategory(id: String, name: String, colorHex: String, displayOrder: Int) async throws {
-        try await perform("PUT", "catalog/categories/\(id)", body: CategoryBody(name: name, colorHex: colorHex, displayOrder: displayOrder, iconName: nil, isActive: true))
+    /// `preparationStationId` : nil = inchangé (clé omise), `""` = effacé, valeur = défini (sémantique du serveur).
+    public func updateCategory(id: String, name: String, colorHex: String, displayOrder: Int, preparationStationId: String?) async throws {
+        try await perform("PUT", "catalog/categories/\(id)", body: CategoryBody(name: name, colorHex: colorHex, displayOrder: displayOrder, iconName: nil, isActive: true, preparationStationId: preparationStationId))
     }
 
     struct ProductBody: Encodable {
         let name: String, categoryId: String, price: Money, taxRatePercent: Decimal, description: String, colorHex: String
-        let displayOrder: Int, isQuickKey: Bool, stationId: String, isAvailable: Bool?, isActive: Bool?
+        let displayOrder: Int, isQuickKey: Bool, stationId: String?, isAvailable: Bool?, isActive: Bool?
         init(_ d: ProductDraft, update: Bool) {
             name = d.name; categoryId = d.categoryId; price = d.price; taxRatePercent = d.taxRatePercent
             description = d.description; colorHex = d.colorHex; displayOrder = d.displayOrder
@@ -373,6 +374,16 @@ public actor HTTPPosAPI: PosAPI {
     public func testPrinter(id: UUID) async throws -> TestPrintResult {
         try await call("POST", "printers/\(id.uuidString.lowercased())/test", body: Empty())
     }
+
+    public func printerStatuses() async throws -> [PrinterStatus] { try await call("GET", "printers/status") }
+
+    /// Impressions ouvertes (En attente / Échec), défaut serveur : ce sont les seules réessayables ou annulables.
+    public func printJobs(printerId: UUID) async throws -> [PrintJobInfo] {
+        try await call("GET", "printers/\(printerId.uuidString.lowercased())/jobs")
+    }
+
+    public func retryPrintJob(id: UUID) async throws { try await perform("POST", "print-jobs/\(id.uuidString.lowercased())/retry") }
+    public func cancelPrintJob(id: UUID) async throws { try await perform("POST", "print-jobs/\(id.uuidString.lowercased())/cancel") }
 
     // MARK: - Happy Hour
 

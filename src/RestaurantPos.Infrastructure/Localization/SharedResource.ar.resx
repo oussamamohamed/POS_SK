@@ -298,4 +298,67 @@
   <data name="admin.payment_method_other" xml:space="preserve">
     <value>دفع آخر</value>
   </data>
+  <data name="errors.preparation_station_invalid" xml:space="preserve">
+    <value>محطة التحضير غير معروفة.</value>
+  </data>
+  <data name="errors.receipt_printer_invalid" xml:space="preserve">
+    <value>الجهاز أو الطابعة غير موجود.</value>
+  </data>
+  <data name="receipt.test_title" xml:space="preserve">
+    <value>اختبار الطباعة</value>
+  </data>
+  <data name="receipt.test_printer" xml:space="preserve">
+    <value>الطابعة</value>
+  </data>
+  <data name="receipt.test_address" xml:space="preserve">
+    <value>العنوان</value>
+  </data>
+  <data name="receipt.test_paper" xml:space="preserve">
+    <value>الورق</value>
+  </data>
+  <data name="errors.print_job_not_found" xml:space="preserve">
+    <value>مهمة الطباعة غير موجودة.</value>
+  </data>
+  <data name="errors.print_job_not_retryable" xml:space="preserve">
+    <value>يمكن إعادة محاولة مهام الطباعة الفاشلة فقط.</value>
+  </data>
+  <data name="errors.print_job_not_cancellable" xml:space="preserve">
+    <value>لم يعد بالإمكان إلغاء مهمة الطباعة هذه.</value>
+  </data>
+  <data name="kitchen_ticket.table" xml:space="preserve">
+    <value>طاولة {table}</value>
+  </data>
+  <data name="kitchen_ticket.takeaway" xml:space="preserve">
+    <value>سفري</value>
+  </data>
+  <data name="kitchen_ticket.pickup" xml:space="preserve">
+    <value>استلام رقم {number}</value>
+  </data>
+  <data name="kitchen_ticket.buzzer" xml:space="preserve">
+    <value>جهاز النداء {buzzer}</value>
+  </data>
+  <data name="kitchen_ticket.server" xml:space="preserve">
+    <value>النادل</value>
+  </data>
+  <data name="kitchen_ticket.covers" xml:space="preserve">
+    <value>عدد الأشخاص</value>
+  </data>
+  <data name="kitchen_ticket.time" xml:space="preserve">
+    <value>الوقت</value>
+  </data>
+  <data name="kitchen_ticket.comment" xml:space="preserve">
+    <value>ملاحظة: {comment}</value>
+  </data>
+  <data name="kitchen_ticket.course_direct" xml:space="preserve">
+    <value>فوري</value>
+  </data>
+  <data name="kitchen_ticket.course_suite" xml:space="preserve">
+    <value>الطبق التالي</value>
+  </data>
+  <data name="kitchen_ticket.course_dessert" xml:space="preserve">
+    <value>حلوى</value>
+  </data>
+  <data name="kitchen_ticket.course_on_demand" xml:space="preserve">
+    <value>عند الطلب</value>
+  </data>
 </root>

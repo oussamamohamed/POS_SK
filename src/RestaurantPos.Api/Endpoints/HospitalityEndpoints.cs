@@ -14,6 +14,7 @@ using RestaurantPos.Domain.ValueObjects;
 using RestaurantPos.Domain.Common;
 using RestaurantPos.Infrastructure.Localization;
 using RestaurantPos.Infrastructure.Persistence;
+using RestaurantPos.Infrastructure.Printing;
 
 namespace RestaurantPos.Api.Endpoints;
 
@@ -74,7 +75,7 @@ public static class HospitalityEndpoints
             return Results.Ok(new { Success = true, TotalTtc = updated.TotalTtc.ToDecimal() });
         });
 
-        tableGroup.MapPost("/{tableNumber}/fire-suite", async (string tableNumber, AppDbContext db, IHubContext<KitchenHub> hubContext) =>
+        tableGroup.MapPost("/{tableNumber}/fire-suite", async (string tableNumber, AppDbContext db, IHubContext<KitchenHub> hubContext, PrintDispatcher printing) =>
         {
             var table = await db.DiningTables.FirstOrDefaultAsync(t => t.TableNumber == tableNumber);
             if (table?.ActiveOrderId is not null)
@@ -102,6 +103,7 @@ public static class HospitalityEndpoints
                     };
                     db.KitchenTickets.Add(ticket);
                     await db.SaveChangesAsync();
+                    await printing.QueueKitchenTicketsAsync([ticket.Id]);
                 }
             }
             await hubContext.Clients.All.SendAsync("ReceiveKitchenUpdate", "SUITE_CLAIMED", tableNumber);

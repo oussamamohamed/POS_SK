@@ -14,7 +14,8 @@ public struct CartLine: Identifiable, Hashable, Sendable {
     public var unitPrice: Money
     public var taxRatePercent: Decimal
     public var taxRateTakeawayPercent: Decimal?
-    public var station: String
+    /// nil = pas de poste propre : le serveur retombe sur celui de la famille.
+    public var station: String?
     public var modifiers: [String]
     public var modifiersExtra: Money
     public var kitchenComment: String?
@@ -27,7 +28,7 @@ public struct CartLine: Identifiable, Hashable, Sendable {
     public var originalUnitPrice: Money?
     public var happyHourScheduleId: UUID?
 
-    public init(id: UUID = UUID(), serverLineId: UUID? = nil, productId: UUID, name: String, unitPrice: Money, taxRatePercent: Decimal, taxRateTakeawayPercent: Decimal? = nil, station: String = "HOT_KITCHEN", modifiers: [String] = [], modifiersExtra: Money = .zero, kitchenComment: String? = nil, course: CourseType = .direct, quantity: Int = 1, isDispatched: Bool = false, isComp: Bool = false, discountPercent: Decimal = 0, isHappyHourApplied: Bool = false, originalUnitPrice: Money? = nil, happyHourScheduleId: UUID? = nil) {
+    public init(id: UUID = UUID(), serverLineId: UUID? = nil, productId: UUID, name: String, unitPrice: Money, taxRatePercent: Decimal, taxRateTakeawayPercent: Decimal? = nil, station: String? = nil, modifiers: [String] = [], modifiersExtra: Money = .zero, kitchenComment: String? = nil, course: CourseType = .direct, quantity: Int = 1, isDispatched: Bool = false, isComp: Bool = false, discountPercent: Decimal = 0, isHappyHourApplied: Bool = false, originalUnitPrice: Money? = nil, happyHourScheduleId: UUID? = nil) {
         self.id = id
         self.serverLineId = serverLineId
         self.productId = productId
@@ -53,7 +54,7 @@ public struct CartLine: Identifiable, Hashable, Sendable {
         self.init(
             id: l.lineId, serverLineId: l.lineId, productId: l.productId, name: l.productName,
             unitPrice: l.unitPrice, taxRatePercent: l.taxRatePercent, taxRateTakeawayPercent: l.taxRateTakeawayPercent,
-            station: l.preparationStationId ?? "HOT_KITCHEN", modifiers: l.modifiersSummary, modifiersExtra: l.modifiersPriceExtra,
+            station: l.preparationStationId, modifiers: l.modifiersSummary, modifiersExtra: l.modifiersPriceExtra,
             course: l.course, quantity: l.quantity, isDispatched: l.isDispatched, isComp: l.isComp,
             discountPercent: l.discountPercent, isHappyHourApplied: l.isHappyHourApplied,
             originalUnitPrice: l.originalUnitPrice, happyHourScheduleId: l.appliedHappyHourScheduleId

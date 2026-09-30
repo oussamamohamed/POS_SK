@@ -24,4 +24,7 @@ public interface IDeviceService
     Task<IReadOnlyList<Device>> ListAsync(CancellationToken ct = default);
 
     Task<bool> RevokeAsync(Guid deviceId, CancellationToken ct = default);
+
+    /// <returns>false si l'appareil ou l'imprimante n'existe pas.</returns>
+    Task<bool> SetReceiptPrinterAsync(Guid deviceId, Guid? printerId, CancellationToken ct = default);
 }

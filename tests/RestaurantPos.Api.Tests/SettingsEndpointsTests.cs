@@ -23,6 +23,36 @@ public class SettingsEndpointsTests : IClassFixture<PosApiApplicationFactory>
     }
 
     [Fact]
+    public async Task KitchenLanguage_RoundTrips_AndDefaultsToReceiptLanguage()
+    {
+        var admin = await ClientAsync("9999");
+        var initial = await admin.GetFromJsonAsync<JsonElement>("/api/settings");
+        initial.GetProperty("kitchenTicketLanguage").GetString().Should().Be(initial.GetProperty("receiptLanguage").GetString());
+
+        (await admin.PutAsJsonAsync("/api/settings", new UpdateRestaurantSettingsRequest("fr", "ar"))).StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await admin.GetFromJsonAsync<JsonElement>("/api/settings");
+        body.GetProperty("kitchenTicketLanguage").GetString().Should().Be("ar");
+    }
+
+    [Fact]
+    public async Task Put_WithoutKitchenLanguage_KeepsIt()
+    {
+        var admin = await ClientAsync("9999");
+        await admin.PutAsJsonAsync("/api/settings", new UpdateRestaurantSettingsRequest("fr", "ar"));
+        (await admin.PutAsJsonAsync("/api/settings", new { receiptLanguage = "en" })).StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await admin.GetFromJsonAsync<JsonElement>("/api/settings");
+        body.GetProperty("receiptLanguage").GetString().Should().Be("en");
+        body.GetProperty("kitchenTicketLanguage").GetString().Should().Be("ar");
+    }
+
+    [Fact]
+    public async Task Put_InvalidKitchenLanguage_Returns400()
+    {
+        var admin = await ClientAsync("9999");
+        (await admin.PutAsJsonAsync("/api/settings", new UpdateRestaurantSettingsRequest("fr", "de"))).StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
     public async Task Put_ThenGet_RoundTrips()
     {
         var admin = await ClientAsync("9999");

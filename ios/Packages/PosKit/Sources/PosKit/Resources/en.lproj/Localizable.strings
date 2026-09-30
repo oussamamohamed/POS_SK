@@ -142,3 +142,6 @@
 "payment.sale_validated" = "Sale accepted — pickup %@";
 "payment.supervisor_pin_required" = "Supervisor PIN required";
 "payment.zero_amount" = "Amount is zero";
+"admin.kitchen_language_saved" = "Kitchen ticket language saved";
+"messages.printer_back_online" = "Printer %@ back online";
+"messages.printer_offline" = "Printer %@ offline — %lld tickets waiting";

@@ -1,17 +1,21 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 using RestaurantPos.Application.Common.Interfaces;
+using RestaurantPos.Infrastructure.Printing;
 
 namespace RestaurantPos.Api.Hubs;
 
 public class KitchenHub : Hub<IKitchenHubClient>
 {
     private readonly IKitchenRoutingService _routingService;
+    private readonly PrintDispatcher _printing;
 
-    public KitchenHub(IKitchenRoutingService routingService)
+    public KitchenHub(IKitchenRoutingService routingService, PrintDispatcher printing)
     {
         _routingService = routingService;
+        _printing = printing;
     }
 
     public async Task JoinStationGroup(string stationId)
@@ -33,6 +37,8 @@ public class KitchenHub : Hub<IKitchenHubClient>
             await Clients.Group($"Station_{ticket.StationId}").OnNewTicketReceived(ticket).ConfigureAwait(false);
             await Clients.Group("Station_All").OnNewTicketReceived(ticket).ConfigureAwait(false);
         }
+
+        await _printing.QueueKitchenTicketsAsync(tickets.Select(t => t.TicketId).ToList()).ConfigureAwait(false);
     }
 
     public async Task BumpTicket(Guid ticketId)

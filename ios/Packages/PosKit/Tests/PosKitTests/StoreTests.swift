@@ -545,3 +545,61 @@ struct PairingStateTests {
         #expect(await api.calls.contains("setDeviceToken"))
     }
 }
+
+@MainActor
+@Suite("Impression")
+struct PrintingStoreTests {
+    @Test func kitchenLanguageSaved() async {
+        let (model, _) = await makeModel()
+        await model.settingsStore.load()
+        await model.settingsStore.setKitchenTicketLanguage("ar")
+        #expect(model.settingsStore.settings?.kitchenTicketLanguage == "ar")
+        #expect(model.settingsStore.settings?.receiptLanguage == "fr")
+        await model.settingsStore.setReceiptLanguage("en")
+        #expect(model.settingsStore.settings?.kitchenTicketLanguage == "ar")
+    }
+
+    @Test func retryFailedJobReloads() async throws {
+        let (model, api) = await makeModel()
+        let printer = try #require(try await api.printers().first)
+        await api.seedFailedPrintJob(printerId: printer.id)
+        await model.printers.loadJobs(printerId: printer.id)
+        let job = try #require(model.printers.jobs[printer.id]?.first)
+        #expect(job.status == "Failed")
+        await model.printers.retry(job)
+        #expect(model.printers.jobs[printer.id]?.first?.status == "Pending")
+        #expect(model.printers.statuses.first { $0.printerId == printer.id }?.pendingCount == 1)
+    }
+
+    @Test func cancelJobReloads() async throws {
+        let (model, api) = await makeModel()
+        let printer = try #require(try await api.printers().first)
+        await api.seedFailedPrintJob(printerId: printer.id)
+        await model.printers.loadJobs(printerId: printer.id)
+        let job = try #require(model.printers.jobs[printer.id]?.first)
+        await model.printers.cancel(job)
+        #expect(model.printers.jobs[printer.id]?.isEmpty == true)
+    }
+
+    @Test func tablePaymentSendsReceiptFlag() async {
+        let (model, api) = await makeModel()
+        await model.ticket.load(table: "T1")
+        model.ticket.add(product(model, "Pizza 4 Fromages"))
+        _ = await model.ticket.pay(method: .creditCard, amount: Money(cents: 1450), tendered: Money(cents: 1450), printReceipt: true)
+        #expect(await api.lastPaymentRequest?.requestReceiptPrint == true)
+        #expect(model.ticket.lastPrintQueued == true)
+    }
+
+    @Test func categoryStationSaved() async {
+        let (model, _) = await makeModel()
+        let cat = model.catalog.categories[0]
+        #expect(await model.catalogAdmin.saveCategory(id: cat.id, name: cat.name, colorHex: "#111111", preparationStationId: "BAR"))
+        #expect(model.catalog.categories.first { $0.id == cat.id }?.preparationStationId == "BAR")
+    }
+
+    @Test func printerStatusEventRaisesAlert() async {
+        let (model, _) = await makeModel()
+        await model.handle(.printerStatusChanged(printerId: nil, name: "Cuisine", isOnline: false, pendingCount: 2))
+        #expect(model.printerAlert?.contains("Cuisine") == true)
+    }
+}

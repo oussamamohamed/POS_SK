@@ -240,13 +240,15 @@ public struct PaymentRequest: Codable, Hashable, Sendable {
     public var operatorId: UUID?
     public var terminalId: String
     public var tenders: [TenderInput]
+    public var requestReceiptPrint: Bool
 
-    public init(orderId: UUID?, tableNumber: String, operatorId: UUID?, terminalId: String, tenders: [TenderInput]) {
+    public init(orderId: UUID?, tableNumber: String, operatorId: UUID?, terminalId: String, tenders: [TenderInput], requestReceiptPrint: Bool = false) {
         self.orderId = orderId
         self.tableNumber = tableNumber
         self.operatorId = operatorId
         self.terminalId = terminalId
         self.tenders = tenders
+        self.requestReceiptPrint = requestReceiptPrint
     }
 }
 
@@ -256,13 +258,15 @@ public struct PaymentResult: Codable, Hashable, Sendable {
     public var changeGiven: Money
     public var remainingBalance: Money
     public var fiscalSignature: String?
+    public var printQueued: Bool?
 
-    public init(receiptNumber: String?, totalPaid: Money, changeGiven: Money, remainingBalance: Money, fiscalSignature: String?) {
+    public init(receiptNumber: String?, totalPaid: Money, changeGiven: Money, remainingBalance: Money, fiscalSignature: String?, printQueued: Bool? = nil) {
         self.receiptNumber = receiptNumber
         self.totalPaid = totalPaid
         self.changeGiven = changeGiven
         self.remainingBalance = remainingBalance
         self.fiscalSignature = fiscalSignature
+        self.printQueued = printQueued
     }
 }
 
@@ -318,8 +322,9 @@ public struct CounterCheckoutResult: Codable, Hashable, Sendable {
     public var fiscalSignature: String?
     public var issuedCreditVoucher: CreditVoucher?
     public var openCashDrawer: Bool?
+    public var printQueued: Bool?
 
-    public init(orderId: UUID, pickupNumber: String, totalPaid: Money, changeGiven: Money, remainingBalance: Money, receiptNumber: String?, fiscalSignature: String?, issuedCreditVoucher: CreditVoucher?, openCashDrawer: Bool?) {
+    public init(orderId: UUID, pickupNumber: String, totalPaid: Money, changeGiven: Money, remainingBalance: Money, receiptNumber: String?, fiscalSignature: String?, issuedCreditVoucher: CreditVoucher?, openCashDrawer: Bool?, printQueued: Bool? = nil) {
         self.orderId = orderId
         self.pickupNumber = pickupNumber
         self.totalPaid = totalPaid
@@ -329,6 +334,7 @@ public struct CounterCheckoutResult: Codable, Hashable, Sendable {
         self.fiscalSignature = fiscalSignature
         self.issuedCreditVoucher = issuedCreditVoucher
         self.openCashDrawer = openCashDrawer
+        self.printQueued = printQueued
     }
 }
 

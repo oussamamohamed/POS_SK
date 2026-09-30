@@ -330,6 +330,7 @@
                                     <div class="form-group">
                                         <label data-i18n="admin.station_label">Poste de préparation :</label>
                                         <select id="selectProdStation">
+                                            <option value="" data-i18n="admin.station_from_category">Poste de la famille</option>
                                             <option value="HOT_KITCHEN" data-i18n="admin.station_hot_kitchen">Cuisine Chaude / Grill</option>
                                             <option value="COLD" data-i18n="admin.station_cold">Cuisine Froide / Entrées</option>
                                             <option value="DESSERT" data-i18n="admin.station_dessert">Pâtisserie / Desserts</option>
@@ -422,6 +423,12 @@
                             </div>
                             <div class="admin-card">
                                 <h4 data-i18n="admin.printers_list_title">Imprimantes Configurées</h4>
+                                <div class="form-row">
+                                    <label for="settingsReceiptLanguage" data-i18n="admin.receipt_language">Langue des tickets</label>
+                                    <select id="settingsReceiptLanguage"><option value="en">English</option><option value="fr">Français</option><option value="ar">العربية</option></select>
+                                    <label for="settingsKitchenLanguage" data-i18n="admin.kitchen_ticket_language">Langue des bons cuisine</label>
+                                    <select id="settingsKitchenLanguage"><option value="en">English</option><option value="fr">Français</option><option value="ar">العربية</option></select>
+                                </div>
                                 <div class="printers-list-view" id="adminPrintersList"></div>
                             </div>
                         </div>
@@ -1060,6 +1067,8 @@
                     <label for="chkPrintFiscalReceipt" style="font-size:0.85rem; cursor:pointer; color:#e2e8f0;" data-i18n="payment.print_fiscal_receipt">🧾 Imprimer la facturette fiscale (Loi AGEC - Optionnel)</label>
                 </div>
 
+                <label class="checkbox-row" id="paymentPrintReceiptRow" style="margin-top:12px; display:flex; align-items:center; gap:8px; cursor:pointer;"><input type="checkbox" id="paymentPrintReceipt" style="width:18px; height:18px;" /> <span data-i18n="payment.print_receipt">Imprimer le ticket de caisse</span></label>
+
                 <div class="fast-cash-buttons">
                     <button class="btn-cash-bill" data-cash="10">10 €</button>
                     <button class="btn-cash-bill" data-cash="20">20 €</button>
@@ -1399,6 +1408,7 @@
                     <div class="form-group" style="flex:1;">
                         <label for="editProdStation" data-i18n="admin.kitchen_station_label">Poste de Cuisine :</label>
                         <select id="editProdStation" style="width:100%; padding:10px; border-radius: 2px; background:var(--bg-card); border:1px solid var(--border-color); color:white;">
+                            <option value="" data-i18n="admin.station_from_category">Poste de la famille</option>
                             <option value="HOT_KITCHEN" data-i18n="admin.edit_station_hot">Chaud / Grill</option>
                             <option value="COLD" data-i18n="admin.edit_station_cold">Froid / Entrées</option>
                             <option value="BAR" data-i18n="admin.station_bar">Bar & Boissons</option>
@@ -1436,6 +1446,17 @@
                 <div class="form-group">
                     <label for="editCatColor" data-i18n="admin.badge_color_label">Couleur du Badge :</label>
                     <input type="color" id="editCatColor" value="#4A90E2" style="width:100%; height:42px; border-radius: 2px; background:transparent; border:1px solid var(--border-color); cursor:pointer;" />
+                </div>
+                <div class="form-group">
+                    <label for="editCatStation" data-i18n="admin.category_station_label">Poste de préparation :</label>
+                    <select id="editCatStation">
+                        <option value="" data-i18n="admin.station_default_hot">Cuisine chaude (défaut)</option>
+                        <option value="HOT_KITCHEN" data-i18n="admin.station_hot_kitchen">Cuisine Chaude / Grill</option>
+                        <option value="COLD" data-i18n="admin.station_cold">Cuisine Froide / Entrées</option>
+                        <option value="GRILL" data-i18n="admin.station_grill">Grill</option>
+                        <option value="DESSERT" data-i18n="admin.station_dessert">Pâtisserie / Desserts</option>
+                        <option value="BAR" data-i18n="admin.station_bar">Bar & Boissons</option>
+                    </select>
                 </div>
                 <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:10px;">
                     <button type="button" class="btn-archive" id="btnCancelEditCat" data-i18n="common.cancel">Annuler</button>

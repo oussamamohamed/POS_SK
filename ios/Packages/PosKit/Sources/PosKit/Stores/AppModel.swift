@@ -24,6 +24,8 @@ public final class AppModel {
     public let settingsStore: SettingsStore
 
     public private(set) var isRealtimeConnected = false
+    /// Alerte imprimante (hors ligne / rétablie) ; l'UI l'affiche puis la remet à nil.
+    public var printerAlert: String?
     public private(set) var isBootstrapped = false
 
     @ObservationIgnored private var realtime: [SignalRConnection] = []
@@ -116,6 +118,11 @@ public final class AppModel {
             await happyHour.refresh()
         case .tablesChanged:
             await floor.load()
+        case let .printerStatusChanged(_, name, isOnline, pending):
+            printerAlert = isOnline
+                ? String(format: L10n.string("messages.printer_back_online"), name)
+                : String(format: L10n.string("messages.printer_offline"), name, pending)
+            await printers.loadStatuses()
         case .connectionChanged(let connected):
             isRealtimeConnected = connected
         }

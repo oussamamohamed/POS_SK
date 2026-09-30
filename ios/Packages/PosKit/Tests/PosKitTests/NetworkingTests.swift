@@ -188,6 +188,28 @@ struct HTTPPosAPITests {
         #expect(try body(last)["receiptLanguage"] as? String == "ar")
         #expect(saved.receiptLanguage == "ar")
     }
+
+    @Test func categoryUpdateStationSemantics() async throws {
+        let api = makeAPI { _ in .init(status: 200, body: "{}") }
+        try await api.updateCategory(id: "C1", name: "N", colorHex: "#111111", displayOrder: 1, preparationStationId: nil)
+        let unchanged = try body(last)
+        #expect(unchanged["preparationStationId"] == nil || unchanged["preparationStationId"] is NSNull)
+        try await api.updateCategory(id: "C1", name: "N", colorHex: "#111111", displayOrder: 1, preparationStationId: "")
+        #expect(try body(last)["preparationStationId"] as? String == "")
+        try await api.updateCategory(id: "C1", name: "N", colorHex: "#111111", displayOrder: 1, preparationStationId: "BAR")
+        #expect(try body(last)["preparationStationId"] as? String == "BAR")
+    }
+
+    @Test func productWithoutStationSendsNoStation() async throws {
+        let api = makeAPI { _ in .init(status: 200, body: "{}") }
+        let product = Product(name: "X", categoryId: "C", price: Money(cents: 100), preparationStationId: nil)
+        try await api.updateProduct(id: product.id, ProductDraft(product: product))
+        let sent = try body(last)
+        #expect(sent["stationId"] == nil || sent["stationId"] is NSNull)
+        let own = Product(name: "Y", categoryId: "C", price: Money(cents: 100), preparationStationId: "BAR")
+        try await api.updateProduct(id: own.id, ProductDraft(product: own))
+        #expect(try body(last)["stationId"] as? String == "BAR")
+    }
 }
 
 @Suite("Lien d'appairage (QR)")
@@ -295,5 +317,30 @@ struct LiveAPITests {
         _ = try await api.heldOrders(terminalId: "IPAD_TEST")
         let interval = DashboardRange.today.interval()
         _ = try await api.dashboard(from: interval.from, to: interval.to)
+    }
+
+    @Test func realtimePrinterStatusEvent() {
+        let id = "3f2504e0-4f89-11d3-9a0c-0305e82c3301"
+        let e = RealtimeEvent.from(target: "OnPrinterStatusChanged", arguments: [.string(id), .string("Cuisine chaude"), .bool(false), .number(3)])
+        #expect(e == .printerStatusChanged(printerId: UUID(uuidString: id), name: "Cuisine chaude", isOnline: false, pendingCount: 3))
+    }
+
+    @Test func paymentRequestEncodesReceiptFlag() throws {
+        let req = PaymentRequest(orderId: nil, tableNumber: "T05", operatorId: nil, terminalId: "T01", tenders: [], requestReceiptPrint: true)
+        let json = try #require(try JSONSerialization.jsonObject(with: JSONEncoder().encode(req)) as? [String: Any])
+        #expect(json["requestReceiptPrint"] as? Bool == true)
+    }
+
+    @Test func cartLineWithoutProductStationSendsNil() throws {
+        let line = CartLine(productId: UUID(), name: "Mojito", unitPrice: Money(cents: 800), taxRatePercent: 10)
+        #expect(line.station == nil)
+        #expect(line.asInput.preparationStationId == nil)
+        let json = try #require(try JSONSerialization.jsonObject(with: JSONEncoder().encode(line.asInput)) as? [String: Any])
+        #expect(json["preparationStationId"] == nil || json["preparationStationId"] is NSNull)
+    }
+
+    @Test func cartLineFromServerLineKeepsNilStation() {
+        let product = Product(name: "X", categoryId: "C", price: Money(cents: 100), preparationStationId: nil)
+        #expect(product.station == nil)
     }
 }

@@ -298,4 +298,67 @@
   <data name="admin.payment_method_other" xml:space="preserve">
     <value>Autre Règlement</value>
   </data>
+  <data name="errors.preparation_station_invalid" xml:space="preserve">
+    <value>Poste de préparation inconnu.</value>
+  </data>
+  <data name="errors.receipt_printer_invalid" xml:space="preserve">
+    <value>Appareil ou imprimante introuvable.</value>
+  </data>
+  <data name="receipt.test_title" xml:space="preserve">
+    <value>TEST D'IMPRESSION</value>
+  </data>
+  <data name="receipt.test_printer" xml:space="preserve">
+    <value>Imprimante</value>
+  </data>
+  <data name="receipt.test_address" xml:space="preserve">
+    <value>Adresse</value>
+  </data>
+  <data name="receipt.test_paper" xml:space="preserve">
+    <value>Papier</value>
+  </data>
+  <data name="errors.print_job_not_found" xml:space="preserve">
+    <value>Impression introuvable.</value>
+  </data>
+  <data name="errors.print_job_not_retryable" xml:space="preserve">
+    <value>Seules les impressions en échec peuvent être relancées.</value>
+  </data>
+  <data name="errors.print_job_not_cancellable" xml:space="preserve">
+    <value>Cette impression ne peut plus être annulée.</value>
+  </data>
+  <data name="kitchen_ticket.table" xml:space="preserve">
+    <value>TABLE {table}</value>
+  </data>
+  <data name="kitchen_ticket.takeaway" xml:space="preserve">
+    <value>À EMPORTER</value>
+  </data>
+  <data name="kitchen_ticket.pickup" xml:space="preserve">
+    <value>Retrait n° {number}</value>
+  </data>
+  <data name="kitchen_ticket.buzzer" xml:space="preserve">
+    <value>Bipeur {buzzer}</value>
+  </data>
+  <data name="kitchen_ticket.server" xml:space="preserve">
+    <value>Serveur</value>
+  </data>
+  <data name="kitchen_ticket.covers" xml:space="preserve">
+    <value>Couverts</value>
+  </data>
+  <data name="kitchen_ticket.time" xml:space="preserve">
+    <value>Heure</value>
+  </data>
+  <data name="kitchen_ticket.comment" xml:space="preserve">
+    <value>Note : {comment}</value>
+  </data>
+  <data name="kitchen_ticket.course_direct" xml:space="preserve">
+    <value>Direct</value>
+  </data>
+  <data name="kitchen_ticket.course_suite" xml:space="preserve">
+    <value>Suite</value>
+  </data>
+  <data name="kitchen_ticket.course_dessert" xml:space="preserve">
+    <value>Dessert</value>
+  </data>
+  <data name="kitchen_ticket.course_on_demand" xml:space="preserve">
+    <value>À la demande</value>
+  </data>
 </root>

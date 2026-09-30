@@ -43,12 +43,10 @@ public class KitchenRoutingService : IKitchenRoutingService
         string serverName = diningTable?.AssignedWaiterName ?? "Serveur";
         int coversCount = diningTable?.CoversCount ?? 1;
 
-        var products = await _dbContext.Products
-            .AsNoTracking()
-            .ToListAsync(cancellationToken)
-            .ConfigureAwait(false);
-
-        var productMap = products.ToDictionary(p => p.Id, p => p.CategoryId);
+        var products = await _dbContext.Products.AsNoTracking()
+            .ToDictionaryAsync(p => p.Id, cancellationToken).ConfigureAwait(false);
+        var categoryStations = await _dbContext.Categories.AsNoTracking()
+            .ToDictionaryAsync(c => c.Id, c => c.PreparationStationId, cancellationToken).ConfigureAwait(false);
 
         // Only route items that have NOT been dispatched yet (avoid duplicating existing tickets)
         var pendingItems = order.Items.Where(i => !i.IsDispatched).ToList();
@@ -57,21 +55,11 @@ public class KitchenRoutingService : IKitchenRoutingService
             return [];
         }
 
-        // Group items by station: CAT-DRINKS -> STATION-BAR, CAT-DESSERTS -> STATION-PASTRY, other -> STATION-HOT
         var stationGroups = pendingItems.GroupBy(item =>
         {
-            // Use PreparationStationId on the item itself if it is already set
-            if (!string.IsNullOrWhiteSpace(item.PreparationStationId))
-            {
-                return item.PreparationStationId;
-            }
-
-            if (productMap.TryGetValue(item.ProductId, out string? catId))
-            {
-                if (catId.Contains("DRINK", StringComparison.OrdinalIgnoreCase)) return "STATION-BAR";
-                if (catId.Contains("DESSERT", StringComparison.OrdinalIgnoreCase)) return "STATION-PASTRY";
-            }
-            return "STATION-HOT";
+            var product = products.GetValueOrDefault(item.ProductId);
+            var categoryStation = product is null ? null : categoryStations.GetValueOrDefault(product.CategoryId);
+            return PreparationStations.Resolve(item.PreparationStationId, product?.PreparationStationId, categoryStation);
         });
 
         var createdTickets = new List<KitchenTicketDto>();

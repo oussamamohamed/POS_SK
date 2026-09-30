@@ -63,5 +63,6 @@ public record CounterCheckoutResponse(
     CustomerCreditVoucherDto? IssuedCreditVoucher,
     bool PrintPickupVoucher,
     bool PrintFiscalReceipt,
-    bool OpenCashDrawer
+    bool OpenCashDrawer,
+    bool PrintQueued
 );

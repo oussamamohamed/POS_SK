@@ -96,4 +96,66 @@ public class TicketDocumentBuilderTests
             (CultureInfo.CurrentCulture, CultureInfo.CurrentUICulture) = original;
         }
     }
+
+    [Theory]
+    [InlineData("en", "PRINT TEST")]
+    [InlineData("fr", "TEST D'IMPRESSION")]
+    [InlineData("ar", "اختبار الطباعة")]
+    public void TestPage_IsLocalized_AndShowsPrinter(string lang, string title)
+    {
+        var printer = new PrinterConfiguration { Name = "Cuisine", IpAddress = "10.0.0.5", Port = 9100, PaperWidthMm = 58 };
+        var text = AllText(TicketDocumentBuilder.TestPage(printer, lang, DateTimeOffset.UnixEpoch));
+        text.Should().Contain(title).And.Contain("Cuisine").And.Contain("10.0.0.5:9100").And.Contain("58 mm");
+    }
+
+    private static readonly DateTimeOffset Dispatched = new(2026, 9, 29, 12, 34, 0, TimeSpan.Zero);
+
+    private static KitchenTicket SampleKitchenTicket(Guid productId) => new()
+    {
+        TableNumber = "stocké, ignoré",
+        ServerName = "Julie",
+        CoversCount = 4,
+        StationId = "HOT_KITCHEN",
+        DispatchedAtUtc = Dispatched,
+        Items = { new KitchenTicketItem { ProductId = productId, ProductName = "Burger Rossini", Quantity = 2, ModifiersSummary = "Saignant", KitchenComment = "Sans oignon" } }
+    };
+
+    [Theory]
+    [InlineData("en", "TABLE T05", "Next course", "Covers")]
+    [InlineData("fr", "TABLE T05", "Suite", "Couverts")]
+    [InlineData("ar", "طاولة T05", "الطبق التالي", "عدد الأشخاص")]
+    public void KitchenTicket_EatIn_ShowsTableCourseAndDetails(string lang, string header, string course, string covers)
+    {
+        var productId = Guid.NewGuid();
+        var order = new Order { TableNumber = "T05", Destination = OrderDestination.EatIn, Items = { new OrderItem { ProductId = productId, ProductName = "Burger Rossini", Course = CourseType.Suite } } };
+        var doc = TicketDocumentBuilder.KitchenTicket(SampleKitchenTicket(productId), order, lang);
+        var text = AllText(doc);
+
+        doc.RightToLeft.Should().Be(lang == "ar");
+        doc.Lines[0].Should().BeOfType<TicketText>().Which.Should().Match<TicketText>(t => t.Text == header && t.Large);
+        text.Should().Contain("2x Burger Rossini").And.Contain("+ Saignant").And.Contain("Sans oignon")
+            .And.Contain(course).And.Contain(covers).And.Contain("Julie")
+            .And.Contain(Dispatched.ToLocalTime().ToString("HH:mm", CultureInfo.InvariantCulture))
+            .And.NotContain("stocké, ignoré");
+    }
+
+    [Theory]
+    [InlineData("en", "TAKEAWAY", "Buzzer 7")]
+    [InlineData("fr", "À EMPORTER", "Bipeur 7")]
+    [InlineData("ar", "سفري", "جهاز النداء 7")]
+    public void KitchenTicket_Takeaway_ShowsPickupAndBuzzer(string lang, string header, string buzzer)
+    {
+        var order = new Order { TableNumber = "Comptoir", Destination = OrderDestination.Takeaway, PickupNumber = "A-12", PickupBuzzer = "7" };
+        var text = AllText(TicketDocumentBuilder.KitchenTicket(SampleKitchenTicket(Guid.NewGuid()), order, lang));
+        text.Should().StartWith(header).And.Contain("A-12").And.Contain(buzzer);
+    }
+
+    [Fact]
+    public void Receipt_HasFiscalContent_WithoutPickupCoupon()
+    {
+        var doc = TicketDocumentBuilder.Receipt(SampleReceipt(), SampleOrder(), "fr");
+        var text = AllText(doc);
+        text.Should().Contain("T01-000042").And.Contain("abc123").And.NotContain("RETRAIT");
+        doc.Lines.OfType<TicketSeparator>().Should().NotContain(s => s.Cut);
+    }
 }

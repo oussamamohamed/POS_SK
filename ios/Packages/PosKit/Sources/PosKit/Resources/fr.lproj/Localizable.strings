@@ -142,3 +142,6 @@
 "payment.sale_validated" = "Vente validée — retrait %@";
 "payment.supervisor_pin_required" = "PIN superviseur requis";
 "payment.zero_amount" = "Le montant est nul";
+"admin.kitchen_language_saved" = "Langue du bon cuisine enregistrée";
+"messages.printer_back_online" = "Imprimante %@ rétablie";
+"messages.printer_offline" = "Imprimante %@ hors ligne — %lld bons en attente";

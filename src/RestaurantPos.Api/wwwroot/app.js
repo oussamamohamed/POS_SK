@@ -382,6 +382,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Ensure active authentication session
         await ensureAuthToken();
+        startPosHub();
 
         await loadCatalogData();
         // Le terminal démarre sur le comptoir : on charge sa commande en cours (articles, destination).
@@ -496,6 +497,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     document.getElementById('editCatId').value = cat.id;
                     document.getElementById('editCatName').value = cat.name;
                     document.getElementById('editCatColor').value = cat.colorHex || '#4A90E2';
+                    document.getElementById('editCatStation').value = cat.preparationStationId || '';
                     elements.editCategoryModal.classList.add('active');
                     return;
                 }
@@ -921,7 +923,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     price: effectiveUnitPrice,
                     taxRatePercent: product.taxRatePercent || 10.0,
                     taxRateTakeawayPercent: product.taxRateTakeawayPercent ?? null,
-                    preparationStationId: product.preparationStationId || 'HOT_KITCHEN'
+                    preparationStationId: product.preparationStationId || null
                 },
                 quantity: 1,
                 course: course,
@@ -953,6 +955,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const data = await res.json();
                 state.token = data.token;
                 localStorage.setItem('pos_jwt_token', data.token);
+                startPosHub();
                 state.operator = { name: data.operatorName, role: data.role, id: data.operatorId };
                 return data.token;
             }
@@ -986,7 +989,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 unitPrice: i.product.price,
                 taxRatePercent: i.product.taxRatePercent || 10.0,
                 taxRateTakeawayPercent: i.product.taxRateTakeawayPercent ?? null,
-                preparationStationId: i.product.preparationStationId || 'HOT_KITCHEN',
+                preparationStationId: i.product.preparationStationId || null,
                 modifiers: modifiers,
                 modifiersPriceExtra: i.modifiersPriceExtra || 0,
                 course: courseMap[i.course] || 0,
@@ -1569,6 +1572,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             state.selectedTipPercent = 0;
             state.customTipAmount = 0;
             updateTipCalculation();
+            syncPaymentPrintRow();
             elements.paymentModal.classList.add('active');
         });
 
@@ -1881,6 +1885,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Seul le montant est isolé en LTR : la phrase suit la direction de la page (RTL en arabe).
         elements.payRemainingAmount.innerHTML = t('payment.split_part_amount', { amount: `<bdi dir="ltr">${state.splitActivePart.toFixed(2)} €</bdi>`, index: plan.index + 1, total: plan.parts.length });
         elements.payTotalWithTip.textContent = `${state.splitActivePart.toFixed(2)} €`;
+        syncPaymentPrintRow();
         elements.paymentModal.classList.add('active');
     }
 
@@ -1899,6 +1904,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             row.innerHTML = `<span>${t('payment.split_guest_label', { n: i })}</span> <strong>${(cents / 100).toFixed(2)} €</strong>`;
             elements.splitPartitionsList.appendChild(row);
         }
+    }
+
+    /** Case « ticket de caisse » : réservée au paiement à table (le comptoir a sa propre case). */
+    function syncPaymentPrintRow() {
+        const row = document.getElementById('paymentPrintReceiptRow');
+        if (row) row.style.display = state.activeTable === 'Comptoir' ? 'none' : '';
+    }
+
+    function warnIfNotQueued(resData) {
+        if (resData && resData.printQueued === false) showToast(t('payment.print_not_queued'), 'warning');
     }
 
     async function executePayment(tenderMethod, tendered) {
@@ -1936,7 +1951,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                         tendered: tendered,
                         changeGiven: change
                     }
-                ]
+                ],
+                requestReceiptPrint: document.getElementById('paymentPrintReceipt')?.checked === true
             };
 
             const res = await fetch('/api/checkout/pay', {
@@ -1947,6 +1963,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (res.ok) {
                 const resData = await res.json();
+                if (payload.requestReceiptPrint && !(resData.remainingBalance > 0.001)) warnIfNotQueued(resData);
+                const printBox = document.getElementById('paymentPrintReceipt');
+                if (printBox) printBox.checked = false;
                 showToast(t('payment.paid_toast', { receipt: resData.receiptNumber || 'NF', change: change.toFixed(2) }), 'success');
                 elements.paymentModal.classList.remove('active');
 
@@ -2311,6 +2330,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const data = await res.json();
             if (res.ok) {
+                warnIfNotQueued(data);
                 // Success: Close payment modal
                 if (elements.paymentModal) elements.paymentModal.classList.remove('active');
 
@@ -2747,7 +2767,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 catSelect.value = p.categoryId;
                 document.getElementById('editProdPrice').value = p.price;
                 setSelectValue('editProdTax', String(Number(p.taxRatePercent)));
-                setSelectValue('editProdStation', p.preparationStationId || 'HOT_KITCHEN');
+                setSelectValue('editProdStation', p.preparationStationId || '');
                 document.getElementById('editProdQuickKey').checked = !!p.isQuickKey;
                 elements.editProductModal.classList.add('active');
             });
@@ -2824,26 +2844,87 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
+    async function loadPrintSettings() {
+        const res = await fetch('/api/settings');
+        if (!res.ok) return;
+        const s = await res.json();
+        document.getElementById('settingsReceiptLanguage').value = s.receiptLanguage;
+        document.getElementById('settingsKitchenLanguage').value = s.kitchenTicketLanguage;
+    }
+
+    async function savePrintSettings() {
+        const res = await fetch('/api/settings', {
+            method: 'PUT', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                receiptLanguage: document.getElementById('settingsReceiptLanguage').value,
+                kitchenTicketLanguage: document.getElementById('settingsKitchenLanguage').value
+            })
+        });
+        showToast(res.ok ? t('admin.settings_saved') : await readApiError(res, t('admin.settings_error')), res.ok ? 'success' : 'error');
+    }
+
+    async function togglePrinterJobs(row, pr) {
+        const existing = row.nextElementSibling;
+        if (existing?.classList.contains('printer-jobs')) { existing.remove(); return; }
+        const res = await fetch(`/api/printers/${pr.id}/jobs`);
+        if (!res.ok) return;
+        const jobs = (await res.json()).filter(j => j.status === 'Failed' || j.status === 'Pending');
+        const kinds = {
+            pickupvoucher: t('admin.print_job_kind_pickupvoucher'),
+            receipt: t('admin.print_job_kind_receipt'),
+            kitchenticket: t('admin.print_job_kind_kitchenticket')
+        };
+        const box = document.createElement('div');
+        box.className = 'printer-jobs';
+        box.innerHTML = jobs.map(j => `
+            <div class="item-list-row" data-job-id="${j.id}">
+                <div>
+                    ${kinds[String(j.kind).toLowerCase()] || escapeHtml(j.kind)} · ${new Date(j.createdAtUtc).toLocaleTimeString(window.i18n.locale, { hour: '2-digit', minute: '2-digit' })}
+                    ${j.lastError ? `<small style="display:block;color:#f87171;">${escapeHtml(j.lastError)}</small>` : ''}
+                </div>
+                <button type="button" class="btn-archive btn-print-job-action" data-action="${j.status === 'Failed' ? 'retry' : 'cancel'}">${j.status === 'Failed' ? t('admin.print_job_retry') : t('admin.print_job_cancel')}</button>
+            </div>`).join('');
+        box.querySelectorAll('.btn-print-job-action').forEach(btn => btn.addEventListener('click', async () => {
+            const id = btn.closest('[data-job-id]').dataset.jobId;
+            const r = await fetch(`/api/print-jobs/${id}/${btn.dataset.action}`, { method: 'POST' });
+            showToast(r.ok ? btn.textContent : await readApiError(r, String(r.status)), r.ok ? 'success' : 'error');
+            await loadAdminPrinters();
+        }));
+        row.after(box);
+    }
+
     async function loadAdminPrinters() {
         if (!elements.adminPrintersList) elements.adminPrintersList = document.getElementById('adminPrintersList');
         if (!elements.adminPrintersList) return;
         elements.adminPrintersList.innerHTML = '';
+        loadPrintSettings();
         try {
             const res = await fetch('/api/printers');
             state.printers = await res.json();
+            const statusRes = await fetch('/api/printers/status');
+            const statuses = statusRes.ok ? await statusRes.json() : [];
             state.printers.forEach(pr => {
+                const st = statuses.find(s => s.printerId === pr.id);
+                const status = !st || st.isOnline === null ? t('admin.printer_status_unknown')
+                    : st.isOnline ? t('admin.printer_status_online')
+                    : t('admin.printer_status_offline_since', { time: new Date(st.sinceUtc).toLocaleTimeString(window.i18n.locale, { hour: '2-digit', minute: '2-digit' }) });
+                const pending = st?.pendingCount ? ' · ' + t('admin.printer_pending', { count: st.pendingCount }) : '';
+                const hasJobs = (st?.pendingCount || 0) + (st?.failedCount || 0) > 0;
                 const row = document.createElement('div');
                 row.className = 'item-list-row';
                 row.innerHTML = `
                     <div>
-                        <strong>${pr.name}</strong> (${pr.ipAddress}:${pr.port})${pr.isActive === false ? ` <span style="color:#f87171;">${t('admin.printer_row_inactive_suffix')}</span>` : ''}
+                        <strong>${escapeHtml(pr.name)}</strong> (${escapeHtml(pr.ipAddress)}:${pr.port})${pr.isActive === false ? ` <span style="color:#f87171;">${t('admin.printer_row_inactive_suffix')}</span>` : ''}
+                        <span class="printer-status">${status}${pending}</span>
                         <small style="display:block;color:#94a3b8;">${t('admin.printer_row_meta', { stations: (pr.assignedStationIds || []).join(', ') || '—', drawer: pr.openCashDrawerOnReceipt ? t('common.yes') : t('common.no') })}</small>
                     </div>
                     <div style="display:flex; gap:6px;">
+                        ${hasJobs ? `<button class="btn-archive btn-printer-jobs" data-id="${pr.id}">${t('admin.printer_jobs_btn')}</button>` : ''}
                         <button class="btn-archive btn-edit-printer" data-id="${pr.id}" style="background:rgba(59,130,246,0.2); border-color:rgba(59,130,246,0.4); color:#60a5fa;">${t('admin.btn_edit_row')}</button>
                         <button class="btn-archive btn-del-printer" data-id="${pr.id}">${pr.isActive === false ? t('admin.btn_reactivate') : t('admin.btn_deactivate')}</button>
                     </div>
                 `;
+                row.querySelector('.btn-printer-jobs')?.addEventListener('click', () => togglePrinterJobs(row, pr));
                 row.querySelector('.btn-edit-printer').addEventListener('click', () => {
                     document.getElementById('editPrinterId').value = pr.id;
                     document.getElementById('editPrinterName').value = pr.name;
@@ -3505,7 +3586,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const taxEl = document.getElementById('selectProdVat');
             const tax = taxEl ? parseFloat(taxEl.value) : 10.0;
             const stationEl = document.getElementById('selectProdStation');
-            const station = stationEl ? stationEl.value : 'HOT_KITCHEN';
+            const station = stationEl ? (stationEl.value || null) : null;
             const quickEl = document.getElementById('checkQuickKey');
             const isQuick = quickEl ? quickEl.checked : false;
 
@@ -3897,6 +3978,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
         const devices = await res.json();
+        if (!state.printers || state.printers.length === 0) {
+            const pr = await fetch('/api/printers');
+            state.printers = pr.ok ? await pr.json() : [];
+        }
         list.innerHTML = devices.length === 0
             ? `<div style="color:var(--text-muted);">${t('admin.devices_none_paired')}</div>`
             : devices.map(d => `
@@ -3906,8 +3991,19 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <span style="color:var(--text-muted);">${escapeHtml(d.terminalId)} · ${escapeHtml(deviceRoleLabel(d.role))}</span>
                         <div style="font-size:0.8rem; color:#94a3b8;">${d.isRevoked ? t('admin.device_revoked') : (d.lastSeenUtc ? t('admin.device_last_seen', { date: new Date(d.lastSeenUtc).toLocaleString(window.i18n.locale) }) : t('admin.device_never_used'))}</div>
                     </div>
-                    ${d.isRevoked ? '' : `<button type="button" class="btn-archive btn-revoke-device" data-device-id="${d.id}">${t('admin.device_revoke_btn')}</button>`}
+                    ${d.isRevoked ? '' : `<select class="device-receipt-printer" data-device-id="${d.id}" aria-label="${t('admin.device_receipt_printer_label')}">
+                        <option value="">${t('admin.device_receipt_printer_default')}</option>
+                        ${(state.printers || []).filter(p => p.isActive !== false).map(p => `<option value="${p.id}" ${p.id === d.receiptPrinterId ? 'selected' : ''}>${escapeHtml(p.name)}</option>`).join('')}
+                    </select>
+                    <button type="button" class="btn-archive btn-revoke-device" data-device-id="${d.id}">${t('admin.device_revoke_btn')}</button>`}
                 </div>`).join('');
+        list.querySelectorAll('.device-receipt-printer').forEach(sel => sel.addEventListener('change', async () => {
+            const r = await fetch(`/api/devices/${sel.dataset.deviceId}/receipt-printer`, {
+                method: 'PUT', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ printerId: sel.value || null })
+            });
+            showToast(r.ok ? t('admin.device_receipt_printer_saved') : await readApiError(r, t('admin.device_receipt_printer_error')), r.ok ? 'success' : 'error');
+        }));
         list.querySelectorAll('.btn-revoke-device').forEach(btn => btn.addEventListener('click', async () => {
             if (!confirm(t('admin.device_revoke_confirm'))) return;
             const r = await fetch(`/api/devices/${btn.dataset.deviceId}/revoke`, { method: 'POST' });
@@ -3923,6 +4019,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     let pairingCountdown = null;
 
     function setupDeviceAdminHandlers() {
+        document.getElementById('settingsReceiptLanguage')?.addEventListener('change', savePrintSettings);
+        document.getElementById('settingsKitchenLanguage')?.addEventListener('change', savePrintSettings);
         document.getElementById('formDevicePairingCode')?.addEventListener('submit', async (e) => {
             e.preventDefault();
             const name = document.getElementById('inputDeviceName').value.trim();
@@ -4106,7 +4204,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     colorHex: document.getElementById('editCatColor').value,
                     displayOrder: current.displayOrder || 0,
                     iconName: current.iconName || null,
-                    isActive: true
+                    isActive: true,
+                    preparationStationId: document.getElementById('editCatStation').value
                 })
             });
             if (!res.ok) {
@@ -4224,6 +4323,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (data.success) {
                 state.token = data.token;
                 localStorage.setItem('pos_jwt_token', data.token);
+                startPosHub();
                 state.operator = { name: data.operatorName, role: data.role, id: data.operatorId };
                 elements.currentOperatorName.textContent = data.operatorName;
                 elements.currentOperatorRole.textContent = operatorRoleLabel(data.role);
@@ -4770,6 +4870,33 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // ==================== REAL-TIME SIGNALR SYNC (US5) ====================
+    // L'état des imprimantes est diffusé sur /hubs/pos (le reste de ce client écoute /hubs/kitchen).
+    // Hub [Authorize] : démarré seulement une fois un jeton disponible (connexion ou renouvellement), et relancé si le démarrage a échoué.
+    let posConnection = null;
+    let posConnectionStarted = false;
+    function startPosHub() {
+        if (typeof signalR === 'undefined' || posConnectionStarted) return;
+        const token = state.token || localStorage.getItem('pos_jwt_token');
+        if (!token) return;
+        if (!posConnection) {
+            posConnection = new signalR.HubConnectionBuilder()
+                .withUrl('/hubs/pos', { accessTokenFactory: () => state.token || localStorage.getItem('pos_jwt_token') || '' })
+                .withAutomaticReconnect()
+                .build();
+            posConnection.on('OnPrinterStatusChanged', (printerId, printerName, isOnline, pendingCount) => {
+                showToast(isOnline
+                    ? t('messages.printer_back_online', { name: printerName })
+                    : t('messages.printer_offline', { name: printerName, count: pendingCount }), isOnline ? 'success' : 'warning');
+                if (document.getElementById('adminPrintersList')?.offsetParent) loadAdminPrinters();
+            });
+        }
+        posConnectionStarted = true;
+        posConnection.start().catch(err => {
+            posConnectionStarted = false; // sera retenté à la prochaine authentification
+            console.log('SignalR hub /hubs/pos non connecté:', err);
+        });
+    }
+
     function setupSignalR() {
         if (typeof signalR === 'undefined') return;
         try {

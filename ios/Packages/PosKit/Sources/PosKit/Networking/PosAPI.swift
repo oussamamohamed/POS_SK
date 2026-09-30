@@ -39,7 +39,7 @@ public protocol PosAPI: Sendable {
     func categories() async throws -> [MenuCategory]
     func products() async throws -> [Product]
     func createCategory(name: String, colorHex: String, displayOrder: Int) async throws
-    func updateCategory(id: String, name: String, colorHex: String, displayOrder: Int) async throws
+    func updateCategory(id: String, name: String, colorHex: String, displayOrder: Int, preparationStationId: String?) async throws
     func createProduct(_ draft: ProductDraft) async throws
     func updateProduct(id: UUID, _ draft: ProductDraft) async throws
     func archiveProduct(id: UUID) async throws
@@ -96,6 +96,10 @@ public protocol PosAPI: Sendable {
     func printers() async throws -> [Printer]
     func savePrinter(_ printer: Printer, isNew: Bool) async throws
     func testPrinter(id: UUID) async throws -> TestPrintResult
+    func printerStatuses() async throws -> [PrinterStatus]
+    func printJobs(printerId: UUID) async throws -> [PrintJobInfo]
+    func retryPrintJob(id: UUID) async throws
+    func cancelPrintJob(id: UUID) async throws
 
     // Happy Hour
     func happyHourStatus(terminalId: String) async throws -> HappyHourStatus
@@ -125,13 +129,13 @@ public struct ProductDraft: Hashable, Sendable {
     public var categoryId: String
     public var price: Money
     public var taxRatePercent: Decimal
-    public var stationId: String
+    public var stationId: String?
     public var isQuickKey: Bool
     public var colorHex: String
     public var displayOrder: Int
     public var description: String
 
-    public init(name: String = "", categoryId: String = "", price: Money = .zero, taxRatePercent: Decimal = 10, stationId: String = "HOT_KITCHEN", isQuickKey: Bool = false, colorHex: String = "#3B82F6", displayOrder: Int = 0, description: String = "") {
+    public init(name: String = "", categoryId: String = "", price: Money = .zero, taxRatePercent: Decimal = 10, stationId: String? = nil, isQuickKey: Bool = false, colorHex: String = "#3B82F6", displayOrder: Int = 0, description: String = "") {
         self.name = name
         self.categoryId = categoryId
         self.price = price

@@ -27,6 +27,7 @@ public class KitchenRoutingServiceTests
         var drinkProd = new Product { Name = "Mojito", CategoryId = "CAT-DRINKS", Price = Money.FromDecimal(8m) };
         var steakProd = new Product { Name = "Entrecôte", CategoryId = "CAT-MAINS", Price = Money.FromDecimal(22m) };
 
+        dbContext.Categories.Add(new Category { Id = "CAT-DRINKS", Name = "Boissons", PreparationStationId = "BAR" });
         dbContext.Products.Add(drinkProd);
         dbContext.Products.Add(steakProd);
 
@@ -43,12 +44,12 @@ public class KitchenRoutingServiceTests
         // Assert
         tickets.Should().HaveCount(2);
 
-        var barTicket = tickets.FirstOrDefault(t => t.StationId == "STATION-BAR");
+        var barTicket = tickets.FirstOrDefault(t => t.StationId == "BAR");
         barTicket.Should().NotBeNull();
         barTicket!.Items.Should().HaveCount(1);
         barTicket.Items[0].ProductName.Should().Be("Mojito");
 
-        var hotTicket = tickets.FirstOrDefault(t => t.StationId == "STATION-HOT");
+        var hotTicket = tickets.FirstOrDefault(t => t.StationId == "HOT_KITCHEN");
         hotTicket.Should().NotBeNull();
         hotTicket!.Items.Should().HaveCount(1);
         hotTicket.Items[0].ProductName.Should().Be("Entrecôte");
@@ -92,5 +93,29 @@ public class KitchenRoutingServiceTests
         // Act & Assert 4: Recall from Served -> Ready
         var recalled = await routingService.RecallTicketAsync(ticketId);
         recalled!.Status.Should().Be(TicketStatus.Ready);
+    }
+
+    [Fact]
+    public async Task Resolve_UsesCategory_WhenItemAndProductEmpty()
+    {
+        var options = new DbContextOptionsBuilder<AppDbContext>().UseInMemoryDatabase("KdsRouting_" + Guid.NewGuid().ToString("N")).Options;
+        using var db = new AppDbContext(options);
+        db.Categories.Add(new Category { Id = "CAT-DRINKS", Name = "Boissons", PreparationStationId = "BAR" });
+        db.Categories.Add(new Category { Id = "CAT-MAINS", Name = "Plats" });
+        var mojito = new Product { Name = "Mojito", CategoryId = "CAT-DRINKS", Price = Money.FromDecimal(8m) };
+        var steak = new Product { Name = "Entrecôte", CategoryId = "CAT-MAINS", Price = Money.FromDecimal(22m) };
+        var tiramisu = new Product { Name = "Tiramisu", CategoryId = "CAT-MAINS", Price = Money.FromDecimal(7m), PreparationStationId = "DESSERT" };
+        db.Products.AddRange(mojito, steak, tiramisu);
+        var order = new Order { TableNumber = "T05" };
+        order.Items.Add(new OrderItem { ProductId = mojito.Id, ProductName = mojito.Name });
+        order.Items.Add(new OrderItem { ProductId = steak.Id, ProductName = steak.Name });
+        order.Items.Add(new OrderItem { ProductId = tiramisu.Id, ProductName = tiramisu.Name });
+        order.Items.Add(new OrderItem { ProductId = steak.Id, ProductName = "Steak grill", PreparationStationId = "GRILL" });
+        db.Orders.Add(order);
+        await db.SaveChangesAsync();
+
+        var tickets = await new KitchenRoutingService(db).SplitAndRouteOrderAsync(order.Id);
+
+        tickets.Select(t => t.StationId).Should().BeEquivalentTo(["BAR", "HOT_KITCHEN", "DESSERT", "GRILL"]);
     }
 }

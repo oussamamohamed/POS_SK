@@ -298,4 +298,67 @@
   <data name="admin.payment_method_other" xml:space="preserve">
     <value>Other Payment</value>
   </data>
+  <data name="errors.preparation_station_invalid" xml:space="preserve">
+    <value>Unknown preparation station.</value>
+  </data>
+  <data name="errors.receipt_printer_invalid" xml:space="preserve">
+    <value>Device or printer not found.</value>
+  </data>
+  <data name="receipt.test_title" xml:space="preserve">
+    <value>PRINT TEST</value>
+  </data>
+  <data name="receipt.test_printer" xml:space="preserve">
+    <value>Printer</value>
+  </data>
+  <data name="receipt.test_address" xml:space="preserve">
+    <value>Address</value>
+  </data>
+  <data name="receipt.test_paper" xml:space="preserve">
+    <value>Paper</value>
+  </data>
+  <data name="errors.print_job_not_found" xml:space="preserve">
+    <value>Print job not found.</value>
+  </data>
+  <data name="errors.print_job_not_retryable" xml:space="preserve">
+    <value>Only failed print jobs can be retried.</value>
+  </data>
+  <data name="errors.print_job_not_cancellable" xml:space="preserve">
+    <value>This print job can no longer be cancelled.</value>
+  </data>
+  <data name="kitchen_ticket.table" xml:space="preserve">
+    <value>TABLE {table}</value>
+  </data>
+  <data name="kitchen_ticket.takeaway" xml:space="preserve">
+    <value>TAKEAWAY</value>
+  </data>
+  <data name="kitchen_ticket.pickup" xml:space="preserve">
+    <value>Pickup #{number}</value>
+  </data>
+  <data name="kitchen_ticket.buzzer" xml:space="preserve">
+    <value>Buzzer {buzzer}</value>
+  </data>
+  <data name="kitchen_ticket.server" xml:space="preserve">
+    <value>Server</value>
+  </data>
+  <data name="kitchen_ticket.covers" xml:space="preserve">
+    <value>Covers</value>
+  </data>
+  <data name="kitchen_ticket.time" xml:space="preserve">
+    <value>Time</value>
+  </data>
+  <data name="kitchen_ticket.comment" xml:space="preserve">
+    <value>Note: {comment}</value>
+  </data>
+  <data name="kitchen_ticket.course_direct" xml:space="preserve">
+    <value>Now</value>
+  </data>
+  <data name="kitchen_ticket.course_suite" xml:space="preserve">
+    <value>Next course</value>
+  </data>
+  <data name="kitchen_ticket.course_dessert" xml:space="preserve">
+    <value>Dessert</value>
+  </data>
+  <data name="kitchen_ticket.course_on_demand" xml:space="preserve">
+    <value>On demand</value>
+  </data>
 </root>

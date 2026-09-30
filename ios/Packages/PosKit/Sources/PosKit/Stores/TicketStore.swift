@@ -12,6 +12,8 @@ public final class TicketStore {
     public private(set) var discount: GlobalDiscount?
     /// Reste dû communiqué par le serveur après un paiement partiel (split).
     public private(set) var remainingBalance: Money?
+    /// Le ticket du dernier encaissement a-t-il été mis en file d'impression ? nil = non demandé / inconnu.
+    public private(set) var lastPrintQueued: Bool?
     public private(set) var isBusy = false
     public private(set) var heldOrders: [HeldOrder] = []
 
@@ -357,7 +359,7 @@ public final class TicketStore {
     }
 
     /// Encaisse `amount` (part de split ou totalité + pourboire) avec le moyen `method`.
-    public func pay(method: PaymentMethod, amount: Money, tendered: Money) async -> CheckoutOutcome? {
+    public func pay(method: PaymentMethod, amount: Money, tendered: Money, printReceipt: Bool = false) async -> CheckoutOutcome? {
         guard amount.cents > 0 else { notifier.warning(L10n.string("payment.zero_amount")); return nil }
         guard tendered >= amount || method != .cash else {
             notifier.warning(String(format: L10n.string("payment.insufficient_tendered"), tendered.formatted, amount.formatted))
@@ -370,8 +372,10 @@ public final class TicketStore {
             let result = try await api.pay(PaymentRequest(
                 orderId: orderId, tableNumber: tableNumber, operatorId: session.currentOperator?.id,
                 terminalId: terminalId(),
-                tenders: [TenderInput(method: method, amount: amount, tendered: max(tendered, amount), changeGiven: change)]
+                tenders: [TenderInput(method: method, amount: amount, tendered: max(tendered, amount), changeGiven: change)],
+                requestReceiptPrint: printReceipt
             ))
+            lastPrintQueued = result.printQueued
             outcome = CheckoutOutcome(receiptNumber: result.receiptNumber, change: change, remaining: result.remainingBalance)
         }
         guard ok, let outcome else { return nil }
@@ -403,6 +407,7 @@ public final class TicketStore {
                 tipAmount: tip, requestFiscalReceiptPrint: printReceipt, mealVoucherPolicy: policy,
                 tenders: [CounterTender(method: method, amount: min(tendered, amount), tendered: tendered, facialValue: method == .mealVoucher ? tendered : nil)]
             ))
+            lastPrintQueued = result.printQueued
             outcome = CheckoutOutcome(
                 receiptNumber: result.receiptNumber, change: result.changeGiven, remaining: result.remainingBalance,
                 pickupNumber: result.pickupNumber, buzzer: (trimmedBuzzer?.isEmpty ?? true) ? nil : trimmedBuzzer,
