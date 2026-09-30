@@ -17,6 +17,7 @@ Objectifs :
 2. Imprimer le rapport X et la clôture Z, avec la liste des articles vendus (triés par famille puis nom) et les
    pourboires par serveur.
 3. Saisir un pourboire au paiement à table, attribué au serveur de la table.
+4. Fiabiliser la clôture Z : tout encaisser avant la Z, aucune annulation d'une période clôturée.
 
 ## Décisions
 
@@ -32,6 +33,8 @@ Objectifs :
 | Pourboire à table | Saisi à l'encaissement, **seulement sur le paiement qui solde la commande** |
 | Attribution du pourboire | Table : `Order.OperatorId` (serveur qui a ouvert la table) ; comptoir : opérateur connecté à l'encaissement si la commande n'a pas de serveur |
 | Écran des rapports | Inchangé : articles et pourboires n'apparaissent que sur le ticket imprimé |
+| Clôture Z | Refusée tant qu'une commande est en cours dans le restaurant : il faut tout encaisser avant la Z |
+| Annulation après Z | Interdite : un reçu d'une période clôturée ne peut plus être annulé |
 
 ## Mode texte
 
@@ -76,7 +79,8 @@ Calcul à partir de la période du rapport (X : période en cours de `GenerateXR
 (terminal principal : `TerminalId`, `POS_MAIN_TERM`, `POS01`).
 
 - **Commandes retenues** : ayant au moins un reçu non annulé (`IsVoid == false`, montant positif) dans la
-  période, et statut différent de `Cancelled`. Une vente annulée après coup disparaît donc d'une réimpression.
+  période, et statut différent de `Cancelled`. Une période clôturée ne pouvant plus recevoir d'annulation
+  (voir « Règles de clôture »), une réimpression de Z redonne la même liste.
 - **Articles** : lignes des commandes retenues, regroupées par (famille, nom d'article).
   - Famille : `Product.CategoryId` → `Category.Name` ; article ou famille introuvable → groupe « Autres »
     (clé `report.other_category`), placé en dernier.
@@ -118,6 +122,28 @@ Clés `report.*` dans les trois `.resx`.
   404 si aucune clôture.
 - Accès : manager/admin (politique du groupe `/api/fiscal`). NF525 inchangé : lecture seule de la chaîne.
 
+## Règles de clôture
+
+### Pas de Z avec des commandes en cours
+
+- Avant toute écriture, `POST /api/fiscal/z-closure` recherche les commandes en cours dans tout le restaurant
+  (une commande n'est rattachée à aucun terminal) : au moins un article, statut ni `Paid` ni `Cancelled`.
+  Cela inclut les commandes partiellement réglées et les paniers comptoir mis en attente ; une table ouverte
+  sans article ne bloque pas.
+- S'il y en a : 409 `{ code: "open_orders", message: Texts.T("errors.z_closure_open_orders"), openOrders: [...] }`,
+  chaque élément portant `tableNumber` (ou libellé du panier en attente) et `remainingTtc` (TTC restant dû,
+  décimal). Rien n'est écrit, rien n'est imprimé.
+- Le rapport X n'est pas concerné.
+
+### Pas d'annulation après Z
+
+- `POST /api/checkout/void/{receiptId}` refuse, avant toute écriture, un reçu dont `CreatedAtUtc` est
+  antérieur ou égal au `PeriodEndUtc` de la dernière clôture Z de son terminal (même règle d'alias du terminal
+  principal que `GetLatestZClosureAsync`) : 409 `{ code: "void_after_closure", message:
+  Texts.T("errors.void_after_closure") }`.
+- La vérification est une méthode du service fiscal, `IsInClosedPeriodAsync(string terminalId,
+  DateTimeOffset createdAtUtc)`, appelée par l'endpoint ; la chaîne NF525 et `VoidReceiptAsync` ne changent pas.
+
 ## Pourboire à table
 
 - `PaymentSettlementRequest.TipAmount` (decimal, défaut 0 ; négatif → 400).
@@ -134,7 +160,9 @@ Clés `report.*` dans les trois `.resx`.
 
 - Gestion → Imprimantes : case « Mode texte (fr/en, plus rapide) » à la création et à la modification.
 - Écran fiscal : bouton « Imprimer » sur le rapport X ; bouton « Réimprimer » sur la dernière clôture ;
-  avertissement si `printQueued` vaut `false` (y compris après une clôture Z).
+  avertissement si `printQueued` vaut `false` (y compris après une clôture Z) ; clôture Z refusée → message
+  et liste des tables / paniers à encaisser (numéro, TTC restant).
+- Annulation d'un reçu refusée après Z → message traduit (`void_after_closure`).
 - Paiement à table : champ pourboire (même interface que le comptoir), visible seulement quand le montant à
   encaisser est le solde restant ; le montant envoyé inclut le pourboire.
 - Chaînes en/fr/ar (web `i18n/*.json`, PosKit et app `.xcstrings`) ; fixtures iOS (`printers.json`, réponses
@@ -161,6 +189,10 @@ Clés `report.*` dans les trois `.resx`.
 - **Documents** : X et Z en en/fr/ar (titres, sections, signature Z seulement).
 - **Déclencheurs** : clôture Z → un job `Report`, `printQueued` vrai ; sans imprimante de caisse → aucun job,
   `printQueued` faux ; routes X et réimpression Z ; serveur (rôle Waiter) refusé ; 404 sans clôture.
+- **Règles de clôture** : Z refusée (409, liste) avec une table non soldée, une commande partiellement réglée,
+  un panier en attente ; acceptée avec une table ouverte sans article ; rien d'écrit en cas de refus ;
+  annulation d'un reçu antérieur à la dernière Z refusée (409), d'un reçu postérieur acceptée ; alias du
+  terminal principal.
 - **Pourboire** : attribué au serveur de la table ; au comptoir à l'opérateur connecté ; refusé sur un
   paiement partiel (400, rien d'écrit) ; reçu d'un paiement complet avec pourboire = TTC de la commande.
 - **Clients** : case mode texte, boutons Imprimer/Réimprimer, champ pourboire à table (Playwright, XCUITest),
@@ -173,7 +205,8 @@ Clés `report.*` dans les trois `.resx`.
 1. Mode texte : champ, API, rendu, choix du rendu.
 2. Pourboire à table et attribution comptoir.
 3. Données de rapport + documents X/Z.
-4. Déclencheurs X/Z + routes.
-5. Client web.
-6. iPad (PosKit + app).
-7. Documentation `docs/impression.md`.
+4. Règles de clôture (Z bloquée par les commandes en cours, pas d'annulation après Z).
+5. Déclencheurs X/Z + routes.
+6. Client web.
+7. iPad (PosKit + app).
+8. Documentation `docs/impression.md`.
