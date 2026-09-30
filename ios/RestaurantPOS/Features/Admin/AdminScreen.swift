@@ -477,6 +477,7 @@ struct PrintersAdminView: View {
                     }
                     Spacer()
                     if printer.openCashDrawerOnReceipt { Badge(text: String(localized: "admin.cash_drawer_badge"), color: .green, systemImage: "tray") }
+                    if printer.textMode { Badge(text: String(localized: "admin.printer_text_mode_badge"), color: .blue, systemImage: "textformat") }
                     if !printer.isActive { Badge(text: String(localized: "admin.deactivated_badge"), color: .red) }
                     Button("admin.test_button") { Task { await store.test(printer) } }
                         .buttonStyle(.bordered)
@@ -536,6 +537,7 @@ struct PrinterJobsList: View {
         case "PickupVoucher": String(localized: "admin.print_job_kind_pickupvoucher")
         case "Receipt": String(localized: "admin.print_job_kind_receipt")
         case "KitchenTicket": String(localized: "admin.print_job_kind_kitchenticket")
+        case "Report": String(localized: "admin.print_job_kind_report")
         default: kind
         }
     }
@@ -591,6 +593,7 @@ struct PrinterEditorSheet: View {
                     }
                     .pickerStyle(.segmented)
                     Toggle("admin.open_cash_drawer_toggle", isOn: $printer.openCashDrawerOnReceipt)
+                    Toggle("admin.printer_text_mode", isOn: $printer.textMode).accessibilityIdentifier("printer.textMode")
                 }
                 Section("admin.served_stations_section") {
                     ForEach(Self.stations, id: \.self) { station in

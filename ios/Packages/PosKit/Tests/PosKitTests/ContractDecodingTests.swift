@@ -15,6 +15,20 @@ struct ContractDecodingTests {
         try PosJSON.makeDecoder().decode(T.self, from: Self.fixture(name))
     }
 
+    @Test func decodesPrinterTextMode() throws {
+        let printers = try decode([Printer].self, "printers")
+        #expect(printers.contains { $0.textMode })
+    }
+
+    @Test func printerWithoutTextModeDecodesFalse() throws {
+        let json = #"{"id":"3f2504e0-4f89-11d3-9a0c-0305e82c3301","name":"P","ipAddress":"1.2.3.4","port":9100,"paperWidthMm":80,"openCashDrawerOnReceipt":false,"assignedStationIds":[],"isActive":true}"#
+        #expect(try JSONDecoder().decode(Printer.self, from: Data(json.utf8)).textMode == false)
+    }
+
+    @Test func decodesZClosurePrintQueued() throws {
+        #expect(try decode(FiscalReport.self, "z_closure").printQueued != nil)
+    }
+
     @Test func login() throws {
         let login = try decode(LoginResponse.self, "login")
         #expect(login.success)

@@ -241,14 +241,17 @@ public struct PaymentRequest: Codable, Hashable, Sendable {
     public var terminalId: String
     public var tenders: [TenderInput]
     public var requestReceiptPrint: Bool
+    /// Pourboire à table : accepté seulement si ce paiement solde la commande. Inclus dans les montants remis.
+    public var tipAmount: Money
 
-    public init(orderId: UUID?, tableNumber: String, operatorId: UUID?, terminalId: String, tenders: [TenderInput], requestReceiptPrint: Bool = false) {
+    public init(orderId: UUID?, tableNumber: String, operatorId: UUID?, terminalId: String, tenders: [TenderInput], requestReceiptPrint: Bool = false, tipAmount: Money = .zero) {
         self.orderId = orderId
         self.tableNumber = tableNumber
         self.operatorId = operatorId
         self.terminalId = terminalId
         self.tenders = tenders
         self.requestReceiptPrint = requestReceiptPrint
+        self.tipAmount = tipAmount
     }
 }
 

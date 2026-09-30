@@ -22,6 +22,15 @@ final class PrintingUITests: PosUITestCase {
         XCTAssertTrue(status.label.contains("État inconnu"), "statut : \(status.label)")
     }
 
+    func testPrinterEditorHasTextModeToggle() {
+        launch(section: "admin")
+        tap("admin.printers")
+        let row = app.staticTexts["Imprimante Caisse Comptoir"].firstMatch
+        XCTAssertTrue(row.waitForExistence(timeout: 5))
+        row.tap()
+        XCTAssertTrue(app.switches["printer.textMode"].waitForExistence(timeout: 5))
+    }
+
     func testCategoryStationPicker() {
         launch(section: "admin")
         tap("admin.catalog")

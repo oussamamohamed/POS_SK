@@ -2370,6 +2370,29 @@
         }
       }
     },
+    "admin.print_job_kind_report": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تقرير"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Report"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rapport"
+          }
+        }
+      }
+    },
     "admin.print_job_retry": {
       "extractionState": "manual",
       "localizations": {
@@ -2527,6 +2550,52 @@
           "stringUnit": {
             "state": "translated",
             "value": "État inconnu"
+          }
+        }
+      }
+    },
+    "admin.printer_text_mode": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "وضع النص (فرنسي/إنجليزي، أسرع)"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Text mode (fr/en, faster)"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mode texte (fr/en, plus rapide)"
+          }
+        }
+      }
+    },
+    "admin.printer_text_mode_badge": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "نص"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Text"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Texte"
           }
         }
       }
@@ -4854,6 +4923,29 @@
         }
       }
     },
+    "fiscal.print_x_report": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "طباعة تقرير X"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Print X report"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Imprimer le rapport X"
+          }
+        }
+      }
+    },
     "fiscal.reports_title": {
       "extractionState": "manual",
       "localizations": {
@@ -4873,6 +4965,29 @@
           "stringUnit": {
             "state": "translated",
             "value": "Rapports de caisse"
+          }
+        }
+      }
+    },
+    "fiscal.reprint_z": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "إعادة طباعة آخر إغلاق"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reprint last closure"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Réimprimer la dernière clôture"
           }
         }
       }

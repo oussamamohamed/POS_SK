@@ -136,6 +136,31 @@ struct HTTPPosAPITests {
         #expect(try body(last)["targetStations"] as? [String] == ["BAR"])
     }
 
+    @Test func paymentRequestEncodesTip() throws {
+        let req = PaymentRequest(orderId: nil, tableNumber: "T5", operatorId: nil, terminalId: "T01", tenders: [], tipAmount: Money(cents: 250))
+        let json = try #require(try JSONSerialization.jsonObject(with: JSONEncoder().encode(req)) as? [String: Any])
+        #expect((json["tipAmount"] as? NSNumber)?.decimalValue == Decimal(string: "2.5"))
+    }
+
+    @Test func printerTextModeIsSentOnCreateAndUpdate() async throws {
+        let api = makeAPI { _ in .init(status: 200, body: "{}") }
+        let printer = Printer(name: "Bar", ipAddress: "10.0.0.2", textMode: true)
+        try await api.savePrinter(printer, isNew: true)
+        #expect(try body(last)["textMode"] as? Bool == true)
+        try await api.savePrinter(printer, isNew: false)
+        #expect(try body(last)["textMode"] as? Bool == true)
+    }
+
+    @Test func reportPrintRoutesReturnPrintQueued() async throws {
+        let api = makeAPI { _ in .init(status: 200, body: #"{"printQueued":true}"#) }
+        #expect(try await api.printXReport(terminalId: "T01"))
+        #expect(last.httpMethod == "POST")
+        #expect(last.url?.path == "/api/fiscal/x-report/print")
+        #expect(last.url?.query == "terminalId=T01")
+        #expect(try await api.reprintLatestClosure(terminalId: "T01"))
+        #expect(last.url?.path == "/api/fiscal/latest-closure/print")
+    }
+
     @Test func fecExportUsesContentDispositionFileName() async throws {
         let api = makeAPI { _ in .init(status: 200, body: "JournalCode|JournalLib", headers: ["Content-Disposition": "attachment; filename=123456789FEC20260924.txt; filename*=UTF-8''x"]) }
         let result = try await api.exportFec(from: Date(timeIntervalSince1970: 0), to: Date(), siren: "123456789")

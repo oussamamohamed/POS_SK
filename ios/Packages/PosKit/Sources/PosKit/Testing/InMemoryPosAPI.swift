@@ -427,6 +427,7 @@ public actor InMemoryPosAPI: PosAPI {
         var id = request.orderId
         if id == nil || orders[id!] == nil, let i = tableIndex(request.tableNumber) { id = tablesStore[i].activeOrderId }
         guard let orderId = id else { throw APIError.server(status: 400, message: "Commande introuvable pour ce règlement.") }
+        orders[orderId]?.tipCents += request.tipAmount.cents
         let result = try settle(orderId: orderId, terminal: request.terminalId, tenders: request.tenders.map { ($0.method, $0.amount.cents, $0.tendered.cents) })
         return PaymentResult(receiptNumber: result.receipt, totalPaid: Money(cents: result.paid), changeGiven: Money(cents: result.change), remainingBalance: Money(cents: result.remaining), fiscalSignature: String(repeating: "A", count: 64), printQueued: request.requestReceiptPrint && result.remaining == 0 && hasReceiptPrinter)
     }
@@ -552,6 +553,17 @@ public actor InMemoryPosAPI: PosAPI {
         return summary(terminal: terminalId)
     }
 
+    public func printXReport(terminalId: String) async throws -> Bool {
+        try await step("printXReport"); try requireManager()
+        return hasReceiptPrinter
+    }
+
+    public func reprintLatestClosure(terminalId: String) async throws -> Bool {
+        try await step("reprintLatestClosure"); try requireManager()
+        guard closures.contains(where: { $0.terminalId == terminalId }) else { throw APIError.notFound(nil) }
+        return hasReceiptPrinter
+    }
+
     public func latestClosure(terminalId: String) async throws -> FiscalReport? {
         try await step("latestClosure"); try requireManager()
         return closures.last { $0.terminalId == terminalId }
@@ -559,12 +571,21 @@ public actor InMemoryPosAPI: PosAPI {
 
     public func zClosure(terminalId: String, managerId: UUID, managerName: String) async throws -> FiscalReport {
         try await step("zClosure"); try requireManager()
+        let open = tablesStore.compactMap { t -> String? in
+            guard let id = t.activeOrderId, let record = orders[id], !record.order.lines.isEmpty else { return nil }
+            let remaining = max(0, totals(of: record.order).totalTtc.cents + record.tipCents - record.paidCents)
+            return "\(t.tableNumber) (\(String(format: "%d.%02d", remaining / 100, remaining % 100)))"
+        }
+        if !open.isEmpty {
+            throw APIError.server(status: 409, message: "Clôture Z impossible : \(open.count) commande(s) en cours : \(open.joined(separator: ", "))")
+        }
         var report = summary(terminal: terminalId)
         report.closureSequence = closures.filter { $0.terminalId == terminalId }.count + 1
         report.signatureHash = String(format: "%064X", report.totalSalesTtc.cents &* 2654435761 &+ (report.closureSequence ?? 0))
         report.closedAtUtc = Date()
         closures.append(report)
         receipts.removeAll { $0.terminal == terminalId }
+        report.printQueued = hasReceiptPrinter
         return report
     }
 

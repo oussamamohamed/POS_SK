@@ -85,6 +85,10 @@ public protocol PosAPI: Sendable {
     func xReport(terminalId: String) async throws -> FiscalReport
     func latestClosure(terminalId: String) async throws -> FiscalReport?
     func zClosure(terminalId: String, managerId: UUID, managerName: String) async throws -> FiscalReport
+    /// Imprime le rapport X ; `true` si mis en file d'impression.
+    func printXReport(terminalId: String) async throws -> Bool
+    /// Réimprime la dernière clôture Z ; `true` si mis en file d'impression.
+    func reprintLatestClosure(terminalId: String) async throws -> Bool
     func exportFec(from: Date, to: Date, siren: String) async throws -> (fileName: String, data: Data)
     func dashboard(from: Date, to: Date) async throws -> FinancialDashboard
 
