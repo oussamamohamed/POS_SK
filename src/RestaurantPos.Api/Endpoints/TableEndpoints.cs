@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -72,13 +73,14 @@ public static class TableEndpoints
                 }
             }
 
+            IReadOnlyList<KitchenTicketDto> tickets = [];
             if (table?.ActiveOrderId is not null)
             {
-                var tickets = await kds.SplitAndRouteOrderAsync(table.ActiveOrderId.Value);
-                await printing.QueueKitchenTicketsAsync(tickets.Select(t => t.TicketId).ToList());
+                tickets = await kds.SplitAndRouteOrderAsync(table.ActiveOrderId.Value);
             }
 
             var ok = await tableService.DispatchOrderLinesAsync(tableNumber);
+            await printing.QueueKitchenTicketsAsync(tickets.Select(t => t.TicketId).ToList());
             return ok ? Results.Ok(new { Success = true }) : Results.NotFound();
         });
     }

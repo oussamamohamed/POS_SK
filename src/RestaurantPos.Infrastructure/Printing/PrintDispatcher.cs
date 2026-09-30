@@ -94,7 +94,16 @@ public sealed class PrintDispatcher
                 }
                 var document = TicketDocumentBuilder.KitchenTicket(ticket, await LoadOrderAsync(ticket.OrderId, ct).ConfigureAwait(false), language);
                 foreach (var printer in targets)
-                    await _queue.EnqueueAsync(printer.Id, PrintJobKind.KitchenTicket, document, false, ct).ConfigureAwait(false);
+                {
+                    try
+                    {
+                        await _queue.EnqueueAsync(printer.Id, PrintJobKind.KitchenTicket, document, false, ct).ConfigureAwait(false);
+                    }
+                    catch (Exception ex) when (ex is not OperationCanceledException)
+                    {
+                        PrintLog.QueueFailed(_logger, ex);
+                    }
+                }
             }
         }
         catch (Exception ex)

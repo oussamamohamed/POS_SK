@@ -1,8 +1,10 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using RestaurantPos.Domain.Entities;
 using RestaurantPos.Infrastructure.Persistence;
 
@@ -57,7 +59,17 @@ public sealed class PrintQueue
             DeadlineAtUtc = now + PrintJob.Lifetime,
             CreatedAtUtc = now
         });
-        await _db.SaveChangesAsync(ct).ConfigureAwait(false);
+        try
+        {
+            await _db.SaveChangesAsync(ct).ConfigureAwait(false);
+        }
+        catch
+        {
+            // Le job en échec resterait Added dans le contexte partagé et ferait échouer le prochain SaveChanges métier.
+            foreach (var entry in _db.ChangeTracker.Entries<PrintJob>().Where(e => e.State == EntityState.Added).ToList())
+                entry.State = EntityState.Detached;
+            throw;
+        }
         _signal.Notify();
     }
 }
