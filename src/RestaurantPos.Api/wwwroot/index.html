@@ -418,6 +418,11 @@
                                             (RJ11)</span>
                                         </label>
                                     </div>
+                                    <div class="form-group checkbox-group">
+                                        <label>
+                                            <input type="checkbox" id="newPrinterTextMode"> <span data-i18n="admin.printer_text_mode">Mode texte (fr/en, plus rapide)</span>
+                                        </label>
+                                    </div>
                                     <button type="submit" class="btn-primary" data-i18n="admin.save_printer">Enregistrer l'Imprimante</button>
                                 </form>
                             </div>
@@ -874,6 +879,12 @@
                         </button>
                         <button class="btn-fiscal" id="btnPreviewX" style="background:rgba(255,255,255,0.1); color:#fff; border:1px solid rgba(255,255,255,0.2);">
                             <span>👁️</span> <span data-i18n="fiscal.preview_x">Aperçu du Rapport X (En cours)</span>
+                        </button>
+                        <button class="btn-fiscal" id="btnPrintXReport" style="background:rgba(255,255,255,0.1); color:#fff; border:1px solid rgba(255,255,255,0.2);">
+                            <span>🖨️</span> <span data-i18n="fiscal.print_x_report">Imprimer le rapport X</span>
+                        </button>
+                        <button class="btn-fiscal" id="btnReprintZ" style="background:rgba(255,255,255,0.1); color:#fff; border:1px solid rgba(255,255,255,0.2);">
+                            <span>🖨️</span> <span data-i18n="fiscal.reprint_z">Réimprimer la dernière clôture</span>
                         </button>
                     </div>
 
@@ -1528,6 +1539,12 @@
                     <label style="cursor:pointer; display:flex; align-items:center; gap:8px;">
                         <input type="checkbox" id="editPrinterDrawer" style="width:18px; height:18px;" />
                         <span data-i18n="admin.printer_drawer_trigger">Déclencher le tiroir-caisse (RJ11)</span>
+                    </label>
+                </div>
+                <div class="form-group checkbox-group" style="display:flex; align-items:center; gap:8px;">
+                    <label style="cursor:pointer; display:flex; align-items:center; gap:8px;">
+                        <input type="checkbox" id="editPrinterTextMode" style="width:18px; height:18px;" />
+                        <span data-i18n="admin.printer_text_mode">Mode texte (fr/en, plus rapide)</span>
                     </label>
                 </div>
                 <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:10px;">
