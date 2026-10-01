@@ -41,7 +41,7 @@ public sealed class FinancialDashboardService : IFinancialDashboardService
             .ConfigureAwait(false);
 
         var receipts = allReceipts
-            .Where(r => r.CreatedAtUtc >= startUtc && r.CreatedAtUtc <= endUtc && !r.IsVoid)
+            .Where(r => r.CreatedAtUtc >= startUtc && r.CreatedAtUtc <= endUtc && !r.IsVoid && r.VoidedReceiptId == null)
             .ToList();
 
         // 2. Fetch Orders and related data in memory
