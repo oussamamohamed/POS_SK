@@ -1,18 +1,14 @@
 <!--
 Sync Impact Report
-- Version change: 1.2.0 → 1.3.0
-- List of modified principles:
-  * I. Touch-First Ergonomics & iPadOS Tactile Design (Clarified touch targets, gestures, and on-screen keypad rules)
-  * II. Clean Architecture & Centralized Multi-POS Backend (Specified .NET 9, shared Domain/Application assemblies, MVVM CommunityToolkit)
-  * III. Transactional Integrity and Offline-First Operations (Added UUIDv7 decentralized IDs, Outbox pattern, and sandbox persistence)
-  * IV. Hardware Driver Abstraction, mDNS Discovery & Real-Time Sync (Detailed raw TCP port 9100 ESC/POS, mDNS/Bonjour, SignalR TableHub)
-  * V. Test-First, Immutability & Fiscal Traceability (NON-NEGOTIABLE) (Formalized NF525 SHA-256 chaining, JET logs, and Z-closure)
-- Added sections:
-  * ## Deployment Topologies, Apple Ecosystem & Enterprise Stack
-  * ## Robust Software Engineering, Quality Gates & Fiscal Compliance
-- Removed sections:
-  * None
-- Follow-up TODOs: None (Fully synchronized with PLAN.md)
+- Version change: 1.3.0 → 2.0.0 (MAJOR: suppression de MediatR/CQRS, .NET MAUI, PostgreSQL, TableHub et des abstractions matérielles qui n'existent pas dans le code)
+- Principes modifiés:
+  * II. Clean Architecture & Backend Multi-POS Centralisé (services simples au lieu de MediatR; clients web + SwiftUI au lieu de MAUI)
+  * III. Intégrité transactionnelle et opérations offline (SQLite côté serveur, outbox/sync réellement présents)
+  * IV. Périphériques, découverte réseau & temps réel (PrintDispatcher/PrintWorker, Bonjour, hubs /hubs/pos et /hubs/kitchen)
+  * V. Test-First, Immutabilité & Traçabilité fiscale (formule de hash réelle, JET décrit tel qu'implémenté)
+- Sections modifiées: Topologies de déploiement, Qualité & conformité
+- Suivi: le journal technique (JET) n'est pas chaîné (EntryHash non cryptographique); ouverture de tiroir, réimpression et changement d'opérateur ne sont pas journalisés. Écarts listés dans specs/006.../spec.md.
+- Source de vérité: le code (CLAUDE.md).
 -->
 
 # Restaurant POS System Constitution
@@ -20,45 +16,44 @@ Sync Impact Report
 ## Core Principles
 
 ### I. Touch-First Ergonomics & iPadOS Tactile Design
-All Front-of-House user interfaces MUST be engineered exclusively for tactile screens across the Apple iPad ecosystem (iPad 10.9", iPad Pro 11"/13", iPad Mini 8.3") and touchscreen POS terminals. Touch targets MUST adhere to a minimum size of 54x54 pt (and 68x68 pt for high-velocity rush items) with generous touch padding. Workflows MUST eliminate system virtual pop-up keyboards during ordering; an integrated, fixed on-screen custom numeric keypad is mandatory to prevent obscuring the order cart or totals. Natural tactile gestures (Swipe for quick item removal/hold, Long-press/Haptic Touch for modifiers and doneness, Pinch-to-zoom for 2D floor plans) MUST be supported natively. Instant visual/haptic feedback (< 50ms) and adaptive light/dark themes (dark for dim bar atmospheres, high-contrast light for outdoor terraces) are mandatory.
+Toutes les interfaces de salle MUST être conçues pour écrans tactiles (iPad 10.9", iPad Pro 11"/13", iPad Mini 8.3"). Les cibles tactiles MUST respecter au minimum 54x54 pt (68x68 pt pour les articles à forte cadence). Le clavier système MUST être évité pendant la prise de commande: un pavé numérique intégré et fixe est obligatoire pour ne pas masquer le panier ni les totaux. Gestes naturels (balayage, appui long, pincement sur le plan de salle) et thèmes clair/sombre adaptatifs sont requis. Le retour visuel/haptique MUST rester immédiat (< 50 ms).
 
-### II. Clean Architecture & Centralized Multi-POS Backend
-The solution MUST adhere strictly to Clean Architecture and CQRS (Command Query Responsibility Segregation via MediatR) separating Domain, Application, Infrastructure, and Presentation layers. Core business libraries (`RestaurantPos.Domain`, `RestaurantPos.Application`) MUST be shared across both the centralized .NET 9 ASP.NET Core backend and the .NET MAUI iOS/iPadOS client. The central backend serves as the authoritative orchestrator for multi-terminal and multi-outlet management: central catalog (menus, variants, recipes, VAT rates), global inventory tracking, multi-operator access controls, and consolidated financial reporting. The frontend MUST utilize modern MVVM architecture (`CommunityToolkit.Mvvm`). Core domain business logic MUST remain 100% decoupled from transport layers, databases, and UI frameworks, with strong typing and asynchronous non-blocking I/O (`async`/`await`) enforced across all boundaries.
+### II. Clean Architecture & Backend Multi-POS Centralisé
+La solution MUST respecter la Clean Architecture avec les couches `Domain` ← `Application` ← `Infrastructure` ← `Api` (.NET 9, ASP.NET Core Minimal API, `RestaurantPos.slnx`). Il n'y a ni MediatR ni CQRS: les endpoints appellent directement des services injectés (`I*Service` dans `Application/Common/Interfaces`), enregistrés dans `Program.cs`. Le Domain ne dépend d'aucune couche de transport, de base de données ou d'interface. Le backend central est l'orchestrateur faisant autorité (catalogue, TVA, opérateurs, rapports). Les clients sont le client web tactile (`wwwroot/app.js`) et l'app native SwiftUI (`ios/`, Swift 6, iPadOS 17+, logique dans le package `PosKit`). Les DTO du web, de PosKit et de .NET sont synchronisés à la main, avec des fixtures de contrat côté Swift.
 
 ### III. Transactional Integrity and Offline-First Operations
-Every sales transaction MUST be recorded in an immutable, append-only local journal before being processed further. The application MUST support fully functional offline operations (Local-First pattern with embedded SQLite in the iOS application sandbox `FileSystem.AppDataDirectory`), safely buffering sales records locally and synchronizing them to the cloud / central backend once network connectivity is verified. Decentralized, collision-free chronological identifiers (UUIDv7) MUST be generated locally. Local and remote transaction states MUST remain consistent, idempotent, and auditable at all times with unique idempotency tokens on every mutation.
+Les écritures fiscales MUST être append-only: toute correction passe par une annulation (void) ou un avoir chaîné, jamais par une mise à jour. Le journal `TransactionJournalEntry` et l'endpoint `/api/sync/receipt` assurent la synchronisation idempotente (clé d'idempotence sur chaque mutation). Les identifiants sont des UUIDv7 générés localement. La persistance est SQLite (EF Core, `EnsureCreated()` + `ALTER TABLE` idempotents dans `Program.cs`, sans migrations EF); le fournisseur InMemory est réservé à l'environnement `Testing`. Les routes qui écrivent des reçus MUST exiger un appareil appairé (`X-Device-Token`); le serveur impose le `terminalId` issu de l'appareil. Le client iPad garde un ticket brouillon local et ne l'envoie qu'aux moments clés (envoi cuisine, paiement, remise, mise en attente, transfert).
 
-*Rationale*: Unstable network connectivity at physical retail locations must not cause business interruption or transaction loss.
+*Rationale*: un réseau instable ne doit ni interrompre le service ni perdre de transaction.
 
-### IV. Hardware Driver Abstraction, mDNS Discovery & Real-Time Sync
-Physical restaurant peripherals (ESC/POS thermal receipt and kitchen printers over raw TCP sockets on port 9100, RJ11 cash drawers, barcode/RFID scanners, IP/BLE payment terminals) MUST be encapsulated behind strict hardware abstraction interfaces (`IPrinterService`, `IPaymentTerminalService`, `ICashDrawerService`). Network discovery of central servers and peripherals MUST leverage zero-configuration mDNS / Bonjour protocols with appropriate iOS local network permissions (`NSLocalNetworkUsageDescription`). Real-time floor plan table states and Kitchen Display System (KDS) order routing MUST utilize persistent SignalR / WebSocket channels featuring automatic exponential reconnection and missed-event replay buffers.
+### IV. Périphériques, découverte réseau & temps réel
+L'impression MUST passer par `PrintDispatcher` (mise en file de `PrintJobs`, sans jamais faire échouer l'opération métier) et `PrintWorker` (rendu ESC/POS raster, envoi TCP 9100); la station est résolue article → produit → catégorie → `HOT_KITCHEN`. Le serveur s'annonce en Bonjour (`_restaurantpos._tcp`) via `NetworkDiscoveryBeaconService`. Le temps réel utilise SignalR: `/hubs/pos` (`PosHub`, authentifié) et `/hubs/kitchen` (`KitchenHub`); renommer un événement casse les deux clients. Aucune abstraction `IPrinterService`/`ICashDrawerService`/`IPaymentTerminalService` n'existe à ce jour; les terminaux de paiement et le tiroir-caisse ne sont pas intégrés.
 
-### V. Test-First, Immutability & Fiscal Traceability (NON-NEGOTIABLE)
-Financial calculations (VAT breakdown, discounts, price modifiers, multi-way bill splitting) MUST use dedicated `Money` value objects represented as integer cents with zero rounding tolerance; binary floating-point types (`float`, `double`) are strictly forbidden. All transactional records MUST be cryptographically secured using SHA-256 block chaining ($Hash_n = \text{SHA256}(Hash_{n-1} + \text{HorodatageUtc} + \text{TotalTTC} + \text{VentilationTVA})$) and an immutable Technical Event Log (JET) satisfying regulatory fiscal standards (Norme NF525). Test-Driven Development (TDD) is mandatory for domain logic, complemented by automated API integration tests (`WebApplicationFactory`) and tactile UI component verification before any release.
+### V. Test-First, Immutabilité & Traçabilité fiscale (NON-NEGOTIABLE)
+Les calculs financiers (TVA, remises, partage de note) MUST utiliser le value object `Money` en centimes entiers, sans tolérance d'arrondi; `float`/`double` sont interdits. Les reçus fiscaux et les clôtures Z MUST être chaînés en SHA-256 (norme NF525) par `NF525FiscalAuditService`:
 
-## Deployment Topologies, Apple Ecosystem & Enterprise Stack
+`SignatureHash = HEX(SHA256("{previousHash}|{terminalId}|{sequenceNumber}|{amountCents}|{timestampUtc:O}|{taxBreakdownJson}"))`
 
-- **Supported Topologies**:
-  1. *Multi-Terminal Restaurant (Recommended)*: Centralized local .NET 9 ASP.NET Core server (Mini-PC/Linux/Mac mini with PostgreSQL) connected over local Wi-Fi to multiple iPad POS clients (.NET MAUI), kitchen KDS terminals, network ESC/POS printers, and IP payment terminals.
-  2. *Standalone iPad POS (Food-Truck / Autonomous)*: Single iPad executing .NET MAUI with embedded SQLite, offline business engine, and direct Wi-Fi/Bluetooth printer connection.
-- **Client Runtime & Frontend**: Native SwiftUI iPad app (Swift 6, iPadOS 17+) in `ios/`, business logic in the `PosKit` Swift package, covered by Swift Testing unit tests and XCUITest UI tests. The former .NET MAUI client has been removed.
-- **Centralized Backend Runtime**: .NET 9 (C#), ASP.NET Core Web API, SignalR Hubs (`TableHub`), MediatR for CQRS pipelines, Entity Framework Core multi-provider (PostgreSQL/SQL Server for central server, SQLite for local terminal cache).
-- **Security & Multi-Operator Authentication**: Sub-50ms PIN / NFC badge operator switching; Role-Based Access Control (RBAC: Cashier, Waiter, Kitchen Staff, Floor Manager, Admin); tokenized payment gateways with zero local cardholder storage (PCI-DSS compliance); Apple Business Manager (ABM) / MDM profiles for Single App Mode (kiosk locking).
-- **Performance Service Level Objectives (SLOs)**: Tactile input-to-render feedback < 50ms; transactional API latency p95 < 200ms; multi-terminal real-time state synchronization < 200ms; kitchen ticket and receipt print dispatch < 500ms.
+La chaîne commence à `GenesisHash` (`GENESIS_` + 64 zéros), est propre à chaque terminal et vérifiable par `ValidateAuditChainIntegrityAsync`. Modifier l'ordre des champs, le format ou la sérialisation de la ventilation TVA invalide les chaînes existantes: c'est INTERDIT sans migration fiscale validée. Un reçu ne peut être annulé que depuis l'appareil qui l'a émis, et plus après une clôture Z couvrant sa période. La clôture Z est refusée tant qu'il reste des commandes ouvertes. Le Journal des Événements Techniques (JET) est tenu dans `TransactionJournalEntry` (événements `EVENT_*`); il n'est pas encore chaîné cryptographiquement. Le TDD est obligatoire pour la logique domaine, complété par des tests d'intégration API (`WebApplicationFactory`), des tests Swift Testing/XCUITest côté iOS et des tests Playwright côté web.
 
-## Robust Software Engineering, Quality Gates & Fiscal Compliance
+## Topologies de déploiement & pile technique
 
-- **Code Quality & Static Analysis**: Strict static analysis enforced at build time (`.editorconfig`, `Directory.Build.props`, Roslyn analyzers, StyleCop, Nullable reference types enabled, `TreatWarningsAsErrors` enabled in CI). Zero compiler warnings permitted.
-- **Resilience & Fault Tolerance**: Implementation of Polly retry/circuit-breaker policies on external integrations; structured validation with FluentValidation before command handling; fail-fast design on invariant violations.
-- **Observability & Diagnostics**: Structured logging (OpenTelemetry / Serilog in JSON format) with distributed correlation IDs tracing orders from tactile client to central backend, database, and printer queues; proactive health monitoring endpoints (`/healthz/live`, `/healthz/ready`).
-- **Fiscal Compliance & Archiving**: Automated generation of immutable daily Z-reports, intermediate X-reports, and monthly fiscal archives (FEC export) with cryptographically verified hash chains and tamper-detection audits.
+- **Topologie supportée**: serveur local .NET 9 (mini-PC/Linux/Mac) avec base SQLite, relié en Wi-Fi à plusieurs iPad (app SwiftUI ou client web), écrans cuisine (KDS) et imprimantes ESC/POS réseau.
+- **Authentification**: connexion opérateur par PIN → JWT (`Jwt:Secret` obligatoire hors Development), limitation de débit sur le PIN; rôles manager, serveur, cuisine, admin.
+- **Objectifs de performance (SLO)**: retour tactile < 50 ms; latence API transactionnelle p95 < 200 ms; synchronisation temps réel multi-terminaux < 200 ms; envoi d'impression < 500 ms. Ces objectifs ne sont pas mesurés automatiquement à ce jour.
+
+## Qualité logicielle & conformité fiscale
+
+- **Analyse statique**: `Directory.Build.props` active `TreatWarningsAsErrors`, `EnforceCodeStyleInBuild` et `AnalysisLevel=latest-recommended`; `.editorconfig` fait foi. Zéro avertissement toléré.
+- **Observabilité**: journalisation ASP.NET Core standard. Pas de Polly, FluentValidation, Serilog/OpenTelemetry ni de points de santé `/healthz` à ce jour.
+- **Conformité & archivage**: rapports X, clôtures Z (total perpétuel `PerpetualGrandTotalCents`) et export FEC (`FecExportService`) avec audit de la chaîne de hachage. Aucune attestation de conformité NF525 par un tiers n'est documentée.
 
 ## Governance
 
-This Constitution represents the authoritative architectural and operational standard for the Restaurant POS project. It supersedes all informal agreements and undocumented patterns.
+Cette Constitution est la référence architecturale et opérationnelle du projet. En cas de divergence avec le code, le code fait foi et la Constitution MUST être corrigée.
 
-- **Amendments**: Any change to principles, technical stack requirements, or governance rules requires a formal proposal, architectural review, and explicit consensus.
-- **Compliance in Code Reviews**: Every Pull Request MUST be evaluated against these principles—specifically touch ergonomics, .NET clean architecture boundaries, offline resilience, and fiscal hash integrity.
-- **Versioning Policy**: The Constitution follows Semantic Versioning (MAJOR for breaking governance/architectural removals, MINOR for new principles or constraints, PATCH for clarifications and typo fixes).
+- **Amendements**: tout changement de principe, de pile technique ou de gouvernance requiert une proposition, une revue d'architecture et un consensus explicite.
+- **Revues de code**: chaque PR MUST être évaluée au regard de ces principes (ergonomie tactile, frontières Clean Architecture, résilience offline, intégrité du hash fiscal).
+- **Versionnage**: Semantic Versioning (MAJOR pour suppression/rupture de gouvernance ou d'architecture, MINOR pour nouveau principe, PATCH pour clarifications).
 
-**Version**: 1.3.0 | **Ratified**: 2026-08-15 | **Last Amended**: 2026-08-15
+**Version**: 2.0.0 | **Ratified**: 2026-08-15 | **Last Amended**: 2026-10-01

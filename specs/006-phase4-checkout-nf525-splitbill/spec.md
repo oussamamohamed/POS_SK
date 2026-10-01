@@ -4,7 +4,7 @@
 
 **Created**: 2026-08-15
 
-**Status**: Draft
+**Status**: Implemented (aligné sur le code le 2026-10-01; écarts restants listés en fin de document)
 
 **Input**: User description: "phase 4" (From PLAN.md Phase 4: Caisse, Encaissement & Clôtures Fiscales NF525)
 
@@ -44,7 +44,7 @@ Waitstaff need to divide dining checks easily—either equally across $N$ guests
 
 ### User Story 3 - NF525 Cryptographic Audit Hash Chain & Fiscal Closures (Priority: P1)
 
-The restaurant owner and tax auditor require an immutable, append-only audit ledger compliant with French NF525 fiscal regulations, featuring sequential receipt numbering (`POS01-001042`), cryptographic SHA-256 chaining ($\text{Hash}_n = \text{SHA-256}(\text{Hash}_{n-1} \parallel \text{Data}_n)$), on-demand X-reports, and immutable daily Z-closures.
+The restaurant owner and tax auditor require an immutable, append-only audit ledger compliant with French NF525 fiscal regulations, featuring sequential receipt numbering per terminal (`T01-000042`), cryptographic SHA-256 chaining ($\text{Hash}_n = \text{SHA-256}(\text{Hash}_{n-1} | \text{Terminal} | \text{Seq} | \text{AmountCents} | \text{TimestampUtc} | \text{TaxBreakdownJson})$), on-demand X-reports, and immutable daily Z-closures.
 
 **Why this priority**: Legal requirement under French finance law (article 286 du CGI / NF525 / LNE) to prevent tax fraud and tampering.
 
@@ -52,36 +52,36 @@ The restaurant owner and tax auditor require an immutable, append-only audit led
 
 **Acceptance Scenarios**:
 
-1. **Given** a new transaction, **When** persisted, **Then** its signature $\text{SHA-256}(\text{PrevHash} \parallel \text{Seq} \parallel \text{Amount} \parallel \text{Taxes} \parallel \text{Timestamp})$ is computed and saved immutably.
+1. **Given** a new transaction, **When** persisted, **Then** its signature `HEX(SHA256("{prevHash}|{terminalId}|{seq}|{amountCents}|{timestampUtc:O}|{taxBreakdownJson}"))` is computed and saved immutably. The first receipt of a terminal chains from `GenesisHash` (`GENESIS_` + 64 zeros).
 2. **Given** a request for an X-report during a shift, **When** generated, **Then** total sales by VAT category (5.5%, 10%, 20%) and payment method are printed without resetting counters.
-3. **Given** end-of-day closure (Z-report), **When** confirmed by a manager PIN, **Then** daily counters reset to zero, perpetual cumulative sales are updated, and a cryptographic closure signature is recorded.
+3. **Given** end-of-day closure (Z-report), **When** confirmed by a manager PIN, **Then** the period is sealed, `PerpetualGrandTotalCents` is updated, and a closure signature chained to the previous closure is recorded. The Z-closure is refused while open orders remain, and no void is allowed on a receipt covered by a Z-closure.
 
 ---
 
 ### Edge Cases
 
 - **Exact Cent Distribution on Split Bills**: Dividing 100.00 € by 3 yields parts of 33.34 €, 33.33 €, 33.33 €, strictly summing to 100.00 €.
-- **Chain Tampering Detection**: If any row in the SQLite or PostgreSQL journal is altered manually, the verification algorithm immediately detects a broken signature link and raises a fiscal integrity alert.
-- **Offline Receipt Generation**: Terminal creates sequential terminal-prefixed numbers (`POS01-001042`) offline, preventing duplicate sequence collisions.
+- **Chain Tampering Detection**: If any receipt in the SQLite database is altered manually, the `ValidateAuditChainIntegrityAsync` reports the first receipt with a broken previous-hash link or an invalid signature (`AuditValidationResult.BrokenLinkReceiptNumber`).
+- **Offline Receipt Generation**: Receipts are written through `/api/sync/receipt` with the paired device's terminal id; the server assigns the sequence, and the chain is per terminal. Receipt-writing routes require a paired device (`X-Device-Token`, else `401 device_not_paired`).
 
 ## Requirements *(mandatory)*
 
 ### Functional Requirements
 
-- **FR-001**: System MUST support multi-tender checkout per transaction (Cash, Credit Card, Meal Voucher / Titres Restaurant, Gift Card).
+- **FR-001**: System MUST support multi-tender checkout per transaction (`PaymentMethod`: Cash, CreditCard, MealVoucher / Titres Restaurant, GiftCard, RoomCharge).
 - **FR-002**: System MUST compute change due in real-time when cash tendered exceeds remaining balance.
 - **FR-003**: System MUST provide tactile split-bill modes: Equal division across $N$ guests, or Itemized selection of dishes per sub-group.
-- **FR-004**: System MUST maintain an append-only cryptographic hash chain complying with French NF525 requirements: $\text{CurrentHash} = \text{SHA-256}(\text{PreviousHash} \parallel \text{Sequence} \parallel \text{AmountCents} \parallel \text{TimestampUtc} \parallel \text{TaxesJson})$.
-- **FR-005**: System MUST assign monotonic sequential receipt numbers formatted per terminal (e.g. `POS01-001042`).
+- **FR-004**: System MUST maintain an append-only cryptographic hash chain complying with French NF525 requirements: $\text{CurrentHash} = \text{HEX}(\text{SHA-256}(\text{PreviousHash} | \text{TerminalId} | \text{Sequence} | \text{AmountCents} | \text{TimestampUtc:O} | \text{TaxBreakdownJson}))$. Changing field order or formatting breaks existing chains.
+- **FR-005**: System MUST assign monotonic sequential receipt numbers formatted `{TerminalId}-{Sequence:D6}` (e.g. `T01-000042`); a void is `{TerminalId}-VOID-{Sequence:D6}`. Terminal ids come from device pairing (`T01`, `T02`…).
 - **FR-006**: System MUST generate intermediate X-reports (non-resetting shift turnover and tax breakdown) on demand.
-- **FR-007**: System MUST perform immutable daily Z-closures, resetting active counters and sealing the fiscal period with cumulative perpetual grand totals.
-- **FR-008**: System MUST format legal thermal receipt ESC/POS print commands including French statutory VAT breakdown (5.5%, 10%, 20%), fiscal receipt signature, and QR code payload in $< 500\text{ms}$.
+- **FR-007**: System MUST perform immutable daily Z-closures, sealing the fiscal period with a chained signature and cumulative perpetual grand totals (`PerpetualGrandTotalCents`). Voids are chained credit entries issued from the originating device only.
+- **FR-008**: System MUST format legal thermal receipt ESC/POS print commands including French statutory VAT breakdown (5.5%, 10%, 20%), and the receipt number, via `PrintDispatcher`/`PrintWorker` (raster ESC/POS, text mode available), without blocking the payment. *Not implemented*: fiscal signature and QR code on the ticket.
 
 ### Key Entities *(include if feature involves data)*
 
-- **FiscalReceipt**: Immutable receipt with `ReceiptNumber`, `OrderId`, `TotalAmount` (`Money`), `TaxBreakdown`, `PaymentTenders`, `PreviousSignatureHash`, `SignatureHash`, `SequenceNumber`, `CreatedAtUtc`.
-- **PaymentTender**: Represents a payment part (`TenderType` [Cash, Card, MealVoucher], `AmountTendered`, `ChangeGiven`).
-- **DailyFiscalClosure (Z-Report)**: Represents a daily period closure with `ClosureSequence`, `OpeningAtUtc`, `ClosingAtUtc`, `TotalTtcAmount`, `TotalHtAmount`, `TaxesSummary`, `PaymentMethodTotals`, `CumulativeGrandTotal`, `PeriodHashSignature`.
+- **FiscalReceipt**: Immutable receipt with `ReceiptNumber`, `OrderId`, `TerminalId`, `TotalTtcAmount`/`TotalHtAmount` (`Money`), `TaxBreakdownJson`, `Tenders`, `PreviousSignatureHash`, `SignatureHash`, `SequenceNumber`, `CreatedAtUtc`, `IsVoid`, `VoidedReceiptId`.
+- **PaymentTender**: Represents a payment part (`Method` [`PaymentMethod`], `Amount`, `Tendered`, `ChangeGiven`).
+- **DailyFiscalClosure (Z-Report)**: Represents a daily period closure with `TerminalId`, `ClosureSequence`, `PeriodStartUtc`, `PeriodEndUtc`, `TotalSalesTtc`, `TotalSalesHt`, `TaxesSummaryJson`, `TenderTotalsJson`, `PerpetualGrandTotalCents`, `PreviousSignatureHash`, `SignatureHash`, `SealedByUserId`/`SealedByUserName`.
 
 ## Success Criteria *(mandatory)*
 
@@ -95,4 +95,11 @@ The restaurant owner and tax auditor require an immutable, append-only audit led
 ## Assumptions
 
 - French VAT rates (5.5% food, 10% restaurants/prepared food, 20% alcoholic beverages) are configured per product.
-- Each POS terminal has a unique prefix identifier (`POS01`, `POS02`).
+- Each POS terminal has a unique id assigned at pairing (`T01`, `T02`…). Receipts issued before pairing (`POS_A`, `POS_MAIN_TERM`, `POS01`) cannot be voided through the API.
+
+## Known gaps (2026-10-01)
+
+- Fiscal signature and QR code are not printed on the ticket (FR-008).
+- The technical event log (JET) lives in `TransactionJournalEntry`; its `EntryHash` is not a chained hash, and drawer opening, reprint and operator switch are not logged.
+- No third-party NF525 certificate is documented.
+- Performance criteria (SC-001) are not measured automatically.
