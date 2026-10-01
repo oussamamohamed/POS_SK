@@ -42,7 +42,7 @@
 ### Tests
 
 - [ ] T007 [P] [US2] Tests du service : séquence continue, `PreviousHash` = hash précédent, première entrée sur `GenesisHash`, entrées héritées (`ChainSequence = NULL`) ignorées, dans `tests/RestaurantPos.Infrastructure.Tests/FiscalJournalServiceTests.cs`
-- [ ] T008 [P] [US2] Tests API : connexion réussie et échouée (`/api/auth`), `POST /api/devices/pair`, `POST /api/devices/{id}/revoke` écrivent chacun une entrée, dans `tests/RestaurantPos.Api.Tests/JournalEventsApiTests.cs`
+- [ ] T008 [P] [US2] Tests API : connexion réussie et échouée (`POST /api/auth/login`, et `/override` si pertinent), `POST /api/devices/pair`, `POST /api/devices/{id}/revoke` écrivent chacun une entrée, dans `tests/RestaurantPos.Api.Tests/JournalEventsApiTests.cs`
 
 ### Implémentation
 
@@ -75,7 +75,7 @@
 ### Implémentation
 
 - [ ] T021 [US3] Ajouter un prédicat réutilisable « reçu annulé » (existence d'un reçu avec `VoidedReceiptId == r.Id`, ou jeu d'identifiants chargé une fois) dans `src/RestaurantPos.Infrastructure/Persistence/FiscalReceiptQueries.cs`
-- [ ] T022 [US3] Remplacer écriture et lectures de `IsVoid` dans `src/RestaurantPos.Infrastructure/Services/CheckoutPaymentService.cs` (l.231 et reçus antérieurs) ; journaliser `RECEIPT_VOIDED` dans la même transaction
+- [ ] T022 [US3] Remplacer écriture et lectures de `IsVoid` dans `src/RestaurantPos.Infrastructure/Services/CheckoutPaymentService.cs` (écriture `IsVoid = true` l.245 ; lectures l.69 et l.239 ; l.293 `IsVoid = false` à la création du reçu) ; journaliser `RECEIPT_VOIDED` dans la même transaction
 - [ ] T023 [P] [US3] Remplacer la lecture de `IsVoid` dans `src/RestaurantPos.Api/Endpoints/CheckoutEndpoints.cs:100`
 - [ ] T024 [P] [US3] Remplacer la lecture de `IsVoid` dans `src/RestaurantPos.Infrastructure/Services/NF525FiscalAuditService.cs:347`
 - [ ] T025 [P] [US3] Remplacer la lecture de `IsVoid` dans `src/RestaurantPos.Infrastructure/Services/FecExportService.cs:89`
@@ -177,7 +177,7 @@
 - [ ] T062 [P] [US5] Tests API du contrat (création, téléchargement avec JET, vérification multipart), dans `tests/RestaurantPos.Api.Tests/FiscalArchiveApiTests.cs`
 - [ ] T063 [US5] Créer `FiscalArchive` (entité, `DbSet`, SQL idempotent, intercepteur)
 - [ ] T064 [US5] Implémenter `FiscalArchiveService` (ZIP en flux, `Archives:Path`, formule R1, JET) dans `src/RestaurantPos.Infrastructure/Services/FiscalArchiveService.cs` ; ajouter la chaîne `archives` à `VerifyAllChainsAsync`
-- [ ] T065 [US5] Routes `POST /api/fiscal/archives`, `GET /api/fiscal/archives/{id}/file`, `POST /api/fiscal/archives/verify` dans `FiscalEndpoints.cs` ; `Archives:Path` dans `src/RestaurantPos.Api/appsettings.json`
+- [ ] T065 [US5] Routes `POST /api/fiscal/archives`, `GET /api/fiscal/archives/{id}/file`, `POST /api/fiscal/archives/verify` dans `FiscalEndpoints.cs` ; `Archives:Path` dans `src/RestaurantPos.Api/appsettings.Production.json` (il n’existe pas d’`appsettings.json` ; valeur par défaut dans le code pour Development/Testing)
 - [ ] T066 [P] [US5] Web : archiver une clôture, télécharger, vérifier un fichier + spec E2E
 - [ ] T067 [P] [US5] iPad : archiver et vérifier (pas de téléchargement sur iPad), store, écran, tests
 

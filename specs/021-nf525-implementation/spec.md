@@ -72,7 +72,7 @@ En tant que contrôleur, je dispose d'un journal chaîné des événements techn
 
 En tant que contrôleur, je constate qu'aucun reçu enregistré n'est jamais modifié : l'annulation se lit dans l'avoir, pas dans une mise à jour du reçu annulé.
 
-**Pourquoi cette priorité** : aujourd'hui l'annulation fait `original.IsVoid = true` (`CheckoutPaymentService.cs:231`), une mise à jour d'un enregistrement fiscal, contraire à INV-3.
+**Pourquoi cette priorité** : aujourd'hui l'annulation fait `original.IsVoid = true` (`CheckoutPaymentService.cs:245`), une mise à jour d'un enregistrement fiscal, contraire à INV-3.
 
 **Test indépendant** : annuler un reçu ; vérifier que la ligne du reçu d'origine est identique avant et après, et que le statut « annulé » est toujours affiché partout où il l'était.
 
@@ -114,7 +114,7 @@ En tant que gérant, je produis une archive signée d'une période clôturée (a
 
 En tant que contrôleur, je distingue un original d'une réimpression : toute réimpression d'un ticket ou d'une clôture porte la mention « DUPLICATA » et un numéro, et elle est journalisée.
 
-**Pourquoi cette priorité** : la réimpression existe (tickets, « Réimprimer la dernière clôture ») sans aucune marque de duplicata.
+**Pourquoi cette priorité** : seule la réimpression de la dernière clôture et le `retry` d’un job d’impression existent, sans aucune marque de duplicata ; il n’existe pas de réimpression de ticket.
 
 **Test indépendant** : réimprimer deux fois le même ticket ; vérifier « DUPLICATA n°1 » puis « n°2 » et deux entrées JET.
 
