@@ -15,7 +15,7 @@
 
 ## Phase 1 : Préparation
 
-- [ ] T001 Créer la branche `021-nf525-implementation` depuis `main` et y déplacer `specs/021-nf525-implementation/`
+- [x] T001 Créer la branche `021-nf525-implementation` depuis `main` et y déplacer `specs/021-nf525-implementation/`
 - [ ] T002 [P] Obtenir de l'organisme certificateur la table officielle des codes d'événements JET (NF525 R19) et ses exigences de signature des archives ; consigner le résultat dans `specs/021-nf525-implementation/research.md` (R9) — bloque T012 et T061
 - [ ] T003 [P] Relever les noms réels des tables SQLite (`sqlite3 restaurantpos.db .tables`) et corriger les noms dans `specs/021-nf525-implementation/data-model.md`
 
