@@ -10,7 +10,7 @@ Restaurant POS for iPad with French NF525 fiscal compliance. Three pieces:
 - **`src/RestaurantPos.Api/wwwroot/`** — vanilla JS touch web client (`app.js`, single large file), served as static files by the API.
 - **`ios/`** — native SwiftUI iPad client (Swift 6, iPadOS 17+) at feature parity with the web client. See `ios/README.md`.
 
-The .NET MAUI client was removed. `src/RestaurantPos.Client.Maui` and `tests/*Maui*` are leftover `bin/obj` folders only. `PLAN.md` and `.specify/memory/constitution.md` still mention MAUI, MediatR/CQRS, and PostgreSQL. The code uses none of these: it uses plain services and SQLite. Treat the code as the source of truth.
+The .NET MAUI client was removed. `src/RestaurantPos.Client.Maui` and `tests/*Maui*` are leftover `bin/obj` folders only. `PLAN.md` still mentions MAUI, MediatR/CQRS, and PostgreSQL. The code uses none of these: it uses plain services and SQLite. Treat the code as the source of truth.
 
 Project docs, specs (`specs/`), comments, and UI strings are mostly in French.
 

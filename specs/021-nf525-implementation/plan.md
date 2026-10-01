@@ -17,7 +17,7 @@ Compléter le socle NF525 existant sans le refaire : vérification d'intégrité
 
 ## Contrôle de conformité
 
-La constitution (`.specify/memory/constitution.md`) mentionne MAUI, MediatR et PostgreSQL : elle est périmée (voir `CLAUDE.md`). Le contrôle se fait contre `CLAUDE.md` et les invariants de la spec :
+La constitution (`.specify/memory/constitution.md`, v2.0.0) a été alignée sur le code (plus de MAUI, MediatR ni PostgreSQL). Le contrôle se fait contre elle, `CLAUDE.md` et les invariants de la spec :
 
 - [x] INV-1 : formule des reçus et des Z inchangée ; nouvelles chaînes avec formules propres (research R1).
 - [x] INV-2 : aucune signature côté client ; le serveur calcule tout.
