@@ -1,0 +1,25 @@
+[
+  {
+    "id": "e305e82c-3301-4f89-9a0c-3f2504e011d3",
+    "terminalId": "POS_MAIN_TERM",
+    "periodType": "monthly",
+    "periodKey": "2026-08",
+    "closureSequence": 1,
+    "periodStartUtc": "2026-08-01T00:00:00Z",
+    "periodEndUtc": "2026-08-31T23:59:59.9999999Z",
+    "totalTtc": 1545.5,
+    "totalHt": 1405.0,
+    "totalTtcCents": 154550,
+    "totalHtCents": 140500,
+    "taxesSummaryJson": "{\"10.0\":140.50}",
+    "tenderTotalsJson": "{\"CreditCard\":1545.50}",
+    "perpetualGrandTotal": 5420.0,
+    "perpetualGrandTotalCents": 542000,
+    "dailyClosureCount": 31,
+    "previousSignatureHash": null,
+    "signatureHash": "688B16F664132BAE0B1CC33AB2E1DF310E32F375654483AE166848CE18F2D424",
+    "sealedByUserId": "01a067d9-b8b9-7b6a-8b3c-d272e6128c35",
+    "sealedByUserName": "Alexandre Dupont (Manager)",
+    "createdAtUtc": "2026-09-01T00:05:00.0000000Z"
+  }
+]

@@ -79,12 +79,12 @@ Points d'entrée : `POST /api/fiscal/latest-closure/print` (déjà existant, dev
 
 **Purge** : aucune route de suppression n'existe ; l'intercepteur (R5) refuse tout `Deleted`. Pas de fonction de purge dans ce lot.
 
-**Signature asymétrique non retenue** : elle demande une gestion de clé. À réévaluer selon les exigences de l'organisme certificateur.
+**Signature asymétrique non retenue** : elle demande une gestion de clé. Si les exigences officielles INFOCERT ne sont pas obtenues dans T002, repli nominal sur la formule de chaînage SHA-256 R1 (`SHA256(previousHash|periodType|periodKey|fileSha256|createdAtUtc:O)`). T061 n'est pas bloqué.
 
 ## R9 — Références réglementaires (vérifiées le 2026-09-30)
 
 - **Justificatif de conformité** : la loi de finances 2025 (art. 43) réservait la preuve à un certificat d'organisme accrédité, avec obligation au 1er septembre 2026 ; **la loi de finances 2026 (art. 125) rétablit l'attestation individuelle de l'éditeur** (source : Legifiscal). La certification (clarification : objectif INFOCERT) reste un choix commercial, pas une obligation légale : le numéro de certificat reste donc facultatif (R7).
-- **Codes d'événements JET** : le référentiel NF525 (exigence R19) fixe une liste codée d'événements, obligatoires (« X ») ou conditionnels (« C »), dont le code 30 « archivage de fin d'exercice ou de période » (source : documentation RetailForce, table de correspondance R19). → Avant l'implémentation d'US2, remplacer ou compléter `JournalEventTypes` par la table officielle du référentiel INFOCERT en vigueur (document de l'organisme, non public).
+- **Codes d'événements JET** : le référentiel NF525 (exigence R19) fixe une liste codée d'événements, obligatoires (« X ») ou conditionnels (« C »). La table complète de correspondance (codes 01 à 91) est consignée dans `spec.md` (US2) et reprise dans `JournalEventTypes`.
 - **Conservation** : 6 ans (droit de communication, LPF art. L102 B) — cohérent avec la clarification du 2026-09-30.
 
 Sources :

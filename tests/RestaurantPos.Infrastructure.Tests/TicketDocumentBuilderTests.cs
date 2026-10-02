@@ -198,4 +198,51 @@ public class TicketDocumentBuilderTests
         var text = AllText(TicketDocumentBuilder.ZClosure(closure, SampleReportData(), "fr"));
         text.Should().StartWith("CLÔTURE Z n° 12").And.Contain("Alexandre").And.Contain("abc123").And.Contain("ARTICLES VENDUS");
     }
+
+    [Fact]
+    public void Receipt_WithoutCertificate_ShowsSettingsAndVersionOnly()
+    {
+        var settings = new RestaurantSettingsDto(
+            ReceiptLanguage: "fr",
+            KitchenTicketLanguage: "fr",
+            CompanyName: "Bistro Parisien",
+            AddressLines: "1 rue de la Paix\n75002 Paris",
+            Siret: "12345678901234",
+            VatNumber: "FR99123456789",
+            CertificateNumber: null,
+            FiscalYearStartMonth: 1,
+            FiscalYearStartDay: 1);
+
+        var doc = TicketDocumentBuilder.Receipt(SampleReceipt(), SampleOrder(), "fr", settings);
+        var text = AllText(doc);
+
+        text.Should().Contain("Bistro Parisien")
+            .And.Contain("1 rue de la Paix")
+            .And.Contain("75002 Paris")
+            .And.Contain("SIRET: 12345678901234")
+            .And.Contain("TVA: FR99123456789")
+            .And.Contain("Logiciel: RestaurantPOS v")
+            .And.NotContain("Certificat:");
+    }
+
+    [Fact]
+    public void Receipt_WithCertificate_PrintsCertificateInHeader()
+    {
+        var settings = new RestaurantSettingsDto(
+            ReceiptLanguage: "fr",
+            KitchenTicketLanguage: "fr",
+            CompanyName: "Bistro Parisien",
+            AddressLines: "1 rue de la Paix\n75002 Paris",
+            Siret: "12345678901234",
+            VatNumber: "FR99123456789",
+            CertificateNumber: "INFOCERT-2026-9999",
+            FiscalYearStartMonth: 1,
+            FiscalYearStartDay: 1);
+
+        var doc = TicketDocumentBuilder.Receipt(SampleReceipt(), SampleOrder(), "fr", settings);
+        var text = AllText(doc);
+
+        text.Should().Contain("Certificat: INFOCERT-2026-9999")
+            .And.Contain("Logiciel: RestaurantPOS v");
+    }
 }

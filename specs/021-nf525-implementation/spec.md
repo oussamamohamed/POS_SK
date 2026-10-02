@@ -68,6 +68,29 @@ En tant que contrôleur, je dispose d'un journal chaîné des événements techn
 2. **Étant donné** chacun des événements suivants, **quand** il survient, **alors** une entrée JET est créée : démarrage et arrêt du serveur, connexion et échec de connexion, clôture (journalière, mensuelle, annuelle), annulation de ticket, réimpression (duplicata), export FEC, archivage, modification d'un paramètre fiscal (taux de TVA, identité de l'établissement), appairage et révocation d'un appareil, rupture de chaîne détectée.
 3. **Étant donné** les entrées existantes non chaînées, **quand** la nouvelle chaîne démarre, **alors** elles restent lisibles et la chaîne commence après elles (pas de réécriture).
 
+#### Table officielle des codes JET (Référentiel NF525 Exigence R19)
+
+| Code JET | Statut | Événement | Description / Déclencheur | Constante système |
+|---|---|---|---|---|
+| **01** | X | Démarrage application | Démarrage du serveur (`ApplicationStarted`) | `SERVER_STARTED` |
+| **02** | X | Arrêt application | Arrêt normal du serveur (`ApplicationStopping`) | `SERVER_STOPPED` |
+| **05** | X | Connexion opérateur réussie | Authentification valide (`POST /api/auth/login`) | `LOGIN_SUCCEEDED` |
+| **06** | X | Échec de connexion | Tentative rejetée (PIN invalide, verrouillage) | `LOGIN_FAILED` |
+| **15** | X | Rupture de chaîne détectée | Rupture ou altération constatée lors d'un contrôle | `CHAIN_BREAK_DETECTED` |
+| **20** | X | Clôture de période mensuelle | Validation d'une clôture mensuelle | `PERIOD_CLOSURE` |
+| **21** | X | Clôture journalière (Z) | Validation d'une clôture Z de caisse | `Z_CLOSURE` |
+| **30** | X | Clôture d'exercice annuel | Validation d'une clôture annuelle | `PERIOD_CLOSURE` |
+| **32** | X | Création archive fiscale | Génération du fichier ZIP d'archive scellée | `ARCHIVE_CREATED` |
+| **35** | X | Exportation archive / FEC | Téléchargement du ZIP d'archive ou export FEC | `ARCHIVE_EXPORTED`, `FEC_EXPORTED` |
+| **60** | X | Modification paramètres fiscaux | Changement taux de TVA, SIRET, raison sociale, exercice | `TAX_RATE_CHANGED`, `FISCAL_SETTINGS_CHANGED` |
+| **80** | X | Annulation de document fiscal | Annulation d'un ticket avec émission d'avoir lié | `RECEIPT_VOIDED` |
+| **85** | X | Réimpression / Duplicata | Réimpression d'un ticket ou duplicata de clôture | `DUPLICATE_PRINTED` |
+| **90** | C | Appairage terminal | Enregistrement d'un nouvel appareil de caisse | `DEVICE_PAIRED` |
+| **91** | C | Révocation terminal | Révocation des accès d'un terminal | `DEVICE_REVOKED` |
+
+*Légende statuts NF525 : **X** = Obligatoire, **C** = Conditionnel.*
+
+
 ### US3 — Annulation sans modifier le reçu d'origine (Priorité : P1)
 
 En tant que contrôleur, je constate qu'aucun reçu enregistré n'est jamais modifié : l'annulation se lit dans l'avoir, pas dans une mise à jour du reçu annulé.
@@ -106,7 +129,7 @@ En tant que gérant, je produis une archive signée d'une période clôturée (a
 
 **Scénarios d'acceptation** :
 
-1. **Étant donné** une période clôturée, **quand** je l'archive, **alors** un fichier contenant reçus, avoirs, clôtures et JET de la période est produit, avec une signature et son empreinte enregistrée côté serveur et dans le JET.
+1. **Étant donné** une période clôturée, **quand** je l'archive, **alors** un fichier contenant reçus, avoirs, clôtures et JET de la période est produit, avec une signature et son empreinte enregistrée côté serveur et dans le JET (téléchargement du ZIP disponible sur web ; l'iPad déclenche et vérifie sans stockage local du ZIP).
 2. **Étant donné** une archive, **quand** je la vérifie, **alors** le système indique si elle est intacte.
 3. **Étant donné** des données fiscales de moins de 6 ans, **quand** une purge ou une suppression est tentée, **alors** elle est refusée.
 
@@ -156,7 +179,7 @@ En tant que gérant, je renseigne l'identité de mon établissement ; les ticket
 - **FR-005** : Le système DOIT produire et vérifier des archives signées de périodes clôturées, et refuser toute suppression de données fiscales de moins de 6 ans.
 - **FR-006** : Le système DOIT marquer et numéroter chaque réimpression comme duplicata et la journaliser.
 - **FR-007** : Le système DOIT imprimer l'identité de l'établissement saisie dans la gestion et la version du logiciel sur les tickets et rapports.
-- **FR-008** : Chaque nouvelle fonction DOIT exister sur le client web et sur l'iPad (parité), avec chaînes en/fr/ar.
+- **FR-008** : Chaque nouvelle fonction DOIT exister sur le client web et sur l'iPad (parité), avec chaînes en/fr/ar (exception ergonomique : téléchargement du fichier ZIP d'archive réservé au web ; l'iPad pilote création et vérification).
 
 ### Entités clés
 

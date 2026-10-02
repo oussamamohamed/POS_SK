@@ -152,13 +152,26 @@ struct HTTPPosAPITests {
     }
 
     @Test func reportPrintRoutesReturnPrintQueued() async throws {
-        let api = makeAPI { _ in .init(status: 200, body: #"{"printQueued":true}"#) }
+        let api = makeAPI { req in
+            if req.url?.path == "/api/fiscal/x-report/print" {
+                return .init(status: 200, body: #"{"printQueued":true}"#)
+            } else {
+                return .init(status: 200, body: #"{"printQueued":true,"duplicateNumber":1}"#)
+            }
+        }
         #expect(try await api.printXReport(terminalId: "T01"))
         #expect(last.httpMethod == "POST")
         #expect(last.url?.path == "/api/fiscal/x-report/print")
         #expect(last.url?.query == "terminalId=T01")
-        #expect(try await api.reprintLatestClosure(terminalId: "T01"))
+        let closureReprint = try await api.reprintLatestClosure(terminalId: "T01")
+        #expect(closureReprint.printQueued == true)
+        #expect(closureReprint.duplicateNumber == 1)
         #expect(last.url?.path == "/api/fiscal/latest-closure/print")
+        let receiptReprint = try await api.reprintReceipt(receiptIdentifier: "REC-123")
+        #expect(receiptReprint.printQueued == true)
+        #expect(receiptReprint.duplicateNumber == 1)
+        #expect(last.httpMethod == "POST")
+        #expect(last.url?.path == "/api/checkout/receipts/REC-123/reprint")
     }
 
     @Test func fecExportUsesContentDispositionFileName() async throws {
@@ -166,6 +179,81 @@ struct HTTPPosAPITests {
         let result = try await api.exportFec(from: Date(timeIntervalSince1970: 0), to: Date(), siren: "123456789")
         #expect(result.fileName == "123456789FEC20260924.txt")
         #expect(last.url?.query?.contains("siren=123456789") == true)
+    }
+
+    @Test func fiscalArchivesNetworkingRoutes() async throws {
+        let sampleArchiveJson = """
+        [{
+            "id": "11111111-1111-1111-1111-111111111111",
+            "periodClosureId": "22222222-2222-2222-2222-222222222222",
+            "periodType": "Monthly",
+            "periodKey": "2026-08",
+            "fileName": "ARCHIVE-M-2026-08-000001.zip",
+            "fileSha256": "abc123def456",
+            "fileSizeBytes": 1024,
+            "archiveSequence": 1,
+            "previousSignatureHash": "00000000",
+            "signatureHash": "11111111",
+            "createdByUserId": "33333333-3333-3333-3333-333333333333",
+            "createdAtUtc": "2026-09-01T00:00:00Z"
+        }]
+        """
+
+        let singleArchiveJson = """
+        {
+            "id": "11111111-1111-1111-1111-111111111111",
+            "periodClosureId": "22222222-2222-2222-2222-222222222222",
+            "periodType": "Monthly",
+            "periodKey": "2026-08",
+            "fileName": "ARCHIVE-M-2026-08-000001.zip",
+            "fileSha256": "abc123def456",
+            "fileSizeBytes": 1024,
+            "archiveSequence": 1,
+            "previousSignatureHash": "00000000",
+            "signatureHash": "11111111",
+            "createdByUserId": "33333333-3333-3333-3333-333333333333",
+            "createdAtUtc": "2026-09-01T00:00:00Z"
+        }
+        """
+
+        let verifyResultJson = """
+        {
+            "isValid": true,
+            "archiveId": "11111111-1111-1111-1111-111111111111",
+            "reason": null
+        }
+        """
+
+        let api = makeAPI { req in
+            if req.url?.path == "/api/fiscal/archives" && req.httpMethod == "GET" {
+                return .init(status: 200, body: sampleArchiveJson)
+            } else if req.url?.path == "/api/fiscal/archives" && req.httpMethod == "POST" {
+                return .init(status: 200, body: singleArchiveJson)
+            } else if req.url?.path == "/api/fiscal/archives/verify" && req.httpMethod == "POST" {
+                return .init(status: 200, body: verifyResultJson)
+            } else {
+                return .init(status: 404, body: "{}")
+            }
+        }
+
+        let archives = try await api.archives()
+        #expect(archives.count == 1)
+        #expect(archives[0].periodKey == "2026-08")
+        #expect(archives[0].fileName == "ARCHIVE-M-2026-08-000001.zip")
+        #expect(last.httpMethod == "GET")
+        #expect(last.url?.path == "/api/fiscal/archives")
+
+        let created = try await api.createArchive(periodClosureId: UUID(uuidString: "22222222-2222-2222-2222-222222222222")!)
+        #expect(created.archiveSequence == 1)
+        #expect(last.httpMethod == "POST")
+        #expect(last.url?.path == "/api/fiscal/archives")
+
+        let verify = try await api.verifyArchive(data: Data([1, 2, 3]), fileName: "test.zip")
+        #expect(verify.isValid == true)
+        #expect(verify.archiveId == UUID(uuidString: "11111111-1111-1111-1111-111111111111"))
+        #expect(last.httpMethod == "POST")
+        #expect(last.url?.path == "/api/fiscal/archives/verify")
+        #expect(last.value(forHTTPHeaderField: "Content-Type")?.contains("multipart/form-data") == true)
     }
 
     @Test func deviceTokenHeaderIsSentOnEveryRequest() async throws {

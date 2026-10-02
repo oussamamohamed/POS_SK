@@ -78,7 +78,7 @@ public class CheckoutE2ETests : IClassFixture<PosApiApplicationFactory>
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             var originalReceipt = await db.FiscalReceipts.FindAsync(receiptId);
             originalReceipt.Should().NotBeNull();
-            originalReceipt!.IsVoid.Should().BeTrue();
+            originalReceipt!.VoidedReceiptId.Should().BeNull();
 
             var voidReceipt = db.FiscalReceipts.FirstOrDefault(r => r.VoidedReceiptId == receiptId);
             voidReceipt.Should().NotBeNull();

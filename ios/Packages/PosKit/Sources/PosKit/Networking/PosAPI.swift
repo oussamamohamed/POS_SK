@@ -87,10 +87,18 @@ public protocol PosAPI: Sendable {
     func zClosure(terminalId: String, managerId: UUID, managerName: String) async throws -> FiscalReport
     /// Imprime le rapport X ; `true` si mis en file d'impression.
     func printXReport(terminalId: String) async throws -> Bool
-    /// Réimprime la dernière clôture Z ; `true` si mis en file d'impression.
-    func reprintLatestClosure(terminalId: String) async throws -> Bool
+    /// Réimprime la dernière clôture Z ; retourne le résultat avec duplicateNumber.
+    func reprintLatestClosure(terminalId: String) async throws -> ReprintResult
+    /// Réimprime un reçu fiscal ; retourne le résultat avec duplicateNumber.
+    func reprintReceipt(receiptIdentifier: String) async throws -> ReprintResult
     func exportFec(from: Date, to: Date, siren: String) async throws -> (fileName: String, data: Data)
     func dashboard(from: Date, to: Date) async throws -> FinancialDashboard
+    func verifyChains() async throws -> FiscalVerificationResult
+    func periodClosures(terminalId: String?, periodType: FiscalPeriodType?) async throws -> [FiscalPeriodClosure]
+    func executePeriodClosure(terminalId: String, periodType: FiscalPeriodType, periodKey: String) async throws -> FiscalPeriodClosure
+    func archives() async throws -> [FiscalArchive]
+    func createArchive(periodClosureId: UUID) async throws -> FiscalArchive
+    func verifyArchive(data: Data, fileName: String) async throws -> ArchiveVerificationResult
 
     // Personnel & imprimantes
     func staff() async throws -> [StaffMember]

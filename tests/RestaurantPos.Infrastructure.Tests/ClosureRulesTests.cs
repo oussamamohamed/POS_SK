@@ -65,16 +65,16 @@ public class ClosureRulesTests
     }
 
     [Fact]
-    public async Task ClosedPeriod_OwnTerminalAndMainTerminalClosures()
+    public async Task ClosedPeriod_OnlyOwnTerminalClosureCovers()
     {
         var (fiscal, db) = Create();
         var end = new DateTimeOffset(2026, 9, 30, 23, 0, 0, TimeSpan.Zero);
         db.DailyFiscalClosures.Add(new DailyFiscalClosure { TerminalId = "POS_MAIN_TERM", ClosureSequence = 1, PeriodStartUtc = end.AddDays(-1), PeriodEndUtc = end, SignatureHash = "h", PreviousSignatureHash = "g" });
         db.SaveChanges();
 
-        (await fiscal.IsInClosedPeriodAsync("T01", end.AddMinutes(-5))).Should().BeTrue();   // couvert par la Z du terminal principal
-        (await fiscal.IsInClosedPeriodAsync("T01", end.AddMinutes(5))).Should().BeFalse();
-        (await fiscal.IsInClosedPeriodAsync("POS_MAIN_TERM", end)).Should().BeTrue();
+        (await fiscal.IsInClosedPeriodAsync("T01", end.AddMinutes(-5))).Should().BeFalse();   // la Z du terminal principal ne couvre pas T01
+        (await fiscal.IsInClosedPeriodAsync("POS_MAIN_TERM", end.AddMinutes(-5))).Should().BeTrue();
+        (await fiscal.IsInClosedPeriodAsync("POS_MAIN_TERM", end.AddMinutes(5))).Should().BeFalse();
     }
 
     [Fact]

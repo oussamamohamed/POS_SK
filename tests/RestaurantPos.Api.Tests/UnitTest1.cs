@@ -1,4 +1,4 @@
-﻿namespace RestaurantPos.Api.Tests;
+namespace RestaurantPos.Api.Tests;
 
 public class UnitTest1
 {

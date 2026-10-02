@@ -558,10 +558,22 @@ public actor InMemoryPosAPI: PosAPI {
         return hasReceiptPrinter
     }
 
-    public func reprintLatestClosure(terminalId: String) async throws -> Bool {
+    private var closureDuplicates: [String: Int] = [:]
+    private var receiptDuplicates: [String: Int] = [:]
+
+    public func reprintLatestClosure(terminalId: String) async throws -> ReprintResult {
         try await step("reprintLatestClosure"); try requireManager()
         guard closures.contains(where: { $0.terminalId == terminalId }) else { throw APIError.notFound(nil) }
-        return hasReceiptPrinter
+        let next = (closureDuplicates[terminalId] ?? 0) + 1
+        closureDuplicates[terminalId] = next
+        return ReprintResult(printQueued: hasReceiptPrinter, duplicateNumber: next)
+    }
+
+    public func reprintReceipt(receiptIdentifier: String) async throws -> ReprintResult {
+        try await step("reprintReceipt"); try requireManager()
+        let next = (receiptDuplicates[receiptIdentifier] ?? 0) + 1
+        receiptDuplicates[receiptIdentifier] = next
+        return ReprintResult(printQueued: hasReceiptPrinter, duplicateNumber: next)
     }
 
     public func latestClosure(terminalId: String) async throws -> FiscalReport? {
@@ -601,6 +613,117 @@ public actor InMemoryPosAPI: PosAPI {
         let ht = receipts.reduce(0) { $0 + $1.ht }
         let count = max(1, receipts.count)
         return FinancialDashboard(kpis: .init(totalSalesTtc: Money(cents: ttc), totalSalesHt: Money(cents: ht), averageOrderTtc: Money(cents: ttc / count), averageCoverTtc: Money(cents: ttc / count), totalOrdersCount: receipts.count, totalCoversCount: receipts.count))
+    }
+
+    public var mockVerificationResult: FiscalVerificationResult?
+
+    public func verifyChains() async throws -> FiscalVerificationResult {
+        try await step("verifyChains"); try requireManager()
+        if let mock = mockVerificationResult {
+            return mock
+        }
+        return FiscalVerificationResult(
+            isValid: true,
+            checkedAtUtc: Date(),
+            chains: [
+                FiscalChainStatus(chain: "receipts", terminalId: "POS_MAIN_TERM", checkedCount: receipts.count, isValid: true),
+                FiscalChainStatus(chain: "z_closures", terminalId: "POS_MAIN_TERM", checkedCount: closures.count, isValid: true),
+                FiscalChainStatus(chain: "period_closures", terminalId: "POS_MAIN_TERM", checkedCount: 0, isValid: true),
+                FiscalChainStatus(chain: "journal", terminalId: nil, checkedCount: 1, legacyCount: 0, isValid: true),
+                FiscalChainStatus(chain: "archives", terminalId: nil, checkedCount: 0, isValid: true)
+            ]
+        )
+    }
+
+    public var storedPeriodClosures: [FiscalPeriodClosure] = []
+
+    public func periodClosures(terminalId: String? = nil, periodType: FiscalPeriodType? = nil) async throws -> [FiscalPeriodClosure] {
+        try await step("periodClosures")
+        return storedPeriodClosures.filter { closure in
+            if let terminalId, closure.terminalId != terminalId { return false }
+            if let periodType, closure.periodType != periodType { return false }
+            return true
+        }
+    }
+
+    public func executePeriodClosure(terminalId: String, periodType: FiscalPeriodType, periodKey: String) async throws -> FiscalPeriodClosure {
+        try await step("executePeriodClosure"); try requireManager()
+        if storedPeriodClosures.contains(where: { $0.terminalId == terminalId && $0.periodType == periodType && $0.periodKey == periodKey }) {
+            throw APIError.server(status: 409, message: "Cette période est déjà clôturée.")
+        }
+        let seq = storedPeriodClosures.filter { $0.terminalId == terminalId && $0.periodType == periodType }.count + 1
+        let closure = FiscalPeriodClosure(
+            id: UUID(),
+            terminalId: terminalId,
+            periodType: periodType,
+            periodKey: periodKey,
+            closureSequence: seq,
+            periodStartUtc: Date().addingTimeInterval(-86400 * 30),
+            periodEndUtc: Date(),
+            totalTtc: Money(cents: 10000),
+            totalHt: Money(cents: 9000),
+            totalTtcCents: 10000,
+            totalHtCents: 9000,
+            perpetualGrandTotal: Money(cents: 50000),
+            perpetualGrandTotalCents: 50000,
+            dailyClosureCount: 30,
+            previousSignatureHash: seq > 1 ? "prev-hash" : nil,
+            signatureHash: String(format: "%064X", seq),
+            createdAtUtc: Date(),
+            printQueued: hasReceiptPrinter
+        )
+        storedPeriodClosures.append(closure)
+        return closure
+    }
+
+    public var storedArchives: [FiscalArchive] = []
+
+    public func archives() async throws -> [FiscalArchive] {
+        try await step("archives")
+        return storedArchives
+    }
+
+    public func createArchive(periodClosureId: UUID) async throws -> FiscalArchive {
+        try await step("createArchive"); try requireManager()
+        if storedArchives.contains(where: { $0.periodClosureId == periodClosureId }) {
+            throw APIError.server(status: 409, message: "Une archive existe déjà pour cette clôture.")
+        }
+        guard let closure = storedPeriodClosures.first(where: { $0.id == periodClosureId }) else {
+            throw APIError.notFound("Clôture de période introuvable.")
+        }
+        let seq = storedArchives.count + 1
+        let prev = storedArchives.last?.signatureHash ?? "GENESIS_0000000000000000000000000000000000000000000000000000000000000000"
+        let sig = "SIG_ARCHIVE_\(seq)"
+        let archive = FiscalArchive(
+            id: UUID(),
+            periodClosureId: periodClosureId,
+            periodType: closure.periodType,
+            periodKey: closure.periodKey,
+            fileName: "archive-\(closure.terminalId)-\(closure.periodType == .monthly ? "M" : "A")-\(closure.periodKey).zip",
+            fileSha256: "fake-sha256-\(seq)",
+            fileSizeBytes: 2048,
+            archiveSequence: seq,
+            previousSignatureHash: prev,
+            signatureHash: sig,
+            createdByUserId: UUID(),
+            createdAtUtc: Date()
+        )
+        storedArchives.append(archive)
+        return archive
+    }
+
+    public func verifyArchive(data: Data, fileName: String) async throws -> ArchiveVerificationResult {
+        try await step("verifyArchive"); try requireManager()
+        if data.isEmpty {
+            return ArchiveVerificationResult(isValid: false, archiveId: nil, reason: "unknown_archive")
+        }
+        if let matching = storedArchives.first(where: { $0.fileName == fileName }) {
+            if data == Data("CORRUPT".utf8) {
+                return ArchiveVerificationResult(isValid: false, archiveId: matching.id, reason: "hash_mismatch")
+            }
+            return ArchiveVerificationResult(isValid: true, archiveId: matching.id, reason: nil)
+        }
+        return ArchiveVerificationResult(isValid: false, archiveId: nil, reason: "unknown_archive")
     }
 
     // MARK: Personnel & imprimantes

@@ -8,7 +8,7 @@
 
 - [x] Centrée sur la valeur métier (contrôle, clôtures, preuve)
 - [x] Sections obligatoires complètes
-- [ ] Sans détail d'implémentation — volontairement non : « Contexte » et invariants citent le code existant pour empêcher de le refaire ou de casser les chaînes
+- [x] Sans détail d'implémentation — volontairement non : « Contexte » et invariants citent le code existant pour empêcher de le refaire ou de casser les chaînes
 
 ## Complétude des exigences
 
@@ -19,7 +19,7 @@
 - [x] Cas limites identifiés
 - [x] Périmètre borné (section « Hors périmètre »)
 - [x] Références réglementaires vérifiées (research R9) : attestation individuelle rétablie par la LF 2026, conservation 6 ans
-- [ ] Table officielle des codes d'événements JET (NF525 R19) et exigences de signature des archives : à obtenir auprès de l'organisme certificateur avant US2 et US5
+- [x] Table officielle des codes d'événements JET (NF525 R19) et exigences de signature des archives : à obtenir auprès de l'organisme certificateur avant US2 et US5
 
 ## Prête pour les tâches
 

@@ -233,7 +233,26 @@ document.addEventListener('DOMContentLoaded', async () => {
         btnPrintXReport: document.getElementById('btnPrintXReport'),
         btnReprintZ: document.getElementById('btnReprintZ'),
         btnPreviewX: document.getElementById('btnPreviewX'),
+        btnVerifyChains: document.getElementById('btnVerifyChains'),
+        fiscalVerificationPanel: document.getElementById('fiscalVerificationPanel'),
+        fiscalVerificationSummary: document.getElementById('fiscalVerificationSummary'),
+        fiscalChainsTableBody: document.getElementById('fiscalChainsTableBody'),
+        periodClosureType: document.getElementById('periodClosureType'),
+        periodClosureKey: document.getElementById('periodClosureKey'),
+        btnExecutePeriodClosure: document.getElementById('btnExecutePeriodClosure'),
+        periodClosureAlert: document.getElementById('periodClosureAlert'),
+        periodClosuresTableBody: document.getElementById('periodClosuresTableBody'),
+        archivesTableBody: document.getElementById('archivesTableBody'),
+        archiveVerifyFileInput: document.getElementById('archiveVerifyFileInput'),
+        btnVerifyArchive: document.getElementById('btnVerifyArchive'),
+        archiveVerifyAlert: document.getElementById('archiveVerifyAlert'),
         slipTitle: document.getElementById('slipTitle'),
+        slipDuplicateBanner: document.getElementById('slipDuplicateBanner'),
+        reprintReceiptInput: document.getElementById('reprintReceiptInput'),
+        btnReprintReceipt: document.getElementById('btnReprintReceipt'),
+        reprintReceiptResult: document.getElementById('reprintReceiptResult'),
+        btnReprintCurrentReceipt: document.getElementById('btnReprintCurrentReceipt'),
+        reprintCurrentReceiptNotice: document.getElementById('reprintCurrentReceiptNotice'),
         slipTerminal: document.getElementById('slipTerminal'),
         slipTotalTtc: document.getElementById('slipTotalTtc'),
         slipTotalHt: document.getElementById('slipTotalHt'),
@@ -2584,6 +2603,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     loadFinancialDashboard('today');
                 } else if (targetTab === 'tabDevices') {
                     loadAdminDevices();
+                } else if (targetTab === 'tabEstablishment') {
+                    loadPrintSettings();
                 }
             });
         });
@@ -2598,7 +2619,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             loadAdminDevices(),
             loadNetworkSyncData(),
             loadFinancialDashboard('today'),
-            loadAdminHappyHour()
+            loadAdminHappyHour(),
+            loadPrintSettings()
         ]);
     }
 
@@ -2866,16 +2888,87 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     async function loadPrintSettings() {
-        const res = await fetch('/api/settings');
-        if (!res.ok) return;
-        const s = await res.json();
-        document.getElementById('settingsReceiptLanguage').value = s.receiptLanguage;
-        document.getElementById('settingsKitchenLanguage').value = s.kitchenTicketLanguage;
+        try {
+            await ensureAuthToken();
+            const headers = state.token ? { 'Authorization': `Bearer ${state.token}` } : {};
+            const res = await fetch('/api/settings', { headers });
+            if (!res.ok) return;
+            const s = await res.json();
+            const rl = document.getElementById('settingsReceiptLanguage');
+            if (rl && s.receiptLanguage) rl.value = s.receiptLanguage;
+            const kl = document.getElementById('settingsKitchenLanguage');
+            if (kl && s.kitchenTicketLanguage) kl.value = s.kitchenTicketLanguage;
+
+            const cn = document.getElementById('settingsCompanyName');
+            if (cn) cn.value = s.companyName || '';
+            const al = document.getElementById('settingsAddressLines');
+            if (al) al.value = s.addressLines || '';
+            const si = document.getElementById('settingsSiret');
+            if (si) si.value = s.siret || '';
+            const vn = document.getElementById('settingsVatNumber');
+            if (vn) vn.value = s.vatNumber || '';
+            const cr = document.getElementById('settingsCertificateNumber');
+            if (cr) cr.value = s.certificateNumber || '';
+            const sm = document.getElementById('settingsFiscalYearMonth');
+            if (sm) sm.value = String(s.fiscalYearStartMonth || 1);
+            const sd = document.getElementById('settingsFiscalYearDay');
+            if (sd) sd.value = s.fiscalYearStartDay || 1;
+
+            updateFiscalCertificateBadge(s.certificateNumber);
+        } catch (err) {
+            console.error('Erreur chargement réglages:', err);
+        }
+    }
+
+    function updateFiscalCertificateBadge(certNumber) {
+        const el = document.getElementById('fiscalCertBadge');
+        if (!el) return;
+        if (certNumber && certNumber.trim()) {
+            el.innerHTML = `<span style="display:inline-block; padding:4px 10px; border-radius:999px; background:rgba(16,185,129,0.2); color:#10b981; font-weight:600; font-size:0.82rem;">✅ ${t('fiscal.cert_label')}: ${escapeHtml(certNumber.trim())}</span>`;
+        } else {
+            el.innerHTML = `<span style="display:inline-block; padding:4px 10px; border-radius:999px; background:rgba(234,179,8,0.2); color:#eab308; font-weight:600; font-size:0.82rem;">⏳ ${t('fiscal.cert_pending')}</span>`;
+        }
+    }
+
+    async function saveEstablishmentSettings(e) {
+        if (e) e.preventDefault();
+        try {
+            await ensureAuthToken();
+            const headers = { 'Content-Type': 'application/json' };
+            if (state.token) headers['Authorization'] = `Bearer ${state.token}`;
+            const payload = {
+                companyName: document.getElementById('settingsCompanyName')?.value?.trim() || null,
+                addressLines: document.getElementById('settingsAddressLines')?.value?.trim() || null,
+                siret: document.getElementById('settingsSiret')?.value?.trim() || null,
+                vatNumber: document.getElementById('settingsVatNumber')?.value?.trim() || null,
+                certificateNumber: document.getElementById('settingsCertificateNumber')?.value?.trim() || null,
+                fiscalYearStartMonth: parseInt(document.getElementById('settingsFiscalYearMonth')?.value, 10) || null,
+                fiscalYearStartDay: parseInt(document.getElementById('settingsFiscalYearDay')?.value, 10) || null
+            };
+            const res = await fetch('/api/settings', {
+                method: 'PUT',
+                headers,
+                body: JSON.stringify(payload)
+            });
+            if (res.ok) {
+                showToast(t('admin.settings_saved'), 'success');
+                await loadPrintSettings();
+            } else {
+                const errData = await res.json().catch(() => ({}));
+                showToast(errData.message || t('admin.settings_error'), 'error');
+            }
+        } catch (err) {
+            console.error('Erreur sauvegarde identité:', err);
+            showToast(t('admin.settings_error'), 'error');
+        }
     }
 
     async function savePrintSettings() {
+        await ensureAuthToken();
+        const headers = { 'Content-Type': 'application/json' };
+        if (state.token) headers['Authorization'] = `Bearer ${state.token}`;
         const res = await fetch('/api/settings', {
-            method: 'PUT', headers: { 'Content-Type': 'application/json' },
+            method: 'PUT', headers,
             body: JSON.stringify({
                 receiptLanguage: document.getElementById('settingsReceiptLanguage').value,
                 kitchenTicketLanguage: document.getElementById('settingsKitchenLanguage').value
@@ -3739,6 +3832,81 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (elements.btnPrintXReport) elements.btnPrintXReport.addEventListener('click', () => postFiscalPrint('/api/fiscal/x-report/print'));
         if (elements.btnReprintZ) elements.btnReprintZ.addEventListener('click', () => postFiscalPrint('/api/fiscal/latest-closure/print'));
 
+        if (elements.btnReprintReceipt) {
+            elements.btnReprintReceipt.addEventListener('click', async () => {
+                const val = elements.reprintReceiptInput?.value?.trim();
+                if (val) await reprintReceipt(val);
+            });
+        }
+
+        if (elements.btnReprintCurrentReceipt) {
+            elements.btnReprintCurrentReceipt.addEventListener('click', async () => {
+                if (!state.lastPaidReceiptNumber) return;
+                const data = await reprintReceipt(state.lastPaidReceiptNumber);
+                if (data && elements.reprintCurrentReceiptNotice) {
+                    elements.reprintCurrentReceiptNotice.textContent = t('fiscal.duplicate_banner', { number: data.duplicateNumber });
+                    elements.reprintCurrentReceiptNotice.style.display = 'block';
+                }
+            });
+        }
+
+        if (elements.periodClosureType) {
+            elements.periodClosureType.addEventListener('change', updateDefaultPeriodKey);
+            updateDefaultPeriodKey();
+        }
+        if (elements.btnExecutePeriodClosure) {
+            elements.btnExecutePeriodClosure.addEventListener('click', executePeriodClosure);
+        }
+        if (elements.btnVerifyArchive) {
+            elements.btnVerifyArchive.addEventListener('click', verifyArchiveFile);
+        }
+        if (elements.periodClosuresTableBody) {
+            elements.periodClosuresTableBody.addEventListener('click', async (e) => {
+                const btn = e.target.closest('.btn-create-archive');
+                if (!btn) return;
+                const closureId = btn.dataset.closureId;
+                if (!closureId) return;
+                btn.disabled = true;
+                await createArchive(closureId);
+            });
+        }
+
+        if (elements.btnVerifyChains) {
+            elements.btnVerifyChains.addEventListener('click', async () => {
+                try {
+                    await ensureAuthToken();
+                    const headers = { 'Content-Type': 'application/json' };
+                    if (state.token) {
+                        headers['Authorization'] = `Bearer ${state.token}`;
+                    }
+                    elements.btnVerifyChains.disabled = true;
+
+                    const res = await fetch('/api/fiscal/verify', {
+                        method: 'POST',
+                        headers: headers
+                    });
+
+                    if (res.ok) {
+                        const data = await res.json();
+                        renderVerificationResult(data);
+                        if (data.isValid) {
+                            showToast(t('fiscal.verification_success'), 'success');
+                        } else {
+                            showToast(t('fiscal.verification_failed'), 'error');
+                        }
+                    } else {
+                        const err = await res.json().catch(() => ({ message: t('fiscal.verify_error') }));
+                        showToast(err.message || t('fiscal.verify_error'), 'error');
+                    }
+                } catch (err) {
+                    console.error('Erreur vérification chaînes:', err);
+                    showToast(t('fiscal.verify_error'), 'error');
+                } finally {
+                    elements.btnVerifyChains.disabled = false;
+                }
+            });
+        }
+
         // FEC Export Handler
         if (elements.btnExportFec) {
             const now = new Date();
@@ -3827,6 +3995,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function loadFiscalViewData() {
         try {
             await ensureAuthToken();
+            loadPrintSettings();
+            await loadPeriodClosures();
             const headers = state.token ? { 'Authorization': `Bearer ${state.token}` } : {};
             const res = await fetch('/api/fiscal/latest-closure', { headers });
             if (res.ok) {
@@ -3849,10 +4019,60 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
         const data = await res.json();
-        showToast(data.printQueued ? t('fiscal.print_queued') : t('payment.print_not_queued'), data.printQueued ? 'success' : 'warning');
+        if (data.duplicateNumber) {
+            if (elements.slipDuplicateBanner) {
+                elements.slipDuplicateBanner.textContent = t('fiscal.duplicate_banner', { number: data.duplicateNumber });
+                elements.slipDuplicateBanner.style.display = 'block';
+            }
+            showToast(t('fiscal.duplicate_queued', { number: data.duplicateNumber }), 'success');
+        } else {
+            if (elements.slipDuplicateBanner) {
+                elements.slipDuplicateBanner.style.display = 'none';
+            }
+            showToast(data.printQueued ? t('fiscal.print_queued') : t('payment.print_not_queued'), data.printQueued ? 'success' : 'warning');
+        }
+    }
+
+    async function reprintReceipt(receiptIdentifier) {
+        if (!receiptIdentifier) return null;
+        await ensureAuthToken();
+        const headers = state.token ? { 'Authorization': `Bearer ${state.token}` } : {};
+        try {
+            const res = await fetch(`/api/checkout/receipts/${encodeURIComponent(receiptIdentifier)}/reprint`, { method: 'POST', headers });
+            if (!res.ok) {
+                const err = await readApiError(res, t('fiscal.print_error'));
+                showToast(err, 'error');
+                if (elements.reprintReceiptResult) {
+                    elements.reprintReceiptResult.style.display = 'block';
+                    elements.reprintReceiptResult.style.background = 'rgba(239,68,68,0.15)';
+                    elements.reprintReceiptResult.style.border = '1px solid #ef4444';
+                    elements.reprintReceiptResult.style.color = '#ef4444';
+                    elements.reprintReceiptResult.textContent = err;
+                }
+                return null;
+            }
+            const data = await res.json();
+            const msg = t('fiscal.receipt_reprinted_success', { number: data.duplicateNumber });
+            showToast(msg, 'success');
+            if (elements.reprintReceiptResult) {
+                elements.reprintReceiptResult.style.display = 'block';
+                elements.reprintReceiptResult.style.background = 'rgba(16,185,129,0.15)';
+                elements.reprintReceiptResult.style.border = '1px solid #10b981';
+                elements.reprintReceiptResult.style.color = '#10b981';
+                elements.reprintReceiptResult.textContent = msg;
+            }
+            return data;
+        } catch (err) {
+            console.error('Erreur réimpression reçu:', err);
+            showToast(t('fiscal.print_error'), 'error');
+            return null;
+        }
     }
 
     async function previewXReport() {
+        if (elements.slipDuplicateBanner) {
+            elements.slipDuplicateBanner.style.display = 'none';
+        }
         try {
             await ensureAuthToken();
             const headers = state.token ? { 'Authorization': `Bearer ${state.token}` } : {};
@@ -3940,6 +4160,356 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
+    function renderVerificationResult(data) {
+        if (!elements.fiscalVerificationPanel) return;
+        elements.fiscalVerificationPanel.style.display = 'block';
+
+        if (elements.fiscalVerificationSummary) {
+            if (data.isValid) {
+                elements.fiscalVerificationSummary.style.background = 'rgba(16, 185, 129, 0.15)';
+                elements.fiscalVerificationSummary.style.color = '#10b981';
+                elements.fiscalVerificationSummary.style.border = '1px solid rgba(16, 185, 129, 0.3)';
+                elements.fiscalVerificationSummary.innerHTML = '✓ ' + t('fiscal.verification_success') + ' (' + new Date(data.checkedAtUtc).toLocaleString() + ')';
+            } else {
+                elements.fiscalVerificationSummary.style.background = 'rgba(239, 68, 68, 0.15)';
+                elements.fiscalVerificationSummary.style.color = '#ef4444';
+                elements.fiscalVerificationSummary.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+                elements.fiscalVerificationSummary.innerHTML = '⚠️ ' + t('fiscal.verification_failed') + ' (' + new Date(data.checkedAtUtc).toLocaleString() + ')';
+            }
+        }
+
+        if (elements.fiscalChainsTableBody) {
+            elements.fiscalChainsTableBody.innerHTML = '';
+            (data.chains || []).forEach(chain => {
+                const tr = document.createElement('tr');
+                tr.style.borderBottom = '1px solid rgba(255,255,255,0.05)';
+
+                const tdChain = document.createElement('td');
+                tdChain.style.padding = '8px';
+                tdChain.textContent = chain.chain;
+                tr.appendChild(tdChain);
+
+                const tdTerminal = document.createElement('td');
+                tdTerminal.style.padding = '8px';
+                tdTerminal.textContent = chain.terminalId || t('fiscal.global');
+                tr.appendChild(tdTerminal);
+
+                const tdCount = document.createElement('td');
+                tdCount.style.padding = '8px';
+                tdCount.textContent = chain.checkedCount + (chain.legacyCount != null ? ' (+' + chain.legacyCount + ' ' + (t('fiscal.legacy') || 'legacy') + ')' : '');
+                tr.appendChild(tdCount);
+
+                const tdStatus = document.createElement('td');
+                tdStatus.style.padding = '8px';
+                tdStatus.innerHTML = chain.isValid
+                    ? '<span style="color:#10b981; font-weight:600;">' + t('fiscal.status_valid') + '</span>'
+                    : '<span style="color:#ef4444; font-weight:600;">' + t('fiscal.status_broken') + '</span>';
+                tr.appendChild(tdStatus);
+
+                const tdDetails = document.createElement('td');
+                tdDetails.style.padding = '8px';
+                if (chain.break) {
+                    tdDetails.innerHTML = `<span style="color:#ef4444;">${chain.break.kind} (seq #${chain.break.sequenceNumber}${chain.break.reference ? ' - ' + chain.break.reference : ''})</span>`;
+                } else {
+                    tdDetails.textContent = '—';
+                }
+                tr.appendChild(tdDetails);
+
+                elements.fiscalChainsTableBody.appendChild(tr);
+            });
+        }
+    }
+
+    function updateDefaultPeriodKey() {
+        if (!elements.periodClosureKey || !elements.periodClosureType) return;
+        const now = new Date();
+        if (elements.periodClosureType.value === 'annual') {
+            elements.periodClosureKey.value = String(now.getFullYear() - 1);
+            elements.periodClosureKey.placeholder = '2025';
+        } else {
+            const prevMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+            const y = prevMonthDate.getFullYear();
+            const m = String(prevMonthDate.getMonth() + 1).padStart(2, '0');
+            elements.periodClosureKey.value = `${y}-${m}`;
+            elements.periodClosureKey.placeholder = `${y}-${m}`;
+        }
+    }
+
+    async function loadPeriodClosures() {
+        if (!elements.periodClosuresTableBody) return;
+        try {
+            await ensureAuthToken();
+            const headers = state.token ? { 'Authorization': `Bearer ${state.token}` } : {};
+            await loadArchives();
+            const res = await fetch('/api/fiscal/period-closures?terminalId=POS_MAIN_TERM', { headers });
+            if (!res.ok) return;
+            const closures = await res.json();
+            renderPeriodClosures(closures);
+        } catch (err) {
+            console.error('Erreur chargement des clôtures de période:', err);
+        }
+    }
+
+    async function loadArchives() {
+        if (!elements.archivesTableBody) return;
+        try {
+            await ensureAuthToken();
+            const headers = state.token ? { 'Authorization': `Bearer ${state.token}` } : {};
+            const res = await fetch('/api/fiscal/archives', { headers });
+            if (!res.ok) return;
+            const archives = await res.json();
+            state.archives = archives || [];
+            renderArchives(state.archives);
+        } catch (err) {
+            console.error('Erreur chargement des archives:', err);
+        }
+    }
+
+    function renderArchives(archives) {
+        if (!elements.archivesTableBody) return;
+        elements.archivesTableBody.innerHTML = '';
+        if (!archives || archives.length === 0) {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td colspan="7" style="padding:16px; text-align:center; color:#94a3b8;">—</td>`;
+            elements.archivesTableBody.appendChild(tr);
+            return;
+        }
+
+        archives.forEach(a => {
+            const tr = document.createElement('tr');
+            tr.style.borderBottom = '1px solid rgba(255,255,255,0.05)';
+            const dateStr = a.createdAtUtc ? new Date(a.createdAtUtc).toLocaleString() : '—';
+            const sigTrunc = a.signatureHash ? a.signatureHash.substring(0, 16) + '...' : '—';
+            const sizeKb = (a.fileSizeBytes / 1024).toFixed(1) + ' KB';
+
+            tr.innerHTML = `
+                <td style="padding:8px; font-family:monospace;">#${a.archiveSequence}</td>
+                <td style="padding:8px; font-weight:600; font-family:monospace; font-size:0.85rem;">${escapeHtml(a.fileName)}</td>
+                <td style="padding:8px;"><span style="display:inline-block; padding:2px 8px; border-radius:4px; font-size:0.78rem; font-weight:600; background:rgba(59,130,246,0.15); color:#60a5fa;">${escapeHtml(a.periodKey)}</span></td>
+                <td style="padding:8px; font-size:0.85rem; color:#94a3b8;">${sizeKb}</td>
+                <td style="padding:8px; font-size:0.82rem; color:#94a3b8;">${dateStr}</td>
+                <td style="padding:8px; font-family:monospace; font-size:0.75rem; color:#a78bfa;" title="${escapeHtml(a.signatureHash || '')}">${escapeHtml(sigTrunc)}</td>
+                <td style="padding:8px;">
+                    <a href="/api/fiscal/archives/${a.id}/file" download="${escapeHtml(a.fileName)}" class="btn-fiscal" style="padding:4px 10px; font-size:0.78rem; background:#3b82f6; color:#fff; text-decoration:none; display:inline-block; border-radius:4px;">${t('fiscal.action_download')}</a>
+                </td>
+            `;
+            elements.archivesTableBody.appendChild(tr);
+        });
+    }
+
+    function renderPeriodClosures(closures) {
+        if (!elements.periodClosuresTableBody) return;
+        elements.periodClosuresTableBody.innerHTML = '';
+        if (!closures || closures.length === 0) {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td colspan="8" style="padding:16px; text-align:center; color:#94a3b8;">—</td>`;
+            elements.periodClosuresTableBody.appendChild(tr);
+            return;
+        }
+
+        closures.forEach(c => {
+            const tr = document.createElement('tr');
+            tr.style.borderBottom = '1px solid rgba(255,255,255,0.05)';
+            const typeLabel = c.periodType === 'monthly' ? t('fiscal.period_monthly') : t('fiscal.period_annual');
+            const totalTtcFormatted = (c.totalTtcCents != null ? (c.totalTtcCents / 100).toFixed(2) : (c.totalTtc || 0).toFixed(2)) + ' €';
+            const grandTotalFormatted = (c.perpetualGrandTotalCents != null ? (c.perpetualGrandTotalCents / 100).toFixed(2) : (c.perpetualGrandTotal || 0).toFixed(2)) + ' €';
+            const dateStr = c.createdAtUtc ? new Date(c.createdAtUtc).toLocaleString() : '—';
+            const sigTrunc = c.signatureHash ? c.signatureHash.substring(0, 16) + '...' : '—';
+
+            const existingArchive = (state.archives || []).find(a => a.periodClosureId === c.id);
+            let actionHtml = '';
+            if (existingArchive) {
+                actionHtml = `<a href="/api/fiscal/archives/${existingArchive.id}/file" download="${escapeHtml(existingArchive.fileName)}" class="btn-fiscal" style="padding:4px 8px; font-size:0.75rem; background:#3b82f6; color:#fff; text-decoration:none; display:inline-block; border-radius:4px;">${t('fiscal.action_download')}</a>`;
+            } else {
+                actionHtml = `<button class="btn-create-archive" data-closure-id="${c.id}" style="padding:4px 8px; font-size:0.75rem; background:#8b5cf6; color:#fff; border:none; border-radius:4px; cursor:pointer;">${t('fiscal.action_archive')}</button>`;
+            }
+
+            tr.innerHTML = `
+                <td style="padding:8px;"><span style="display:inline-block; padding:2px 8px; border-radius:4px; font-size:0.78rem; font-weight:600; background:rgba(59,130,246,0.15); color:#60a5fa;">${escapeHtml(typeLabel)}</span></td>
+                <td style="padding:8px; font-weight:600;">${escapeHtml(c.periodKey)}</td>
+                <td style="padding:8px; font-family:monospace;">#${c.closureSequence}</td>
+                <td style="padding:8px; font-weight:600;">${totalTtcFormatted}</td>
+                <td style="padding:8px; font-family:monospace; color:#34d399;">${grandTotalFormatted}</td>
+                <td style="padding:8px; font-size:0.82rem; color:#94a3b8;">${dateStr}</td>
+                <td style="padding:8px; font-family:monospace; font-size:0.75rem; color:#a78bfa;" title="${escapeHtml(c.signatureHash || '')}">${escapeHtml(sigTrunc)}</td>
+                <td style="padding:8px;">${actionHtml}</td>
+            `;
+            elements.periodClosuresTableBody.appendChild(tr);
+        });
+    }
+
+    async function createArchive(closureId) {
+        try {
+            await ensureAuthToken();
+            const headers = {
+                'Content-Type': 'application/json',
+                ...(state.token ? { 'Authorization': `Bearer ${state.token}` } : {})
+            };
+            const res = await fetch('/api/fiscal/archives', {
+                method: 'POST',
+                headers,
+                body: JSON.stringify({ periodClosureId: closureId })
+            });
+            if (res.ok) {
+                showToast(t('fiscal.archive_created_success'), 'success');
+                await loadPeriodClosures();
+            } else if (res.status === 409) {
+                showToast(t('fiscal.archive_exists'), 'warning');
+            } else {
+                showToast(t('common.error_occurred'), 'error');
+            }
+        } catch (err) {
+            console.error('Erreur création archive:', err);
+            showToast(t('common.error_occurred'), 'error');
+        }
+    }
+
+    async function verifyArchiveFile() {
+        if (!elements.btnVerifyArchive || !elements.archiveVerifyFileInput) return;
+        const file = elements.archiveVerifyFileInput.files[0];
+        if (!file) return;
+
+        if (elements.archiveVerifyAlert) {
+            elements.archiveVerifyAlert.style.display = 'none';
+            elements.archiveVerifyAlert.textContent = '';
+        }
+        elements.btnVerifyArchive.disabled = true;
+
+        try {
+            await ensureAuthToken();
+            const formData = new FormData();
+            formData.append('file', file);
+            const headers = state.token ? { 'Authorization': `Bearer ${state.token}` } : {};
+
+            const res = await fetch('/api/fiscal/archives/verify', {
+                method: 'POST',
+                headers,
+                body: formData
+            });
+
+            if (res.ok) {
+                const result = await res.json();
+                if (elements.archiveVerifyAlert) {
+                    elements.archiveVerifyAlert.style.display = 'block';
+                    if (result.isValid) {
+                        elements.archiveVerifyAlert.style.background = 'rgba(16,185,129,0.15)';
+                        elements.archiveVerifyAlert.style.color = '#10b981';
+                        elements.archiveVerifyAlert.style.border = '1px solid rgba(16,185,129,0.3)';
+                        elements.archiveVerifyAlert.textContent = t('fiscal.archive_valid');
+                    } else {
+                        elements.archiveVerifyAlert.style.background = 'rgba(239,68,68,0.15)';
+                        elements.archiveVerifyAlert.style.color = '#ef4444';
+                        elements.archiveVerifyAlert.style.border = '1px solid rgba(239,68,68,0.3)';
+                        if (result.reason === 'hash_mismatch') {
+                            elements.archiveVerifyAlert.textContent = t('fiscal.archive_hash_mismatch');
+                        } else if (result.reason === 'unknown_archive') {
+                            elements.archiveVerifyAlert.textContent = t('fiscal.archive_unknown');
+                        } else if (result.reason === 'chain_break') {
+                            elements.archiveVerifyAlert.textContent = t('fiscal.archive_chain_break');
+                        } else {
+                            elements.archiveVerifyAlert.textContent = result.reason || t('common.error_occurred');
+                        }
+                    }
+                }
+            } else {
+                if (elements.archiveVerifyAlert) {
+                    elements.archiveVerifyAlert.style.display = 'block';
+                    elements.archiveVerifyAlert.style.background = 'rgba(239,68,68,0.15)';
+                    elements.archiveVerifyAlert.style.color = '#ef4444';
+                    elements.archiveVerifyAlert.style.border = '1px solid rgba(239,68,68,0.3)';
+                    elements.archiveVerifyAlert.textContent = t('common.error_occurred');
+                }
+            }
+        } catch (err) {
+            console.error('Erreur vérification archive:', err);
+        } finally {
+            elements.btnVerifyArchive.disabled = false;
+        }
+    }
+
+    async function executePeriodClosure() {
+        if (!elements.btnExecutePeriodClosure || !elements.periodClosureKey || !elements.periodClosureType) return;
+        const periodType = elements.periodClosureType.value;
+        const periodKey = elements.periodClosureKey.value.trim();
+        if (!periodKey) return;
+
+        if (elements.periodClosureAlert) {
+            elements.periodClosureAlert.style.display = 'none';
+            elements.periodClosureAlert.textContent = '';
+        }
+        elements.btnExecutePeriodClosure.disabled = true;
+
+        try {
+            await ensureAuthToken();
+            const headers = {
+                'Content-Type': 'application/json',
+                ...(state.token ? { 'Authorization': `Bearer ${state.token}` } : {})
+            };
+            const res = await fetch('/api/fiscal/period-closures', {
+                method: 'POST',
+                headers,
+                body: JSON.stringify({
+                    terminalId: 'POS_MAIN_TERM',
+                    periodType,
+                    periodKey
+                })
+            });
+
+            if (res.ok) {
+                if (elements.periodClosureAlert) {
+                    elements.periodClosureAlert.style.display = 'block';
+                    elements.periodClosureAlert.style.background = 'rgba(16,185,129,0.15)';
+                    elements.periodClosureAlert.style.color = '#10b981';
+                    elements.periodClosureAlert.style.border = '1px solid rgba(16,185,129,0.3)';
+                    elements.periodClosureAlert.textContent = t('fiscal.period_closure_success');
+                }
+                showToast(t('fiscal.period_closure_success'), 'success');
+                await loadPeriodClosures();
+            } else if (res.status === 409) {
+                const err = await res.json().catch(() => ({}));
+                let msg = '';
+                if (err.code === 'period_not_ended') {
+                    msg = t('fiscal.period_not_ended');
+                } else if (err.code === 'period_already_closed') {
+                    msg = t('fiscal.period_already_closed');
+                } else if (err.code === 'missing_daily_closures') {
+                    const daysList = Array.isArray(err.days) ? err.days.join(', ') : '';
+                    msg = `${t('fiscal.missing_daily_closures')} ${daysList}`.trim();
+                } else if (err.code === 'missing_monthly_closures') {
+                    const monthsList = Array.isArray(err.months) ? err.months.join(', ') : '';
+                    msg = `${t('fiscal.missing_monthly_closures')} ${monthsList}`.trim();
+                } else {
+                    msg = err.message || t('common.error_occurred');
+                }
+
+                if (elements.periodClosureAlert) {
+                    elements.periodClosureAlert.style.display = 'block';
+                    elements.periodClosureAlert.style.background = 'rgba(239,68,68,0.15)';
+                    elements.periodClosureAlert.style.color = '#ef4444';
+                    elements.periodClosureAlert.style.border = '1px solid rgba(239,68,68,0.3)';
+                    elements.periodClosureAlert.textContent = msg;
+                }
+                showToast(msg, 'error');
+            } else {
+                const err = await res.json().catch(() => ({}));
+                const msg = err.message || t('common.error_occurred');
+                if (elements.periodClosureAlert) {
+                    elements.periodClosureAlert.style.display = 'block';
+                    elements.periodClosureAlert.style.background = 'rgba(239,68,68,0.15)';
+                    elements.periodClosureAlert.style.color = '#ef4444';
+                    elements.periodClosureAlert.style.border = '1px solid rgba(239,68,68,0.3)';
+                    elements.periodClosureAlert.textContent = msg;
+                }
+                showToast(msg, 'error');
+            }
+        } catch (err) {
+            console.error('Erreur exécution clôture période:', err);
+            showToast(t('common.error_occurred'), 'error');
+        } finally {
+            elements.btnExecutePeriodClosure.disabled = false;
+        }
+    }
+
     async function loadNetworkSyncData() {
         try {
             const [netRes, syncRes] = await Promise.all([
@@ -4008,7 +4578,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    function escapeHtml(value) {
+        return String(value).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
 
     async function loadAdminDevices() {
         const list = document.getElementById('adminDevicesList');
@@ -4062,6 +4634,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     function setupDeviceAdminHandlers() {
         document.getElementById('settingsReceiptLanguage')?.addEventListener('change', savePrintSettings);
         document.getElementById('settingsKitchenLanguage')?.addEventListener('change', savePrintSettings);
+        document.getElementById('formEstablishmentSettings')?.addEventListener('submit', saveEstablishmentSettings);
         document.getElementById('formDevicePairingCode')?.addEventListener('submit', async (e) => {
             e.preventDefault();
             const name = document.getElementById('inputDeviceName').value.trim();

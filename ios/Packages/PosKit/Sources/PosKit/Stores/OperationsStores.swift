@@ -115,6 +115,8 @@ public final class FiscalStore {
     public private(set) var isWorking = false
     public private(set) var fecStatus: String?
     public private(set) var exportedFile: URL?
+    public private(set) var verificationResult: FiscalVerificationResult?
+    public private(set) var lastDuplicateNumber: Int?
 
     private let api: PosAPI
     private let notifier: Notifier
@@ -142,6 +144,7 @@ public final class FiscalStore {
     }
 
     public func previewX() async {
+        lastDuplicateNumber = nil
         do {
             report = try await api.xReport(terminalId: settings.terminalId)
             isSealed = false
@@ -162,6 +165,7 @@ public final class FiscalStore {
             closure.terminalId = closure.terminalId ?? settings.terminalId
             report = closure
             isSealed = true
+            lastDuplicateNumber = nil
             notifier.success(String(format: L10n.string("fiscal.z_closure_done"), closure.closureSequence ?? 0))
             if closure.printQueued == false { notifier.warning(L10n.string("payment.print_not_queued")) }
             return true
@@ -172,7 +176,39 @@ public final class FiscalStore {
     }
 
     public func printX() async { await sendPrint { try await self.api.printXReport(terminalId: self.settings.terminalId) } }
-    public func reprintZ() async { await sendPrint { try await self.api.reprintLatestClosure(terminalId: self.settings.terminalId) } }
+
+    public func reprintZ() async {
+        do {
+            let res = try await self.api.reprintLatestClosure(terminalId: self.settings.terminalId)
+            lastDuplicateNumber = res.duplicateNumber
+            if res.printQueued {
+                notifier.success(String(format: L10n.string("fiscal.duplicate_queued"), "\(res.duplicateNumber)"))
+            } else {
+                notifier.warning(L10n.string("payment.print_not_queued"))
+            }
+        } catch {
+            notifier.error(error)
+        }
+    }
+
+    @discardableResult
+    public func reprintReceipt(receiptIdentifier: String) async -> Bool {
+        isWorking = true
+        defer { isWorking = false }
+        do {
+            let res = try await self.api.reprintReceipt(receiptIdentifier: receiptIdentifier)
+            lastDuplicateNumber = res.duplicateNumber
+            if res.printQueued {
+                notifier.success(String(format: L10n.string("fiscal.receipt_reprinted_success"), "\(res.duplicateNumber)"))
+            } else {
+                notifier.warning(L10n.string("payment.print_not_queued"))
+            }
+            return true
+        } catch {
+            notifier.error(error)
+            return false
+        }
+    }
 
     private func sendPrint(_ send: () async throws -> Bool) async {
         do {
@@ -200,6 +236,108 @@ public final class FiscalStore {
         } catch {
             fecStatus = L10n.string("fiscal.fec_error")
             notifier.error(error)
+        }
+    }
+
+    public func verify() async -> Bool {
+        guard let op = session.currentOperator, op.role.isManager else {
+            notifier.error(L10n.string("fiscal.verify_forbidden"))
+            return false
+        }
+        isWorking = true
+        defer { isWorking = false }
+        do {
+            let result = try await api.verifyChains()
+            verificationResult = result
+            if result.isValid {
+                notifier.success(L10n.string("fiscal.verification_success"))
+            } else {
+                notifier.error(L10n.string("fiscal.verification_failed"))
+            }
+            return result.isValid
+        } catch {
+            notifier.error(error)
+            return false
+        }
+    }
+
+    public private(set) var periodClosures: [FiscalPeriodClosure] = []
+
+    public func loadPeriodClosures(type: FiscalPeriodType? = nil) async {
+        do {
+            periodClosures = try await api.periodClosures(terminalId: settings.terminalId, periodType: type)
+        } catch {
+            notifier.error(error)
+        }
+    }
+
+    public func executePeriodClosure(type: FiscalPeriodType, key: String) async -> Bool {
+        guard let op = session.currentOperator, op.role.isManager else {
+            notifier.error(L10n.string("fiscal.period_closure_forbidden"))
+            return false
+        }
+        isWorking = true
+        defer { isWorking = false }
+        do {
+            let closure = try await api.executePeriodClosure(terminalId: settings.terminalId, periodType: type, periodKey: key)
+            periodClosures.insert(closure, at: 0)
+            notifier.success(L10n.string("fiscal.period_closure_success"))
+            return true
+        } catch {
+            notifier.error(error)
+            return false
+        }
+    }
+
+    public private(set) var archives: [FiscalArchive] = []
+
+    public func loadArchives() async {
+        do {
+            archives = try await api.archives()
+        } catch {
+            notifier.error(error)
+        }
+    }
+
+    @discardableResult
+    public func createArchive(periodClosureId: UUID) async -> Bool {
+        guard let op = session.currentOperator, op.role.isManager else {
+            notifier.error(L10n.string("fiscal.archive_forbidden"))
+            return false
+        }
+        isWorking = true
+        defer { isWorking = false }
+        do {
+            let archive = try await api.createArchive(periodClosureId: periodClosureId)
+            archives.insert(archive, at: 0)
+            notifier.success(L10n.string("fiscal.archive_created_success"))
+            return true
+        } catch {
+            notifier.error(error)
+            return false
+        }
+    }
+
+    public func verifyArchive(data: Data, fileName: String) async -> ArchiveVerificationResult? {
+        isWorking = true
+        defer { isWorking = false }
+        do {
+            let res = try await api.verifyArchive(data: data, fileName: fileName)
+            if res.isValid {
+                notifier.success(L10n.string("fiscal.archive_valid"))
+            } else if res.reason == "hash_mismatch" {
+                notifier.error(L10n.string("fiscal.archive_hash_mismatch"))
+            } else if res.reason == "unknown_archive" {
+                notifier.error(L10n.string("fiscal.archive_unknown"))
+            } else if res.reason == "chain_break" {
+                notifier.error(L10n.string("fiscal.archive_chain_break"))
+            } else {
+                notifier.error(res.reason ?? L10n.string("errors.unknown"))
+            }
+            return res
+        } catch {
+            notifier.error(error)
+            return nil
         }
     }
 }

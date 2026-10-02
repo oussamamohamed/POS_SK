@@ -58,10 +58,10 @@ Unicité : `(TerminalId, PeriodType, PeriodKey)`.
 Chaque instruction dans son propre `try { … } catch { }`, comme le bloc existant.
 
 ```sql
-ALTER TABLE TransactionJournalEntries ADD COLUMN ChainSequence INTEGER NULL;
-ALTER TABLE TransactionJournalEntries ADD COLUMN PreviousHash TEXT NULL;
-ALTER TABLE TransactionJournalEntries ADD COLUMN OperatorId TEXT NULL;
-CREATE UNIQUE INDEX IF NOT EXISTS IX_TransactionJournalEntries_ChainSequence ON TransactionJournalEntries (ChainSequence) WHERE ChainSequence IS NOT NULL;
+ALTER TABLE JournalEntries ADD COLUMN ChainSequence INTEGER NULL;
+ALTER TABLE JournalEntries ADD COLUMN PreviousHash TEXT NULL;
+ALTER TABLE JournalEntries ADD COLUMN OperatorId TEXT NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS IX_JournalEntries_ChainSequence ON JournalEntries (ChainSequence) WHERE ChainSequence IS NOT NULL;
 CREATE INDEX IF NOT EXISTS IX_FiscalReceipts_VoidedReceiptId ON FiscalReceipts (VoidedReceiptId);
 ALTER TABLE PrintJobs ADD COLUMN DuplicateOfDocumentId TEXT NULL;
 ALTER TABLE PrintJobs ADD COLUMN DuplicateNumber INTEGER NULL;

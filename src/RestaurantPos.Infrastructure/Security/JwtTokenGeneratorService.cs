@@ -24,7 +24,7 @@ public class JwtTokenGeneratorService : IJwtTokenGeneratorService
             ?? throw new InvalidOperationException("'Jwt:Secret' is not configured.");
         var issuer = _configuration["Jwt:Issuer"] ?? "RestaurantPos.Api";
         var audience = _configuration["Jwt:Audience"] ?? "RestaurantPos.Client";
-        
+
         // Phase 2: Token valid for 12 hours (typical shift length)
         var expirationHours = int.Parse(_configuration["Jwt:ExpirationHours"] ?? "12", System.Globalization.CultureInfo.InvariantCulture);
 

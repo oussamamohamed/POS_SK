@@ -171,7 +171,7 @@ public static class CounterSaleEndpoints
         });
 
         // 6. Void Held Order (Supervisor PIN Protected)
-        group.MapPost("/held/{holdId:guid}/void", async (Guid holdId, VoidHeldOrderRequest req, AppDbContext db, IHeldOrderStorageService heldStorage, IOperatorAuthenticationService authService) =>
+        group.MapPost("/held/{holdId:guid}/void", async (Guid holdId, VoidHeldOrderRequest req, AppDbContext db, IHeldOrderStorageService heldStorage, IOperatorAuthenticationService authService, IFiscalJournal fiscalJournal) =>
         {
             if (string.IsNullOrWhiteSpace(req.SupervisorPin))
             {
@@ -191,16 +191,11 @@ public static class CounterSaleEndpoints
             }
 
             // Log JET audit event
-            var journalEntry = new TransactionJournalEntry
-            {
-                TerminalId = !string.IsNullOrWhiteSpace(req.TerminalId) ? req.TerminalId : "POS_MAIN_TERM",
-                IdempotencyKey = Guid.NewGuid().ToString("N"),
-                EventType = "EVENT_HELD_ORDER_VOIDED",
-                PayloadJson = JsonSerializer.Serialize(new { HoldId = holdId, VoidedBy = auth.OperatorName, Reason = req.VoidReason }),
-                EntryHash = "JET_VOID_" + Guid.NewGuid().ToString("N")[..16]
-            };
-            db.JournalEntries.Add(journalEntry);
-            await db.SaveChangesAsync();
+            await fiscalJournal.AppendAsync(
+                JournalEventTypes.EventHeldOrderVoided,
+                new { HoldId = holdId, VoidedBy = auth.OperatorName, Reason = req.VoidReason },
+                terminalId: !string.IsNullOrWhiteSpace(req.TerminalId) ? req.TerminalId : "POS_MAIN_TERM",
+                operatorId: auth.OperatorId);
 
             return Results.Ok(new { Message = Texts.T("messages.held_order_cancelled") });
         });

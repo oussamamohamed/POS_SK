@@ -4,7 +4,7 @@ import PosKit
 /// Back-office (responsables) : navigation par sous-section.
 struct AdminScreen: View {
     enum Section: String, CaseIterable, Identifiable {
-        case dashboard, catalog, grid, staff, printers, happyHour, network
+        case dashboard, catalog, grid, staff, printers, happyHour, establishment, network
         var id: String { rawValue }
 
         var title: String {
@@ -15,6 +15,7 @@ struct AdminScreen: View {
             case .staff: String(localized: "admin.section_staff")
             case .printers: String(localized: "admin.section_printers")
             case .happyHour: String(localized: "admin.section_happy_hour")
+            case .establishment: String(localized: "admin.section_establishment")
             case .network: String(localized: "admin.section_network")
             }
         }
@@ -27,6 +28,7 @@ struct AdminScreen: View {
             case .staff: "person.3"
             case .printers: "printer"
             case .happyHour: "wineglass"
+            case .establishment: "building.2"
             case .network: "network"
             }
         }
@@ -53,6 +55,7 @@ struct AdminScreen: View {
                 case .staff: StaffAdminView()
                 case .printers: PrintersAdminView()
                 case .happyHour: HappyHourAdminView()
+                case .establishment: EstablishmentAdminView()
                 case .network: NetworkSettingsView()
                 }
             }
@@ -713,3 +716,100 @@ struct KitchenTicketLanguagePicker: View {
         .accessibilityIdentifier("admin.kitchenTicketLanguage")
     }
 }
+
+/// Back-office : identité de l'établissement et exercice fiscal (NF525).
+struct EstablishmentAdminView: View {
+    @Environment(AppModel.self) private var model
+    @State private var companyName = ""
+    @State private var addressLines = ""
+    @State private var siret = ""
+    @State private var vatNumber = ""
+    @State private var certificateNumber = ""
+    @State private var fiscalYearStartMonth = 1
+    @State private var fiscalYearStartDay = 1
+    @State private var isSaving = false
+
+    var body: some View {
+        Form {
+            Section {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("admin.establishment_title").font(.headline)
+                    Text("admin.establishment_subtitle")
+                        .font(.caption)
+                        .foregroundStyle(Theme.inkMuted)
+                }
+            }
+            Section("admin.company_name") {
+                TextField("admin.company_name", text: $companyName)
+                    .accessibilityIdentifier("establishment.companyName")
+            }
+            Section("admin.address_lines") {
+                TextField("admin.address_lines", text: $addressLines, axis: .vertical)
+                    .lineLimit(2...4)
+                    .accessibilityIdentifier("establishment.addressLines")
+            }
+            Section("admin.siret") {
+                TextField("admin.siret", text: $siret)
+                    .keyboardType(.numberPad)
+                    .accessibilityIdentifier("establishment.siret")
+            }
+            Section("admin.vat_number") {
+                TextField("admin.vat_number", text: $vatNumber)
+                    .autocorrectionDisabled()
+                    .accessibilityIdentifier("establishment.vatNumber")
+            }
+            Section("admin.certificate_number") {
+                TextField("admin.certificate_number", text: $certificateNumber)
+                    .autocorrectionDisabled()
+                    .accessibilityIdentifier("establishment.certificateNumber")
+            }
+            Section("admin.fiscal_year_start") {
+                Stepper(value: $fiscalYearStartMonth, in: 1...12) {
+                    LabeledContent("admin.fiscal_year_month", value: "\(fiscalYearStartMonth)")
+                }
+                .accessibilityIdentifier("establishment.fiscalYearMonth")
+                Stepper(value: $fiscalYearStartDay, in: 1...28) {
+                    LabeledContent("admin.fiscal_year_day", value: "\(fiscalYearStartDay)")
+                }
+                .accessibilityIdentifier("establishment.fiscalYearDay")
+            }
+            Section {
+                Button {
+                    Task {
+                        isSaving = true
+                        _ = await model.settingsStore.updateEstablishment(
+                            companyName: companyName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : companyName,
+                            addressLines: addressLines.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : addressLines,
+                            siret: siret.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : siret,
+                            vatNumber: vatNumber.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : vatNumber,
+                            certificateNumber: certificateNumber.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : certificateNumber,
+                            fiscalYearStartMonth: fiscalYearStartMonth,
+                            fiscalYearStartDay: fiscalYearStartDay
+                        )
+                        isSaving = false
+                    }
+                } label: {
+                    if isSaving {
+                        ProgressView()
+                    } else {
+                        Label("admin.save_establishment", systemImage: "checkmark.circle")
+                    }
+                }
+                .accessibilityIdentifier("establishment.save")
+            }
+        }
+        .task {
+            await model.settingsStore.load()
+            if let s = model.settingsStore.settings {
+                companyName = s.companyName ?? ""
+                addressLines = s.addressLines ?? ""
+                siret = s.siret ?? ""
+                vatNumber = s.vatNumber ?? ""
+                certificateNumber = s.certificateNumber ?? ""
+                fiscalYearStartMonth = s.fiscalYearStartMonth ?? 1
+                fiscalYearStartDay = s.fiscalYearStartDay ?? 1
+            }
+        }
+    }
+}
+

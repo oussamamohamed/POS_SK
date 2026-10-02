@@ -1,0 +1,42 @@
+{
+  "isValid": true,
+  "checkedAtUtc": "2026-09-30T21:00:00.0000000Z",
+  "chains": [
+    {
+      "chain": "receipts",
+      "terminalId": "POS_MAIN_TERM",
+      "checkedCount": 812,
+      "isValid": true,
+      "break": null
+    },
+    {
+      "chain": "z_closures",
+      "terminalId": "POS_MAIN_TERM",
+      "checkedCount": 18,
+      "isValid": true,
+      "break": null
+    },
+    {
+      "chain": "period_closures",
+      "terminalId": null,
+      "checkedCount": 0,
+      "isValid": true,
+      "break": null
+    },
+    {
+      "chain": "journal",
+      "terminalId": null,
+      "checkedCount": 512,
+      "legacyCount": 3,
+      "isValid": true,
+      "break": null
+    },
+    {
+      "chain": "archives",
+      "terminalId": null,
+      "checkedCount": 0,
+      "isValid": true,
+      "break": null
+    }
+  ]
+}

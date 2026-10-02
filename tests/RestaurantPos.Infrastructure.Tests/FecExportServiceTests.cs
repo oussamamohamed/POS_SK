@@ -170,7 +170,7 @@ public sealed class FecExportServiceTests
             TotalHtAmount = Money.FromCents(1000),  // 10.00 €
             TaxBreakdownJson = "{\"10.0\": 100}",
             CreatedAtUtc = now,
-            IsVoid = true
+            VoidedReceiptId = Guid.NewGuid()
         };
 
         voidReceipt.Tenders.Add(new PaymentTender

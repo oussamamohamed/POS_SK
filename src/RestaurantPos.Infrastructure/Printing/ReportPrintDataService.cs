@@ -29,10 +29,17 @@ public sealed class ReportPrintDataService
     {
         // Même périmètre que GenerateXReportAsync : le terminal principal couvre tous les terminaux.
         var isMainTerminal = string.IsNullOrWhiteSpace(terminalId) || terminalId == "POS_MAIN_TERM";
-        var orderIds = (await _db.FiscalReceipts.AsNoTracking()
-                .Where(r => !r.IsVoid && (isMainTerminal || r.TerminalId == terminalId))
-                .ToListAsync(ct).ConfigureAwait(false))
-            .Where(r => r.TotalTtcAmount.AmountInCents > 0 && r.CreatedAtUtc >= periodStartUtc && r.CreatedAtUtc <= periodEndUtc)
+        var receipts = await _db.FiscalReceipts.AsNoTracking()
+            .Where(r => isMainTerminal || r.TerminalId == terminalId)
+            .ToListAsync(ct).ConfigureAwait(false);
+
+        var voidedIds = receipts
+            .Where(r => r.VoidedReceiptId != null)
+            .Select(r => r.VoidedReceiptId!.Value)
+            .ToHashSet();
+
+        var orderIds = receipts
+            .Where(r => r.VoidedReceiptId == null && !voidedIds.Contains(r.Id) && r.TotalTtcAmount.AmountInCents > 0 && r.CreatedAtUtc >= periodStartUtc && r.CreatedAtUtc <= periodEndUtc)
             .Select(r => r.OrderId).Distinct().ToList();
 
         var orders = (await _db.Orders.AsNoTracking().Include(o => o.Items)

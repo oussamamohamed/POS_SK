@@ -19,11 +19,13 @@ public class HappyHourPricingService : IHappyHourPricingService
 {
     private readonly AppDbContext _dbContext;
     private readonly IOperatorAuthenticationService _authService;
+    private readonly IFiscalJournal _fiscalJournal;
 
-    public HappyHourPricingService(AppDbContext dbContext, IOperatorAuthenticationService authService)
+    public HappyHourPricingService(AppDbContext dbContext, IOperatorAuthenticationService authService, IFiscalJournal? fiscalJournal = null)
     {
         _dbContext = dbContext;
         _authService = authService;
+        _fiscalJournal = fiscalJournal ?? new FiscalJournalService(dbContext);
     }
 
     public async Task<HappyHourStatusDto> GetCurrentStatusAsync(string terminalId = "POS_MAIN", CancellationToken cancellationToken = default)
@@ -279,24 +281,19 @@ public class HappyHourPricingService : IHappyHourPricingService
         _dbContext.HappyHourOverrideSessions.Add(session);
 
         // NF525 JET Audit Entry
-        var jet = new TransactionJournalEntry
-        {
-            TerminalId = request.TerminalId,
-            IdempotencyKey = Guid.NewGuid().ToString("N"),
-            EventType = "EVENT_HAPPY_HOUR_OVERRIDE_ACTIVATED",
-            PayloadJson = JsonSerializer.Serialize(new
+        await _fiscalJournal.AppendAsync(
+            JournalEventTypes.EventHappyHourActivated,
+            new
             {
                 SessionId = session.Id,
                 DurationMinutes = duration,
                 Operator = auth.OperatorName,
                 Reason = session.Reason,
                 ExpiresAtUtc = session.ExpiresAtUtc
-            }),
-            EntryHash = "JET_HH_" + Guid.NewGuid().ToString("N")[..16]
-        };
-        _dbContext.JournalEntries.Add(jet);
-
-        await _dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            },
+            terminalId: request.TerminalId,
+            operatorId: auth.OperatorId,
+            cancellationToken: cancellationToken).ConfigureAwait(false);
 
         return new OverrideActionResponse(
             true,
@@ -335,21 +332,16 @@ public class HappyHourPricingService : IHappyHourPricingService
             sess.IsActive = false;
         }
 
-        var jet = new TransactionJournalEntry
-        {
-            TerminalId = request.TerminalId,
-            IdempotencyKey = Guid.NewGuid().ToString("N"),
-            EventType = "EVENT_HAPPY_HOUR_OVERRIDE_STOPPED",
-            PayloadJson = JsonSerializer.Serialize(new
+        await _fiscalJournal.AppendAsync(
+            JournalEventTypes.EventHappyHourDeactivated,
+            new
             {
                 Operator = auth.OperatorName,
                 Reason = request.Reason
-            }),
-            EntryHash = "JET_HH_STOP_" + Guid.NewGuid().ToString("N")[..16]
-        };
-        _dbContext.JournalEntries.Add(jet);
-
-        await _dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            },
+            terminalId: request.TerminalId,
+            operatorId: auth.OperatorId,
+            cancellationToken: cancellationToken).ConfigureAwait(false);
 
         return new OverrideActionResponse(
             true,

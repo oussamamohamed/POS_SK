@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
+using System.Text.Json;
 using RestaurantPos.Application.Common.Interfaces;
 using RestaurantPos.Domain.Entities;
 using RestaurantPos.Domain.Enums;
@@ -12,10 +14,6 @@ namespace RestaurantPos.Infrastructure.Printing;
 /// <summary>Construit les tickets dans la langue des tickets du restaurant. Le rendu est fait par EscPosRasterRenderer.</summary>
 public static class TicketDocumentBuilder
 {
-    // ponytail: en-tête restaurant en dur, repris de l'ancien formatter ; à déplacer dans RestaurantSettings quand un écran de saisie existera.
-    private static readonly string[] Header =
-        ["RESTAURANT L'ANTIGRAVITE", "12 Rue de la Gastronomie", "75001 Paris", "SIRET: 888 777 666 00012", "TVA: FR 12 888777666"];
-
     public static TicketDocument PickupCoupon(Order order, string pickupNumber, string? buzzer, string language, DateTimeOffset nowUtc)
     {
         ArgumentNullException.ThrowIfNull(order);
@@ -25,26 +23,53 @@ public static class TicketDocumentBuilder
         return new TicketDocument(lang, lang == "ar", lines);
     }
 
-    public static TicketDocument Receipt(FiscalReceipt receipt, Order order, string language)
+    public static TicketDocument Receipt(FiscalReceipt receipt, Order order, string language, RestaurantSettingsDto? settings = null, int? duplicateNumber = null)
     {
         ArgumentNullException.ThrowIfNull(receipt);
         ArgumentNullException.ThrowIfNull(order);
         var (lang, c) = Resolve(language);
-        return new TicketDocument(lang, lang == "ar", ReceiptLines(receipt, order, c));
+        return new TicketDocument(lang, lang == "ar", ReceiptLines(receipt, order, c, settings, duplicateNumber));
     }
 
-    public static TicketDocument FiscalReceipt(FiscalReceipt receipt, Order order, string pickupNumber, string? buzzer, string language)
+    public static TicketDocument ReceiptFallback(FiscalReceipt receipt, string language, RestaurantSettingsDto? settings = null, int? duplicateNumber = null)
+    {
+        ArgumentNullException.ThrowIfNull(receipt);
+        var (lang, c) = Resolve(language);
+        var lines = new List<TicketLine>();
+        if (duplicateNumber.HasValue)
+        {
+            lines.Add(new TicketText($"DUPLICATA n°{duplicateNumber.Value}", TicketAlign.Center, Bold: true, Large: true));
+            lines.Add(new TicketSeparator());
+        }
+        lines.Add(new TicketSeparator());
+        AppendHeader(lines, settings);
+        lines.Add(new TicketSeparator());
+        lines.Add(new TicketColumns(Texts.Get(c, "receipt.ticket"), receipt.ReceiptNumber));
+        lines.Add(new TicketColumns(Texts.Get(c, "receipt.date"), receipt.CreatedAtUtc.ToString("dd/MM/yyyy HH:mm:ss", CultureInfo.InvariantCulture)));
+        lines.Add(new TicketColumns(Texts.Get(c, "receipt.terminal"), receipt.TerminalId));
+        lines.Add(new TicketSeparator());
+        lines.Add(new TicketColumns(Texts.Get(c, "receipt.total_ttc"), Amount(receipt.TotalTtcAmount.AmountInCents)));
+        lines.Add(new TicketColumns(Texts.Get(c, "receipt.total_ht"), Amount(receipt.TotalHtAmount.AmountInCents)));
+        lines.Add(new TicketSeparator());
+        lines.Add(new TicketText(Texts.Get(c, "receipt.vat_breakdown"), Bold: true));
+        lines.Add(new TicketText(receipt.TaxBreakdownJson));
+        lines.Add(new TicketText(Texts.Get(c, "receipt.fiscal_signature"), Bold: true));
+        lines.Add(new TicketText(receipt.SignatureHash));
+        return new TicketDocument(lang, lang == "ar", lines);
+    }
+
+    public static TicketDocument FiscalReceipt(FiscalReceipt receipt, Order order, string pickupNumber, string? buzzer, string language, RestaurantSettingsDto? settings = null, int? duplicateNumber = null)
     {
         ArgumentNullException.ThrowIfNull(receipt);
         ArgumentNullException.ThrowIfNull(order);
         var (lang, c) = Resolve(language);
-        var lines = ReceiptLines(receipt, order, c);
+        var lines = ReceiptLines(receipt, order, c, settings, duplicateNumber);
         lines.Add(new TicketSeparator(Cut: true));
         AppendPickup(lines, c, order, pickupNumber, buzzer, receipt.CreatedAtUtc);
         return new TicketDocument(lang, lang == "ar", lines);
     }
 
-    public static TicketDocument XReport(FiscalSummaryDto summary, ReportPrintData data, string language, DateTimeOffset nowUtc)
+    public static TicketDocument XReport(FiscalSummaryDto summary, ReportPrintData data, string language, DateTimeOffset nowUtc, RestaurantSettingsDto? settings = null)
     {
         ArgumentNullException.ThrowIfNull(summary);
         ArgumentNullException.ThrowIfNull(data);
@@ -60,28 +85,106 @@ public static class TicketDocumentBuilder
         };
         AppendReportTotals(lines, c, summary.ReceiptCount, summary.TotalSalesTtcCents, summary.TotalSalesHtCents, summary.VatBreakdownCents, summary.PaymentTotalsCents, summary.PerpetualGrandTotalCents);
         AppendReportDetails(lines, c, data);
+        lines.Add(new TicketSeparator());
+        lines.Add(new TicketText($"Logiciel: RestaurantPOS v{GetSoftwareVersion()}", TicketAlign.Center));
+        if (!string.IsNullOrWhiteSpace(settings?.CertificateNumber))
+            lines.Add(new TicketText($"Certificat: {settings.CertificateNumber}", TicketAlign.Center));
         return new TicketDocument(lang, lang == "ar", lines);
     }
 
-    public static TicketDocument ZClosure(DailyFiscalClosureDto closure, ReportPrintData data, string language)
+    public static TicketDocument ZClosure(DailyFiscalClosureDto closure, ReportPrintData data, string language, RestaurantSettingsDto? settings = null, int? duplicateNumber = null)
     {
         ArgumentNullException.ThrowIfNull(closure);
         ArgumentNullException.ThrowIfNull(data);
         var (lang, c) = Resolve(language);
-        var lines = new List<TicketLine>
+        var lines = new List<TicketLine>();
+        if (duplicateNumber.HasValue)
         {
-            new TicketText(Texts.Get(c, "report.z_title", ("sequence", closure.ClosureSequence)), TicketAlign.Center, Large: true),
-            new TicketSeparator(),
-            new TicketColumns(Texts.Get(c, "receipt.terminal"), closure.TerminalId),
-            new TicketColumns(Texts.Get(c, "report.period_start"), LocalDate(closure.PeriodStartUtc)),
-            new TicketColumns(Texts.Get(c, "report.closed_at"), LocalDate(closure.ClosedAtUtc)),
-            new TicketColumns(Texts.Get(c, "report.manager"), closure.SealedByUserName)
-        };
+            lines.Add(new TicketText($"DUPLICATA n°{duplicateNumber.Value}", TicketAlign.Center, Bold: true, Large: true));
+            lines.Add(new TicketSeparator());
+        }
+        lines.Add(new TicketText(Texts.Get(c, "report.z_title", ("sequence", closure.ClosureSequence)), TicketAlign.Center, Large: true));
+        lines.Add(new TicketSeparator());
+        lines.Add(new TicketColumns(Texts.Get(c, "receipt.terminal"), closure.TerminalId));
+        lines.Add(new TicketColumns(Texts.Get(c, "report.period_start"), LocalDate(closure.PeriodStartUtc)));
+        lines.Add(new TicketColumns(Texts.Get(c, "report.closed_at"), LocalDate(closure.ClosedAtUtc)));
+        lines.Add(new TicketColumns(Texts.Get(c, "report.manager"), closure.SealedByUserName));
         AppendReportTotals(lines, c, closure.ReceiptCount, closure.TotalSalesTtcCents, closure.TotalSalesHtCents, closure.VatBreakdownCents, closure.PaymentTotalsCents, closure.PerpetualGrandTotalCents);
         AppendReportDetails(lines, c, data);
         lines.Add(new TicketSeparator());
         lines.Add(new TicketText(Texts.Get(c, "report.signature"), Bold: true));
         lines.Add(new TicketText(closure.SignatureHash));
+        lines.Add(new TicketSeparator());
+        lines.Add(new TicketText($"Logiciel: RestaurantPOS v{GetSoftwareVersion()}", TicketAlign.Center));
+        if (!string.IsNullOrWhiteSpace(settings?.CertificateNumber))
+            lines.Add(new TicketText($"Certificat: {settings.CertificateNumber}", TicketAlign.Center));
+        return new TicketDocument(lang, lang == "ar", lines);
+    }
+
+    public static TicketDocument PeriodClosure(PeriodClosureDto closure, ReportPrintData data, string language, RestaurantSettingsDto? settings = null)
+    {
+        ArgumentNullException.ThrowIfNull(closure);
+        ArgumentNullException.ThrowIfNull(data);
+        var (lang, c) = Resolve(language);
+        var title = closure.PeriodType == FiscalPeriodType.Monthly
+            ? $"CLOTURE MENSUELLE {closure.PeriodKey} - n°{closure.ClosureSequence}"
+            : $"CLOTURE ANNUELLE {closure.PeriodKey} - n°{closure.ClosureSequence}";
+
+        var lines = new List<TicketLine>
+        {
+            new TicketText(title, TicketAlign.Center, Large: true),
+            new TicketSeparator(),
+            new TicketColumns(Texts.Get(c, "receipt.terminal"), closure.TerminalId),
+            new TicketColumns(Texts.Get(c, "report.period_start"), LocalDate(closure.PeriodStartUtc)),
+            new TicketColumns(Texts.Get(c, "report.closed_at"), LocalDate(closure.PeriodEndUtc)),
+            new TicketColumns(Texts.Get(c, "report.manager"), closure.SealedByUserName)
+        };
+
+        var vatDict = new Dictionary<decimal, long>();
+        if (!string.IsNullOrWhiteSpace(closure.TaxesSummaryJson))
+        {
+            try
+            {
+                var dict = JsonSerializer.Deserialize<Dictionary<string, long>>(closure.TaxesSummaryJson);
+                if (dict != null)
+                {
+                    foreach (var kvp in dict)
+                    {
+                        if (decimal.TryParse(kvp.Key, NumberStyles.Any, CultureInfo.InvariantCulture, out decimal r))
+                            vatDict[r] = kvp.Value;
+                    }
+                }
+            }
+            catch { }
+        }
+
+        var tenderDict = new Dictionary<PaymentMethod, long>();
+        if (!string.IsNullOrWhiteSpace(closure.TenderTotalsJson))
+        {
+            try
+            {
+                var dict = JsonSerializer.Deserialize<Dictionary<string, long>>(closure.TenderTotalsJson);
+                if (dict != null)
+                {
+                    foreach (var kvp in dict)
+                    {
+                        if (Enum.TryParse<PaymentMethod>(kvp.Key, out var m))
+                            tenderDict[m] = kvp.Value;
+                    }
+                }
+            }
+            catch { }
+        }
+
+        AppendReportTotals(lines, c, closure.DailyClosureCount, closure.TotalTtcCents, closure.TotalHtCents, vatDict, tenderDict, closure.PerpetualGrandTotalCents);
+        AppendReportDetails(lines, c, data);
+        lines.Add(new TicketSeparator());
+        lines.Add(new TicketText(Texts.Get(c, "report.signature"), Bold: true));
+        lines.Add(new TicketText(closure.SignatureHash));
+        lines.Add(new TicketSeparator());
+        lines.Add(new TicketText($"Logiciel: RestaurantPOS v{GetSoftwareVersion()}", TicketAlign.Center));
+        if (!string.IsNullOrWhiteSpace(settings?.CertificateNumber))
+            lines.Add(new TicketText($"Certificat: {settings.CertificateNumber}", TicketAlign.Center));
         return new TicketDocument(lang, lang == "ar", lines);
     }
 
@@ -143,10 +246,16 @@ public static class TicketDocumentBuilder
     private static string LocalDate(DateTimeOffset utc) =>
         utc == DateTimeOffset.MinValue ? "-" : utc.ToLocalTime().ToString("dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture);
 
-    private static List<TicketLine> ReceiptLines(FiscalReceipt receipt, Order order, CultureInfo c)
+    private static List<TicketLine> ReceiptLines(FiscalReceipt receipt, Order order, CultureInfo c, RestaurantSettingsDto? settings, int? duplicateNumber = null)
     {
-        var lines = new List<TicketLine> { new TicketSeparator() };
-        foreach (var h in Header) lines.Add(new TicketText(h, TicketAlign.Center));
+        var lines = new List<TicketLine>();
+        if (duplicateNumber.HasValue)
+        {
+            lines.Add(new TicketText($"DUPLICATA n°{duplicateNumber.Value}", TicketAlign.Center, Bold: true, Large: true));
+            lines.Add(new TicketSeparator());
+        }
+        lines.Add(new TicketSeparator());
+        AppendHeader(lines, settings);
         lines.Add(new TicketSeparator());
         lines.Add(new TicketColumns(Texts.Get(c, "receipt.ticket"), receipt.ReceiptNumber));
         lines.Add(new TicketColumns(Texts.Get(c, "receipt.date"), receipt.CreatedAtUtc.ToString("dd/MM/yyyy HH:mm:ss", CultureInfo.InvariantCulture)));
@@ -164,6 +273,51 @@ public static class TicketDocumentBuilder
         lines.Add(new TicketText(Texts.Get(c, "receipt.fiscal_signature"), Bold: true));
         lines.Add(new TicketText(receipt.SignatureHash));
         return lines;
+    }
+
+    private static void AppendHeader(List<TicketLine> lines, RestaurantSettingsDto? settings)
+    {
+        var companyName = string.IsNullOrWhiteSpace(settings?.CompanyName)
+            ? "RESTAURANT L'ANTIGRAVITE"
+            : settings.CompanyName;
+        lines.Add(new TicketText(companyName, TicketAlign.Center, Bold: true));
+
+        var address = string.IsNullOrWhiteSpace(settings?.AddressLines)
+            ? "12 Rue de la Gastronomie\n75001 Paris"
+            : settings.AddressLines;
+        foreach (var line in address.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            lines.Add(new TicketText(line, TicketAlign.Center));
+        }
+
+        var siret = string.IsNullOrWhiteSpace(settings?.Siret)
+            ? "88877766600012"
+            : settings.Siret;
+        lines.Add(new TicketText($"SIRET: {siret}", TicketAlign.Center));
+
+        var vat = string.IsNullOrWhiteSpace(settings?.VatNumber)
+            ? "FR12888777666"
+            : settings.VatNumber;
+        lines.Add(new TicketText($"TVA: {vat}", TicketAlign.Center));
+
+        lines.Add(new TicketText($"Logiciel: RestaurantPOS v{GetSoftwareVersion()}", TicketAlign.Center));
+
+        if (!string.IsNullOrWhiteSpace(settings?.CertificateNumber))
+        {
+            lines.Add(new TicketText($"Certificat: {settings.CertificateNumber}", TicketAlign.Center));
+        }
+    }
+
+    private static string GetSoftwareVersion()
+    {
+        var assembly = typeof(TicketDocumentBuilder).Assembly;
+        var infoVersion = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+        if (!string.IsNullOrWhiteSpace(infoVersion))
+        {
+            var plusIndex = infoVersion.IndexOf('+');
+            return plusIndex > 0 ? infoVersion[..plusIndex] : infoVersion;
+        }
+        return assembly.GetName().Version?.ToString(3) ?? "1.0.0";
     }
 
     public static TicketDocument KitchenTicket(KitchenTicket ticket, Order order, string language)
@@ -256,4 +410,12 @@ public static class TicketDocumentBuilder
 
     // Devise en dur jusqu'au sous-projet B.
     private static string Amount(long cents) => (cents / 100m).ToString("0.00", CultureInfo.InvariantCulture);
+
+    public static TicketDocument WithDuplicateNotice(TicketDocument doc, int duplicateNumber)
+    {
+        ArgumentNullException.ThrowIfNull(doc);
+        var lines = doc.Lines.Where(l => l is not TicketText t || !t.Text.Contains("DUPLICATA", StringComparison.OrdinalIgnoreCase)).ToList();
+        lines.Insert(0, new TicketText($"DUPLICATA n°{duplicateNumber}", TicketAlign.Center, Bold: true, Large: true));
+        return new TicketDocument(doc.Language, doc.RightToLeft, lines);
+    }
 }

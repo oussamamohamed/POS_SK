@@ -17,13 +17,15 @@ public class BackOfficeCatalogService : IBackOfficeCatalogService
 {
     private readonly AppDbContext _dbContext;
     private readonly IMemoryCache _cache;
+    private readonly IFiscalJournal _fiscalJournal;
     private static readonly string CacheKeyCategories = "catalog_categories";
     private static readonly string CacheKeyProducts = "catalog_products";
 
-    public BackOfficeCatalogService(AppDbContext dbContext, IMemoryCache cache)
+    public BackOfficeCatalogService(AppDbContext dbContext, IMemoryCache cache, IFiscalJournal? fiscalJournal = null)
     {
         _dbContext = dbContext;
         _cache = cache;
+        _fiscalJournal = fiscalJournal ?? new FiscalJournalService(dbContext);
     }
 
     private void InvalidateCache()
@@ -161,6 +163,8 @@ public class BackOfficeCatalogService : IBackOfficeCatalogService
         var product = await _dbContext.Products.FindAsync([productId], ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException($"Article introuvable: {productId}");
 
+        decimal oldTaxRate = product.TaxRatePercent;
+
         product.Name = name.Trim();
         product.CategoryId = categoryId;
         product.Price = Money.FromDecimal(price, "EUR");
@@ -175,6 +179,23 @@ public class BackOfficeCatalogService : IBackOfficeCatalogService
         product.UpdatedAtUtc = DateTimeOffset.UtcNow;
 
         await _dbContext.SaveChangesAsync(ct).ConfigureAwait(false);
+
+        if (oldTaxRate != taxRatePercent)
+        {
+            await _fiscalJournal.AppendAsync(
+                JournalEventTypes.TaxRateChanged,
+                new
+                {
+                    ProductId = product.Id,
+                    ProductName = product.Name,
+                    OldTaxRatePercent = oldTaxRate,
+                    NewTaxRatePercent = taxRatePercent
+                },
+                terminalId: null,
+                cancellationToken: ct
+            ).ConfigureAwait(false);
+        }
+
         InvalidateCache();
         return product;
     }

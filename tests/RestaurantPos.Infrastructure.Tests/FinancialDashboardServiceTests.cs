@@ -127,7 +127,7 @@ public sealed class FinancialDashboardServiceTests
         var voided = new Order { TableNumber = "T2", Status = OrderStatus.Cancelled, CreatedAtUtc = now };
         dbContext.Orders.AddRange(kept, voided);
 
-        FiscalReceipt Receipt(Guid orderId, long sequence, long cents, bool isVoid = false, Guid? voidedReceiptId = null)
+        FiscalReceipt Receipt(Guid orderId, long sequence, long cents, Guid? voidedReceiptId = null)
         {
             var r = new FiscalReceipt
             {
@@ -138,14 +138,13 @@ public sealed class FinancialDashboardServiceTests
                 TotalTtcAmount = Money.FromCents(cents),
                 TotalHtAmount = Money.FromCents(cents * 10 / 11),
                 CreatedAtUtc = now,
-                IsVoid = isVoid,
                 VoidedReceiptId = voidedReceiptId
             };
             r.Tenders.Add(new PaymentTender { FiscalReceiptId = r.Id, Method = PaymentMethod.CreditCard, Amount = Money.FromCents(cents), Tendered = Money.FromCents(cents) });
             return r;
         }
 
-        var original = Receipt(voided.Id, 2, 3000, isVoid: true);
+        var original = Receipt(voided.Id, 2, 3000);
         dbContext.FiscalReceipts.AddRange(
             Receipt(kept.Id, 1, 5000),
             original,

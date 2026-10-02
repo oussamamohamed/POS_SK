@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -97,7 +98,8 @@ public static class CheckoutEndpoints
             if (tipCents > 0)
             {
                 tippedOrder = await db.Orders.Include(o => o.Items).FirstAsync(o => o.Id == orderId);
-                var paidCents = (await db.FiscalReceipts.Include(r => r.Tenders).Where(r => r.OrderId == orderId && !r.IsVoid).ToListAsync())
+                var voidedIds = await db.FiscalReceipts.Where(r => r.OrderId == orderId && r.VoidedReceiptId != null).Select(r => r.VoidedReceiptId!.Value).ToListAsync();
+                var paidCents = (await db.FiscalReceipts.Include(r => r.Tenders).Where(r => r.OrderId == orderId && r.VoidedReceiptId == null && !voidedIds.Contains(r.Id)).ToListAsync())
                     .SelectMany(r => r.Tenders).Sum(t => t.Amount.AmountInCents);
                 var remainingCents = tippedOrder.TotalTtc.AmountInCents + tippedOrder.TipAmount.AmountInCents - paidCents;
                 // Un pourboire sur un paiement partiel entrerait dans le montant fiscal du reçu (ratio) : refusé.
@@ -181,6 +183,30 @@ public static class CheckoutEndpoints
                 FiscalTimestampUtc = DateTimeOffset.UtcNow
             });
         }).RequireAuthorization("RequireManagerOrAdmin").RequirePairedDevice();
+
+        group.MapPost("/receipts/{receiptId}/reprint", async (
+            string receiptId,
+            AppDbContext db,
+            PrintDispatcher printing,
+            ClaimsPrincipal user,
+            CancellationToken ct) =>
+        {
+            FiscalReceipt? receipt = null;
+            if (Guid.TryParse(receiptId, out var id))
+            {
+                receipt = await db.FiscalReceipts.AsNoTracking().FirstOrDefaultAsync(r => r.Id == id, ct);
+            }
+            receipt ??= await db.FiscalReceipts.AsNoTracking().FirstOrDefaultAsync(r => r.ReceiptNumber == receiptId, ct);
+
+            if (receipt is null)
+            {
+                return Results.NotFound(new { code = "receipt_not_found", message = Texts.T("errors.receipt_not_found") });
+            }
+
+            Guid? opId = Guid.TryParse(user.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? user.FindFirst("sub")?.Value, out var parsedOpId) ? parsedOpId : null;
+            var (printQueued, duplicateNumber) = await printing.QueueReceiptReprintAsync(receipt, opId, ct);
+            return Results.Ok(new { printQueued, duplicateNumber });
+        });
     }
 
     private static string? NormalizeAltTableNumber(string tableNumber)

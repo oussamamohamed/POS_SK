@@ -425,6 +425,103 @@ struct OperationsTests {
         let (model, _) = await makeModel(pin: "2468")
         #expect(await model.fiscal.executeZ() == false)
     }
+
+    @Test func fiscalVerifyChains() async {
+        let (model, api) = await makeModel()
+        let success = await model.fiscal.verify()
+        #expect(success)
+        #expect(model.fiscal.verificationResult?.isValid == true)
+        #expect(await api.calls.contains("verifyChains"))
+        #expect(model.notifier.toasts.last?.kind == .success)
+    }
+
+    @Test func fiscalVerifyChainsRefusedForWaiter() async {
+        let (model, _) = await makeModel(pin: "2468")
+        let success = await model.fiscal.verify()
+        #expect(success == false)
+        #expect(model.notifier.toasts.last?.kind == .error)
+    }
+
+    @Test func fiscalPeriodClosuresLoadAndExecute() async {
+        let (model, api) = await makeModel()
+        await model.fiscal.loadPeriodClosures()
+        #expect(model.fiscal.periodClosures.isEmpty)
+        #expect(await api.calls.contains("periodClosures"))
+
+        let success = await model.fiscal.executePeriodClosure(type: .monthly, key: "2026-08")
+        #expect(success)
+        #expect(model.fiscal.periodClosures.count == 1)
+        #expect(model.fiscal.periodClosures[0].periodKey == "2026-08")
+        #expect(model.fiscal.periodClosures[0].periodType == .monthly)
+        #expect(model.fiscal.periodClosures[0].closureSequence == 1)
+        #expect(await api.calls.contains("executePeriodClosure"))
+        #expect(model.notifier.toasts.last?.kind == .success)
+
+        // Seconde clôture même période -> échec (409)
+        let second = await model.fiscal.executePeriodClosure(type: .monthly, key: "2026-08")
+        #expect(second == false)
+        #expect(model.notifier.toasts.last?.kind == .error)
+    }
+
+    @Test func fiscalPeriodClosuresRefusedForWaiter() async {
+        let (model, _) = await makeModel(pin: "2468")
+        let success = await model.fiscal.executePeriodClosure(type: .monthly, key: "2026-08")
+        #expect(success == false)
+        #expect(model.notifier.toasts.last?.kind == .error)
+    }
+
+    @Test func fiscalReprintZUpdatesDuplicateNumber() async {
+        let (model, api) = await makeModel()
+        _ = await model.fiscal.executeZ()
+        await model.fiscal.reprintZ()
+        #expect(await api.calls.contains("reprintLatestClosure"))
+        #expect(model.fiscal.lastDuplicateNumber == 1)
+        #expect(model.notifier.toasts.last?.kind == .success)
+    }
+
+    @Test func fiscalReprintReceiptUpdatesDuplicateNumber() async {
+        let (model, api) = await makeModel()
+        let success = await model.fiscal.reprintReceipt(receiptIdentifier: "REC-42")
+        #expect(success)
+        #expect(await api.calls.contains("reprintReceipt"))
+        #expect(model.fiscal.lastDuplicateNumber == 1)
+        #expect(model.notifier.toasts.last?.kind == .success)
+    }
+
+    @Test func fiscalArchivesLoadCreateAndVerify() async {
+        let (model, api) = await makeModel()
+        _ = await model.fiscal.executePeriodClosure(type: .monthly, key: "2026-08")
+        let closureId = model.fiscal.periodClosures[0].id
+
+        await model.fiscal.loadArchives()
+        #expect(model.fiscal.archives.isEmpty)
+
+        let created = await model.fiscal.createArchive(periodClosureId: closureId)
+        #expect(created)
+        #expect(await api.calls.contains("createArchive"))
+        #expect(model.fiscal.archives.count == 1)
+        #expect(model.fiscal.archives[0].periodClosureId == closureId)
+        #expect(model.fiscal.archives[0].fileName.localizedCaseInsensitiveContains("archive") && model.fiscal.archives[0].fileName.contains("2026-08"))
+        #expect(model.notifier.toasts.last?.kind == .success)
+
+        let validRes = await model.fiscal.verifyArchive(data: Data("ARCHIVE_DATA".utf8), fileName: model.fiscal.archives[0].fileName)
+        #expect(validRes?.isValid == true)
+        #expect(await api.calls.contains("verifyArchive"))
+        #expect(model.notifier.toasts.last?.kind == .success)
+
+        let invalidRes = await model.fiscal.verifyArchive(data: Data("CORRUPT".utf8), fileName: model.fiscal.archives[0].fileName)
+        #expect(invalidRes?.isValid == false)
+        #expect(invalidRes?.reason == "hash_mismatch")
+        #expect(model.notifier.toasts.last?.kind == .error)
+    }
+
+    @Test func fiscalArchiveCreateRefusedForWaiter() async {
+        let (model, _) = await makeModel(pin: "2468")
+        let closureId = UUID()
+        let created = await model.fiscal.createArchive(periodClosureId: closureId)
+        #expect(created == false)
+        #expect(model.notifier.toasts.last?.kind == .error)
+    }
 }
 
 @MainActor
@@ -627,5 +724,51 @@ struct PrintingStoreTests {
         let (model, _) = await makeModel()
         await model.handle(.printerStatusChanged(printerId: nil, name: "Cuisine", isOnline: false, pendingCount: 2))
         #expect(model.printerAlert?.contains("Cuisine") == true)
+    }
+}
+
+@MainActor
+@Suite("Réglages restaurant")
+struct SettingsStoreTests {
+    @Test func loadsAndUpdatesEstablishmentSettings() async {
+        let (model, _) = await makeModel()
+        let store = model.settingsStore
+        await store.load()
+        #expect(store.settings != nil)
+
+        let success = await store.updateEstablishment(
+            companyName: "Bistro Parisien",
+            addressLines: "10 Rue de Paris\n75001 Paris",
+            siret: "98765432109876",
+            vatNumber: "FR98765432109",
+            certificateNumber: "NF525-TEST",
+            fiscalYearStartMonth: 4,
+            fiscalYearStartDay: 1
+        )
+        #expect(success)
+        #expect(store.settings?.companyName == "Bistro Parisien")
+        #expect(store.settings?.siret == "98765432109876")
+        #expect(store.settings?.vatNumber == "FR98765432109")
+        #expect(store.settings?.certificateNumber == "NF525-TEST")
+        #expect(store.settings?.fiscalYearStartMonth == 4)
+        #expect(store.settings?.fiscalYearStartDay == 1)
+    }
+
+    @Test func settingLanguagePreservesEstablishmentFields() async {
+        let (model, _) = await makeModel()
+        let store = model.settingsStore
+        _ = await store.updateEstablishment(
+            companyName: "Bistro Parisien",
+            addressLines: "10 Rue de Paris",
+            siret: "98765432109876",
+            vatNumber: "FR98765432109",
+            certificateNumber: "NF525-TEST",
+            fiscalYearStartMonth: 1,
+            fiscalYearStartDay: 1
+        )
+        await store.setReceiptLanguage("fr")
+        #expect(store.settings?.receiptLanguage == "fr")
+        #expect(store.settings?.companyName == "Bistro Parisien")
+        #expect(store.settings?.siret == "98765432109876")
     }
 }
