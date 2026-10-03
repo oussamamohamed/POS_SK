@@ -58,11 +58,10 @@ Le hachage initial de genèse (`GenesisHash`) pour le premier élément d'une ch
   ```
 - **Format de sortie** : hexadécimal minuscule (`Convert.ToHexStringLower`).
 - **Événements tracés** :
-  - `CLOSURE_Z` : exécution d'un rapport Z journalier.
+  - `Z_CLOSURE` : exécution d'un rapport Z journalier.
   - `PERIOD_CLOSURE` : clôture mensuelle ou annuelle.
-  - `RECEIPT_VOID` : annulation de reçu par contre-passation.
-  - `RECEIPT_REPRINTED` : réimpression d'un duplicata de ticket de caisse.
-  - `Z_REPRINTED` : réimpression d'une clôture Z scellée.
+  - `RECEIPT_VOIDED` : annulation de reçu par contre-passation.
+  - `DUPLICATE_PRINTED` : réimpression d'un duplicata (ticket de caisse, clôture Z scellée ou job d'impression ; le champ `documentType` du payload distingue le type).
   - `DEVICE_PAIRED`, `DEVICE_REVOKED` : appairage et révocation de terminaux iPad.
   - `FISCAL_SETTINGS_CHANGED` : modification de l'identité légale (SIREN, raison sociale, exercice fiscal).
   - `FEC_EXPORTED` : génération d'un export comptable FEC.
@@ -99,13 +98,13 @@ Le hachage initial de genèse (`GenesisHash`) pour le premier élément d'une ch
 ### 3.1 Intercepteur EF Core (`FiscalImmutabilityInterceptor`)
 Pour interdire toute tentative logicielle de modification directe ou de suppression des enregistrements fiscaux, un intercepteur EF Core est enregistré au niveau du pipeline de persistance :
 - `SavingChangesAsync` inspecte le `ChangeTracker` d'Entity Framework.
-- Toute entité de type `FiscalReceipt`, `DailyFiscalClosure`, `TechnicalJournalEntry`, `FiscalPeriodClosure` ou `FiscalArchive` dont le statut est `EntityState.Modified` ou `EntityState.Deleted` lève immédiatement une `InvalidOperationException("Modification or deletion of fiscal records is strictly forbidden by NF525 rules.")`.
+- Toute entité de type `FiscalReceipt`, `DailyFiscalClosure`, `TechnicalJournalEntry`, `FiscalPeriodClosure` ou `FiscalArchive` dont le statut est `EntityState.Modified` ou `EntityState.Deleted` lève immédiatement une `InvalidOperationException` dont le message nomme l'entité (par ex. « NF525 INV-3: Fiscal receipts are append-only and immutable. »). `PaymentTender` et les entrées JET chaînées sont protégés de la même façon ; les entrées JET héritées (sans `ChainSequence`) restent modifiables.
 
 ### 3.2 Gestion des Annulations (Contre-passation)
 Aucun ticket n'est jamais supprimé physiquement :
 1. Un reçu original reste intact dans la base et dans sa chaîne.
-2. L'annulation crée un nouveau `FiscalReceipt` de type annulation (`isVoid = true`), signé dans la chaîne courante du terminal émetteur avec un montant TTC et des bases TVA négatives.
-3. Un événement JET `RECEIPT_VOID` est automatiquement journalisé dans la transaction.
+2. L'annulation crée un nouveau `FiscalReceipt` de type annulation (liée à l'original par `VoidedReceiptId` ; `IsVoid` est obsolète et n'est plus écrit), signé dans la chaîne courante du terminal émetteur avec un montant TTC et des bases TVA négatives.
+3. Un événement JET `RECEIPT_VOIDED` est automatiquement journalisé dans la transaction.
 
 ---
 
@@ -118,7 +117,7 @@ Aucun ticket n'est jamais supprimé physiquement :
    - Calcul des cumuls de la journée (TTC, HT, ventilation TVA, ventilation règlements).
    - Mise à jour du Grand Total perpétuel (cumul continu depuis la mise en service).
    - Scellement du Z avec la signature de chaîne.
-   - Enregistrement dans le JET (`CLOSURE_Z`).
+   - Enregistrement dans le JET (`Z_CLOSURE`).
    - Impression automatique du ticket Z scellé sur imprimante thermique.
 
 ### 4.2 Clôtures Périodiques (Mois & Année)
@@ -130,8 +129,8 @@ Aucun ticket n'est jamais supprimé physiquement :
 1. Toute réimpression d'un ticket de caisse ou d'une clôture Z requiert l'action explicite d'un opérateur.
 2. Le système incrémente le compteur de duplicata propre au document (`DuplicateNumber`).
 3. Le document imprimé (image ESC/POS et texte) comporte obligatoirement la mention en tête :
-   `*** DUPLICATA n°N ***`
-4. Un événement `RECEIPT_REPRINTED` ou `Z_REPRINTED` est consigné dans le JET.
+   `DUPLICATA n°N` (gras, grande taille)
+4. Un événement `DUPLICATE_PRINTED` est consigné dans le JET, même si aucune imprimante n'est disponible (`printQueued = false` dans le payload).
 
 ### 4.4 Archivage et Conservation (6 ans)
 1. Les archives sont générées à partir des clôtures de période (`POST /api/fiscal/archives`).

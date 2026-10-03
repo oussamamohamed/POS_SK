@@ -4209,7 +4209,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const tdDetails = document.createElement('td');
                 tdDetails.style.padding = '8px';
                 if (chain.break) {
-                    tdDetails.innerHTML = `<span style="color:#ef4444;">${chain.break.kind} (seq #${chain.break.sequenceNumber}${chain.break.reference ? ' - ' + chain.break.reference : ''})</span>`;
+                    tdDetails.innerHTML = `<span style="color:#ef4444;">${escapeHtml(chain.break.kind)} (seq #${escapeHtml(chain.break.sequenceNumber)}${chain.break.reference ? ' - ' + escapeHtml(chain.break.reference) : ''})</span>`;
                 } else {
                     tdDetails.textContent = '—';
                 }
