@@ -475,7 +475,8 @@ public class NF525FiscalAuditService : INF525FiscalAuditService
                     .ConfigureAwait(false);
 
                 var periodDailyClosures = allDailyClosures
-                    .Where(c => c.PeriodEndUtc >= periodStartUtc && c.PeriodEndUtc < periodEndUtc)
+                    // Un Z appartient au mois où sa période commence (un Z lancé après minuit clôture le jour précédent).
+                    .Where(c => c.PeriodStartUtc >= periodStartUtc && c.PeriodStartUtc < periodEndUtc)
                     .OrderBy(c => c.ClosureSequence)
                     .ToList();
 

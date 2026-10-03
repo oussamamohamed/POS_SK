@@ -85,8 +85,8 @@ public partial class FiscalArchiveService : IFiscalArchiveService
         var closures = await _dbContext.DailyFiscalClosures
             .AsNoTracking()
             .Where(c => c.TerminalId == periodClosure.TerminalId
-                     && c.PeriodEndUtc >= periodClosure.PeriodStartUtc
-                     && c.PeriodEndUtc <= periodClosure.PeriodEndUtc)
+                     && c.PeriodStartUtc >= periodClosure.PeriodStartUtc
+                     && c.PeriodStartUtc <= periodClosure.PeriodEndUtc)
             .OrderBy(c => c.ClosureSequence)
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);

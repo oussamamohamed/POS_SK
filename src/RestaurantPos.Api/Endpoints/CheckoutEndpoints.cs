@@ -206,7 +206,7 @@ public static class CheckoutEndpoints
             Guid? opId = Guid.TryParse(user.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? user.FindFirst("sub")?.Value, out var parsedOpId) ? parsedOpId : null;
             var (printQueued, duplicateNumber) = await printing.QueueReceiptReprintAsync(receipt, opId, ct);
             return Results.Ok(new { printQueued, duplicateNumber });
-        });
+        }).RequireAuthorization("RequireManagerOrAdmin");
     }
 
     private static string? NormalizeAltTableNumber(string tableNumber)

@@ -151,6 +151,18 @@ public class DuplicatePrintTests
     }
 
     [Fact]
+    public async Task ReprintReceipt_AsWaiter_Returns403()
+    {
+        using var factory = new PosApiApplicationFactory();
+        var client = factory.CreateClient();
+        client.DefaultRequestHeaders.Add("X-Test-Role", "Waiter");
+
+        var resp = await client.PostAsync($"/api/checkout/receipts/{Guid.NewGuid()}/reprint", null);
+
+        resp.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
     public async Task ReprintReceipt_NumberingIsPerDocument()
     {
         using var factory = new PosApiApplicationFactory();

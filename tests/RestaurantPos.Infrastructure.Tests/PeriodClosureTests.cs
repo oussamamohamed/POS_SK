@@ -173,6 +173,52 @@ public class PeriodClosureTests
     }
 
     [Fact]
+    public async Task MonthlyClosure_ZRunAfterMonthEnd_BelongsToTheMonthItCloses()
+    {
+        using var db = CreateInMemoryDbContext();
+        var auditService = new NF525FiscalAuditService(db, new FiscalJournalService(db));
+        var terminalId = "POS_MAIN_TERM";
+
+        // Reçu du 30/09, Z lancé le 02/10 : la période du Z commence en septembre, il clôture septembre.
+        db.FiscalReceipts.Add(new FiscalReceipt
+        {
+            TerminalId = terminalId,
+            ReceiptNumber = "POS_MAIN_TERM-000001",
+            SequenceNumber = 1,
+            TotalTtcAmount = Money.FromCents(1200),
+            TotalHtAmount = Money.FromCents(1091),
+            CreatedAtUtc = new DateTimeOffset(2026, 9, 30, 14, 0, 0, TimeSpan.Zero),
+            TaxBreakdownJson = "{}",
+            SignatureHash = "SIG1"
+        });
+        db.DailyFiscalClosures.Add(new DailyFiscalClosure
+        {
+            TerminalId = terminalId,
+            ClosureSequence = 1,
+            PeriodStartUtc = new DateTimeOffset(2026, 9, 30, 12, 0, 0, TimeSpan.Zero),
+            PeriodEndUtc = new DateTimeOffset(2026, 10, 2, 12, 0, 0, TimeSpan.Zero),
+            TotalSalesTtc = Money.FromCents(1200),
+            TotalSalesHt = Money.FromCents(1091),
+            TaxesSummaryJson = "{}",
+            TenderTotalsJson = "{}",
+            PerpetualGrandTotalCents = 1200,
+            SignatureHash = "SIG_Z1"
+        });
+        await db.SaveChangesAsync();
+
+        var monthly = await auditService.ExecutePeriodClosureAsync(
+            terminalId,
+            FiscalPeriodType.Monthly,
+            "2026-09",
+            Guid.NewGuid(),
+            "Gérant",
+            utcNow: new DateTimeOffset(2026, 10, 5, 10, 0, 0, TimeSpan.Zero));
+
+        monthly.DailyClosureCount.Should().Be(1);
+        monthly.TotalTtcCents.Should().Be(1200);
+    }
+
+    [Fact]
     public async Task MonthlyClosure_WithReceiptWithoutDailyClosure_ThrowsMissingDailyClosures()
     {
         using var db = CreateInMemoryDbContext();
