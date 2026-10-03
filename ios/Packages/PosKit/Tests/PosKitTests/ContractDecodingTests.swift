@@ -212,6 +212,7 @@ struct ContractDecodingTests {
         let jobs = try decode([PrintJobInfo].self, "print_jobs")
         #expect(!jobs.isEmpty)
         #expect(jobs.allSatisfy { ["Pending", "Failed", "Sent", "Cancelled"].contains($0.status) })
+        #expect(jobs.contains { $0.duplicateNumber == 1 && $0.duplicateOfDocumentId != nil })
     }
 
     @Test func decodesPrintQueuedOnPayment() throws {

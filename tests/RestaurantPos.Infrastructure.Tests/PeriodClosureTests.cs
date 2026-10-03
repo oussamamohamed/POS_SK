@@ -299,6 +299,56 @@ public class PeriodClosureTests
     }
 
     [Fact]
+    public async Task AnnualClosure_StartingMidMonth_SumsOnlyDailyClosuresOfTheFiscalYear()
+    {
+        using var db = CreateInMemoryDbContext();
+        var auditService = new NF525FiscalAuditService(db, new FiscalJournalService(db));
+        var terminalId = "POS_MAIN_TERM";
+
+        db.RestaurantSettings.Add(new RestaurantSettings
+        {
+            ReceiptLanguage = "fr",
+            KitchenTicketLanguage = "fr",
+            CompanyName = "Bistro",
+            FiscalYearStartMonth = 7,
+            FiscalYearStartDay = 15
+        });
+
+        DailyFiscalClosure Z(long seq, DateTimeOffset start, long ttc) => new()
+        {
+            TerminalId = terminalId,
+            ClosureSequence = seq,
+            PeriodStartUtc = start,
+            PeriodEndUtc = start.AddHours(10),
+            TotalSalesTtc = Money.FromCents(ttc),
+            TotalSalesHt = Money.FromCents(ttc),
+            TaxesSummaryJson = "{}",
+            TenderTotalsJson = "{}",
+            PerpetualGrandTotalCents = ttc,
+            SignatureHash = "SIG" + seq
+        };
+
+        // Exercice 2025 = 15/07/2025 -> 15/07/2026 : seuls les Z du 20/07/2025 et du 10/07/2026 comptent.
+        db.DailyFiscalClosures.AddRange(
+            Z(1, new DateTimeOffset(2025, 7, 10, 12, 0, 0, TimeSpan.Zero), 1000),
+            Z(2, new DateTimeOffset(2025, 7, 20, 12, 0, 0, TimeSpan.Zero), 2000),
+            Z(3, new DateTimeOffset(2026, 7, 10, 12, 0, 0, TimeSpan.Zero), 3000),
+            Z(4, new DateTimeOffset(2026, 7, 20, 12, 0, 0, TimeSpan.Zero), 4000));
+        await db.SaveChangesAsync();
+
+        var annual = await auditService.ExecutePeriodClosureAsync(
+            terminalId,
+            FiscalPeriodType.Annual,
+            "2025",
+            Guid.NewGuid(),
+            "Gérant",
+            utcNow: new DateTimeOffset(2026, 8, 1, 10, 0, 0, TimeSpan.Zero));
+
+        annual.DailyClosureCount.Should().Be(2);
+        annual.TotalTtcCents.Should().Be(2000 + 3000);
+    }
+
+    [Fact]
     public async Task AnnualClosure_ShiftedFiscalYear_StartsAprilFirst()
     {
         using var db = CreateInMemoryDbContext();

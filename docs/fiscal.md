@@ -18,8 +18,8 @@ Conformément à l'article 286, I-3° bis du Code Général des Impôts (CGI), l
 ## 2. Chaînes Cryptographiques & Formules de Signature
 
 Toutes les chaînes utilisent l'algorithme **SHA-256** calculé sur une chaîne UTF-8 avec le séparateur tube (`|`).
-Le hachage initial de genèse (`GenesisHash`) pour le premier élément d'une chaîne est composé de 64 zéros :
-`0000000000000000000000000000000000000000000000000000000000000000`
+Le hachage initial de genèse (`GenesisHash`) pour le premier élément d'une chaîne est composé du préfixe `GENESIS_` suivi de 64 zéros :
+`GENESIS_0000000000000000000000000000000000000000000000000000000000000000`
 
 ### 2.1 Chaîne des Reçus Fiscaux (`FiscalReceipt`)
 - **Portée** : partitionnée par terminal (`terminalId`).

@@ -604,8 +604,11 @@ public struct PrintJobInfo: Codable, Identifiable, Hashable, Sendable {
     public var createdAtUtc: Date
     public var sentAtUtc: Date?
     public var lastError: String?
+    /// Duplicata n°N d'un document déjà imprimé (nil pour une impression d'origine).
+    public var duplicateNumber: Int?
+    public var duplicateOfDocumentId: UUID?
 
-    public init(id: UUID = UUID(), printerId: UUID, kind: String, status: String, attempts: Int = 0, createdAtUtc: Date = Date(), sentAtUtc: Date? = nil, lastError: String? = nil) {
+    public init(id: UUID = UUID(), printerId: UUID, kind: String, status: String, attempts: Int = 0, createdAtUtc: Date = Date(), sentAtUtc: Date? = nil, lastError: String? = nil, duplicateNumber: Int? = nil, duplicateOfDocumentId: UUID? = nil) {
         self.id = id
         self.printerId = printerId
         self.kind = kind
@@ -614,6 +617,8 @@ public struct PrintJobInfo: Codable, Identifiable, Hashable, Sendable {
         self.createdAtUtc = createdAtUtc
         self.sentAtUtc = sentAtUtc
         self.lastError = lastError
+        self.duplicateNumber = duplicateNumber
+        self.duplicateOfDocumentId = duplicateOfDocumentId
     }
 }
 

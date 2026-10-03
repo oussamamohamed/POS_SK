@@ -466,7 +466,9 @@ public class NF525FiscalAuditService : INF525FiscalAuditService
             var vatDict = new Dictionary<string, long>();
             var tenderDict = new Dictionary<string, long>();
 
-            if (periodType == FiscalPeriodType.Monthly)
+            // Un exercice qui ne commence pas le 1er ne s'aligne pas sur les mois civils : ses totaux viennent des Z quotidiens.
+            var fromDailyClosures = periodType == FiscalPeriodType.Monthly || periodStartLocal.Day != 1;
+            if (fromDailyClosures)
             {
                 var allDailyClosures = await _dbContext.DailyFiscalClosures
                     .AsNoTracking()

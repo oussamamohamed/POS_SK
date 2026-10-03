@@ -2941,7 +2941,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 addressLines: document.getElementById('settingsAddressLines')?.value?.trim() || null,
                 siret: document.getElementById('settingsSiret')?.value?.trim() || null,
                 vatNumber: document.getElementById('settingsVatNumber')?.value?.trim() || null,
-                certificateNumber: document.getElementById('settingsCertificateNumber')?.value?.trim() || null,
+                certificateNumber: document.getElementById('settingsCertificateNumber')?.value?.trim() ?? null, // "" efface, null = inchangé
                 fiscalYearStartMonth: parseInt(document.getElementById('settingsFiscalYearMonth')?.value, 10) || null,
                 fiscalYearStartDay: parseInt(document.getElementById('settingsFiscalYearDay')?.value, 10) || null
             };
