@@ -48,8 +48,10 @@ public partial class Program
         var dbConnection = builder.Configuration.GetConnectionString("DefaultConnection")
             ?? "Data Source=restaurantpos.db";
 
-        builder.Services.AddDbContext<AppDbContext>(options =>
+        builder.Services.AddSingleton<FiscalImmutabilityInterceptor>();
+        builder.Services.AddDbContext<AppDbContext>((sp, options) =>
         {
+            options.AddInterceptors(sp.GetRequiredService<FiscalImmutabilityInterceptor>());
             if (builder.Environment.IsEnvironment("Testing"))
             {
                 options.UseInMemoryDatabase("RestaurantPosTestDb");
@@ -91,6 +93,7 @@ public partial class Program
         builder.Services.AddScoped<ITerminalLayoutService, TerminalLayoutService>();
         builder.Services.AddScoped<ICheckoutPaymentService, CheckoutPaymentService>();
         builder.Services.AddScoped<INF525FiscalAuditService, NF525FiscalAuditService>();
+        builder.Services.AddScoped<IFiscalJournal, FiscalJournalService>();
         builder.Services.AddScoped<IFecExportService, FecExportService>();
         builder.Services.AddScoped<IFinancialDashboardService, FinancialDashboardService>();
         builder.Services.AddScoped<IOrderDiscountService, OrderDiscountService>();
@@ -100,6 +103,8 @@ public partial class Program
         builder.Services.AddSingleton<ITakeawayCounterService, TakeawayCounterService>();
         builder.Services.AddScoped<IMealVoucherPolicyService, MealVoucherPolicyService>();
         builder.Services.AddScoped<IHappyHourPricingService, HappyHourPricingService>();
+        builder.Services.AddScoped<IFiscalChainVerificationService, FiscalChainVerificationService>();
+        builder.Services.AddScoped<IFiscalArchiveService, FiscalArchiveService>();
         builder.Services.AddScoped<IJwtTokenGeneratorService, JwtTokenGeneratorService>();
         builder.Services.AddSingleton<IPinRateLimiterService, PinRateLimiterService>();
         builder.Services.AddSingleton(TimeProvider.System);
@@ -315,6 +320,50 @@ public partial class Program
             );"); } catch { }
             try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE RestaurantSettings ADD COLUMN KitchenTicketLanguage TEXT NULL;"); } catch { }
             try { dbContext.Database.ExecuteSqlRaw("UPDATE RestaurantSettings SET KitchenTicketLanguage = ReceiptLanguage WHERE KitchenTicketLanguage IS NULL;"); } catch { }
+            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE RestaurantSettings ADD COLUMN CompanyName TEXT NOT NULL DEFAULT 'RESTAURANT L''ANTIGRAVITE';"); } catch { }
+            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE RestaurantSettings ADD COLUMN AddressLines TEXT NOT NULL DEFAULT '12 Rue de la Gastronomie\n75001 Paris';"); } catch { }
+            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE RestaurantSettings ADD COLUMN Siret TEXT NOT NULL DEFAULT '88877766600012';"); } catch { }
+            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE RestaurantSettings ADD COLUMN VatNumber TEXT NOT NULL DEFAULT 'FR12888777666';"); } catch { }
+            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE RestaurantSettings ADD COLUMN CertificateNumber TEXT NULL;"); } catch { }
+            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE RestaurantSettings ADD COLUMN FiscalYearStartMonth INTEGER NOT NULL DEFAULT 1;"); } catch { }
+            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE RestaurantSettings ADD COLUMN FiscalYearStartDay INTEGER NOT NULL DEFAULT 1;"); } catch { }
+            try { dbContext.Database.ExecuteSqlRaw(@"CREATE TABLE IF NOT EXISTS PeriodClosures (
+                Id TEXT PRIMARY KEY,
+                TerminalId TEXT NOT NULL,
+                PeriodType INTEGER NOT NULL,
+                PeriodKey TEXT NOT NULL,
+                ClosureSequence INTEGER NOT NULL,
+                PeriodStartUtc TEXT NOT NULL,
+                PeriodEndUtc TEXT NOT NULL,
+                TotalTtcAmount INTEGER NOT NULL,
+                TotalHtAmount INTEGER NOT NULL,
+                TaxesSummaryJson TEXT NOT NULL,
+                TenderTotalsJson TEXT NOT NULL,
+                PerpetualGrandTotalCents INTEGER NOT NULL,
+                DailyClosureCount INTEGER NOT NULL,
+                PreviousSignatureHash TEXT NOT NULL,
+                SignatureHash TEXT NOT NULL,
+                SealedByUserId TEXT NOT NULL,
+                SealedByUserName TEXT NOT NULL,
+                CreatedAtUtc TEXT NOT NULL
+            );"); } catch { }
+            try { dbContext.Database.ExecuteSqlRaw("CREATE UNIQUE INDEX IF NOT EXISTS IX_PeriodClosures_Terminal_Type_Key ON PeriodClosures (TerminalId, PeriodType, PeriodKey);"); } catch { }
+            try { dbContext.Database.ExecuteSqlRaw(@"CREATE TABLE IF NOT EXISTS FiscalArchives (
+                Id TEXT PRIMARY KEY,
+                PeriodClosureId TEXT NOT NULL,
+                PeriodType INTEGER NOT NULL,
+                PeriodKey TEXT NOT NULL,
+                FileName TEXT NOT NULL,
+                FileSha256 TEXT NOT NULL,
+                FileSizeBytes INTEGER NOT NULL,
+                ArchiveSequence INTEGER NOT NULL,
+                PreviousSignatureHash TEXT NOT NULL,
+                SignatureHash TEXT NOT NULL,
+                CreatedByUserId TEXT NOT NULL,
+                CreatedAtUtc TEXT NOT NULL
+            );
+            CREATE UNIQUE INDEX IF NOT EXISTS IX_FiscalArchives_PeriodClosureId ON FiscalArchives (PeriodClosureId);
+            CREATE UNIQUE INDEX IF NOT EXISTS IX_FiscalArchives_ArchiveSequence ON FiscalArchives (ArchiveSequence);"); } catch { }
             try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE Categories ADD COLUMN PreparationStationId TEXT NULL;"); } catch { }
             try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE Devices ADD COLUMN ReceiptPrinterId TEXT NULL;"); } catch { }
             try { dbContext.Database.ExecuteSqlRaw(@"CREATE TABLE IF NOT EXISTS PrintJobs (
@@ -333,6 +382,44 @@ public partial class Program
             );
             CREATE INDEX IF NOT EXISTS IX_PrintJobs_Status_NextAttemptAtUtc ON PrintJobs(Status, NextAttemptAtUtc);"); } catch { }
             try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE PrinterConfigurations ADD COLUMN TextMode INTEGER NOT NULL DEFAULT 0;"); } catch { }
+            try { dbContext.Database.ExecuteSqlRaw("CREATE INDEX IF NOT EXISTS IX_FiscalReceipts_VoidedReceiptId ON FiscalReceipts (VoidedReceiptId);"); } catch { }
+            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE JournalEntries ADD COLUMN ChainSequence INTEGER NULL;"); } catch { }
+            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE JournalEntries ADD COLUMN PreviousHash TEXT NULL;"); } catch { }
+            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE JournalEntries ADD COLUMN OperatorId TEXT NULL;"); } catch { }
+            try { dbContext.Database.ExecuteSqlRaw("CREATE UNIQUE INDEX IF NOT EXISTS IX_JournalEntries_ChainSequence ON JournalEntries (ChainSequence) WHERE ChainSequence IS NOT NULL;"); } catch { }
+            // TerminalId est devenu nullable (événements sans terminal) : SQLite ne sait pas
+            // retirer NOT NULL, on reconstruit la table une seule fois.
+            try
+            {
+                var terminalIdNotNull = dbContext.Database
+                    .SqlQueryRaw<int>("SELECT \"notnull\" AS Value FROM pragma_table_info('JournalEntries') WHERE name = 'TerminalId'")
+                    .AsEnumerable().FirstOrDefault();
+                if (terminalIdNotNull == 1)
+                {
+                    using var tx = dbContext.Database.BeginTransaction();
+                    dbContext.Database.ExecuteSqlRaw(@"CREATE TABLE JournalEntries_new (
+                        Id TEXT NOT NULL CONSTRAINT PK_JournalEntries PRIMARY KEY,
+                        LocalSequence INTEGER NOT NULL,
+                        TerminalId TEXT NULL,
+                        OccurredAtUtc TEXT NOT NULL,
+                        IdempotencyKey TEXT NOT NULL,
+                        EventType TEXT NOT NULL,
+                        PayloadJson TEXT NOT NULL,
+                        EntryHash TEXT NOT NULL,
+                        ChainSequence INTEGER NULL,
+                        PreviousHash TEXT NULL,
+                        OperatorId TEXT NULL);
+                    INSERT INTO JournalEntries_new SELECT Id, LocalSequence, TerminalId, OccurredAtUtc, IdempotencyKey, EventType, PayloadJson, EntryHash, ChainSequence, PreviousHash, OperatorId FROM JournalEntries;
+                    DROP TABLE JournalEntries;
+                    ALTER TABLE JournalEntries_new RENAME TO JournalEntries;
+                    CREATE UNIQUE INDEX IX_JournalEntries_ChainSequence ON JournalEntries (ChainSequence) WHERE ChainSequence IS NOT NULL;");
+                    tx.Commit();
+                }
+            }
+            catch { }
+            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE PrintJobs ADD COLUMN DuplicateOfDocumentId TEXT NULL;"); } catch { }
+            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE PrintJobs ADD COLUMN DuplicateNumber INTEGER NULL;"); } catch { }
+            try { dbContext.Database.ExecuteSqlRaw("CREATE INDEX IF NOT EXISTS IX_PrintJobs_DuplicateOfDocumentId ON PrintJobs (DuplicateOfDocumentId);"); } catch { }
 
             // Initialise ReceiptLanguage au démarrage plutôt qu'à la première lecture paresseuse :
             // sinon une installation EN/AR fraîche qui prend des commandes avant l'ouverture de
@@ -447,6 +534,43 @@ public partial class Program
         // 11. Touch Grid Management
         app.MapGridEndpoints();
         app.MapDeviceEndpoints();
+
+        var lifetime = app.Services.GetRequiredService<IHostApplicationLifetime>();
+        lifetime.ApplicationStarted.Register(() =>
+        {
+            try
+            {
+                using var scope = app.Services.CreateScope();
+                var journal = scope.ServiceProvider.GetRequiredService<IFiscalJournal>();
+                journal.AppendAsync(
+                    JournalEventTypes.ServerStarted,
+                    new { ProcessId = Environment.ProcessId, MachineName = Environment.MachineName, StartedAtUtc = DateTimeOffset.UtcNow },
+                    cancellationToken: CancellationToken.None
+                ).GetAwaiter().GetResult();
+            }
+            catch
+            {
+                // Fiscal journal failure during startup should not crash the host
+            }
+        });
+
+        lifetime.ApplicationStopping.Register(() =>
+        {
+            try
+            {
+                using var scope = app.Services.CreateScope();
+                var journal = scope.ServiceProvider.GetRequiredService<IFiscalJournal>();
+                journal.AppendAsync(
+                    JournalEventTypes.ServerStopped,
+                    new { ProcessId = Environment.ProcessId, MachineName = Environment.MachineName, StoppedAtUtc = DateTimeOffset.UtcNow },
+                    cancellationToken: CancellationToken.None
+                ).GetAwaiter().GetResult();
+            }
+            catch
+            {
+                // Fiscal journal failure during shutdown should not crash the host
+            }
+        });
 
         app.Run();
     }

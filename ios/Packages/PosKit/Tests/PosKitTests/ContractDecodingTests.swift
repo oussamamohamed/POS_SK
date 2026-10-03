@@ -29,6 +29,24 @@ struct ContractDecodingTests {
         #expect(try decode(FiscalReport.self, "z_closure").printQueued != nil)
     }
 
+    @Test func decodesFiscalVerification() throws {
+        let verify = try decode(FiscalVerificationResult.self, "verify")
+        #expect(verify.isValid)
+        #expect(verify.chains.count == 5)
+        #expect(verify.chains.contains { $0.chain == "receipts" && $0.checkedCount == 812 })
+    }
+
+    @Test func decodesPeriodClosures() throws {
+        let closures = try decode([FiscalPeriodClosure].self, "period_closures")
+        #expect(closures.count == 1)
+        let first = closures[0]
+        #expect(first.periodType == .monthly)
+        #expect(first.periodKey == "2026-08")
+        #expect(first.closureSequence == 1)
+        #expect(first.totalTtc == Money(cents: 154550))
+        #expect(first.dailyClosureCount == 31)
+    }
+
     @Test func login() throws {
         let login = try decode(LoginResponse.self, "login")
         #expect(login.success)
@@ -161,6 +179,13 @@ struct ContractDecodingTests {
     @Test func settings() throws {
         let settings = try decode(RestaurantSettings.self, "settings")
         #expect(["en", "fr", "ar"].contains(settings.receiptLanguage))
+        #expect(settings.companyName == "La Brasserie du Port")
+        #expect(settings.addressLines?.contains("Quai de la Douane") == true)
+        #expect(settings.siret == "12345678901234")
+        #expect(settings.vatNumber == "FR12345678901")
+        #expect(settings.certificateNumber == "NF525-2026-001")
+        #expect(settings.fiscalYearStartMonth == 1)
+        #expect(settings.fiscalYearStartDay == 1)
     }
 
     @Test func decodesSettingsWithKitchenLanguage() throws {
@@ -187,6 +212,7 @@ struct ContractDecodingTests {
         let jobs = try decode([PrintJobInfo].self, "print_jobs")
         #expect(!jobs.isEmpty)
         #expect(jobs.allSatisfy { ["Pending", "Failed", "Sent", "Cancelled"].contains($0.status) })
+        #expect(jobs.contains { $0.duplicateNumber == 1 && $0.duplicateOfDocumentId != nil })
     }
 
     @Test func decodesPrintQueuedOnPayment() throws {

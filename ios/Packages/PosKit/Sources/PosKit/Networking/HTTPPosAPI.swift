@@ -32,7 +32,7 @@ public actor HTTPPosAPI: PosAPI {
 
     struct Empty: Codable {}
 
-    private func makeRequest(_ method: String, _ path: String, query: [String: String] = [:], body: Data? = nil) throws -> URLRequest {
+    private func makeRequest(_ method: String, _ path: String, query: [String: String] = [:], body: Data? = nil, contentType: String? = nil) throws -> URLRequest {
         var components = URLComponents(url: baseURL.appendingPathComponent("api").appendingPathComponent(path), resolvingAgainstBaseURL: false)!
         // `appendingPathComponent` encode déjà les segments ; on force l'encodage des espaces/accents.
         if !query.isEmpty {
@@ -45,11 +45,16 @@ public actor HTTPPosAPI: PosAPI {
         request.setValue(Self.acceptLanguage, forHTTPHeaderField: "Accept-Language")
         if let body {
             request.httpBody = body
-            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.setValue(contentType ?? "application/json", forHTTPHeaderField: "Content-Type")
         }
         if let token { request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization") }
         if let deviceToken { request.setValue(deviceToken, forHTTPHeaderField: "X-Device-Token") }
         return request
+    }
+
+    private func upload<Response: Decodable>(_ method: String, _ path: String, body: Data, contentType: String, as type: Response.Type = Response.self) async throws -> Response {
+        let (data, _) = try await send(makeRequest(method, path, body: body, contentType: contentType))
+        return try decode(data)
     }
 
     private func send(_ request: URLRequest) async throws -> (Data, HTTPURLResponse) {
@@ -330,8 +335,12 @@ public actor HTTPPosAPI: PosAPI {
         try await call("POST", "fiscal/x-report/print", query: ["terminalId": terminalId], as: PrintQueuedResponse.self).printQueued
     }
 
-    public func reprintLatestClosure(terminalId: String) async throws -> Bool {
-        try await call("POST", "fiscal/latest-closure/print", query: ["terminalId": terminalId], as: PrintQueuedResponse.self).printQueued
+    public func reprintLatestClosure(terminalId: String) async throws -> ReprintResult {
+        try await call("POST", "fiscal/latest-closure/print", query: ["terminalId": terminalId], as: ReprintResult.self)
+    }
+
+    public func reprintReceipt(receiptIdentifier: String) async throws -> ReprintResult {
+        try await call("POST", "checkout/receipts/\(receiptIdentifier)/reprint", as: ReprintResult.self)
     }
 
     public func exportFec(from: Date, to: Date, siren: String) async throws -> (fileName: String, data: Data) {
@@ -349,6 +358,55 @@ public actor HTTPPosAPI: PosAPI {
 
     public func dashboard(from: Date, to: Date) async throws -> FinancialDashboard {
         try await call("GET", "dashboard/financial", query: ["from": Self.iso(from), "to": Self.iso(to)])
+    }
+
+    public func verifyChains() async throws -> FiscalVerificationResult {
+        try await call("POST", "fiscal/verify")
+    }
+
+    public func periodClosures(terminalId: String? = nil, periodType: FiscalPeriodType? = nil) async throws -> [FiscalPeriodClosure] {
+        var query: [String: String] = [:]
+        if let terminalId { query["terminalId"] = terminalId }
+        if let periodType { query["periodType"] = periodType.rawValue }
+        return try await call("GET", "fiscal/period-closures", query: query)
+    }
+
+    struct PeriodClosureBody: Encodable {
+        let terminalId: String
+        let periodType: String
+        let periodKey: String
+    }
+
+    public func executePeriodClosure(terminalId: String, periodType: FiscalPeriodType, periodKey: String) async throws -> FiscalPeriodClosure {
+        try await call(
+            "POST",
+            "fiscal/period-closures",
+            body: PeriodClosureBody(terminalId: terminalId, periodType: periodType.rawValue, periodKey: periodKey)
+        )
+    }
+
+    public func archives() async throws -> [FiscalArchive] {
+        try await call("GET", "fiscal/archives")
+    }
+
+    struct CreateArchiveBody: Encodable {
+        let periodClosureId: UUID
+    }
+
+    public func createArchive(periodClosureId: UUID) async throws -> FiscalArchive {
+        try await call("POST", "fiscal/archives", body: CreateArchiveBody(periodClosureId: periodClosureId))
+    }
+
+    public func verifyArchive(data: Data, fileName: String) async throws -> ArchiveVerificationResult {
+        let boundary = "Boundary-\(UUID().uuidString)"
+        var body = Data()
+        body.append("--\(boundary)\r\n".data(using: .utf8)!)
+        body.append("Content-Disposition: form-data; name=\"file\"; filename=\"\(fileName)\"\r\n".data(using: .utf8)!)
+        body.append("Content-Type: application/zip\r\n\r\n".data(using: .utf8)!)
+        body.append(data)
+        body.append("\r\n--\(boundary)--\r\n".data(using: .utf8)!)
+
+        return try await upload("POST", "fiscal/archives/verify", body: body, contentType: "multipart/form-data; boundary=\(boundary)")
     }
 
     // MARK: - Personnel & imprimantes

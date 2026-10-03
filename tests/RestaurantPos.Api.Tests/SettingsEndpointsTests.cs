@@ -3,8 +3,12 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using RestaurantPos.Application.Common.Interfaces;
 using RestaurantPos.Application.DTOs;
+using RestaurantPos.Domain.Entities;
+using RestaurantPos.Infrastructure.Persistence;
 using Xunit;
 
 namespace RestaurantPos.Api.Tests;
@@ -82,4 +86,92 @@ public class SettingsEndpointsTests : IClassFixture<PosApiApplicationFactory>
     [Fact]
     public async Task Get_Anonymous_IsUnauthorized() =>
         (await _factory.CreateClient().GetAsync("/api/settings")).StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+
+    [Fact]
+    public async Task Put_PartialUpdate_PreservesOtherFields()
+    {
+        var admin = await ClientAsync("9999");
+        var initial = await admin.GetFromJsonAsync<JsonElement>("/api/settings");
+        var initialSiret = initial.GetProperty("siret").GetString();
+
+        var res = await admin.PutAsJsonAsync("/api/settings", new { companyName = "Le Petit Bistro" });
+        res.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var body = await admin.GetFromJsonAsync<JsonElement>("/api/settings");
+        body.GetProperty("companyName").GetString().Should().Be("Le Petit Bistro");
+        body.GetProperty("siret").GetString().Should().Be(initialSiret);
+    }
+
+    [Fact]
+    public async Task Put_InvalidSiret_Returns400()
+    {
+        var admin = await ClientAsync("9999");
+        var res = await admin.PutAsJsonAsync("/api/settings", new { siret = "12345" });
+        res.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task Put_InvalidVat_Returns400()
+    {
+        var admin = await ClientAsync("9999");
+        var res = await admin.PutAsJsonAsync("/api/settings", new { vatNumber = "US123456789" });
+        res.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task Put_InvalidFiscalDate_Returns400()
+    {
+        var admin = await ClientAsync("9999");
+        var resMonth = await admin.PutAsJsonAsync("/api/settings", new { fiscalYearStartMonth = 13 });
+        resMonth.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        var resDay = await admin.PutAsJsonAsync("/api/settings", new { fiscalYearStartDay = 30 });
+        resDay.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task Put_FiscalYearLocked_WhenAnnualClosureExists_Returns409()
+    {
+        var admin = await ClientAsync("9999");
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            db.PeriodClosures.Add(new FiscalPeriodClosure
+            {
+                TerminalId = "T01",
+                PeriodType = FiscalPeriodType.Annual,
+                PeriodKey = "2025",
+                ClosureSequence = 1,
+                PeriodStartUtc = DateTimeOffset.UtcNow.AddYears(-1),
+                PeriodEndUtc = DateTimeOffset.UtcNow,
+                DailyClosureCount = 365,
+                PreviousSignatureHash = "genesis",
+                SignatureHash = "sig2025"
+            });
+            await db.SaveChangesAsync();
+        }
+
+        var res = await admin.PutAsJsonAsync("/api/settings", new { fiscalYearStartMonth = 4 });
+        res.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        var body = await res.Content.ReadFromJsonAsync<JsonElement>();
+        body.GetProperty("code").GetString().Should().Be("fiscal_year_locked");
+    }
+
+    [Fact]
+    public async Task Put_ValidSettings_WritesJetEvent()
+    {
+        var admin = await ClientAsync("9999");
+        var res = await admin.PutAsJsonAsync("/api/settings", new { companyName = "Restaurant Test JET" });
+        res.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        using var scope = _factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var entry = await db.JournalEntries
+            .OrderByDescending(j => j.ChainSequence)
+            .FirstOrDefaultAsync(j => j.EventType == JournalEventTypes.FiscalSettingsChanged);
+
+        entry.Should().NotBeNull();
+        entry!.ChainSequence.Should().HaveValue();
+        entry.PayloadJson.Should().Contain("Restaurant Test JET");
+    }
 }

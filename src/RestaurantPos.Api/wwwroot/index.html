@@ -279,6 +279,9 @@
                     <button class="admin-tab-btn" data-admin-tab="tabHappyHour">
                         <span>🍻</span> <span data-i18n="admin.tab_happy_hour">Plages Happy Hour</span>
                     </button>
+                    <button class="admin-tab-btn" data-admin-tab="tabEstablishment">
+                        <span>🏢</span> <span data-i18n="admin.tab_establishment">Établissement & Exercice</span>
+                    </button>
                 </div>
 
                 <div class="admin-content">
@@ -863,6 +866,71 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Tab 9: Establishment & Fiscal Year -->
+                    <div class="admin-tab-pane" id="tabEstablishment">
+                        <div class="admin-card" style="max-width: 700px;">
+                            <h3 data-i18n="admin.establishment_title">🏢 Identité de l'Établissement & Exercice Fiscal</h3>
+                            <p class="text-muted" data-i18n="admin.establishment_subtitle" style="margin-bottom:16px;">
+                                Renseignez les mentions légales obligatoires imprimées sur les tickets et l'exercice fiscal (NF525).
+                            </p>
+                            <form id="formEstablishmentSettings">
+                                <div class="form-group" style="margin-bottom:12px;">
+                                    <label for="settingsCompanyName" data-i18n="admin.company_name">Raison Sociale / Enseigne</label>
+                                    <input type="text" id="settingsCompanyName" required placeholder="RESTAURANT L'ANTIGRAVITE" />
+                                </div>
+                                <div class="form-group" style="margin-bottom:12px;">
+                                    <label for="settingsAddressLines" data-i18n="admin.address_lines">Adresse complète (lignes)</label>
+                                    <textarea id="settingsAddressLines" rows="2" required data-i18n-placeholder="admin.address_lines_placeholder" placeholder="12 Rue de la Gastronomie&#10;75001 Paris" style="width:100%; border-radius:var(--radius-sm); background:var(--bg-dark); color:white; border:1px solid var(--border-color); padding:8px 12px; font-family:inherit;"></textarea>
+                                </div>
+                                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:12px;">
+                                    <div class="form-group">
+                                        <label for="settingsSiret" data-i18n="admin.siret">Numéro SIRET (14 chiffres)</label>
+                                        <input type="text" id="settingsSiret" maxlength="14" required placeholder="88877766600012" />
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="settingsVatNumber" data-i18n="admin.vat_number">Numéro TVA Intracommunautaire</label>
+                                        <input type="text" id="settingsVatNumber" required placeholder="FR12888777666" />
+                                    </div>
+                                </div>
+                                <div class="form-group" style="margin-bottom:12px;">
+                                    <label for="settingsCertificateNumber" data-i18n="admin.certificate_number">Numéro de certificat officiel (INFOCERT - facultatif)</label>
+                                    <input type="text" id="settingsCertificateNumber" placeholder="Ex: INFOCERT-2026-XXXX" />
+                                    <small class="text-muted" data-i18n="admin.certificate_number_help" style="display:block; margin-top:4px;">
+                                        Tant que ce numéro est vide, l'écran fiscal affiche « certification en cours ».
+                                    </small>
+                                </div>
+                                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:16px;">
+                                    <div class="form-group">
+                                        <label for="settingsFiscalYearMonth" data-i18n="admin.fiscal_year_start_month">Mois de début d'exercice fiscal</label>
+                                        <select id="settingsFiscalYearMonth" style="width:100%; padding:8px 12px; border-radius:var(--radius-sm); background:var(--bg-dark); color:white; border:1px solid var(--border-color);">
+                                            <option value="1">1 - Janvier</option>
+                                            <option value="2" data-i18n-opt="month">2 - Février</option>
+                                            <option value="3">3 - Mars</option>
+                                            <option value="4">4 - Avril</option>
+                                            <option value="5">5 - Mai</option>
+                                            <option value="6">6 - Juin</option>
+                                            <option value="7">7 - Juillet</option>
+                                            <option value="8">8 - Août</option>
+                                            <option value="9">9 - Septembre</option>
+                                            <option value="10">10 - Octobre</option>
+                                            <option value="11">11 - Novembre</option>
+                                            <option value="12" data-i18n-opt="month">12 - Décembre</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="settingsFiscalYearDay" data-i18n="admin.fiscal_year_start_day">Jour de début d'exercice (1 - 28)</label>
+                                        <input type="number" id="settingsFiscalYearDay" min="1" max="28" value="1" required />
+                                    </div>
+                                </div>
+                                <div style="display:flex; justify-content:flex-end;">
+                                    <button type="submit" class="btn-primary" id="btnSaveEstablishment" data-i18n="admin.save_establishment">
+                                        💾 Enregistrer l'identité
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -870,7 +938,10 @@
         <!-- ==================== VIEW 5: FISCAL NF525 ==================== -->
         <section class="view-panel" id="fiscalView">
                 <div class="fiscal-card">
-                    <h2 data-i18n="fiscal.title">📜 Traçabilité Fiscale NF525 & Clôtures</h2>
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:8px;">
+                        <h2 data-i18n="fiscal.title" style="margin:0;">📜 Traçabilité Fiscale NF525 & Clôtures</h2>
+                        <div id="fiscalCertBadge"></div>
+                    </div>
                     <p class="text-muted" data-i18n="fiscal.subtitle">Chaînage cryptographique inaltérable SHA-256 des règlements et scellement journalier.</p>
 
                     <div class="fiscal-actions" style="display:flex; gap:12px; margin-bottom:16px; flex-wrap:wrap;">
@@ -886,11 +957,15 @@
                         <button class="btn-fiscal" id="btnReprintZ" style="background:rgba(255,255,255,0.1); color:#fff; border:1px solid rgba(255,255,255,0.2);">
                             <span>🖨️</span> <span data-i18n="fiscal.reprint_z">Réimprimer la dernière clôture</span>
                         </button>
+                        <button class="btn-fiscal" id="btnVerifyChains" style="background:#2563eb; color:#fff;">
+                            <span>🔍</span> <span data-i18n="fiscal.verify_chains">Vérifier l'intégrité</span>
+                        </button>
                     </div>
 
                     <div class="fiscal-report-display" id="fiscalReportDisplay">
                         <div class="ticket-slip">
                             <div class="slip-header">
+                                <div id="slipDuplicateBanner" style="display:none; background:#f59e0b; color:#0f172a; font-weight:800; padding:6px 12px; margin-bottom:10px; border-radius:6px; text-align:center; font-size:1.1rem; letter-spacing:1px;">DUPLICATA</div>
                                 <h3 id="slipTitle" data-i18n="fiscal.slip_title">*** RAPPORT FISCAL NF525 ***</h3>
                                 <p data-i18n="fiscal.slip_standard">Norme NF525 — Traçabilité Fiscale Inaltérable</p>
                                 <p id="slipDate" data-i18n="fiscal.slip_date_pending">Date: En attente</p>
@@ -911,6 +986,116 @@
                             </div>
                         </div>
                     </div>
+                </div>
+
+                <div class="fiscal-card" id="fiscalVerificationPanel" style="margin-top: 24px; display: none;">
+                    <h2 data-i18n="fiscal.verification_title">🔍 Vérification d'Intégrité des Chaînes (NF525)</h2>
+                    <div id="fiscalVerificationSummary" style="margin: 12px 0; padding: 12px; border-radius: 8px; font-weight: 600;"></div>
+                    <div id="fiscalChainsTableContainer" style="overflow-x: auto;">
+                        <table class="data-table" style="width: 100%; border-collapse: collapse; margin-top: 8px;">
+                            <thead>
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.1); text-align: left;">
+                                    <th style="padding: 8px;" data-i18n="fiscal.col_chain">Chaîne</th>
+                                    <th style="padding: 8px;" data-i18n="fiscal.col_terminal">Terminal</th>
+                                    <th style="padding: 8px;" data-i18n="fiscal.col_checked">Éléments vérifiés</th>
+                                    <th style="padding: 8px;" data-i18n="fiscal.col_status">Statut</th>
+                                    <th style="padding: 8px;" data-i18n="fiscal.col_details">Détails</th>
+                                </tr>
+                            </thead>
+                            <tbody id="fiscalChainsTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="fiscal-card" id="fiscalPeriodClosuresPanel" style="margin-top: 24px;">
+                    <h2 data-i18n="fiscal.period_closures_title">📅 Clôtures de Période (Mois & Année NF525)</h2>
+                    <p class="text-muted" data-i18n="fiscal.period_closures_subtitle">Clôtures mensuelles et annuelles cumulatives scellées et chaînées par terminal.</p>
+
+                    <div style="display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin:16px 0; background:rgba(255,255,255,0.03); padding:16px; border-radius:10px; border:1px solid rgba(255,255,255,0.08);">
+                        <div>
+                            <label style="display:block; font-size:0.82rem; color:#94a3b8; margin-bottom:6px;" data-i18n="fiscal.period_type">Type de période</label>
+                            <select id="periodClosureType" class="form-input" style="padding:8px 12px; border-radius:6px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.15); color:#fff;">
+                                <option value="monthly" data-i18n="fiscal.period_monthly">Mensuelle</option>
+                                <option value="annual" data-i18n="fiscal.period_annual">Annuelle</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="display:block; font-size:0.82rem; color:#94a3b8; margin-bottom:6px;" data-i18n="fiscal.period_key">Période (AAAA-MM ou AAAA)</label>
+                            <input type="text" id="periodClosureKey" placeholder="2026-09" class="form-input" style="padding:8px 12px; border-radius:6px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.15); color:#fff; width:140px;">
+                        </div>
+                        <button class="btn-fiscal" id="btnExecutePeriodClosure" style="background:#10b981; color:#fff;">
+                            <span>🔒</span> <span data-i18n="fiscal.execute_period_closure">Clôturer la période</span>
+                        </button>
+                    </div>
+
+                    <div id="periodClosureAlert" style="display:none; padding:12px; border-radius:8px; margin-bottom:16px; font-weight:600;"></div>
+
+                    <div style="overflow-x:auto;">
+                        <table class="data-table" style="width:100%; border-collapse:collapse; margin-top:8px;">
+                            <thead>
+                                <tr style="border-bottom:1px solid rgba(255,255,255,0.1); text-align:left;">
+                                    <th style="padding:8px;" data-i18n="fiscal.col_type">Type</th>
+                                    <th style="padding:8px;" data-i18n="fiscal.col_period">Période</th>
+                                    <th style="padding:8px;" data-i18n="fiscal.col_sequence">Séquence</th>
+                                    <th style="padding:8px;" data-i18n="fiscal.col_ttc">Total TTC</th>
+                                    <th style="padding:8px;" data-i18n="fiscal.col_grand_total">Grand Total</th>
+                                    <th style="padding:8px;" data-i18n="fiscal.col_date">Date de scellement</th>
+                                    <th style="padding:8px;" data-i18n="fiscal.col_signature">Signature SHA-256</th>
+                                    <th style="padding:8px;" data-i18n="fiscal.col_action">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="periodClosuresTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="fiscal-card" id="fiscalArchivesPanel" style="margin-top: 24px;">
+                    <h2 data-i18n="fiscal.archives_title">📦 Archives Fiscales (NF525)</h2>
+                    <p class="text-muted" data-i18n="fiscal.archives_subtitle">Génération, conservation et vérification d'intégrité des archives scellées.</p>
+
+                    <div style="background:rgba(255,255,255,0.03); padding:16px; border-radius:10px; border:1px solid rgba(255,255,255,0.08); margin:16px 0;">
+                        <h3 style="font-size:0.95rem; margin-bottom:8px; color:#e2e8f0;" data-i18n="fiscal.verify_archive_title">🔍 Vérifier l'intégrité d'une archive</h3>
+                        <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+                            <input type="file" id="archiveVerifyFileInput" accept=".zip" class="form-input" style="padding:6px; color:#fff;" />
+                            <button class="btn-fiscal" id="btnVerifyArchive" style="background:#3b82f6; color:#fff;">
+                                <span>🔍</span> <span data-i18n="fiscal.verify_archive_btn">Vérifier l'archive</span>
+                            </button>
+                        </div>
+                        <div id="archiveVerifyAlert" style="display:none; padding:12px; border-radius:8px; margin-top:12px; font-weight:600;"></div>
+                    </div>
+
+                    <div style="overflow-x:auto;">
+                        <table class="data-table" style="width:100%; border-collapse:collapse; margin-top:8px;">
+                            <thead>
+                                <tr style="border-bottom:1px solid rgba(255,255,255,0.1); text-align:left;">
+                                    <th style="padding:8px;" data-i18n="fiscal.col_archive_seq">Seq</th>
+                                    <th style="padding:8px;" data-i18n="fiscal.col_archive_file">Fichier</th>
+                                    <th style="padding:8px;" data-i18n="fiscal.col_period">Période</th>
+                                    <th style="padding:8px;" data-i18n="fiscal.col_archive_size">Taille</th>
+                                    <th style="padding:8px;" data-i18n="fiscal.col_date">Date</th>
+                                    <th style="padding:8px;" data-i18n="fiscal.col_signature">Signature SHA-256</th>
+                                    <th style="padding:8px;" data-i18n="fiscal.col_action">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="archivesTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="fiscal-card" id="fiscalReceiptReprintPanel" style="margin-top: 24px;">
+                    <h2 data-i18n="fiscal.reprint_receipt_title">🖨️ Réimpression de Ticket (Duplicata)</h2>
+                    <p class="text-muted" data-i18n="fiscal.reprint_receipt_subtitle">Réimprimer un reçu fiscal avec mention DUPLICATA obligatoire et numérotation incrémentale.</p>
+
+                    <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin:16px 0;">
+                        <input type="text" id="reprintReceiptInput" data-i18n-placeholder="fiscal.reprint_receipt_placeholder" placeholder="N° de reçu ou UUID (ex: POS_MAIN_TERM-000001)" class="form-input" style="flex:1; min-width:260px; padding:10px 14px; border-radius:8px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.15); color:#fff;" />
+                        <button class="btn-fiscal" id="btnReprintReceipt" style="background:#f59e0b; color:#0f172a; font-weight:700;">
+                            <span>🖨️</span> <span data-i18n="fiscal.reprint_receipt_btn">Réimprimer le ticket</span>
+                        </button>
+                    </div>
+                    <div id="reprintReceiptResult" style="display:none; padding:12px 16px; border-radius:8px; font-weight:600;"></div>
                 </div>
 
                 <div class="fiscal-card" style="margin-top: 24px;">
@@ -1116,6 +1301,10 @@
             <button type="button" class="btn-action btn-pay" id="btnChangeDone" style="width:100%; padding:16px; font-size:1.2rem; font-weight:800;" data-i18n="payment.new_sale">
                 OK — Nouvelle Vente
             </button>
+            <button type="button" class="btn-fiscal" id="btnReprintCurrentReceipt" style="display:none; width:100%; margin-top:10px; background:rgba(255,255,255,0.1); color:#fff; border:1px solid rgba(255,255,255,0.2); padding:12px; border-radius:8px; cursor:pointer;">
+                <span>🖨️</span> <span data-i18n="payment.reprint_receipt">Réimprimer le ticket (Duplicata)</span>
+            </button>
+            <div id="reprintCurrentReceiptNotice" style="display:none; margin-top:8px; font-size:0.95rem; color:#f59e0b; font-weight:700;"></div>
         </div>
     </div>
 

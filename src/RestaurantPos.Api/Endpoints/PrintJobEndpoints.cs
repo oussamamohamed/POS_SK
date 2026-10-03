@@ -1,9 +1,12 @@
 using System;
 using System.Linq;
+using System.Security.Claims;
+using System.Threading;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
+using RestaurantPos.Application.Common.Interfaces;
 using RestaurantPos.Domain.Entities;
 using RestaurantPos.Infrastructure.Localization;
 using RestaurantPos.Infrastructure.Persistence;
@@ -12,7 +15,7 @@ using RestaurantPos.Infrastructure.Printing;
 namespace RestaurantPos.Api.Endpoints;
 
 public record PrinterStatusDto(Guid PrinterId, string Name, bool IsActive, bool? IsOnline, DateTimeOffset? SinceUtc, int PendingCount, int FailedCount);
-public record PrintJobDto(Guid Id, Guid PrinterId, string Kind, string Status, int Attempts, DateTimeOffset CreatedAtUtc, DateTimeOffset? SentAtUtc, string? LastError);
+public record PrintJobDto(Guid Id, Guid PrinterId, string Kind, string Status, int Attempts, DateTimeOffset CreatedAtUtc, DateTimeOffset? SentAtUtc, string? LastError, int? DuplicateNumber = null, Guid? DuplicateOfDocumentId = null);
 
 public static class PrintJobEndpoints
 {
@@ -51,20 +54,85 @@ public static class PrintJobEndpoints
 
         var jobsGroup = app.MapGroup("/api/print-jobs").WithTags("Printers").RequireAuthorization("RequireManagerOrAdmin");
 
-        jobsGroup.MapPost("/{id:guid}/retry", async (Guid id, AppDbContext db, PrintSignal signal, TimeProvider time) =>
+        jobsGroup.MapPost("/{id:guid}/retry", async (
+            Guid id,
+            AppDbContext db,
+            PrintQueue queue,
+            PrintSignal signal,
+            TimeProvider time,
+            IFiscalJournal fiscalJournal,
+            ClaimsPrincipal user,
+            CancellationToken ct) =>
         {
-            var job = await db.PrintJobs.FindAsync(id);
+            var job = await db.PrintJobs.FindAsync([id], ct);
             if (job is null) return Results.NotFound(new { Message = Texts.T("errors.print_job_not_found") });
-            if (job.Status != PrintJobStatus.Failed) return Results.Conflict(new { Message = Texts.T("errors.print_job_not_retryable") });
-            var now = time.GetUtcNow();
-            job.Status = PrintJobStatus.Pending;
-            job.Attempts = 0;
-            job.NextAttemptAtUtc = now;
-            job.DeadlineAtUtc = now + PrintJob.Lifetime;
-            job.LastError = null;
-            await db.SaveChangesAsync();
-            signal.Notify();
-            return Results.Ok(ToDto(job));
+            if (job.Status != PrintJobStatus.Failed && job.Status != PrintJobStatus.Sent)
+                return Results.Conflict(new { Message = Texts.T("errors.print_job_not_retryable") });
+            // Duplicata fiscal : uniquement reçus et rapports (pas tickets cuisine ni bons de retrait).
+            if (job.Status == PrintJobStatus.Sent && job.Kind is not (PrintJobKind.Receipt or PrintJobKind.Report))
+                return Results.Conflict(new { Message = Texts.T("errors.print_job_not_retryable") });
+
+            if (job.Status == PrintJobStatus.Failed)
+            {
+                var now = time.GetUtcNow();
+                job.Status = PrintJobStatus.Pending;
+                job.Attempts = 0;
+                job.NextAttemptAtUtc = now;
+                job.DeadlineAtUtc = now + PrintJob.Lifetime;
+                job.LastError = null;
+                await db.SaveChangesAsync(ct);
+                signal.Notify();
+                return Results.Ok(ToDto(job));
+            }
+
+            // job.Status == PrintJobStatus.Sent: creates duplicate print job
+            Guid? opId = Guid.TryParse(user.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? user.FindFirst("sub")?.Value, out var parsedOpId) ? parsedOpId : null;
+            var docId = job.DuplicateOfDocumentId ?? job.Id;
+
+            TicketDocument original;
+            try
+            {
+                original = TicketDocumentJson.Deserialize(job.DocumentJson);
+            }
+            catch (System.Text.Json.JsonException)
+            {
+                // Document illisible : pas de duplicata vide présenté comme un succès.
+                return Results.Conflict(new { Message = Texts.T("errors.print_job_not_retryable") });
+            }
+
+            var newJob = await db.ExecuteInTransactionAsync(async txCt =>
+            {
+                var duplicateNumber = await db.NextAsync(docId, txCt);
+
+                var doc = TicketDocumentBuilder.WithDuplicateNotice(original, duplicateNumber);
+
+                var createdJob = await queue.EnqueueAsync(
+                    job.PrinterId,
+                    job.Kind,
+                    doc,
+                    false, // un duplicata n'ouvre jamais le tiroir-caisse
+                    docId,
+                    duplicateNumber,
+                    txCt);
+
+                await fiscalJournal.AppendAsync(
+                    JournalEventTypes.DuplicatePrinted,
+                    new
+                    {
+                        documentId = docId,
+                        documentType = "print_job",
+                        originalJobId = job.Id,
+                        duplicateNumber,
+                        printerId = job.PrinterId
+                    },
+                    terminalId: null,
+                    operatorId: opId,
+                    cancellationToken: txCt);
+
+                return createdJob;
+            }, System.Data.IsolationLevel.Serializable, ct);
+
+            return Results.Ok(ToDto(newJob));
         });
 
         jobsGroup.MapPost("/{id:guid}/cancel", async (Guid id, AppDbContext db) =>
@@ -79,5 +147,5 @@ public static class PrintJobEndpoints
     }
 
     private static PrintJobDto ToDto(PrintJob j) =>
-        new(j.Id, j.PrinterId, j.Kind.ToString(), j.Status.ToString(), j.Attempts, j.CreatedAtUtc, j.SentAtUtc, j.LastError);
+        new(j.Id, j.PrinterId, j.Kind.ToString(), j.Status.ToString(), j.Attempts, j.CreatedAtUtc, j.SentAtUtc, j.LastError, j.DuplicateNumber, j.DuplicateOfDocumentId);
 }

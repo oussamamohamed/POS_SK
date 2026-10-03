@@ -184,6 +184,242 @@ public struct FiscalReport: Codable, Hashable, Sendable {
     }
 }
 
+public struct FiscalChainBreak: Codable, Hashable, Sendable {
+    public var sequenceNumber: Int
+    public var reference: String
+    public var kind: String
+
+    public init(sequenceNumber: Int, reference: String, kind: String) {
+        self.sequenceNumber = sequenceNumber
+        self.reference = reference
+        self.kind = kind
+    }
+}
+
+public struct FiscalChainStatus: Codable, Hashable, Sendable {
+    public var chain: String
+    public var terminalId: String?
+    public var checkedCount: Int
+    public var legacyCount: Int?
+    public var isValid: Bool
+    public var `break`: FiscalChainBreak?
+
+    public init(chain: String, terminalId: String? = nil, checkedCount: Int, legacyCount: Int? = nil, isValid: Bool, break: FiscalChainBreak? = nil) {
+        self.chain = chain
+        self.terminalId = terminalId
+        self.checkedCount = checkedCount
+        self.legacyCount = legacyCount
+        self.isValid = isValid
+        self.break = `break`
+    }
+}
+
+public struct FiscalVerificationResult: Codable, Hashable, Sendable {
+    public var isValid: Bool
+    public var checkedAtUtc: Date
+    public var chains: [FiscalChainStatus]
+
+    public init(isValid: Bool, checkedAtUtc: Date, chains: [FiscalChainStatus]) {
+        self.isValid = isValid
+        self.checkedAtUtc = checkedAtUtc
+        self.chains = chains
+    }
+}
+
+public enum FiscalPeriodType: String, Codable, Hashable, Sendable, CaseIterable {
+    case monthly = "monthly"
+    case annual = "annual"
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        if let intVal = try? container.decode(Int.self) {
+            switch intVal {
+            case 1: self = .monthly
+            case 2: self = .annual
+            default: self = .monthly
+            }
+            return
+        }
+        let strVal = try container.decode(String.self).lowercased()
+        if strVal == "annual" || strVal == "2" {
+            self = .annual
+        } else {
+            self = .monthly
+        }
+    }
+}
+
+public struct FiscalPeriodClosure: Identifiable, Codable, Hashable, Sendable {
+    public var id: UUID
+    public var terminalId: String
+    public var periodType: FiscalPeriodType
+    public var periodKey: String
+    public var closureSequence: Int
+    public var periodStartUtc: Date?
+    public var periodEndUtc: Date?
+    public var totalTtc: Money
+    public var totalHt: Money
+    public var totalTtcCents: Int?
+    public var totalHtCents: Int?
+    public var taxesSummaryJson: String?
+    public var tenderTotalsJson: String?
+    public var perpetualGrandTotal: Money
+    public var perpetualGrandTotalCents: Int?
+    public var dailyClosureCount: Int
+    public var previousSignatureHash: String?
+    public var signatureHash: String?
+    public var sealedByUserId: UUID?
+    public var sealedByUserName: String?
+    public var createdAtUtc: Date
+    public var printQueued: Bool?
+
+    public init(
+        id: UUID,
+        terminalId: String,
+        periodType: FiscalPeriodType,
+        periodKey: String,
+        closureSequence: Int,
+        periodStartUtc: Date? = nil,
+        periodEndUtc: Date? = nil,
+        totalTtc: Money,
+        totalHt: Money,
+        totalTtcCents: Int? = nil,
+        totalHtCents: Int? = nil,
+        taxesSummaryJson: String? = nil,
+        tenderTotalsJson: String? = nil,
+        perpetualGrandTotal: Money,
+        perpetualGrandTotalCents: Int? = nil,
+        dailyClosureCount: Int,
+        previousSignatureHash: String? = nil,
+        signatureHash: String? = nil,
+        sealedByUserId: UUID? = nil,
+        sealedByUserName: String? = nil,
+        createdAtUtc: Date,
+        printQueued: Bool? = nil
+    ) {
+        self.id = id
+        self.terminalId = terminalId
+        self.periodType = periodType
+        self.periodKey = periodKey
+        self.closureSequence = closureSequence
+        self.periodStartUtc = periodStartUtc
+        self.periodEndUtc = periodEndUtc
+        self.totalTtc = totalTtc
+        self.totalHt = totalHt
+        self.totalTtcCents = totalTtcCents
+        self.totalHtCents = totalHtCents
+        self.taxesSummaryJson = taxesSummaryJson
+        self.tenderTotalsJson = tenderTotalsJson
+        self.perpetualGrandTotal = perpetualGrandTotal
+        self.perpetualGrandTotalCents = perpetualGrandTotalCents
+        self.dailyClosureCount = dailyClosureCount
+        self.previousSignatureHash = previousSignatureHash
+        self.signatureHash = signatureHash
+        self.sealedByUserId = sealedByUserId
+        self.sealedByUserName = sealedByUserName
+        self.createdAtUtc = createdAtUtc
+        self.printQueued = printQueued
+    }
+
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decode(UUID.self, forKey: .id)
+        terminalId = try c.decode(String.self, forKey: .terminalId)
+        periodType = try c.decode(FiscalPeriodType.self, forKey: .periodType)
+        periodKey = try c.decode(String.self, forKey: .periodKey)
+        closureSequence = try c.decode(Int.self, forKey: .closureSequence)
+        periodStartUtc = try c.decodeIfPresent(Date.self, forKey: .periodStartUtc)
+        periodEndUtc = try c.decodeIfPresent(Date.self, forKey: .periodEndUtc)
+        totalTtc = try c.decodeIfPresent(Money.self, forKey: .totalTtc) ?? .zero
+        totalHt = try c.decodeIfPresent(Money.self, forKey: .totalHt) ?? .zero
+        totalTtcCents = try c.decodeIfPresent(Int.self, forKey: .totalTtcCents)
+        totalHtCents = try c.decodeIfPresent(Int.self, forKey: .totalHtCents)
+        taxesSummaryJson = try c.decodeIfPresent(String.self, forKey: .taxesSummaryJson)
+        tenderTotalsJson = try c.decodeIfPresent(String.self, forKey: .tenderTotalsJson)
+        perpetualGrandTotal = try c.decodeIfPresent(Money.self, forKey: .perpetualGrandTotal) ?? .zero
+        perpetualGrandTotalCents = try c.decodeIfPresent(Int.self, forKey: .perpetualGrandTotalCents)
+        dailyClosureCount = try c.decodeIfPresent(Int.self, forKey: .dailyClosureCount) ?? 0
+        previousSignatureHash = try c.decodeIfPresent(String.self, forKey: .previousSignatureHash)
+        signatureHash = try c.decodeIfPresent(String.self, forKey: .signatureHash)
+        sealedByUserId = try c.decodeIfPresent(UUID.self, forKey: .sealedByUserId)
+        sealedByUserName = try c.decodeIfPresent(String.self, forKey: .sealedByUserName)
+        createdAtUtc = try c.decode(Date.self, forKey: .createdAtUtc)
+        printQueued = try c.decodeIfPresent(Bool.self, forKey: .printQueued)
+    }
+}
+
+public struct ReprintResult: Codable, Sendable, Equatable {
+    public let printQueued: Bool
+    public let duplicateNumber: Int
+
+    public init(printQueued: Bool, duplicateNumber: Int) {
+        self.printQueued = printQueued
+        self.duplicateNumber = duplicateNumber
+    }
+}
+
+public struct FiscalArchive: Identifiable, Codable, Hashable, Sendable {
+    public var id: UUID
+    public var periodClosureId: UUID
+    public var periodType: FiscalPeriodType
+    public var periodKey: String
+    public var fileName: String
+    public var fileSha256: String
+    public var fileSizeBytes: Int
+    public var archiveSequence: Int
+    public var previousSignatureHash: String
+    public var signatureHash: String
+    public var createdByUserId: UUID
+    public var createdAtUtc: Date
+
+    public init(
+        id: UUID,
+        periodClosureId: UUID,
+        periodType: FiscalPeriodType,
+        periodKey: String,
+        fileName: String,
+        fileSha256: String,
+        fileSizeBytes: Int,
+        archiveSequence: Int,
+        previousSignatureHash: String,
+        signatureHash: String,
+        createdByUserId: UUID,
+        createdAtUtc: Date
+    ) {
+        self.id = id
+        self.periodClosureId = periodClosureId
+        self.periodType = periodType
+        self.periodKey = periodKey
+        self.fileName = fileName
+        self.fileSha256 = fileSha256
+        self.fileSizeBytes = fileSizeBytes
+        self.archiveSequence = archiveSequence
+        self.previousSignatureHash = previousSignatureHash
+        self.signatureHash = signatureHash
+        self.createdByUserId = createdByUserId
+        self.createdAtUtc = createdAtUtc
+    }
+}
+
+public struct CreateArchiveRequest: Codable, Sendable {
+    public let periodClosureId: UUID
+    public init(periodClosureId: UUID) {
+        self.periodClosureId = periodClosureId
+    }
+}
+
+public struct ArchiveVerificationResult: Codable, Hashable, Sendable {
+    public let isValid: Bool
+    public let archiveId: UUID?
+    public let reason: String?
+
+    public init(isValid: Bool, archiveId: UUID? = nil, reason: String? = nil) {
+        self.isValid = isValid
+        self.archiveId = archiveId
+        self.reason = reason
+    }
+}
+
 // MARK: - Tableau de bord
 
 public struct FinancialDashboard: Codable, Hashable, Sendable {
@@ -368,8 +604,11 @@ public struct PrintJobInfo: Codable, Identifiable, Hashable, Sendable {
     public var createdAtUtc: Date
     public var sentAtUtc: Date?
     public var lastError: String?
+    /// Duplicata n°N d'un document déjà imprimé (nil pour une impression d'origine).
+    public var duplicateNumber: Int?
+    public var duplicateOfDocumentId: UUID?
 
-    public init(id: UUID = UUID(), printerId: UUID, kind: String, status: String, attempts: Int = 0, createdAtUtc: Date = Date(), sentAtUtc: Date? = nil, lastError: String? = nil) {
+    public init(id: UUID = UUID(), printerId: UUID, kind: String, status: String, attempts: Int = 0, createdAtUtc: Date = Date(), sentAtUtc: Date? = nil, lastError: String? = nil, duplicateNumber: Int? = nil, duplicateOfDocumentId: UUID? = nil) {
         self.id = id
         self.printerId = printerId
         self.kind = kind
@@ -378,6 +617,8 @@ public struct PrintJobInfo: Codable, Identifiable, Hashable, Sendable {
         self.createdAtUtc = createdAtUtc
         self.sentAtUtc = sentAtUtc
         self.lastError = lastError
+        self.duplicateNumber = duplicateNumber
+        self.duplicateOfDocumentId = duplicateOfDocumentId
     }
 }
 
@@ -410,16 +651,47 @@ public struct SyncStatus: Codable, Hashable, Sendable {
 public struct RestaurantSettings: Codable, Hashable, Sendable {
     public var receiptLanguage: String
     public var kitchenTicketLanguage: String
+    public var companyName: String?
+    public var addressLines: String?
+    public var siret: String?
+    public var vatNumber: String?
+    public var certificateNumber: String?
+    public var fiscalYearStartMonth: Int?
+    public var fiscalYearStartDay: Int?
 
-    public init(receiptLanguage: String, kitchenTicketLanguage: String? = nil) {
+    public init(
+        receiptLanguage: String,
+        kitchenTicketLanguage: String? = nil,
+        companyName: String? = nil,
+        addressLines: String? = nil,
+        siret: String? = nil,
+        vatNumber: String? = nil,
+        certificateNumber: String? = nil,
+        fiscalYearStartMonth: Int? = nil,
+        fiscalYearStartDay: Int? = nil
+    ) {
         self.receiptLanguage = receiptLanguage
         self.kitchenTicketLanguage = kitchenTicketLanguage ?? receiptLanguage
+        self.companyName = companyName
+        self.addressLines = addressLines
+        self.siret = siret
+        self.vatNumber = vatNumber
+        self.certificateNumber = certificateNumber
+        self.fiscalYearStartMonth = fiscalYearStartMonth
+        self.fiscalYearStartDay = fiscalYearStartDay
     }
 
     public init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         receiptLanguage = try c.decode(String.self, forKey: .receiptLanguage)
         kitchenTicketLanguage = try c.decodeIfPresent(String.self, forKey: .kitchenTicketLanguage) ?? receiptLanguage
+        companyName = try c.decodeIfPresent(String.self, forKey: .companyName)
+        addressLines = try c.decodeIfPresent(String.self, forKey: .addressLines)
+        siret = try c.decodeIfPresent(String.self, forKey: .siret)
+        vatNumber = try c.decodeIfPresent(String.self, forKey: .vatNumber)
+        certificateNumber = try c.decodeIfPresent(String.self, forKey: .certificateNumber)
+        fiscalYearStartMonth = try c.decodeIfPresent(Int.self, forKey: .fiscalYearStartMonth)
+        fiscalYearStartDay = try c.decodeIfPresent(Int.self, forKey: .fiscalYearStartDay)
     }
 }
 

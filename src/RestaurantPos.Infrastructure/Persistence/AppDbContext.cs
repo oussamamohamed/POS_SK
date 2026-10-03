@@ -35,6 +35,8 @@ public class AppDbContext : DbContext
     public DbSet<HeldOrder> HeldOrders => Set<HeldOrder>();
     public DbSet<CustomerCreditVoucher> CustomerCreditVouchers => Set<CustomerCreditVoucher>();
     public DbSet<RestaurantSettings> RestaurantSettings => Set<RestaurantSettings>();
+    public DbSet<FiscalPeriodClosure> PeriodClosures => Set<FiscalPeriodClosure>();
+    public DbSet<FiscalArchive> FiscalArchives => Set<FiscalArchive>();
 
     // Happy Hour Pricing DbSets
     public DbSet<HappyHourSchedule> HappyHourSchedules => Set<HappyHourSchedule>();
@@ -165,6 +167,7 @@ public class AppDbContext : DbContext
                   .HasConversion(m => m.AmountInCents, cents => new Money(cents, "EUR"));
             entity.HasMany(f => f.Tenders).WithOne().HasForeignKey(t => t.FiscalReceiptId).OnDelete(DeleteBehavior.Cascade);
             entity.HasIndex(f => new { f.TerminalId, f.SequenceNumber }).IsUnique();
+            entity.HasIndex(f => f.VoidedReceiptId);
         });
 
         modelBuilder.Entity<PaymentTender>(entity =>
@@ -189,6 +192,16 @@ public class AppDbContext : DbContext
             entity.Property(c => c.TotalSalesHt)
                   .HasConversion(m => m.AmountInCents, cents => new Money(cents, "EUR"));
             entity.HasIndex(c => new { c.TerminalId, c.ClosureSequence }).IsUnique();
+        });
+
+        modelBuilder.Entity<TransactionJournalEntry>(entity =>
+        {
+            entity.HasKey(j => j.Id);
+            entity.Property(j => j.TerminalId).HasMaxLength(16);
+            entity.Property(j => j.EventType).HasMaxLength(64).IsRequired();
+            entity.Property(j => j.PreviousHash).HasMaxLength(64);
+            entity.Property(j => j.EntryHash).HasMaxLength(64).IsRequired();
+            entity.HasIndex(j => j.ChainSequence).IsUnique();
         });
 
         modelBuilder.Entity<Order>(entity =>
@@ -309,6 +322,7 @@ public class AppDbContext : DbContext
         {
             entity.HasKey(j => j.Id);
             entity.HasIndex(j => new { j.Status, j.NextAttemptAtUtc });
+            entity.HasIndex(j => j.DuplicateOfDocumentId);
         });
 
         modelBuilder.Entity<Device>(entity =>
@@ -344,6 +358,33 @@ public class AppDbContext : DbContext
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.ReceiptLanguage).HasMaxLength(8).IsRequired();
+        });
+
+        modelBuilder.Entity<FiscalPeriodClosure>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.TerminalId).HasMaxLength(16).IsRequired();
+            entity.Property(e => e.PeriodKey).HasMaxLength(32).IsRequired();
+            entity.Property(e => e.PreviousSignatureHash).HasMaxLength(64).IsRequired();
+            entity.Property(e => e.SignatureHash).HasMaxLength(64).IsRequired();
+            entity.Property(e => e.TotalTtcAmount)
+                  .HasConversion(m => m.AmountInCents, cents => new Money(cents, "EUR"));
+            entity.Property(e => e.TotalHtAmount)
+                  .HasConversion(m => m.AmountInCents, cents => new Money(cents, "EUR"));
+            entity.HasIndex(e => new { e.TerminalId, e.PeriodType, e.PeriodKey }).IsUnique();
+        });
+
+        modelBuilder.Entity<FiscalArchive>(entity =>
+        {
+            entity.ToTable("FiscalArchives");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.PeriodKey).HasMaxLength(32).IsRequired();
+            entity.Property(e => e.FileName).HasMaxLength(255).IsRequired();
+            entity.Property(e => e.FileSha256).HasMaxLength(64).IsRequired();
+            entity.Property(e => e.PreviousSignatureHash).HasMaxLength(64).IsRequired();
+            entity.Property(e => e.SignatureHash).HasMaxLength(64).IsRequired();
+            entity.HasIndex(e => e.PeriodClosureId).IsUnique();
+            entity.HasIndex(e => e.ArchiveSequence).IsUnique();
         });
     }
 }

@@ -41,6 +41,41 @@ public record AuditValidationResult(
 /// <summary>Commande qui empêche la clôture Z : Label = table, ou libellé du panier comptoir en attente.</summary>
 public record OpenOrderDto(Guid OrderId, string Label, long RemainingTtcCents);
 
+public class PeriodClosureException : Exception
+{
+    public string Code { get; }
+    public IReadOnlyList<string>? Days { get; }
+    public IReadOnlyList<string>? Months { get; }
+
+    public PeriodClosureException(string code, string message, IReadOnlyList<string>? days = null, IReadOnlyList<string>? months = null)
+        : base(message)
+    {
+        Code = code;
+        Days = days;
+        Months = months;
+    }
+}
+
+public record PeriodClosureDto(
+    Guid Id,
+    string TerminalId,
+    FiscalPeriodType PeriodType,
+    string PeriodKey,
+    long ClosureSequence,
+    DateTimeOffset PeriodStartUtc,
+    DateTimeOffset PeriodEndUtc,
+    long TotalTtcCents,
+    long TotalHtCents,
+    string TaxesSummaryJson,
+    string TenderTotalsJson,
+    long PerpetualGrandTotalCents,
+    int DailyClosureCount,
+    string PreviousSignatureHash,
+    string SignatureHash,
+    Guid SealedByUserId,
+    string SealedByUserName,
+    DateTimeOffset CreatedAtUtc);
+
 public interface INF525FiscalAuditService
 {
     string ComputeReceiptHashSignature(
@@ -74,4 +109,18 @@ public interface INF525FiscalAuditService
 
     /// <summary>Vrai si un reçu de ce terminal émis à cette date est couvert par une clôture Z (du terminal ou du terminal principal).</summary>
     Task<bool> IsInClosedPeriodAsync(string terminalId, DateTimeOffset createdAtUtc, CancellationToken cancellationToken = default);
+
+    Task<PeriodClosureDto> ExecutePeriodClosureAsync(
+        string terminalId,
+        FiscalPeriodType periodType,
+        string periodKey,
+        Guid managerId,
+        string managerName,
+        DateTimeOffset? utcNow = null,
+        CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<PeriodClosureDto>> GetPeriodClosuresAsync(
+        string? terminalId = null,
+        FiscalPeriodType? periodType = null,
+        CancellationToken cancellationToken = default);
 }

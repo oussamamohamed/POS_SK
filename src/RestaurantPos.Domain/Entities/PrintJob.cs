@@ -24,4 +24,6 @@ public class PrintJob
     public string? LastError { get; set; }
     public DateTimeOffset CreatedAtUtc { get; init; }
     public DateTimeOffset? SentAtUtc { get; set; }
+    public Guid? DuplicateOfDocumentId { get; set; }
+    public int? DuplicateNumber { get; set; }
 }

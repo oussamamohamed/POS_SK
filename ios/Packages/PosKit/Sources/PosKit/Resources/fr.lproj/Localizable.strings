@@ -36,6 +36,7 @@
 "admin.staff_deactivated" = "Employé « %@ » désactivé";
 "admin.staff_updated" = "Employé « %@ » mis à jour";
 "admin.sync_success" = "Synchronisation réussie";
+"admin.settings_saved" = "Réglages enregistrés";
 "common.comp_label" = "Offert";
 "common.course_dessert" = "Dessert";
 "common.course_direct" = "Direct";
@@ -86,8 +87,15 @@
 "fiscal.fec_generated" = "Fichier %@ généré";
 "fiscal.fec_generating" = "Génération du fichier FEC…";
 "fiscal.fec_ready" = "Fichier FEC %@ prêt";
+"fiscal.verification_failed" = "Rupture d'intégrité détectée dans les chaînes fiscales";
+"fiscal.verification_success" = "Toutes les chaînes fiscales sont intègres";
+"fiscal.verify_forbidden" = "Vérification réservée aux responsables";
 "fiscal.z_closure_done" = "Clôture Z n°%d exécutée et scellée";
 "fiscal.z_closure_forbidden" = "Clôture Z réservée aux responsables";
+"fiscal.period_closure_success" = "Clôture de période scellée et enregistrée avec succès";
+"fiscal.period_closure_forbidden" = "Clôture de période réservée aux responsables";
+"fiscal.duplicate_queued" = "Impression lancée (DUPLICATA n°%@)";
+"fiscal.receipt_reprinted_success" = "Ticket réimprimé avec succès (DUPLICATA n°%@)";
 "floor.load_error" = "Erreur de chargement du plan de salle";
 "floor.number_required" = "Le numéro de table est requis";
 "floor.table_created" = "Table %@ créée";
@@ -147,3 +155,13 @@
 "messages.printer_offline" = "Imprimante %@ hors ligne — %lld bons en attente";
 "fiscal.print_queued" = "Envoyé à l'imprimante";
 "payment.print_not_queued" = "Aucune imprimante disponible : rien n'a été imprimé";
+"fiscal.archives_title" = "Archives Fiscales (NF525)";
+"fiscal.archives_subtitle" = "Génération, conservation et vérification d'intégrité des archives scellées.";
+"fiscal.action_archive" = "Archiver";
+"fiscal.archive_created_success" = "Archive générée et scellée avec succès";
+"fiscal.archive_valid" = "Archive valide et intègre (chaîne intacte)";
+"fiscal.archive_hash_mismatch" = "Empreinte SHA-256 invalide : archive altérée !";
+"fiscal.archive_unknown" = "Archive inconnue du système";
+"fiscal.archive_chain_break" = "Rupture de chaîne détectée pour cette archive";
+"fiscal.archive_forbidden" = "Archivage réservé aux responsables";
+"fiscal.archived" = "Archivée";

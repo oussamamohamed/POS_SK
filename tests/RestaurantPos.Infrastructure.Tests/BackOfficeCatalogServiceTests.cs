@@ -28,32 +28,32 @@ public class BackOfficeCatalogServiceTests
         {
             var service = new BackOfficeCatalogService(context, cache);
 
-        var category = await service.CreateCategoryAsync("Desserts Maison", "#E67E22", 1, "cake");
-        category.Should().NotBeNull();
-        category.Name.Should().Be("Desserts Maison");
-        category.IsActive.Should().BeTrue();
+            var category = await service.CreateCategoryAsync("Desserts Maison", "#E67E22", 1, "cake");
+            category.Should().NotBeNull();
+            category.Name.Should().Be("Desserts Maison");
+            category.IsActive.Should().BeTrue();
 
-        var product = await service.CreateProductAsync(
-            name: "Tiramisu Spéculos",
-            categoryId: category.Id,
-            price: 7.50m,
-            taxRatePercent: 10.0m,
-            description: "Fait maison",
-            colorHex: "#D35400",
-            displayOrder: 1,
-            isQuickKey: true,
-            stationId: "DESSERT"
-        );
+            var product = await service.CreateProductAsync(
+                name: "Tiramisu Spéculos",
+                categoryId: category.Id,
+                price: 7.50m,
+                taxRatePercent: 10.0m,
+                description: "Fait maison",
+                colorHex: "#D35400",
+                displayOrder: 1,
+                isQuickKey: true,
+                stationId: "DESSERT"
+            );
 
-        product.Should().NotBeNull();
-        product.Price.AmountInCents.Should().Be(750);
-        product.Price.ToDecimal().Should().Be(7.50m);
-        product.IsQuickKey.Should().BeTrue();
-        product.IsActive.Should().BeTrue();
+            product.Should().NotBeNull();
+            product.Price.AmountInCents.Should().Be(750);
+            product.Price.ToDecimal().Should().Be(7.50m);
+            product.IsQuickKey.Should().BeTrue();
+            product.IsActive.Should().BeTrue();
 
-        var activeProducts = await service.GetProductsByCategoryAsync(category.Id);
-        activeProducts.Should().HaveCount(1);
-        activeProducts[0].Name.Should().Be("Tiramisu Spéculos");
+            var activeProducts = await service.GetProductsByCategoryAsync(category.Id);
+            activeProducts.Should().HaveCount(1);
+            activeProducts[0].Name.Should().Be("Tiramisu Spéculos");
         }
     }
 

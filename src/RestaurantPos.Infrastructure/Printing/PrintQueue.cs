@@ -46,19 +46,37 @@ public sealed class PrintQueue
         _time = time;
     }
 
-    public async Task EnqueueAsync(Guid printerId, PrintJobKind kind, TicketDocument document, bool openCashDrawer, CancellationToken ct = default)
+    public Task<PrintJob> EnqueueAsync(
+        Guid printerId,
+        PrintJobKind kind,
+        TicketDocument document,
+        bool openCashDrawer,
+        CancellationToken ct = default)
+        => EnqueueAsync(printerId, kind, document, openCashDrawer, null, null, ct);
+
+    public async Task<PrintJob> EnqueueAsync(
+        Guid printerId,
+        PrintJobKind kind,
+        TicketDocument document,
+        bool openCashDrawer,
+        Guid? duplicateOfDocumentId,
+        int? duplicateNumber,
+        CancellationToken ct = default)
     {
         var now = _time.GetUtcNow();
-        _db.PrintJobs.Add(new PrintJob
+        var job = new PrintJob
         {
             PrinterId = printerId,
             Kind = kind,
             DocumentJson = TicketDocumentJson.Serialize(document),
             OpenCashDrawer = openCashDrawer,
+            DuplicateOfDocumentId = duplicateOfDocumentId,
+            DuplicateNumber = duplicateNumber,
             NextAttemptAtUtc = now,
             DeadlineAtUtc = now + PrintJob.Lifetime,
             CreatedAtUtc = now
-        });
+        };
+        _db.PrintJobs.Add(job);
         try
         {
             await _db.SaveChangesAsync(ct).ConfigureAwait(false);
@@ -71,5 +89,6 @@ public sealed class PrintQueue
             throw;
         }
         _signal.Notify();
+        return job;
     }
 }

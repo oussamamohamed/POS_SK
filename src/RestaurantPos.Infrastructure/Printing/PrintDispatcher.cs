@@ -24,8 +24,9 @@ public sealed class PrintDispatcher
     private readonly ReportPrintDataService _reports;
     private readonly TimeProvider _time;
     private readonly ILogger<PrintDispatcher> _logger;
+    private readonly IFiscalJournal? _journal;
 
-    public PrintDispatcher(AppDbContext db, PrintQueue queue, IRestaurantSettingsService settings, ReportPrintDataService reports, TimeProvider time, ILogger<PrintDispatcher> logger)
+    public PrintDispatcher(AppDbContext db, PrintQueue queue, IRestaurantSettingsService settings, ReportPrintDataService reports, TimeProvider time, ILogger<PrintDispatcher> logger, IFiscalJournal? journal = null)
     {
         _db = db;
         _queue = queue;
@@ -33,6 +34,7 @@ public sealed class PrintDispatcher
         _reports = reports;
         _time = time;
         _logger = logger;
+        _journal = journal;
     }
 
     public async Task<bool> QueueCounterSaleAsync(Guid orderId, string terminalId, string receiptNumber, bool withFiscalReceipt, bool hasCash, CancellationToken ct = default)
@@ -42,12 +44,14 @@ public sealed class PrintDispatcher
             var printer = await ReceiptPrinterAsync(terminalId, ct).ConfigureAwait(false);
             if (printer is null) return false;
             var order = await LoadOrderAsync(orderId, ct).ConfigureAwait(false);
-            var language = (await _settings.GetAsync(ct).ConfigureAwait(false)).ReceiptLanguage;
+            var settings = await _settings.GetAsync(ct).ConfigureAwait(false);
+            var language = settings.ReceiptLanguage;
             var pickup = order.PickupNumber ?? string.Empty;
+            var receipt = withFiscalReceipt ? await LoadReceiptAsync(terminalId, receiptNumber, ct).ConfigureAwait(false) : null;
             var (kind, document) = withFiscalReceipt
-                ? (PrintJobKind.Receipt, TicketDocumentBuilder.FiscalReceipt(await LoadReceiptAsync(terminalId, receiptNumber, ct).ConfigureAwait(false), order, pickup, order.PickupBuzzer, language))
+                ? (PrintJobKind.Receipt, TicketDocumentBuilder.FiscalReceipt(receipt!, order, pickup, order.PickupBuzzer, language, settings))
                 : (PrintJobKind.PickupVoucher, TicketDocumentBuilder.PickupCoupon(order, pickup, order.PickupBuzzer, language, _time.GetUtcNow()));
-            await _queue.EnqueueAsync(printer.Id, kind, document, hasCash && printer.OpenCashDrawerOnReceipt, ct).ConfigureAwait(false);
+            await _queue.EnqueueAsync(printer.Id, kind, document, hasCash && printer.OpenCashDrawerOnReceipt, receipt?.Id, null, ct).ConfigureAwait(false);
             return true;
         }
         catch (Exception ex)
@@ -65,8 +69,8 @@ public sealed class PrintDispatcher
             if (printer is null) return false;
             var order = await LoadOrderAsync(orderId, ct).ConfigureAwait(false);
             var receipt = await LoadReceiptAsync(terminalId, receiptNumber, ct).ConfigureAwait(false);
-            var language = (await _settings.GetAsync(ct).ConfigureAwait(false)).ReceiptLanguage;
-            await _queue.EnqueueAsync(printer.Id, PrintJobKind.Receipt, TicketDocumentBuilder.Receipt(receipt, order, language), hasCash && printer.OpenCashDrawerOnReceipt, ct).ConfigureAwait(false);
+            var settings = await _settings.GetAsync(ct).ConfigureAwait(false);
+            await _queue.EnqueueAsync(printer.Id, PrintJobKind.Receipt, TicketDocumentBuilder.Receipt(receipt, order, settings.ReceiptLanguage, settings), hasCash && printer.OpenCashDrawerOnReceipt, receipt.Id, null, ct).ConfigureAwait(false);
             return true;
         }
         catch (Exception ex)
@@ -117,31 +121,167 @@ public sealed class PrintDispatcher
     public Task<bool> QueueXReportAsync(FiscalSummaryDto summary, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(summary);
-        return QueueReportAsync(summary.TerminalId, async language =>
+        return QueueReportAsync(summary.TerminalId, async settings =>
         {
             var data = await _reports.BuildAsync(summary.TerminalId, summary.PeriodStartUtc, summary.PeriodEndUtc, ct).ConfigureAwait(false);
-            return TicketDocumentBuilder.XReport(summary, data, language, _time.GetUtcNow());
+            return TicketDocumentBuilder.XReport(summary, data, settings.ReceiptLanguage, _time.GetUtcNow(), settings);
         }, ct);
     }
 
     public Task<bool> QueueZClosureAsync(DailyFiscalClosureDto closure, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(closure);
-        return QueueReportAsync(closure.TerminalId, async language =>
+        return QueueReportAsync(closure.TerminalId, async settings =>
         {
             var data = await _reports.BuildAsync(closure.TerminalId, closure.PeriodStartUtc, closure.ClosedAtUtc, ct).ConfigureAwait(false);
-            return TicketDocumentBuilder.ZClosure(closure, data, language);
+            return TicketDocumentBuilder.ZClosure(closure, data, settings.ReceiptLanguage, settings);
+        }, closure.ClosureId, ct);
+    }
+
+    public async Task<(bool printQueued, int duplicateNumber)> QueueZClosureReprintAsync(DailyFiscalClosureDto closure, Guid? operatorId = null, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(closure);
+        try
+        {
+            var printer = await ReceiptPrinterAsync(closure.TerminalId, ct).ConfigureAwait(false);
+            var settings = await _settings.GetAsync(ct).ConfigureAwait(false);
+            var data = await _reports.BuildAsync(closure.TerminalId, closure.PeriodStartUtc, closure.ClosedAtUtc, ct).ConfigureAwait(false);
+
+            return await _db.ExecuteInTransactionAsync(async txCt =>
+            {
+                var duplicateNumber = await _db.NextAsync(closure.ClosureId, txCt).ConfigureAwait(false);
+
+                var document = TicketDocumentBuilder.ZClosure(closure, data, settings.ReceiptLanguage, settings, duplicateNumber);
+
+                bool queued = false;
+                if (printer != null)
+                {
+                    await _queue.EnqueueAsync(
+                        printer.Id,
+                        PrintJobKind.Report,
+                        document,
+                        false,
+                        closure.ClosureId,
+                        duplicateNumber,
+                        txCt).ConfigureAwait(false);
+                    queued = true;
+                }
+
+                if (_journal != null)
+                {
+                    await _journal.AppendAsync(
+                        JournalEventTypes.DuplicatePrinted,
+                        new
+                        {
+                            documentId = closure.ClosureId,
+                            documentType = "closure",
+                            closureSequence = closure.ClosureSequence,
+                            duplicateNumber,
+                            printQueued = queued,
+                            terminalId = closure.TerminalId
+                        },
+                        terminalId: closure.TerminalId,
+                        operatorId: operatorId,
+                        cancellationToken: txCt).ConfigureAwait(false);
+                }
+
+                return (queued, duplicateNumber);
+            }, System.Data.IsolationLevel.Serializable, ct).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            PrintLog.QueueFailed(_logger, ex);
+            return (false, 0);
+        }
+    }
+
+    public async Task<(bool printQueued, int duplicateNumber)> QueueReceiptReprintAsync(Guid receiptId, Guid? operatorId = null, CancellationToken ct = default)
+    {
+        var receipt = await _db.FiscalReceipts.AsNoTracking().FirstOrDefaultAsync(r => r.Id == receiptId, ct).ConfigureAwait(false);
+        if (receipt is null) return (false, 0);
+        return await QueueReceiptReprintAsync(receipt, operatorId, ct).ConfigureAwait(false);
+    }
+
+    public async Task<(bool printQueued, int duplicateNumber)> QueueReceiptReprintAsync(FiscalReceipt receipt, Guid? operatorId = null, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(receipt);
+        try
+        {
+            var printer = await ReceiptPrinterAsync(receipt.TerminalId, ct).ConfigureAwait(false);
+            var settings = await _settings.GetAsync(ct).ConfigureAwait(false);
+            var order = await _db.Orders.AsNoTracking().Include(o => o.Items).FirstOrDefaultAsync(o => o.Id == receipt.OrderId, ct).ConfigureAwait(false);
+
+            return await _db.ExecuteInTransactionAsync(async txCt =>
+            {
+                var duplicateNumber = await _db.NextAsync(receipt.Id, txCt).ConfigureAwait(false);
+
+                var document = order != null
+                    ? TicketDocumentBuilder.Receipt(receipt, order, settings.ReceiptLanguage, settings, duplicateNumber)
+                    : TicketDocumentBuilder.ReceiptFallback(receipt, settings.ReceiptLanguage, settings, duplicateNumber);
+
+                bool queued = false;
+                if (printer != null)
+                {
+                    await _queue.EnqueueAsync(
+                        printer.Id,
+                        PrintJobKind.Receipt,
+                        document,
+                        false,
+                        receipt.Id,
+                        duplicateNumber,
+                        txCt).ConfigureAwait(false);
+                    queued = true;
+                }
+
+                if (_journal != null)
+                {
+                    await _journal.AppendAsync(
+                        JournalEventTypes.DuplicatePrinted,
+                        new
+                        {
+                            documentId = receipt.Id,
+                            documentType = "receipt",
+                            receiptNumber = receipt.ReceiptNumber,
+                            duplicateNumber,
+                            printQueued = queued,
+                            terminalId = receipt.TerminalId
+                        },
+                        terminalId: receipt.TerminalId,
+                        operatorId: operatorId,
+                        cancellationToken: txCt).ConfigureAwait(false);
+                }
+
+                return (queued, duplicateNumber);
+            }, System.Data.IsolationLevel.Serializable, ct).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            PrintLog.QueueFailed(_logger, ex);
+            return (false, 0);
+        }
+    }
+
+    public Task<bool> QueuePeriodClosureAsync(PeriodClosureDto closure, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(closure);
+        return QueueReportAsync(closure.TerminalId, async settings =>
+        {
+            var data = await _reports.BuildAsync(closure.TerminalId, closure.PeriodStartUtc, closure.PeriodEndUtc, ct).ConfigureAwait(false);
+            return TicketDocumentBuilder.PeriodClosure(closure, data, settings.ReceiptLanguage, settings);
         }, ct);
     }
 
-    private async Task<bool> QueueReportAsync(string terminalId, Func<string, Task<TicketDocument>> build, CancellationToken ct)
+    private Task<bool> QueueReportAsync(string terminalId, Func<RestaurantSettingsDto, Task<TicketDocument>> build, CancellationToken ct)
+        => QueueReportAsync(terminalId, build, null, ct);
+
+    private async Task<bool> QueueReportAsync(string terminalId, Func<RestaurantSettingsDto, Task<TicketDocument>> build, Guid? documentId, CancellationToken ct = default)
     {
         try
         {
             var printer = await ReceiptPrinterAsync(terminalId, ct).ConfigureAwait(false);
             if (printer is null) return false;
-            var language = (await _settings.GetAsync(ct).ConfigureAwait(false)).ReceiptLanguage;
-            await _queue.EnqueueAsync(printer.Id, PrintJobKind.Report, await build(language).ConfigureAwait(false), false, ct).ConfigureAwait(false);
+            var settings = await _settings.GetAsync(ct).ConfigureAwait(false);
+            await _queue.EnqueueAsync(printer.Id, PrintJobKind.Report, await build(settings).ConfigureAwait(false), false, documentId, null, ct).ConfigureAwait(false);
             return true;
         }
         catch (Exception ex)

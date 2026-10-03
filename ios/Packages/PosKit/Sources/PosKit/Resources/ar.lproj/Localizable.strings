@@ -36,6 +36,7 @@
 "admin.staff_deactivated" = "تم تعطيل الموظف «%@»";
 "admin.staff_updated" = "تم تحديث الموظف «%@»";
 "admin.sync_success" = "تمت المزامنة بنجاح";
+"admin.settings_saved" = "تم حفظ الإعدادات";
 "common.comp_label" = "مجاني";
 "common.course_dessert" = "الحلوى";
 "common.course_direct" = "فوري";
@@ -86,8 +87,15 @@
 "fiscal.fec_generated" = "تم إنشاء الملف %@";
 "fiscal.fec_generating" = "جارٍ إنشاء ملف FEC…";
 "fiscal.fec_ready" = "ملف FEC %@ جاهز";
+"fiscal.verification_failed" = "تم اكتشاف انقطاع في السلاسل المالية";
+"fiscal.verification_success" = "جميع السلاسل المالية سليمة";
+"fiscal.verify_forbidden" = "التحقق مخصص للمسؤولين";
 "fiscal.z_closure_done" = "تم تنفيذ إقفال Z رقم %d وختمه";
 "fiscal.z_closure_forbidden" = "إقفال Z مخصص للمسؤولين";
+"fiscal.period_closure_success" = "تم إقفال الفترة وتوثيقها بنجاح";
+"fiscal.period_closure_forbidden" = "إقفال الفترة مخصص للمسؤولين فقط";
+"fiscal.duplicate_queued" = "بدأت الطباعة (نسخة طبق الأصل رقم %@)";
+"fiscal.receipt_reprinted_success" = "تمت إعادة طباعة الإيصال بنجاح (نسخة طبق الأصل رقم %@)";
 "floor.load_error" = "خطأ في تحميل مخطط الصالة";
 "floor.number_required" = "رقم الطاولة مطلوب";
 "floor.table_created" = "تم إنشاء الطاولة %@";
@@ -147,3 +155,13 @@
 "messages.printer_offline" = "الطابعة %@ غير متصلة — %lld تذاكر في الانتظار";
 "fiscal.print_queued" = "أُرسل إلى الطابعة";
 "payment.print_not_queued" = "لا توجد طابعة متاحة: لم تتم الطباعة";
+"fiscal.archives_title" = "الأرشيفات المالية (NF525)";
+"fiscal.archives_subtitle" = "إنشاء وحفظ والتحقق من سلامة الأرشيفات المختومة.";
+"fiscal.action_archive" = "أرشفة";
+"fiscal.archive_created_success" = "تم إنشاء الأرشيف وختمه بنجاح";
+"fiscal.archive_valid" = "أرشيف صالح وسليم (السلسلة سليمة)";
+"fiscal.archive_hash_mismatch" = "بصمة SHA-256 غير صالحة: تم العبث بالأرشيف!";
+"fiscal.archive_unknown" = "أرشيف غير معروف";
+"fiscal.archive_chain_break" = "تم اكتشاف انقطاع في السلسلة لهذا الأرشيف";
+"fiscal.archive_forbidden" = "الأرشفة مخصصة للمسؤولين فقط";
+"fiscal.archived" = "مؤرشف";

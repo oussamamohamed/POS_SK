@@ -9,10 +9,12 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using QRCoder;
 using RestaurantPos.Api.Services;
 using RestaurantPos.Application.Common.Interfaces;
 using RestaurantPos.Application.DTOs;
+using RestaurantPos.Domain.Entities;
 using RestaurantPos.Domain.Enums;
 using RestaurantPos.Infrastructure.Localization;
 
@@ -45,7 +47,7 @@ public static class DeviceEndpoints
             return Results.Ok(new PairingCodeResponse(created.Code, created.ExpiresAtUtc, payload, Convert.ToBase64String(png)));
         }).RequireAuthorization("RequireManagerOrAdmin");
 
-        group.MapPost("/pair", async (PairRequest req, IDeviceService devices, IPinRateLimiterService rateLimiter, IConfiguration config, HttpContext http, CancellationToken ct) =>
+        group.MapPost("/pair", async (PairRequest req, IDeviceService devices, IPinRateLimiterService rateLimiter, IFiscalJournal fiscalJournal, IConfiguration config, HttpContext http, ILoggerFactory loggerFactory, CancellationToken ct) =>
         {
             var clientKey = "pair:" + (http.Connection.RemoteIpAddress?.ToString() ?? "unknown-client");
             if (rateLimiter.IsLocked(clientKey))
@@ -64,6 +66,21 @@ public static class DeviceEndpoints
             }
 
             rateLimiter.ResetAttempts(clientKey);
+
+            // L'appairage est déjà validé : un échec du journal ne doit pas priver l'appareil de son jeton.
+            try
+            {
+                await fiscalJournal.AppendAsync(
+                    JournalEventTypes.DevicePaired,
+                    new { DeviceId = paired.DeviceId, paired.TerminalId, paired.Name, Role = paired.Role.ToString() },
+                    terminalId: paired.TerminalId,
+                    cancellationToken: ct);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                AuthLogMessages.FiscalJournalError(loggerFactory.CreateLogger("RestaurantPos.Api.Endpoints.DeviceEndpoints"), ex, "DEVICE_PAIRED");
+            }
+
             return Results.Ok(new PairResponse(paired.DeviceId, paired.Token, paired.TerminalId, paired.Name, paired.Role.ToString(), BonjourAdvertiserService.ServerName(config)));
         }).AllowAnonymous();
 
@@ -73,9 +90,32 @@ public static class DeviceEndpoints
             return Results.Ok(list.Select(d => new DeviceDto(d.Id, d.Name, d.Role.ToString(), d.TerminalId, d.PairedAtUtc, d.LastSeenUtc, d.RevokedAtUtc is not null, d.ReceiptPrinterId)));
         }).RequireAuthorization("RequireManagerOrAdmin");
 
-        group.MapPost("/{id:guid}/revoke", async (Guid id, IDeviceService devices, CancellationToken ct) =>
-            await devices.RevokeAsync(id, ct) ? Results.NoContent() : Results.NotFound())
-            .RequireAuthorization("RequireManagerOrAdmin");
+        group.MapPost("/{id:guid}/revoke", async (Guid id, IDeviceService devices, IFiscalJournal fiscalJournal, ClaimsPrincipal user, ILoggerFactory loggerFactory, CancellationToken ct) =>
+        {
+            var success = await devices.RevokeAsync(id, ct);
+            if (!success)
+            {
+                return Results.NotFound();
+            }
+
+            Guid? opId = Guid.TryParse(user.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? user.FindFirst("sub")?.Value, out var parsedOpId) ? parsedOpId : null;
+            try
+            {
+                await fiscalJournal.AppendAsync(
+                    JournalEventTypes.DeviceRevoked,
+                    new { DeviceId = id },
+                    terminalId: null,
+                    operatorId: opId,
+                    cancellationToken: ct);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                AuthLogMessages.FiscalJournalError(loggerFactory.CreateLogger("RestaurantPos.Api.Endpoints.DeviceEndpoints"), ex, "DEVICE_REVOKED");
+            }
+
+            return Results.NoContent();
+        })
+        .RequireAuthorization("RequireManagerOrAdmin");
 
         group.MapPut("/{id:guid}/receipt-printer", async (Guid id, SetReceiptPrinterRequest req, IDeviceService devices, CancellationToken ct) =>
             await devices.SetReceiptPrinterAsync(id, req.PrinterId, ct)

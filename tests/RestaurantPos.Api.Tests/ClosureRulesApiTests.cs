@@ -74,7 +74,7 @@ public class ClosureRulesApiTests
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             db.DailyFiscalClosures.Add(new DailyFiscalClosure
             {
-                TerminalId = "POS_MAIN_TERM",
+                TerminalId = paired.TerminalId,
                 ClosureSequence = 1,
                 PeriodStartUtc = closureEnd.AddDays(-1),
                 PeriodEndUtc = closureEnd,
@@ -93,8 +93,8 @@ public class ClosureRulesApiTests
         using (var scope = factory.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            var receipt = await db.FiscalReceipts.FindAsync(receiptId);
-            receipt!.IsVoid.Should().BeFalse();
+            var voidReceiptExists = await db.FiscalReceipts.AnyAsync(r => r.VoidedReceiptId == receiptId);
+            voidReceiptExists.Should().BeFalse();
         }
     }
 

@@ -86,7 +86,7 @@ public sealed class FecExportService : IFecExportService
             var ecritureDateStr = receipt.CreatedAtUtc.ToString("yyyyMMdd", CultureInfo.InvariantCulture);
             var validDateStr = receipt.CreatedAtUtc.ToString("yyyyMMdd", CultureInfo.InvariantCulture);
             var pieceRef = receipt.ReceiptNumber;
-            var isVoid = receipt.IsVoid;
+            var isVoid = receipt.VoidedReceiptId != null || receipt.TotalTtcAmount.AmountInCents < 0;
 
             // 1. Determine VAT & HT breakdowns
             var vatItems = ParseVatBreakdown(receipt);
@@ -94,7 +94,10 @@ public sealed class FecExportService : IFecExportService
             // 2. Generate Sales Lines (Compte 706xxx)
             foreach (var item in vatItems)
             {
-                if (item.HtCents <= 0 && item.VatCents <= 0)
+                long absHt = Math.Abs(item.HtCents);
+                long absVat = Math.Abs(item.VatCents);
+
+                if (absHt <= 0 && absVat <= 0)
                 {
                     continue;
                 }
@@ -103,8 +106,8 @@ public sealed class FecExportService : IFecExportService
                 var (vatAccount, vatLibelle) = GetVatAccountForRate(item.TaxRatePercent);
 
                 // Sales Line (HT)
-                long htDebit = isVoid ? item.HtCents : 0;
-                long htCredit = isVoid ? 0 : item.HtCents;
+                long htDebit = isVoid ? absHt : 0;
+                long htCredit = isVoid ? 0 : absHt;
 
                 sb.AppendLine(FormatFecLine(
                     "VT",
@@ -125,10 +128,10 @@ public sealed class FecExportService : IFecExportService
                 totalRecords++;
 
                 // VAT Line
-                if (item.VatCents > 0)
+                if (absVat > 0)
                 {
-                    long vatDebit = isVoid ? item.VatCents : 0;
-                    long vatCredit = isVoid ? 0 : item.VatCents;
+                    long vatDebit = isVoid ? absVat : 0;
+                    long vatCredit = isVoid ? 0 : absVat;
 
                     sb.AppendLine(FormatFecLine(
                         "VT",
@@ -156,7 +159,7 @@ public sealed class FecExportService : IFecExportService
                 foreach (var tender in receipt.Tenders)
                 {
                     var (accountNum, accountLib) = GetPaymentAccount(tender.Method);
-                    long amountCents = tender.Amount.AmountInCents;
+                    long amountCents = Math.Abs(tender.Amount.AmountInCents);
                     long debitCents = isVoid ? 0 : amountCents;
                     long creditCents = isVoid ? amountCents : 0;
 

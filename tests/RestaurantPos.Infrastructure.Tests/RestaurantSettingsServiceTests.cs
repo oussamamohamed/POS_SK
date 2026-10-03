@@ -70,7 +70,9 @@ public class RestaurantSettingsServiceTests
     {
         using var db = NewDb();
         var service = new RestaurantSettingsService(db);
-        (await service.UpdateAsync(new UpdateRestaurantSettingsRequest(lang)))!.ReceiptLanguage.Should().Be(lang);
+        var result = await service.UpdateAsync(new UpdateRestaurantSettingsRequest(lang));
+        result.Status.Should().Be(UpdateSettingsStatus.Success);
+        result.Settings!.ReceiptLanguage.Should().Be(lang);
         (await service.GetAsync()).ReceiptLanguage.Should().Be(lang);
     }
 
@@ -82,7 +84,9 @@ public class RestaurantSettingsServiceTests
     public async Task Update_RejectsOtherValues(string lang)
     {
         using var db = NewDb();
-        (await new RestaurantSettingsService(db).UpdateAsync(new UpdateRestaurantSettingsRequest(lang))).Should().BeNull();
+        var result = await new RestaurantSettingsService(db).UpdateAsync(new UpdateRestaurantSettingsRequest(lang));
+        result.Status.Should().Be(UpdateSettingsStatus.InvalidLanguage);
+        result.Settings.Should().BeNull();
     }
 
     [Fact]

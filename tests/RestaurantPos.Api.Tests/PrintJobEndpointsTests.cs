@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using RestaurantPos.Application.DTOs;
 using RestaurantPos.Domain.Entities;
 using RestaurantPos.Infrastructure.Persistence;
+using RestaurantPos.Infrastructure.Printing;
 using Xunit;
 
 namespace RestaurantPos.Api.Tests;
@@ -25,14 +26,16 @@ public class PrintJobEndpointsTests : IClassFixture<PosApiApplicationFactory>
         return client;
     }
 
-    private async Task<(Guid PrinterId, Guid JobId)> SeedJobAsync(PrintJobStatus status)
+    private static readonly string ValidDocumentJson = TicketDocumentJson.Serialize(new TicketDocument("fr", false, [new TicketText("x", TicketAlign.Start)]));
+
+    private async Task<(Guid PrinterId, Guid JobId)> SeedJobAsync(PrintJobStatus status, PrintJobKind kind = PrintJobKind.PickupVoucher)
     {
         using var scope = _factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var printer = new PrinterConfiguration { Name = "P-" + Guid.NewGuid().ToString("N")[..6], IpAddress = "10.0.0.9" };
         db.PrinterConfigurations.Add(printer);
         var now = DateTimeOffset.UtcNow;
-        var job = new PrintJob { PrinterId = printer.Id, DocumentJson = "{}", Status = status, Attempts = 7, CreatedAtUtc = now, NextAttemptAtUtc = now, DeadlineAtUtc = now.AddMinutes(-1), LastError = "refused" };
+        var job = new PrintJob { PrinterId = printer.Id, Kind = kind, OpenCashDrawer = true, DocumentJson = ValidDocumentJson, Status = status, Attempts = 7, CreatedAtUtc = now, NextAttemptAtUtc = now, DeadlineAtUtc = now.AddMinutes(-1), LastError = "refused" };
         db.PrintJobs.Add(job);
         await db.SaveChangesAsync();
         return (printer.Id, job.Id);
@@ -62,6 +65,44 @@ public class PrintJobEndpointsTests : IClassFixture<PosApiApplicationFactory>
         var manager = await ClientAsync("1234");
         var (_, jobId) = await SeedJobAsync(PrintJobStatus.Pending);
         (await manager.PostAsync($"/api/print-jobs/{jobId}/retry", null)).StatusCode.Should().Be(HttpStatusCode.Conflict);
+    }
+
+    [Theory]
+    [InlineData(PrintJobKind.PickupVoucher)]
+    [InlineData(PrintJobKind.KitchenTicket)]
+    public async Task Retry_SentNonFiscalJob_Returns409(PrintJobKind kind)
+    {
+        var manager = await ClientAsync("1234");
+        var (_, jobId) = await SeedJobAsync(PrintJobStatus.Sent, kind);
+        (await manager.PostAsync($"/api/print-jobs/{jobId}/retry", null)).StatusCode.Should().Be(HttpStatusCode.Conflict);
+    }
+
+    [Fact]
+    public async Task Retry_SentJobWithUnreadableDocument_Returns409AndCreatesNoDuplicate()
+    {
+        var manager = await ClientAsync("1234");
+        var (printerId, jobId) = await SeedJobAsync(PrintJobStatus.Sent, PrintJobKind.Receipt);
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            (await db.PrintJobs.SingleAsync(j => j.Id == jobId)).DocumentJson = "not json";
+            await db.SaveChangesAsync();
+        }
+        (await manager.PostAsync($"/api/print-jobs/{jobId}/retry", null)).StatusCode.Should().Be(HttpStatusCode.Conflict);
+        using var check = _factory.Services.CreateScope();
+        (await check.ServiceProvider.GetRequiredService<AppDbContext>().PrintJobs.CountAsync(j => j.PrinterId == printerId)).Should().Be(1);
+    }
+
+    [Fact]
+    public async Task Retry_SentReceipt_CreatesDuplicateWithoutOpeningDrawer()
+    {
+        var manager = await ClientAsync("1234");
+        var (printerId, jobId) = await SeedJobAsync(PrintJobStatus.Sent, PrintJobKind.Receipt);
+        (await manager.PostAsync($"/api/print-jobs/{jobId}/retry", null)).StatusCode.Should().Be(HttpStatusCode.OK);
+        using var scope = _factory.Services.CreateScope();
+        var duplicate = await scope.ServiceProvider.GetRequiredService<AppDbContext>().PrintJobs.AsNoTracking()
+            .SingleAsync(j => j.PrinterId == printerId && j.DuplicateOfDocumentId == jobId);
+        duplicate.OpenCashDrawer.Should().BeFalse();
     }
 
     [Theory]

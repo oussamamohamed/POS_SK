@@ -40,8 +40,13 @@ public sealed class FinancialDashboardService : IFinancialDashboardService
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 
+        var voidedReceiptIds = allReceipts
+            .Where(r => r.VoidedReceiptId != null)
+            .Select(r => r.VoidedReceiptId!.Value)
+            .ToHashSet();
+
         var receipts = allReceipts
-            .Where(r => r.CreatedAtUtc >= startUtc && r.CreatedAtUtc <= endUtc && !r.IsVoid && r.VoidedReceiptId == null)
+            .Where(r => r.CreatedAtUtc >= startUtc && r.CreatedAtUtc <= endUtc && r.VoidedReceiptId == null && !voidedReceiptIds.Contains(r.Id))
             .ToList();
 
         // 2. Fetch Orders and related data in memory

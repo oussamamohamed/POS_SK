@@ -17,13 +17,16 @@ public class CheckoutPaymentService : ICheckoutPaymentService
 {
     private readonly AppDbContext _dbContext;
     private readonly INF525FiscalAuditService _fiscalService;
+    private readonly IFiscalJournal _fiscalJournal;
 
     public CheckoutPaymentService(
         AppDbContext dbContext,
-        INF525FiscalAuditService fiscalService)
+        INF525FiscalAuditService fiscalService,
+        IFiscalJournal? fiscalJournal = null)
     {
         _dbContext = dbContext;
         _fiscalService = fiscalService;
+        _fiscalJournal = fiscalJournal ?? new FiscalJournalService(dbContext);
     }
 
     public IReadOnlyList<long> CalculateEqualSplitPartitions(long totalAmountCents, int numberOfGuests)
@@ -64,9 +67,15 @@ public class CheckoutPaymentService : ICheckoutPaymentService
                 }
 
                 // Account for prior non-void payments already settled for this order (e.g. split bill)
+                var voidedReceiptIds = await _dbContext.FiscalReceipts
+                    .Where(r => r.OrderId == order.Id && r.VoidedReceiptId != null)
+                    .Select(r => r.VoidedReceiptId!.Value)
+                    .ToListAsync(ct)
+                    .ConfigureAwait(false);
+
                 var priorReceipts = await _dbContext.FiscalReceipts
                     .Include(r => r.Tenders)
-                    .Where(r => r.OrderId == order.Id && !r.IsVoid)
+                    .Where(r => r.OrderId == order.Id && r.VoidedReceiptId == null && !voidedReceiptIds.Contains(r.Id))
                     .ToListAsync(ct)
                     .ConfigureAwait(false);
 
@@ -236,13 +245,19 @@ public class CheckoutPaymentService : ICheckoutPaymentService
                     .FirstOrDefaultAsync(r => r.Id == originalReceiptId, ct)
                     .ConfigureAwait(false);
 
-                if (original is null || original.IsVoid || original.TerminalId != terminalId)
+                if (original is null || original.TerminalId != terminalId || original.VoidedReceiptId != null)
                 {
                     return new CheckoutResult(false, 0, 0, 0, string.Empty, null);
                 }
 
-                // Mark original as void
-                original.IsVoid = true;
+                var alreadyVoided = await _dbContext.FiscalReceipts
+                    .AnyAsync(r => r.VoidedReceiptId == original.Id, ct)
+                    .ConfigureAwait(false);
+
+                if (alreadyVoided)
+                {
+                    return new CheckoutResult(false, 0, 0, 0, string.Empty, null);
+                }
 
                 // Create a corrective receipt
                 var lastReceipt = await _dbContext.FiscalReceipts
@@ -259,7 +274,7 @@ public class CheckoutPaymentService : ICheckoutPaymentService
                 var originalVat = string.IsNullOrWhiteSpace(original.TaxBreakdownJson) || original.TaxBreakdownJson == "{}"
                     ? new Dictionary<string, long>()
                     : JsonSerializer.Deserialize<Dictionary<string, long>>(original.TaxBreakdownJson) ?? new Dictionary<string, long>();
-                    
+
                 var voidVat = new Dictionary<string, long>();
                 foreach (var kvp in originalVat)
                 {
@@ -290,7 +305,6 @@ public class CheckoutPaymentService : ICheckoutPaymentService
                     PreviousSignatureHash = prevHash,
                     SignatureHash = sigHash,
                     CreatedAtUtc = now,
-                    IsVoid = false,
                     VoidedReceiptId = original.Id
                 };
 
@@ -315,6 +329,21 @@ public class CheckoutPaymentService : ICheckoutPaymentService
                 }
 
                 await _dbContext.SaveChangesAsync(ct).ConfigureAwait(false);
+
+                await _fiscalJournal.AppendAsync(
+                    JournalEventTypes.ReceiptVoided,
+                    new
+                    {
+                        OriginalReceiptId = original.Id,
+                        OriginalReceiptNumber = original.ReceiptNumber,
+                        VoidReceiptId = voidReceipt.Id,
+                        VoidReceiptNumber = voidReceipt.ReceiptNumber,
+                        TotalTtcCents = original.TotalTtcAmount.AmountInCents
+                    },
+                    terminalId: terminalId,
+                    operatorId: operatorId,
+                    cancellationToken: ct
+                ).ConfigureAwait(false);
 
                 return new CheckoutResult(
                     IsSuccess: true,

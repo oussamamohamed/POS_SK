@@ -503,7 +503,9 @@ public final class SettingsStore {
 
     public func setReceiptLanguage(_ lang: String) async {
         do {
-            settings = try await api.saveSettings(RestaurantSettings(receiptLanguage: lang, kitchenTicketLanguage: settings?.kitchenTicketLanguage))
+            var updated = settings ?? RestaurantSettings(receiptLanguage: lang)
+            updated.receiptLanguage = lang
+            settings = try await api.saveSettings(updated)
             notifier.success(L10n.string("admin.receipt_language_saved"))
         } catch {
             notifier.error(error)
@@ -512,10 +514,39 @@ public final class SettingsStore {
 
     public func setKitchenTicketLanguage(_ lang: String) async {
         do {
-            settings = try await api.saveSettings(RestaurantSettings(receiptLanguage: settings?.receiptLanguage ?? "en", kitchenTicketLanguage: lang))
+            var updated = settings ?? RestaurantSettings(receiptLanguage: "en", kitchenTicketLanguage: lang)
+            updated.kitchenTicketLanguage = lang
+            settings = try await api.saveSettings(updated)
             notifier.success(L10n.string("admin.kitchen_language_saved"))
         } catch {
             notifier.error(error)
+        }
+    }
+
+    public func updateEstablishment(
+        companyName: String?,
+        addressLines: String?,
+        siret: String?,
+        vatNumber: String?,
+        certificateNumber: String?,
+        fiscalYearStartMonth: Int?,
+        fiscalYearStartDay: Int?
+    ) async -> Bool {
+        do {
+            var updated = settings ?? RestaurantSettings(receiptLanguage: "fr")
+            updated.companyName = companyName
+            updated.addressLines = addressLines
+            updated.siret = siret
+            updated.vatNumber = vatNumber
+            updated.certificateNumber = certificateNumber
+            updated.fiscalYearStartMonth = fiscalYearStartMonth
+            updated.fiscalYearStartDay = fiscalYearStartDay
+            settings = try await api.saveSettings(updated)
+            notifier.success(L10n.string("admin.settings_saved"))
+            return true
+        } catch {
+            notifier.error(error)
+            return false
         }
     }
 }

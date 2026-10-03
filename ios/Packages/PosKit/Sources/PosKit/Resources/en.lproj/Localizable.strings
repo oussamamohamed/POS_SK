@@ -36,6 +36,7 @@
 "admin.staff_deactivated" = "Staff member “%@” deactivated";
 "admin.staff_updated" = "Staff member “%@” updated";
 "admin.sync_success" = "Sync successful";
+"admin.settings_saved" = "Settings saved";
 "common.comp_label" = "Comped";
 "common.course_dessert" = "Dessert";
 "common.course_direct" = "Direct";
@@ -86,8 +87,15 @@
 "fiscal.fec_generated" = "File %@ generated";
 "fiscal.fec_generating" = "Generating FEC file…";
 "fiscal.fec_ready" = "FEC file %@ ready";
+"fiscal.verification_failed" = "Integrity breach detected in fiscal chains";
+"fiscal.verification_success" = "All fiscal chains are intact";
+"fiscal.verify_forbidden" = "Verification reserved for managers";
 "fiscal.z_closure_done" = "Z closure #%d executed and sealed";
 "fiscal.z_closure_forbidden" = "Z closure reserved for managers";
+"fiscal.period_closure_success" = "Period closure sealed and recorded successfully";
+"fiscal.period_closure_forbidden" = "Period closure is restricted to managers";
+"fiscal.duplicate_queued" = "Print queued (DUPLICATE #%@)";
+"fiscal.receipt_reprinted_success" = "Receipt successfully reprinted (DUPLICATE #%@)";
 "floor.load_error" = "Error loading the floor plan";
 "floor.number_required" = "Table number is required";
 "floor.table_created" = "Table %@ created";
@@ -147,3 +155,13 @@
 "messages.printer_offline" = "Printer %@ offline — %lld tickets waiting";
 "fiscal.print_queued" = "Sent to the printer";
 "payment.print_not_queued" = "No printer available: nothing was printed";
+"fiscal.archives_title" = "Fiscal Archives (NF525)";
+"fiscal.archives_subtitle" = "Generation, retention and integrity verification of sealed archives.";
+"fiscal.action_archive" = "Archive";
+"fiscal.archive_created_success" = "Archive generated and sealed successfully";
+"fiscal.archive_valid" = "Valid and intact archive (unbroken chain)";
+"fiscal.archive_hash_mismatch" = "Invalid SHA-256 hash: archive has been tampered with!";
+"fiscal.archive_unknown" = "Unknown archive";
+"fiscal.archive_chain_break" = "Chain break detected for this archive";
+"fiscal.archive_forbidden" = "Archiving is reserved for managers";
+"fiscal.archived" = "Archived";

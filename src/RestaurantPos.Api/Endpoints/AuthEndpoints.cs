@@ -22,6 +22,7 @@ public static class AuthEndpoints
             IOperatorAuthenticationService authService,
             IJwtTokenGeneratorService tokenGen,
             IPinRateLimiterService rateLimiter,
+            IFiscalJournal fiscalJournal,
             HttpContext context,
             ILoggerFactory loggerFactory) =>
         {
@@ -40,6 +41,18 @@ public static class AuthEndpoints
             {
                 rateLimiter.RecordFailedAttempt(clientKey);
                 AuthLogMessages.LoginFailed(logger, clientKey);
+                try
+                {
+                    await fiscalJournal.AppendAsync(
+                        JournalEventTypes.LoginFailed,
+                        new { ClientIp = clientKey, Error = result.ErrorMessage },
+                        terminalId: null,
+                        operatorId: null);
+                }
+                catch (Exception ex)
+                {
+                    AuthLogMessages.FiscalJournalError(logger, ex, "LOGIN_FAILED");
+                }
                 return Results.BadRequest(new { Success = false, result.ErrorMessage });
             }
 
@@ -48,6 +61,19 @@ public static class AuthEndpoints
             var token = tokenGen.GenerateToken(result.OperatorId.GetValueOrDefault(), result.OperatorName ?? "Opérateur", role);
 
             AuthLogMessages.LoginSucceeded(logger, result.OperatorName ?? "Opérateur", role, clientKey);
+
+            try
+            {
+                await fiscalJournal.AppendAsync(
+                    JournalEventTypes.LoginSucceeded,
+                    new { OperatorName = result.OperatorName, Role = role.ToString(), ClientIp = clientKey },
+                    terminalId: null,
+                    operatorId: result.OperatorId);
+            }
+            catch (Exception ex)
+            {
+                AuthLogMessages.FiscalJournalError(logger, ex, "LOGIN_SUCCEEDED");
+            }
 
             context.Response.Cookies.Append("pos_jwt_token", token, new CookieOptions
             {
@@ -153,4 +179,7 @@ internal static partial class AuthLogMessages
 
     [LoggerMessage(EventId = 1006, Level = LogLevel.Information, Message = "Supervisor override granted by {Name} (Role: {Role}) for action: {Action}")]
     public static partial void SupervisorOverrideGranted(ILogger logger, string name, UserRole role, string action);
+
+    [LoggerMessage(EventId = 1007, Level = LogLevel.Error, Message = "Failed to log {EventType} event to fiscal journal")]
+    public static partial void FiscalJournalError(ILogger logger, Exception ex, string eventType);
 }
