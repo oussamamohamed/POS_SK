@@ -38,3 +38,6 @@ xcuserdata/
 *.db
 *.sqlite
 TestResults/
+
+# Sortie de graphify (graphe de connaissances)
+graphify-out/
