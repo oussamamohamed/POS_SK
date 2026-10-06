@@ -7,7 +7,7 @@ cd "$ROOT_DIR"
 
 SIM_DEVICE="iPad Pro 11-inch (M5)"
 BUNDLE_ID="com.restaurantpos.ipad"
-API_URL="http://127.0.0.1:5000"
+API_URL="http://127.0.0.1:5080"
 
 echo "========================================================"
 echo " [DEPLOY] Deploiement RestaurantPos en Mode Production   "
@@ -38,7 +38,7 @@ echo "  Compilation Release API..."
 dotnet build src/RestaurantPos.Api/RestaurantPos.Api.csproj -c Release --nologo
 
 echo "  Demarrage de l'API en environnement Production..."
-ASPNETCORE_ENVIRONMENT=Production dotnet run --project src/RestaurantPos.Api/RestaurantPos.Api.csproj -c Release --no-build > /tmp/pos_api_prod.log 2>&1 &
+ASPNETCORE_ENVIRONMENT=Production ASPNETCORE_URLS="http://0.0.0.0:5080" dotnet run --project src/RestaurantPos.Api/RestaurantPos.Api.csproj -c Release --no-build > /tmp/pos_api_prod.log 2>&1 &
 API_PID=$!
 echo "  API lancee en arriere-plan (PID: $API_PID)"
 
