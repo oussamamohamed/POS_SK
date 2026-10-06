@@ -25,6 +25,7 @@ public actor LocalPosAPI: PosAPI {
     }
 
     var staffRepository: LocalStaffRepository { LocalStaffRepository(db: db) }
+    var catalogRepository: LocalCatalogRepository { LocalCatalogRepository(db: db) }
 
     func unsupported(_ name: String = #function) -> APIError {
         .server(status: 501, message: "Non disponible en mode autonome : \(name)")

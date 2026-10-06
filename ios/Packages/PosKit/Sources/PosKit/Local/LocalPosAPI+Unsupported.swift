@@ -2,15 +2,6 @@ import Foundation
 
 /// Méthodes de `PosAPI` pas encore portées sur la base locale. Chaque plan suivant retire ses lignes d'ici.
 extension LocalPosAPI {
-    // MARK: Catalogue (retiré par la tâche 4)
-    public func categories() async throws -> [MenuCategory] { throw unsupported() }
-    public func products() async throws -> [Product] { throw unsupported() }
-    public func createCategory(name: String, colorHex: String, displayOrder: Int) async throws { throw unsupported() }
-    public func updateCategory(id: String, name: String, colorHex: String, displayOrder: Int, preparationStationId: String?) async throws { throw unsupported() }
-    public func createProduct(_ draft: ProductDraft) async throws { throw unsupported() }
-    public func updateProduct(id: UUID, _ draft: ProductDraft) async throws { throw unsupported() }
-    public func archiveProduct(id: UUID) async throws { throw unsupported() }
-
     // MARK: Salle et réglages (retiré par la tâche 5)
     public func tables() async throws -> [DiningTable] { throw unsupported() }
     public func createTable(number: String, capacity: Int) async throws { throw unsupported() }

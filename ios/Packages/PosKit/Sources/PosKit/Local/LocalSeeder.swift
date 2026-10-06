@@ -9,6 +9,9 @@ enum LocalSeeder {
         try db.transaction {
             let staff = LocalStaffRepository(db: db)
             for record in seed.staff { try staff.insert(record.member, pin: record.pin) }
+            let catalog = LocalCatalogRepository(db: db)
+            for category in seed.categories { try catalog.insert(category) }
+            for product in seed.products { try catalog.insert(product) }
         }
     }
 }
