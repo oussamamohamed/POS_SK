@@ -12,6 +12,9 @@ enum LocalSeeder {
             let catalog = LocalCatalogRepository(db: db)
             for category in seed.categories { try catalog.insert(category) }
             for product in seed.products { try catalog.insert(product) }
+            let floor = LocalFloorRepository(db: db)
+            for table in seed.tables { try floor.insert(table) }
+            try floor.insertDefaultSettings()
         }
     }
 }

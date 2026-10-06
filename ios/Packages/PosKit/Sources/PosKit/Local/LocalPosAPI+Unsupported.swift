@@ -2,12 +2,6 @@ import Foundation
 
 /// Méthodes de `PosAPI` pas encore portées sur la base locale. Chaque plan suivant retire ses lignes d'ici.
 extension LocalPosAPI {
-    // MARK: Salle et réglages (retiré par la tâche 5)
-    public func tables() async throws -> [DiningTable] { throw unsupported() }
-    public func createTable(number: String, capacity: Int) async throws { throw unsupported() }
-    public func settings() async throws -> RestaurantSettings { throw unsupported() }
-    public func saveSettings(_ settings: RestaurantSettings) async throws -> RestaurantSettings { throw unsupported() }
-
     // MARK: Grille tactile (retiré par la tâche 6)
     public func gridLayout(categoryId: String, page: Int) async throws -> TouchGridLayout { throw unsupported() }
     public func saveGridLayout(_ request: UpdateGridLayoutRequest) async throws -> TouchGridLayout { throw unsupported() }
