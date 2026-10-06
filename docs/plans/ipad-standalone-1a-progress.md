@@ -12,4 +12,4 @@ Base de référence (avant tâche 1) : PosKit 154 · .NET 417 (15 Domain + 252 I
 | 4 Catalogue | fait | 188 | inchangé | inchangé | aucun |
 | 5 Salle et réglages | fait | 193 | inchangé | inchangé | aucun |
 | 6 Grille tactile | fait | 200 | inchangé | inchangé | aucun |
-| 7 Persistance et docs | à faire | | | | |
+| 7 Persistance et docs | fait | 203 | inchangé (build seul vérifié) | inchangé (build seul vérifié) | aucun |
