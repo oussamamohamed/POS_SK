@@ -7,7 +7,7 @@ Base de référence (avant tâche 1) : PosKit 154 · .NET 417 (15 Domain + 252 I
 | Tâche | Statut | PosKit | .NET | Web | Findings de revue ouverts |
 |---|---|---|---|---|---|
 | 1 Enveloppe SQLite | fait | 160 | inchangé | inchangé | aucun |
-| 2 Schéma v1 et PinHasher | à faire | | | | |
+| 2 Schéma v1 et PinHasher | fait | 165 | inchangé | inchangé | aucun |
 | 3 Auth et personnel | à faire | | | | |
 | 4 Catalogue | à faire | | | | |
 | 5 Salle et réglages | à faire | | | | |
