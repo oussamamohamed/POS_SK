@@ -49,16 +49,18 @@ struct LocalStaffRepository {
 
     /// `false` si l'identifiant est inconnu. `pin == nil` : code inchangé.
     func update(id: UUID, name: String, role: UserRole, pin: String?, isActive: Bool) throws -> Bool {
-        let changed = try db.run(
-            "UPDATE Users SET Name = ?, Role = ?, IsActive = ?, UpdatedAtUtc = ? WHERE Id = ?",
-            [.text(name), .integer(role.storageValue), .bool(isActive), .date(Date()), .uuid(id)]
-        )
-        guard changed > 0 else { return false }
-        if let pin {
-            let salt = PinHasher.makeSalt()
-            try db.run("UPDATE Users SET PinHash = ?, PinSalt = ? WHERE Id = ?", [.text(PinHasher.hash(pin: pin, salt: salt)), .text(salt), .uuid(id)])
+        try db.transaction {
+            let changed = try db.run(
+                "UPDATE Users SET Name = ?, Role = ?, IsActive = ?, UpdatedAtUtc = ? WHERE Id = ?",
+                [.text(name), .integer(role.storageValue), .bool(isActive), .date(Date()), .uuid(id)]
+            )
+            guard changed > 0 else { return false }
+            if let pin {
+                let salt = PinHasher.makeSalt()
+                try db.run("UPDATE Users SET PinHash = ?, PinSalt = ? WHERE Id = ?", [.text(PinHasher.hash(pin: pin, salt: salt)), .text(salt), .uuid(id)])
+            }
+            return true
         }
-        return true
     }
 
     private static func matches(_ row: SQLRow, pin: String) -> Bool {

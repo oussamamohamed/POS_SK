@@ -106,4 +106,4 @@ Arguments de lancement réservés aux tests : `-UITestMode`, `-UITestPin 1234`,
 
 `LocalPosAPI` (`Packages/PosKit/Sources/PosKit/Local/`) implémente `PosAPI` sur une base SQLite locale, sans serveur .NET. Plan 1a livré : authentification par PIN (avec verrouillage), personnel, catalogue, grille tactile, tables et réglages. Les autres méthodes répondent `501` (« Non disponible en mode autonome ») jusqu'aux plans 1b (commandes, paiement non fiscal, cuisine) et 1c (imprimantes, Happy Hour, choix Serveur/Autonome au lancement).
 
-Le mode n'est pas encore sélectionnable dans l'app. Les tests : `cd Packages/PosKit && swift test --filter LocalPosAPI`.
+Le mode n'est pas encore sélectionnable dans l'app. Les tests : `cd Packages/PosKit && swift test --filter 'Local[A-Z].*Tests|SQLiteDatabaseTests'`.
