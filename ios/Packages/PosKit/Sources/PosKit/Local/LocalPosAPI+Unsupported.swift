@@ -2,12 +2,6 @@ import Foundation
 
 /// Méthodes de `PosAPI` pas encore portées sur la base locale. Chaque plan suivant retire ses lignes d'ici.
 extension LocalPosAPI {
-    // MARK: Grille tactile (retiré par la tâche 6)
-    public func gridLayout(categoryId: String, page: Int) async throws -> TouchGridLayout { throw unsupported() }
-    public func saveGridLayout(_ request: UpdateGridLayoutRequest) async throws -> TouchGridLayout { throw unsupported() }
-    public func swapGridSlots(layoutId: UUID, from: GridPosition, to: GridPosition) async throws -> TouchGridLayout { throw unsupported() }
-    public func updateGridDimensions(categoryId: String, columns: Int, rows: Int, applyToAll: Bool) async throws -> [TouchGridLayout] { throw unsupported() }
-
     // MARK: Appairage : sans objet en mode autonome (le poste est son propre terminal)
     public func pair(code: String) async throws -> PairResponse { throw unsupported() }
 
