@@ -92,6 +92,21 @@ struct LocalCatalogRepository {
         try db.run("UPDATE Products SET IsActive = 0, UpdatedAtUtc = ? WHERE Id = ?", [.date(Date()), .uuid(productId)]) > 0
     }
 
+    /// Poste propre de l'article et poste de sa famille (repli du routage cuisine). Inclut les articles archivés.
+    func stationFallbacks() throws -> [UUID: (product: String?, category: String?)] {
+        let rows = try db.query(
+            """
+            SELECT p.Id AS Id, p.PreparationStationId AS PStation, c.PreparationStationId AS CStation
+            FROM Products p LEFT JOIN Categories c ON c.Id = p.CategoryId
+            """
+        )
+        var result: [UUID: (product: String?, category: String?)] = [:]
+        for row in rows {
+            if let id = row.uuid("Id") { result[id] = (product: row.string("PStation"), category: row.string("CStation")) }
+        }
+        return result
+    }
+
     private func modifierGroupsByProduct() throws -> [UUID: [ModifierGroup]] {
         let options = Dictionary(grouping: try db.query("SELECT * FROM ModifierOptions ORDER BY DisplayOrder, rowid"), by: { $0.uuid("GroupId")! })
         var result: [UUID: [ModifierGroup]] = [:]
