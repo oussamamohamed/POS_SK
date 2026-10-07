@@ -5,17 +5,12 @@ extension LocalPosAPI {
     // MARK: Appairage : sans objet en mode autonome (le poste est son propre terminal)
     public func pair(code: String) async throws -> PairResponse { throw unsupported() }
 
-    // MARK: Remises et gratuités (retiré par la tâche 5)
-    public func applyDiscount(orderId: UUID, type: DiscountType, value: Decimal, reason: String, operatorId: UUID?) async throws { throw unsupported() }
-    public func removeDiscount(orderId: UUID) async throws { throw unsupported() }
-    public func compItem(orderId: UUID, lineId: UUID, reason: String, operatorId: UUID?) async throws { throw unsupported() }
-
-    // MARK: Encaissement (plan 1b)
+    // MARK: Encaissement (plan 1c)
     public func pay(_ request: PaymentRequest) async throws -> PaymentResult { throw unsupported() }
     public func hotelRooms() async throws -> [HotelRoom] { throw unsupported() }
     public func chargeRoom(_ request: RoomChargeRequest) async throws -> OperationResult { throw unsupported() }
 
-    // MARK: Comptoir & vente à emporter (plan 1b)
+    // MARK: Comptoir & vente à emporter (plan 1c)
     public func openCounterOrder(terminalId: String, destination: OrderDestination) async throws -> ActiveOrder { throw unsupported() }
     public func holdOrder(orderId: UUID, terminalId: String, label: String) async throws { throw unsupported() }
     public func heldOrders(terminalId: String) async throws -> [HeldOrder] { throw unsupported() }
@@ -39,7 +34,7 @@ extension LocalPosAPI {
     public func createArchive(periodClosureId: UUID) async throws -> FiscalArchive { throw unsupported() }
     public func verifyArchive(data: Data, fileName: String) async throws -> ArchiveVerificationResult { throw unsupported() }
 
-    // MARK: Imprimantes (plan 1c)
+    // MARK: Imprimantes (plan 1d)
     public func printers() async throws -> [Printer] { throw unsupported() }
     public func savePrinter(_ printer: Printer, isNew: Bool) async throws { throw unsupported() }
     public func testPrinter(id: UUID) async throws -> TestPrintResult { throw unsupported() }
@@ -48,7 +43,7 @@ extension LocalPosAPI {
     public func retryPrintJob(id: UUID) async throws { throw unsupported() }
     public func cancelPrintJob(id: UUID) async throws { throw unsupported() }
 
-    // MARK: Happy Hour (plan 1c)
+    // MARK: Happy Hour (plan 1d)
     public func happyHourStatus(terminalId: String) async throws -> HappyHourStatus { throw unsupported() }
     public func happyHourPricing(terminalId: String) async throws -> HappyHourPricingTable { throw unsupported() }
     public func activateHappyHourOverride(terminalId: String, pin: String, minutes: Int, reason: String) async throws -> OperationResult { throw unsupported() }
@@ -59,7 +54,7 @@ extension LocalPosAPI {
     public func applyHappyHourRules(scheduleId: UUID, _ request: BatchPriceRulesRequest) async throws -> Int { throw unsupported() }
     public func deleteHappyHourRules(scheduleId: UUID, ruleIds: [UUID]) async throws { throw unsupported() }
 
-    // MARK: Réseau (plan 1c)
+    // MARK: Réseau (plan 1d)
     public func networkInfo() async throws -> NetworkInfo { throw unsupported() }
     public func syncStatus() async throws -> SyncStatus { throw unsupported() }
     public func forceSync() async throws { throw unsupported() }
