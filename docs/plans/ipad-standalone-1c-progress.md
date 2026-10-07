@@ -7,7 +7,7 @@ Base de référence (avant tâche 1) : PosKit 244 · .NET et web inchangés (auc
 | Tâche | Statut | PosKit | Findings de revue ouverts |
 |---|---|---|---|
 | 1 Migration v3 et dépôts | fait | 251 | |
-| 2 Garde de statut et PIN partagé | à faire | | |
+| 2 Garde de statut et PIN partagé | fait | 252 | |
 | 3 Paiement des tables | à faire | | |
 | 4 Comptoir et mise en attente | à faire | | |
 | 5 Encaissement comptoir | à faire | | |

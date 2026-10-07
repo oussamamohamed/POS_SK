@@ -103,6 +103,8 @@ extension LocalPosAPI {
 
     public func setDestination(orderId: UUID, destination: OrderDestination) async throws {
         try requireAuth()
-        guard try orderRepository.setDestination(orderId: orderId, destination) else { throw APIError.notFound("Commande introuvable.") }
+        guard let status = try orderRepository.status(of: orderId) else { throw APIError.notFound("Commande introuvable.") }
+        guard status.isModifiable else { throw APIError.localOrderClosed }
+        _ = try orderRepository.setDestination(orderId: orderId, destination)
     }
 }

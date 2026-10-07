@@ -44,20 +44,33 @@ public actor LocalPosAPI: PosAPI {
     public func setDeviceToken(_ token: String?) {}
 
     public func login(pin: String) async throws -> LoginResponse {
-        let now = Date()
-        if let until = lockedUntil, until > now { throw APIError.rateLimited(nil) }
+        try ensurePinAttemptsAllowed()
         guard let member = try staffRepository.activeMember(pin: pin) else {
-            failedLogins = failedLogins.filter { now.timeIntervalSince($0) < Self.failureWindow } + [now]
-            if failedLogins.count >= Self.maxFailedLogins {
-                lockedUntil = now.addingTimeInterval(Self.lockoutDuration)
-                failedLogins = []
-            }
+            recordFailedPin()
             return LoginResponse(success: false, operatorId: nil, operatorName: nil, role: nil, token: nil, errorMessage: "Code PIN ou identifiants incorrects")
         }
-        failedLogins = []
-        lockedUntil = nil
+        resetFailedPins()
         token = Self.tokenPrefix + member.id.uuidString
         return LoginResponse(success: true, operatorId: member.id, operatorName: member.name, role: member.role, token: token)
+    }
+
+    /// La connexion et le PIN superviseur partagent le même compteur d'échecs : un PIN deviné par l'une ou l'autre voie reste soumis au verrouillage.
+    func ensurePinAttemptsAllowed() throws {
+        if let until = lockedUntil, until > Date() { throw APIError.rateLimited(nil) }
+    }
+
+    func recordFailedPin() {
+        let now = Date()
+        failedLogins = failedLogins.filter { now.timeIntervalSince($0) < Self.failureWindow } + [now]
+        if failedLogins.count >= Self.maxFailedLogins {
+            lockedUntil = now.addingTimeInterval(Self.lockoutDuration)
+            failedLogins = []
+        }
+    }
+
+    func resetFailedPins() {
+        failedLogins = []
+        lockedUntil = nil
     }
 
     @discardableResult

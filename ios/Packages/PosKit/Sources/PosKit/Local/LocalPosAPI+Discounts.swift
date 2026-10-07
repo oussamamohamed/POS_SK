@@ -13,6 +13,7 @@ extension LocalPosAPI {
         let orders = orderRepository
         try db.transaction {
             guard let order = try orders.order(id: orderId) else { throw Self.discountFailed }
+            guard try orders.status(of: orderId)?.isModifiable == true else { throw APIError.localOrderClosed }
             let totals = OrderMath.totals(
                 lines: order.lines.map(CartLine.init(serverLine:)), destination: order.destination,
                 discount: GlobalDiscount(type: type, value: value, reason: trimmed)
@@ -27,8 +28,13 @@ extension LocalPosAPI {
 
     public func removeDiscount(orderId: UUID) async throws {
         try requireAuth()
-        // Écart assumé : commande inconnue → 404 (le .NET lève une exception non gérée).
-        guard try orderRepository.setDiscount(orderId: orderId, type: nil, value: 0, reason: nil) else { throw APIError.notFound("Commande introuvable.") }
+        // Écart assumé : commande inconnue → 404 (le .NET lève une exception non gérée) ; commande réglée ou annulée → 409.
+        let orders = orderRepository
+        try db.transaction {
+            guard let status = try orders.status(of: orderId) else { throw APIError.notFound("Commande introuvable.") }
+            guard status.isModifiable else { throw APIError.localOrderClosed }
+            _ = try orders.setDiscount(orderId: orderId, type: nil, value: 0, reason: nil)
+        }
     }
 
     /// Offre une ligne (gratuité). L'économie journalisée est `prix unitaire × quantité`, hors options (comme `CompOrderItemAsync`).
@@ -38,9 +44,10 @@ extension LocalPosAPI {
         guard !trimmed.isEmpty else { throw Self.compFailed }
         let orders = orderRepository
         try db.transaction {
-            guard let order = try orders.order(id: orderId), let line = order.lines.first(where: { $0.lineId == lineId }),
-                  try orders.comp(lineId: lineId, orderId: orderId, reason: trimmed)
-            else { throw Self.compFailed }
+            guard let order = try orders.order(id: orderId) else { throw Self.compFailed }
+            guard try orders.status(of: orderId)?.isModifiable == true else { throw APIError.localOrderClosed }
+            guard let line = order.lines.first(where: { $0.lineId == lineId }) else { throw Self.compFailed }
+            guard try orders.comp(lineId: lineId, orderId: orderId, reason: trimmed) else { throw Self.compFailed }
             try orders.insertDiscountAudit(
                 orderId: orderId, itemId: lineId, type: .comp, value: 100, saved: line.unitPrice * line.quantity,
                 reason: trimmed, operatorId: operatorId ?? localNoOperator
