@@ -5,18 +5,22 @@ extension LocalPosAPI {
     // MARK: Appairage : sans objet en mode autonome (le poste est son propre terminal)
     public func pair(code: String) async throws -> PairResponse { throw unsupported() }
 
-    // MARK: Encaissement (plan 1c)
+    // MARK: Paiement des tables (retiré par la tâche 3)
     public func pay(_ request: PaymentRequest) async throws -> PaymentResult { throw unsupported() }
-    public func hotelRooms() async throws -> [HotelRoom] { throw unsupported() }
-    public func chargeRoom(_ request: RoomChargeRequest) async throws -> OperationResult { throw unsupported() }
 
-    // MARK: Comptoir & vente à emporter (plan 1c)
+    // MARK: Comptoir et mise en attente (retiré par la tâche 4)
     public func openCounterOrder(terminalId: String, destination: OrderDestination) async throws -> ActiveOrder { throw unsupported() }
     public func holdOrder(orderId: UUID, terminalId: String, label: String) async throws { throw unsupported() }
     public func heldOrders(terminalId: String) async throws -> [HeldOrder] { throw unsupported() }
     public func recallHeldOrder(holdId: UUID) async throws -> ActiveOrder { throw unsupported() }
     public func voidHeldOrder(holdId: UUID, supervisorPin: String, reason: String, terminalId: String) async throws { throw unsupported() }
+
+    // MARK: Encaissement comptoir (retiré par la tâche 5)
     public func counterCheckout(_ request: CounterCheckoutRequest) async throws -> CounterCheckoutResult { throw unsupported() }
+
+    // MARK: Chambres d'hôtel (retiré par la tâche 6)
+    public func hotelRooms() async throws -> [HotelRoom] { throw unsupported() }
+    public func chargeRoom(_ request: RoomChargeRequest) async throws -> OperationResult { throw unsupported() }
 
     // MARK: Fiscal (sous-projets 2 et 3)
     public func xReport(terminalId: String) async throws -> FiscalReport { throw unsupported() }
