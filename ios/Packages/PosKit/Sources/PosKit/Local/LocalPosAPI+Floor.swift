@@ -1,7 +1,13 @@
 import Foundation
 
 extension LocalPosAPI {
-    public func tables() async throws -> [DiningTable] { try floorRepository.tables() }
+    public func tables() async throws -> [DiningTable] {
+        try floorRepository.tables().map { table in
+            var withTotal = table
+            if let order = try activeOrder(on: table) { withTotal.activeOrderTotalTtc = order.totalTtcAmount ?? .zero }
+            return withTotal
+        }
+    }
 
     public func createTable(number: String, capacity: Int) async throws {
         try requireAuth()

@@ -5,12 +5,6 @@ extension LocalPosAPI {
     // MARK: Appairage : sans objet en mode autonome (le poste est son propre terminal)
     public func pair(code: String) async throws -> PairResponse { throw unsupported() }
 
-    // MARK: Commandes de salle (retiré par la tâche 2)
-    public func openTable(number: String, covers: Int, operatorId: UUID?, waiterName: String?) async throws { throw unsupported() }
-    public func activeOrder(table: String) async throws -> ActiveOrder? { throw unsupported() }
-    public func addItems(table: String, items: [OrderItemInput]) async throws -> ActiveOrder { throw unsupported() }
-    public func setDestination(orderId: UUID, destination: OrderDestination) async throws { throw unsupported() }
-
     // MARK: Envoi cuisine (retiré par la tâche 3)
     public func dispatch(table: String) async throws { throw unsupported() }
     public func fireSuite(table: String) async throws { throw unsupported() }
