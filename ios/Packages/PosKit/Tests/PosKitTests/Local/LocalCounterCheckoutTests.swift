@@ -75,6 +75,17 @@ struct LocalCounterCheckoutTests {
         #expect(abs(expiry.timeIntervalSinceNow - 90 * 86_400) < 60)
     }
 
+    @Test func settleRefusalAfterVoucherChecksRollsBackPickupNumberAndCreditVoucher() async throws {
+        let api = try await makeLocalAPI()
+        let order = try await cart(api)  // 19,50 €
+        // Le retrait et l'avoir sont écrits avant que le règlement soit refusé (100 cts < solde) : tout doit être annulé.
+        await #expect(throws: APIError.server(status: 400, message: "Échec de l'encaissement.")) {
+            try await api.counterCheckout(checkout(order, [voucher(1950, facial: 2500), cash(100)], policy: .customerCreditVoucher))
+        }
+        let result = try await api.counterCheckout(checkout(order, [cash(1950)]))
+        #expect(result.pickupNumber == "#A-01" && result.receiptNumber == "NF-T01-000001" && result.issuedCreditVoucher == nil)
+    }
+
     @Test func counterCheckoutRefusesEmptyOrUnknownOrders() async throws {
         let api = try await makeLocalAPI()
         let empty = try await api.openCounterOrder(terminalId: "T01", destination: .takeaway)

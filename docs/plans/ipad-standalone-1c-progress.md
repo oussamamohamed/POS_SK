@@ -10,5 +10,5 @@ Base de référence (avant tâche 1) : PosKit 244 · .NET et web inchangés (auc
 | 2 Garde de statut et PIN partagé | fait | 252 | |
 | 3 Paiement des tables | fait | 259 | |
 | 4 Comptoir et mise en attente | fait | 266 | |
-| 5 Encaissement comptoir | fait | 273 | |
+| 5 Encaissement comptoir | fait | 274 | |
 | 6 Chambres d'hôtel | à faire | | |
