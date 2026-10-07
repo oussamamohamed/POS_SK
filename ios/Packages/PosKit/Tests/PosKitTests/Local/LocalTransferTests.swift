@@ -79,4 +79,53 @@ struct LocalTransferTests {
         #expect(order.coversCount == 3 && names(order) == ["Burger Gourmet Rossini"])
         #expect(try await api.activeOrder(table: "T1") == nil)
     }
+
+    @Test func mergeIsRefusedWhenAnOrderCarriesAGlobalDiscount() async throws {
+        let api = try await makeLocalAPI()
+        let burger = try await localProduct(api, "Burger Gourmet Rossini")
+        let cafe = try await localProduct(api, "Café Gourmand")
+        try await seatTable(api, "T1", items: [localInput(burger)])
+        try await seatTable(api, "T2", items: [localInput(cafe)])
+        for discounted in ["T1", "T2"] {
+            let order = try #require(try await api.activeOrder(table: discounted))
+            try await api.applyDiscount(orderId: order.orderId, type: .percentage, value: 10, reason: "Geste", operatorId: nil)
+            let result = try await api.transfer(from: "T1", to: "T2", merge: true)
+            #expect(result.success == false && result.message == "Échec de la fusion de tables.")
+            let source = try #require(try await api.activeOrder(table: "T1"))
+            let target = try #require(try await api.activeOrder(table: "T2"))
+            #expect(names(source) == ["Burger Gourmet Rossini"] && names(target) == ["Café Gourmand"])
+            #expect((discounted == "T1" ? source : target).globalDiscountType == .percentage)
+            try await api.removeDiscount(orderId: order.orderId)
+        }
+        #expect(try await api.transfer(from: "T1", to: "T2", merge: true).success == true)
+        #expect(Set(names(try await api.activeOrder(table: "T2"))) == ["Burger Gourmet Rossini", "Café Gourmand"])
+    }
+
+    @Test func mergeIsAuditedAndCancelsTheSourceOrder() async throws {
+        let path = temporaryDatabasePath()
+        defer { for suffix in ["", "-wal", "-shm"] { try? FileManager.default.removeItem(atPath: path + suffix) } }
+        let api = try LocalPosAPI(path: path)
+        _ = try await api.login(pin: "1234")
+        let burger = try await localProduct(api, "Burger Gourmet Rossini")
+        let cafe = try await localProduct(api, "Café Gourmand")
+        try await seatTable(api, "T1", waiter: "Sophie", items: [localInput(burger)])
+        try await seatTable(api, "T2", waiter: "Karim", items: [localInput(cafe)])
+        try await seatTable(api, "T4", waiter: "Lina", items: [localInput(cafe)])
+        let transferredId = try #require(try await api.activeOrder(table: "T1")).orderId
+        let mergedSourceId = try #require(try await api.activeOrder(table: "T2")).orderId
+        #expect(try await api.transfer(from: "T1", to: "T3", merge: false).success == true)
+        #expect(try await api.transfer(from: "T2", to: "T4", merge: true).success == true)
+
+        let reader = try SQLiteDatabase(path: path)
+        let logs = try reader.query("SELECT * FROM TableTransferLogs ORDER BY rowid")
+        #expect(logs.count == 2)
+        #expect(logs[0].string("SourceTableNumber") == "T1" && logs[0].string("TargetTableNumber") == "T3" && logs[0].int("IsMerge") == 0)
+        #expect(logs[1].string("SourceTableNumber") == "T2" && logs[1].string("TargetTableNumber") == "T4" && logs[1].int("IsMerge") == 1)
+        #expect(logs.allSatisfy { $0.string("OperatorName") != nil })
+        let merged = try reader.query("SELECT Status FROM Orders WHERE Id = ?", [.uuid(mergedSourceId)])
+        #expect(merged.first?.int("Status") == 4)
+        #expect(try reader.query("SELECT * FROM OrderItems WHERE OrderId = ?", [.uuid(mergedSourceId)]).isEmpty)
+        let moved = try reader.query("SELECT TableNumber FROM Orders WHERE Id = ?", [.uuid(transferredId)])
+        #expect(moved.first?.string("TableNumber") == "T3")
+    }
 }

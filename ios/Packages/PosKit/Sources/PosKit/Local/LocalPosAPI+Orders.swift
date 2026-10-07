@@ -72,7 +72,7 @@ extension LocalPosAPI {
                 let sameLine = lines.firstIndex {
                     !$0.isDispatched && $0.productId == input.productId && $0.course == input.course && $0.unitPrice == input.unitPrice
                         && $0.isHappyHourApplied == input.isHappyHourApplied && $0.modifiersPriceExtra == input.modifiersPriceExtra
-                        && $0.modifiersSummary == input.modifiers
+                        && $0.modifiersSummary == input.modifiers && !$0.isComp && $0.discountPercent == 0
                 }
                 if let index = sameLine {
                     lines[index].quantity += input.quantity

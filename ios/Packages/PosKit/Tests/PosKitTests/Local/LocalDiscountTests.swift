@@ -98,4 +98,18 @@ struct LocalDiscountTests {
         await #expect(throws: APIError.unauthorized) { try await api.removeDiscount(orderId: UUID()) }
         await #expect(throws: APIError.unauthorized) { try await api.compItem(orderId: UUID(), lineId: UUID(), reason: "x", operatorId: nil) }
     }
+
+    @Test func compingTwiceIsRefusedWithoutASecondAudit() async throws {
+        let path = temporaryDatabasePath()
+        defer { for suffix in ["", "-wal", "-shm"] { try? FileManager.default.removeItem(atPath: path + suffix) } }
+        let api = try LocalPosAPI(path: path)
+        _ = try await api.login(pin: "1234")
+        let burger = try await localProduct(api, "Burger Gourmet Rossini")
+        let order = try await seat(api, "T1", [localInput(burger)])
+        let lineId = try #require(order.lines.first?.lineId)
+        try await api.compItem(orderId: order.orderId, lineId: lineId, reason: "Erreur", operatorId: nil)
+        await #expect(throws: Self.compFailed) { try await api.compItem(orderId: order.orderId, lineId: lineId, reason: "Encore", operatorId: nil) }
+        let reader = try SQLiteDatabase(path: path)
+        #expect(try reader.query("SELECT * FROM OrderDiscountAudits").count == 1)
+    }
 }

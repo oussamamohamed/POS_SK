@@ -89,7 +89,7 @@ struct LocalOrderRepository {
 
     /// Passe la ligne en gratuité. `false` si la ligne n'appartient pas à la commande.
     func comp(lineId: UUID, orderId: UUID, reason: String) throws -> Bool {
-        try db.run("UPDATE OrderItems SET IsComp = 1, CompReason = ? WHERE Id = ? AND OrderId = ?", [.text(reason), .uuid(lineId), .uuid(orderId)]) > 0
+        try db.run("UPDATE OrderItems SET IsComp = 1, CompReason = ? WHERE Id = ? AND OrderId = ? AND IsComp = 0", [.text(reason), .uuid(lineId), .uuid(orderId)]) > 0
     }
 
     func moveLines(from source: UUID, to target: UUID) throws {

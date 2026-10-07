@@ -3,7 +3,9 @@ import Foundation
 extension LocalPosAPI {
     /// Transfert (`merge == false`) ou fusion (`merge == true`) de la commande d'une table vers une autre.
     /// Échec (`success: false`) si la source n'a pas de commande, si une table est inconnue, si source et cible sont la même table,
-    /// ou si un transfert vise une table occupée (le .NET écraserait alors la commande : écart assumé, utiliser la fusion).
+    /// si un transfert vise une table occupée (le .NET écraserait alors la commande : écart assumé, utiliser la fusion),
+    /// ou si une fusion concerne une commande portant une remise globale (elle disparaîtrait ou s'étendrait aux lignes de l'autre commande :
+    /// retirer la remise d'abord).
     public func transfer(from: String, to: String, merge: Bool) async throws -> OperationResult {
         try requireAuth()
         let failure = OperationResult(success: false, message: merge ? "Échec de la fusion de tables." : "Échec du transfert de table.")
@@ -14,7 +16,9 @@ extension LocalPosAPI {
             else { return failure }
 
             if let targetOrderId = target.activeOrderId, try orders.order(id: targetOrderId) != nil {
-                guard merge else { return failure }
+                guard merge, let targetOrder = try orders.order(id: targetOrderId), let sourceOrder = try orders.order(id: sourceOrderId),
+                      sourceOrder.globalDiscountType == nil, targetOrder.globalDiscountType == nil
+                else { return failure }
                 try orders.moveLines(from: sourceOrderId, to: targetOrderId)
                 try orders.setStatus(orderId: sourceOrderId, .cancelled)
                 try floor.update(

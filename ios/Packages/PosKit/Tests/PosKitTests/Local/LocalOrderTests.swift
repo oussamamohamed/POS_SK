@@ -112,4 +112,18 @@ struct LocalOrderTests {
         #expect(tables.first { $0.tableNumber == "T5" }?.activeOrderTotalTtc == Money(cents: 2800))
         #expect(tables.filter { $0.tableNumber != "T5" }.allSatisfy { $0.activeOrderTotalTtc == .zero })
     }
+
+    @Test func addItemsDoesNotMergeIntoACompedLine() async throws {
+        let api = try await makeLocalAPI()
+        let cafe = try await localProduct(api, "Café Gourmand")
+        try await seatTable(api, "T1", items: [localInput(cafe)])
+        let order = try #require(try await api.activeOrder(table: "T1"))
+        let lineId = try #require(order.lines.first?.lineId)
+        try await api.compItem(orderId: order.orderId, lineId: lineId, reason: "Geste", operatorId: nil)
+        _ = try await api.addItems(table: "T1", items: [localInput(cafe)])
+        let after = try #require(try await api.activeOrder(table: "T1"))
+        #expect(after.lines.count == 2)
+        #expect(after.lines.filter(\.isComp).count == 1 && after.lines.filter { !$0.isComp }.count == 1)
+        #expect(after.totalTtcAmount == Money(cents: 850))
+    }
 }
