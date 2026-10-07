@@ -8,6 +8,6 @@ Base de référence (avant tâche 1) : PosKit 203 · .NET et web inchangés (auc
 |---|---|---|---|
 | 1 Migration v2 et dépôts | fait | 208 | aucun |
 | 2 Commandes de salle | fait | 219 | aucun |
-| 3 Envoi cuisine et bons | à faire | | |
+| 3 Envoi cuisine et bons | fait | 227 | aucun |
 | 4 Transfert et fusion | à faire | | |
 | 5 Remises et gratuités | à faire | | |

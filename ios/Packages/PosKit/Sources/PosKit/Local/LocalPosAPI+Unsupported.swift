@@ -5,10 +5,6 @@ extension LocalPosAPI {
     // MARK: Appairage : sans objet en mode autonome (le poste est son propre terminal)
     public func pair(code: String) async throws -> PairResponse { throw unsupported() }
 
-    // MARK: Envoi cuisine (retiré par la tâche 3)
-    public func dispatch(table: String) async throws { throw unsupported() }
-    public func fireSuite(table: String) async throws { throw unsupported() }
-
     // MARK: Transfert et fusion (retiré par la tâche 4)
     public func transfer(from: String, to: String, merge: Bool) async throws -> OperationResult { throw unsupported() }
 
@@ -29,10 +25,6 @@ extension LocalPosAPI {
     public func recallHeldOrder(holdId: UUID) async throws -> ActiveOrder { throw unsupported() }
     public func voidHeldOrder(holdId: UUID, supervisorPin: String, reason: String, terminalId: String) async throws { throw unsupported() }
     public func counterCheckout(_ request: CounterCheckoutRequest) async throws -> CounterCheckoutResult { throw unsupported() }
-
-    // MARK: Cuisine (plan 1b)
-    public func kitchenTickets() async throws -> [KitchenTicket] { throw unsupported() }
-    public func bumpTicket(id: UUID) async throws { throw unsupported() }
 
     // MARK: Fiscal (sous-projets 2 et 3)
     public func xReport(terminalId: String) async throws -> FiscalReport { throw unsupported() }
