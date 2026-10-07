@@ -65,6 +65,11 @@ struct LocalPaymentTests {
         await #expect(throws: APIError.server(status: 400, message: "Montant de pourboire invalide.")) {
             try await api.pay(localPayment(order, table: "T1", tenders: [localTender(.cash, 1950)], tip: -1))
         }
+        // Le pourboire est écrit puis settle refuse le surpaiement : la transaction doit tout annuler.
+        await #expect(throws: Self.paymentFailed) {
+            try await api.pay(localPayment(order, table: "T1", tenders: [localTender(.cash, 2500)], tip: 200))
+        }
+        #expect(try await api.tables().first { $0.tableNumber == "T1" }?.status == .occupied)
         // Aucun pourboire n'est resté enregistré : le paiement final avec pourboire solde exactement la note.
         let final = try await api.pay(localPayment(order, table: "T1", tenders: [localTender(.cash, 2150, tendered: 2200)], tip: 200))
         #expect(final.totalPaid == Money(cents: 2150) && final.changeGiven == Money(cents: 50) && final.remainingBalance == .zero)
