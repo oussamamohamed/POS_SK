@@ -5,9 +5,6 @@ extension LocalPosAPI {
     // MARK: Appairage : sans objet en mode autonome (le poste est son propre terminal)
     public func pair(code: String) async throws -> PairResponse { throw unsupported() }
 
-    // MARK: Transfert et fusion (retiré par la tâche 4)
-    public func transfer(from: String, to: String, merge: Bool) async throws -> OperationResult { throw unsupported() }
-
     // MARK: Remises et gratuités (retiré par la tâche 5)
     public func applyDiscount(orderId: UUID, type: DiscountType, value: Decimal, reason: String, operatorId: UUID?) async throws { throw unsupported() }
     public func removeDiscount(orderId: UUID) async throws { throw unsupported() }
