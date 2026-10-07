@@ -5,9 +5,6 @@ extension LocalPosAPI {
     // MARK: Appairage : sans objet en mode autonome (le poste est son propre terminal)
     public func pair(code: String) async throws -> PairResponse { throw unsupported() }
 
-    // MARK: Paiement des tables (retiré par la tâche 3)
-    public func pay(_ request: PaymentRequest) async throws -> PaymentResult { throw unsupported() }
-
     // MARK: Comptoir et mise en attente (retiré par la tâche 4)
     public func openCounterOrder(terminalId: String, destination: OrderDestination) async throws -> ActiveOrder { throw unsupported() }
     public func holdOrder(orderId: UUID, terminalId: String, label: String) async throws { throw unsupported() }

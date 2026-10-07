@@ -8,7 +8,7 @@ Base de référence (avant tâche 1) : PosKit 244 · .NET et web inchangés (auc
 |---|---|---|---|
 | 1 Migration v3 et dépôts | fait | 251 | |
 | 2 Garde de statut et PIN partagé | fait | 252 | |
-| 3 Paiement des tables | à faire | | |
+| 3 Paiement des tables | fait | 259 | |
 | 4 Comptoir et mise en attente | à faire | | |
 | 5 Encaissement comptoir | à faire | | |
 | 6 Chambres d'hôtel | à faire | | |
