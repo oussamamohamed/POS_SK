@@ -104,6 +104,6 @@ Arguments de lancement réservés aux tests : `-UITestMode`, `-UITestPin 1234`,
 
 ## Mode autonome (en cours)
 
-`LocalPosAPI` (`Packages/PosKit/Sources/PosKit/Local/`) implémente `PosAPI` sur une base SQLite locale, sans serveur .NET. Livré : authentification par PIN (avec verrouillage), personnel, catalogue, grille tactile, tables et réglages (plan 1a) ; commandes de salle, envoi cuisine et bons, remises et gratuités, transfert et fusion de tables (plan 1b). Les autres méthodes répondent `501` (« Non disponible en mode autonome ») jusqu'aux plans 1c (paiement non fiscal, comptoir, mise en attente, chambres d'hôtel) et 1d (imprimantes, Happy Hour, réseau, choix Serveur/Autonome au lancement).
+`LocalPosAPI` (`Packages/PosKit/Sources/PosKit/Local/`) implémente `PosAPI` sur une base SQLite locale, sans serveur .NET. Livré : authentification par PIN (avec verrouillage), personnel, catalogue, grille tactile, tables et réglages (plan 1a) ; commandes de salle, envoi cuisine et bons, remises et gratuités, transfert et fusion de tables (plan 1b) ; paiement non fiscal des tables et du comptoir (reçus `NF-…`, numéros de retrait, titres-restaurant et avoirs), mise en attente, facturation sur chambre (plan 1c). Les autres méthodes répondent `501` (« Non disponible en mode autonome ») jusqu'au plan 1d (imprimantes, Happy Hour, réseau, choix Serveur/Autonome au lancement) et aux sous-projets fiscaux.
 
 Le mode n'est pas encore sélectionnable dans l'app. Les tests : `cd Packages/PosKit && swift test --filter 'Local[A-Z].*Tests|SQLiteDatabaseTests'`.

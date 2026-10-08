@@ -15,6 +15,10 @@ enum LocalSeeder {
             let floor = LocalFloorRepository(db: db)
             for table in seed.tables { try floor.insert(table) }
             try floor.insertDefaultSettings()
+            // Chambres de démonstration (comme `Program.SeedDatabase`) : à remplacer par l'accueil de l'établissement avant toute mise en service.
+            let hotel = LocalHotelRepository(db: db)
+            let now = Date()
+            for room in seed.rooms { try hotel.insert(room, checkIn: now.addingTimeInterval(-86_400), checkOut: now.addingTimeInterval(3 * 86_400)) }
         }
     }
 }
