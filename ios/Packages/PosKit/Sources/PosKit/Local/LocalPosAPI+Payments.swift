@@ -10,11 +10,9 @@ struct LocalSettlement {
 extension LocalPosAPI {
     static let paymentFailed = APIError.server(status: 400, message: "Échec de l'encaissement.")
 
-    /// Identifiant de terminal utilisable dans un numéro de reçu (le poste autonome s'appellera `T01` au plan 1d).
-    func normalizedTerminal(_ id: String) -> String {
-        let trimmed = id.trimmingCharacters(in: .whitespacesAndNewlines)
-        return trimmed.isEmpty ? "LOCAL" : trimmed
-    }
+    /// Terminal des reçus, retraits et mises en attente. Comme le serveur, qui prend le terminal de l'appareil et ignore celui de la requête,
+    /// le poste autonome n'a qu'un terminal : `T01`.
+    func normalizedTerminal(_ requested: String) -> String { Self.standaloneTerminalId }
 
     /// Total TTC de la commande, pourboire déjà enregistré et montant déjà réglé.
     func balance(of order: ActiveOrder) throws -> (total: Money, tip: Money, paid: Money) {

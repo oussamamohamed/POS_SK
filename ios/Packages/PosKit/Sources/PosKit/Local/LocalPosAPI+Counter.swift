@@ -40,7 +40,7 @@ extension LocalPosAPI {
             let decorated = decorate(order)
             let snapshot = String(decoding: try JSONEncoder().encode(decorated), as: UTF8.self)
             try holds.insert(
-                orderId: orderId, terminalId: terminalId.isEmpty ? "POS_MAIN_TERM" : terminalId, label: label.isEmpty ? nil : label,
+                orderId: orderId, terminalId: normalizedTerminal(terminalId), label: label.isEmpty ? nil : label,
                 destination: order.destination, itemCount: order.lines.reduce(0) { $0 + $1.quantity }, total: decorated.totalTtcAmount ?? .zero,
                 snapshot: snapshot, staffId: member.id
             )
@@ -52,7 +52,7 @@ extension LocalPosAPI {
 
     public func heldOrders(terminalId: String) async throws -> [HeldOrder] {
         try requireAuth()
-        return try holdRepository.active(terminalId: terminalId)
+        return try holdRepository.active(terminalId: normalizedTerminal(terminalId))
     }
 
     /// Remet un panier en attente sur le comptoir. Un panier de comptoir vide est annulé et remplacé ; une vente en cours n'est jamais

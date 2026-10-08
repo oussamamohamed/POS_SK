@@ -12,6 +12,8 @@ public actor LocalPosAPI: PosAPI {
     private static let tokenPrefix = "local-"
     /// Identique à `SessionStore.pinLength` (isolé au MainActor, donc non réutilisable ici).
     static let pinLength = 4
+    /// Le poste autonome est son propre terminal : les numéros de reçu (`NF-T01-…`) et de retrait (`#A-…`) en dépendent.
+    public static let standaloneTerminalId = "T01"
 
     /// `path` : fichier SQLite à créer ou rouvrir, ou `":memory:"` (tests).
     public init(path: String, clock: @escaping @Sendable () -> Date = { Date() }, calendar: Calendar = .current) throws {

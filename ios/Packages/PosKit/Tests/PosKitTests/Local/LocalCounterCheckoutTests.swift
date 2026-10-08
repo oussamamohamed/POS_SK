@@ -41,10 +41,10 @@ struct LocalCounterCheckoutTests {
         #expect(second.pickupNumber == "#A-02" && second.receiptNumber == "NF-T01-000002" && second.openCashDrawer == true)
     }
 
-    @Test func pickupNumbersFollowTheTerminalPrefix() async throws {
+    @Test func requestedTerminalIsIgnoredAtTheCounter() async throws {
         let api = try await makeLocalAPI()
         let result = try await api.counterCheckout(checkout(try await cart(api), [cash(1950)], terminal: "T02"))
-        #expect(result.pickupNumber == "#B-01" && result.receiptNumber == "NF-T02-000001")
+        #expect(result.pickupNumber == "#A-01" && result.receiptNumber == "NF-T01-000001")
     }
 
     @Test func mealVoucherAboveTheLegalCapIsRefusedWithoutConsumingAPickupNumber() async throws {

@@ -111,14 +111,16 @@ struct LocalCounterTests {
         #expect(try await api.heldOrders(terminalId: "T01").count == 1)
     }
 
-    @Test func heldOrdersAreFilteredByTerminal() async throws {
+    @Test func heldOrdersAlwaysBelongToTheStandaloneTerminal() async throws {
         let api = try await makeLocalAPI()
         let first = try await counterCart(api)
         try await api.holdOrder(orderId: first.orderId, terminalId: "T01", label: "A")
         let second = try await counterCart(api)
         try await api.holdOrder(orderId: second.orderId, terminalId: "T02", label: "B")
-        #expect(try await api.heldOrders(terminalId: "T01").map(\.customerLabel) == ["A"])
-        #expect(try await api.heldOrders(terminalId: "T02").map(\.customerLabel) == ["B"])
-        #expect(try await api.heldOrders(terminalId: "").count == 2)
+        // Le poste autonome est son propre terminal : le terminal demandé est ignoré, comme le fait le serveur avec celui de la requête.
+        for requested in ["T01", "T02", ""] {
+            #expect(try await api.heldOrders(terminalId: requested).compactMap(\.customerLabel).sorted() == ["A", "B"])
+        }
+        #expect(try await api.heldOrders(terminalId: "T01").allSatisfy { $0.terminalId == "T01" })
     }
 }
