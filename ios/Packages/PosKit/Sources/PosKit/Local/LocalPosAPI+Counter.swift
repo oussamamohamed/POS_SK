@@ -88,11 +88,11 @@ extension LocalPosAPI {
         try ensurePinAttemptsAllowed()
         let insufficient = APIError.forbidden("Autorisation insuffisante : code PIN superviseur ou gérant requis.")
         guard let supervisor = try staffRepository.activeMember(pin: supervisorPin) else {
-            recordFailedPin()
+            try recordFailedPin()
             throw insufficient
         }
         guard supervisor.role.isManager else { throw insufficient }
-        resetFailedPins()
+        try resetFailedPins()
         let orders = orderRepository, holds = holdRepository
         try db.transaction {
             guard let orderId = try holds.activeOrderId(holdId: holdId) else { throw APIError.notFound("Commande en attente introuvable.") }

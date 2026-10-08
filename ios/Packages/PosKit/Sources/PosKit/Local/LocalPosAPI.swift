@@ -5,23 +5,22 @@ import Foundation
 public actor LocalPosAPI: PosAPI {
     let db: SQLiteDatabase
     private var token: String?
-    private var failedLogins: [Date] = []
-    private var lockedUntil: Date?
+    /// Horloge et calendrier injectables : verrouillage des PIN, Happy Hour (heure locale) et tests sans attente réelle.
+    let clock: @Sendable () -> Date
+    let calendar: Calendar
 
     private static let tokenPrefix = "local-"
     /// Identique à `SessionStore.pinLength` (isolé au MainActor, donc non réutilisable ici).
     static let pinLength = 4
-    /// Même règle que `PinRateLimiterService` : 5 échecs en 1 min verrouillent 30 s.
-    private static let maxFailedLogins = 5
-    private static let failureWindow: TimeInterval = 60
-    private static let lockoutDuration: TimeInterval = 30
 
     /// `path` : fichier SQLite à créer ou rouvrir, ou `":memory:"` (tests).
-    public init(path: String) throws {
+    public init(path: String, clock: @escaping @Sendable () -> Date = { Date() }, calendar: Calendar = .current) throws {
         let db = try SQLiteDatabase(path: path)
         try LocalMigrator.migrate(db)
         try LocalSeeder.seedIfEmpty(db)
         self.db = db
+        self.clock = clock
+        self.calendar = calendar
     }
 
     var staffRepository: LocalStaffRepository { LocalStaffRepository(db: db) }
@@ -46,32 +45,22 @@ public actor LocalPosAPI: PosAPI {
     public func login(pin: String) async throws -> LoginResponse {
         try ensurePinAttemptsAllowed()
         guard let member = try staffRepository.activeMember(pin: pin) else {
-            recordFailedPin()
+            try recordFailedPin()
             return LoginResponse(success: false, operatorId: nil, operatorName: nil, role: nil, token: nil, errorMessage: "Code PIN ou identifiants incorrects")
         }
-        resetFailedPins()
+        try resetFailedPins()
         token = Self.tokenPrefix + member.id.uuidString
         return LoginResponse(success: true, operatorId: member.id, operatorName: member.name, role: member.role, token: token)
     }
 
     /// La connexion et le PIN superviseur partagent le même compteur d'échecs : un PIN deviné par l'une ou l'autre voie reste soumis au verrouillage.
-    func ensurePinAttemptsAllowed() throws {
-        if let until = lockedUntil, until > Date() { throw APIError.rateLimited(nil) }
-    }
+    var pinGuard: LocalPinGuard { LocalPinGuard(db: db) }
 
-    func recordFailedPin() {
-        let now = Date()
-        failedLogins = failedLogins.filter { now.timeIntervalSince($0) < Self.failureWindow } + [now]
-        if failedLogins.count >= Self.maxFailedLogins {
-            lockedUntil = now.addingTimeInterval(Self.lockoutDuration)
-            failedLogins = []
-        }
-    }
+    func ensurePinAttemptsAllowed() throws { try pinGuard.ensureAllowed(now: clock()) }
 
-    func resetFailedPins() {
-        failedLogins = []
-        lockedUntil = nil
-    }
+    func recordFailedPin() throws { try pinGuard.recordFailure(now: clock()) }
+
+    func resetFailedPins() throws { try pinGuard.reset() }
 
     @discardableResult
     func requireAuth() throws -> StaffMember {

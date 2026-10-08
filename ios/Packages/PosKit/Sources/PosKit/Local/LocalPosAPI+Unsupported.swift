@@ -21,7 +21,7 @@ extension LocalPosAPI {
     public func createArchive(periodClosureId: UUID) async throws -> FiscalArchive { throw unsupported() }
     public func verifyArchive(data: Data, fileName: String) async throws -> ArchiveVerificationResult { throw unsupported() }
 
-    // MARK: Imprimantes (plan 1d)
+    // MARK: Imprimantes (retiré par la tâche 4)
     public func printers() async throws -> [Printer] { throw unsupported() }
     public func savePrinter(_ printer: Printer, isNew: Bool) async throws { throw unsupported() }
     public func testPrinter(id: UUID) async throws -> TestPrintResult { throw unsupported() }
@@ -30,18 +30,20 @@ extension LocalPosAPI {
     public func retryPrintJob(id: UUID) async throws { throw unsupported() }
     public func cancelPrintJob(id: UUID) async throws { throw unsupported() }
 
-    // MARK: Happy Hour (plan 1d)
+    // MARK: Happy Hour, statut et dérogations (retiré par la tâche 6)
     public func happyHourStatus(terminalId: String) async throws -> HappyHourStatus { throw unsupported() }
     public func happyHourPricing(terminalId: String) async throws -> HappyHourPricingTable { throw unsupported() }
     public func activateHappyHourOverride(terminalId: String, pin: String, minutes: Int, reason: String) async throws -> OperationResult { throw unsupported() }
     public func stopHappyHourOverride(terminalId: String, pin: String, reason: String) async throws -> OperationResult { throw unsupported() }
+
+    // MARK: Happy Hour, plannings (retiré par la tâche 5)
     public func happyHourSchedules() async throws -> [HappyHourSchedule] { throw unsupported() }
     public func createHappyHourSchedule(_ schedule: HappyHourSchedule) async throws -> UUID? { throw unsupported() }
     public func deleteHappyHourSchedule(id: UUID) async throws { throw unsupported() }
     public func applyHappyHourRules(scheduleId: UUID, _ request: BatchPriceRulesRequest) async throws -> Int { throw unsupported() }
     public func deleteHappyHourRules(scheduleId: UUID, ruleIds: [UUID]) async throws { throw unsupported() }
 
-    // MARK: Réseau (plan 1d)
+    // MARK: Réseau (retiré par la tâche 7)
     public func networkInfo() async throws -> NetworkInfo { throw unsupported() }
     public func syncStatus() async throws -> SyncStatus { throw unsupported() }
     public func forceSync() async throws { throw unsupported() }

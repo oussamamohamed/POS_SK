@@ -2,7 +2,7 @@ import Foundation
 
 /// Migrations versionnées par `PRAGMA user_version`. Ne jamais modifier un script déjà publié : en ajouter un.
 enum LocalMigrator {
-    static let steps: [String] = [schemaV1, schemaV2, schemaV3]
+    static let steps: [String] = [schemaV1, schemaV2, schemaV3, schemaV4]
 
     static func migrate(_ db: SQLiteDatabase) throws {
         let current = try db.userVersion()
