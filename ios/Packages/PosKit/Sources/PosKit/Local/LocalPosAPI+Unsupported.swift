@@ -21,12 +21,6 @@ extension LocalPosAPI {
     public func createArchive(periodClosureId: UUID) async throws -> FiscalArchive { throw unsupported() }
     public func verifyArchive(data: Data, fileName: String) async throws -> ArchiveVerificationResult { throw unsupported() }
 
-    // MARK: Happy Hour, statut et dérogations (retiré par la tâche 6)
-    public func happyHourStatus(terminalId: String) async throws -> HappyHourStatus { throw unsupported() }
-    public func happyHourPricing(terminalId: String) async throws -> HappyHourPricingTable { throw unsupported() }
-    public func activateHappyHourOverride(terminalId: String, pin: String, minutes: Int, reason: String) async throws -> OperationResult { throw unsupported() }
-    public func stopHappyHourOverride(terminalId: String, pin: String, reason: String) async throws -> OperationResult { throw unsupported() }
-
     // MARK: Réseau (retiré par la tâche 7)
     public func networkInfo() async throws -> NetworkInfo { throw unsupported() }
     public func syncStatus() async throws -> SyncStatus { throw unsupported() }
