@@ -8,7 +8,7 @@ Base de référence (avant tâche 1) : PosKit 288 · .NET et web inchangés (auc
 |---|---|---|---|
 | 1 Migration v4, horloge, PIN persistants | fait | 294 | |
 | 2 Terminal fixe T01 | fait | 295 | |
-| 3 Durcissement SQLite et sauvegarde | fait | 300 | |
+| 3 Durcissement SQLite et sauvegarde | fait | 301 | |
 | 4 Configuration des imprimantes | à faire | | |
 | 5 Happy Hour : plannings et règles | à faire | | |
 | 6 Happy Hour : statut, tarifs, dérogations | à faire | | |

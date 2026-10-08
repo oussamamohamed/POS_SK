@@ -79,9 +79,10 @@ final class SQLiteDatabase {
         }
         handle = db
         try exec("PRAGMA foreign_keys = ON")
-        try exec("PRAGMA journal_mode = WAL")
-        // Attend jusqu'à 5 s un verrou tenu par une autre connexion au lieu d'échouer aussitôt.
+        // Attend jusqu'à 5 s un verrou tenu par une autre connexion au lieu d'échouer aussitôt. Posé avant le passage en WAL,
+        // qui prend lui-même un verrou.
         try exec("PRAGMA busy_timeout = 5000")
+        try exec("PRAGMA journal_mode = WAL")
         // FULL : une coupure de courant ne doit pas faire perdre la dernière vente validée (NORMAL, défaut du mode WAL, le permet).
         try exec("PRAGMA synchronous = FULL")
     }

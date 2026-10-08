@@ -14,6 +14,15 @@ struct LocalHardeningTests {
         #expect(try db.query("PRAGMA synchronous").first?.int("synchronous") == 2)
     }
 
+    @Test func pragmasAreSetOnAFileDatabase() throws {
+        let path = temporaryDatabasePath()
+        defer { cleanup(path) }
+        let db = try SQLiteDatabase(path: path)
+        #expect(try db.query("PRAGMA journal_mode").first?.string("journal_mode") == "wal")
+        #expect(try db.query("PRAGMA busy_timeout").first?.int("timeout") == 5000)
+        #expect(try db.query("PRAGMA synchronous").first?.int("synchronous") == 2)
+    }
+
     @Test func backupIsAConsistentOpenableCopy() async throws {
         let path = temporaryDatabasePath(), copy = temporaryDatabasePath()
         defer { cleanup(path); cleanup(copy) }
