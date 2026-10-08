@@ -14,17 +14,13 @@ extension LocalPosAPI {
         try requireAuth()
         let failed = APIError.server(status: 400, message: "Facturation chambre échouée.")
         guard request.amount > .zero, request.tipAmount >= .zero else { throw failed }
-        let floor = floorRepository, orders = orderRepository, hotel = hotelRepository
+        let floor = floorRepository, orders = orderRepository, hotel = hotelRepository, holds = holdRepository
         return try db.transaction { () throws -> OperationResult in
-            let orderId: UUID
-            if let id = request.orderId, try orders.order(id: id) != nil {
-                orderId = id
-            } else if let active = try floor.table(request.tableNumber)?.activeOrderId, try orders.order(id: active) != nil {
-                orderId = active
-            } else {
-                throw failed
-            }
-            guard let order = try orders.order(id: orderId), try orders.status(of: orderId)?.isModifiable == true else { throw failed }
+            // Repli sur la commande de la table seulement sans `orderId` : un identifiant inconnu est refusé.
+            guard let orderId = try request.orderId ?? floor.table(request.tableNumber)?.activeOrderId,
+                  let order = try orders.order(id: orderId), try orders.status(of: orderId)?.isModifiable == true
+            else { throw failed }
+            guard try !holds.hasActiveHold(orderId: orderId) else { throw APIError.localOrderHeld }
             let (total, _, paid) = try balance(of: order)
             guard request.amount == total - paid else { throw failed }
 

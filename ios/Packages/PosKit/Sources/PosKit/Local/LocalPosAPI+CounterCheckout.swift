@@ -41,11 +41,12 @@ extension LocalPosAPI {
     public func counterCheckout(_ request: CounterCheckoutRequest) async throws -> CounterCheckoutResult {
         try requireAuth()
         guard request.tipAmount >= .zero else { throw APIError.server(status: 400, message: "Montant de pourboire invalide.") }
-        let orders = orderRepository, payments = paymentRepository
+        let orders = orderRepository, payments = paymentRepository, holds = holdRepository
         return try db.transaction { () throws -> CounterCheckoutResult in
             guard let order = try orders.order(id: request.orderId), !order.lines.isEmpty,
                   try orders.status(of: request.orderId)?.isModifiable == true
             else { throw APIError.server(status: 400, message: "Commande introuvable ou panier vide.") }
+            guard try !holds.hasActiveHold(orderId: order.orderId) else { throw APIError.localOrderHeld }
             let terminal = normalizedTerminal(request.terminalId)
 
             var surplus = Money.zero

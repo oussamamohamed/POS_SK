@@ -4,12 +4,13 @@ extension LocalPosAPI {
     /// Transfert (`merge == false`) ou fusion (`merge == true`) de la commande d'une table vers une autre.
     /// Échec (`success: false`) si la source n'a pas de commande, si une table est inconnue, si source et cible sont la même table,
     /// si un transfert vise une table occupée (le .NET écraserait alors la commande : écart assumé, utiliser la fusion),
-    /// ou si une fusion concerne une commande portant une remise globale (elle disparaîtrait ou s'étendrait aux lignes de l'autre commande :
-    /// retirer la remise d'abord).
+    /// si une fusion concerne une commande portant une remise globale (elle disparaîtrait ou s'étendrait aux lignes de l'autre commande :
+    /// retirer la remise d'abord), ou si la commande fusionnée a déjà un règlement (il resterait sur la commande annulée et ses lignes
+    /// seraient repayées sur la cible). Le transfert simple garde l'`OrderId`, donc les règlements suivent.
     public func transfer(from: String, to: String, merge: Bool) async throws -> OperationResult {
         try requireAuth()
         let failure = OperationResult(success: false, message: merge ? "Échec de la fusion de tables." : "Échec du transfert de table.")
-        let floor = floorRepository, orders = orderRepository
+        let floor = floorRepository, orders = orderRepository, payments = paymentRepository
         return try db.transaction { () throws -> OperationResult in
             guard from != to, let source = try floor.table(from), let target = try floor.table(to),
                   let sourceOrderId = source.activeOrderId, try orders.order(id: sourceOrderId) != nil
@@ -17,7 +18,8 @@ extension LocalPosAPI {
 
             if let targetOrderId = target.activeOrderId, try orders.order(id: targetOrderId) != nil {
                 guard merge, let targetOrder = try orders.order(id: targetOrderId), let sourceOrder = try orders.order(id: sourceOrderId),
-                      sourceOrder.globalDiscountType == nil, targetOrder.globalDiscountType == nil
+                      sourceOrder.globalDiscountType == nil, targetOrder.globalDiscountType == nil,
+                      try payments.paidCents(orderId: sourceOrderId) == 0
                 else { return failure }
                 try orders.moveLines(from: sourceOrderId, to: targetOrderId)
                 try orders.setStatus(orderId: sourceOrderId, .cancelled)

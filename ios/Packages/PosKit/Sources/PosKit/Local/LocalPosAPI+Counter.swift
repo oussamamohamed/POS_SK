@@ -24,15 +24,19 @@ extension LocalPosAPI {
         return order
     }
 
-    /// Met un panier en attente et libère le comptoir. Refusé si le panier est vide ou déjà en attente.
+    /// Met un panier en attente et libère le comptoir. Refusé si le panier est vide, déjà en attente ou déjà partiellement réglé
+    /// (son annulation laisserait des encaissements sur une commande annulée).
     public func holdOrder(orderId: UUID, terminalId: String, label: String) async throws {
         let member = try requireAuth()
-        let floor = floorRepository, orders = orderRepository, holds = holdRepository
+        let floor = floorRepository, orders = orderRepository, holds = holdRepository, payments = paymentRepository
         try db.transaction {
             guard let order = try orders.order(id: orderId), !order.lines.isEmpty, try orders.status(of: orderId)?.isModifiable == true else {
                 throw APIError.server(status: 400, message: "Impossible de mettre en attente un panier vide.")
             }
             guard try !holds.hasActiveHold(orderId: orderId) else { throw APIError.server(status: 409, message: "Cette commande est déjà en attente.") }
+            guard try payments.paidCents(orderId: orderId) == 0 else {
+                throw APIError.server(status: 409, message: "Impossible de mettre en attente une commande déjà partiellement réglée.")
+            }
             let decorated = decorate(order)
             let snapshot = String(decoding: try JSONEncoder().encode(decorated), as: UTF8.self)
             try holds.insert(
@@ -67,6 +71,8 @@ extension LocalPosAPI {
                 try orders.setStatus(orderId: current, .cancelled)
             }
             _ = try holds.markRecalled(id: holdId)
+            // Une commande venue de salle devient une vente au comptoir : sa clôture libérera bien le comptoir.
+            try orders.setTableNumber(orderId: orderId, DiningTable.counterNumber)
             try floor.update(DiningTable.counterNumber, status: .occupied, covers: 0, waiterName: nil, waiterId: nil, activeOrderId: orderId, openedAt: table.openedAtUtc ?? Date())
         }
         guard let order = try activeOrder(on: try counterTable()) else { throw SQLiteError(code: -1, message: "Panier rappelé introuvable après écriture") }
@@ -90,6 +96,7 @@ extension LocalPosAPI {
         let orders = orderRepository, holds = holdRepository
         try db.transaction {
             guard let orderId = try holds.activeOrderId(holdId: holdId) else { throw APIError.notFound("Commande en attente introuvable.") }
+            guard try orders.status(of: orderId)?.isModifiable == true else { throw APIError.localOrderClosed }
             _ = try holds.markVoided(id: holdId, staffId: supervisor.id, reason: reason)
             try orders.setStatus(orderId: orderId, .cancelled)
         }

@@ -24,10 +24,10 @@ extension LocalPosAPI {
         return (total, tip, paid)
     }
 
-    /// Clôture la commande (réglée ou annulée) et libère sa table si elle y était encore.
+    /// Clôture la commande (réglée ou annulée) et libère la table qui pointe encore sur elle (pas forcément `order.tableNumber`).
     func closeOrder(_ order: ActiveOrder, as status: LocalOrderStatus) throws {
         try orderRepository.setStatus(orderId: order.orderId, status)
-        if let table = try floorRepository.table(order.tableNumber), table.activeOrderId == order.orderId {
+        if let table = try floorRepository.tables().first(where: { $0.activeOrderId == order.orderId }) {
             try floorRepository.update(table.tableNumber, status: .free, covers: 0, waiterName: nil, waiterId: nil, activeOrderId: nil, openedAt: nil)
         }
     }
@@ -43,12 +43,13 @@ extension LocalPosAPI {
         let totalPaid = tenders.reduce(Money.zero) { $0 + $1.amount }
         guard totalPaid <= remainingBefore else { throw Self.paymentFailed }
 
-        let totalTendered = tenders.reduce(Money.zero) { $0 + $1.tendered }
-        let change = (totalTendered - remainingBefore).clampedAtZero()
         let terminal = normalizedTerminal(terminalId)
         let receipt = try paymentRepository.nextReceiptNumber(terminalId: terminal)
+        // Seules les espèces rendent la monnaie : jamais la valeur faciale d'un titre-restaurant ni une carte sur-saisie.
+        var change = Money.zero
         for tender in tenders {
             let tenderChange = tender.method == .cash ? (tender.tendered - tender.amount).clampedAtZero() : .zero
+            change += tenderChange
             try paymentRepository.insertTender(
                 orderId: order.orderId, terminalId: terminal, receiptNumber: receipt, method: tender.method,
                 amount: tender.amount.cents, tendered: tender.tendered.cents, change: tenderChange.cents
@@ -63,18 +64,14 @@ extension LocalPosAPI {
     public func pay(_ request: PaymentRequest) async throws -> PaymentResult {
         try requireAuth()
         guard request.tipAmount >= .zero else { throw APIError.server(status: 400, message: "Montant de pourboire invalide.") }
-        let floor = floorRepository, orders = orderRepository
+        let floor = floorRepository, orders = orderRepository, holds = holdRepository
         return try db.transaction { () throws -> PaymentResult in
             let notFound = APIError.server(status: 400, message: "Commande introuvable pour ce règlement.")
-            let orderId: UUID
-            if let id = request.orderId, try orders.order(id: id) != nil {
-                orderId = id
-            } else if let active = try floor.table(request.tableNumber)?.activeOrderId, try orders.order(id: active) != nil {
-                orderId = active
-            } else {
-                throw notFound
-            }
-            guard let order = try orders.order(id: orderId) else { throw notFound }
+            // Le repli sur la commande de la table ne vaut que sans `orderId` : un identifiant inconnu n'encaisse jamais une autre commande.
+            guard let orderId = try request.orderId ?? floor.table(request.tableNumber)?.activeOrderId,
+                  let order = try orders.order(id: orderId)
+            else { throw notFound }
+            guard try !holds.hasActiveHold(orderId: orderId) else { throw APIError.localOrderHeld }
             let tenders = request.tenders.map { (method: $0.method, amount: $0.amount, tendered: $0.tendered) }
             if request.tipAmount > .zero {
                 let (total, tip, paid) = try balance(of: order)

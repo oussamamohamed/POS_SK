@@ -78,7 +78,7 @@ struct LocalCounterCheckoutTests {
     @Test func settleRefusalAfterVoucherChecksRollsBackPickupNumberAndCreditVoucher() async throws {
         let api = try await makeLocalAPI()
         let order = try await cart(api)  // 19,50 €
-        // Le retrait et l'avoir sont écrits avant que le règlement soit refusé (100 cts < solde) : tout doit être annulé.
+        // Le retrait et l'avoir sont écrits avant que le règlement soit refusé (surpaiement : 1950 + 100 > solde dû 1950) : tout doit être annulé.
         await #expect(throws: APIError.server(status: 400, message: "Échec de l'encaissement.")) {
             try await api.counterCheckout(checkout(order, [voucher(1950, facial: 2500), cash(100)], policy: .customerCreditVoucher))
         }

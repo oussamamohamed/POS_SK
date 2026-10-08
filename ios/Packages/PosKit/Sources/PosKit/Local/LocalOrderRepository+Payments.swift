@@ -8,6 +8,10 @@ extension LocalOrderStatus {
 extension APIError {
     /// Opération refusée parce que la commande est déjà réglée ou annulée.
     static let localOrderClosed = APIError.server(status: 409, message: "Commande déjà réglée ou annulée.")
+    /// Encaissement refusé tant que la commande est en attente (elle doit d'abord être rappelée).
+    static let localOrderHeld = APIError.server(status: 409, message: "Commande en attente : rappelez-la avant de l'encaisser.")
+    /// La note est figée dès le premier règlement : plus de remise, de retrait de remise ni de gratuité.
+    static let localOrderPartiallyPaid = APIError.server(status: 409, message: "Remise ou gratuité impossible : la commande est déjà partiellement réglée.")
 }
 
 extension LocalOrderRepository {

@@ -34,8 +34,9 @@ struct LocalPaymentStoreTests {
         #expect(try payments.nextReceiptNumber(terminalId: "T01") == "NF-T01-000002")
         #expect(try payments.nextReceiptNumber(terminalId: "T02") == "NF-T02-000001")
 
-        try db.run("DELETE FROM Orders WHERE Id = ?", [.uuid(order.orderId)])
-        #expect(try payments.paidCents(orderId: order.orderId) == 0)
+        // Pas de cascade : une commande portant des encaissements ne peut pas être supprimée (la clé étrangère refuse).
+        #expect(throws: SQLiteError.self) { try db.run("DELETE FROM Orders WHERE Id = ?", [.uuid(order.orderId)]) }
+        #expect(try payments.paidCents(orderId: order.orderId) == 1500)
     }
 
     @Test func pickupNumbersWrapAtNinetyNineAndResetEachDay() throws {

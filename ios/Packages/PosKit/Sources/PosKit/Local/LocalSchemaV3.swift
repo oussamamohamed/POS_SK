@@ -65,7 +65,7 @@ extension LocalMigrator {
 
     CREATE TABLE NonFiscalPayments (
         Id TEXT NOT NULL PRIMARY KEY,
-        OrderId TEXT NOT NULL REFERENCES Orders (Id) ON DELETE CASCADE,
+        OrderId TEXT NOT NULL REFERENCES Orders (Id),
         TerminalId TEXT NOT NULL,
         ReceiptNumber TEXT NOT NULL,
         Method INTEGER NOT NULL,

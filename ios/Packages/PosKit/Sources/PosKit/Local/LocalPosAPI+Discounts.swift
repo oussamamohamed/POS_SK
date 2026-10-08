@@ -10,10 +10,11 @@ extension LocalPosAPI {
         try requireAuth()
         let trimmed = reason.trimmingCharacters(in: .whitespacesAndNewlines)
         guard value >= 0, !trimmed.isEmpty, !(type == .percentage && value > 100) else { throw Self.discountFailed }
-        let orders = orderRepository
+        let orders = orderRepository, payments = paymentRepository
         try db.transaction {
             guard let order = try orders.order(id: orderId) else { throw Self.discountFailed }
             guard try orders.status(of: orderId)?.isModifiable == true else { throw APIError.localOrderClosed }
+            guard try payments.paidCents(orderId: orderId) == 0 else { throw APIError.localOrderPartiallyPaid }
             let totals = OrderMath.totals(
                 lines: order.lines.map(CartLine.init(serverLine:)), destination: order.destination,
                 discount: GlobalDiscount(type: type, value: value, reason: trimmed)
@@ -29,10 +30,11 @@ extension LocalPosAPI {
     public func removeDiscount(orderId: UUID) async throws {
         try requireAuth()
         // Écart assumé : commande inconnue → 404 (le .NET lève une exception non gérée) ; commande réglée ou annulée → 409.
-        let orders = orderRepository
+        let orders = orderRepository, payments = paymentRepository
         try db.transaction {
             guard let status = try orders.status(of: orderId) else { throw APIError.notFound("Commande introuvable.") }
             guard status.isModifiable else { throw APIError.localOrderClosed }
+            guard try payments.paidCents(orderId: orderId) == 0 else { throw APIError.localOrderPartiallyPaid }
             _ = try orders.setDiscount(orderId: orderId, type: nil, value: 0, reason: nil)
         }
     }
@@ -42,10 +44,11 @@ extension LocalPosAPI {
         try requireAuth()
         let trimmed = reason.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { throw Self.compFailed }
-        let orders = orderRepository
+        let orders = orderRepository, payments = paymentRepository
         try db.transaction {
             guard let order = try orders.order(id: orderId) else { throw Self.compFailed }
             guard try orders.status(of: orderId)?.isModifiable == true else { throw APIError.localOrderClosed }
+            guard try payments.paidCents(orderId: orderId) == 0 else { throw APIError.localOrderPartiallyPaid }
             guard let line = order.lines.first(where: { $0.lineId == lineId }) else { throw Self.compFailed }
             guard try orders.comp(lineId: lineId, orderId: orderId, reason: trimmed) else { throw Self.compFailed }
             try orders.insertDiscountAudit(
