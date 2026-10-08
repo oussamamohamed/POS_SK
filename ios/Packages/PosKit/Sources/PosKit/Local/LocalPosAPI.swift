@@ -34,6 +34,7 @@ public actor LocalPosAPI: PosAPI {
     var paymentRepository: LocalPaymentRepository { LocalPaymentRepository(db: db) }
     var holdRepository: LocalHoldRepository { LocalHoldRepository(db: db) }
     var hotelRepository: LocalHotelRepository { LocalHotelRepository(db: db) }
+    var printerRepository: LocalPrinterRepository { LocalPrinterRepository(db: db) }
 
     func unsupported(_ name: String = #function) -> APIError {
         .server(status: 501, message: "Non disponible en mode autonome : \(name)")

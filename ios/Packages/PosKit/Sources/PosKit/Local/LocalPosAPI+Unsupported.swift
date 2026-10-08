@@ -21,15 +21,6 @@ extension LocalPosAPI {
     public func createArchive(periodClosureId: UUID) async throws -> FiscalArchive { throw unsupported() }
     public func verifyArchive(data: Data, fileName: String) async throws -> ArchiveVerificationResult { throw unsupported() }
 
-    // MARK: Imprimantes (retiré par la tâche 4)
-    public func printers() async throws -> [Printer] { throw unsupported() }
-    public func savePrinter(_ printer: Printer, isNew: Bool) async throws { throw unsupported() }
-    public func testPrinter(id: UUID) async throws -> TestPrintResult { throw unsupported() }
-    public func printerStatuses() async throws -> [PrinterStatus] { throw unsupported() }
-    public func printJobs(printerId: UUID) async throws -> [PrintJobInfo] { throw unsupported() }
-    public func retryPrintJob(id: UUID) async throws { throw unsupported() }
-    public func cancelPrintJob(id: UUID) async throws { throw unsupported() }
-
     // MARK: Happy Hour, statut et dérogations (retiré par la tâche 6)
     public func happyHourStatus(terminalId: String) async throws -> HappyHourStatus { throw unsupported() }
     public func happyHourPricing(terminalId: String) async throws -> HappyHourPricingTable { throw unsupported() }
