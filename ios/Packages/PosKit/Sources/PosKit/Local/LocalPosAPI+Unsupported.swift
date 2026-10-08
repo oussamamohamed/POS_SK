@@ -27,13 +27,6 @@ extension LocalPosAPI {
     public func activateHappyHourOverride(terminalId: String, pin: String, minutes: Int, reason: String) async throws -> OperationResult { throw unsupported() }
     public func stopHappyHourOverride(terminalId: String, pin: String, reason: String) async throws -> OperationResult { throw unsupported() }
 
-    // MARK: Happy Hour, plannings (retiré par la tâche 5)
-    public func happyHourSchedules() async throws -> [HappyHourSchedule] { throw unsupported() }
-    public func createHappyHourSchedule(_ schedule: HappyHourSchedule) async throws -> UUID? { throw unsupported() }
-    public func deleteHappyHourSchedule(id: UUID) async throws { throw unsupported() }
-    public func applyHappyHourRules(scheduleId: UUID, _ request: BatchPriceRulesRequest) async throws -> Int { throw unsupported() }
-    public func deleteHappyHourRules(scheduleId: UUID, ruleIds: [UUID]) async throws { throw unsupported() }
-
     // MARK: Réseau (retiré par la tâche 7)
     public func networkInfo() async throws -> NetworkInfo { throw unsupported() }
     public func syncStatus() async throws -> SyncStatus { throw unsupported() }

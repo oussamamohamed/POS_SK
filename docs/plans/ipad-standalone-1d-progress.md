@@ -10,6 +10,6 @@ Base de référence (avant tâche 1) : PosKit 288 · .NET et web inchangés (auc
 | 2 Terminal fixe T01 | fait | 295 | |
 | 3 Durcissement SQLite et sauvegarde | fait | 301 | |
 | 4 Configuration des imprimantes | fait | 306 | |
-| 5 Happy Hour : plannings et règles | à faire | | |
+| 5 Happy Hour : plannings et règles | fait | 313 | |
 | 6 Happy Hour : statut, tarifs, dérogations | à faire | | |
 | 7 Réseau, base vierge, première configuration | à faire | | |
