@@ -80,6 +80,10 @@ final class SQLiteDatabase {
         handle = db
         try exec("PRAGMA foreign_keys = ON")
         try exec("PRAGMA journal_mode = WAL")
+        // Attend jusqu'à 5 s un verrou tenu par une autre connexion au lieu d'échouer aussitôt.
+        try exec("PRAGMA busy_timeout = 5000")
+        // FULL : une coupure de courant ne doit pas faire perdre la dernière vente validée (NORMAL, défaut du mode WAL, le permet).
+        try exec("PRAGMA synchronous = FULL")
     }
 
     deinit { sqlite3_close(handle) }
@@ -142,6 +146,12 @@ final class SQLiteDatabase {
             try? exec("ROLLBACK")
             throw error
         }
+    }
+
+    /// Copie cohérente de la base (même en mode WAL) dans un nouveau fichier. `VACUUM INTO` refuse d'écraser un fichier existant
+    /// et ne s'exécute pas dans une transaction.
+    func backup(to path: String) throws {
+        try run("VACUUM INTO ?", [.text(path)])
     }
 
     func userVersion() throws -> Int { try query("PRAGMA user_version").first?.int("user_version") ?? 0 }
