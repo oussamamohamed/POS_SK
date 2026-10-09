@@ -28,15 +28,20 @@ struct LocalFloorRepository {
         )
     }
 
-    /// Réglages initiaux : valeurs par défaut de l'entité `RestaurantSettings` du .NET.
+    /// Réglages de démonstration (valeurs de `Program.SeedDatabase`).
     func insertDefaultSettings() throws {
+        try insertSettings(companyName: "RESTAURANT L'ANTIGRAVITE", addressLines: "12 Rue de la Gastronomie\n75001 Paris", siret: "88877766600012", vatNumber: "FR12888777666")
+    }
+
+    /// Réglages initiaux : langues et exercice par défaut de l'entité `RestaurantSettings` du .NET.
+    func insertSettings(companyName: String, addressLines: String, siret: String, vatNumber: String) throws {
         try db.run(
             """
             INSERT INTO RestaurantSettings (Id, ReceiptLanguage, KitchenTicketLanguage, CompanyName, AddressLines, Siret, VatNumber,
                 CertificateNumber, FiscalYearStartMonth, FiscalYearStartDay, UpdatedAtUtc)
             VALUES (1, 'fr', 'fr', ?, ?, ?, ?, NULL, 1, 1, ?)
             """,
-            [.text("RESTAURANT L'ANTIGRAVITE"), .text("12 Rue de la Gastronomie\n75001 Paris"), .text("88877766600012"), .text("FR12888777666"), .date(Date())]
+            [.text(companyName), .text(addressLines), .text(siret), .text(vatNumber), .date(Date())]
         )
     }
 

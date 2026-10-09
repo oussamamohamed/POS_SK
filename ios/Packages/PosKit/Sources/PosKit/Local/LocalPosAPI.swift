@@ -16,10 +16,10 @@ public actor LocalPosAPI: PosAPI {
     public static let standaloneTerminalId = "T01"
 
     /// `path` : fichier SQLite à créer ou rouvrir, ou `":memory:"` (tests).
-    public init(path: String, clock: @escaping @Sendable () -> Date = { Date() }, calendar: Calendar = .current) throws {
+    public init(path: String, seed: LocalSeedMode = .demo, clock: @escaping @Sendable () -> Date = { Date() }, calendar: Calendar = .current) throws {
         let db = try SQLiteDatabase(path: path)
         try LocalMigrator.migrate(db)
-        try LocalSeeder.seedIfEmpty(db)
+        try LocalSeeder.seedIfEmpty(db, mode: seed)
         self.db = db
         self.clock = clock
         self.calendar = calendar

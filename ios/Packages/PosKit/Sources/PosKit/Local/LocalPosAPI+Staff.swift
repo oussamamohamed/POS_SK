@@ -28,7 +28,7 @@ extension LocalPosAPI {
         _ = try staffRepository.update(id: id, name: current.name, role: current.role, pin: nil, isActive: false)
     }
 
-    private func validate(pin: String) throws {
+    func validate(pin: String) throws {
         guard pin.count == Self.pinLength, pin.allSatisfy(\.isASCII), pin.allSatisfy(\.isNumber) else {
             throw APIError.server(status: 400, message: "Le code PIN doit comporter \(Self.pinLength) chiffres.")
         }

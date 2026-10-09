@@ -20,9 +20,4 @@ extension LocalPosAPI {
     public func archives() async throws -> [FiscalArchive] { throw unsupported() }
     public func createArchive(periodClosureId: UUID) async throws -> FiscalArchive { throw unsupported() }
     public func verifyArchive(data: Data, fileName: String) async throws -> ArchiveVerificationResult { throw unsupported() }
-
-    // MARK: Réseau (retiré par la tâche 7)
-    public func networkInfo() async throws -> NetworkInfo { throw unsupported() }
-    public func syncStatus() async throws -> SyncStatus { throw unsupported() }
-    public func forceSync() async throws { throw unsupported() }
 }
