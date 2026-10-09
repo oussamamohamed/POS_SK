@@ -112,6 +112,8 @@ final class AppEnvironment {
         } else {
             mode = AppMode.resolve(stored: stored, hasPairedCredentials: serverSettings.isPaired)
         }
+        // Reprise d'un iPad déjà appairé avant la mise à jour : on mémorise « serveur » pour que la dissociation ne rouvre pas le choix.
+        if stored == nil, mode == .server { defaults.set(AppMode.server.rawValue, forKey: AppMode.storageKey) }
         let settings = mode == .standalone ? Self.standaloneSettings(defaults: defaults) : serverSettings
         var api: LocalPosAPI?
         var startupError: String?
