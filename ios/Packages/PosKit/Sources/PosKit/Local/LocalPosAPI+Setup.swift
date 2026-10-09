@@ -20,9 +20,16 @@ public struct LocalSetup: Sendable {
 }
 
 extension LocalPosAPI {
-    /// `true` tant qu'aucun responsable actif n'existe (base vierge) : l'application doit alors proposer la configuration initiale.
+    /// Ouvre le fichier d'une installation réelle : jamais de comptes ni de données de démonstration (`seed: .blank`).
+    /// C'est le seul point d'entrée de la production ; le défaut `.demo` de l'initialiseur est réservé aux tests.
+    public static func openStandalone(path: String) throws -> LocalPosAPI {
+        try LocalPosAPI(path: path, seed: .blank)
+    }
+
+    /// `true` tant qu'aucun compte n'existe (base vierge) : l'application doit alors proposer la configuration initiale.
+    /// Même critère que la garde « déjà configurée » (409) de `completeFirstRun`.
     public func needsSetup() async throws -> Bool {
-        try staffRepository.members().allSatisfy { !($0.isActive && $0.role.isManager) }
+        try staffRepository.members().isEmpty
     }
 
     /// Crée le premier responsable (rôle `admin`) et l'identité de l'établissement d'une base vierge. Refusé (409) dès qu'un compte

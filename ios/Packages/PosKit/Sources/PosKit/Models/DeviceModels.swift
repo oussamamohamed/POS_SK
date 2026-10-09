@@ -43,6 +43,12 @@ public struct DeviceCredentials: Codable, Hashable, Sendable {
         deviceId: UUID(uuidString: "00000000-0000-0000-0000-0000000000D1")!,
         token: "device-token-demo", terminalId: "T01", name: "iPad démo", role: "Caisse", serverName: "Serveur démo"
     ))
+
+    /// Identité du poste en mode autonome : l'iPad est son propre terminal (`T01`), sans appairage ni serveur.
+    public static let standalone = DeviceCredentials(PairResponse(
+        deviceId: UUID(uuidString: "00000000-0000-0000-0000-0000000000A1")!,
+        token: "standalone", terminalId: LocalPosAPI.standaloneTerminalId, name: "Cet iPad", role: "Autonome", serverName: "Mode autonome"
+    ))
 }
 
 /// Contenu du QR affiché par le back-office : `posdevice://pair?url=<serveur>&code=<code>`.
