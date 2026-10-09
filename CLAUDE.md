@@ -43,7 +43,7 @@ POS_API_URL=http://localhost:5080 ./scripts/test.sh contract   # live flow again
 cd Packages/PosKit && swift test --filter <TestName>           # single unit test
 ```
 
-Test-only launch args: `-UITestMode` (in-memory backend, no server), `-UITestPaired` (start already paired), `-UITestPin 1234`, `-UITestSection floor|kitchen|fiscal|admin`, `-UITestHappyHour`.
+Test-only launch args: `-UITestMode` (in-memory backend, no server), `-UITestPaired` (start already paired), `-UITestPin 1234`, `-UITestSection floor|kitchen|fiscal|admin`, `-UITestHappyHour`, `-UITestLocal` (mode autonome, base SQLite en mémoire avec données de démonstration), `-UITestLocalBlank` (mode autonome vierge : première configuration), `-UITestModeChoice` (écran « Serveur / Autonome »).
 
 ### Web E2E (Playwright)
 

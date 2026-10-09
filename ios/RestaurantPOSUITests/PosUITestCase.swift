@@ -42,6 +42,30 @@ class PosUITestCase: XCTestCase {
         return app
     }
 
+    /// Lance l'app en mode autonome sur une base SQLite en mémoire.
+    /// - Parameters:
+    ///   - blank: base vierge (première configuration) au lieu des données de démonstration.
+    ///   - modeChoice: aucun mode mémorisé, l'écran « Serveur / Autonome » s'affiche.
+    ///   - pin: déverrouillage automatique (données de démonstration uniquement ; nil = rester sur l'écran PIN).
+    @discardableResult
+    func launchStandalone(blank: Bool = false, modeChoice: Bool = false, pin: String? = "1234", language: String = "fr") -> XCUIApplication {
+        app = XCUIApplication()
+        app.launchArguments = ["-UITestMode"]
+        if modeChoice {
+            app.launchArguments.append("-UITestModeChoice")
+        } else {
+            app.launchArguments.append(blank ? "-UITestLocalBlank" : "-UITestLocal")
+        }
+        let unlocks = pin != nil && !blank && !modeChoice
+        if let pin, unlocks { app.launchArguments += ["-UITestPin", pin] }
+        app.launchArguments += ["-AppleLanguages", "(\(language))", "-AppleLocale", language == "ar" ? "ar" : "\(language)_FR"]
+        app.launch()
+        if unlocks {
+            XCTAssertTrue(app.buttons["nav.order"].waitForExistence(timeout: 10), "La coque principale doit s'afficher après connexion")
+        }
+        return app
+    }
+
     // MARK: Raccourcis
 
     func element(_ id: String) -> XCUIElement {
