@@ -633,6 +633,11 @@ struct NetworkSettingsView: View {
     var body: some View {
         let network = model.network
         Form {
+            if environment.isStandalone {
+                Section("mode.standalone_status") {
+                    Text("mode.standalone_detail").font(.footnote).foregroundStyle(Theme.inkMuted)
+                }
+            } else {
             Section("common.master_server_section") {
                 LabeledContent("admin.address_label", value: environment.launch.isUITest ? String(localized: "admin.demo_data_label") : model.settings.serverURL)
                 LabeledContent("admin.status_label", value: network.isOnline ? String(localized: "common.status_online_simple") : String(localized: "common.status_offline"))
@@ -655,6 +660,7 @@ struct NetworkSettingsView: View {
                 }
                 Button("admin.force_sync_button") { Task { await network.forceSync() } }
                     .accessibilityIdentifier("network.forceSync")
+            }
             }
             Section("admin.terminal_section") {
                 LabeledContent("admin.identifier_label", value: model.settings.terminalId)

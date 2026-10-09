@@ -5,12 +5,14 @@ import PosKit
 struct MainShell: View {
     @Environment(AppModel.self) private var model
     @Environment(Router.self) private var router
+    @Environment(AppEnvironment.self) private var environment
 
     var body: some View {
         HStack(spacing: 0) {
             SidebarRail()
             VStack(spacing: 0) {
                 HeaderBar()
+                if environment.isStandalone { StandaloneBanner() }
                 if model.happyHour.isActive {
                     HappyHourBanner()
                 }
@@ -43,6 +45,13 @@ struct MainShell: View {
 struct SidebarRail: View {
     @Environment(AppModel.self) private var model
     @Environment(Router.self) private var router
+    @Environment(AppEnvironment.self) private var environment
+
+    /// Le fiscal n'existe pas encore en mode autonome (sous-projet 2) : sa section est masquée plutôt que de répondre « non disponible ».
+    private func isVisible(_ section: Router.Section) -> Bool {
+        if environment.isStandalone && section == .fiscal { return false }
+        return !section.requiresManager || model.session.isManager
+    }
 
     var body: some View {
         VStack(spacing: Theme.Space.s) {
@@ -56,7 +65,7 @@ struct SidebarRail: View {
                 .accessibilityHidden(true)
 
             ForEach(Router.Section.allCases) { section in
-                if !section.requiresManager || model.session.isManager {
+                if isVisible(section) {
                     RailButton(section: section, isSelected: router.section == section) {
                         router.section = section
                     }

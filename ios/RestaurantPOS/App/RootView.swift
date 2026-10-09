@@ -3,10 +3,21 @@ import PosKit
 
 struct RootView: View {
     @Environment(AppModel.self) private var model
+    @Environment(AppEnvironment.self) private var environment
 
     var body: some View {
         ZStack(alignment: .top) {
-            if !model.settings.isPaired {
+            if let error = environment.startupError {
+                StartupErrorScreen(message: error)
+            } else if environment.mode == nil {
+                ModeChoiceScreen()
+                    .transition(.opacity)
+            } else if environment.isStandalone && environment.setupState == .checking {
+                ProgressView().controlSize(.large)
+            } else if environment.isStandalone && environment.setupState == .needed {
+                FirstRunScreen()
+                    .transition(.opacity)
+            } else if !model.settings.isPaired {
                 PairingScreen()
                     .transition(.opacity)
             } else if model.session.isUnlocked {
@@ -26,6 +37,7 @@ struct RootView: View {
         }
         .animation(.easeInOut(duration: 0.25), value: model.session.isUnlocked)
         .animation(.easeInOut(duration: 0.25), value: model.settings.isPaired)
+        .task(id: environment.generation) { await environment.refreshSetup() }
         .task(id: model.session.currentOperator?.id) {
             guard model.session.isUnlocked, !model.isBootstrapped else { return }
             await model.bootstrap()
@@ -84,12 +96,19 @@ struct LockScreen: View {
             VStack {
                 Spacer()
                 HStack {
-                    Label(environment.launch.isUITest ? String(localized: "login.demo_mode_label") : model.settings.serverURL, systemImage: "server.rack")
-                        .font(.footnote)
-                        .foregroundStyle(Theme.inkMuted)
-                    Button("login.change_server") { showsServerSettings = true }
-                        .font(.footnote.weight(.semibold))
-                        .accessibilityIdentifier("lock.server")
+                    if environment.isStandalone {
+                        Label("mode.standalone_status", systemImage: "ipad")
+                            .font(.footnote)
+                            .foregroundStyle(Theme.inkMuted)
+                            .accessibilityIdentifier("lock.standalone")
+                    } else {
+                        Label(environment.launch.isUITest ? String(localized: "login.demo_mode_label") : model.settings.serverURL, systemImage: "server.rack")
+                            .font(.footnote)
+                            .foregroundStyle(Theme.inkMuted)
+                        Button("login.change_server") { showsServerSettings = true }
+                            .font(.footnote.weight(.semibold))
+                            .accessibilityIdentifier("lock.server")
+                    }
                 }
                 .padding()
             }

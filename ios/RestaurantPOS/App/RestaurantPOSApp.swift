@@ -32,6 +32,9 @@ struct RestaurantPOSApp: App {
 /// - `-UITestPin 1234` : déverrouillage automatique (mode test uniquement).
 /// - `-UITestSection floor` : écran affiché après connexion (mode test uniquement).
 /// - `-UITestPaired` : poste déjà appairé (sinon écran d'appairage, mode test uniquement).
+/// - `-UITestLocal` : mode autonome sur une base SQLite en mémoire avec les données de démonstration (mode test uniquement).
+/// - `-UITestLocalBlank` : mode autonome sur une base en mémoire vierge, donc première configuration (mode test uniquement).
+/// - `-UITestModeChoice` : aucun mode mémorisé, l'écran « Serveur / Autonome » s'affiche (mode test uniquement).
 struct LaunchConfiguration {
     let isUITest: Bool
     let forceHappyHour: Bool
@@ -40,6 +43,9 @@ struct LaunchConfiguration {
     let autoPin: String?
     let initialSection: Router.Section?
     let startsPaired: Bool
+    let usesLocalBackend: Bool
+    let localIsBlank: Bool
+    let showsModeChoice: Bool
 
     static let current: LaunchConfiguration = {
         let args = ProcessInfo.processInfo.arguments
@@ -52,7 +58,10 @@ struct LaunchConfiguration {
             serverOverride: ProcessInfo.processInfo.environment["POS_SERVER_URL"],
             autoPin: isUITest ? defaults.string(forKey: "UITestPin") : nil,
             initialSection: isUITest ? defaults.string(forKey: "UITestSection").flatMap(Router.Section.init(rawValue:)) : nil,
-            startsPaired: isUITest && args.contains("-UITestPaired")
+            startsPaired: isUITest && args.contains("-UITestPaired"),
+            usesLocalBackend: isUITest && (args.contains("-UITestLocal") || args.contains("-UITestLocalBlank")),
+            localIsBlank: isUITest && args.contains("-UITestLocalBlank"),
+            showsModeChoice: isUITest && args.contains("-UITestModeChoice")
         )
     }()
 }
@@ -60,24 +69,63 @@ struct LaunchConfiguration {
 /// Construit l'`AppModel` selon le mode de lancement et le reconstruit si le serveur change.
 @MainActor @Observable
 final class AppEnvironment {
+    /// Première configuration d'une installation autonome.
+    enum SetupState { case checking, needed, done }
+
     private(set) var model: AppModel
     let router = Router()
-    let settings: TerminalSettings
+    private(set) var settings: TerminalSettings
     private(set) var generation = 0
     let launch = LaunchConfiguration.current
+    /// `nil` tant que l'utilisateur n'a pas choisi (premier lancement, aucun poste appairé).
+    private(set) var mode: AppMode?
+    private(set) var setupState = SetupState.done
+    /// Ouverture de la base locale impossible : l'application affiche l'erreur au lieu de démarrer.
+    private(set) var startupError: String?
+    @ObservationIgnored private let defaults: UserDefaults
+    /// **Une seule instance** de l'acteur pour tout le processus : la recréer ouvrirait une seconde connexion sur le même fichier.
+    @ObservationIgnored private var localAPI: LocalPosAPI?
+
+    var isStandalone: Bool { mode == .standalone }
 
     init() {
         let launch = LaunchConfiguration.current
+        let defaults: UserDefaults
+        let serverSettings: TerminalSettings
         if launch.isUITest {
             UIView.setAnimationsEnabled(false)
-            let defaults = UserDefaults(suiteName: "RestaurantPOS.UITests")!
+            defaults = UserDefaults(suiteName: "RestaurantPOS.UITests")!
             defaults.removePersistentDomain(forName: "RestaurantPOS.UITests")
-            settings = TerminalSettings(defaults: defaults, credentialStore: InMemoryCredentialStore(launch.startsPaired ? .demo : nil))
+            serverSettings = TerminalSettings(defaults: defaults, credentialStore: InMemoryCredentialStore(launch.startsPaired ? .demo : nil))
         } else {
-            settings = TerminalSettings(credentialStore: KeychainCredentialStore())
+            defaults = .standard
+            serverSettings = TerminalSettings(credentialStore: KeychainCredentialStore())
         }
-        if let override = launch.serverOverride { settings.serverURL = override }
-        model = AppEnvironment.makeModel(settings: settings, launch: launch)
+        if let override = launch.serverOverride { serverSettings.serverURL = override }
+
+        let stored = defaults.string(forKey: AppMode.storageKey).flatMap(AppMode.init(rawValue:))
+        let mode: AppMode?
+        if launch.usesLocalBackend {
+            mode = .standalone
+        } else if launch.isUITest {
+            mode = launch.showsModeChoice ? nil : .server
+        } else {
+            mode = AppMode.resolve(stored: stored, hasPairedCredentials: serverSettings.isPaired)
+        }
+        let settings = mode == .standalone ? Self.standaloneSettings(defaults: defaults) : serverSettings
+        var api: LocalPosAPI?
+        var startupError: String?
+        if mode == .standalone {
+            do { api = try Self.openLocal(launch: launch) } catch { startupError = Self.describe(error) }
+        }
+
+        self.defaults = defaults
+        self.mode = mode
+        self.settings = settings
+        self.localAPI = api
+        self.startupError = startupError
+        self.setupState = mode == .standalone && startupError == nil ? .checking : .done
+        model = Self.makeModel(settings: settings, launch: launch, localAPI: api)
         if let section = launch.initialSection { router.section = section }
         if let pin = launch.autoPin {
             let session = model.session
@@ -85,7 +133,24 @@ final class AppEnvironment {
         }
     }
 
-    private static func makeModel(settings: TerminalSettings, launch: LaunchConfiguration) -> AppModel {
+    private static func standaloneSettings(defaults: UserDefaults) -> TerminalSettings {
+        TerminalSettings(defaults: defaults, credentialStore: InMemoryCredentialStore(.standalone))
+    }
+
+    /// Production : fichier protégé, jamais de données de démonstration. Tests : base en mémoire (démonstration ou vierge).
+    private static func openLocal(launch: LaunchConfiguration) throws -> LocalPosAPI {
+        if launch.isUITest {
+            return try LocalPosAPI(path: ":memory:", seed: launch.usesLocalBackend && !launch.localIsBlank ? .demo : .blank)
+        }
+        return try LocalPosAPI.openStandalone(path: LocalDatabaseLocation.defaultURL().path)
+    }
+
+    private static func describe(_ error: Error) -> String {
+        (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
+    }
+
+    private static func makeModel(settings: TerminalSettings, launch: LaunchConfiguration, localAPI: LocalPosAPI?) -> AppModel {
+        if let localAPI { return AppModel(api: localAPI, settings: settings) }
         if launch.isUITest {
             let api = InMemoryPosAPI()
             if launch.forceHappyHour { Task { await api.forceHappyHour(minutes: 45) } }
@@ -98,10 +163,47 @@ final class AppEnvironment {
         return AppModel(api: HTTPPosAPI(baseURL: url, deviceToken: settings.credentials?.token), settings: settings, realtimeBaseURL: url)
     }
 
-    /// Applique une nouvelle adresse serveur : nouvelle session, nouvel état.
+    /// Mémorise le choix du mode et reconstruit l'état. Le mode autonome ouvre la base (une seule fois) ; une erreur d'ouverture est
+    /// affichée par `StartupErrorScreen`.
+    func choose(_ newMode: AppMode) {
+        defaults.set(newMode.rawValue, forKey: AppMode.storageKey)
+        model.stopRealtime()
+        mode = newMode
+        startupError = nil
+        if newMode == .standalone {
+            settings = Self.standaloneSettings(defaults: defaults)
+            if localAPI == nil {
+                do { localAPI = try Self.openLocal(launch: launch) } catch { startupError = Self.describe(error) }
+            }
+            setupState = startupError == nil ? .checking : .done
+        } else {
+            setupState = .done
+        }
+        model = Self.makeModel(settings: settings, launch: launch, localAPI: newMode == .standalone ? localAPI : nil)
+        router.section = .order
+        generation += 1
+    }
+
+    /// Nouvel essai après une erreur d'ouverture de la base.
+    func retryStartup() { choose(mode ?? .standalone) }
+
+    /// Mode autonome : la base est-elle vierge ? (première configuration à faire)
+    func refreshSetup() async {
+        guard isStandalone, let localAPI else { return }
+        do { setupState = try await localAPI.needsSetup() ? .needed : .done } catch { startupError = Self.describe(error) }
+    }
+
+    /// Crée le premier responsable et l'établissement ; lève l'erreur de validation du modèle pour l'afficher dans le formulaire.
+    func completeSetup(_ setup: LocalSetup) async throws {
+        guard let localAPI else { return }
+        try await localAPI.completeFirstRun(setup)
+        setupState = .done
+    }
+
+    /// Applique une nouvelle adresse serveur : nouvelle session, nouvel état (mode serveur).
     func reconnect() {
         model.stopRealtime()
-        model = AppEnvironment.makeModel(settings: settings, launch: launch)
+        model = Self.makeModel(settings: settings, launch: launch, localAPI: nil)
         router.section = .order
         generation += 1
     }
@@ -116,9 +218,9 @@ final class AppEnvironment {
         return true
     }
 
-    /// Le serveur a changé d'adresse (DHCP) : on le retrouve par son nom Bonjour.
+    /// Le serveur a changé d'adresse (DHCP) : on le retrouve par son nom Bonjour. Sans objet en mode autonome.
     func rediscoverServerIfUnreachable() async {
-        guard !launch.isUITest, let name = settings.credentials?.serverName else { return }
+        guard !launch.isUITest, !isStandalone, let name = settings.credentials?.serverName else { return }
         if (try? await model.api.health()) != nil { return }
         guard let url = await ServerBrowser.resolve(name: name), url.absoluteString != settings.serverURL else { return }
         settings.serverURL = url.absoluteString
