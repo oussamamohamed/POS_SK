@@ -8,5 +8,5 @@ Base de référence (avant tâche 1) : PosKit 329 · .NET et web inchangés (auc
 |---|---|---|---|---|
 | 1 Briques PosKit | fait | 335 | - | aucun |
 | 2 Environnement, aiguillage, choix du mode | fait | 335 | SessionUITests + PairingUITests verts | aucun |
-| 3 Première configuration | à faire | | | |
+| 3 Première configuration | fait | 335 | - (tâche 4) | aucun |
 | 4 Tests UI et documentation | à faire | | | |
