@@ -76,14 +76,13 @@ extension LocalPosAPI {
             throw insufficient
         }
         guard supervisor.role.isManager else { throw insufficient }
-        try resetFailedPins()
         return supervisor
     }
 
     /// Dérogation de responsable : remplace la précédente, durée par défaut 60 minutes. L'audit JET viendra avec le sous-projet fiscal.
     public func activateHappyHourOverride(terminalId: String, pin: String, minutes: Int, reason: String) async throws -> OperationResult {
         let supervisor = try authenticateSupervisor(pin: pin)
-        let duration = minutes > 0 ? minutes : 60
+        let duration = minutes <= 0 ? 60 : min(minutes, 1440)
         let now = clock()
         let repository = happyHourRepository
         try db.transaction {

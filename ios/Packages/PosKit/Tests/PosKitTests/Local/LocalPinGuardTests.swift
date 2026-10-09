@@ -43,13 +43,40 @@ struct LocalPinGuardTests {
         #expect(try await api.login(pin: "1234").success)
     }
 
-    @Test func aSuccessfulLoginClearsTheFailures() async throws {
+    @Test func aSuccessfulLoginDoesNotClearTheFailures() async throws {
         let clock = LocalTestClock()
         let api = try await makeLocalAPI(clock: clock)
         try await failLogin(api, times: 4)
         #expect(try await api.login(pin: "1234").success)
+        try await failLogin(api, times: 1)
+        await #expect(throws: APIError.rateLimited(nil)) { try await api.login(pin: "1234") }
+    }
+
+    @Test func failuresAgeOutAfterASuccessfulLogin() async throws {
+        let clock = LocalTestClock()
+        let api = try await makeLocalAPI(clock: clock)
         try await failLogin(api, times: 4)
         #expect(try await api.login(pin: "1234").success)
+        clock.advance(61)
+        try await failLogin(api, times: 1)
+        #expect(try await api.login(pin: "1234").success)
+    }
+
+    @Test func aLockFarInTheFutureBecauseTheClockWentBackIsTreatedAsExpired() async throws {
+        let clock = LocalTestClock("2026-10-12T18:30:00Z")
+        let api = try await makeLocalAPI(clock: clock)
+        try await failLogin(api, times: 5)
+        clock.set("2026-10-12T15:30:00Z")
+        #expect(try await api.login(pin: "1234").success)
+    }
+
+    @Test func aSmallClockStepBackStaysLocked() async throws {
+        let clock = LocalTestClock("2026-10-12T18:30:00Z")
+        let api = try await makeLocalAPI(clock: clock)
+        try await failLogin(api, times: 5)
+        clock.advance(15)
+        clock.set("2026-10-12T18:30:05Z")  // recul de 10 s : il reste 25 s de verrou
+        await #expect(throws: APIError.rateLimited(nil)) { try await api.login(pin: "1234") }
     }
 
     @Test func lockoutSurvivesReopeningTheFile() async throws {

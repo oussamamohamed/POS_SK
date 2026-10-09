@@ -9,8 +9,9 @@ struct LocalPinGuard {
     static let window: TimeInterval = 60
     static let lockout: TimeInterval = 30
 
+    /// Un verrou à plus de `lockout` dans le futur est impossible : l'horloge a reculé, il est considéré expiré (sinon l'iPad resterait bloqué).
     func ensureAllowed(now: Date) throws {
-        guard let until = try db.query("SELECT LockedUntilUtc FROM LocalPinLockout WHERE Id = 1").first?.date("LockedUntilUtc"), until > now else { return }
+        guard let until = try db.query("SELECT LockedUntilUtc FROM LocalPinLockout WHERE Id = 1").first?.date("LockedUntilUtc"), until > now, until <= now.addingTimeInterval(Self.lockout) else { return }
         throw APIError.rateLimited(nil)
     }
 
@@ -25,13 +26,6 @@ struct LocalPinGuard {
                 [.date(now.addingTimeInterval(Self.lockout))]
             )
             try db.run("DELETE FROM LocalPinFailures")
-        }
-    }
-
-    func reset() throws {
-        try db.transaction {
-            try db.run("DELETE FROM LocalPinFailures")
-            try db.run("DELETE FROM LocalPinLockout")
         }
     }
 }

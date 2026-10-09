@@ -30,14 +30,6 @@ struct LocalAuthTests {
         await #expect(throws: APIError.rateLimited(nil)) { try await api.login(pin: "1234") }
     }
 
-    @Test func successResetsTheFailureCounter() async throws {
-        let api = try LocalPosAPI(path: ":memory:")
-        for _ in 0..<4 { _ = try await api.login(pin: "0000") }
-        #expect(try await api.login(pin: "1234").success)
-        for _ in 0..<4 { _ = try await api.login(pin: "0000") }
-        #expect(try await api.login(pin: "1234").success)
-    }
-
     @Test func protectedCallsNeedLogin() async throws {
         let api = try LocalPosAPI(path: ":memory:")
         await #expect(throws: APIError.unauthorized) { try await api.createStaff(name: "X", role: .waiter, pin: "1357") }

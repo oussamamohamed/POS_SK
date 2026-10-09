@@ -16,7 +16,7 @@ public actor LocalPosAPI: PosAPI {
     public static let standaloneTerminalId = "T01"
 
     /// `path` : fichier SQLite à créer ou rouvrir, ou `":memory:"` (tests).
-    public init(path: String, seed: LocalSeedMode = .demo, clock: @escaping @Sendable () -> Date = { Date() }, calendar: Calendar = .current) throws {
+    public init(path: String, seed: LocalSeedMode = .demo, clock: @escaping @Sendable () -> Date = { Date() }, calendar: Calendar = .autoupdatingCurrent) throws {
         let db = try SQLiteDatabase(path: path)
         try LocalMigrator.migrate(db)
         try LocalSeeder.seedIfEmpty(db, mode: seed)
@@ -52,7 +52,6 @@ public actor LocalPosAPI: PosAPI {
             try recordFailedPin()
             return LoginResponse(success: false, operatorId: nil, operatorName: nil, role: nil, token: nil, errorMessage: "Code PIN ou identifiants incorrects")
         }
-        try resetFailedPins()
         token = Self.tokenPrefix + member.id.uuidString
         return LoginResponse(success: true, operatorId: member.id, operatorName: member.name, role: member.role, token: token)
     }
@@ -63,8 +62,6 @@ public actor LocalPosAPI: PosAPI {
     func ensurePinAttemptsAllowed() throws { try pinGuard.ensureAllowed(now: clock()) }
 
     func recordFailedPin() throws { try pinGuard.recordFailure(now: clock()) }
-
-    func resetFailedPins() throws { try pinGuard.reset() }
 
     @discardableResult
     func requireAuth() throws -> StaffMember {

@@ -108,6 +108,15 @@ struct LocalHappyHourStatusTests {
         #expect(empty.isActive && empty.items.isEmpty)
     }
 
+    @Test func overrideDurationIsCappedAtOneDay() async throws {
+        let clock = LocalTestClock("2026-10-14T10:00:00Z")
+        let api = try await makeLocalAPI(clock: clock)
+        try await clearSchedules(api)
+        let result = try await api.activateHappyHourOverride(terminalId: "T01", pin: "1234", minutes: 100000, reason: "")
+        #expect(result.message == "Happy Hour activé/prolongé de 1440 minutes avec succès.")
+        #expect(try await api.happyHourStatus(terminalId: "T01").currentWindow?.remainingMinutes == 1440)
+    }
+
     @Test func supervisorOverrideStartsExtendsAndExpires() async throws {
         let clock = LocalTestClock("2026-10-14T10:00:00Z")  // mercredi, hors plage
         let api = try await makeLocalAPI(clock: clock)
