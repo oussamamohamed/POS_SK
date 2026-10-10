@@ -154,7 +154,7 @@ struct LocalFiscalRepositoryTests {
 
     @Test func storedDatesSurviveTheRoundTripOverManyTimestamps() throws {
         let (repo, _) = try makeRepository()
-        var generator = SystemRandomNumberGenerator()
+        var generator = SplitMix64(seed: 0x5EED_0525)
         for i in 0..<320 {
             let base = 1_760_000_000 + Double.random(in: 0..<1_000_000, using: &generator)
             let now = i % 3 == 0 ? Date(timeIntervalSince1970: floor(base) + 0.002 - 1e-9) : Date(timeIntervalSince1970: base)
@@ -162,5 +162,18 @@ struct LocalFiscalRepositoryTests {
             try repo.appendJournal(eventType: "TEST", payloadJson: "{}", terminalId: "T01", operatorId: nil, now: now)
         }
         #expect(try repo.verifyChains().isEmpty)
+    }
+}
+
+/// Générateur déterministe (SplitMix64) : le test d'aller-retour des dates reste reproductible.
+private struct SplitMix64: RandomNumberGenerator {
+    private var state: UInt64
+    init(seed: UInt64) { state = seed }
+    mutating func next() -> UInt64 {
+        state &+= 0x9E37_79B9_7F4A_7C15
+        var z = state
+        z = (z ^ (z >> 30)) &* 0xBF58_476D_1CE4_E5B9
+        z = (z ^ (z >> 27)) &* 0x94D0_49BB_1331_11EB
+        return z ^ (z >> 31)
     }
 }

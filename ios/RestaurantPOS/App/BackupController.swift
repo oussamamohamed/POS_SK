@@ -54,13 +54,20 @@ final class BackupController {
     /// Au premier plan : sauvegarde si la dernière date de plus de 24 h (ou n'existe pas) et que phrase et dossier sont configurés.
     func runIfDue() async {
         guard !isRunning else { return }
+        isRunning = true
+        defer { isRunning = false }
         await refresh()
         guard status?.isOverdue == true, let phrase = passphrases.load() else { return }
         _ = await perform(passphrase: phrase, scheduled: true)
     }
 
     /// Export manuel : la phrase est redemandée à l'utilisateur.
-    func exportNow(passphrase: String) async -> Bool { await perform(passphrase: passphrase, scheduled: false) }
+    func exportNow(passphrase: String) async -> Bool {
+        guard !isRunning else { return false }
+        isRunning = true
+        defer { isRunning = false }
+        return await perform(passphrase: passphrase, scheduled: false)
+    }
 
     private func perform(passphrase: String, scheduled: Bool) async -> Bool {
         guard let folder = resolveFolder() else {
@@ -69,8 +76,6 @@ final class BackupController {
         }
         let scoped = folder.startAccessingSecurityScopedResource()
         defer { if scoped { folder.stopAccessingSecurityScopedResource() } }
-        isRunning = true
-        defer { isRunning = false }
         do {
             if scheduled { _ = try await api.runScheduledBackup(to: folder, passphrase: passphrase) }
             else { _ = try await api.exportBackup(to: folder, passphrase: passphrase) }

@@ -20,6 +20,23 @@ struct LocalBackupTests {
         return db
     }
 
+    @Test func writeRemovesStaleTemporaryCopiesOnly() throws {
+        let tmp = FileManager.default.temporaryDirectory
+        let stale = tmp.appendingPathComponent("pos-\(UUID().uuidString).sqlite")
+        let fresh = tmp.appendingPathComponent("pos-\(UUID().uuidString).sqlite")
+        let unrelated = tmp.appendingPathComponent("autre-\(UUID().uuidString).sqlite")
+        for url in [stale, fresh, unrelated] { try Data("x".utf8).write(to: url) }
+        defer { for url in [stale, fresh, unrelated] { try? FileManager.default.removeItem(at: url) } }
+        try FileManager.default.setAttributes([.modificationDate: Date().addingTimeInterval(-7200)], ofItemAtPath: stale.path)
+        try FileManager.default.setAttributes([.modificationDate: Date().addingTimeInterval(-7200)], ofItemAtPath: unrelated.path)
+        let folder = try makeFolder()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        _ = try LocalBackupService.write(db: try makeDB(), to: folder, passphrase: "phrase de test", now: Date(), iterations: Self.fast)
+        #expect(!FileManager.default.fileExists(atPath: stale.path))
+        #expect(FileManager.default.fileExists(atPath: fresh.path))
+        #expect(FileManager.default.fileExists(atPath: unrelated.path))
+    }
+
     @Test func sealAndOpenRoundTrip() throws {
         let plain = Data("base de données".utf8)
         let sealed = try LocalBackupCrypto.seal(plain, passphrase: "phrase secrète 1", iterations: Self.fast)

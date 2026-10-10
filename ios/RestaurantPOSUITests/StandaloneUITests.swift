@@ -143,10 +143,26 @@ final class StandaloneUITests: PosUITestCase {
 
         tap("backup.export")
         fill("backup.export.passphrase", "phrase de test 1")
+        fill("backup.export.confirmPassphrase", "phrase de test 1")
         tap("backup.export.confirm")
 
         assertNotExists("backup.banner")
         XCTAssertFalse(label(of: "backup.lastSuccess").isEmpty)
+    }
+
+    func testExportWithDifferentPassphrasesIsRefused() throws {
+        let folder = NSTemporaryDirectory() + "ui-backup-\(UUID().uuidString)"
+        try FileManager.default.createDirectory(atPath: folder, withIntermediateDirectories: true)
+        launchStandalone(backupFolder: folder)
+        tap("nav.admin")
+        tap("admin.network")
+        tap("backup.export")
+        fill("backup.export.passphrase", "phrase de test 1")
+        fill("backup.export.confirmPassphrase", "phrase de test 2")
+        tap("backup.export.confirm")
+        assertExists("backup.export.mismatch")
+        assertExists("backup.export.passphrase")
+        XCTAssertTrue(try FileManager.default.contentsOfDirectory(atPath: folder).isEmpty)
     }
 
     func testAPassphraseMismatchIsRefused() {

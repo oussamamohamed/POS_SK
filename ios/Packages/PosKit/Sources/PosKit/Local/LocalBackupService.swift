@@ -21,14 +21,30 @@ enum LocalBackupService {
         guard FileManager.default.fileExists(atPath: folder.path, isDirectory: &isDirectory), isDirectory.boolValue else {
             throw CocoaError(.fileNoSuchFile)
         }
+        removeStaleTemporaryCopies(now: now)
         let temporary = FileManager.default.temporaryDirectory.appendingPathComponent("pos-\(UUID().uuidString).sqlite")
         defer { try? FileManager.default.removeItem(at: temporary) }
         try db.backup(to: temporary.path)
+        #if os(iOS)
+        // La copie en clair contient les hachages de PIN et la chaîne fiscale : illisible appareil verrouillé. Un échec abandonne la sauvegarde.
+        try FileManager.default.setAttributes([.protectionKey: FileProtectionType.complete], ofItemAtPath: temporary.path)
+        #endif
         let sealed = try LocalBackupCrypto.seal(try Data(contentsOf: temporary), passphrase: passphrase, iterations: iterations)
         let destination = folder.appendingPathComponent(fileName(now: now))
         try sealed.write(to: destination, options: writeOptions)
         try prune(folder: folder)
         return destination
+    }
+
+    /// Supprime les copies temporaires `pos-*.sqlite` orphelines (processus tué en cours de sauvegarde) de plus d'une heure ; rien d'autre.
+    static func removeStaleTemporaryCopies(now: Date, in directory: URL = FileManager.default.temporaryDirectory) {
+        let fm = FileManager.default
+        guard let names = try? fm.contentsOfDirectory(atPath: directory.path) else { return }
+        for name in names where name.hasPrefix("pos-") && name.hasSuffix(".sqlite") {
+            let url = directory.appendingPathComponent(name)
+            guard let modified = (try? fm.attributesOfItem(atPath: url.path))?[.modificationDate] as? Date, now.timeIntervalSince(modified) > 3600 else { continue }
+            try? fm.removeItem(at: url)
+        }
     }
 
     /// Déchiffre vers `destination` (fichier SQLite) puis vérifie les chaînes fiscales. Refuse (`destinationExists`) si `destination`,

@@ -82,11 +82,15 @@ private struct ExportSheet: View {
     let backup: BackupController
     @Environment(\.dismiss) private var dismiss
     @State private var phrase = ""
+    @State private var confirmation = ""
+    @State private var mismatch = false
 
     var body: some View {
         NavigationStack {
             Form {
                 SecureField("backup.export_passphrase", text: $phrase).accessibilityIdentifier("backup.export.passphrase")
+                SecureField("backup.passphrase_confirm", text: $confirmation).accessibilityIdentifier("backup.export.confirmPassphrase")
+                if mismatch { Text("backup.passphrase_mismatch").font(.footnote).foregroundStyle(Theme.warning).accessibilityIdentifier("backup.export.mismatch") }
                 if let error = backup.lastError { Text(error).font(.footnote).foregroundStyle(Theme.warning) }
             }
             .navigationTitle("backup.export_title")
@@ -94,6 +98,8 @@ private struct ExportSheet: View {
                 ToolbarItem(placement: .cancellationAction) { Button("backup.cancel") { dismiss() } }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("backup.export_confirm") {
+                        mismatch = phrase != confirmation
+                        guard !mismatch else { return }
                         Task { if await backup.exportNow(passphrase: phrase) { dismiss() } }
                     }
                     .disabled(backup.isRunning)
