@@ -13,3 +13,4 @@ Base de référence (avant tâche 1) : PosKit 335 · UI 47 · .NET 417
 | 5 Encaissement, chambre, annulation et duplicata sur la chaîne fiscale | fait | 418 | 369 | - | aucun |
 | 6 Audit JET : dérogations Happy Hour et annulations de mise en attente | fait | 418 | 372 | - | aucun |
 | 7 Sauvegarde chiffrée (format, écriture, rotation, restauration) | fait | 418 | 386 | - | aucun |
+| 8 Sauvegarde dans LocalPosAPI (export, programmée, état, Keychain) | fait | 418 | 393 | - | aucun |

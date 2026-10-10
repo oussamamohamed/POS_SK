@@ -8,6 +8,7 @@ public actor LocalPosAPI: PosAPI {
     /// Horloge et calendrier injectables : verrouillage des PIN, Happy Hour (heure locale) et tests sans attente réelle.
     let clock: @Sendable () -> Date
     let calendar: Calendar
+    var backupIterations = LocalBackupCrypto.defaultIterations
 
     private static let tokenPrefix = "local-"
     /// Identique à `SessionStore.pinLength` (isolé au MainActor, donc non réutilisable ici).
