@@ -12,4 +12,4 @@ Base de référence (avant tâche 1) : PosKit 335 · UI 47 · .NET 417
 | 4 LocalFiscalRepository (reçus chaînés, annulation, duplicata, JET, vérification) | fait | 418 | 360 | - | aucun |
 | 5 Encaissement, chambre, annulation et duplicata sur la chaîne fiscale | fait | 418 | 369 | - | aucun |
 | 6 Audit JET : dérogations Happy Hour et annulations de mise en attente | fait | 418 | 372 | - | aucun |
-| 7 Sauvegarde chiffrée (format, écriture, rotation, restauration) | fait | 418 | 382 | - | aucun |
+| 7 Sauvegarde chiffrée (format, écriture, rotation, restauration) | fait | 418 | 386 | - | aucun |

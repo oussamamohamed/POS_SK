@@ -39,7 +39,7 @@ struct LocalBackupTests {
         #expect(throws: LocalBackupFailure.wrongPassphraseOrCorrupted) { try LocalBackupCrypto.open(flipped, passphrase: "phrase") }
         var header = sealed
         header[10] ^= 0x01 // l'en-tête est authentifié
-        #expect(throws: LocalBackupFailure.self) { try LocalBackupCrypto.open(header, passphrase: "phrase") }
+        #expect(throws: LocalBackupFailure.wrongPassphraseOrCorrupted) { try LocalBackupCrypto.open(header, passphrase: "phrase") }
         #expect(throws: LocalBackupFailure.wrongPassphraseOrCorrupted) { try LocalBackupCrypto.open(sealed.prefix(sealed.count - 5), passphrase: "phrase") }
         #expect(throws: LocalBackupFailure.notABackup) { try LocalBackupCrypto.open(sealed.prefix(10), passphrase: "phrase") }
     }
@@ -114,5 +114,39 @@ struct LocalBackupTests {
         let db = try makeDB()
         #expect(throws: (any Error).self) { try LocalBackupService.write(db: db, to: missing, passphrase: "phrase", now: at, iterations: Self.fast) }
         #expect(!FileManager.default.fileExists(atPath: missing.path))
+    }
+
+    @Test func restoreNeverOverwritesAnExistingDestination() throws {
+        let folder = try makeFolder()
+        let file = try LocalBackupService.write(db: try makeDB(), to: folder, passphrase: "phrase", now: at, iterations: Self.fast)
+        let destination = folder.appendingPathComponent("live.sqlite")
+        let bytes = Data("base vivante".utf8)
+        try bytes.write(to: destination)
+        #expect(throws: LocalBackupFailure.destinationExists) { try LocalBackupService.restore(from: file, passphrase: "phrase", to: destination) }
+        #expect(try Data(contentsOf: destination) == bytes)
+        #expect(throws: LocalBackupFailure.destinationExists) { try LocalBackupService.restore(from: file, passphrase: "mauvaise", to: destination) }
+        #expect(try Data(contentsOf: destination) == bytes)
+    }
+
+    @Test func restoreRefusesWhenAWalLeftoverExists() throws {
+        let folder = try makeFolder()
+        let file = try LocalBackupService.write(db: try makeDB(), to: folder, passphrase: "phrase", now: at, iterations: Self.fast)
+        let destination = folder.appendingPathComponent("live.sqlite")
+        let wal = URL(fileURLWithPath: destination.path + "-wal")
+        try Data("wal".utf8).write(to: wal)
+        #expect(throws: LocalBackupFailure.destinationExists) { try LocalBackupService.restore(from: file, passphrase: "phrase", to: destination) }
+        #expect(try Data(contentsOf: wal) == Data("wal".utf8))
+        #expect(!FileManager.default.fileExists(atPath: destination.path))
+    }
+
+    @Test func passphraseIsNormalisedToNFC() throws {
+        let sealed = try LocalBackupCrypto.seal(Data("x".utf8), passphrase: "caf\u{E9}", iterations: Self.fast)
+        #expect(try LocalBackupCrypto.open(sealed, passphrase: "cafe\u{301}") == Data("x".utf8))
+    }
+
+    @Test func outOfRangeIterationsThrowInsteadOfTrapping() {
+        for n in [0, 10_000_001] {
+            #expect(throws: LocalBackupFailure.encryptionFailed) { try LocalBackupCrypto.seal(Data("x".utf8), passphrase: "p", iterations: n) }
+        }
     }
 }

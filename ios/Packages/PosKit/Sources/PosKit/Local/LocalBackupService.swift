@@ -31,16 +31,21 @@ enum LocalBackupService {
         return destination
     }
 
-    /// Déchiffre vers `destination` (fichier SQLite qui ne doit pas exister) puis vérifie les chaînes fiscales. Si la phrase est fausse ou la
-    /// chaîne rompue, `destination` n'existe pas à la sortie.
+    /// Déchiffre vers `destination` (fichier SQLite) puis vérifie les chaînes fiscales. Refuse (`destinationExists`) si `destination`,
+    /// `-wal` ou `-shm` existe : un fichier existant n'est jamais touché. Contrat : restaurer vers un chemin temporaire, puis l'échanger
+    /// avec la base active. Si la phrase est fausse ou la chaîne rompue, rien n'est laissé à `destination`.
     static func restore(from file: URL, passphrase: String, to destination: URL) throws {
+        let fm = FileManager.default
+        let paths = ["", "-wal", "-shm"].map { destination.path + $0 }
+        guard !paths.contains(where: { fm.fileExists(atPath: $0) }) else { throw LocalBackupFailure.destinationExists }
         let plain = try LocalBackupCrypto.open(try Data(contentsOf: file), passphrase: passphrase)
+        try plain.write(to: destination, options: [.withoutOverwriting])
+        // Le fichier a été créé par cet appel : on peut le nettoyer en cas d'échec.
         do {
-            try plain.write(to: destination, options: [.withoutOverwriting])
             let issues = try LocalFiscalRepository(db: SQLiteDatabase(path: destination.path)).verifyChains()
             guard issues.isEmpty else { throw LocalBackupFailure.brokenChain(issues) }
         } catch {
-            for suffix in ["", "-wal", "-shm"] { try? FileManager.default.removeItem(atPath: destination.path + suffix) }
+            for path in paths { try? fm.removeItem(atPath: path) }
             throw error
         }
     }
