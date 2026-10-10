@@ -84,6 +84,24 @@ struct LocalFiscalPaymentTests {
         #expect(try LocalFiscalRepository(db: db).verifyChains().isEmpty)
     }
 
+    @Test func aRoomChargeReceiptCannotBeVoided() async throws {
+        let (api, db) = try await makeLocalAPIWithDatabase()
+        let order = try await seat(api, "T3")
+        _ = try await api.chargeRoom(RoomChargeRequest(
+            orderId: order.orderId, tableNumber: "T3", roomNumber: "101", guestName: "Jean Dujardin", amount: Money(cents: 1950),
+            tipAmount: .zero, signatureDataUrl: nil, notes: nil
+        ))
+        let id = try #require(try db.query("SELECT Id FROM FiscalReceipts").first?.uuid("Id"))
+        let balance = try db.query("SELECT CurrentBalance FROM HotelRooms WHERE RoomNumber = '101'").first?.string("CurrentBalance")
+        let status = try db.query("SELECT Status FROM Orders WHERE Id = ?", [.uuid(order.orderId)]).first?.int("Status")
+        let refused = APIError.server(status: 409, message: "Annulation impossible : ce reçu comprend une facturation chambre (la note de chambre ne serait pas rétablie).")
+        await #expect(throws: refused) { try await api.voidReceipt(receiptId: id) }
+        #expect(try db.query("SELECT COUNT(*) AS n FROM FiscalReceipts").first?.int("n") == 1)
+        #expect(try db.query("SELECT COUNT(*) AS n FROM JournalEntries WHERE EventType = 'RECEIPT_VOIDED'").first?.int("n") == 0)
+        #expect(try db.query("SELECT Status FROM Orders WHERE Id = ?", [.uuid(order.orderId)]).first?.int("Status") == status)
+        #expect(try db.query("SELECT CurrentBalance FROM HotelRooms WHERE RoomNumber = '101'").first?.string("CurrentBalance") == balance)
+    }
+
     @Test func onlyAManagerCanVoidOrReprint() async throws {
         let (api, db) = try await makeLocalAPIWithDatabase()
         let order = try await seat(api)

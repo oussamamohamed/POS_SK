@@ -3,11 +3,18 @@ import Foundation
 extension LocalPosAPI {
     /// Annule un reçu par contre-passation (`POST /api/checkout/void/{id}`) : nouveau reçu signé en négatif, entrée JET `RECEIPT_VOIDED`,
     /// commande annulée (comme le .NET, la table n'est pas touchée). Réservé aux responsables ; le reçu doit venir de `T01`.
+    /// Annuler un des reçus d'une commande annule toute la commande (comme le .NET) ; un reçu comprenant une facturation chambre ne peut pas être annulé.
     public func voidReceipt(receiptId: UUID) async throws -> OperationResult {
         let manager = try requireManager()
-        let fiscal = fiscalRepository, orders = orderRepository
+        let fiscal = fiscalRepository, orders = orderRepository, database = db
         let now = clock()
         return try db.transaction { () throws -> OperationResult in
+            let roomTenders = try database.query(
+                "SELECT 1 AS x FROM PaymentTenders WHERE FiscalReceiptId = ? AND Method = ?", [.uuid(receiptId), .integer(PaymentMethod.roomCharge.rawValue)]
+            )
+            guard roomTenders.isEmpty else {
+                throw APIError.server(status: 409, message: "Annulation impossible : ce reçu comprend une facturation chambre (la note de chambre ne serait pas rétablie).")
+            }
             guard let original = try fiscal.receipt(id: receiptId),
                   let voided = try fiscal.voidReceipt(originalId: receiptId, terminalId: Self.standaloneTerminalId, operatorId: manager.id, now: now)
             else { throw APIError.server(status: 400, message: "Annulation du reçu impossible.") }
