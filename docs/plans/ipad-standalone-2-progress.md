@@ -9,3 +9,4 @@ Base de référence (avant tâche 1) : PosKit 335 · UI 47 · .NET 417
 | 1 FiscalHashing et vecteurs .NET | fait | 418 | 342 | - | aucun |
 | 2 FiscalReceiptMath (montants, TVA, HT) et scénarios .NET | fait | 418 | 344 | - | aucun |
 | 3 Migration V5 (tables fiscales, triggers) | fait | 418 | 348 | - | aucun |
+| 4 LocalFiscalRepository (reçus chaînés, annulation, duplicata, JET, vérification) | fait | 418 | 360 | - | aucun |
