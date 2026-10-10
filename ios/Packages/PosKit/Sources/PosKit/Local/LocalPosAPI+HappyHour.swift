@@ -79,25 +79,44 @@ extension LocalPosAPI {
         return supervisor
     }
 
-    /// Dérogation de responsable : remplace la précédente, durée par défaut 60 minutes. L'audit JET viendra avec le sous-projet fiscal.
+    /// Dérogation de responsable : remplace la précédente, durée par défaut 60 minutes.
     public func activateHappyHourOverride(terminalId: String, pin: String, minutes: Int, reason: String) async throws -> OperationResult {
         let supervisor = try authenticateSupervisor(pin: pin)
         let duration = minutes <= 0 ? 60 : min(minutes, 1440)
         let now = clock()
         let repository = happyHourRepository
+        let expiresAt = now.addingTimeInterval(TimeInterval(duration * 60))
+        let text = reason.isEmpty ? "Dérogation manuelle responsable" : reason
+        let fiscal = fiscalRepository
         try db.transaction {
             try repository.deactivateOverrides(terminalId: Self.standaloneTerminalId)
-            try repository.insertOverride(
-                terminalId: Self.standaloneTerminalId, operatorId: supervisor.id, operatorName: supervisor.name, startsAt: now,
-                expiresAt: now.addingTimeInterval(TimeInterval(duration * 60)), reason: reason.isEmpty ? "Dérogation manuelle responsable" : reason
+            let sessionId = try repository.insertOverride(
+                terminalId: Self.standaloneTerminalId, operatorId: supervisor.id, operatorName: supervisor.name, startsAt: now, expiresAt: expiresAt, reason: text
+            )
+            try fiscal.appendJournal(
+                eventType: LocalJournalEvents.happyHourActivated,
+                payloadJson: FiscalJSON.object([
+                    ("SessionId", FiscalJSON.guid(sessionId)), ("DurationMinutes", "\(duration)"), ("Operator", FiscalJSON.string(supervisor.name)),
+                    ("Reason", FiscalJSON.string(text)), ("ExpiresAtUtc", FiscalJSON.dateTime(expiresAt)),
+                ]),
+                terminalId: Self.standaloneTerminalId, operatorId: supervisor.id, now: now
             )
         }
         return OperationResult(success: true, message: "Happy Hour activé/prolongé de \(duration) minutes avec succès.")
     }
 
     public func stopHappyHourOverride(terminalId: String, pin: String, reason: String) async throws -> OperationResult {
-        _ = try authenticateSupervisor(pin: pin)
-        try happyHourRepository.deactivateOverrides(terminalId: Self.standaloneTerminalId)
+        let supervisor = try authenticateSupervisor(pin: pin)
+        let fiscal = fiscalRepository, repository = happyHourRepository
+        let now = clock()
+        try db.transaction {
+            try repository.deactivateOverrides(terminalId: Self.standaloneTerminalId)
+            try fiscal.appendJournal(
+                eventType: LocalJournalEvents.happyHourStopped,
+                payloadJson: FiscalJSON.object([("Operator", FiscalJSON.string(supervisor.name)), ("Reason", FiscalJSON.string(reason))]),
+                terminalId: Self.standaloneTerminalId, operatorId: supervisor.id, now: now
+            )
+        }
         return OperationResult(success: true, message: "Dérogation Happy Hour désactivée.")
     }
 

@@ -86,12 +86,18 @@ extension LocalPosAPI {
             throw APIError.server(status: 400, message: "Code PIN superviseur requis.")
         }
         let supervisor = try authenticateSupervisor(pin: supervisorPin)
-        let orders = orderRepository, holds = holdRepository
+        let orders = orderRepository, holds = holdRepository, fiscal = fiscalRepository
+        let now = clock()
         try db.transaction {
             guard let orderId = try holds.activeOrderId(holdId: holdId) else { throw APIError.notFound("Commande en attente introuvable.") }
             guard try orders.status(of: orderId)?.isModifiable == true else { throw APIError.localOrderClosed }
             _ = try holds.markVoided(id: holdId, staffId: supervisor.id, reason: reason)
             try orders.setStatus(orderId: orderId, .cancelled)
+            try fiscal.appendJournal(
+                eventType: LocalJournalEvents.heldOrderVoided,
+                payloadJson: FiscalJSON.object([("HoldId", FiscalJSON.guid(holdId)), ("VoidedBy", FiscalJSON.string(supervisor.name)), ("Reason", FiscalJSON.string(reason))]),
+                terminalId: Self.standaloneTerminalId, operatorId: supervisor.id, now: now
+            )
         }
     }
 }

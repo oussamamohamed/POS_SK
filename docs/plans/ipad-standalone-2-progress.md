@@ -11,3 +11,4 @@ Base de référence (avant tâche 1) : PosKit 335 · UI 47 · .NET 417
 | 3 Migration V5 (tables fiscales, triggers) | fait | 418 | 348 | - | aucun |
 | 4 LocalFiscalRepository (reçus chaînés, annulation, duplicata, JET, vérification) | fait | 418 | 360 | - | aucun |
 | 5 Encaissement, chambre, annulation et duplicata sur la chaîne fiscale | fait | 418 | 369 | - | aucun |
+| 6 Audit JET : dérogations Happy Hour et annulations de mise en attente | fait | 418 | 372 | - | aucun |

@@ -105,14 +105,17 @@ struct LocalHappyHourRepository {
         try db.run("UPDATE HappyHourOverrideSessions SET IsActive = 0 WHERE TerminalId = ? AND IsActive = 1", [.text(terminalId)])
     }
 
-    func insertOverride(terminalId: String, operatorId: UUID, operatorName: String, startsAt: Date, expiresAt: Date, reason: String) throws {
+    @discardableResult
+    func insertOverride(terminalId: String, operatorId: UUID, operatorName: String, startsAt: Date, expiresAt: Date, reason: String) throws -> UUID {
+        let id = UUID()
         try db.run(
             """
             INSERT INTO HappyHourOverrideSessions (Id, TerminalId, OperatorId, OperatorName, OverrideType, StartsAtUtc, ExpiresAtUtc, Reason, IsActive, CreatedAtUtc)
             VALUES (?, ?, ?, ?, 0, ?, ?, ?, 1, ?)
             """,
-            [.uuid(UUID()), .text(terminalId), .uuid(operatorId), .text(operatorName), .date(startsAt), .date(expiresAt), .text(reason), .date(Date())]
+            [.uuid(id), .text(terminalId), .uuid(operatorId), .text(operatorName), .date(startsAt), .date(expiresAt), .text(reason), .date(Date())]
         )
+        return id
     }
 
     // MARK: Lecture
