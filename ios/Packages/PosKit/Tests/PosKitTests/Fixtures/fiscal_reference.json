@@ -1,0 +1,102 @@
+{
+  "hashVectors": {
+    "genesisHash": "GENESIS_0000000000000000000000000000000000000000000000000000000000000000",
+    "receipts": [
+      {
+        "previousHash": "GENESIS_0000000000000000000000000000000000000000000000000000000000000000",
+        "terminalId": "T01",
+        "sequence": 1,
+        "amountCents": 1250,
+        "timestamp": "2026-10-10T09:00:00.1230000\u002B00:00",
+        "taxBreakdownJson": "{\u002210\u0022:114}",
+        "hash": "7952669DF348E61859140EE31F881F583DDA0AD9E2905D247103258D0640AB80"
+      },
+      {
+        "previousHash": "7952669DF348E61859140EE31F881F583DDA0AD9E2905D247103258D0640AB80",
+        "terminalId": "T01",
+        "sequence": 2,
+        "amountCents": 4000,
+        "timestamp": "2026-10-10T09:05:30.0070000\u002B00:00",
+        "taxBreakdownJson": "{\u002210\u0022:364,\u00225.5\u0022:88}",
+        "hash": "FB2115216FE3BDDD305A9C89C7338A34CDF824001FBA61522755D997FBF32BB7"
+      },
+      {
+        "previousHash": "FB2115216FE3BDDD305A9C89C7338A34CDF824001FBA61522755D997FBF32BB7",
+        "terminalId": "T01",
+        "sequence": 3,
+        "amountCents": -1250,
+        "timestamp": "2026-10-10T09:06:00.9990000\u002B00:00",
+        "taxBreakdownJson": "{\u002210\u0022:-114}",
+        "hash": "935114387FD5734E6AD65AA632A641F831B1CEC7C5526F5E5E79FFCA5E169B46"
+      }
+    ],
+    "jet": [
+      {
+        "previousHash": "GENESIS_0000000000000000000000000000000000000000000000000000000000000000",
+        "chainSequence": 1,
+        "eventType": "RECEIPT_VOIDED",
+        "timestamp": "2026-10-10T09:06:00.9990000\u002B00:00",
+        "terminalId": "T01",
+        "operatorId": "0a1b2c3d-4e5f-6071-8293-a4b5c6d7e8f9",
+        "payloadJson": "{\u0022OriginalReceiptId\u0022:\u002211111111-2222-3333-4444-555555555555\u0022,\u0022TotalTtcCents\u0022:1250}",
+        "hash": "4d74dfdee5a99eb58e45c155d73def178f4dc0ca48d58971ed54802bf42c44d9"
+      },
+      {
+        "previousHash": "4d74dfdee5a99eb58e45c155d73def178f4dc0ca48d58971ed54802bf42c44d9",
+        "chainSequence": 2,
+        "eventType": "EVENT_HAPPY_HOUR_OVERRIDE_ACTIVATED",
+        "timestamp": "2026-10-10T09:07:00.0000000\u002B00:00",
+        "terminalId": "T01",
+        "operatorId": "0a1b2c3d-4e5f-6071-8293-a4b5c6d7e8f9",
+        "payloadJson": "{\u0022Operator\u0022:\u0022Zo\\u00EB \\u0022Chef\\u0022 \\u003CA\\u0026B\\u003E\u0022,\u0022Reason\u0022:\u0022D\\u00E9rogation \\u002B10% d\\u0027\\u00E9t\\u00E9\u0022,\u0022DurationMinutes\u0022:60}",
+        "hash": "182132e9867acd57f8d6dd69585435fdff17cb408cef53292a5d017bf1fb1f03"
+      },
+      {
+        "previousHash": "182132e9867acd57f8d6dd69585435fdff17cb408cef53292a5d017bf1fb1f03",
+        "chainSequence": 3,
+        "eventType": "DUPLICATE_PRINTED",
+        "timestamp": "2026-10-10T09:08:00.5000000\u002B00:00",
+        "terminalId": null,
+        "operatorId": null,
+        "payloadJson": "{\u0022documentId\u0022:\u002211111111-2222-3333-4444-555555555555\u0022,\u0022documentType\u0022:\u0022receipt\u0022,\u0022duplicateNumber\u0022:1,\u0022printQueued\u0022:false}",
+        "hash": "16ce07642573eda63e1751bbb1e76d2bb8ba026319980c67ae311fcc002ec2c3"
+      }
+    ],
+    "jsonStrings": [
+      {
+        "input": "plain",
+        "expected": "\u0022plain\u0022"
+      },
+      {
+        "input": "Zo\u00EB \u0022Chef\u0022 \u003CA\u0026B\u003E",
+        "expected": "\u0022Zo\\u00EB \\u0022Chef\\u0022 \\u003CA\\u0026B\\u003E\u0022"
+      },
+      {
+        "input": "D\u00E9rogation \u002B10% d\u0027\u00E9t\u00E9",
+        "expected": "\u0022D\\u00E9rogation \\u002B10% d\\u0027\\u00E9t\\u00E9\u0022"
+      },
+      {
+        "input": "a\\b\tc\nd",
+        "expected": "\u0022a\\\\b\\tc\\nd\u0022"
+      },
+      {
+        "input": "pizza \uD83C\uDF55 \u0060x\u0060",
+        "expected": "\u0022pizza \\uD83C\\uDF55 \\u0060x\\u0060\u0022"
+      }
+    ],
+    "dateTimes": [
+      {
+        "timestamp": "2026-10-10T09:00:00.0000000\u002B00:00",
+        "expected": "\u00222026-10-10T09:00:00\u002B00:00\u0022"
+      },
+      {
+        "timestamp": "2026-10-10T09:00:00.1200000\u002B00:00",
+        "expected": "\u00222026-10-10T09:00:00.12\u002B00:00\u0022"
+      },
+      {
+        "timestamp": "2026-10-10T09:00:00.1230000\u002B00:00",
+        "expected": "\u00222026-10-10T09:00:00.123\u002B00:00\u0022"
+      }
+    ]
+  }
+}
