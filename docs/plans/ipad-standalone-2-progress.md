@@ -7,3 +7,4 @@ Base de référence (avant tâche 1) : PosKit 335 · UI 47 · .NET 417
 | Tâche | Statut | .NET | PosKit | Tests UI | Findings de revue ouverts |
 |---|---|---|---|---|---|
 | 1 FiscalHashing et vecteurs .NET | fait | 418 | 342 | - | aucun |
+| 2 FiscalReceiptMath (montants, TVA, HT) et scénarios .NET | fait | 418 | 344 | - | aucun |
