@@ -10,7 +10,7 @@ extension LocalPosAPI {
     public func transfer(from: String, to: String, merge: Bool) async throws -> OperationResult {
         try requireAuth()
         let failure = OperationResult(success: false, message: merge ? "Échec de la fusion de tables." : "Échec du transfert de table.")
-        let floor = floorRepository, orders = orderRepository, payments = paymentRepository
+        let floor = floorRepository, orders = orderRepository, payments = fiscalRepository
         return try db.transaction { () throws -> OperationResult in
             guard from != to, let source = try floor.table(from), let target = try floor.table(to),
                   let sourceOrderId = source.activeOrderId, try orders.order(id: sourceOrderId) != nil

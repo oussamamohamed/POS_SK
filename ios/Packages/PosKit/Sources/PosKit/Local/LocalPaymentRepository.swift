@@ -3,28 +3,6 @@ import Foundation
 struct LocalPaymentRepository {
     let db: SQLiteDatabase
 
-    /// Total déjà réglé sur la commande (tous règlements confondus).
-    func paidCents(orderId: UUID) throws -> Int {
-        try db.query("SELECT COALESCE(SUM(Amount), 0) AS total FROM NonFiscalPayments WHERE OrderId = ?", [.uuid(orderId)]).first?.int("total") ?? 0
-    }
-
-    func insertTender(orderId: UUID, terminalId: String, receiptNumber: String, method: PaymentMethod, amount: Int, tendered: Int, change: Int) throws {
-        try db.run(
-            """
-            INSERT INTO NonFiscalPayments (Id, OrderId, TerminalId, ReceiptNumber, Method, Amount, Tendered, ChangeGiven, CreatedAtUtc)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """,
-            [.uuid(UUID()), .uuid(orderId), .text(terminalId), .text(receiptNumber), .integer(method.rawValue), .integer(amount),
-             .integer(tendered), .integer(change), .date(Date())]
-        )
-    }
-
-    /// `NF-{terminal}-{n°}` : le préfixe `NF` distingue un reçu non fiscal d'un futur reçu fiscal.
-    func nextReceiptNumber(terminalId: String) throws -> String {
-        let sequence = try advanceCounter(name: "receipt:\(terminalId)", day: "", wrapAt: nil)
-        return "NF-\(terminalId)-\(String(format: "%06d", sequence))"
-    }
-
     /// `#A-01` … `#A-99` puis retour à `#A-01`, remis à zéro chaque jour UTC (comme `TakeawayCounterService`).
     func nextPickupNumber(terminalId: String, now: Date) throws -> String {
         let prefix = Self.pickupPrefix(for: terminalId)

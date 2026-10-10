@@ -79,7 +79,7 @@ extension LocalPosAPI {
             let settlement = try settle(order: current, tenders: tenders, terminalId: terminal)
             return CounterCheckoutResult(
                 orderId: order.orderId, pickupNumber: pickup, totalPaid: settlement.totalPaid, changeGiven: settlement.changeGiven,
-                remainingBalance: settlement.remaining, receiptNumber: settlement.receiptNumber, fiscalSignature: nil, issuedCreditVoucher: issued,
+                remainingBalance: settlement.remaining, receiptNumber: settlement.receiptNumber, fiscalSignature: settlement.fiscalSignature, issuedCreditVoucher: issued,
                 openCashDrawer: request.tenders.contains { $0.method == .cash }, printQueued: false
             )
         }

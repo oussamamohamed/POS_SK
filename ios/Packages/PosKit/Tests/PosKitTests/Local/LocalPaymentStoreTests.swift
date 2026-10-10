@@ -15,28 +15,9 @@ struct LocalPaymentStoreTests {
         #expect(try db.userVersion() == LocalMigrator.steps.count)
         #expect(LocalMigrator.steps.count >= 3)
         let tables = try db.query("SELECT name FROM sqlite_master WHERE type = 'table'").compactMap { $0.string("name") }
-        for expected in ["HeldOrders", "CustomerCreditVouchers", "HotelRooms", "RoomFolioCharges", "NonFiscalPayments", "LocalCounters"] {
+        for expected in ["HeldOrders", "CustomerCreditVouchers", "HotelRooms", "RoomFolioCharges", "LocalCounters"] {
             #expect(tables.contains(expected))
         }
-    }
-
-    @Test func paymentRepositoryTracksPaidAmountAndReceiptNumbers() throws {
-        let db = try makeDB()
-        let orders = LocalOrderRepository(db: db), payments = LocalPaymentRepository(db: db)
-        let order = ActiveOrder(tableNumber: "T1", destination: .eatIn)
-        try orders.insert(order, operatorId: localNoOperator, status: .open)
-        #expect(try payments.paidCents(orderId: order.orderId) == 0)
-        try payments.insertTender(orderId: order.orderId, terminalId: "T01", receiptNumber: "NF-T01-000001", method: .cash, amount: 1000, tendered: 1200, change: 200)
-        try payments.insertTender(orderId: order.orderId, terminalId: "T01", receiptNumber: "NF-T01-000001", method: .creditCard, amount: 500, tendered: 500, change: 0)
-        #expect(try payments.paidCents(orderId: order.orderId) == 1500)
-
-        #expect(try payments.nextReceiptNumber(terminalId: "T01") == "NF-T01-000001")
-        #expect(try payments.nextReceiptNumber(terminalId: "T01") == "NF-T01-000002")
-        #expect(try payments.nextReceiptNumber(terminalId: "T02") == "NF-T02-000001")
-
-        // Pas de cascade : une commande portant des encaissements ne peut pas être supprimée (la clé étrangère refuse).
-        #expect(throws: SQLiteError.self) { try db.run("DELETE FROM Orders WHERE Id = ?", [.uuid(order.orderId)]) }
-        #expect(try payments.paidCents(orderId: order.orderId) == 1500)
     }
 
     @Test func pickupNumbersWrapAtNinetyNineAndResetEachDay() throws {

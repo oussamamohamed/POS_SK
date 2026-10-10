@@ -11,7 +11,6 @@ extension LocalPosAPI {
     public func zClosure(terminalId: String, managerId: UUID, managerName: String) async throws -> FiscalReport { throw unsupported() }
     public func printXReport(terminalId: String) async throws -> Bool { throw unsupported() }
     public func reprintLatestClosure(terminalId: String) async throws -> ReprintResult { throw unsupported() }
-    public func reprintReceipt(receiptIdentifier: String) async throws -> ReprintResult { throw unsupported() }
     public func exportFec(from: Date, to: Date, siren: String) async throws -> (fileName: String, data: Data) { throw unsupported() }
     public func dashboard(from: Date, to: Date) async throws -> FinancialDashboard { throw unsupported() }
     public func verifyChains() async throws -> FiscalVerificationResult { throw unsupported() }

@@ -2,6 +2,7 @@ import Foundation
 
 struct LocalSettlement {
     let receiptNumber: String
+    let fiscalSignature: String
     let totalPaid: Money
     let changeGiven: Money
     let remaining: Money
@@ -14,11 +15,11 @@ extension LocalPosAPI {
     /// le poste autonome n'a qu'un terminal : `T01`.
     func normalizedTerminal(_ requested: String) -> String { Self.standaloneTerminalId }
 
-    /// Total TTC de la commande, pourboire déjà enregistré et montant déjà réglé.
+    /// Total TTC de la commande, pourboire déjà enregistré et montant déjà réglé (net des annulations).
     func balance(of order: ActiveOrder) throws -> (total: Money, tip: Money, paid: Money) {
         let total = decorate(order).totalTtcAmount ?? .zero
         let tip = Money(cents: try orderRepository.tipCents(of: order.orderId))
-        let paid = Money(cents: try paymentRepository.paidCents(orderId: order.orderId))
+        let paid = Money(cents: try fiscalRepository.paidCents(orderId: order.orderId))
         return (total, tip, paid)
     }
 
@@ -30,32 +31,36 @@ extension LocalPosAPI {
         }
     }
 
-    /// Enregistre des règlements sur une commande. Refuse (sans rien écrire) une liste vide, un montant ≤ 0, un total supérieur au solde
-    /// dû ou une commande déjà réglée ou annulée. À appeler dans une transaction.
+    /// Enregistre des règlements sur une commande et écrit le reçu fiscal (chaîne `T01`). Refuse (sans rien écrire) un montant ≤ 0,
+    /// un total supérieur au solde dû ou une commande déjà réglée ou annulée. Une liste de règlements vide n'est acceptée que pour une
+    /// commande à total nul (offerte ou remisée à 100 %) : elle est clôturée avec un reçu à zéro. À appeler dans une transaction.
     func settle(order: ActiveOrder, tenders: [(method: PaymentMethod, amount: Money, tendered: Money)], terminalId: String) throws -> LocalSettlement {
-        guard !tenders.isEmpty, tenders.allSatisfy({ $0.amount > .zero && $0.tendered >= .zero }),
+        let (total, tip, paid) = try balance(of: order)
+        let isFreeOrder = tenders.isEmpty && total + tip == .zero && !order.lines.isEmpty
+        guard isFreeOrder || (!tenders.isEmpty && tenders.allSatisfy({ $0.amount > .zero && $0.tendered >= .zero })),
               try orderRepository.status(of: order.orderId)?.isModifiable == true
         else { throw Self.paymentFailed }
-        let (total, tip, paid) = try balance(of: order)
         let remainingBefore = (total + tip - paid).clampedAtZero()
         let totalPaid = tenders.reduce(Money.zero) { $0 + $1.amount }
         guard totalPaid <= remainingBefore else { throw Self.paymentFailed }
 
         let terminal = normalizedTerminal(terminalId)
-        let receipt = try paymentRepository.nextReceiptNumber(terminalId: terminal)
+        let fiscal = fiscalRepository
+        let amounts = FiscalReceiptMath.amounts(
+            order: order, totalPaidCents: totalPaid.cents, tipCents: tip.cents, priorFiscalTtcCents: try fiscal.priorFiscalTtcCents(orderId: order.orderId)
+        )
         // Seules les espèces rendent la monnaie : jamais la valeur faciale d'un titre-restaurant ni une carte sur-saisie.
         var change = Money.zero
+        var inputs: [FiscalTenderInput] = []
         for tender in tenders {
             let tenderChange = tender.method == .cash ? (tender.tendered - tender.amount).clampedAtZero() : .zero
             change += tenderChange
-            try paymentRepository.insertTender(
-                orderId: order.orderId, terminalId: terminal, receiptNumber: receipt, method: tender.method,
-                amount: tender.amount.cents, tendered: tender.tendered.cents, change: tenderChange.cents
-            )
+            inputs.append(FiscalTenderInput(method: tender.method, amount: tender.amount.cents, tendered: tender.tendered.cents, change: tenderChange.cents))
         }
+        let receipt = try fiscal.appendReceipt(orderId: order.orderId, terminalId: terminal, amounts: amounts, tenders: inputs, now: clock())
         let remaining = remainingBefore - totalPaid
         if remaining == .zero { try closeOrder(order, as: .paid) }
-        return LocalSettlement(receiptNumber: receipt, totalPaid: totalPaid, changeGiven: change, remaining: remaining)
+        return LocalSettlement(receiptNumber: receipt.receiptNumber, fiscalSignature: receipt.signature, totalPaid: totalPaid, changeGiven: change, remaining: remaining)
     }
 
     /// Règlement d'une table, en une ou plusieurs fois (note partagée). Le pourboire n'est accepté qu'au paiement qui solde la note.
@@ -83,7 +88,7 @@ extension LocalPosAPI {
             let settlement = try settle(order: order, tenders: tenders, terminalId: request.terminalId)
             return PaymentResult(
                 receiptNumber: settlement.receiptNumber, totalPaid: settlement.totalPaid, changeGiven: settlement.changeGiven,
-                remainingBalance: settlement.remaining, fiscalSignature: nil, printQueued: false
+                remainingBalance: settlement.remaining, fiscalSignature: settlement.fiscalSignature, printQueued: false
             )
         }
     }

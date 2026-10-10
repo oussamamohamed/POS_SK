@@ -11,3 +11,11 @@ func makeLocalAPI(pin: String = "1234") async throws -> LocalPosAPI {
 func temporaryDatabasePath() -> String {
     FileManager.default.temporaryDirectory.appendingPathComponent("pos-\(UUID().uuidString).sqlite").path
 }
+
+/// API sur fichier + seconde connexion (WAL) pour inspecter les tables fiscales depuis un test.
+func makeLocalAPIWithDatabase(pin: String = "1234") async throws -> (api: LocalPosAPI, db: SQLiteDatabase) {
+    let path = temporaryDatabasePath()
+    let api = try LocalPosAPI(path: path)
+    _ = try await api.login(pin: pin)
+    return (api, try SQLiteDatabase(path: path))
+}

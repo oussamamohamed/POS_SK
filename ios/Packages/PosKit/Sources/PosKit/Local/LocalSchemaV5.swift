@@ -1,11 +1,13 @@
 import Foundation
 
 extension LocalMigrator {
-    /// Chaîne fiscale NF525 : mêmes tables et colonnes que `AppDbContext` (`FiscalReceipts`, `PaymentTenders`, `JournalEntries` = JET).
+    /// Chaîne fiscale NF525 (remplace `NonFiscalPayments`) : mêmes tables et colonnes que `AppDbContext` (`FiscalReceipts`, `PaymentTenders`, `JournalEntries` = JET).
     /// Les triggers reprennent `FiscalImmutabilityInterceptor` (mêmes messages) : aucune ligne fiscale ne peut être modifiée ni supprimée.
     /// `IsVoid` est conservée pour la parité du schéma et n'est jamais écrite ; une annulation est un reçu lié par `VoidedReceiptId`.
     /// Les clôtures Z, de période et les archives viennent au sous-projet 3.
     static let schemaV5 = """
+    DROP TABLE NonFiscalPayments;
+
     CREATE TABLE FiscalReceipts (
         Id TEXT NOT NULL PRIMARY KEY,
         TerminalId TEXT NOT NULL,

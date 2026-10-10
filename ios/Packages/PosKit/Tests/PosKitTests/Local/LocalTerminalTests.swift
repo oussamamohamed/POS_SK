@@ -10,7 +10,7 @@ struct LocalTerminalTests {
         try await seatTable(api, "T1", items: [localInput(burger)])
         let order = try #require(try await api.activeOrder(table: "T1"))
         let result = try await api.pay(localPayment(order, table: "T1", tenders: [localTender(.cash, 1950)], terminal: "T09"))
-        #expect(result.receiptNumber == "NF-T01-000001")
+        #expect(result.receiptNumber == "T01-000001")
         #expect(LocalPosAPI.standaloneTerminalId == "T01")
     }
 }

@@ -31,20 +31,20 @@ struct LocalCounterCheckoutTests {
         var request = checkout(order, [cash(1950, tendered: 2000)])
         request.pickupBuzzer = "12"
         let result = try await api.counterCheckout(request)
-        #expect(result.orderId == order.orderId && result.pickupNumber == "#A-01" && result.receiptNumber == "NF-T01-000001")
+        #expect(result.orderId == order.orderId && result.pickupNumber == "#A-01" && result.receiptNumber == "T01-000001")
         #expect(result.totalPaid == Money(cents: 1950) && result.changeGiven == Money(cents: 50) && result.remainingBalance == .zero)
-        #expect(result.openCashDrawer == true && result.issuedCreditVoucher == nil && result.fiscalSignature == nil && result.printQueued == false)
+        #expect(result.openCashDrawer == true && result.issuedCreditVoucher == nil && result.fiscalSignature?.isEmpty == false && result.printQueued == false)
         #expect(try await api.tables().first { $0.isCounter }?.status == .free)
         #expect(try await api.activeOrder(table: "Comptoir") == nil)
 
         let second = try await api.counterCheckout(checkout(try await cart(api), [cash(1950)]))
-        #expect(second.pickupNumber == "#A-02" && second.receiptNumber == "NF-T01-000002" && second.openCashDrawer == true)
+        #expect(second.pickupNumber == "#A-02" && second.receiptNumber == "T01-000002" && second.openCashDrawer == true)
     }
 
     @Test func requestedTerminalIsIgnoredAtTheCounter() async throws {
         let api = try await makeLocalAPI()
         let result = try await api.counterCheckout(checkout(try await cart(api), [cash(1950)], terminal: "T02"))
-        #expect(result.pickupNumber == "#A-01" && result.receiptNumber == "NF-T01-000001")
+        #expect(result.pickupNumber == "#A-01" && result.receiptNumber == "T01-000001")
     }
 
     @Test func mealVoucherAboveTheLegalCapIsRefusedWithoutConsumingAPickupNumber() async throws {
@@ -55,7 +55,7 @@ struct LocalCounterCheckoutTests {
         }
         // Rien n'a été écrit : la vente suivante reçoit le premier numéro de retrait et de reçu.
         let result = try await api.counterCheckout(checkout(order, [cash(3900)]))
-        #expect(result.pickupNumber == "#A-01" && result.receiptNumber == "NF-T01-000001" && result.issuedCreditVoucher == nil)
+        #expect(result.pickupNumber == "#A-01" && result.receiptNumber == "T01-000001" && result.issuedCreditVoucher == nil)
     }
 
     @Test func mealVoucherOverpaymentFollowsThePolicy() async throws {
@@ -83,7 +83,7 @@ struct LocalCounterCheckoutTests {
             try await api.counterCheckout(checkout(order, [voucher(1950, facial: 2500), cash(100)], policy: .customerCreditVoucher))
         }
         let result = try await api.counterCheckout(checkout(order, [cash(1950)]))
-        #expect(result.pickupNumber == "#A-01" && result.receiptNumber == "NF-T01-000001" && result.issuedCreditVoucher == nil)
+        #expect(result.pickupNumber == "#A-01" && result.receiptNumber == "T01-000001" && result.issuedCreditVoucher == nil)
     }
 
     @Test func counterCheckoutRefusesEmptyOrUnknownOrders() async throws {

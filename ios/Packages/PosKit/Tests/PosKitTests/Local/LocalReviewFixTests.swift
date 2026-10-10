@@ -81,7 +81,7 @@ struct LocalReviewFixTests {
         let hold = try #require(try await api.heldOrders(terminalId: "T01").first)
         _ = try await api.recallHeldOrder(holdId: hold.holdId)
         let result = try await api.counterCheckout(checkout(cart.orderId, [CounterTender(method: .cash, amount: Money(cents: 1950), tendered: Money(cents: 1950))]))
-        #expect(result.pickupNumber == "#A-01" && result.receiptNumber == "NF-T01-000001" && result.remainingBalance == .zero)
+        #expect(result.pickupNumber == "#A-01" && result.receiptNumber == "T01-000001" && result.remainingBalance == .zero)
     }
 
     // I1 : une mise en attente dont la commande n'est plus modifiable (données antérieures au correctif) n'est pas annulée.

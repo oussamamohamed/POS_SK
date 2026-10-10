@@ -8,8 +8,8 @@ extension LocalPosAPI {
     }
 
     /// Facture une commande sur une chambre. Refusée si la chambre est inconnue ou libre, si le plafond de crédit serait dépassé, ou si le
-    /// montant n'est pas exactement le solde de la commande (écart assumé : le .NET ne contrôle pas le montant). La commande est clôturée
-    /// et sa table libérée (le .NET laisse la commande ouverte).
+    /// montant n'est pas exactement le solde de la commande (écart assumé : le .NET ne contrôle pas le montant). La commande est soldée par un
+    /// reçu fiscal à règlement « chambre » et sa table libérée (le .NET n'écrit pas de reçu pour une chambre ni ne clôture la commande : écart assumé, voir la spec).
     public func chargeRoom(_ request: RoomChargeRequest) async throws -> OperationResult {
         try requireAuth()
         let failed = APIError.server(status: 400, message: "Facturation chambre échouée.")
@@ -37,7 +37,9 @@ extension LocalPosAPI {
                 orderId: orderId, roomNumber: room.roomNumber, guestName: guest, amount: request.amount, tip: request.tipAmount,
                 signature: request.signatureDataUrl, notes: request.notes
             )
-            try closeOrder(order, as: .paid)
+            // Le pourboire de la chambre fait partie de l'encaissement : il est enregistré sur la commande, puis le reçu fiscal est écrit.
+            try orders.setTip(orderId: orderId, cents: request.tipAmount.cents)
+            _ = try settle(order: order, tenders: [(method: .roomCharge, amount: charge, tendered: charge)], terminalId: Self.standaloneTerminalId)
             return OperationResult(success: true, message: "Facturation de \(LocalMealVoucher.format(charge)) € enregistrée sur la chambre \(room.roomNumber) (\(guest))")
         }
     }

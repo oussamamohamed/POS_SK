@@ -28,7 +28,7 @@ extension LocalPosAPI {
     /// (son annulation laisserait des encaissements sur une commande annulée).
     public func holdOrder(orderId: UUID, terminalId: String, label: String) async throws {
         let member = try requireAuth()
-        let floor = floorRepository, orders = orderRepository, holds = holdRepository, payments = paymentRepository
+        let floor = floorRepository, orders = orderRepository, holds = holdRepository, payments = fiscalRepository
         try db.transaction {
             guard let order = try orders.order(id: orderId), !order.lines.isEmpty, try orders.status(of: orderId)?.isModifiable == true else {
                 throw APIError.server(status: 400, message: "Impossible de mettre en attente un panier vide.")

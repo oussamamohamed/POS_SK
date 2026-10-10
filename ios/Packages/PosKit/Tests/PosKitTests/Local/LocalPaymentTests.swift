@@ -16,7 +16,7 @@ struct LocalPaymentTests {
         let api = try await makeLocalAPI()
         let order = try await seat(api)
         let result = try await api.pay(localPayment(order, table: "T1", tenders: [localTender(.cash, 1950, tendered: 2000)]))
-        #expect(result.receiptNumber == "NF-T01-000001" && result.fiscalSignature == nil && result.printQueued == false)
+        #expect(result.receiptNumber == "T01-000001" && result.fiscalSignature?.isEmpty == false && result.printQueued == false)
         #expect(result.totalPaid == Money(cents: 1950) && result.changeGiven == Money(cents: 50) && result.remainingBalance == .zero)
         let table = try #require(try await api.tables().first { $0.tableNumber == "T1" })
         #expect(table.status == .free && table.activeOrderId == nil && table.coversCount == 0)
@@ -27,10 +27,10 @@ struct LocalPaymentTests {
         let api = try await makeLocalAPI()
         let order = try await seat(api)
         let first = try await api.pay(localPayment(order, table: "T1", tenders: [localTender(.creditCard, 1000)]))
-        #expect(first.receiptNumber == "NF-T01-000001" && first.remainingBalance == Money(cents: 950) && first.changeGiven == .zero)
+        #expect(first.receiptNumber == "T01-000001" && first.remainingBalance == Money(cents: 950) && first.changeGiven == .zero)
         #expect(try await api.tables().first { $0.tableNumber == "T1" }?.status == .occupied)
         let second = try await api.pay(localPayment(order, table: "T1", tenders: [localTender(.cash, 950, tendered: 1000)]))
-        #expect(second.receiptNumber == "NF-T01-000002" && second.remainingBalance == .zero && second.changeGiven == Money(cents: 50))
+        #expect(second.receiptNumber == "T01-000002" && second.remainingBalance == .zero && second.changeGiven == Money(cents: 50))
         #expect(try await api.activeOrder(table: "T1") == nil)
     }
 
@@ -43,7 +43,7 @@ struct LocalPaymentTests {
         }
         // Rien n'a été écrit : le premier vrai règlement porte le premier numéro de reçu et solde la note.
         let result = try await api.pay(localPayment(order, table: "T1", tenders: [localTender(.cash, 1950)]))
-        #expect(result.receiptNumber == "NF-T01-000001" && result.remainingBalance == .zero)
+        #expect(result.receiptNumber == "T01-000001" && result.remainingBalance == .zero)
     }
 
     @Test func aPaidOrderCannotBePaidAgain() async throws {

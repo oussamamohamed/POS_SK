@@ -10,7 +10,7 @@ extension LocalPosAPI {
         try requireAuth()
         let trimmed = reason.trimmingCharacters(in: .whitespacesAndNewlines)
         guard value >= 0, !trimmed.isEmpty, !(type == .percentage && value > 100) else { throw Self.discountFailed }
-        let orders = orderRepository, payments = paymentRepository
+        let orders = orderRepository, payments = fiscalRepository
         try db.transaction {
             guard let order = try orders.order(id: orderId) else { throw Self.discountFailed }
             guard try orders.status(of: orderId)?.isModifiable == true else { throw APIError.localOrderClosed }
@@ -30,7 +30,7 @@ extension LocalPosAPI {
     public func removeDiscount(orderId: UUID) async throws {
         try requireAuth()
         // Écart assumé : commande inconnue → 404 (le .NET lève une exception non gérée) ; commande réglée ou annulée → 409.
-        let orders = orderRepository, payments = paymentRepository
+        let orders = orderRepository, payments = fiscalRepository
         try db.transaction {
             guard let status = try orders.status(of: orderId) else { throw APIError.notFound("Commande introuvable.") }
             guard status.isModifiable else { throw APIError.localOrderClosed }
@@ -44,7 +44,7 @@ extension LocalPosAPI {
         try requireAuth()
         let trimmed = reason.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { throw Self.compFailed }
-        let orders = orderRepository, payments = paymentRepository
+        let orders = orderRepository, payments = fiscalRepository
         try db.transaction {
             guard let order = try orders.order(id: orderId) else { throw Self.compFailed }
             guard try orders.status(of: orderId)?.isModifiable == true else { throw APIError.localOrderClosed }

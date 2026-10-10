@@ -12,7 +12,7 @@ public actor LocalPosAPI: PosAPI {
     private static let tokenPrefix = "local-"
     /// Identique à `SessionStore.pinLength` (isolé au MainActor, donc non réutilisable ici).
     static let pinLength = 4
-    /// Le poste autonome est son propre terminal : les numéros de reçu (`NF-T01-…`) et de retrait (`#A-…`) en dépendent.
+    /// Le poste autonome est son propre terminal : les numéros de reçu (`T01-…`) et de retrait (`#A-…`) en dépendent.
     public static let standaloneTerminalId = "T01"
 
     /// `path` : fichier SQLite à créer ou rouvrir, ou `":memory:"` (tests).
@@ -32,6 +32,7 @@ public actor LocalPosAPI: PosAPI {
     var orderRepository: LocalOrderRepository { LocalOrderRepository(db: db) }
     var kitchenRepository: LocalKitchenRepository { LocalKitchenRepository(db: db) }
     var paymentRepository: LocalPaymentRepository { LocalPaymentRepository(db: db) }
+    var fiscalRepository: LocalFiscalRepository { LocalFiscalRepository(db: db) }
     var holdRepository: LocalHoldRepository { LocalHoldRepository(db: db) }
     var hotelRepository: LocalHotelRepository { LocalHotelRepository(db: db) }
     var printerRepository: LocalPrinterRepository { LocalPrinterRepository(db: db) }
