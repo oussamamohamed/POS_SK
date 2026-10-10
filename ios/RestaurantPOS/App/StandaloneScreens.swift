@@ -81,12 +81,14 @@ struct StartupErrorScreen: View {
     }
 }
 
-/// Rappel permanent : le mode autonome n'est pas encore fiscal (sous-projet 2).
-struct StandaloneBanner: View {
+/// Rappel de sauvegarde en mode autonome : l'iPad est le seul dépositaire de la chaîne fiscale.
+struct BackupBanner: View {
+    let controller: BackupController
+
     var body: some View {
         HStack(spacing: Theme.Space.s) {
             Image(systemName: "exclamationmark.triangle.fill")
-            Text("mode.non_fiscal_banner").font(.system(size: 13, weight: .semibold))
+            Text(controller.neverBackedUp ? "backup.banner_never" : "backup.banner_overdue").font(.system(size: 13, weight: .semibold))
             Spacer()
         }
         .foregroundStyle(Theme.warning)
@@ -94,6 +96,6 @@ struct StandaloneBanner: View {
         .padding(.vertical, Theme.Space.s)
         .background(Theme.warning.opacity(0.14))
         .accessibilityElement(children: .combine)
-        .accessibilityIdentifier("standalone.banner")
+        .accessibilityIdentifier("backup.banner")
     }
 }

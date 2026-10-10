@@ -48,7 +48,7 @@ class PosUITestCase: XCTestCase {
     ///   - modeChoice: aucun mode mémorisé, l'écran « Serveur / Autonome » s'affiche.
     ///   - pin: déverrouillage automatique (données de démonstration uniquement ; nil = rester sur l'écran PIN).
     @discardableResult
-    func launchStandalone(blank: Bool = false, modeChoice: Bool = false, pin: String? = "1234", language: String = "fr") -> XCUIApplication {
+    func launchStandalone(blank: Bool = false, modeChoice: Bool = false, pin: String? = "1234", language: String = "fr", backupFolder: String? = nil) -> XCUIApplication {
         app = XCUIApplication()
         app.launchArguments = ["-UITestMode"]
         if modeChoice {
@@ -59,6 +59,7 @@ class PosUITestCase: XCTestCase {
         let unlocks = pin != nil && !blank && !modeChoice
         if let pin, unlocks { app.launchArguments += ["-UITestPin", pin] }
         app.launchArguments += ["-AppleLanguages", "(\(language))", "-AppleLocale", language == "ar" ? "ar" : "\(language)_FR"]
+        if let backupFolder { app.launchArguments += ["-UITestBackupFolder", backupFolder] }
         app.launch()
         if unlocks {
             XCTAssertTrue(app.buttons["nav.order"].waitForExistence(timeout: 10), "La coque principale doit s'afficher après connexion")

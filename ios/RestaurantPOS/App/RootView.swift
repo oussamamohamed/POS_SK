@@ -4,6 +4,7 @@ import PosKit
 struct RootView: View {
     @Environment(AppModel.self) private var model
     @Environment(AppEnvironment.self) private var environment
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         ZStack(alignment: .top) {
@@ -38,6 +39,10 @@ struct RootView: View {
         .animation(.easeInOut(duration: 0.25), value: model.session.isUnlocked)
         .animation(.easeInOut(duration: 0.25), value: model.settings.isPaired)
         .task(id: environment.generation) { await environment.refreshSetup() }
+        .task(id: scenePhase) {
+            guard scenePhase == .active else { return }
+            await environment.backup?.runIfDue()
+        }
         .task(id: model.session.currentOperator?.id) {
             guard model.session.isUnlocked, !model.isBootstrapped else { return }
             await model.bootstrap()

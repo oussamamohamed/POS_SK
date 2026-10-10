@@ -46,6 +46,7 @@ struct LaunchConfiguration {
     let usesLocalBackend: Bool
     let localIsBlank: Bool
     let showsModeChoice: Bool
+    let backupFolder: URL?
 
     static let current: LaunchConfiguration = {
         let args = ProcessInfo.processInfo.arguments
@@ -61,7 +62,8 @@ struct LaunchConfiguration {
             startsPaired: isUITest && args.contains("-UITestPaired"),
             usesLocalBackend: isUITest && (args.contains("-UITestLocal") || args.contains("-UITestLocalBlank")),
             localIsBlank: isUITest && args.contains("-UITestLocalBlank"),
-            showsModeChoice: isUITest && args.contains("-UITestModeChoice")
+            showsModeChoice: isUITest && args.contains("-UITestModeChoice"),
+            backupFolder: isUITest ? defaults.string(forKey: "UITestBackupFolder").map { URL(fileURLWithPath: $0, isDirectory: true) } : nil
         )
     }()
 }
@@ -82,6 +84,8 @@ final class AppEnvironment {
     private(set) var setupState = SetupState.done
     /// Ouverture de la base locale impossible : l'application affiche l'erreur au lieu de démarrer.
     private(set) var startupError: String?
+    /// Sauvegarde du mode autonome (`nil` en mode serveur).
+    private(set) var backup: BackupController?
     @ObservationIgnored private let defaults: UserDefaults
     /// **Une seule instance** de l'acteur pour tout le processus : la recréer ouvrirait une seconde connexion sur le même fichier.
     @ObservationIgnored private var localAPI: LocalPosAPI?
@@ -128,6 +132,10 @@ final class AppEnvironment {
         self.startupError = startupError
         self.setupState = mode == .standalone && startupError == nil ? .checking : .done
         model = Self.makeModel(settings: settings, launch: launch, localAPI: api)
+        if let api, mode == .standalone {
+            let store: BackupPassphraseStore = launch.isUITest ? InMemoryBackupPassphraseStore() : KeychainBackupPassphraseStore()
+            backup = BackupController(api: api, passphrases: store, defaults: defaults, folderOverride: launch.backupFolder)
+        }
         if let section = launch.initialSection { router.section = section }
         if let pin = launch.autoPin {
             let session = model.session

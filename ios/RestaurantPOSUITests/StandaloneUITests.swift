@@ -40,7 +40,7 @@ final class StandaloneUITests: PosUITestCase {
         assertExists("lock.standalone")
         typePin("4321")
         assertExists("nav.order", timeout: 10)
-        assertExists("standalone.banner")
+        assertNotExists("standalone.banner")
         XCTAssertTrue(label(of: "header.operator").contains("Marie Curie"))
     }
 
@@ -68,7 +68,7 @@ final class StandaloneUITests: PosUITestCase {
 
     func testFullTableJourneyWorksOnTheLocalBackend() {
         launchStandalone()
-        assertExists("standalone.banner")
+        assertNotExists("standalone.banner")
         openTable("T1", covers: 3)
         addProduct("Pizza Margherita AOP")
         addProduct("Pizza Margherita AOP")
@@ -104,6 +104,44 @@ final class StandaloneUITests: PosUITestCase {
         assertExists("nav.floor")
         assertNotExists("nav.fiscal")
         assertNotExists("nav.admin")
-        assertExists("standalone.banner")
+        assertNotExists("standalone.banner")
+    }
+
+    func testNoNonFiscalBannerAndABackupReminderOnAFreshInstallation() {
+        launchStandalone()
+        assertNotExists("standalone.banner")
+        assertExists("backup.banner", timeout: 10)
+    }
+
+    func testBackupSettingsExportClearsTheReminder() throws {
+        let folder = NSTemporaryDirectory() + "ui-backup-\(UUID().uuidString)"
+        try FileManager.default.createDirectory(atPath: folder, withIntermediateDirectories: true)
+        launchStandalone(backupFolder: folder)
+        assertExists("backup.banner", timeout: 10)
+
+        tap("nav.admin")
+        tap("admin.network")
+        tap("backup.passphrase.set")
+        fill("backup.passphrase.field", "phrase de test 1")
+        fill("backup.passphrase.confirm", "phrase de test 1")
+        tap("backup.passphrase.save")
+
+        tap("backup.export")
+        fill("backup.export.passphrase", "phrase de test 1")
+        tap("backup.export.confirm")
+
+        assertNotExists("backup.banner")
+        XCTAssertFalse(label(of: "backup.lastSuccess").isEmpty)
+    }
+
+    func testAPassphraseMismatchIsRefused() {
+        launchStandalone()
+        tap("nav.admin")
+        tap("admin.network")
+        tap("backup.passphrase.set")
+        fill("backup.passphrase.field", "phrase de test 1")
+        fill("backup.passphrase.confirm", "phrase de test 2")
+        tap("backup.passphrase.save")
+        assertExists("backup.passphrase.field")
     }
 }

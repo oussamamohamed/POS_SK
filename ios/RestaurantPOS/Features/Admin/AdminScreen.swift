@@ -637,6 +637,7 @@ struct NetworkSettingsView: View {
                 Section("mode.standalone_status") {
                     Text("mode.standalone_detail").font(.footnote).foregroundStyle(Theme.inkMuted)
                 }
+                BackupSettingsSection()
             } else {
             Section("common.master_server_section") {
                 LabeledContent("admin.address_label", value: environment.launch.isUITest ? String(localized: "admin.demo_data_label") : model.settings.serverURL)

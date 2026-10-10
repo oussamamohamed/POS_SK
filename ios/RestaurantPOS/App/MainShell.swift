@@ -12,7 +12,7 @@ struct MainShell: View {
             SidebarRail()
             VStack(spacing: 0) {
                 HeaderBar()
-                if environment.isStandalone { StandaloneBanner() }
+                if environment.isStandalone, let backup = environment.backup, backup.needsAttention { BackupBanner(controller: backup) }
                 if model.happyHour.isActive {
                     HappyHourBanner()
                 }
