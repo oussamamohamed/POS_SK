@@ -21,11 +21,15 @@ enum FiscalHashing {
     /// `Guid.ToString()` : minuscules.
     static func guidText(_ id: UUID) -> String { id.uuidString.lowercased() }
 
-    /// Date signée : arrondie à la milliseconde, sous la forme exacte que `SQLDate.parse` rend pour ce texte (idempotent).
-    /// Attention : `SQLDate.format` tronque au lieu d'arrondir ; la valeur relue peut donc perdre 1 ms. Le texte signé fait foi.
+    /// Texte à écrire en base pour une date fiscale (`CreatedAtUtc`, `OccurredAtUtc`) : milliseconde entière, jamais via `SQLDate.format`
+    /// qui tronque et ferait perdre 1 ms à la relecture. Le texte signé (`timestampText`) fait foi.
+    static func storedText(_ date: Date) -> String {
+        String(timestampText(date).prefix(23)) + "Z" // 2026-10-10T09:00:00.123Z
+    }
+
+    /// Date signée : arrondie à la milliseconde, sous la forme exacte que `SQLDate.parse` rend pour `storedText` (idempotent).
     static func roundedToMilliseconds(_ date: Date) -> Date {
-        let text = timestampText(date) // 2026-10-10T09:00:00.1230000+00:00
-        return SQLDate.parse(String(text.prefix(23)) + "Z") ?? date
+        SQLDate.parse(storedText(date)) ?? date
     }
 
     /// `DateTimeOffset.ToString("O")` d'une date UTC : `2026-10-10T09:00:00.1230000+00:00`.

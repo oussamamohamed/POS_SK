@@ -94,11 +94,23 @@ struct FiscalHashingTests {
         #expect(FiscalJSON.object([("Id", FiscalJSON.guid(id)), ("N", "3")]) == "{\"Id\":\"0a1b2c3d-4e5f-6071-8293-a4b5c6d7e8f9\",\"N\":3}")
     }
 
-    @Test func millisecondRoundingIsIdempotentAcrossAStoredDate() throws {
-        let now = Date(timeIntervalSince1970: 1_760_087_880.1234)
-        let rounded = FiscalHashing.roundedToMilliseconds(now)
-        let stored = try #require(SQLDate.parse(SQLDate.format(rounded)))
-        #expect(FiscalHashing.timestampText(stored) == FiscalHashing.timestampText(rounded))
-        #expect(FiscalHashing.roundedToMilliseconds(stored) == stored)
+    @Test func storedDatesRecomputeTheSignedTimestampExactly() throws {
+        var dates: [Date] = [
+            Date(timeIntervalSince1970: 1_760_087_880.002 - 1e-9), Date(timeIntervalSince1970: 1_760_087_880.123),
+            Date(timeIntervalSince1970: 1_760_087_880.999), Date(timeIntervalSince1970: 1_760_087_880),
+            Date(timeIntervalSince1970: 1_700_000_000.5), Date(timeIntervalSince1970: 1_500_000_000.0005),
+        ]
+        var state: UInt64 = 42
+        for _ in 0..<5000 {
+            state = state &* 6364136223846793005 &+ 1442695040888963407
+            dates.append(Date(timeIntervalSince1970: 1_700_000_000 + Double(state >> 33) / Double(1 << 31) * 100_000_000))
+        }
+        for d in dates {
+            let stored = try #require(SQLDate.parse(FiscalHashing.storedText(d)))
+            #expect(FiscalHashing.timestampText(stored) == FiscalHashing.timestampText(d))
+            let rounded = FiscalHashing.roundedToMilliseconds(d)
+            #expect(FiscalHashing.timestampText(rounded) == FiscalHashing.timestampText(d))
+            #expect(FiscalHashing.roundedToMilliseconds(rounded) == rounded)
+        }
     }
 }
