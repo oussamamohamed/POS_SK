@@ -1,6 +1,6 @@
 # iPad standalone, sous-projet 2 : fiscal NF525 et sauvegarde chiffrée
 
-Date : 2026-10-10 · Statut : en attente de relecture
+Date : 2026-10-10 · Statut : implémentée (plan 2026-10-10-ipad-standalone-2-fiscal-nf525)
 Spec parente : `2026-10-06-ipad-standalone-design.md` (sous-projet 2 de l'ordre de construction).
 
 ## Objectif
@@ -12,7 +12,8 @@ Le mode autonome de l'iPad émet de vrais reçus fiscaux NF525 sur le terminal `
 Inclus :
 1. Remplacement de `NonFiscalPayments` par `FiscalReceipts` et `PaymentTenders` signés, chaînés pour `T01`.
 2. Annulation par contre-passation, duplicata, journal technique (JET), triggers d'immuabilité.
-3. Clôture d'une commande à solde nul et `chargeRoom` avec reçu fiscal valide (conditions 6 et 7 du plan 1c).
+3. Clôture d'une commande à solde nul et `chargeRoom` avec reçu fiscal valide (conditions 6 et 7 du plan 1c). Le .NET n'écrit pas de reçu pour une facturation chambre ; l'iPad en écrit un (règlement « chambre ») : écart assumé.
+- **Parité des montants** : TVA et HT du reçu reproduisent `CheckoutPaymentService`, y compris ses écarts actuels (JSON de TVA sans taux à emporter ni remise globale, HT sans remise en montant fixe) ; les corriger est une décision séparée des deux côtés.
 4. Audit JET des dérogations Happy Hour et des annulations de mise en attente.
 5. Règle de signature des décimaux : on signe toujours la valeur recalculée depuis les centimes, jamais le texte relu de la base (« 20 » côté Swift, « 20.0 » côté .NET).
 6. Sauvegarde chiffrée : export manuel, sauvegarde quotidienne automatique, restauration (fonction et tests).
@@ -43,7 +44,7 @@ Hors périmètre (sous-projet 3 ou suivants) :
 
 ## Données : migration V5 (nouveau script, jamais de modification d'un script publié)
 
-- Création de `FiscalReceipts`, `PaymentTenders`, `TechnicalJournalEntries` avec les mêmes tables et colonnes que `AppDbContext`, y compris `VoidedReceiptId` et `DuplicateNumber`. `IsVoid` est conservée pour la parité du schéma et jamais écrite.
+- Création de `FiscalReceipts`, `PaymentTenders` et `JournalEntries` (nom du `DbSet` du JET) avec les mêmes colonnes que `AppDbContext`, y compris `VoidedReceiptId`. Il n'y a pas de colonne `DuplicateNumber` sur les reçus : comme le .NET, le numéro de duplicata se déduit du JET (nombre d'entrées `DUPLICATE_PRINTED` du document + 1). `IsVoid` est conservée pour la parité du schéma et jamais écrite.
 - Triggers `BEFORE UPDATE` et `BEFORE DELETE` sur ces trois tables : `RAISE(ABORT, 'NF525 INV-3: ...')`, mêmes messages que `FiscalImmutabilityInterceptor`. Les entrées JET héritées sans `ChainSequence` ne sont pas concernées côté Swift (aucune n'existe).
 - Suppression de `NonFiscalPayments` (décision de l'utilisateur : aucune base réelle à préserver, les paiements provisoires sont perdus). Les chaînes démarrent à `GenesisHash`.
 - `LocalCounters` et les tables de verrouillage PIN sont inchangés.
@@ -52,8 +53,8 @@ Hors périmètre (sous-projet 3 ou suivants) :
 ## Règles métier
 
 - **Encaissement** : un reçu par paiement soldant ou encaissant, `sequenceNumber` continu à partir de 1, montants TTC et HT en centimes entiers (arrondi identique à `Money.FromDecimal`), tenders par moyen de paiement (espèces avec rendu monnaie, carte, ticket restaurant, carte cadeau, chambre).
-- **Annulation** : nouveau reçu signé, montants TTC et bases de TVA négatifs, lié par `VoidedReceiptId`, plus entrée JET `RECEIPT_VOIDED`. Refusée si le reçu n'est pas de `T01`, s'il est lui-même une annulation, ou s'il est déjà annulé.
-- **Duplicata** : incrémente `DuplicateNumber`, impose la mention « DUPLICATA n°N » et crée une entrée JET `DUPLICATE_PRINTED` avec `printQueued` dans le payload, même sans imprimante.
+- **Annulation** : nouveau reçu signé, montants TTC et bases de TVA négatifs, lié par `VoidedReceiptId`, plus entrée JET `RECEIPT_VOIDED`. Refusée si le reçu n'est pas de `T01`, s'il est lui-même une annulation, s'il est déjà annulé, ou s'il porte un règlement « chambre » (409 : le folio de la chambre ne serait pas contre-passé ; la contre-passation du folio est une fonctionnalité future).
+- **Duplicata** : numérote le duplicata d'après le JET, impose la mention « DUPLICATA n°N » et crée une entrée JET `DUPLICATE_PRINTED` avec `printQueued` dans le payload, même sans imprimante.
 - **Solde nul et chambre** : commande 100 % offerte ou remisée, et `chargeRoom` : un reçu fiscal est émis, sans numéro `NF-…` incohérent (conditions 6 et 7 du plan 1c).
 - **JET** : en plus de `RECEIPT_VOIDED` et `DUPLICATE_PRINTED`, les dérogations Happy Hour et les annulations de mise en attente sont journalisées. Les événements de sauvegarde sont aussi journalisés (réussite et échec).
 - **Décimaux** : toute valeur signée est formatée depuis les centimes. Aucune relecture de texte décimal de la base n'entre dans un hash.
@@ -69,7 +70,7 @@ Hors périmètre (sous-projet 3 ou suivants) :
 
 ## Interface
 
-- Le bandeau « non fiscal » est retiré.
+- Le bandeau « non fiscal » est remplacé par un bandeau de rappel de sauvegarde (jamais sauvegardé, ou plus de 24 h).
 - La section Fiscal reste masquée en mode autonome jusqu'au sous-projet 3.
 - Réglages : phrase de sauvegarde, dossier, bouton d'export manuel, état de la dernière sauvegarde, bannière de retard.
 - Toutes les chaînes d'interface sont ajoutées en FR, EN et AR dans `Localizable.xcstrings`.

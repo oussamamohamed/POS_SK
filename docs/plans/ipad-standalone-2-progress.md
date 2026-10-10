@@ -15,3 +15,15 @@ Base de référence (avant tâche 1) : PosKit 335 · UI 47 · .NET 417
 | 7 Sauvegarde chiffrée (format, écriture, rotation, restauration) | fait | 418 | 386 | - | aucun |
 | 8 Sauvegarde dans LocalPosAPI (export, programmée, état, Keychain) | fait | 418 | 393 | - | aucun |
 | 9 Interface : retrait du bandeau non fiscal, réglages et bandeau de sauvegarde | fait | 418 | 393 | 51 | aucun |
+| 10 Documentation, règle de suivi .NET/Swift et vérification finale | fait | 418 | 393 | 51 | aucun |
+
+Sous-projet 2 « Fiscal NF525 » : terminé (condition de sortie : `FiscalHashingTests` et `FiscalReceiptMathTests` rejouent `fiscal_reference.json`, généré par le .NET).
+
+Conditions d'entrée du sous-projet 3 :
+1. Tables `DailyFiscalClosures`, `FiscalPeriodClosures`, `FiscalArchives` (migration V6) avec leurs triggers, et extension de `verifyChains` aux chaînes restantes.
+2. Section Fiscal visible en mode autonome (retirer le masquage de `SidebarRail`), rapports X et Z, FEC, export via le partage.
+3. Impression des duplicata : `reprintReceipt` ne fait que numéroter et journaliser (`printQueued: false`) tant que le sous-projet 4 n'existe pas.
+4. Interface d'annulation de reçu : `voidReceipt` n'a pas d'écran (le client serveur n'en a pas non plus). Un reçu portant un règlement « chambre » ne peut pas être annulé (409) : la contre-passation du folio de la chambre est une fonctionnalité future.
+5. Écran de réglages de la base et restauration depuis l'interface : `LocalBackupService.restore` existe et est testée, sans écran.
+6. Attestation NF525 à faire couvrir le mode autonome avant tout usage réel.
+7. Décider de corriger ou non les écarts .NET reproduits pour la parité (TVA et HT du reçu), des deux côtés.
