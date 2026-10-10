@@ -40,7 +40,7 @@ Hors périmètre (sous-projet 3 ou suivants) :
 | `LocalBackupCrypto` | Dérivation de clé et AES-GCM, format de fichier | CryptoKit |
 | `LocalBackupService` | Copie cohérente, chiffrement, rotation, état de la dernière sauvegarde, restauration | `LocalBackupCrypto`, `backup(to:)` existant |
 
-`LocalPaymentRepository` est supprimé avec `NonFiscalPayments`. Le terminal reste toujours `T01`, comme le serveur qui ignore le terminal envoyé par le client.
+Le code de règlement de `LocalPaymentRepository` (`insertTender`, `paidCents`, `nextReceiptNumber`) est supprimé avec `NonFiscalPayments` ; le dépôt ne garde que les numéros de retrait et les avoirs. Le terminal reste toujours `T01`, comme le serveur qui ignore le terminal envoyé par le client.
 
 ## Données : migration V5 (nouveau script, jamais de modification d'un script publié)
 

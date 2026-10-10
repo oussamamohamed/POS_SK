@@ -73,7 +73,7 @@ Un spec, un plan et un cycle d'implémentation par sous-projet.
 | 4 | Impression | `PrinterTransport`, LAN, Star, Epson, rendu ESC/POS | Ticket réel imprimé sur chaque marque |
 | 5 | Back-office local | Écrans Gestion branchés sur `LocalPosAPI` | Création produit/opérateur sans serveur |
 
-Tant que le sous-projet 2 n'est pas terminé, le mode autonome est marqué « non fiscal » et ne doit pas servir à encaisser.
+Le sous-projet 2 est terminé : le mode autonome émet des reçus fiscaux NF525. L'attestation NF525 doit toutefois couvrir ce mode avant tout usage réel.
 
 ## Tests
 
