@@ -44,6 +44,21 @@ final class StandaloneUITests: PosUITestCase {
         XCTAssertTrue(label(of: "header.operator").contains("Marie Curie"))
     }
 
+    func testBackupReminderAndSettingsAppearWhenStandaloneIsChosenAtRuntime() {
+        launchStandalone(modeChoice: true, pin: nil)
+        tap("mode.standalone", timeout: 10)
+        assertExists("setup.name", timeout: 10)
+        fillFirstRun()
+        tap("setup.submit")
+        assertExists("pin.1", timeout: 10)
+        typePin("4321")
+        assertExists("nav.order", timeout: 10)
+        assertExists("backup.banner", timeout: 10)
+        tap("nav.admin")
+        tap("admin.network")
+        assertExists("backup.passphrase.set")
+    }
+
     func testChoosingServerModeLeadsToPairing() {
         launchStandalone(modeChoice: true, pin: nil)
         tap("mode.server", timeout: 10)

@@ -53,6 +53,7 @@ final class BackupController {
 
     /// Au premier plan : sauvegarde si la dernière date de plus de 24 h (ou n'existe pas) et que phrase et dossier sont configurés.
     func runIfDue() async {
+        guard !isRunning else { return }
         await refresh()
         guard status?.isOverdue == true, let phrase = passphrases.load() else { return }
         _ = await perform(passphrase: phrase, scheduled: true)

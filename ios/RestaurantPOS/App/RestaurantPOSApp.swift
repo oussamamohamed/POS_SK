@@ -132,15 +132,19 @@ final class AppEnvironment {
         self.startupError = startupError
         self.setupState = mode == .standalone && startupError == nil ? .checking : .done
         model = Self.makeModel(settings: settings, launch: launch, localAPI: api)
-        if let api, mode == .standalone {
-            let store: BackupPassphraseStore = launch.isUITest ? InMemoryBackupPassphraseStore() : KeychainBackupPassphraseStore()
-            backup = BackupController(api: api, passphrases: store, defaults: defaults, folderOverride: launch.backupFolder)
-        }
+        backup = makeBackup()
         if let section = launch.initialSection { router.section = section }
         if let pin = launch.autoPin {
             let session = model.session
             Task { for digit in pin { await session.appendDigit(String(digit)) } }
         }
+    }
+
+    /// Contrôleur de sauvegarde du mode autonome ; `nil` hors mode autonome ou sans base ouverte.
+    private func makeBackup() -> BackupController? {
+        guard mode == .standalone, let localAPI else { return nil }
+        let store: BackupPassphraseStore = launch.isUITest ? InMemoryBackupPassphraseStore() : KeychainBackupPassphraseStore()
+        return BackupController(api: localAPI, passphrases: store, defaults: defaults, folderOverride: launch.backupFolder)
     }
 
     private static func standaloneSettings(defaults: UserDefaults) -> TerminalSettings {
@@ -190,6 +194,7 @@ final class AppEnvironment {
             setupState = .done
         }
         model = Self.makeModel(settings: settings, launch: launch, localAPI: newMode == .standalone ? localAPI : nil)
+        backup = makeBackup()
         router.section = .order
         generation += 1
     }

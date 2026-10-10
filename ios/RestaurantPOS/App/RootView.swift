@@ -39,7 +39,7 @@ struct RootView: View {
         .animation(.easeInOut(duration: 0.25), value: model.session.isUnlocked)
         .animation(.easeInOut(duration: 0.25), value: model.settings.isPaired)
         .task(id: environment.generation) { await environment.refreshSetup() }
-        .task(id: scenePhase) {
+        .task(id: "\(scenePhase)-\(environment.generation)") {
             guard scenePhase == .active else { return }
             await environment.backup?.runIfDue()
         }
