@@ -28,9 +28,11 @@ public sealed record DayOrderDiscount(string Type, decimal Value);
 
 /// <summary>
 /// Opérations : <c>table_order</c> (sur place), <c>counter_order</c> (comptoir / à emporter), <c>hold_then_void</c> (mise en attente puis
-/// annulation par PIN responsable), <c>x_report</c>, <c>z_closure</c>. L'annulation et la réimpression d'un reçu sont portées par la
-/// commande (<c>VoidPaymentIndex</c>, <c>Reprint</c>). Le pourboire (<c>TipCents</c>) est encaissé avec le dernier règlement.
-/// Les champs inutiles pour un type sont nuls.
+/// annulation par PIN responsable), <c>x_report</c>, <c>z_closure</c>, <c>void_receipt</c>. L'annulation et la réimpression d'un reçu sont
+/// portées par la commande (<c>VoidPaymentIndex</c>, <c>Reprint</c>). Le pourboire (<c>TipCents</c>) est encaissé avec le dernier règlement.
+/// <c>Ref</c> nomme une commande ; <c>void_receipt</c> (<c>Ref</c> + <c>VoidPaymentIndex</c>) tente d'annuler après coup le reçu d'une
+/// commande : placée après le <c>z_closure</c> du poste, elle doit être REFUSÉE (409 <c>void_after_closure</c>) et n'a aucun effet fiscal,
+/// donc aucun effet sur le grand livre. Les champs inutiles pour un type sont nuls.
 /// </summary>
 public sealed record DayOperation(
     string Type,
@@ -45,8 +47,27 @@ public sealed record DayOperation(
     IReadOnlyList<IReadOnlyList<DayTender>>? Payments = null,
     int? VoidPaymentIndex = null,
     bool Reprint = false,
-    bool HoldAndRecall = false);
+    bool HoldAndRecall = false,
+    string? Ref = null);
 
-[JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase, WriteIndented = true)]
+/// <summary>Grand livre attendu d'un poste (ou de la salle) tel que publié dans le JSON partagé ; clés de TVA = taux invariant.</summary>
+public sealed record DayExpected(
+    long TtcCents,
+    long HtCents,
+    int ReceiptCount,
+    IReadOnlyDictionary<string, long> VatByRate,
+    IReadOnlyDictionary<string, long> TenderByMethod);
+
+/// <summary>Contenu de <c>day_scenario.json</c> : le scénario et son grand livre (clés de <c>Expected</c> = clés des postes du scénario).</summary>
+public sealed record DayScenarioFile(
+    int Seed,
+    IReadOnlyList<DayTerminal> Terminals,
+    IReadOnlyList<DayOperation> Operations,
+    IReadOnlyDictionary<string, DayExpected> Expected,
+    DayExpected Total);
+
+[JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase, WriteIndented = true,
+    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
 [JsonSerializable(typeof(DayScenario))]
+[JsonSerializable(typeof(DayScenarioFile))]
 internal sealed partial class DayScenarioJsonContext : JsonSerializerContext;

@@ -102,7 +102,32 @@ public class DayOracleTests
             new DayOperation("x_report", "T1"),
             new DayOperation("z_closure", "T1"),
         };
-        DayLedgerOracle.Compute(ops, T1).ByTerminal.Should().BeEmpty();
+        var t = DayLedgerOracle.Compute(ops, T1).ByTerminal["T01"];
+        t.TtcCents.Should().Be(0);
+        t.ReceiptCount.Should().Be(0);
+        t.VatByRate.Should().BeEmpty();
+        t.TenderByMethod.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void ATerminalWithoutSales_HasAnEmptyLedger_NotAMissingKey()
+    {
+        var ids = new Dictionary<string, string> { ["A"] = "T01", ["B"] = "T02" };
+        var order = new DayOperation("counter_order", "A", "waiter1", null, 0, "EatIn",
+            [new DayLine("Menu", 1, 1000, 10m)], null, 0, [[new DayTender("Cash", 1000)]]);
+        var ledger = DayLedgerOracle.Compute([order], ids);
+        ledger.ByTerminal["T02"].ReceiptCount.Should().Be(0);
+        ledger.ByTerminal["T02"].TtcCents.Should().Be(0);
+        ledger.Total.TtcCents.Should().Be(1000);
+    }
+
+    [Fact]
+    public void OrderTotalCents_AppliesTheDiscountAndNeverGoesBelowZero()
+    {
+        var lines = new[] { new DayLine("Café", 2, 250, 20m), new DayLine("Offert", 1, 900, 10m, Comp: true) };
+        DayLedgerOracle.OrderTotalCents(new DayOperation("table_order", Lines: lines)).Should().Be(500);
+        DayLedgerOracle.OrderTotalCents(new DayOperation("table_order", Lines: lines, Discount: new("Percentage", 10m))).Should().Be(450);
+        DayLedgerOracle.OrderTotalCents(new DayOperation("table_order", Lines: lines, Discount: new("FixedAmount", 10m))).Should().Be(0);
     }
 
     [Fact]

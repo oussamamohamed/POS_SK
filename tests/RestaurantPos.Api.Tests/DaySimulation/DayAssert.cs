@@ -22,5 +22,28 @@ public static class DayAssert
         tenders.Should().BeEquivalentTo(expected.TenderByMethod, $"{because} : moyens de paiement");
     }
 
-    private static long Cents(JsonElement euros) => (long)(euros.GetDecimal() * 100m);
+    /// <summary>Deux rapports (par exemple un X et la Z qui le suit) portent les mêmes chiffres : TTC, HT, reçus, TVA, moyens de paiement et grand total perpétuel.</summary>
+    public static void SummariesEqual(JsonElement actual, JsonElement expected, string because)
+    {
+        Cents(actual.GetProperty("totalSalesTtc")).Should().Be(Cents(expected.GetProperty("totalSalesTtc")), $"{because} : TTC");
+        Cents(actual.GetProperty("totalSalesHt")).Should().Be(Cents(expected.GetProperty("totalSalesHt")), $"{because} : HT");
+        actual.GetProperty("receiptCount").GetInt32().Should().Be(expected.GetProperty("receiptCount").GetInt32(), $"{because} : nombre de reçus");
+        Cents(actual.GetProperty("perpetualGrandTotal")).Should().Be(Cents(expected.GetProperty("perpetualGrandTotal")), $"{because} : grand total perpétuel");
+        Map(actual.GetProperty("vatBreakdown")).Should().BeEquivalentTo(Map(expected.GetProperty("vatBreakdown")), $"{because} : TVA par taux");
+        Map(actual.GetProperty("paymentTotals")).Should().BeEquivalentTo(Map(expected.GetProperty("paymentTotals")), $"{because} : moyens de paiement");
+    }
+
+    /// <summary>Rapport d'une période sans vente : tout à zéro, ni TVA ni règlement.</summary>
+    public static void IsEmpty(JsonElement summary, string because)
+    {
+        Cents(summary.GetProperty("totalSalesTtc")).Should().Be(0, $"{because} : TTC");
+        Cents(summary.GetProperty("totalSalesHt")).Should().Be(0, $"{because} : HT");
+        summary.GetProperty("receiptCount").GetInt32().Should().Be(0, $"{because} : nombre de reçus");
+        Map(summary.GetProperty("vatBreakdown")).Should().BeEmpty($"{because} : TVA");
+        Map(summary.GetProperty("paymentTotals")).Should().BeEmpty($"{because} : moyens de paiement");
+    }
+
+    public static long Cents(JsonElement euros) => (long)(euros.GetDecimal() * 100m);
+
+    private static Dictionary<string, long> Map(JsonElement obj) => obj.EnumerateObject().ToDictionary(p => p.Name, p => Cents(p.Value));
 }

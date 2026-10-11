@@ -72,7 +72,18 @@ public sealed record DayRunResult(
     IReadOnlyDictionary<string, List<JsonElement>> XReports,
     IReadOnlyDictionary<string, List<JsonElement>> ZClosures,
     IReadOnlyDictionary<string, List<JsonElement>> LatestClosures,
-    IReadOnlyDictionary<string, List<DayReceipt>> Receipts);
+    IReadOnlyDictionary<string, List<DayReceipt>> Receipts,
+    IReadOnlyDictionary<string, List<int>> XReportOpIndexes,
+    IReadOnlyDictionary<string, List<int>> ZClosureOpIndexes,
+    IReadOnlyList<DayVoidAttempt> VoidAttempts,
+    IReadOnlyDictionary<string, HttpClient> Clients,
+    DayManager Manager);
+
+/// <summary>Le responsable connecté du rejeu (PIN 1234) : permet aux tests de rappeler X, Z et les rapports après coup.</summary>
+public sealed record DayManager(Guid Id, string Name, string Token);
+
+/// <summary>Résultat d'une opération <c>void_receipt</c> : statut HTTP et code d'erreur renvoyés par l'API (null si la réponse n'en a pas).</summary>
+public sealed record DayVoidAttempt(int OpIndex, string Key, string? Ref, int Status, string? Code);
 
 /// <summary>Rejoue un <see cref="DayScenario"/> par l'API HTTP réelle (jamais par la base, sauf pour relire l'identifiant d'un reçu).</summary>
 public static class DayRunner
@@ -91,19 +102,34 @@ public static class DayRunner
             run.Clients[terminal.Key] = client;
             run.TerminalIds[terminal.Key] = paired.TerminalId;
             run.XReports[terminal.Key] = [];
+            run.XReportOpIndexes[terminal.Key] = [];
+            run.ZClosureOpIndexes[terminal.Key] = [];
             run.ZClosures[terminal.Key] = [];
             run.LatestClosures[terminal.Key] = [];
             run.Receipts[terminal.Key] = [];
         }
 
         run.Manager = await LoginAsync(run.Clients.Values.First(), ManagerPin);
-        foreach (var op in scenario.Operations)
+        for (int i = 0; i < scenario.Operations.Count; i++)
         {
-            await run.ExecuteAsync(op);
+            var op = scenario.Operations[i];
+            try
+            {
+                await run.ExecuteAsync(op, i);
+            }
+            catch (Exception ex) when (ex is InvalidOperationException or NotSupportedException or KeyNotFoundException)
+            {
+                throw new InvalidOperationException($"[{Context(scenario.Seed, i, op.Terminal)}] {op.Type} : {ex.Message}", ex);
+            }
         }
 
-        return new DayRunResult(run.TerminalIds, run.XReports, run.ZClosures, run.LatestClosures, run.Receipts);
+        return new DayRunResult(run.TerminalIds, run.XReports, run.ZClosures, run.LatestClosures, run.Receipts,
+            run.XReportOpIndexes, run.ZClosureOpIndexes, run.VoidAttempts, run.Clients,
+            new DayManager(run.Manager.Id, run.Manager.Name, run.Manager.Token));
     }
+
+    /// <summary>Contexte d'échec commun à tous les messages : graine, index d'opération et terminal.</summary>
+    public static string Context(int seed, int opIndex, string? terminal) => $"graine {seed}, opération #{opIndex}, terminal {terminal ?? "-"}";
 
     private static async Task<Operator> LoginAsync(HttpClient client, string pin)
     {
@@ -111,8 +137,21 @@ public static class DayRunner
         return new Operator(body.GetProperty("operatorId").GetGuid(), body.GetProperty("operatorName").GetString()!, body.GetProperty("token").GetString()!);
     }
 
-    private static async Task<JsonElement> SendAsync(HttpClient client, HttpMethod method, string url, object? body, string? token)
+    public static async Task<JsonElement> SendAsync(HttpClient client, HttpMethod method, string url, object? body, string? token)
     {
+        var (status, response) = await TrySendAsync(client, method, url, body, token);
+        if (status is < 200 or > 299)
+        {
+            throw new InvalidOperationException($"{method} {url} -> {status} {response}");
+        }
+
+        return response;
+    }
+
+    /// <summary>Envoie la requête et rend statut + corps JSON (un corps vide ou non JSON devient <c>null</c>), sans lever d'exception sur un refus.</summary>
+    public static async Task<(int Status, JsonElement Body)> TrySendAsync(HttpClient client, HttpMethod method, string url, object? body, string? token)
+    {
+        ArgumentNullException.ThrowIfNull(client);
         using var request = new HttpRequestMessage(method, url);
         if (token is not null)
         {
@@ -126,13 +165,19 @@ public static class DayRunner
 
         using var response = await client.SendAsync(request);
         string text = await response.Content.ReadAsStringAsync();
-        if (!response.IsSuccessStatusCode)
+        JsonElement parsed;
+        try
         {
-            throw new InvalidOperationException($"{method} {url} -> {(int)response.StatusCode} {text}");
+            using var doc = JsonDocument.Parse(string.IsNullOrWhiteSpace(text) ? "null" : text);
+            parsed = doc.RootElement.Clone();
+        }
+        catch (JsonException)
+        {
+            using var doc = JsonDocument.Parse("null");
+            parsed = doc.RootElement.Clone();
         }
 
-        using var doc = JsonDocument.Parse(string.IsNullOrEmpty(text) ? "null" : text);
-        return doc.RootElement.Clone();
+        return ((int)response.StatusCode, parsed);
     }
 
     private static decimal Euros(long cents) => cents / 100m;
@@ -142,6 +187,7 @@ public static class DayRunner
     private sealed class Run(PosApiApplicationFactory factory)
     {
         private readonly Dictionary<string, Operator> _waiters = [];
+        private readonly Dictionary<string, List<DayReceipt>> _receiptsByRef = [];
 
         public Dictionary<string, HttpClient> Clients { get; } = [];
         public Dictionary<string, string> TerminalIds { get; } = [];
@@ -149,9 +195,12 @@ public static class DayRunner
         public Dictionary<string, List<JsonElement>> ZClosures { get; } = [];
         public Dictionary<string, List<JsonElement>> LatestClosures { get; } = [];
         public Dictionary<string, List<DayReceipt>> Receipts { get; } = [];
+        public Dictionary<string, List<int>> XReportOpIndexes { get; } = [];
+        public Dictionary<string, List<int>> ZClosureOpIndexes { get; } = [];
+        public List<DayVoidAttempt> VoidAttempts { get; } = [];
         public Operator Manager { get; set; } = null!;
 
-        public async Task ExecuteAsync(DayOperation op)
+        public async Task ExecuteAsync(DayOperation op, int index)
         {
             var key = op.Terminal ?? throw new InvalidOperationException($"{op.Type} : poste manquant");
             var client = Clients[key];
@@ -167,10 +216,15 @@ public static class DayRunner
                 case "hold_then_void":
                     await HoldThenVoidAsync(op, client, terminalId);
                     break;
+                case "void_receipt":
+                    await VoidReceiptAsync(op, key, client, terminalId, index);
+                    break;
                 case "x_report":
+                    XReportOpIndexes[key].Add(index);
                     XReports[key].Add(await SendAsync(client, HttpMethod.Get, $"/api/fiscal/x-report?terminalId={terminalId}", null, Manager.Token));
                     break;
                 case "z_closure":
+                    ZClosureOpIndexes[key].Add(index);
                     ZClosures[key].Add(await SendAsync(client, HttpMethod.Post, "/api/fiscal/z-closure",
                         new ZClosureRequest(terminalId, Manager.Id, Manager.Name), Manager.Token));
                     LatestClosures[key].Add(await SendAsync(client, HttpMethod.Get, $"/api/fiscal/latest-closure?terminalId={terminalId}", null, Manager.Token));
@@ -286,9 +340,26 @@ public static class DayRunner
             }
         }
 
+        /// <summary>Annulation tardive du reçu d'une commande déjà réglée : on enregistre la réponse de l'API, refus compris.</summary>
+        private async Task VoidReceiptAsync(DayOperation op, string key, HttpClient client, string terminalId, int index)
+        {
+            string reference = op.Ref ?? throw new InvalidOperationException("void_receipt : Ref manquante");
+            var receipts = _receiptsByRef.GetValueOrDefault(reference) ?? throw new InvalidOperationException($"void_receipt : commande {reference} inconnue ou sans reçu");
+            int paymentIndex = op.VoidPaymentIndex ?? throw new InvalidOperationException("void_receipt : VoidPaymentIndex manquant");
+            var (status, body) = await TrySendAsync(client, HttpMethod.Post, $"/api/checkout/void/{receipts[paymentIndex].Id}",
+                new VoidReceiptRequest(terminalId, Manager.Id), Manager.Token);
+            string? code = body.ValueKind == JsonValueKind.Object && body.TryGetProperty("code", out var c) ? c.GetString() : null;
+            VoidAttempts.Add(new DayVoidAttempt(index, key, reference, status, code));
+        }
+
         private async Task AfterPaymentsAsync(DayOperation op, string key, HttpClient client, List<DayReceipt> receipts)
         {
             Receipts[key].AddRange(receipts);
+            if (op.Ref is not null)
+            {
+                _receiptsByRef[op.Ref] = receipts;
+            }
+
             if (op.Reprint)
             {
                 foreach (var receipt in receipts)

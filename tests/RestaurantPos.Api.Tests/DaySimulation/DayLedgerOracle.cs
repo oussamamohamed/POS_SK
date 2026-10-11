@@ -40,15 +40,14 @@ public static class DayLedgerOracle
         ArgumentNullException.ThrowIfNull(operations);
         ArgumentNullException.ThrowIfNull(terminalIds);
         var ledger = new DayLedger();
+        foreach (string id in terminalIds.Values)
+        {
+            ledger.ByTerminal[id] = new TerminalLedger(); // un poste sans vente a un grand livre vide, pas une clé absente
+        }
+
         foreach (var op in operations.Where(o => o.Type is "table_order" or "counter_order"))
         {
-            var terminal = terminalIds[op.Terminal!];
-            if (!ledger.ByTerminal.TryGetValue(terminal, out var t))
-            {
-                ledger.ByTerminal[terminal] = t = new TerminalLedger();
-            }
-
-            Apply(op, t);
+            Apply(op, ledger.ByTerminal[terminalIds[op.Terminal!]]);
         }
 
         foreach (var t in ledger.ByTerminal.Values)
@@ -70,18 +69,29 @@ public static class DayLedgerOracle
         return ledger;
     }
 
-    private static void Apply(DayOperation op, TerminalLedger t)
+    /// <summary>Total TTC de la commande après remise (borné à zéro), avant tout règlement ni pourboire.</summary>
+    public static long OrderTotalCents(DayOperation op)
+    {
+        ArgumentNullException.ThrowIfNull(op);
+        long subtotal = Groups(op).Sum(g => g.Ttc);
+        return Math.Max(0, subtotal - DiscountCents(op.Discount, subtotal));
+    }
+
+    private static List<(decimal Rate, long Ttc)> Groups(DayOperation op)
     {
         bool takeaway = op.Destination == "Takeaway";
-        var lines = op.Lines ?? [];
-        var groups = lines
+        return (op.Lines ?? [])
             .GroupBy(l => takeaway && l.TaxRateTakeawayPercent.HasValue ? l.TaxRateTakeawayPercent.Value : l.TaxRatePercent)
             .OrderBy(g => g.Key)
             .Select(g => (Rate: g.Key, Ttc: g.Sum(l => l.Comp ? 0L : (l.UnitPriceCents + l.ModifiersExtraCents) * l.Quantity)))
             .ToList();
+    }
+
+    private static void Apply(DayOperation op, TerminalLedger t)
+    {
+        var groups = Groups(op);
         decimal[] rates = groups.Select(g => g.Rate).ToArray();
-        long subtotal = groups.Sum(g => g.Ttc);
-        long total = Math.Max(0, subtotal - DiscountCents(op.Discount, subtotal));
+        long total = OrderTotalCents(op);
         long[] orderShares = Allocate(total, groups.Select(g => g.Ttc).ToArray());
 
         var payments = op.Payments ?? [];
@@ -93,7 +103,7 @@ public static class DayLedgerOracle
             bool carriesTip = op.TipCents > 0 && p == payments.Count - 1;
             long fiscal = Math.Clamp(carriesTip ? Math.Min(paid, total - fiscalPaidSoFar) : paid, 0, total);
             fiscalPaidSoFar += fiscal;
-            long[] shares = fiscal == total ? orderShares : Allocate(fiscal, orderShares);
+            long[] shares = Allocate(fiscal, orderShares); // fiscal == total rend orderShares tel quel
             long ht = 0;
             var vat = new long[groups.Count];
             for (int g = 0; g < groups.Count; g++)
