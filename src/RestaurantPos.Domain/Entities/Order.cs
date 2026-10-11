@@ -38,6 +38,12 @@ public class Order
     public Money TotalTtc => CalculateTotalTtc();
     public Money TotalHt => new(CalculateTaxBreakdown().Sum(t => t.TaxableBaseCents));
 
+    /// <summary>Somme des TTC de lignes, avant remise de commande.</summary>
+    public Money Subtotal => new(Items.Sum(i => i.CalculateTotalTtc().AmountInCents));
+
+    /// <summary>Montant de la remise de commande réellement appliquée (`Subtotal − TotalTtc`).</summary>
+    public Money DiscountAmount => new(Subtotal.AmountInCents - CalculateTotalTtc().AmountInCents);
+
     public decimal GetEffectiveTaxRate(OrderItem item)
     {
         if (Destination == OrderDestination.Takeaway && item.TaxRateTakeawayPercent.HasValue)
@@ -63,20 +69,19 @@ public class Order
         return new Money(itemsTotalCents);
     }
 
+    /// <summary>
+    /// Ventilation fiscale de la commande : un groupe par taux effectif (ordre croissant), la remise de commande (pourcentage ou montant
+    /// fixe) étant répartie sur les groupes au prorata de leur TTC (plus fort reste). Σ (base + TVA) = <see cref="TotalTtc"/>.
+    /// </summary>
     public List<TaxBreakdownItem> CalculateTaxBreakdown()
     {
-        return Items
+        var groups = Items
             .GroupBy(GetEffectiveTaxRate)
-            .Select(g =>
-            {
-                long groupTtcCents = g.Sum(x => x.CalculateTotalTtc().AmountInCents);
-                if (GlobalDiscountType == DiscountType.Percentage && GlobalDiscountValue > 0)
-                {
-                    groupTtcCents = (long)Math.Round(groupTtcCents * (1.0m - (GlobalDiscountValue / 100.0m)), MidpointRounding.AwayFromZero);
-                }
-                return TaxBreakdownItem.Calculate(g.Key, Math.Max(0, groupTtcCents));
-            })
+            .OrderBy(g => g.Key)
+            .Select(g => (Rate: g.Key, Ttc: g.Sum(x => x.CalculateTotalTtc().AmountInCents)))
             .ToList();
+        long[] shares = TaxAllocation.Allocate(CalculateTotalTtc().AmountInCents, groups.Select(g => g.Ttc).ToList());
+        return groups.Select((g, i) => TaxBreakdownItem.Calculate(g.Rate, shares[i])).ToList();
     }
 }
 

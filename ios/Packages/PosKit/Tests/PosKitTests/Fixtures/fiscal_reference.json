@@ -317,7 +317,7 @@
           ],
           "expected": {
             "totalTtcCents": 2700,
-            "totalHtCents": 2576,
+            "totalHtCents": 2318,
             "taxBreakdownJson": "{\u002210\u0022:91,\u002220\u0022:333}",
             "changeGivenCents": 300,
             "remainingBalanceCents": 0

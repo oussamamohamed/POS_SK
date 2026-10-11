@@ -27,7 +27,7 @@ Une seule source de vérité pour la ventilation fiscale d'une commande, utilis�
 ## Règle de calcul (.NET)
 
 1. **Groupes** : lignes regroupées par taux effectif (`GetEffectiveTaxRate` : taux à emporter si destination à emporter et taux défini, sinon taux de la ligne). Le TTC d'une ligne reste `OrderItem.CalculateTotalTtc()` (gratuité, remise ligne, suppléments).
-2. **Remise de commande** : la remise (pourcentage ou montant fixe, bornée à zéro) est répartie entre les groupes au prorata du TTC de chaque groupe, le **dernier groupe prenant le reste**, pour que la somme des parts soit exactement `Order.TotalTtc`. C'est la règle déjà appliquée par `OrderMath.totals` côté iPad.
+2. **Remise de commande** : la remise (pourcentage ou montant fixe, bornée à zéro) est répartie entre les groupes au prorata du TTC de chaque groupe, selon la **méthode du plus fort reste** (somme exacte, aucune part négative, restes égaux départagés par l'ordre des groupes), qui remplace aussi la règle « dernier groupe prend le reste » de `OrderMath.totals` côté iPad (elle pouvait produire une part négative). Les groupes sont ordonnés par **taux effectif croissant**.
 3. **Découpe** : pour chaque groupe, base HT et TVA par `TaxBreakdownItem.Calculate(taux, part)` (TVA = part − base).
 4. **Totaux** : `TotalHt` = somme des bases ; `Σ TVA = TotalTtc − TotalHt`.
 5. **Reçu** : `TaxBreakdownJson` = TVA par taux effectif (clés et ordre d'apparition inchangés), `TotalHtAmount` = somme des bases, `TotalTtcAmount` = montant fiscal encaissé.
@@ -35,8 +35,7 @@ Une seule source de vérité pour la ventilation fiscale d'une commande, utilis�
 ## Règlements partiels et pourboire
 
 - La détection du pourboire et du règlement partiel (`fiscalPaid`, `isPartial`, `priorFiscalTtc`) ne change pas.
-- Remplacement de l'échelle par ratio (arrondi au pair) par une **répartition cumulée** : la part du reçu pour un taux est `part(P + X) − part(P)`, où `P` = TTC fiscal des reçus précédents, `X` = TTC fiscal de ce reçu, et `part(t)` répartit `t` sur les taux au prorata du TTC des groupes. Conséquence recherchée : la somme des reçus d'une commande est **exactement** la ventilation de la commande, par taux, et pour chaque reçu `TTC − HT = Σ TVA`.
-- Le plan vérifie par tests aléatoires que la répartition cumulée ne produit ni montant négatif sur un reçu de vente, ni écart de somme. Si la méthode choisie échoue, le repli est une répartition proportionnelle par reçu avec un écart cumulé borné à 1 centime par reçu et par taux, et la spec sera amendée avant d'avancer.
+- La part d'un reçu de montant `X` est `Allocate(X, parts de la commande par taux)` (plus fort reste), sans rejouer l'historique des reçus. Pour chaque reçu, `TTC − HT = Σ TVA` exactement ; `Σ TTC des reçus = TTC de la commande` exactement ; par taux, la somme des reçus s'écarte du total de la commande d'au plus 1 centime par reçu (arrondi de la TVA ticket par ticket).
 - Annulation : inchangée (valeurs négatées).
 
 ## Périmètre
@@ -66,7 +65,7 @@ Principe : un **générateur .NET** produit la fixture à partir du code réel (
 **Invariants** (assertions explicites, sur tous les cas) :
 1. Reçu : `TTC − HT = Σ TVA`.
 2. Commande : `Σ parts = TotalTtc`, `Σ bases = TotalHt`, `Σ TVA = TotalTtc − TotalHt`.
-3. Somme des reçus (hors annulés) d'une commande réglée = ventilation de la commande, par taux, **exactement**.
+3. Somme des reçus (hors annulés) d'une commande réglée : `Σ TTC` exact, et écart par taux ≤ 1 centime par reçu.
 4. Aucun montant négatif pour un reçu de vente ; annulation = exacte négation de l'original.
 5. Taux : un reçu à emporter à 5,5 % a une clé `5.5` dans son JSON (jamais le taux de base).
 6. Parité : Swift = .NET sur chaque grandeur.
@@ -116,6 +115,5 @@ Un test d'intégration rejoue une **journée complète** sur l'API réelle (`Pos
 ## Risques
 
 - **Montants des reçus à emporter et des reçus avec remise** : ils changent (c'est le but). Les tests existants qui figeaient les anciens montants doivent être révisés un par un et non régénérés à l'aveugle : chaque changement de valeur est justifié par l'invariant.
-- **Répartition cumulée** : peut produire des cas d'arrondi inattendus ; couverte par la matrice et le jeu aléatoire, avec le repli décrit plus haut.
 - **Attestation NF525** : une modification de la règle de calcul des reçus relève de la documentation de conformité ; à signaler avant toute mise en production.
 - **Divergence iPad serveur/autonome** : le serveur .NET reste la référence ; toute évolution ultérieure impose de régénérer la fixture (règle déjà inscrite dans `CLAUDE.md`).
