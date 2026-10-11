@@ -103,7 +103,7 @@ public class CheckoutPaymentService : ICheckoutPaymentService
                 string prevHash = lastReceipt?.SignatureHash ?? NF525FiscalAuditService.GenesisHash;
 
                 // Montant fiscal de ce paiement : jamais le pourboire. Avec pourboire, la part fiscale est bornée
-                // au TTC restant après les reçus antérieurs (hors avoirs) ; sans pourboire, calcul historique inchangé.
+                // au TTC restant après les reçus antérieurs (hors avoirs) ; sans pourboire, le montant payé.
                 long orderTtcCents = order.TotalTtc.AmountInCents;
                 bool hasTip = order.TipAmount.AmountInCents > 0;
                 long priorFiscalTtcCents = priorReceipts
@@ -112,39 +112,18 @@ public class CheckoutPaymentService : ICheckoutPaymentService
                 long fiscalPaidCents = hasTip
                     ? Math.Min(totalPaidCents, Math.Max(0, orderTtcCents - priorFiscalTtcCents))
                     : totalPaidCents;
-                bool isPartialReceipt = hasTip
-                    ? priorFiscalTtcCents > 0 || fiscalPaidCents < orderTtcCents
-                    : totalPaidCents < totalDueCents;
 
-                // For split / partial receipts, calculate proportional VAT breakdown for this receipt
-                decimal paymentRatio = (orderTtcCents > 0 && isPartialReceipt)
-                    ? (decimal)fiscalPaidCents / orderTtcCents
-                    : 1.0m;
-
+                // Une seule source de calcul : la ventilation de la commande (taux effectif, remise), répartie sur le reçu.
+                var receiptTax = ReceiptTaxCalculator.Compute(order, fiscalPaidCents);
                 var vatDict = new Dictionary<decimal, long>();
-                foreach (var item in order.Items)
+                foreach (var kvp in receiptTax.VatByRate)
                 {
-                    long itemVatCents = paymentRatio == 1.0m
-                        ? item.TaxAmount.AmountInCents
-                        : (long)Math.Round(item.TaxAmount.AmountInCents * paymentRatio);
-
-                    if (!vatDict.TryGetValue(item.TaxRatePercent, out long amt))
-                    {
-                        vatDict[item.TaxRatePercent] = itemVatCents;
-                    }
-                    else
-                    {
-                        vatDict[item.TaxRatePercent] = amt + itemVatCents;
-                    }
+                    vatDict[kvp.Key] = kvp.Value;
                 }
-                string taxJson = JsonSerializer.Serialize(vatDict);
 
-                long receiptTtcCents = paymentRatio == 1.0m
-                    ? order.TotalTtc.AmountInCents
-                    : fiscalPaidCents;
-                long receiptHtCents = paymentRatio == 1.0m
-                    ? order.TotalHt.AmountInCents
-                    : (long)Math.Round(order.TotalHt.AmountInCents * paymentRatio);
+                string taxJson = JsonSerializer.Serialize(vatDict);
+                long receiptTtcCents = receiptTax.TtcCents;
+                long receiptHtCents = receiptTax.HtCents;
 
                 var now = DateTimeOffset.UtcNow;
                 string sigHash = _fiscalService.ComputeReceiptHashSignature(
