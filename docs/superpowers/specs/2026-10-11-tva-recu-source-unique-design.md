@@ -1,6 +1,6 @@
 # TVA du reçu : une seule source de calcul (taux effectif et remise)
 
-Date : 2026-10-11 · Statut : en attente de relecture
+Date : 2026-10-11 · Statut : implémentée (plan 2026-10-11-tva-recu-source-unique)
 Contexte : suite du sous-projet 2 du mode autonome (`2026-10-10-ipad-standalone-2-fiscal-design.md`), qui a reproduit volontairement des écarts du .NET pour la parité.
 
 ## Problème

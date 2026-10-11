@@ -34,7 +34,7 @@ Le hachage initial de genèse (`GenesisHash`) pour le premier élément d'une ch
   - `sequenceNumber` : séquence incrémentale continue 1, 2, 3... sans rupture.
   - `amountCents` : montant TTC en centimes entiers (`long`).
   - `timestampUtc:O` : horodatage ISO 8601 UTC au format standard (`yyyy-MM-ddTHH:mm:ss.fffffffZ`).
-  - `taxBreakdownJson` : dictionnaire des montants de TVA sérialisé en JSON canonique.
+  - `taxBreakdownJson` : dictionnaire des montants de TVA sérialisé en JSON canonique. Il vient de `Order.CalculateTaxBreakdown` : taux effectif (y compris à emporter), groupes par taux croissant, remise de commande répartie au plus fort reste.
 
 ### 2.2 Chaîne des Clôtures Journalières Z (`DailyFiscalClosure`)
 - **Portée** : partitionnée par terminal (`terminalId`).
