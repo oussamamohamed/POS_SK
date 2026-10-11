@@ -166,7 +166,7 @@ struct LocalFiscalRepositoryTests {
 }
 
 /// Générateur déterministe (SplitMix64) : le test d'aller-retour des dates reste reproductible.
-private struct SplitMix64: RandomNumberGenerator {
+struct SplitMix64: RandomNumberGenerator {
     private var state: UInt64
     init(seed: UInt64) { state = seed }
     mutating func next() -> UInt64 {

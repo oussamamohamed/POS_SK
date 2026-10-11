@@ -14,7 +14,16 @@ struct FiscalReceiptMathTests {
             let isComp: Bool
             let modifiersExtraCents: Int
         }
-        struct Tender: Decodable { let method: Int; let amountCents: Int; let tenderedCents: Int }
+        struct Tender: Decodable { let amountCents: Int }
+        struct Group: Decodable { let rate: String; let ttcCents: Int; let baseHtCents: Int; let vatCents: Int }
+        struct OrderBlock: Decodable {
+            let subtotalCents: Int
+            let discountCents: Int
+            let totalTtcCents: Int
+            let totalHtCents: Int
+            let totalVatCents: Int
+            let groups: [Group]
+        }
         struct Expected: Decodable {
             let totalTtcCents: Int
             let totalHtCents: Int
@@ -34,6 +43,7 @@ struct FiscalReceiptMathTests {
             let globalDiscountValue: String
             let tipCents: Int
             let lines: [Line]
+            let order: OrderBlock
             let payments: [Payment]
             let voided: Voided?
         }
@@ -59,6 +69,33 @@ struct FiscalReceiptMathTests {
         )
     }
 
+    /// Somme des valeurs du JSON de TVA (même expression régulière que `negatedTaxJson`).
+    static func vatSum(_ json: String) -> Int {
+        guard let regex = try? NSRegularExpression(pattern: "\"([^\"]+)\":(-?[0-9]+)") else { return 0 }
+        return regex.matches(in: json, range: NSRange(json.startIndex..., in: json)).reduce(0) { sum, match in
+            guard let range = Range(match.range(at: 2), in: json), let value = Int(json[range]) else { return sum }
+            return sum + value
+        }
+    }
+
+    @Test func everyOrderTotalsMatchTheBackend() throws {
+        for scenario in try Self.scenarios() {
+            let order = try Self.order(scenario)
+            let totals = OrderMath.totals(lines: order.lines.map(CartLine.init(serverLine:)), destination: order.destination, discount: order.globalDiscount)
+            let expected = scenario.order
+            #expect(totals.subtotalTtc.cents == expected.subtotalCents, "\(scenario.name) sous-total")
+            #expect(totals.discountAmount.cents == expected.discountCents, "\(scenario.name) remise")
+            #expect(totals.totalTtc.cents == expected.totalTtcCents, "\(scenario.name) total TTC")
+            #expect(totals.totalHt.cents == expected.totalHtCents, "\(scenario.name) HT")
+            #expect(totals.totalVat.cents == expected.totalVatCents, "\(scenario.name) TVA")
+            #expect(totals.vatLines.count == expected.groups.count, "\(scenario.name) nombre de taux")
+            for (line, group) in zip(totals.vatLines, expected.groups) {
+                #expect("\(line.ratePercent)" == group.rate, "\(scenario.name) taux")
+                #expect(line.ttc.cents == group.ttcCents && line.baseHt.cents == group.baseHtCents && line.vat.cents == group.vatCents, "\(scenario.name) taux \(group.rate)")
+            }
+        }
+    }
+
     @Test func everyScenarioMatchesTheBackend() throws {
         let scenarios = try Self.scenarios()
         #expect(scenarios.count >= 9)
@@ -71,6 +108,7 @@ struct FiscalReceiptMathTests {
                 #expect(amounts.ttcCents == payment.expected.totalTtcCents, "\(scenario.name)[\(index)] TTC")
                 #expect(amounts.htCents == payment.expected.totalHtCents, "\(scenario.name)[\(index)] HT")
                 #expect(amounts.taxBreakdownJson == payment.expected.taxBreakdownJson, "\(scenario.name)[\(index)] TVA")
+                #expect(amounts.ttcCents - amounts.htCents == Self.vatSum(amounts.taxBreakdownJson), "\(scenario.name)[\(index)] TTC - HT = TVA")
                 priorFiscalTtc += amounts.ttcCents
             }
             if let voided = scenario.voided {
