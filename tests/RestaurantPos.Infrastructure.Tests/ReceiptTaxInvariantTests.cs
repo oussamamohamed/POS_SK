@@ -33,6 +33,23 @@ public class ReceiptTaxInvariantTests
             receipt.VatByRate.Should().OnlyContain(v => v.Value >= 0, at);
             receipt.HtCents.Should().BeGreaterThanOrEqualTo(0, at);
             receipt.VatByRate.Select(v => v.Key).Should().Equal(order.Groups.Select(g => g.Rate), at);
+
+            // HT par taux persisté : mêmes taux, même ordre que la TVA, somme = HT du reçu ; reçu complet = bases HT de la commande
+            receipt.HtJson.Should().NotBeNull(at);
+            receipt.HtByRate.Select(h => h.Key).Should().Equal(receipt.VatByRate.Select(v => v.Key), at);
+            receipt.HtByRate.Sum(h => h.Value).Should().Be(receipt.HtCents, at);
+            receipt.HtByRate.Should().OnlyContain(h => h.Value >= 0, at);
+            if (outcome.Payments.Count == 1)
+            {
+                receipt.HtByRate.Select(h => h.Value).Should().Equal(order.Groups.Select(g => g.BaseHtCents), at);
+            }
+
+            // HT par taux + TVA par taux = part TTC du taux : cohérent avec la règle de calcul
+            for (int g = 0; g < receipt.HtByRate.Count; g++)
+            {
+                var part = RestaurantPos.Domain.ValueObjects.TaxBreakdownItem.Calculate(receipt.HtByRate[g].Key, receipt.HtByRate[g].Value + receipt.VatByRate[g].Value);
+                part.TaxableBaseCents.Should().Be(receipt.HtByRate[g].Value, $"{at} rate {receipt.HtByRate[g].Key}");
+            }
         }
 
         // Σ TTC des reçus = TTC de la commande (commande soldée) ; écart par taux ≤ 1 centime par reçu
@@ -51,6 +68,8 @@ public class ReceiptTaxInvariantTests
             voided.TtcCents.Should().Be(-original.TtcCents, context);
             voided.HtCents.Should().Be(-original.HtCents, context);
             voided.VatByRate.Select(x => x.Value).Should().Equal(original.VatByRate.Select(x => -x.Value), context);
+            voided.HtByRate.Select(x => (x.Key, x.Value)).Should().Equal(original.HtByRate.Select(x => (x.Key, -x.Value)), context);
+            voided.HtByRate.Sum(x => x.Value).Should().Be(voided.HtCents, context);
         }
     }
 

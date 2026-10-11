@@ -150,12 +150,13 @@ public class FiscalReferenceFixtureTests
                     totalTtcCents = p.TtcCents,
                     totalHtCents = p.HtCents,
                     taxBreakdownJson = p.TaxJson,
+                    htBreakdownJson = p.HtJson,
                     changeGivenCents = p.ChangeGivenCents,
                     remainingBalanceCents = p.RemainingBalanceCents,
                 },
             }).ToList(),
             voided = o.Voided is { } v
-                ? new { paymentIndex = spec.VoidPayment!.Value, totalTtcCents = v.TtcCents, totalHtCents = v.HtCents, taxBreakdownJson = v.TaxJson }
+                ? new { paymentIndex = spec.VoidPayment!.Value, totalTtcCents = v.TtcCents, totalHtCents = v.HtCents, taxBreakdownJson = v.TaxJson, htBreakdownJson = v.HtJson }
                 : null,
         };
     }

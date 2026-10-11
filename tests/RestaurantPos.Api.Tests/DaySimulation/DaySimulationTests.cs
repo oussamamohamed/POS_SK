@@ -326,16 +326,11 @@ public class DaySimulationTests(DayFixture day) : IClassFixture<DayFixture>
         VatByAccount(fec).Should().BeEquivalentTo(ExpectedVatByAccount(day.Ledger), $"{because} : TVA collectée nette par compte");
         fec.Where(l => l.IsVoid).Should().NotBeEmpty("la journée annule au moins un reçu");
 
-        // HT 706 net par compte (annulations comprises) vs HT par taux du grand livre. Le total 706 est exact (voir TheFecKeepsTheHtOfVoidReceipts) ;
-        // par compte, le FEC ne connaît que la TVA par taux (le JSON signé du reçu) et en déduit le HT, ambigu de quelques centimes aux taux
-        // bas : tolérance de 0,1 %. L'exactitude par taux demanderait de persister le HT par taux sur le reçu.
+        // HT 706 net par compte (annulations comprises) = HT par taux du grand livre, au centime : le reçu persiste son HT par taux
+        // (HtBreakdownJson) et le FEC le reprend tel quel. Les taux qui partagent un compte (0 % et 2,1 % sur 706000) sont additionnés.
         var actualHt = Net706ByAccount(fec);
         var expectedHt = ExpectedHtByAccount(day.Ledger);
-        actualHt.Keys.Should().BeEquivalentTo(expectedHt.Keys, $"{because} : mêmes comptes 706");
-        foreach (var (account, expected) in expectedHt)
-        {
-            Math.Abs(actualHt[account] - expected).Should().BeLessThanOrEqualTo(expected / 1000, $"{because} : HT du compte {account}");
-        }
+        actualHt.Should().BeEquivalentTo(expectedHt, $"{because} : HT 706 net exact par compte");
     }
 
     /// <summary>Un reçu d'annulation (montants négatifs) écrit son HT 706 en débit : le FEC net retombe sur le HT du grand livre.</summary>

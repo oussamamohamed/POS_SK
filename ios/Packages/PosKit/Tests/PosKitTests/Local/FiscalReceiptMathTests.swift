@@ -28,6 +28,7 @@ struct FiscalReceiptMathTests {
             let totalTtcCents: Int
             let totalHtCents: Int
             let taxBreakdownJson: String
+            let htBreakdownJson: String
         }
         struct Payment: Decodable { let tenders: [Tender]; let expected: Expected }
         struct Voided: Decodable {
@@ -35,6 +36,7 @@ struct FiscalReceiptMathTests {
             let totalTtcCents: Int
             let totalHtCents: Int
             let taxBreakdownJson: String
+            let htBreakdownJson: String
         }
         struct Scenario: Decodable {
             let name: String
@@ -109,12 +111,15 @@ struct FiscalReceiptMathTests {
                 #expect(amounts.htCents == payment.expected.totalHtCents, "\(scenario.name)[\(index)] HT")
                 #expect(amounts.taxBreakdownJson == payment.expected.taxBreakdownJson, "\(scenario.name)[\(index)] TVA")
                 #expect(amounts.ttcCents - amounts.htCents == Self.vatSum(amounts.taxBreakdownJson), "\(scenario.name)[\(index)] TTC - HT = TVA")
+                #expect(amounts.htBreakdownJson == payment.expected.htBreakdownJson, "\(scenario.name)[\(index)] HT par taux")
+                #expect(Self.vatSum(payment.expected.htBreakdownJson) == amounts.htCents, "\(scenario.name)[\(index)] Σ HT par taux = HT")
                 priorFiscalTtc += amounts.ttcCents
             }
             if let voided = scenario.voided {
                 let original = scenario.payments[voided.paymentIndex].expected
                 #expect(-original.totalTtcCents == voided.totalTtcCents && -original.totalHtCents == voided.totalHtCents, "\(scenario.name) annulation")
                 #expect(FiscalReceiptMath.negatedTaxJson(original.taxBreakdownJson) == voided.taxBreakdownJson, "\(scenario.name) annulation TVA")
+                #expect(FiscalReceiptMath.negatedTaxJson(original.htBreakdownJson) == voided.htBreakdownJson, "\(scenario.name) annulation HT par taux")
             }
         }
     }

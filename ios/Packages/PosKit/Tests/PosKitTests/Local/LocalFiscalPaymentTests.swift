@@ -24,6 +24,19 @@ struct LocalFiscalPaymentTests {
         #expect(try db.query("SELECT 1 AS x FROM sqlite_master WHERE name = 'NonFiscalPayments'").isEmpty)
     }
 
+    @Test func everyReceiptStoresItsHtPerRate_AndSumsToTheReceiptHt() async throws {
+        let (api, db) = try await makeLocalAPIWithDatabase()
+        let order = try await seat(api)
+        _ = try await api.pay(localPayment(order, table: "T1", tenders: [localTender(.creditCard, 1000)]))
+        _ = try await api.pay(localPayment(order, table: "T1", tenders: [localTender(.cash, 950)]))
+        let rows = try db.query("SELECT * FROM FiscalReceipts ORDER BY SequenceNumber")
+        #expect(rows.count == 2)
+        for row in rows {
+            let json = try #require(row.string("HtBreakdownJson"))
+            #expect(FiscalReceiptMathTests.vatSum(json) == row.int("TotalHtAmount"))
+        }
+    }
+
     @Test func splitPaymentsProduceLinkedReceipts() async throws {
         let (api, db) = try await makeLocalAPIWithDatabase()
         let order = try await seat(api)

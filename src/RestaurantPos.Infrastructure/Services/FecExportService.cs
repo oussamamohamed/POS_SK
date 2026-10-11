@@ -328,16 +328,23 @@ public sealed class FecExportService : IFecExportService
     private sealed record VatBreakdownItem(decimal TaxRatePercent, long HtCents, long VatCents);
 
     /// <summary>
-    /// Le JSON signé du reçu ne porte que la TVA par taux ; le HT par taux en est déduit. Pour un taux t &gt; 0, le HT retenu est
-    /// la valeur cohérente avec la TVA (<see cref="TaxBreakdownItem.Calculate"/>) la plus proche de TVA / t. Un taux 0 % (TVA nulle,
-    /// HT invisible dans le JSON) ou, à défaut, le plus petit taux (le plus sensible à l'arrondi) absorbe le reste : la somme des HT vaut
-    /// toujours le HT du reçu. Limite : à plusieurs taux bas, le HT exact par taux n'est pas récupérable depuis le seul JSON (écart de
-    /// quelques centimes entre deux lignes, total exact) ; l'exactitude demanderait de persister le HT par taux sur le reçu.
+    /// Ventilation par taux du reçu. Reçu récent : <c>HtBreakdownJson</c> (colonne non signée, posée à la création) donne le HT exact
+    /// par taux, repris tel quel. Reçu historique (<c>null</c>) : le JSON signé ne porte que la TVA par taux et le HT en est déduit.
+    /// Pour un taux t &gt; 0, le HT retenu est la valeur cohérente avec la TVA (<see cref="TaxBreakdownItem.Calculate"/>) la plus proche
+    /// de TVA / t ; un taux 0 % (TVA nulle, HT invisible dans le JSON) ou, à défaut, le plus petit taux (le plus sensible à l'arrondi)
+    /// absorbe le reste : la somme des HT vaut toujours le HT du reçu. Limite de ce repli seul : à plusieurs taux bas, le HT exact par
+    /// taux n'est pas récupérable (écart de quelques centimes entre deux lignes, total exact).
     /// </summary>
     private static List<VatBreakdownItem> ParseVatBreakdown(FiscalReceipt receipt)
     {
         long totalHtCents = Math.Abs(receipt.TotalHtAmount.AmountInCents);
         long totalVatCents = Math.Abs(receipt.TotalTtcAmount.AmountInCents) - totalHtCents;
+
+        var exact = ParseExactBreakdown(receipt);
+        if (exact is not null)
+        {
+            return exact;
+        }
 
         if (!string.IsNullOrWhiteSpace(receipt.TaxBreakdownJson) && receipt.TaxBreakdownJson != "{}")
         {
@@ -392,6 +399,50 @@ public sealed class FecExportService : IFecExportService
 
         // Default single rate (10%) fallback
         return [new VatBreakdownItem(10.0m, totalHtCents, totalVatCents)];
+    }
+
+    /// <summary>HT par taux persisté, avec la TVA du JSON signé au même taux. <c>null</c> si absent ou illisible (repli par déduction).</summary>
+    private static List<VatBreakdownItem>? ParseExactBreakdown(FiscalReceipt receipt)
+    {
+        if (string.IsNullOrWhiteSpace(receipt.HtBreakdownJson))
+        {
+            return null;
+        }
+
+        try
+        {
+            var ht = ParseByRate(receipt.HtBreakdownJson);
+            var vat = string.IsNullOrWhiteSpace(receipt.TaxBreakdownJson) ? [] : ParseByRate(receipt.TaxBreakdownJson);
+            if (ht is null || vat is null || ht.Count == 0)
+            {
+                return null;
+            }
+
+            var items = ht.Select(h => new VatBreakdownItem(h.Key, Math.Abs(h.Value), Math.Abs(vat.GetValueOrDefault(h.Key)))).ToList();
+            items.AddRange(vat.Where(v => !ht.ContainsKey(v.Key)).Select(v => new VatBreakdownItem(v.Key, 0, Math.Abs(v.Value))));
+            return items;
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
+    }
+
+    private static Dictionary<decimal, long>? ParseByRate(string json)
+    {
+        var dict = JsonSerializer.Deserialize<Dictionary<string, long>>(json);
+        var result = new Dictionary<decimal, long>();
+        foreach (var kvp in dict ?? [])
+        {
+            if (!decimal.TryParse(kvp.Key, NumberStyles.Any, CultureInfo.InvariantCulture, out var rate))
+            {
+                return null;
+            }
+
+            result[rate] = result.GetValueOrDefault(rate) + kvp.Value;
+        }
+
+        return result;
     }
 
     /// <summary>

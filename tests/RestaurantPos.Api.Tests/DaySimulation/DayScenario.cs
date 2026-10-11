@@ -1,3 +1,5 @@
+using System.Globalization;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace RestaurantPos.Api.Tests.DaySimulation;
@@ -66,8 +68,18 @@ public sealed record DayScenarioFile(
     IReadOnlyDictionary<string, DayExpected> Expected,
     DayExpected Total);
 
+/// <summary>Décimaux écrits en chaînes (<c>"5.5"</c>) comme dans <c>fiscal_reference.json</c> : le Swift les lit en <c>Decimal</c> sans passer par un flottant.</summary>
+internal sealed class DecimalAsStringConverter : JsonConverter<decimal>
+{
+    public override decimal Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) =>
+        reader.TokenType == JsonTokenType.String ? decimal.Parse(reader.GetString()!, CultureInfo.InvariantCulture) : reader.GetDecimal();
+
+    public override void Write(Utf8JsonWriter writer, decimal value, JsonSerializerOptions options) =>
+        writer.WriteStringValue(value.ToString(CultureInfo.InvariantCulture));
+}
+
 [JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase, WriteIndented = true,
-    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
+    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull, Converters = [typeof(DecimalAsStringConverter)])]
 [JsonSerializable(typeof(DayScenario))]
 [JsonSerializable(typeof(DayScenarioFile))]
 internal sealed partial class DayScenarioJsonContext : JsonSerializerContext;

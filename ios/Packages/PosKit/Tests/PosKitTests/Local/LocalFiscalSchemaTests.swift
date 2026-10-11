@@ -35,6 +35,23 @@ struct LocalFiscalSchemaTests {
         #expect(try db.query("SELECT 1 AS x FROM sqlite_master WHERE name = 'FiscalReceipts'").count == 1)
     }
 
+    @Test func upgradingAV5DatabaseAddsTheNullableHtBreakdownColumn() throws {
+        let db = try SQLiteDatabase(path: ":memory:")
+        for script in [LocalMigrator.schemaV1, LocalMigrator.schemaV2, LocalMigrator.schemaV3, LocalMigrator.schemaV4, LocalMigrator.schemaV5] { try db.exec(script) }
+        try db.exec("PRAGMA user_version = 5")
+        try db.run(Self.insertReceipt)
+        try LocalMigrator.migrate(db)
+        #expect(try db.userVersion() == LocalMigrator.steps.count && LocalMigrator.steps.count >= 6)
+        let row = try #require(try db.query("SELECT TotalTtcAmount, HtBreakdownJson FROM FiscalReceipts WHERE Id = 'R1'").first)
+        #expect(row.int("TotalTtcAmount") == 1000 && row.string("HtBreakdownJson") == nil)
+    }
+
+    @Test func theHtBreakdownIsImmutableLikeTheRestOfTheReceipt() throws {
+        let db = try makeDB()
+        try db.run(Self.insertReceipt)
+        #expect(throws: SQLiteError.self) { try db.run("UPDATE FiscalReceipts SET HtBreakdownJson = '{}' WHERE Id = 'R1'") }
+    }
+
     @Test func receiptSequencesAreUniquePerTerminal() throws {
         let db = try makeDB()
         try db.run(Self.insertReceipt)

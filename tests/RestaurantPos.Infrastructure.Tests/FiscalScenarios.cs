@@ -36,7 +36,13 @@ internal sealed record GroupOutcome(decimal Rate, long TtcCents, long BaseHtCent
 internal sealed record OrderOutcome(long SubtotalCents, long DiscountCents, long TotalTtcCents, long TotalHtCents, long TotalVatCents, IReadOnlyList<GroupOutcome> Groups);
 
 /// <summary><c>TenderAmountCents</c> : somme réglée pour ce reçu, pourboire compris sur le dernier (0 pour une annulation).</summary>
-internal sealed record ReceiptOutcome(long TtcCents, long HtCents, string TaxJson, IReadOnlyList<KeyValuePair<decimal, long>> VatByRate, long ChangeGivenCents, long RemainingBalanceCents, long TenderAmountCents = 0);
+internal sealed record ReceiptOutcome(long TtcCents, long HtCents, string TaxJson, IReadOnlyList<KeyValuePair<decimal, long>> VatByRate, long ChangeGivenCents, long RemainingBalanceCents, long TenderAmountCents = 0)
+{
+    /// <summary>HT par taux persisté sur le reçu (colonne non signée <c>HtBreakdownJson</c>).</summary>
+    public string? HtJson { get; init; }
+
+    public IReadOnlyList<KeyValuePair<decimal, long>> HtByRate { get; init; } = [];
+}
 
 internal sealed record ScenarioOutcome(ScenarioSpec Spec, OrderOutcome Order, IReadOnlyList<ReceiptOutcome> Payments, ReceiptOutcome? Voided);
 
@@ -127,7 +133,13 @@ internal static class FiscalScenarios
     {
         var vat = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, long>>(receipt.TaxBreakdownJson)!
             .Select(kv => new KeyValuePair<decimal, long>(decimal.Parse(kv.Key, CultureInfo.InvariantCulture), kv.Value)).ToList();
-        return new ReceiptOutcome(receipt.TotalTtcAmount.AmountInCents, receipt.TotalHtAmount.AmountInCents, receipt.TaxBreakdownJson, vat, change, remaining);
+        var ht = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, long>>(receipt.HtBreakdownJson ?? "{}")!
+            .Select(kv => new KeyValuePair<decimal, long>(decimal.Parse(kv.Key, CultureInfo.InvariantCulture), kv.Value)).ToList();
+        return new ReceiptOutcome(receipt.TotalTtcAmount.AmountInCents, receipt.TotalHtAmount.AmountInCents, receipt.TaxBreakdownJson, vat, change, remaining)
+        {
+            HtJson = receipt.HtBreakdownJson,
+            HtByRate = ht,
+        };
     }
 
     private static PaySpec Card(long cents) => new(cents);

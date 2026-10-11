@@ -143,6 +143,7 @@
             "totalTtcCents": 4000,
             "totalHtCents": 3636,
             "taxBreakdownJson": "{\u002210\u0022:364}",
+            "htBreakdownJson": "{\u002210\u0022:3636}",
             "changeGivenCents": 1000,
             "remainingBalanceCents": 0
           }
@@ -152,7 +153,8 @@
         "paymentIndex": 0,
         "totalTtcCents": -4000,
         "totalHtCents": -3636,
-        "taxBreakdownJson": "{\u002210\u0022:-364}"
+        "taxBreakdownJson": "{\u002210\u0022:-364}",
+        "htBreakdownJson": "{\u002210\u0022:-3636}"
       }
     },
     {
@@ -228,6 +230,7 @@
             "totalTtcCents": 4380,
             "totalHtCents": 3899,
             "taxBreakdownJson": "{\u00225.5\u0022:70,\u002210\u0022:114,\u002220\u0022:297}",
+            "htBreakdownJson": "{\u00225.5\u0022:1280,\u002210\u0022:1136,\u002220\u0022:1483}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 0
           }
@@ -278,6 +281,7 @@
             "totalTtcCents": 1000,
             "totalHtCents": 948,
             "taxBreakdownJson": "{\u00225.5\u0022:52}",
+            "htBreakdownJson": "{\u00225.5\u0022:948}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 0
           }
@@ -358,6 +362,7 @@
             "totalTtcCents": 3500,
             "totalHtCents": 3070,
             "taxBreakdownJson": "{\u00225.5\u0022:52,\u002210\u0022:45,\u002220\u0022:333}",
+            "htBreakdownJson": "{\u00225.5\u0022:948,\u002210\u0022:455,\u002220\u0022:1667}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 0
           }
@@ -423,6 +428,7 @@
             "totalTtcCents": 2700,
             "totalHtCents": 2318,
             "taxBreakdownJson": "{\u002210\u0022:82,\u002220\u0022:300}",
+            "htBreakdownJson": "{\u002210\u0022:818,\u002220\u0022:1500}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 0
           }
@@ -503,6 +509,7 @@
             "totalTtcCents": 2518,
             "totalHtCents": 2208,
             "taxBreakdownJson": "{\u00225.5\u0022:27,\u002210\u0022:61,\u002220\u0022:222}",
+            "htBreakdownJson": "{\u00225.5\u0022:491,\u002210\u0022:606,\u002220\u0022:1111}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 0
           }
@@ -568,6 +575,7 @@
             "totalTtcCents": 0,
             "totalHtCents": 0,
             "taxBreakdownJson": "{\u002210\u0022:0,\u002220\u0022:0}",
+            "htBreakdownJson": "{\u002210\u0022:0,\u002220\u0022:0}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 0
           }
@@ -633,6 +641,7 @@
             "totalTtcCents": 2700,
             "totalHtCents": 2318,
             "taxBreakdownJson": "{\u002210\u0022:82,\u002220\u0022:300}",
+            "htBreakdownJson": "{\u002210\u0022:818,\u002220\u0022:1500}",
             "changeGivenCents": 300,
             "remainingBalanceCents": 0
           }
@@ -683,6 +692,7 @@
             "totalTtcCents": 0,
             "totalHtCents": 0,
             "taxBreakdownJson": "{\u002210\u0022:0}",
+            "htBreakdownJson": "{\u002210\u0022:0}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 0
           }
@@ -733,6 +743,7 @@
             "totalTtcCents": 0,
             "totalHtCents": 0,
             "taxBreakdownJson": "{\u002210\u0022:0}",
+            "htBreakdownJson": "{\u002210\u0022:0}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 0
           }
@@ -798,6 +809,7 @@
             "totalTtcCents": 1000,
             "totalHtCents": 864,
             "taxBreakdownJson": "{\u002210\u0022:38,\u002220\u0022:98}",
+            "htBreakdownJson": "{\u002210\u0022:375,\u002220\u0022:489}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 2030
           }
@@ -812,6 +824,7 @@
             "totalTtcCents": 2030,
             "totalHtCents": 1755,
             "taxBreakdownJson": "{\u002210\u0022:76,\u002220\u0022:199}",
+            "htBreakdownJson": "{\u002210\u0022:761,\u002220\u0022:994}",
             "changeGivenCents": 500,
             "remainingBalanceCents": 0
           }
@@ -821,7 +834,8 @@
         "paymentIndex": 1,
         "totalTtcCents": -2030,
         "totalHtCents": -1755,
-        "taxBreakdownJson": "{\u002210\u0022:-76,\u002220\u0022:-199}"
+        "taxBreakdownJson": "{\u002210\u0022:-76,\u002220\u0022:-199}",
+        "htBreakdownJson": "{\u002210\u0022:-761,\u002220\u0022:-994}"
       }
     },
     {
@@ -897,6 +911,7 @@
             "totalTtcCents": 668,
             "totalHtCents": 582,
             "taxBreakdownJson": "{\u00225.5\u0022:0,\u002210\u0022:30,\u002220\u0022:56}",
+            "htBreakdownJson": "{\u00225.5\u0022:0,\u002210\u0022:304,\u002220\u0022:278}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 1333
           }
@@ -911,6 +926,7 @@
             "totalTtcCents": 667,
             "totalHtCents": 582,
             "taxBreakdownJson": "{\u00225.5\u0022:0,\u002210\u0022:30,\u002220\u0022:55}",
+            "htBreakdownJson": "{\u00225.5\u0022:1,\u002210\u0022:303,\u002220\u0022:278}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 666
           }
@@ -925,6 +941,7 @@
             "totalTtcCents": 666,
             "totalHtCents": 581,
             "taxBreakdownJson": "{\u00225.5\u0022:0,\u002210\u0022:30,\u002220\u0022:55}",
+            "htBreakdownJson": "{\u00225.5\u0022:0,\u002210\u0022:303,\u002220\u0022:278}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 0
           }
@@ -934,7 +951,8 @@
         "paymentIndex": 0,
         "totalTtcCents": -668,
         "totalHtCents": -582,
-        "taxBreakdownJson": "{\u00225.5\u0022:0,\u002210\u0022:-30,\u002220\u0022:-56}"
+        "taxBreakdownJson": "{\u00225.5\u0022:0,\u002210\u0022:-30,\u002220\u0022:-56}",
+        "htBreakdownJson": "{\u00225.5\u0022:0,\u002210\u0022:-304,\u002220\u0022:-278}"
       }
     },
     {
@@ -1010,6 +1028,7 @@
             "totalTtcCents": 400,
             "totalHtCents": 349,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00225.5\u0022:7,\u002220\u0022:44}",
+            "htBreakdownJson": "{\u00220\u0022:0,\u00225.5\u0022:126,\u002220\u0022:223}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 1599
           }
@@ -1024,6 +1043,7 @@
             "totalTtcCents": 400,
             "totalHtCents": 349,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00225.5\u0022:7,\u002220\u0022:44}",
+            "htBreakdownJson": "{\u00220\u0022:0,\u00225.5\u0022:126,\u002220\u0022:223}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 1199
           }
@@ -1038,6 +1058,7 @@
             "totalTtcCents": 400,
             "totalHtCents": 349,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00225.5\u0022:7,\u002220\u0022:44}",
+            "htBreakdownJson": "{\u00220\u0022:0,\u00225.5\u0022:126,\u002220\u0022:223}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 799
           }
@@ -1052,6 +1073,7 @@
             "totalTtcCents": 400,
             "totalHtCents": 349,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00225.5\u0022:7,\u002220\u0022:44}",
+            "htBreakdownJson": "{\u00220\u0022:0,\u00225.5\u0022:126,\u002220\u0022:223}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 399
           }
@@ -1066,6 +1088,7 @@
             "totalTtcCents": 399,
             "totalHtCents": 348,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00225.5\u0022:7,\u002220\u0022:44}",
+            "htBreakdownJson": "{\u00220\u0022:0,\u00225.5\u0022:126,\u002220\u0022:222}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 0
           }
@@ -1116,6 +1139,7 @@
             "totalTtcCents": 1250,
             "totalHtCents": 1136,
             "taxBreakdownJson": "{\u002210\u0022:114}",
+            "htBreakdownJson": "{\u002210\u0022:1136}",
             "changeGivenCents": 750,
             "remainingBalanceCents": 0
           }
@@ -1181,6 +1205,7 @@
             "totalTtcCents": 1000,
             "totalHtCents": 863,
             "taxBreakdownJson": "{\u002210\u0022:35,\u002220\u0022:102}",
+            "htBreakdownJson": "{\u002210\u0022:350,\u002220\u0022:513}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 2600
           }
@@ -1195,6 +1220,7 @@
             "totalTtcCents": 2250,
             "totalHtCents": 1940,
             "taxBreakdownJson": "{\u002210\u0022:79,\u002220\u0022:231}",
+            "htBreakdownJson": "{\u002210\u0022:786,\u002220\u0022:1154}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 0
           }
@@ -1204,7 +1230,8 @@
         "paymentIndex": 1,
         "totalTtcCents": -2250,
         "totalHtCents": -1940,
-        "taxBreakdownJson": "{\u002210\u0022:-79,\u002220\u0022:-231}"
+        "taxBreakdownJson": "{\u002210\u0022:-79,\u002220\u0022:-231}",
+        "htBreakdownJson": "{\u002210\u0022:-786,\u002220\u0022:-1154}"
       }
     },
     {
@@ -1274,6 +1301,7 @@
             "totalTtcCents": 2150,
             "totalHtCents": 1928,
             "taxBreakdownJson": "{\u002210\u0022:164,\u002220\u0022:58}",
+            "htBreakdownJson": "{\u002210\u0022:1636,\u002220\u0022:292}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 0
           }
@@ -1324,6 +1352,7 @@
             "totalTtcCents": 0,
             "totalHtCents": 0,
             "taxBreakdownJson": "{\u002210\u0022:0}",
+            "htBreakdownJson": "{\u002210\u0022:0}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 0
           }
@@ -1374,6 +1403,7 @@
             "totalTtcCents": 1,
             "totalHtCents": 1,
             "taxBreakdownJson": "{\u002220\u0022:0}",
+            "htBreakdownJson": "{\u002220\u0022:1}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 0
           }
@@ -1484,6 +1514,7 @@
             "totalTtcCents": 1658,
             "totalHtCents": 1549,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:7,\u00225.5\u0022:17,\u002210\u0022:30,\u002220\u0022:55}",
+            "htBreakdownJson": "{\u00220\u0022:332,\u00222.1\u0022:325,\u00225.5\u0022:315,\u002210\u0022:301,\u002220\u0022:276}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 0
           }
@@ -1549,6 +1580,7 @@
             "totalTtcCents": 152222207,
             "totalHtCents": 133670021,
             "taxBreakdownJson": "{\u002210\u0022:8181817,\u002220\u0022:10370369}",
+            "htBreakdownJson": "{\u002210\u0022:81818174,\u002220\u0022:51851847}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 0
           }
@@ -1653,6 +1685,7 @@
             "totalTtcCents": 2777,
             "totalHtCents": 2692,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:22,\u00225.5\u0022:16,\u002210\u0022:47}",
+            "htBreakdownJson": "{\u00220\u0022:899,\u00222.1\u0022:1027,\u00225.5\u0022:293,\u002210\u0022:473}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 7620
           }
@@ -1667,6 +1700,7 @@
             "totalTtcCents": 1977,
             "totalHtCents": 1917,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:15,\u00225.5\u0022:11,\u002210\u0022:34}",
+            "htBreakdownJson": "{\u00220\u0022:640,\u00222.1\u0022:732,\u00225.5\u0022:209,\u002210\u0022:336}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 5643
           }
@@ -1681,6 +1715,7 @@
             "totalTtcCents": 572,
             "totalHtCents": 555,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:4,\u00225.5\u0022:3,\u002210\u0022:10}",
+            "htBreakdownJson": "{\u00220\u0022:185,\u00222.1\u0022:212,\u00225.5\u0022:61,\u002210\u0022:97}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 5071
           }
@@ -1695,6 +1730,7 @@
             "totalTtcCents": 3670,
             "totalHtCents": 3558,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:29,\u00225.5\u0022:21,\u002210\u0022:62}",
+            "htBreakdownJson": "{\u00220\u0022:1188,\u00222.1\u0022:1358,\u00225.5\u0022:387,\u002210\u0022:625}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 1401
           }
@@ -1709,6 +1745,7 @@
             "totalTtcCents": 1401,
             "totalHtCents": 1358,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:11,\u00225.5\u0022:8,\u002210\u0022:24}",
+            "htBreakdownJson": "{\u00220\u0022:454,\u00222.1\u0022:518,\u00225.5\u0022:148,\u002210\u0022:238}",
             "changeGivenCents": 744,
             "remainingBalanceCents": 0
           }
@@ -1822,6 +1859,7 @@
             "totalTtcCents": 33372,
             "totalHtCents": 31505,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:0,\u00225.5\u0022:1682,\u002220\u0022:185}",
+            "htBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:0,\u00225.5\u0022:30579,\u002220\u0022:926}",
             "changeGivenCents": 500,
             "remainingBalanceCents": 0
           }
@@ -1920,6 +1958,7 @@
             "totalTtcCents": 3337,
             "totalHtCents": 3067,
             "taxBreakdownJson": "{\u00225.5\u0022:85,\u002210\u0022:120,\u002220\u0022:65}",
+            "htBreakdownJson": "{\u00225.5\u0022:1540,\u002210\u0022:1199,\u002220\u0022:328}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 17044
           }
@@ -1934,6 +1973,7 @@
             "totalTtcCents": 311,
             "totalHtCents": 286,
             "taxBreakdownJson": "{\u00225.5\u0022:8,\u002210\u0022:11,\u002220\u0022:6}",
+            "htBreakdownJson": "{\u00225.5\u0022:143,\u002210\u0022:112,\u002220\u0022:31}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 16733
           }
@@ -1948,6 +1988,7 @@
             "totalTtcCents": 2449,
             "totalHtCents": 2251,
             "taxBreakdownJson": "{\u00225.5\u0022:62,\u002210\u0022:88,\u002220\u0022:48}",
+            "htBreakdownJson": "{\u00225.5\u0022:1130,\u002210\u0022:880,\u002220\u0022:241}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 14284
           }
@@ -1962,6 +2003,7 @@
             "totalTtcCents": 9256,
             "totalHtCents": 8506,
             "taxBreakdownJson": "{\u00225.5\u0022:235,\u002210\u0022:333,\u002220\u0022:182}",
+            "htBreakdownJson": "{\u00225.5\u0022:4271,\u002210\u0022:3326,\u002220\u0022:909}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 5028
           }
@@ -1976,6 +2018,7 @@
             "totalTtcCents": 5028,
             "totalHtCents": 4620,
             "taxBreakdownJson": "{\u00225.5\u0022:128,\u002210\u0022:181,\u002220\u0022:99}",
+            "htBreakdownJson": "{\u00225.5\u0022:2319,\u002210\u0022:1807,\u002220\u0022:494}",
             "changeGivenCents": 154,
             "remainingBalanceCents": 0
           }
@@ -1985,7 +2028,8 @@
         "paymentIndex": 0,
         "totalTtcCents": -3337,
         "totalHtCents": -3067,
-        "taxBreakdownJson": "{\u00225.5\u0022:-85,\u002210\u0022:-120,\u002220\u0022:-65}"
+        "taxBreakdownJson": "{\u00225.5\u0022:-85,\u002210\u0022:-120,\u002220\u0022:-65}",
+        "htBreakdownJson": "{\u00225.5\u0022:-1540,\u002210\u0022:-1199,\u002220\u0022:-328}"
       }
     },
     {
@@ -2046,6 +2090,7 @@
             "totalTtcCents": 14216,
             "totalHtCents": 14001,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:215}",
+            "htBreakdownJson": "{\u00220\u0022:3758,\u00222.1\u0022:10243}",
             "changeGivenCents": 112,
             "remainingBalanceCents": 0
           }
@@ -2135,6 +2180,7 @@
             "totalTtcCents": 14179,
             "totalHtCents": 12215,
             "taxBreakdownJson": "{\u00220\u0022:0,\u002210\u0022:386,\u002220\u0022:1578}",
+            "htBreakdownJson": "{\u00220\u0022:467,\u002210\u0022:3860,\u002220\u0022:7888}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 3131
           }
@@ -2149,6 +2195,7 @@
             "totalTtcCents": 3131,
             "totalHtCents": 2698,
             "taxBreakdownJson": "{\u00220\u0022:0,\u002210\u0022:85,\u002220\u0022:348}",
+            "htBreakdownJson": "{\u00220\u0022:103,\u002210\u0022:853,\u002220\u0022:1742}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 0
           }
@@ -2158,7 +2205,8 @@
         "paymentIndex": 1,
         "totalTtcCents": -3131,
         "totalHtCents": -2698,
-        "taxBreakdownJson": "{\u00220\u0022:0,\u002210\u0022:-85,\u002220\u0022:-348}"
+        "taxBreakdownJson": "{\u00220\u0022:0,\u002210\u0022:-85,\u002220\u0022:-348}",
+        "htBreakdownJson": "{\u00220\u0022:-103,\u002210\u0022:-853,\u002220\u0022:-1742}"
       }
     },
     {
@@ -2252,6 +2300,7 @@
             "totalTtcCents": 18888,
             "totalHtCents": 18396,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:166,\u00225.5\u0022:326}",
+            "htBreakdownJson": "{\u00220\u0022:4580,\u00222.1\u0022:7893,\u00225.5\u0022:5923}",
             "changeGivenCents": 168,
             "remainingBalanceCents": 0
           }
@@ -2311,6 +2360,7 @@
             "totalTtcCents": 1609,
             "totalHtCents": 1341,
             "taxBreakdownJson": "{\u002220\u0022:268}",
+            "htBreakdownJson": "{\u002220\u0022:1341}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 16233
           }
@@ -2325,6 +2375,7 @@
             "totalTtcCents": 913,
             "totalHtCents": 761,
             "taxBreakdownJson": "{\u002220\u0022:152}",
+            "htBreakdownJson": "{\u002220\u0022:761}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 15320
           }
@@ -2339,6 +2390,7 @@
             "totalTtcCents": 15012,
             "totalHtCents": 12510,
             "taxBreakdownJson": "{\u002220\u0022:2502}",
+            "htBreakdownJson": "{\u002220\u0022:12510}",
             "changeGivenCents": 274,
             "remainingBalanceCents": 0
           }
@@ -2348,7 +2400,8 @@
         "paymentIndex": 1,
         "totalTtcCents": -913,
         "totalHtCents": -761,
-        "taxBreakdownJson": "{\u002220\u0022:-152}"
+        "taxBreakdownJson": "{\u002220\u0022:-152}",
+        "htBreakdownJson": "{\u002220\u0022:-761}"
       }
     },
     {
@@ -2442,6 +2495,7 @@
             "totalTtcCents": 2255,
             "totalHtCents": 1987,
             "taxBreakdownJson": "{\u00220\u0022:0,\u002210\u0022:130,\u002220\u0022:138}",
+            "htBreakdownJson": "{\u00220\u0022:0,\u002210\u0022:1297,\u002220\u0022:690}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 4461
           }
@@ -2456,6 +2510,7 @@
             "totalTtcCents": 4461,
             "totalHtCents": 3931,
             "taxBreakdownJson": "{\u00220\u0022:0,\u002210\u0022:257,\u002220\u0022:273}",
+            "htBreakdownJson": "{\u00220\u0022:0,\u002210\u0022:2567,\u002220\u0022:1364}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 0
           }
@@ -2515,6 +2570,7 @@
             "totalTtcCents": 19920,
             "totalHtCents": 18882,
             "taxBreakdownJson": "{\u00225.5\u0022:1038}",
+            "htBreakdownJson": "{\u00225.5\u0022:18882}",
             "changeGivenCents": 573,
             "remainingBalanceCents": 0
           }
@@ -2565,6 +2621,7 @@
             "totalTtcCents": 0,
             "totalHtCents": 0,
             "taxBreakdownJson": "{\u00220\u0022:0}",
+            "htBreakdownJson": "{\u00220\u0022:0}",
             "changeGivenCents": 356,
             "remainingBalanceCents": 0
           }
@@ -2663,6 +2720,7 @@
             "totalTtcCents": 1411,
             "totalHtCents": 1350,
             "taxBreakdownJson": "{\u00222.1\u0022:21,\u00225.5\u0022:11,\u002220\u0022:29}",
+            "htBreakdownJson": "{\u00222.1\u0022:1009,\u00225.5\u0022:194,\u002220\u0022:147}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 30828
           }
@@ -2677,6 +2735,7 @@
             "totalTtcCents": 4399,
             "totalHtCents": 4209,
             "taxBreakdownJson": "{\u00222.1\u0022:66,\u00225.5\u0022:33,\u002220\u0022:91}",
+            "htBreakdownJson": "{\u00222.1\u0022:3145,\u00225.5\u0022:606,\u002220\u0022:458}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 26429
           }
@@ -2691,6 +2750,7 @@
             "totalTtcCents": 11179,
             "totalHtCents": 10693,
             "taxBreakdownJson": "{\u00222.1\u0022:168,\u00225.5\u0022:85,\u002220\u0022:233}",
+            "htBreakdownJson": "{\u00222.1\u0022:7992,\u00225.5\u0022:1538,\u002220\u0022:1163}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 15250
           }
@@ -2705,6 +2765,7 @@
             "totalTtcCents": 9432,
             "totalHtCents": 9023,
             "taxBreakdownJson": "{\u00222.1\u0022:142,\u00225.5\u0022:71,\u002220\u0022:196}",
+            "htBreakdownJson": "{\u00222.1\u0022:6743,\u00225.5\u0022:1298,\u002220\u0022:982}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 5818
           }
@@ -2719,6 +2780,7 @@
             "totalTtcCents": 5818,
             "totalHtCents": 5566,
             "taxBreakdownJson": "{\u00222.1\u0022:87,\u00225.5\u0022:44,\u002220\u0022:121}",
+            "htBreakdownJson": "{\u00222.1\u0022:4160,\u00225.5\u0022:801,\u002220\u0022:605}",
             "changeGivenCents": 768,
             "remainingBalanceCents": 0
           }
@@ -2793,6 +2855,7 @@
             "totalTtcCents": 1063,
             "totalHtCents": 973,
             "taxBreakdownJson": "{\u00220\u0022:0,\u002210\u0022:90}",
+            "htBreakdownJson": "{\u00220\u0022:69,\u002210\u0022:904}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 14366
           }
@@ -2807,6 +2870,7 @@
             "totalTtcCents": 158,
             "totalHtCents": 145,
             "taxBreakdownJson": "{\u00220\u0022:0,\u002210\u0022:13}",
+            "htBreakdownJson": "{\u00220\u0022:10,\u002210\u0022:135}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 14208
           }
@@ -2821,6 +2885,7 @@
             "totalTtcCents": 12205,
             "totalHtCents": 11168,
             "taxBreakdownJson": "{\u00220\u0022:0,\u002210\u0022:1037}",
+            "htBreakdownJson": "{\u00220\u0022:797,\u002210\u0022:10371}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 2003
           }
@@ -2835,6 +2900,7 @@
             "totalTtcCents": 1602,
             "totalHtCents": 1466,
             "taxBreakdownJson": "{\u00220\u0022:0,\u002210\u0022:136}",
+            "htBreakdownJson": "{\u00220\u0022:105,\u002210\u0022:1361}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 401
           }
@@ -2849,6 +2915,7 @@
             "totalTtcCents": 401,
             "totalHtCents": 367,
             "taxBreakdownJson": "{\u00220\u0022:0,\u002210\u0022:34}",
+            "htBreakdownJson": "{\u00220\u0022:26,\u002210\u0022:341}",
             "changeGivenCents": 718,
             "remainingBalanceCents": 0
           }
@@ -2858,7 +2925,8 @@
         "paymentIndex": 4,
         "totalTtcCents": -401,
         "totalHtCents": -367,
-        "taxBreakdownJson": "{\u00220\u0022:0,\u002210\u0022:-34}"
+        "taxBreakdownJson": "{\u00220\u0022:0,\u002210\u0022:-34}",
+        "htBreakdownJson": "{\u00220\u0022:-26,\u002210\u0022:-341}"
       }
     },
     {
@@ -2904,6 +2972,7 @@
             "totalTtcCents": 4354,
             "totalHtCents": 4354,
             "taxBreakdownJson": "{\u00220\u0022:0}",
+            "htBreakdownJson": "{\u00220\u0022:4354}",
             "changeGivenCents": 769,
             "remainingBalanceCents": 0
           }
@@ -2987,6 +3056,7 @@
             "totalTtcCents": 873,
             "totalHtCents": 848,
             "taxBreakdownJson": "{\u00222.1\u0022:13,\u00225.5\u0022:12}",
+            "htBreakdownJson": "{\u00222.1\u0022:630,\u00225.5\u0022:218}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 12084
           }
@@ -3001,6 +3071,7 @@
             "totalTtcCents": 5567,
             "totalHtCents": 5407,
             "taxBreakdownJson": "{\u00222.1\u0022:84,\u00225.5\u0022:76}",
+            "htBreakdownJson": "{\u00222.1\u0022:4018,\u00225.5\u0022:1389}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 6517
           }
@@ -3015,6 +3086,7 @@
             "totalTtcCents": 2920,
             "totalHtCents": 2836,
             "taxBreakdownJson": "{\u00222.1\u0022:44,\u00225.5\u0022:40}",
+            "htBreakdownJson": "{\u00222.1\u0022:2108,\u00225.5\u0022:728}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 3597
           }
@@ -3029,6 +3101,7 @@
             "totalTtcCents": 2503,
             "totalHtCents": 2431,
             "taxBreakdownJson": "{\u00222.1\u0022:38,\u00225.5\u0022:34}",
+            "htBreakdownJson": "{\u00222.1\u0022:1806,\u00225.5\u0022:625}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 1094
           }
@@ -3043,6 +3116,7 @@
             "totalTtcCents": 1094,
             "totalHtCents": 1062,
             "taxBreakdownJson": "{\u00222.1\u0022:17,\u00225.5\u0022:15}",
+            "htBreakdownJson": "{\u00222.1\u0022:789,\u00225.5\u0022:273}",
             "changeGivenCents": 11,
             "remainingBalanceCents": 0
           }
@@ -3052,7 +3126,8 @@
         "paymentIndex": 2,
         "totalTtcCents": -2920,
         "totalHtCents": -2836,
-        "taxBreakdownJson": "{\u00222.1\u0022:-44,\u00225.5\u0022:-40}"
+        "taxBreakdownJson": "{\u00222.1\u0022:-44,\u00225.5\u0022:-40}",
+        "htBreakdownJson": "{\u00222.1\u0022:-2108,\u00225.5\u0022:-728}"
       }
     },
     {
@@ -3161,6 +3236,7 @@
             "totalTtcCents": 29003,
             "totalHtCents": 25876,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:108,\u00225.5\u0022:289,\u002220\u0022:2730}",
+            "htBreakdownJson": "{\u00220\u0022:1835,\u00222.1\u0022:5142,\u00225.5\u0022:5246,\u002220\u0022:13653}",
             "changeGivenCents": 68,
             "remainingBalanceCents": 0
           }
@@ -3262,6 +3338,7 @@
             "totalTtcCents": 9311,
             "totalHtCents": 8844,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00225.5\u0022:467}",
+            "htBreakdownJson": "{\u00220\u0022:358,\u00225.5\u0022:8486}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 22498
           }
@@ -3276,6 +3353,7 @@
             "totalTtcCents": 19309,
             "totalHtCents": 18341,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00225.5\u0022:968}",
+            "htBreakdownJson": "{\u00220\u0022:743,\u00225.5\u0022:17598}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 3189
           }
@@ -3290,6 +3368,7 @@
             "totalTtcCents": 2767,
             "totalHtCents": 2628,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00225.5\u0022:139}",
+            "htBreakdownJson": "{\u00220\u0022:106,\u00225.5\u0022:2522}",
             "changeGivenCents": 77,
             "remainingBalanceCents": 0
           }
@@ -3388,6 +3467,7 @@
             "totalTtcCents": 11378,
             "totalHtCents": 9743,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00225.5\u0022:118,\u002220\u0022:1517}",
+            "htBreakdownJson": "{\u00220\u0022:0,\u00225.5\u0022:2155,\u002220\u0022:7588}",
             "changeGivenCents": 792,
             "remainingBalanceCents": 0
           }
@@ -3453,6 +3533,7 @@
             "totalTtcCents": 4371,
             "totalHtCents": 3899,
             "taxBreakdownJson": "{\u00220\u0022:0,\u002220\u0022:472}",
+            "htBreakdownJson": "{\u00220\u0022:1541,\u002220\u0022:2358}",
             "changeGivenCents": 158,
             "remainingBalanceCents": 0
           }
@@ -3542,6 +3623,7 @@
             "totalTtcCents": 934,
             "totalHtCents": 901,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:6,\u00225.5\u0022:27}",
+            "htBreakdownJson": "{\u00220\u0022:142,\u00222.1\u0022:268,\u00225.5\u0022:491}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 7102
           }
@@ -3556,6 +3638,7 @@
             "totalTtcCents": 481,
             "totalHtCents": 464,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:3,\u00225.5\u0022:14}",
+            "htBreakdownJson": "{\u00220\u0022:73,\u00222.1\u0022:138,\u00225.5\u0022:253}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 6621
           }
@@ -3570,6 +3653,7 @@
             "totalTtcCents": 2854,
             "totalHtCents": 2754,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:17,\u00225.5\u0022:83}",
+            "htBreakdownJson": "{\u00220\u0022:434,\u00222.1\u0022:820,\u00225.5\u0022:1500}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 3767
           }
@@ -3584,6 +3668,7 @@
             "totalTtcCents": 3746,
             "totalHtCents": 3615,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:23,\u00225.5\u0022:108}",
+            "htBreakdownJson": "{\u00220\u0022:569,\u00222.1\u0022:1075,\u00225.5\u0022:1971}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 21
           }
@@ -3598,6 +3683,7 @@
             "totalTtcCents": 21,
             "totalHtCents": 20,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:0,\u00225.5\u0022:1}",
+            "htBreakdownJson": "{\u00220\u0022:3,\u00222.1\u0022:6,\u00225.5\u0022:11}",
             "changeGivenCents": 482,
             "remainingBalanceCents": 0
           }
@@ -3607,7 +3693,8 @@
         "paymentIndex": 1,
         "totalTtcCents": -481,
         "totalHtCents": -464,
-        "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:-3,\u00225.5\u0022:-14}"
+        "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:-3,\u00225.5\u0022:-14}",
+        "htBreakdownJson": "{\u00220\u0022:-73,\u00222.1\u0022:-138,\u00225.5\u0022:-253}"
       }
     },
     {
@@ -3668,6 +3755,7 @@
             "totalTtcCents": 22581,
             "totalHtCents": 21183,
             "taxBreakdownJson": "{\u00222.1\u0022:192,\u002210\u0022:1206}",
+            "htBreakdownJson": "{\u00222.1\u0022:9125,\u002210\u0022:12058}",
             "changeGivenCents": 528,
             "remainingBalanceCents": 0
           }
@@ -3742,6 +3830,7 @@
             "totalTtcCents": 2106,
             "totalHtCents": 1948,
             "taxBreakdownJson": "{\u00222.1\u0022:10,\u002210\u0022:148}",
+            "htBreakdownJson": "{\u00222.1\u0022:464,\u002210\u0022:1484}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 6199
           }
@@ -3756,6 +3845,7 @@
             "totalTtcCents": 2448,
             "totalHtCents": 2265,
             "taxBreakdownJson": "{\u00222.1\u0022:11,\u002210\u0022:172}",
+            "htBreakdownJson": "{\u00222.1\u0022:540,\u002210\u0022:1725}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 3751
           }
@@ -3770,6 +3860,7 @@
             "totalTtcCents": 2157,
             "totalHtCents": 1995,
             "taxBreakdownJson": "{\u00222.1\u0022:10,\u002210\u0022:152}",
+            "htBreakdownJson": "{\u00222.1\u0022:476,\u002210\u0022:1519}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 1594
           }
@@ -3784,6 +3875,7 @@
             "totalTtcCents": 394,
             "totalHtCents": 364,
             "taxBreakdownJson": "{\u00222.1\u0022:2,\u002210\u0022:28}",
+            "htBreakdownJson": "{\u00222.1\u0022:87,\u002210\u0022:277}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 1200
           }
@@ -3798,6 +3890,7 @@
             "totalTtcCents": 1154,
             "totalHtCents": 1068,
             "taxBreakdownJson": "{\u00222.1\u0022:5,\u002210\u0022:81}",
+            "htBreakdownJson": "{\u00222.1\u0022:255,\u002210\u0022:813}",
             "changeGivenCents": 714,
             "remainingBalanceCents": 0
           }
@@ -3807,7 +3900,8 @@
         "paymentIndex": 4,
         "totalTtcCents": -1154,
         "totalHtCents": -1068,
-        "taxBreakdownJson": "{\u00222.1\u0022:-5,\u002210\u0022:-81}"
+        "taxBreakdownJson": "{\u00222.1\u0022:-5,\u002210\u0022:-81}",
+        "htBreakdownJson": "{\u00222.1\u0022:-255,\u002210\u0022:-813}"
       }
     },
     {
@@ -3853,6 +3947,7 @@
             "totalTtcCents": 4951,
             "totalHtCents": 4849,
             "taxBreakdownJson": "{\u00222.1\u0022:102}",
+            "htBreakdownJson": "{\u00222.1\u0022:4849}",
             "changeGivenCents": 788,
             "remainingBalanceCents": 0
           }
@@ -3972,6 +4067,7 @@
             "totalTtcCents": 7244,
             "totalHtCents": 6961,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:19,\u00225.5\u0022:45,\u002210\u0022:162,\u002220\u0022:57}",
+            "htBreakdownJson": "{\u00220\u0022:3300,\u00222.1\u0022:927,\u00225.5\u0022:827,\u002210\u0022:1623,\u002220\u0022:284}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 15673
           }
@@ -3986,6 +4082,7 @@
             "totalTtcCents": 8181,
             "totalHtCents": 7861,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:22,\u00225.5\u0022:51,\u002210\u0022:183,\u002220\u0022:64}",
+            "htBreakdownJson": "{\u00220\u0022:3727,\u00222.1\u0022:1046,\u00225.5\u0022:933,\u002210\u0022:1833,\u002220\u0022:322}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 7492
           }
@@ -4000,6 +4097,7 @@
             "totalTtcCents": 7492,
             "totalHtCents": 7198,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:20,\u00225.5\u0022:47,\u002210\u0022:168,\u002220\u0022:59}",
+            "htBreakdownJson": "{\u00220\u0022:3413,\u00222.1\u0022:958,\u00225.5\u0022:854,\u002210\u0022:1679,\u002220\u0022:294}",
             "changeGivenCents": 741,
             "remainingBalanceCents": 0
           }
@@ -4083,6 +4181,7 @@
             "totalTtcCents": 1696,
             "totalHtCents": 1661,
             "taxBreakdownJson": "{\u00222.1\u0022:35,\u002210\u0022:0}",
+            "htBreakdownJson": "{\u00222.1\u0022:1661,\u002210\u0022:0}",
             "changeGivenCents": 538,
             "remainingBalanceCents": 0
           }
@@ -4092,7 +4191,8 @@
         "paymentIndex": 0,
         "totalTtcCents": -1696,
         "totalHtCents": -1661,
-        "taxBreakdownJson": "{\u00222.1\u0022:-35,\u002210\u0022:0}"
+        "taxBreakdownJson": "{\u00222.1\u0022:-35,\u002210\u0022:0}",
+        "htBreakdownJson": "{\u00222.1\u0022:-1661,\u002210\u0022:0}"
       }
     },
     {
@@ -4192,6 +4292,7 @@
             "totalTtcCents": 19804,
             "totalHtCents": 19061,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:188,\u00225.5\u0022:555,\u002220\u0022:0}",
+            "htBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:8970,\u00225.5\u0022:10091,\u002220\u0022:0}",
             "changeGivenCents": 598,
             "remainingBalanceCents": 0
           }
@@ -4305,6 +4406,7 @@
             "totalTtcCents": 286,
             "totalHtCents": 277,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:2,\u00225.5\u0022:1,\u002210\u0022:6}",
+            "htBreakdownJson": "{\u00220\u0022:105,\u00222.1\u0022:97,\u00225.5\u0022:15,\u002210\u0022:60}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 11679
           }
@@ -4319,6 +4421,7 @@
             "totalTtcCents": 7306,
             "totalHtCents": 7080,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:52,\u00225.5\u0022:21,\u002210\u0022:153}",
+            "htBreakdownJson": "{\u00220\u0022:2690,\u00222.1\u0022:2483,\u00225.5\u0022:380,\u002210\u0022:1527}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 4373
           }
@@ -4333,6 +4436,7 @@
             "totalTtcCents": 2630,
             "totalHtCents": 2548,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:19,\u00225.5\u0022:8,\u002210\u0022:55}",
+            "htBreakdownJson": "{\u00220\u0022:968,\u00222.1\u0022:894,\u00225.5\u0022:136,\u002210\u0022:550}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 1743
           }
@@ -4347,6 +4451,7 @@
             "totalTtcCents": 792,
             "totalHtCents": 767,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:6,\u00225.5\u0022:2,\u002210\u0022:17}",
+            "htBreakdownJson": "{\u00220\u0022:292,\u00222.1\u0022:269,\u00225.5\u0022:41,\u002210\u0022:165}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 951
           }
@@ -4361,6 +4466,7 @@
             "totalTtcCents": 815,
             "totalHtCents": 790,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:6,\u00225.5\u0022:2,\u002210\u0022:17}",
+            "htBreakdownJson": "{\u00220\u0022:300,\u00222.1\u0022:277,\u00225.5\u0022:43,\u002210\u0022:170}",
             "changeGivenCents": 714,
             "remainingBalanceCents": 0
           }
@@ -4435,6 +4541,7 @@
             "totalTtcCents": 2147,
             "totalHtCents": 2103,
             "taxBreakdownJson": "{\u00222.1\u0022:44,\u002220\u0022:0}",
+            "htBreakdownJson": "{\u00222.1\u0022:2103,\u002220\u0022:0}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 650
           }
@@ -4449,6 +4556,7 @@
             "totalTtcCents": 351,
             "totalHtCents": 344,
             "taxBreakdownJson": "{\u00222.1\u0022:7,\u002220\u0022:0}",
+            "htBreakdownJson": "{\u00222.1\u0022:344,\u002220\u0022:0}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 299
           }
@@ -4463,6 +4571,7 @@
             "totalTtcCents": 299,
             "totalHtCents": 293,
             "taxBreakdownJson": "{\u00222.1\u0022:6,\u002220\u0022:0}",
+            "htBreakdownJson": "{\u00222.1\u0022:293,\u002220\u0022:0}",
             "changeGivenCents": 210,
             "remainingBalanceCents": 0
           }
@@ -4513,6 +4622,7 @@
             "totalTtcCents": 4405,
             "totalHtCents": 3671,
             "taxBreakdownJson": "{\u002220\u0022:734}",
+            "htBreakdownJson": "{\u002220\u0022:3671}",
             "changeGivenCents": 142,
             "remainingBalanceCents": 0
           }
@@ -4611,6 +4721,7 @@
             "totalTtcCents": 449,
             "totalHtCents": 423,
             "taxBreakdownJson": "{\u00222.1\u0022:7,\u00225.5\u0022:0,\u002220\u0022:19}",
+            "htBreakdownJson": "{\u00222.1\u0022:329,\u00225.5\u0022:0,\u002220\u0022:94}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 11279
           }
@@ -4625,6 +4736,7 @@
             "totalTtcCents": 5414,
             "totalHtCents": 5104,
             "taxBreakdownJson": "{\u00222.1\u0022:83,\u00225.5\u0022:0,\u002220\u0022:227}",
+            "htBreakdownJson": "{\u00222.1\u0022:3967,\u00225.5\u0022:0,\u002220\u0022:1137}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 5865
           }
@@ -4639,6 +4751,7 @@
             "totalTtcCents": 1577,
             "totalHtCents": 1487,
             "taxBreakdownJson": "{\u00222.1\u0022:24,\u00225.5\u0022:0,\u002220\u0022:66}",
+            "htBreakdownJson": "{\u00222.1\u0022:1156,\u00225.5\u0022:0,\u002220\u0022:331}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 4288
           }
@@ -4653,6 +4766,7 @@
             "totalTtcCents": 2238,
             "totalHtCents": 2110,
             "taxBreakdownJson": "{\u00222.1\u0022:34,\u00225.5\u0022:0,\u002220\u0022:94}",
+            "htBreakdownJson": "{\u00222.1\u0022:1640,\u00225.5\u0022:0,\u002220\u0022:470}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 2050
           }
@@ -4667,6 +4781,7 @@
             "totalTtcCents": 2050,
             "totalHtCents": 1932,
             "taxBreakdownJson": "{\u00222.1\u0022:32,\u00225.5\u0022:0,\u002220\u0022:86}",
+            "htBreakdownJson": "{\u00222.1\u0022:1501,\u00225.5\u0022:0,\u002220\u0022:431}",
             "changeGivenCents": 531,
             "remainingBalanceCents": 0
           }
@@ -4741,6 +4856,7 @@
             "totalTtcCents": 27144,
             "totalHtCents": 24825,
             "taxBreakdownJson": "{\u00220\u0022:0,\u002220\u0022:2319}",
+            "htBreakdownJson": "{\u00220\u0022:13228,\u002220\u0022:11597}",
             "changeGivenCents": 582,
             "remainingBalanceCents": 0
           }
@@ -4791,6 +4907,7 @@
             "totalTtcCents": 1299,
             "totalHtCents": 1083,
             "taxBreakdownJson": "{\u002220\u0022:216}",
+            "htBreakdownJson": "{\u002220\u0022:1083}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 9458
           }
@@ -4805,6 +4922,7 @@
             "totalTtcCents": 522,
             "totalHtCents": 435,
             "taxBreakdownJson": "{\u002220\u0022:87}",
+            "htBreakdownJson": "{\u002220\u0022:435}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 8936
           }
@@ -4819,6 +4937,7 @@
             "totalTtcCents": 1488,
             "totalHtCents": 1240,
             "taxBreakdownJson": "{\u002220\u0022:248}",
+            "htBreakdownJson": "{\u002220\u0022:1240}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 7448
           }
@@ -4833,6 +4952,7 @@
             "totalTtcCents": 4550,
             "totalHtCents": 3792,
             "taxBreakdownJson": "{\u002220\u0022:758}",
+            "htBreakdownJson": "{\u002220\u0022:3792}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 2898
           }
@@ -4847,6 +4967,7 @@
             "totalTtcCents": 2898,
             "totalHtCents": 2415,
             "taxBreakdownJson": "{\u002220\u0022:483}",
+            "htBreakdownJson": "{\u002220\u0022:2415}",
             "changeGivenCents": 138,
             "remainingBalanceCents": 0
           }
@@ -4927,6 +5048,7 @@
             "totalTtcCents": 22143,
             "totalHtCents": 19523,
             "taxBreakdownJson": "{\u00222.1\u0022:151,\u002210\u0022:0,\u002220\u0022:2469}",
+            "htBreakdownJson": "{\u00222.1\u0022:7177,\u002210\u0022:0,\u002220\u0022:12346}",
             "changeGivenCents": 187,
             "remainingBalanceCents": 0
           }
@@ -4986,6 +5108,7 @@
             "totalTtcCents": 9051,
             "totalHtCents": 7543,
             "taxBreakdownJson": "{\u002220\u0022:1508}",
+            "htBreakdownJson": "{\u002220\u0022:7543}",
             "changeGivenCents": 386,
             "remainingBalanceCents": 0
           }
@@ -5075,6 +5198,7 @@
             "totalTtcCents": 7914,
             "totalHtCents": 7052,
             "taxBreakdownJson": "{\u00220\u0022:0,\u002210\u0022:442,\u002220\u0022:420}",
+            "htBreakdownJson": "{\u00220\u0022:530,\u002210\u0022:4419,\u002220\u0022:2103}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 10419
           }
@@ -5089,6 +5213,7 @@
             "totalTtcCents": 10419,
             "totalHtCents": 9284,
             "taxBreakdownJson": "{\u00220\u0022:0,\u002210\u0022:582,\u002220\u0022:553}",
+            "htBreakdownJson": "{\u00220\u0022:699,\u002210\u0022:5817,\u002220\u0022:2768}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 0
           }
@@ -5169,6 +5294,7 @@
             "totalTtcCents": 6795,
             "totalHtCents": 6521,
             "taxBreakdownJson": "{\u00222.1\u0022:86,\u00225.5\u0022:70,\u002210\u0022:118}",
+            "htBreakdownJson": "{\u00222.1\u0022:4071,\u00225.5\u0022:1270,\u002210\u0022:1180}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 3018
           }
@@ -5183,6 +5309,7 @@
             "totalTtcCents": 3018,
             "totalHtCents": 2897,
             "taxBreakdownJson": "{\u00222.1\u0022:38,\u00225.5\u0022:31,\u002210\u0022:52}",
+            "htBreakdownJson": "{\u00222.1\u0022:1809,\u00225.5\u0022:564,\u002210\u0022:524}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 0
           }
@@ -5192,7 +5319,8 @@
         "paymentIndex": 1,
         "totalTtcCents": -3018,
         "totalHtCents": -2897,
-        "taxBreakdownJson": "{\u00222.1\u0022:-38,\u00225.5\u0022:-31,\u002210\u0022:-52}"
+        "taxBreakdownJson": "{\u00222.1\u0022:-38,\u00225.5\u0022:-31,\u002210\u0022:-52}",
+        "htBreakdownJson": "{\u00222.1\u0022:-1809,\u00225.5\u0022:-564,\u002210\u0022:-524}"
       }
     },
     {
@@ -5238,6 +5366,7 @@
             "totalTtcCents": 1588,
             "totalHtCents": 1323,
             "taxBreakdownJson": "{\u002220\u0022:265}",
+            "htBreakdownJson": "{\u002220\u0022:1323}",
             "changeGivenCents": 455,
             "remainingBalanceCents": 0
           }
@@ -5327,6 +5456,7 @@
             "totalTtcCents": 0,
             "totalHtCents": 0,
             "taxBreakdownJson": "{\u00222.1\u0022:0,\u00225.5\u0022:0,\u002220\u0022:0}",
+            "htBreakdownJson": "{\u00222.1\u0022:0,\u00225.5\u0022:0,\u002220\u0022:0}",
             "changeGivenCents": 40,
             "remainingBalanceCents": 0
           }
@@ -5434,6 +5564,7 @@
             "totalTtcCents": 17847,
             "totalHtCents": 17388,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:194,\u002210\u0022:265}",
+            "htBreakdownJson": "{\u00220\u0022:5494,\u00222.1\u0022:9240,\u002210\u0022:2654}",
             "changeGivenCents": 135,
             "remainingBalanceCents": 0
           }
@@ -5493,6 +5624,7 @@
             "totalTtcCents": 0,
             "totalHtCents": 0,
             "taxBreakdownJson": "{\u00225.5\u0022:0}",
+            "htBreakdownJson": "{\u00225.5\u0022:0}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 0
           }
@@ -5502,7 +5634,8 @@
         "paymentIndex": 0,
         "totalTtcCents": 0,
         "totalHtCents": 0,
-        "taxBreakdownJson": "{\u00225.5\u0022:0}"
+        "taxBreakdownJson": "{\u00225.5\u0022:0}",
+        "htBreakdownJson": "{\u00225.5\u0022:0}"
       }
     },
     {
@@ -5572,6 +5705,7 @@
             "totalTtcCents": 0,
             "totalHtCents": 0,
             "taxBreakdownJson": "{\u002210\u0022:0,\u002220\u0022:0}",
+            "htBreakdownJson": "{\u002210\u0022:0,\u002220\u0022:0}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 0
           }
@@ -5661,6 +5795,7 @@
             "totalTtcCents": 3988,
             "totalHtCents": 3897,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00225.5\u0022:0,\u002210\u0022:91}",
+            "htBreakdownJson": "{\u00220\u0022:2982,\u00225.5\u0022:0,\u002210\u0022:915}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 4318
           }
@@ -5675,6 +5810,7 @@
             "totalTtcCents": 4318,
             "totalHtCents": 4219,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00225.5\u0022:0,\u002210\u0022:99}",
+            "htBreakdownJson": "{\u00220\u0022:3229,\u00225.5\u0022:0,\u002210\u0022:990}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 0
           }
@@ -5734,6 +5870,7 @@
             "totalTtcCents": 433,
             "totalHtCents": 410,
             "taxBreakdownJson": "{\u00225.5\u0022:23}",
+            "htBreakdownJson": "{\u00225.5\u0022:410}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 1540
           }
@@ -5748,6 +5885,7 @@
             "totalTtcCents": 1069,
             "totalHtCents": 1013,
             "taxBreakdownJson": "{\u00225.5\u0022:56}",
+            "htBreakdownJson": "{\u00225.5\u0022:1013}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 471
           }
@@ -5762,6 +5900,7 @@
             "totalTtcCents": 471,
             "totalHtCents": 446,
             "taxBreakdownJson": "{\u00225.5\u0022:25}",
+            "htBreakdownJson": "{\u00225.5\u0022:446}",
             "changeGivenCents": 461,
             "remainingBalanceCents": 0
           }
@@ -5812,6 +5951,7 @@
             "totalTtcCents": 0,
             "totalHtCents": 0,
             "taxBreakdownJson": "{\u00225.5\u0022:0}",
+            "htBreakdownJson": "{\u00225.5\u0022:0}",
             "changeGivenCents": 392,
             "remainingBalanceCents": 0
           }
@@ -5904,6 +6044,7 @@
             "totalTtcCents": 12258,
             "totalHtCents": 11141,
             "taxBreakdownJson": "{\u00225.5\u0022:421,\u002220\u0022:696}",
+            "htBreakdownJson": "{\u00225.5\u0022:7658,\u002220\u0022:3483}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 9600
           }
@@ -5918,6 +6059,7 @@
             "totalTtcCents": 1439,
             "totalHtCents": 1308,
             "taxBreakdownJson": "{\u00225.5\u0022:49,\u002220\u0022:82}",
+            "htBreakdownJson": "{\u00225.5\u0022:899,\u002220\u0022:409}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 8161
           }
@@ -5932,6 +6074,7 @@
             "totalTtcCents": 1963,
             "totalHtCents": 1785,
             "taxBreakdownJson": "{\u00225.5\u0022:67,\u002220\u0022:111}",
+            "htBreakdownJson": "{\u00225.5\u0022:1227,\u002220\u0022:558}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 6198
           }
@@ -5946,6 +6089,7 @@
             "totalTtcCents": 5738,
             "totalHtCents": 5215,
             "taxBreakdownJson": "{\u00225.5\u0022:197,\u002220\u0022:326}",
+            "htBreakdownJson": "{\u00225.5\u0022:3585,\u002220\u0022:1630}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 460
           }
@@ -5960,6 +6104,7 @@
             "totalTtcCents": 460,
             "totalHtCents": 418,
             "taxBreakdownJson": "{\u00225.5\u0022:16,\u002220\u0022:26}",
+            "htBreakdownJson": "{\u00225.5\u0022:287,\u002220\u0022:131}",
             "changeGivenCents": 787,
             "remainingBalanceCents": 0
           }
@@ -5969,7 +6114,8 @@
         "paymentIndex": 3,
         "totalTtcCents": -5738,
         "totalHtCents": -5215,
-        "taxBreakdownJson": "{\u00225.5\u0022:-197,\u002220\u0022:-326}"
+        "taxBreakdownJson": "{\u00225.5\u0022:-197,\u002220\u0022:-326}",
+        "htBreakdownJson": "{\u00225.5\u0022:-3585,\u002220\u0022:-1630}"
       }
     },
     {
@@ -6072,6 +6218,7 @@
             "totalTtcCents": 37793,
             "totalHtCents": 34754,
             "taxBreakdownJson": "{\u00222.1\u0022:194,\u00225.5\u0022:855,\u002220\u0022:1990}",
+            "htBreakdownJson": "{\u00222.1\u0022:9251,\u00225.5\u0022:15554,\u002220\u0022:9949}",
             "changeGivenCents": 323,
             "remainingBalanceCents": 0
           }
@@ -6081,7 +6228,8 @@
         "paymentIndex": 0,
         "totalTtcCents": -37793,
         "totalHtCents": -34754,
-        "taxBreakdownJson": "{\u00222.1\u0022:-194,\u00225.5\u0022:-855,\u002220\u0022:-1990}"
+        "taxBreakdownJson": "{\u00222.1\u0022:-194,\u00225.5\u0022:-855,\u002220\u0022:-1990}",
+        "htBreakdownJson": "{\u00222.1\u0022:-9251,\u00225.5\u0022:-15554,\u002220\u0022:-9949}"
       }
     },
     {
@@ -6151,6 +6299,7 @@
             "totalTtcCents": 516,
             "totalHtCents": 478,
             "taxBreakdownJson": "{\u00220\u0022:0,\u002220\u0022:38}",
+            "htBreakdownJson": "{\u00220\u0022:286,\u002220\u0022:192}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 15305
           }
@@ -6165,6 +6314,7 @@
             "totalTtcCents": 7851,
             "totalHtCents": 7269,
             "taxBreakdownJson": "{\u00220\u0022:0,\u002220\u0022:582}",
+            "htBreakdownJson": "{\u00220\u0022:4358,\u002220\u0022:2911}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 7454
           }
@@ -6179,6 +6329,7 @@
             "totalTtcCents": 7307,
             "totalHtCents": 6765,
             "taxBreakdownJson": "{\u00220\u0022:0,\u002220\u0022:542}",
+            "htBreakdownJson": "{\u00220\u0022:4056,\u002220\u0022:2709}",
             "changeGivenCents": 87,
             "remainingBalanceCents": 0
           }
@@ -6247,6 +6398,7 @@
             "totalTtcCents": 0,
             "totalHtCents": 0,
             "taxBreakdownJson": "{\u00220\u0022:0}",
+            "htBreakdownJson": "{\u00220\u0022:0}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 0
           }
@@ -6297,6 +6449,7 @@
             "totalTtcCents": 0,
             "totalHtCents": 0,
             "taxBreakdownJson": "{\u00225.5\u0022:0}",
+            "htBreakdownJson": "{\u00225.5\u0022:0}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 0
           }
@@ -6386,6 +6539,7 @@
             "totalTtcCents": 15699,
             "totalHtCents": 14338,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00225.5\u0022:90,\u002210\u0022:1271}",
+            "htBreakdownJson": "{\u00220\u0022:0,\u00225.5\u0022:1631,\u002210\u0022:12707}",
             "changeGivenCents": 111,
             "remainingBalanceCents": 0
           }
@@ -6466,6 +6620,7 @@
             "totalTtcCents": 3570,
             "totalHtCents": 3203,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:19,\u002220\u0022:348}",
+            "htBreakdownJson": "{\u00220\u0022:560,\u00222.1\u0022:901,\u002220\u0022:1742}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 17810
           }
@@ -6480,6 +6635,7 @@
             "totalTtcCents": 16647,
             "totalHtCents": 14935,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:88,\u002220\u0022:1624}",
+            "htBreakdownJson": "{\u00220\u0022:2611,\u00222.1\u0022:4204,\u002220\u0022:8120}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 1163
           }
@@ -6494,6 +6650,7 @@
             "totalTtcCents": 1163,
             "totalHtCents": 1044,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:6,\u002220\u0022:113}",
+            "htBreakdownJson": "{\u00220\u0022:182,\u00222.1\u0022:294,\u002220\u0022:568}",
             "changeGivenCents": 264,
             "remainingBalanceCents": 0
           }
@@ -6559,6 +6716,7 @@
             "totalTtcCents": 14245,
             "totalHtCents": 12770,
             "taxBreakdownJson": "{\u00220\u0022:0,\u002220\u0022:1475}",
+            "htBreakdownJson": "{\u00220\u0022:5394,\u002220\u0022:7376}",
             "changeGivenCents": 39,
             "remainingBalanceCents": 0
           }
@@ -6639,6 +6797,7 @@
             "totalTtcCents": 995,
             "totalHtCents": 964,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00225.5\u0022:0,\u002210\u0022:31}",
+            "htBreakdownJson": "{\u00220\u0022:649,\u00225.5\u0022:0,\u002210\u0022:315}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 12695
           }
@@ -6653,6 +6812,7 @@
             "totalTtcCents": 9005,
             "totalHtCents": 8720,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00225.5\u0022:0,\u002210\u0022:285}",
+            "htBreakdownJson": "{\u00220\u0022:5875,\u00225.5\u0022:0,\u002210\u0022:2845}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 3690
           }
@@ -6667,6 +6827,7 @@
             "totalTtcCents": 3690,
             "totalHtCents": 3573,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00225.5\u0022:0,\u002210\u0022:117}",
+            "htBreakdownJson": "{\u00220\u0022:2408,\u00225.5\u0022:0,\u002210\u0022:1165}",
             "changeGivenCents": 618,
             "remainingBalanceCents": 0
           }
@@ -6780,6 +6941,7 @@
             "totalTtcCents": 2892,
             "totalHtCents": 2830,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:36,\u00225.5\u0022:26,\u002220\u0022:0}",
+            "htBreakdownJson": "{\u00220\u0022:635,\u00222.1\u0022:1721,\u00225.5\u0022:474,\u002220\u0022:0}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 15567
           }
@@ -6794,6 +6956,7 @@
             "totalTtcCents": 4439,
             "totalHtCents": 4344,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:55,\u00225.5\u0022:40,\u002220\u0022:0}",
+            "htBreakdownJson": "{\u00220\u0022:975,\u00222.1\u0022:2642,\u00225.5\u0022:727,\u002220\u0022:0}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 11128
           }
@@ -6808,6 +6971,7 @@
             "totalTtcCents": 1857,
             "totalHtCents": 1817,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:23,\u00225.5\u0022:17,\u002220\u0022:0}",
+            "htBreakdownJson": "{\u00220\u0022:408,\u00222.1\u0022:1105,\u00225.5\u0022:304,\u002220\u0022:0}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 9271
           }
@@ -6822,6 +6986,7 @@
             "totalTtcCents": 3814,
             "totalHtCents": 3732,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:48,\u00225.5\u0022:34,\u002220\u0022:0}",
+            "htBreakdownJson": "{\u00220\u0022:838,\u00222.1\u0022:2269,\u00225.5\u0022:625,\u002220\u0022:0}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 5457
           }
@@ -6836,6 +7001,7 @@
             "totalTtcCents": 5305,
             "totalHtCents": 5191,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:66,\u00225.5\u0022:48,\u002220\u0022:0}",
+            "htBreakdownJson": "{\u00220\u0022:1165,\u00222.1\u0022:3157,\u00225.5\u0022:869,\u002220\u0022:0}",
             "changeGivenCents": 639,
             "remainingBalanceCents": 0
           }
@@ -6895,6 +7061,7 @@
             "totalTtcCents": 23633,
             "totalHtCents": 23147,
             "taxBreakdownJson": "{\u00222.1\u0022:486}",
+            "htBreakdownJson": "{\u00222.1\u0022:23147}",
             "changeGivenCents": 663,
             "remainingBalanceCents": 0
           }
@@ -6904,7 +7071,8 @@
         "paymentIndex": 0,
         "totalTtcCents": -23633,
         "totalHtCents": -23147,
-        "taxBreakdownJson": "{\u00222.1\u0022:-486}"
+        "taxBreakdownJson": "{\u00222.1\u0022:-486}",
+        "htBreakdownJson": "{\u00222.1\u0022:-23147}"
       }
     },
     {
@@ -7007,6 +7175,7 @@
             "totalTtcCents": 6780,
             "totalHtCents": 6556,
             "taxBreakdownJson": "{\u00222.1\u0022:101,\u00225.5\u0022:63,\u002210\u0022:60}",
+            "htBreakdownJson": "{\u00222.1\u0022:4811,\u00225.5\u0022:1140,\u002210\u0022:605}",
             "changeGivenCents": 199,
             "remainingBalanceCents": 0
           }
@@ -7057,6 +7226,7 @@
             "totalTtcCents": 2691,
             "totalHtCents": 2446,
             "taxBreakdownJson": "{\u002210\u0022:245}",
+            "htBreakdownJson": "{\u002210\u0022:2446}",
             "changeGivenCents": 373,
             "remainingBalanceCents": 0
           }
@@ -7107,6 +7277,7 @@
             "totalTtcCents": 4755,
             "totalHtCents": 4657,
             "taxBreakdownJson": "{\u00222.1\u0022:98}",
+            "htBreakdownJson": "{\u00222.1\u0022:4657}",
             "changeGivenCents": 469,
             "remainingBalanceCents": 0
           }
@@ -7157,6 +7328,7 @@
             "totalTtcCents": 10835,
             "totalHtCents": 10835,
             "taxBreakdownJson": "{\u00220\u0022:0}",
+            "htBreakdownJson": "{\u00220\u0022:10835}",
             "changeGivenCents": 315,
             "remainingBalanceCents": 0
           }
@@ -7231,6 +7403,7 @@
             "totalTtcCents": 3850,
             "totalHtCents": 3676,
             "taxBreakdownJson": "{\u00222.1\u0022:18,\u00225.5\u0022:156}",
+            "htBreakdownJson": "{\u00222.1\u0022:834,\u00225.5\u0022:2842}",
             "changeGivenCents": 110,
             "remainingBalanceCents": 0
           }
@@ -7335,6 +7508,7 @@
             "totalTtcCents": 5296,
             "totalHtCents": 4694,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:22,\u002210\u0022:78,\u002220\u0022:502}",
+            "htBreakdownJson": "{\u00220\u0022:359,\u00222.1\u0022:1042,\u002210\u0022:781,\u002220\u0022:2512}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 16488
           }
@@ -7349,6 +7523,7 @@
             "totalTtcCents": 985,
             "totalHtCents": 873,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:4,\u002210\u0022:15,\u002220\u0022:93}",
+            "htBreakdownJson": "{\u00220\u0022:67,\u00222.1\u0022:194,\u002210\u0022:145,\u002220\u0022:467}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 15503
           }
@@ -7363,6 +7538,7 @@
             "totalTtcCents": 10337,
             "totalHtCents": 9161,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:43,\u002210\u0022:152,\u002220\u0022:981}",
+            "htBreakdownJson": "{\u00220\u0022:700,\u00222.1\u0022:2033,\u002210\u0022:1525,\u002220\u0022:4903}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 5166
           }
@@ -7377,6 +7553,7 @@
             "totalTtcCents": 1487,
             "totalHtCents": 1318,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:6,\u002210\u0022:22,\u002220\u0022:141}",
+            "htBreakdownJson": "{\u00220\u0022:101,\u00222.1\u0022:293,\u002210\u0022:219,\u002220\u0022:705}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 3679
           }
@@ -7391,6 +7568,7 @@
             "totalTtcCents": 3679,
             "totalHtCents": 3261,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:15,\u002210\u0022:54,\u002220\u0022:349}",
+            "htBreakdownJson": "{\u00220\u0022:249,\u00222.1\u0022:724,\u002210\u0022:543,\u002220\u0022:1745}",
             "changeGivenCents": 190,
             "remainingBalanceCents": 0
           }
@@ -7441,6 +7619,7 @@
             "totalTtcCents": 155,
             "totalHtCents": 147,
             "taxBreakdownJson": "{\u00225.5\u0022:8}",
+            "htBreakdownJson": "{\u00225.5\u0022:147}",
             "changeGivenCents": 13,
             "remainingBalanceCents": 0
           }
@@ -7545,6 +7724,7 @@
             "totalTtcCents": 2921,
             "totalHtCents": 2754,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:0,\u00225.5\u0022:146,\u002220\u0022:21}",
+            "htBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:0,\u00225.5\u0022:2648,\u002220\u0022:106}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 11474
           }
@@ -7559,6 +7739,7 @@
             "totalTtcCents": 5520,
             "totalHtCents": 5205,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:0,\u00225.5\u0022:275,\u002220\u0022:40}",
+            "htBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:0,\u00225.5\u0022:5005,\u002220\u0022:200}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 5954
           }
@@ -7573,6 +7754,7 @@
             "totalTtcCents": 389,
             "totalHtCents": 367,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:0,\u00225.5\u0022:19,\u002220\u0022:3}",
+            "htBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:0,\u00225.5\u0022:353,\u002220\u0022:14}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 5565
           }
@@ -7587,6 +7769,7 @@
             "totalTtcCents": 263,
             "totalHtCents": 248,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:0,\u00225.5\u0022:13,\u002220\u0022:2}",
+            "htBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:0,\u00225.5\u0022:239,\u002220\u0022:9}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 5302
           }
@@ -7601,6 +7784,7 @@
             "totalTtcCents": 5302,
             "totalHtCents": 5000,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:0,\u00225.5\u0022:264,\u002220\u0022:38}",
+            "htBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:0,\u00225.5\u0022:4807,\u002220\u0022:193}",
             "changeGivenCents": 207,
             "remainingBalanceCents": 0
           }
@@ -7675,6 +7859,7 @@
             "totalTtcCents": 9302,
             "totalHtCents": 8442,
             "taxBreakdownJson": "{\u00225.5\u0022:314,\u002220\u0022:546}",
+            "htBreakdownJson": "{\u00225.5\u0022:5711,\u002220\u0022:2731}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 4836
           }
@@ -7689,6 +7874,7 @@
             "totalTtcCents": 4836,
             "totalHtCents": 4389,
             "taxBreakdownJson": "{\u00225.5\u0022:163,\u002220\u0022:284}",
+            "htBreakdownJson": "{\u00225.5\u0022:2969,\u002220\u0022:1420}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 0
           }
@@ -7698,7 +7884,8 @@
         "paymentIndex": 1,
         "totalTtcCents": -4836,
         "totalHtCents": -4389,
-        "taxBreakdownJson": "{\u00225.5\u0022:-163,\u002220\u0022:-284}"
+        "taxBreakdownJson": "{\u00225.5\u0022:-163,\u002220\u0022:-284}",
+        "htBreakdownJson": "{\u00225.5\u0022:-2969,\u002220\u0022:-1420}"
       }
     },
     {
@@ -7759,6 +7946,7 @@
             "totalTtcCents": 0,
             "totalHtCents": 0,
             "taxBreakdownJson": "{\u00222.1\u0022:0,\u002220\u0022:0}",
+            "htBreakdownJson": "{\u00222.1\u0022:0,\u002220\u0022:0}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 0
           }
@@ -7809,6 +7997,7 @@
             "totalTtcCents": 503,
             "totalHtCents": 493,
             "taxBreakdownJson": "{\u00222.1\u0022:10}",
+            "htBreakdownJson": "{\u00222.1\u0022:493}",
             "changeGivenCents": 24,
             "remainingBalanceCents": 485
           }
@@ -7823,6 +8012,7 @@
             "totalTtcCents": 485,
             "totalHtCents": 475,
             "taxBreakdownJson": "{\u00222.1\u0022:10}",
+            "htBreakdownJson": "{\u00222.1\u0022:475}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 0
           }
@@ -7832,7 +8022,8 @@
         "paymentIndex": 0,
         "totalTtcCents": -503,
         "totalHtCents": -493,
-        "taxBreakdownJson": "{\u00222.1\u0022:-10}"
+        "taxBreakdownJson": "{\u00222.1\u0022:-10}",
+        "htBreakdownJson": "{\u00222.1\u0022:-493}"
       }
     },
     {
@@ -7941,6 +8132,7 @@
             "totalTtcCents": 0,
             "totalHtCents": 0,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:0,\u00225.5\u0022:0,\u002210\u0022:0}",
+            "htBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:0,\u00225.5\u0022:0,\u002210\u0022:0}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 0
           }
@@ -7950,7 +8142,8 @@
         "paymentIndex": 0,
         "totalTtcCents": 0,
         "totalHtCents": 0,
-        "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:0,\u00225.5\u0022:0,\u002210\u0022:0}"
+        "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:0,\u00225.5\u0022:0,\u002210\u0022:0}",
+        "htBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:0,\u00225.5\u0022:0,\u002210\u0022:0}"
       }
     },
     {
@@ -8059,6 +8252,7 @@
             "totalTtcCents": 197,
             "totalHtCents": 181,
             "taxBreakdownJson": "{\u00222.1\u0022:1,\u00225.5\u0022:2,\u002210\u0022:4,\u002220\u0022:9}",
+            "htBreakdownJson": "{\u00222.1\u0022:59,\u00225.5\u0022:33,\u002210\u0022:44,\u002220\u0022:45}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 29060
           }
@@ -8073,6 +8267,7 @@
             "totalTtcCents": 8934,
             "totalHtCents": 8190,
             "taxBreakdownJson": "{\u00222.1\u0022:56,\u00225.5\u0022:81,\u002210\u0022:199,\u002220\u0022:408}",
+            "htBreakdownJson": "{\u00222.1\u0022:2673,\u00225.5\u0022:1482,\u002210\u0022:1992,\u002220\u0022:2043}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 20126
           }
@@ -8087,6 +8282,7 @@
             "totalTtcCents": 6279,
             "totalHtCents": 5756,
             "taxBreakdownJson": "{\u00222.1\u0022:39,\u00225.5\u0022:57,\u002210\u0022:140,\u002220\u0022:287}",
+            "htBreakdownJson": "{\u00222.1\u0022:1879,\u00225.5\u0022:1042,\u002210\u0022:1400,\u002220\u0022:1435}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 13847
           }
@@ -8101,6 +8297,7 @@
             "totalTtcCents": 13649,
             "totalHtCents": 12511,
             "taxBreakdownJson": "{\u00222.1\u0022:86,\u00225.5\u0022:124,\u002210\u0022:304,\u002220\u0022:624}",
+            "htBreakdownJson": "{\u00222.1\u0022:4084,\u00225.5\u0022:2263,\u002210\u0022:3044,\u002220\u0022:3120}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 198
           }
@@ -8115,6 +8312,7 @@
             "totalTtcCents": 198,
             "totalHtCents": 182,
             "taxBreakdownJson": "{\u00222.1\u0022:1,\u00225.5\u0022:2,\u002210\u0022:4,\u002220\u0022:9}",
+            "htBreakdownJson": "{\u00222.1\u0022:59,\u00225.5\u0022:33,\u002210\u0022:45,\u002220\u0022:45}",
             "changeGivenCents": 303,
             "remainingBalanceCents": 0
           }
@@ -8204,6 +8402,7 @@
             "totalTtcCents": 2692,
             "totalHtCents": 2537,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00225.5\u0022:22,\u002210\u0022:133}",
+            "htBreakdownJson": "{\u00220\u0022:810,\u00225.5\u0022:402,\u002210\u0022:1325}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 7630
           }
@@ -8218,6 +8417,7 @@
             "totalTtcCents": 7,
             "totalHtCents": 7,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00225.5\u0022:0,\u002210\u0022:0}",
+            "htBreakdownJson": "{\u00220\u0022:2,\u00225.5\u0022:1,\u002210\u0022:4}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 7623
           }
@@ -8232,6 +8432,7 @@
             "totalTtcCents": 714,
             "totalHtCents": 673,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00225.5\u0022:6,\u002210\u0022:35}",
+            "htBreakdownJson": "{\u00220\u0022:215,\u00225.5\u0022:106,\u002210\u0022:352}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 6909
           }
@@ -8246,6 +8447,7 @@
             "totalTtcCents": 6233,
             "totalHtCents": 5875,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00225.5\u0022:51,\u002210\u0022:307}",
+            "htBreakdownJson": "{\u00220\u0022:1875,\u00225.5\u0022:931,\u002210\u0022:3069}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 676
           }
@@ -8260,6 +8462,7 @@
             "totalTtcCents": 491,
             "totalHtCents": 463,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00225.5\u0022:4,\u002210\u0022:24}",
+            "htBreakdownJson": "{\u00220\u0022:148,\u00225.5\u0022:73,\u002210\u0022:242}",
             "changeGivenCents": 529,
             "remainingBalanceCents": 0
           }
@@ -8340,6 +8543,7 @@
             "totalTtcCents": 11619,
             "totalHtCents": 11007,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00225.5\u0022:504,\u002210\u0022:108}",
+            "htBreakdownJson": "{\u00220\u0022:774,\u00225.5\u0022:9158,\u002210\u0022:1075}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 1423
           }
@@ -8354,6 +8558,7 @@
             "totalTtcCents": 1058,
             "totalHtCents": 1002,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00225.5\u0022:46,\u002210\u0022:10}",
+            "htBreakdownJson": "{\u00220\u0022:70,\u00225.5\u0022:834,\u002210\u0022:98}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 365
           }
@@ -8368,6 +8573,7 @@
             "totalTtcCents": 365,
             "totalHtCents": 346,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00225.5\u0022:16,\u002210\u0022:3}",
+            "htBreakdownJson": "{\u00220\u0022:24,\u00225.5\u0022:288,\u002210\u0022:34}",
             "changeGivenCents": 408,
             "remainingBalanceCents": 0
           }
@@ -8377,7 +8583,8 @@
         "paymentIndex": 0,
         "totalTtcCents": -11619,
         "totalHtCents": -11007,
-        "taxBreakdownJson": "{\u00220\u0022:0,\u00225.5\u0022:-504,\u002210\u0022:-108}"
+        "taxBreakdownJson": "{\u00220\u0022:0,\u00225.5\u0022:-504,\u002210\u0022:-108}",
+        "htBreakdownJson": "{\u00220\u0022:-774,\u00225.5\u0022:-9158,\u002210\u0022:-1075}"
       }
     },
     {
@@ -8456,6 +8663,7 @@
             "totalTtcCents": 1291,
             "totalHtCents": 1254,
             "taxBreakdownJson": "{\u00222.1\u0022:19,\u00225.5\u0022:18}",
+            "htBreakdownJson": "{\u00222.1\u0022:919,\u00225.5\u0022:335}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 7097
           }
@@ -8470,6 +8678,7 @@
             "totalTtcCents": 7097,
             "totalHtCents": 6890,
             "taxBreakdownJson": "{\u00222.1\u0022:106,\u00225.5\u0022:101}",
+            "htBreakdownJson": "{\u00222.1\u0022:5049,\u00225.5\u0022:1841}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 0
           }
@@ -8589,6 +8798,7 @@
             "totalTtcCents": 26358,
             "totalHtCents": 24458,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:22,\u00225.5\u0022:441,\u002210\u0022:1157,\u002220\u0022:280}",
+            "htBreakdownJson": "{\u00220\u0022:2417,\u00222.1\u0022:1047,\u00225.5\u0022:8023,\u002210\u0022:11572,\u002220\u0022:1399}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 7714
           }
@@ -8603,6 +8813,7 @@
             "totalTtcCents": 7714,
             "totalHtCents": 7158,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:6,\u00225.5\u0022:129,\u002210\u0022:339,\u002220\u0022:82}",
+            "htBreakdownJson": "{\u00220\u0022:707,\u00222.1\u0022:307,\u00225.5\u0022:2348,\u002210\u0022:3387,\u002220\u0022:409}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 0
           }
@@ -8612,7 +8823,8 @@
         "paymentIndex": 1,
         "totalTtcCents": -7714,
         "totalHtCents": -7158,
-        "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:-6,\u00225.5\u0022:-129,\u002210\u0022:-339,\u002220\u0022:-82}"
+        "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:-6,\u00225.5\u0022:-129,\u002210\u0022:-339,\u002220\u0022:-82}",
+        "htBreakdownJson": "{\u00220\u0022:-707,\u00222.1\u0022:-307,\u00225.5\u0022:-2348,\u002210\u0022:-3387,\u002220\u0022:-409}"
       }
     },
     {
@@ -8673,6 +8885,7 @@
             "totalTtcCents": 3651,
             "totalHtCents": 3553,
             "taxBreakdownJson": "{\u00222.1\u0022:72,\u002220\u0022:26}",
+            "htBreakdownJson": "{\u00222.1\u0022:3421,\u002220\u0022:132}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 2590
           }
@@ -8687,6 +8900,7 @@
             "totalTtcCents": 2423,
             "totalHtCents": 2358,
             "taxBreakdownJson": "{\u00222.1\u0022:48,\u002220\u0022:17}",
+            "htBreakdownJson": "{\u00222.1\u0022:2270,\u002220\u0022:88}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 0
           }
@@ -8696,7 +8910,8 @@
         "paymentIndex": 1,
         "totalTtcCents": -2423,
         "totalHtCents": -2358,
-        "taxBreakdownJson": "{\u00222.1\u0022:-48,\u002220\u0022:-17}"
+        "taxBreakdownJson": "{\u00222.1\u0022:-48,\u002220\u0022:-17}",
+        "htBreakdownJson": "{\u00222.1\u0022:-2270,\u002220\u0022:-88}"
       }
     },
     {
@@ -8796,6 +9011,7 @@
             "totalTtcCents": 8355,
             "totalHtCents": 7790,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:48,\u002210\u0022:0,\u002220\u0022:517}",
+            "htBreakdownJson": "{\u00220\u0022:2940,\u00222.1\u0022:2263,\u002210\u0022:0,\u002220\u0022:2587}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 13956
           }
@@ -8810,6 +9026,7 @@
             "totalTtcCents": 13956,
             "totalHtCents": 13013,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:79,\u002210\u0022:0,\u002220\u0022:864}",
+            "htBreakdownJson": "{\u00220\u0022:4912,\u00222.1\u0022:3781,\u002210\u0022:0,\u002220\u0022:4320}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 0
           }
@@ -8923,6 +9140,7 @@
             "totalTtcCents": 22612,
             "totalHtCents": 21447,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:119,\u00225.5\u0022:648,\u002210\u0022:398}",
+            "htBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:5689,\u00225.5\u0022:11779,\u002210\u0022:3979}",
             "changeGivenCents": 699,
             "remainingBalanceCents": 0
           }
@@ -8973,6 +9191,7 @@
             "totalTtcCents": 0,
             "totalHtCents": 0,
             "taxBreakdownJson": "{\u002220\u0022:0}",
+            "htBreakdownJson": "{\u002220\u0022:0}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 0
           }
@@ -8982,7 +9201,8 @@
         "paymentIndex": 0,
         "totalTtcCents": 0,
         "totalHtCents": 0,
-        "taxBreakdownJson": "{\u002220\u0022:0}"
+        "taxBreakdownJson": "{\u002220\u0022:0}",
+        "htBreakdownJson": "{\u002220\u0022:0}"
       }
     },
     {
@@ -9043,6 +9263,7 @@
             "totalTtcCents": 471,
             "totalHtCents": 434,
             "taxBreakdownJson": "{\u00225.5\u0022:7,\u002210\u0022:30}",
+            "htBreakdownJson": "{\u00225.5\u0022:129,\u002210\u0022:305}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 19037
           }
@@ -9057,6 +9278,7 @@
             "totalTtcCents": 14087,
             "totalHtCents": 12964,
             "taxBreakdownJson": "{\u00225.5\u0022:213,\u002210\u0022:910}",
+            "htBreakdownJson": "{\u00225.5\u0022:3865,\u002210\u0022:9099}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 4950
           }
@@ -9071,6 +9293,7 @@
             "totalTtcCents": 3407,
             "totalHtCents": 3136,
             "taxBreakdownJson": "{\u00225.5\u0022:51,\u002210\u0022:220}",
+            "htBreakdownJson": "{\u00225.5\u0022:935,\u002210\u0022:2201}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 1543
           }
@@ -9085,6 +9308,7 @@
             "totalTtcCents": 1457,
             "totalHtCents": 1341,
             "taxBreakdownJson": "{\u00225.5\u0022:22,\u002210\u0022:94}",
+            "htBreakdownJson": "{\u00225.5\u0022:400,\u002210\u0022:941}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 86
           }
@@ -9099,6 +9323,7 @@
             "totalTtcCents": 86,
             "totalHtCents": 79,
             "taxBreakdownJson": "{\u00225.5\u0022:1,\u002210\u0022:6}",
+            "htBreakdownJson": "{\u00225.5\u0022:24,\u002210\u0022:55}",
             "changeGivenCents": 747,
             "remainingBalanceCents": 0
           }
@@ -9164,6 +9389,7 @@
             "totalTtcCents": 3360,
             "totalHtCents": 3258,
             "taxBreakdownJson": "{\u00222.1\u0022:60,\u002210\u0022:42}",
+            "htBreakdownJson": "{\u00222.1\u0022:2841,\u002210\u0022:417}",
             "changeGivenCents": 532,
             "remainingBalanceCents": 0
           }
@@ -9173,7 +9399,8 @@
         "paymentIndex": 0,
         "totalTtcCents": -3360,
         "totalHtCents": -3258,
-        "taxBreakdownJson": "{\u00222.1\u0022:-60,\u002210\u0022:-42}"
+        "taxBreakdownJson": "{\u00222.1\u0022:-60,\u002210\u0022:-42}",
+        "htBreakdownJson": "{\u00222.1\u0022:-2841,\u002210\u0022:-417}"
       }
     },
     {
@@ -9234,6 +9461,7 @@
             "totalTtcCents": 0,
             "totalHtCents": 0,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00225.5\u0022:0}",
+            "htBreakdownJson": "{\u00220\u0022:0,\u00225.5\u0022:0}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 0
           }
@@ -9344,6 +9572,7 @@
             "totalTtcCents": 35522,
             "totalHtCents": 32751,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:28,\u00225.5\u0022:84,\u002210\u0022:82,\u002220\u0022:2577}",
+            "htBreakdownJson": "{\u00220\u0022:16205,\u00222.1\u0022:1312,\u00225.5\u0022:1531,\u002210\u0022:816,\u002220\u0022:12887}",
             "changeGivenCents": 369,
             "remainingBalanceCents": 0
           }
@@ -9353,7 +9582,8 @@
         "paymentIndex": 0,
         "totalTtcCents": -35522,
         "totalHtCents": -32751,
-        "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:-28,\u00225.5\u0022:-84,\u002210\u0022:-82,\u002220\u0022:-2577}"
+        "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:-28,\u00225.5\u0022:-84,\u002210\u0022:-82,\u002220\u0022:-2577}",
+        "htBreakdownJson": "{\u00220\u0022:-16205,\u00222.1\u0022:-1312,\u00225.5\u0022:-1531,\u002210\u0022:-816,\u002220\u0022:-12887}"
       }
     },
     {
@@ -9423,6 +9653,7 @@
             "totalTtcCents": 13724,
             "totalHtCents": 13008,
             "taxBreakdownJson": "{\u00220\u0022:0,\u002210\u0022:716}",
+            "htBreakdownJson": "{\u00220\u0022:5852,\u002210\u0022:7156}",
             "changeGivenCents": 265,
             "remainingBalanceCents": 0
           }
@@ -9527,6 +9758,7 @@
             "totalTtcCents": 17187,
             "totalHtCents": 16570,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:203,\u00225.5\u0022:335,\u002210\u0022:79}",
+            "htBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:9689,\u00225.5\u0022:6089,\u002210\u0022:792}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 12879
           }
@@ -9541,6 +9773,7 @@
             "totalTtcCents": 12879,
             "totalHtCents": 12417,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:152,\u00225.5\u0022:251,\u002210\u0022:59}",
+            "htBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:7260,\u00225.5\u0022:4563,\u002210\u0022:594}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 0
           }
@@ -9550,7 +9783,8 @@
         "paymentIndex": 1,
         "totalTtcCents": -12879,
         "totalHtCents": -12417,
-        "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:-152,\u00225.5\u0022:-251,\u002210\u0022:-59}"
+        "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:-152,\u00225.5\u0022:-251,\u002210\u0022:-59}",
+        "htBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:-7260,\u00225.5\u0022:-4563,\u002210\u0022:-594}"
       }
     },
     {
@@ -9650,6 +9884,7 @@
             "totalTtcCents": 23287,
             "totalHtCents": 22447,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00225.5\u0022:395,\u002210\u0022:0,\u002220\u0022:445}",
+            "htBreakdownJson": "{\u00220\u0022:13039,\u00225.5\u0022:7182,\u002210\u0022:0,\u002220\u0022:2226}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 4324
           }
@@ -9664,6 +9899,7 @@
             "totalTtcCents": 4324,
             "totalHtCents": 4168,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00225.5\u0022:73,\u002210\u0022:0,\u002220\u0022:83}",
+            "htBreakdownJson": "{\u00220\u0022:2421,\u00225.5\u0022:1334,\u002210\u0022:0,\u002220\u0022:413}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 0
           }
@@ -9768,6 +10004,7 @@
             "totalTtcCents": 26205,
             "totalHtCents": 24849,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:143,\u00225.5\u0022:0,\u002210\u0022:1213}",
+            "htBreakdownJson": "{\u00220\u0022:5910,\u00222.1\u0022:6807,\u00225.5\u0022:0,\u002210\u0022:12132}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 3171
           }
@@ -9782,6 +10019,7 @@
             "totalTtcCents": 3171,
             "totalHtCents": 3007,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:17,\u00225.5\u0022:0,\u002210\u0022:147}",
+            "htBreakdownJson": "{\u00220\u0022:715,\u00222.1\u0022:824,\u00225.5\u0022:0,\u002210\u0022:1468}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 0
           }
@@ -9877,6 +10115,7 @@
             "totalTtcCents": 10791,
             "totalHtCents": 10471,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:109,\u00225.5\u0022:0,\u002220\u0022:211}",
+            "htBreakdownJson": "{\u00220\u0022:4242,\u00222.1\u0022:5175,\u00225.5\u0022:0,\u002220\u0022:1054}",
             "changeGivenCents": 711,
             "remainingBalanceCents": 0
           }
@@ -9927,6 +10166,7 @@
             "totalTtcCents": 1738,
             "totalHtCents": 1702,
             "taxBreakdownJson": "{\u00222.1\u0022:36}",
+            "htBreakdownJson": "{\u00222.1\u0022:1702}",
             "changeGivenCents": 568,
             "remainingBalanceCents": 0
           }
@@ -9936,7 +10176,8 @@
         "paymentIndex": 0,
         "totalTtcCents": -1738,
         "totalHtCents": -1702,
-        "taxBreakdownJson": "{\u00222.1\u0022:-36}"
+        "taxBreakdownJson": "{\u00222.1\u0022:-36}",
+        "htBreakdownJson": "{\u00222.1\u0022:-1702}"
       }
     },
     {
@@ -10045,6 +10286,7 @@
             "totalTtcCents": 4029,
             "totalHtCents": 3549,
             "taxBreakdownJson": "{\u00222.1\u0022:0,\u00225.5\u0022:71,\u002210\u0022:43,\u002220\u0022:366}",
+            "htBreakdownJson": "{\u00222.1\u0022:0,\u00225.5\u0022:1290,\u002210\u0022:431,\u002220\u0022:1828}",
             "changeGivenCents": 164,
             "remainingBalanceCents": 0
           }
@@ -10054,7 +10296,8 @@
         "paymentIndex": 0,
         "totalTtcCents": -4029,
         "totalHtCents": -3549,
-        "taxBreakdownJson": "{\u00222.1\u0022:0,\u00225.5\u0022:-71,\u002210\u0022:-43,\u002220\u0022:-366}"
+        "taxBreakdownJson": "{\u00222.1\u0022:0,\u00225.5\u0022:-71,\u002210\u0022:-43,\u002220\u0022:-366}",
+        "htBreakdownJson": "{\u00222.1\u0022:0,\u00225.5\u0022:-1290,\u002210\u0022:-431,\u002220\u0022:-1828}"
       }
     },
     {
@@ -10154,6 +10397,7 @@
             "totalTtcCents": 36357,
             "totalHtCents": 35089,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:346,\u00225.5\u0022:922,\u002220\u0022:0}",
+            "htBreakdownJson": "{\u00220\u0022:1876,\u00222.1\u0022:16456,\u00225.5\u0022:16757,\u002220\u0022:0}",
             "changeGivenCents": 306,
             "remainingBalanceCents": 0
           }
@@ -10163,7 +10407,8 @@
         "paymentIndex": 0,
         "totalTtcCents": -36357,
         "totalHtCents": -35089,
-        "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:-346,\u00225.5\u0022:-922,\u002220\u0022:0}"
+        "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:-346,\u00225.5\u0022:-922,\u002220\u0022:0}",
+        "htBreakdownJson": "{\u00220\u0022:-1876,\u00222.1\u0022:-16456,\u00225.5\u0022:-16757,\u002220\u0022:0}"
       }
     },
     {
@@ -10224,6 +10469,7 @@
             "totalTtcCents": 1397,
             "totalHtCents": 1361,
             "taxBreakdownJson": "{\u00222.1\u0022:24,\u00225.5\u0022:12}",
+            "htBreakdownJson": "{\u00222.1\u0022:1143,\u00225.5\u0022:218}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 9316
           }
@@ -10238,6 +10484,7 @@
             "totalTtcCents": 2835,
             "totalHtCents": 2762,
             "taxBreakdownJson": "{\u00222.1\u0022:49,\u00225.5\u0022:24}",
+            "htBreakdownJson": "{\u00222.1\u0022:2319,\u00225.5\u0022:443}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 6481
           }
@@ -10252,6 +10499,7 @@
             "totalTtcCents": 2396,
             "totalHtCents": 2334,
             "taxBreakdownJson": "{\u00222.1\u0022:41,\u00225.5\u0022:21}",
+            "htBreakdownJson": "{\u00222.1\u0022:1961,\u00225.5\u0022:373}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 4085
           }
@@ -10266,6 +10514,7 @@
             "totalTtcCents": 3973,
             "totalHtCents": 3871,
             "taxBreakdownJson": "{\u00222.1\u0022:68,\u00225.5\u0022:34}",
+            "htBreakdownJson": "{\u00222.1\u0022:3251,\u00225.5\u0022:620}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 112
           }
@@ -10280,6 +10529,7 @@
             "totalTtcCents": 107,
             "totalHtCents": 104,
             "taxBreakdownJson": "{\u00222.1\u0022:2,\u00225.5\u0022:1}",
+            "htBreakdownJson": "{\u00222.1\u0022:87,\u00225.5\u0022:17}",
             "changeGivenCents": 515,
             "remainingBalanceCents": 0
           }
@@ -10360,6 +10610,7 @@
             "totalTtcCents": 19354,
             "totalHtCents": 18063,
             "taxBreakdownJson": "{\u00222.1\u0022:80,\u00225.5\u0022:262,\u002210\u0022:949}",
+            "htBreakdownJson": "{\u00222.1\u0022:3811,\u00225.5\u0022:4766,\u002210\u0022:9486}",
             "changeGivenCents": 311,
             "remainingBalanceCents": 0
           }
@@ -10458,6 +10709,7 @@
             "totalTtcCents": 63932,
             "totalHtCents": 61916,
             "taxBreakdownJson": "{\u00222.1\u0022:945,\u00225.5\u0022:878,\u002220\u0022:193}",
+            "htBreakdownJson": "{\u00222.1\u0022:44996,\u00225.5\u0022:15957,\u002220\u0022:963}",
             "changeGivenCents": 180,
             "remainingBalanceCents": 0
           }
@@ -10562,6 +10814,7 @@
             "totalTtcCents": 9997,
             "totalHtCents": 9691,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:38,\u00225.5\u0022:185,\u002210\u0022:83}",
+            "htBreakdownJson": "{\u00220\u0022:3691,\u00222.1\u0022:1809,\u00225.5\u0022:3360,\u002210\u0022:831}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 6600
           }
@@ -10576,6 +10829,7 @@
             "totalTtcCents": 4687,
             "totalHtCents": 4543,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:18,\u00225.5\u0022:87,\u002210\u0022:39}",
+            "htBreakdownJson": "{\u00220\u0022:1730,\u00222.1\u0022:848,\u00225.5\u0022:1575,\u002210\u0022:390}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 1913
           }
@@ -10590,6 +10844,7 @@
             "totalTtcCents": 1913,
             "totalHtCents": 1855,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:7,\u00225.5\u0022:35,\u002210\u0022:16}",
+            "htBreakdownJson": "{\u00220\u0022:706,\u00222.1\u0022:347,\u00225.5\u0022:643,\u002210\u0022:159}",
             "changeGivenCents": 675,
             "remainingBalanceCents": 0
           }
@@ -10599,7 +10854,8 @@
         "paymentIndex": 2,
         "totalTtcCents": -1913,
         "totalHtCents": -1855,
-        "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:-7,\u00225.5\u0022:-35,\u002210\u0022:-16}"
+        "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:-7,\u00225.5\u0022:-35,\u002210\u0022:-16}",
+        "htBreakdownJson": "{\u00220\u0022:-706,\u00222.1\u0022:-347,\u00225.5\u0022:-643,\u002210\u0022:-159}"
       }
     },
     {
@@ -10645,6 +10901,7 @@
             "totalTtcCents": 1685,
             "totalHtCents": 1532,
             "taxBreakdownJson": "{\u002210\u0022:153}",
+            "htBreakdownJson": "{\u002210\u0022:1532}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 8478
           }
@@ -10659,6 +10916,7 @@
             "totalTtcCents": 2065,
             "totalHtCents": 1877,
             "taxBreakdownJson": "{\u002210\u0022:188}",
+            "htBreakdownJson": "{\u002210\u0022:1877}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 6413
           }
@@ -10673,6 +10931,7 @@
             "totalTtcCents": 2868,
             "totalHtCents": 2607,
             "taxBreakdownJson": "{\u002210\u0022:261}",
+            "htBreakdownJson": "{\u002210\u0022:2607}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 3545
           }
@@ -10687,6 +10946,7 @@
             "totalTtcCents": 354,
             "totalHtCents": 322,
             "taxBreakdownJson": "{\u002210\u0022:32}",
+            "htBreakdownJson": "{\u002210\u0022:322}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 3191
           }
@@ -10701,6 +10961,7 @@
             "totalTtcCents": 3191,
             "totalHtCents": 2901,
             "taxBreakdownJson": "{\u002210\u0022:290}",
+            "htBreakdownJson": "{\u002210\u0022:2901}",
             "changeGivenCents": 18,
             "remainingBalanceCents": 0
           }
@@ -10808,6 +11069,7 @@
             "totalTtcCents": 6570,
             "totalHtCents": 6511,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:0,\u002210\u0022:59}",
+            "htBreakdownJson": "{\u00220\u0022:5924,\u00222.1\u0022:0,\u002210\u0022:587}",
             "changeGivenCents": 525,
             "remainingBalanceCents": 0
           }
@@ -10915,6 +11177,7 @@
             "totalTtcCents": 7620,
             "totalHtCents": 7102,
             "taxBreakdownJson": "{\u00222.1\u0022:28,\u00225.5\u0022:110,\u002210\u0022:380}",
+            "htBreakdownJson": "{\u00222.1\u0022:1311,\u00225.5\u0022:1995,\u002210\u0022:3796}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 14390
           }
@@ -10929,6 +11192,7 @@
             "totalTtcCents": 3403,
             "totalHtCents": 3172,
             "taxBreakdownJson": "{\u00222.1\u0022:12,\u00225.5\u0022:49,\u002210\u0022:170}",
+            "htBreakdownJson": "{\u00222.1\u0022:586,\u00225.5\u0022:891,\u002210\u0022:1695}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 10987
           }
@@ -10943,6 +11207,7 @@
             "totalTtcCents": 1620,
             "totalHtCents": 1510,
             "taxBreakdownJson": "{\u00222.1\u0022:6,\u00225.5\u0022:23,\u002210\u0022:81}",
+            "htBreakdownJson": "{\u00222.1\u0022:278,\u00225.5\u0022:425,\u002210\u0022:807}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 9367
           }
@@ -10957,6 +11222,7 @@
             "totalTtcCents": 3803,
             "totalHtCents": 3545,
             "taxBreakdownJson": "{\u00222.1\u0022:14,\u00225.5\u0022:55,\u002210\u0022:189}",
+            "htBreakdownJson": "{\u00222.1\u0022:654,\u00225.5\u0022:996,\u002210\u0022:1895}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 5564
           }
@@ -10971,6 +11237,7 @@
             "totalTtcCents": 5564,
             "totalHtCents": 5187,
             "taxBreakdownJson": "{\u00222.1\u0022:20,\u00225.5\u0022:80,\u002210\u0022:277}",
+            "htBreakdownJson": "{\u00222.1\u0022:957,\u00225.5\u0022:1457,\u002210\u0022:2773}",
             "changeGivenCents": 455,
             "remainingBalanceCents": 0
           }
@@ -11036,6 +11303,7 @@
             "totalTtcCents": 5868,
             "totalHtCents": 5262,
             "taxBreakdownJson": "{\u00220\u0022:0,\u002220\u0022:606}",
+            "htBreakdownJson": "{\u00220\u0022:2231,\u002220\u0022:3031}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 1706
           }
@@ -11050,6 +11318,7 @@
             "totalTtcCents": 1706,
             "totalHtCents": 1530,
             "taxBreakdownJson": "{\u00220\u0022:0,\u002220\u0022:176}",
+            "htBreakdownJson": "{\u00220\u0022:649,\u002220\u0022:881}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 0
           }
@@ -11157,6 +11426,7 @@
             "totalTtcCents": 35797,
             "totalHtCents": 34531,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:383,\u002210\u0022:883}",
+            "htBreakdownJson": "{\u00220\u0022:7448,\u00222.1\u0022:18257,\u002210\u0022:8826}",
             "changeGivenCents": 86,
             "remainingBalanceCents": 0
           }
@@ -11270,6 +11540,7 @@
             "totalTtcCents": 2959,
             "totalHtCents": 2810,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:21,\u00225.5\u0022:34,\u002220\u0022:94}",
+            "htBreakdownJson": "{\u00220\u0022:720,\u00222.1\u0022:1008,\u00225.5\u0022:612,\u002220\u0022:470}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 4940
           }
@@ -11284,6 +11555,7 @@
             "totalTtcCents": 463,
             "totalHtCents": 440,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:3,\u00225.5\u0022:5,\u002220\u0022:15}",
+            "htBreakdownJson": "{\u00220\u0022:113,\u00222.1\u0022:158,\u00225.5\u0022:96,\u002220\u0022:73}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 4477
           }
@@ -11298,6 +11570,7 @@
             "totalTtcCents": 4477,
             "totalHtCents": 4252,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:32,\u00225.5\u0022:51,\u002220\u0022:142}",
+            "htBreakdownJson": "{\u00220\u0022:1089,\u00222.1\u0022:1524,\u00225.5\u0022:927,\u002220\u0022:712}",
             "changeGivenCents": 350,
             "remainingBalanceCents": 0
           }
@@ -11363,6 +11636,7 @@
             "totalTtcCents": 795,
             "totalHtCents": 723,
             "taxBreakdownJson": "{\u00225.5\u0022:0,\u002210\u0022:72}",
+            "htBreakdownJson": "{\u00225.5\u0022:0,\u002210\u0022:723}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 6265
           }
@@ -11377,6 +11651,7 @@
             "totalTtcCents": 5906,
             "totalHtCents": 5369,
             "taxBreakdownJson": "{\u00225.5\u0022:0,\u002210\u0022:537}",
+            "htBreakdownJson": "{\u00225.5\u0022:0,\u002210\u0022:5369}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 0
           }
@@ -11457,6 +11732,7 @@
             "totalTtcCents": 2625,
             "totalHtCents": 2460,
             "taxBreakdownJson": "{\u00222.1\u0022:38,\u002210\u0022:0,\u002220\u0022:127}",
+            "htBreakdownJson": "{\u00222.1\u0022:1825,\u002210\u0022:0,\u002220\u0022:635}",
             "changeGivenCents": 469,
             "remainingBalanceCents": 0
           }
@@ -11555,6 +11831,7 @@
             "totalTtcCents": 813,
             "totalHtCents": 678,
             "taxBreakdownJson": "{\u00220\u0022:0,\u002210\u0022:0,\u002220\u0022:135}",
+            "htBreakdownJson": "{\u00220\u0022:0,\u002210\u0022:0,\u002220\u0022:678}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 6630
           }
@@ -11569,6 +11846,7 @@
             "totalTtcCents": 6007,
             "totalHtCents": 5006,
             "taxBreakdownJson": "{\u00220\u0022:0,\u002210\u0022:0,\u002220\u0022:1001}",
+            "htBreakdownJson": "{\u00220\u0022:0,\u002210\u0022:0,\u002220\u0022:5006}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 623
           }
@@ -11583,6 +11861,7 @@
             "totalTtcCents": 623,
             "totalHtCents": 519,
             "taxBreakdownJson": "{\u00220\u0022:0,\u002210\u0022:0,\u002220\u0022:104}",
+            "htBreakdownJson": "{\u00220\u0022:0,\u002210\u0022:0,\u002220\u0022:519}",
             "changeGivenCents": 93,
             "remainingBalanceCents": 0
           }
@@ -11592,7 +11871,8 @@
         "paymentIndex": 0,
         "totalTtcCents": -813,
         "totalHtCents": -678,
-        "taxBreakdownJson": "{\u00220\u0022:0,\u002210\u0022:0,\u002220\u0022:-135}"
+        "taxBreakdownJson": "{\u00220\u0022:0,\u002210\u0022:0,\u002220\u0022:-135}",
+        "htBreakdownJson": "{\u00220\u0022:0,\u002210\u0022:0,\u002220\u0022:-678}"
       }
     },
     {
@@ -11653,6 +11933,7 @@
             "totalTtcCents": 3290,
             "totalHtCents": 3025,
             "taxBreakdownJson": "{\u00225.5\u0022:46,\u002210\u0022:219}",
+            "htBreakdownJson": "{\u00225.5\u0022:835,\u002210\u0022:2190}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 5056
           }
@@ -11667,6 +11948,7 @@
             "totalTtcCents": 5023,
             "totalHtCents": 4619,
             "taxBreakdownJson": "{\u00225.5\u0022:70,\u002210\u0022:334}",
+            "htBreakdownJson": "{\u00225.5\u0022:1276,\u002210\u0022:3343}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 0
           }
@@ -11774,6 +12056,7 @@
             "totalTtcCents": 17483,
             "totalHtCents": 17116,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:331,\u00225.5\u0022:36}",
+            "htBreakdownJson": "{\u00220\u0022:680,\u00222.1\u0022:15785,\u00225.5\u0022:651}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 11054
           }
@@ -11788,6 +12071,7 @@
             "totalTtcCents": 11054,
             "totalHtCents": 10821,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:210,\u00225.5\u0022:23}",
+            "htBreakdownJson": "{\u00220\u0022:430,\u00222.1\u0022:9980,\u00225.5\u0022:411}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 0
           }
@@ -11853,6 +12137,7 @@
             "totalTtcCents": 8632,
             "totalHtCents": 8594,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:38}",
+            "htBreakdownJson": "{\u00220\u0022:6773,\u00222.1\u0022:1821}",
             "changeGivenCents": 622,
             "remainingBalanceCents": 0
           }
@@ -11862,7 +12147,8 @@
         "paymentIndex": 0,
         "totalTtcCents": -8632,
         "totalHtCents": -8594,
-        "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:-38}"
+        "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:-38}",
+        "htBreakdownJson": "{\u00220\u0022:-6773,\u00222.1\u0022:-1821}"
       }
     },
     {
@@ -11971,6 +12257,7 @@
             "totalTtcCents": 2464,
             "totalHtCents": 2370,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:38,\u002210\u0022:56,\u002220\u0022:0}",
+            "htBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:1814,\u002210\u0022:556,\u002220\u0022:0}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 3632
           }
@@ -11985,6 +12272,7 @@
             "totalTtcCents": 1394,
             "totalHtCents": 1341,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:22,\u002210\u0022:31,\u002220\u0022:0}",
+            "htBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:1026,\u002210\u0022:315,\u002220\u0022:0}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 2238
           }
@@ -11999,6 +12287,7 @@
             "totalTtcCents": 1345,
             "totalHtCents": 1294,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:21,\u002210\u0022:30,\u002220\u0022:0}",
+            "htBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:990,\u002210\u0022:304,\u002220\u0022:0}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 893
           }
@@ -12013,6 +12302,7 @@
             "totalTtcCents": 111,
             "totalHtCents": 106,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:2,\u002210\u0022:3,\u002220\u0022:0}",
+            "htBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:81,\u002210\u0022:25,\u002220\u0022:0}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 782
           }
@@ -12027,6 +12317,7 @@
             "totalTtcCents": 782,
             "totalHtCents": 752,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:12,\u002210\u0022:18,\u002220\u0022:0}",
+            "htBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:576,\u002210\u0022:176,\u002220\u0022:0}",
             "changeGivenCents": 79,
             "remainingBalanceCents": 0
           }
@@ -12092,6 +12383,7 @@
             "totalTtcCents": 4061,
             "totalHtCents": 3920,
             "taxBreakdownJson": "{\u00222.1\u0022:67,\u002210\u0022:74}",
+            "htBreakdownJson": "{\u00222.1\u0022:3185,\u002210\u0022:735}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 2068
           }
@@ -12106,6 +12398,7 @@
             "totalTtcCents": 1324,
             "totalHtCents": 1278,
             "taxBreakdownJson": "{\u00222.1\u0022:22,\u002210\u0022:24}",
+            "htBreakdownJson": "{\u00222.1\u0022:1038,\u002210\u0022:240}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 744
           }
@@ -12120,6 +12413,7 @@
             "totalTtcCents": 435,
             "totalHtCents": 420,
             "taxBreakdownJson": "{\u00222.1\u0022:7,\u002210\u0022:8}",
+            "htBreakdownJson": "{\u00222.1\u0022:341,\u002210\u0022:79}",
             "changeGivenCents": 622,
             "remainingBalanceCents": 0
           }
@@ -12129,7 +12423,8 @@
         "paymentIndex": 0,
         "totalTtcCents": -4061,
         "totalHtCents": -3920,
-        "taxBreakdownJson": "{\u00222.1\u0022:-67,\u002210\u0022:-74}"
+        "taxBreakdownJson": "{\u00222.1\u0022:-67,\u002210\u0022:-74}",
+        "htBreakdownJson": "{\u00222.1\u0022:-3185,\u002210\u0022:-735}"
       }
     },
     {
@@ -12214,6 +12509,7 @@
             "totalTtcCents": 11837,
             "totalHtCents": 11025,
             "taxBreakdownJson": "{\u00220\u0022:0,\u002210\u0022:354,\u002220\u0022:458}",
+            "htBreakdownJson": "{\u00220\u0022:5191,\u002210\u0022:3541,\u002220\u0022:2293}",
             "changeGivenCents": 644,
             "remainingBalanceCents": 0
           }
@@ -12318,6 +12614,7 @@
             "totalTtcCents": 1915,
             "totalHtCents": 1739,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00225.5\u0022:33,\u002210\u0022:69,\u002220\u0022:74}",
+            "htBreakdownJson": "{\u00220\u0022:88,\u00225.5\u0022:593,\u002210\u0022:685,\u002220\u0022:373}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 21980
           }
@@ -12332,6 +12629,7 @@
             "totalTtcCents": 10669,
             "totalHtCents": 9690,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00225.5\u0022:182,\u002210\u0022:382,\u002220\u0022:415}",
+            "htBreakdownJson": "{\u00220\u0022:492,\u00225.5\u0022:3306,\u002210\u0022:3817,\u002220\u0022:2075}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 11311
           }
@@ -12346,6 +12644,7 @@
             "totalTtcCents": 7030,
             "totalHtCents": 6385,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00225.5\u0022:120,\u002210\u0022:252,\u002220\u0022:273}",
+            "htBreakdownJson": "{\u00220\u0022:324,\u00225.5\u0022:2178,\u002210\u0022:2515,\u002220\u0022:1368}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 4281
           }
@@ -12360,6 +12659,7 @@
             "totalTtcCents": 3613,
             "totalHtCents": 3282,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00225.5\u0022:62,\u002210\u0022:129,\u002220\u0022:140}",
+            "htBreakdownJson": "{\u00220\u0022:167,\u00225.5\u0022:1119,\u002210\u0022:1293,\u002220\u0022:703}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 668
           }
@@ -12374,6 +12674,7 @@
             "totalTtcCents": 668,
             "totalHtCents": 607,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00225.5\u0022:11,\u002210\u0022:24,\u002220\u0022:26}",
+            "htBreakdownJson": "{\u00220\u0022:31,\u00225.5\u0022:207,\u002210\u0022:239,\u002220\u0022:130}",
             "changeGivenCents": 440,
             "remainingBalanceCents": 0
           }
@@ -12439,6 +12740,7 @@
             "totalTtcCents": 9581,
             "totalHtCents": 9116,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00225.5\u0022:465}",
+            "htBreakdownJson": "{\u00220\u0022:671,\u00225.5\u0022:8445}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 3498
           }
@@ -12453,6 +12755,7 @@
             "totalTtcCents": 1254,
             "totalHtCents": 1193,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00225.5\u0022:61}",
+            "htBreakdownJson": "{\u00220\u0022:88,\u00225.5\u0022:1105}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 2244
           }
@@ -12467,6 +12770,7 @@
             "totalTtcCents": 161,
             "totalHtCents": 153,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00225.5\u0022:8}",
+            "htBreakdownJson": "{\u00220\u0022:11,\u00225.5\u0022:142}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 2083
           }
@@ -12481,6 +12785,7 @@
             "totalTtcCents": 872,
             "totalHtCents": 830,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00225.5\u0022:42}",
+            "htBreakdownJson": "{\u00220\u0022:61,\u00225.5\u0022:769}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 1211
           }
@@ -12495,6 +12800,7 @@
             "totalTtcCents": 869,
             "totalHtCents": 827,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00225.5\u0022:42}",
+            "htBreakdownJson": "{\u00220\u0022:61,\u00225.5\u0022:766}",
             "changeGivenCents": 68,
             "remainingBalanceCents": 0
           }
@@ -12599,6 +12905,7 @@
             "totalTtcCents": 3415,
             "totalHtCents": 3120,
             "taxBreakdownJson": "{\u00222.1\u0022:17,\u00225.5\u0022:27,\u002210\u0022:114,\u002220\u0022:137}",
+            "htBreakdownJson": "{\u00222.1\u0022:808,\u00225.5\u0022:489,\u002210\u0022:1138,\u002220\u0022:685}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 24928
           }
@@ -12613,6 +12920,7 @@
             "totalTtcCents": 24928,
             "totalHtCents": 22777,
             "taxBreakdownJson": "{\u00222.1\u0022:124,\u00225.5\u0022:196,\u002210\u0022:831,\u002220\u0022:1000}",
+            "htBreakdownJson": "{\u00222.1\u0022:5897,\u00225.5\u0022:3572,\u002210\u0022:8306,\u002220\u0022:5002}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 0
           }
@@ -12678,6 +12986,7 @@
             "totalTtcCents": 2026,
             "totalHtCents": 1981,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00225.5\u0022:45}",
+            "htBreakdownJson": "{\u00220\u0022:1165,\u00225.5\u0022:816}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 2415
           }
@@ -12692,6 +13001,7 @@
             "totalTtcCents": 2085,
             "totalHtCents": 2039,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00225.5\u0022:46}",
+            "htBreakdownJson": "{\u00220\u0022:1198,\u00225.5\u0022:841}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 0
           }
@@ -12742,6 +13052,7 @@
             "totalTtcCents": 221,
             "totalHtCents": 221,
             "taxBreakdownJson": "{\u00220\u0022:0}",
+            "htBreakdownJson": "{\u00220\u0022:221}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 1259
           }
@@ -12756,6 +13067,7 @@
             "totalTtcCents": 800,
             "totalHtCents": 800,
             "taxBreakdownJson": "{\u00220\u0022:0}",
+            "htBreakdownJson": "{\u00220\u0022:800}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 459
           }
@@ -12770,6 +13082,7 @@
             "totalTtcCents": 459,
             "totalHtCents": 459,
             "taxBreakdownJson": "{\u00220\u0022:0}",
+            "htBreakdownJson": "{\u00220\u0022:459}",
             "changeGivenCents": 745,
             "remainingBalanceCents": 0
           }
@@ -12820,6 +13133,7 @@
             "totalTtcCents": 0,
             "totalHtCents": 0,
             "taxBreakdownJson": "{\u00225.5\u0022:0}",
+            "htBreakdownJson": "{\u00225.5\u0022:0}",
             "changeGivenCents": 534,
             "remainingBalanceCents": 0
           }
@@ -12918,6 +13232,7 @@
             "totalTtcCents": 16606,
             "totalHtCents": 16284,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:226,\u00225.5\u0022:96}",
+            "htBreakdownJson": "{\u00220\u0022:3762,\u00222.1\u0022:10777,\u00225.5\u0022:1745}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 7391
           }
@@ -12932,6 +13247,7 @@
             "totalTtcCents": 5619,
             "totalHtCents": 5510,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:77,\u00225.5\u0022:32}",
+            "htBreakdownJson": "{\u00220\u0022:1273,\u00222.1\u0022:3646,\u00225.5\u0022:591}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 1772
           }
@@ -12946,6 +13262,7 @@
             "totalTtcCents": 1772,
             "totalHtCents": 1738,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:24,\u00225.5\u0022:10}",
+            "htBreakdownJson": "{\u00220\u0022:401,\u00222.1\u0022:1150,\u00225.5\u0022:187}",
             "changeGivenCents": 316,
             "remainingBalanceCents": 0
           }
@@ -12996,6 +13313,7 @@
             "totalTtcCents": 163,
             "totalHtCents": 148,
             "taxBreakdownJson": "{\u002210\u0022:15}",
+            "htBreakdownJson": "{\u002210\u0022:148}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 2441
           }
@@ -13010,6 +13328,7 @@
             "totalTtcCents": 122,
             "totalHtCents": 111,
             "taxBreakdownJson": "{\u002210\u0022:11}",
+            "htBreakdownJson": "{\u002210\u0022:111}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 2319
           }
@@ -13024,6 +13343,7 @@
             "totalTtcCents": 612,
             "totalHtCents": 556,
             "taxBreakdownJson": "{\u002210\u0022:56}",
+            "htBreakdownJson": "{\u002210\u0022:556}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 1707
           }
@@ -13038,6 +13358,7 @@
             "totalTtcCents": 891,
             "totalHtCents": 810,
             "taxBreakdownJson": "{\u002210\u0022:81}",
+            "htBreakdownJson": "{\u002210\u0022:810}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 816
           }
@@ -13052,6 +13373,7 @@
             "totalTtcCents": 816,
             "totalHtCents": 742,
             "taxBreakdownJson": "{\u002210\u0022:74}",
+            "htBreakdownJson": "{\u002210\u0022:742}",
             "changeGivenCents": 143,
             "remainingBalanceCents": 0
           }
@@ -13111,6 +13433,7 @@
             "totalTtcCents": 1282,
             "totalHtCents": 1282,
             "taxBreakdownJson": "{\u00220\u0022:0}",
+            "htBreakdownJson": "{\u00220\u0022:1282}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 5102
           }
@@ -13125,6 +13448,7 @@
             "totalTtcCents": 1078,
             "totalHtCents": 1078,
             "taxBreakdownJson": "{\u00220\u0022:0}",
+            "htBreakdownJson": "{\u00220\u0022:1078}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 4024
           }
@@ -13139,6 +13463,7 @@
             "totalTtcCents": 1313,
             "totalHtCents": 1313,
             "taxBreakdownJson": "{\u00220\u0022:0}",
+            "htBreakdownJson": "{\u00220\u0022:1313}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 2711
           }
@@ -13153,6 +13478,7 @@
             "totalTtcCents": 2029,
             "totalHtCents": 2029,
             "taxBreakdownJson": "{\u00220\u0022:0}",
+            "htBreakdownJson": "{\u00220\u0022:2029}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 682
           }
@@ -13167,6 +13493,7 @@
             "totalTtcCents": 553,
             "totalHtCents": 553,
             "taxBreakdownJson": "{\u00220\u0022:0}",
+            "htBreakdownJson": "{\u00220\u0022:553}",
             "changeGivenCents": 457,
             "remainingBalanceCents": 0
           }
@@ -13232,6 +13559,7 @@
             "totalTtcCents": 199,
             "totalHtCents": 166,
             "taxBreakdownJson": "{\u002210\u0022:0,\u002220\u0022:33}",
+            "htBreakdownJson": "{\u002210\u0022:0,\u002220\u0022:166}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 2375
           }
@@ -13246,6 +13574,7 @@
             "totalTtcCents": 1238,
             "totalHtCents": 1032,
             "taxBreakdownJson": "{\u002210\u0022:0,\u002220\u0022:206}",
+            "htBreakdownJson": "{\u002210\u0022:0,\u002220\u0022:1032}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 1137
           }
@@ -13260,6 +13589,7 @@
             "totalTtcCents": 1137,
             "totalHtCents": 948,
             "taxBreakdownJson": "{\u002210\u0022:0,\u002220\u0022:189}",
+            "htBreakdownJson": "{\u002210\u0022:0,\u002220\u0022:948}",
             "changeGivenCents": 348,
             "remainingBalanceCents": 0
           }
@@ -13269,7 +13599,8 @@
         "paymentIndex": 0,
         "totalTtcCents": -199,
         "totalHtCents": -166,
-        "taxBreakdownJson": "{\u002210\u0022:0,\u002220\u0022:-33}"
+        "taxBreakdownJson": "{\u002210\u0022:0,\u002220\u0022:-33}",
+        "htBreakdownJson": "{\u002210\u0022:0,\u002220\u0022:-166}"
       }
     },
     {
@@ -13330,6 +13661,7 @@
             "totalTtcCents": 11889,
             "totalHtCents": 11446,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00225.5\u0022:443}",
+            "htBreakdownJson": "{\u00220\u0022:3389,\u00225.5\u0022:8057}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 10001
           }
@@ -13344,6 +13676,7 @@
             "totalTtcCents": 6505,
             "totalHtCents": 6263,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00225.5\u0022:242}",
+            "htBreakdownJson": "{\u00220\u0022:1854,\u00225.5\u0022:4409}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 3496
           }
@@ -13358,6 +13691,7 @@
             "totalTtcCents": 3496,
             "totalHtCents": 3366,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00225.5\u0022:130}",
+            "htBreakdownJson": "{\u00220\u0022:997,\u00225.5\u0022:2369}",
             "changeGivenCents": 510,
             "remainingBalanceCents": 0
           }
@@ -13453,6 +13787,7 @@
             "totalTtcCents": 14326,
             "totalHtCents": 13538,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:15,\u00225.5\u0022:503,\u002210\u0022:270}",
+            "htBreakdownJson": "{\u00220\u0022:957,\u00222.1\u0022:737,\u00225.5\u0022:9149,\u002210\u0022:2695}",
             "changeGivenCents": 506,
             "remainingBalanceCents": 0
           }
@@ -13462,7 +13797,8 @@
         "paymentIndex": 0,
         "totalTtcCents": -14326,
         "totalHtCents": -13538,
-        "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:-15,\u00225.5\u0022:-503,\u002210\u0022:-270}"
+        "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:-15,\u00225.5\u0022:-503,\u002210\u0022:-270}",
+        "htBreakdownJson": "{\u00220\u0022:-957,\u00222.1\u0022:-737,\u00225.5\u0022:-9149,\u002210\u0022:-2695}"
       }
     },
     {
@@ -13538,6 +13874,7 @@
             "totalTtcCents": 1490,
             "totalHtCents": 1420,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:2,\u002210\u0022:68}",
+            "htBreakdownJson": "{\u00220\u0022:642,\u00222.1\u0022:98,\u002210\u0022:680}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 17338
           }
@@ -13552,6 +13889,7 @@
             "totalTtcCents": 1004,
             "totalHtCents": 957,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:1,\u002210\u0022:46}",
+            "htBreakdownJson": "{\u00220\u0022:432,\u00222.1\u0022:67,\u002210\u0022:458}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 16334
           }
@@ -13566,6 +13904,7 @@
             "totalTtcCents": 7543,
             "totalHtCents": 7189,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:10,\u002210\u0022:344}",
+            "htBreakdownJson": "{\u00220\u0022:3247,\u00222.1\u0022:498,\u002210\u0022:3444}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 8791
           }
@@ -13580,6 +13919,7 @@
             "totalTtcCents": 1495,
             "totalHtCents": 1425,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:2,\u002210\u0022:68}",
+            "htBreakdownJson": "{\u00220\u0022:644,\u00222.1\u0022:98,\u002210\u0022:683}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 7296
           }
@@ -13594,6 +13934,7 @@
             "totalTtcCents": 7296,
             "totalHtCents": 6953,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:10,\u002210\u0022:333}",
+            "htBreakdownJson": "{\u00220\u0022:3141,\u00222.1\u0022:481,\u002210\u0022:3331}",
             "changeGivenCents": 169,
             "remainingBalanceCents": 0
           }
@@ -13674,6 +14015,7 @@
             "totalTtcCents": 529,
             "totalHtCents": 462,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:2,\u002220\u0022:65}",
+            "htBreakdownJson": "{\u00220\u0022:55,\u00222.1\u0022:84,\u002220\u0022:323}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 8302
           }
@@ -13688,6 +14030,7 @@
             "totalTtcCents": 243,
             "totalHtCents": 212,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:1,\u002220\u0022:30}",
+            "htBreakdownJson": "{\u00220\u0022:25,\u00222.1\u0022:39,\u002220\u0022:148}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 8059
           }
@@ -13702,6 +14045,7 @@
             "totalTtcCents": 1630,
             "totalHtCents": 1426,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:5,\u002220\u0022:199}",
+            "htBreakdownJson": "{\u00220\u0022:170,\u00222.1\u0022:261,\u002220\u0022:995}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 6429
           }
@@ -13716,6 +14060,7 @@
             "totalTtcCents": 3773,
             "totalHtCents": 3299,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:13,\u002220\u0022:461}",
+            "htBreakdownJson": "{\u00220\u0022:392,\u00222.1\u0022:604,\u002220\u0022:2303}",
             "changeGivenCents": 0,
             "remainingBalanceCents": 2656
           }
@@ -13730,6 +14075,7 @@
             "totalTtcCents": 2656,
             "totalHtCents": 2323,
             "taxBreakdownJson": "{\u00220\u0022:0,\u00222.1\u0022:9,\u002220\u0022:324}",
+            "htBreakdownJson": "{\u00220\u0022:276,\u00222.1\u0022:425,\u002220\u0022:1622}",
             "changeGivenCents": 394,
             "remainingBalanceCents": 0
           }

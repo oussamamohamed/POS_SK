@@ -137,7 +137,7 @@ public class DayOracleTests
             [new DayOperation("counter_order", "A", "waiter1", null, 0, "Takeaway", [new DayLine("Sandwich", 1, 1000, 10m, 5.5m)], null, 0,
                 [[new DayTender("CreditCard", 1000)]])]);
         string json = JsonSerializer.Serialize(scenario, DayScenarioJsonContext.Default.DayScenario);
-        json.Should().Contain("\"operations\"").And.Contain("\"unitPriceCents\": 1000").And.Contain("\"taxRateTakeawayPercent\": 5.5");
+        json.Should().Contain("\"operations\"").And.Contain("\"unitPriceCents\": 1000").And.Contain("\"taxRateTakeawayPercent\": \"5.5\"");
         var back = JsonSerializer.Deserialize(json, DayScenarioJsonContext.Default.DayScenario)!;
         back.Operations[0].Lines![0].Should().Be(scenario.Operations[0].Lines![0]);
         back.Operations[0].Payments![0][0].Should().Be(new DayTender("CreditCard", 1000));

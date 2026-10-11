@@ -145,6 +145,7 @@ public class CheckoutPaymentService : ICheckoutPaymentService
                     TotalTtcAmount = Money.FromCents(receiptTtcCents),
                     TotalHtAmount = Money.FromCents(receiptHtCents),
                     TaxBreakdownJson = taxJson,
+                    HtBreakdownJson = ReceiptTaxCalculator.ToJson(receiptTax.HtByRate),
                     PreviousSignatureHash = prevHash,
                     SignatureHash = sigHash,
                     CreatedAtUtc = now
@@ -281,6 +282,7 @@ public class CheckoutPaymentService : ICheckoutPaymentService
                     TotalTtcAmount = Money.FromCents(-original.TotalTtcAmount.AmountInCents),
                     TotalHtAmount = Money.FromCents(-original.TotalHtAmount.AmountInCents),
                     TaxBreakdownJson = taxJson,
+                    HtBreakdownJson = original.HtBreakdownJson is null ? null : ReceiptTaxCalculator.Negate(original.HtBreakdownJson),
                     PreviousSignatureHash = prevHash,
                     SignatureHash = sigHash,
                     CreatedAtUtc = now,

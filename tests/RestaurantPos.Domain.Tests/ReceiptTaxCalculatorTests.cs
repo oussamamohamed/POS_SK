@@ -61,4 +61,25 @@ public class ReceiptTaxCalculatorTests
         tax.VatByRate.Select(v => (v.Key, v.Value)).Should().Equal((5.5m, 52L));
         tax.HtCents.Should().Be(948);
     }
+
+    [Fact]
+    public void HtByRate_SumsToTheReceiptHt_OnFullAndPartialReceipts()
+    {
+        var full = ReceiptTaxCalculator.Compute(TwoRates(), 3000);
+        full.HtByRate.Select(h => (h.Key, h.Value)).Should().Equal((10m, 909L), (20m, 1667L));
+        full.HtByRate.Sum(h => h.Value).Should().Be(full.HtCents);
+
+        var partial = ReceiptTaxCalculator.Compute(TwoRates(), 1000);
+        partial.HtByRate.Select(h => h.Key).Should().Equal(partial.VatByRate.Select(v => v.Key));
+        partial.HtByRate.Sum(h => h.Value).Should().Be(partial.HtCents);
+    }
+
+    [Fact]
+    public void HtBreakdownJson_UsesTheSameKeysAndOrderAsTheVatJson()
+    {
+        var tax = ReceiptTaxCalculator.Compute(TwoRates(), 3000);
+        ReceiptTaxCalculator.ToJson(tax.HtByRate).Should().Be("{\"10\":909,\"20\":1667}");
+        ReceiptTaxCalculator.ToJson(tax.VatByRate).Should().Be("{\"10\":91,\"20\":333}");
+        ReceiptTaxCalculator.Negate("{\"10\":909,\"20\":1667}").Should().Be("{\"10\":-909,\"20\":-1667}");
+    }
 }

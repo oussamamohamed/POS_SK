@@ -224,8 +224,12 @@ public sealed class FecExportServiceTests
 
     private sealed record Row(string Num, string Account, long Debit, long Credit);
 
+    private static Task<List<Row>> FecRowsAsync(
+        long ttc, long ht, string taxJson, bool isVoid, params (PaymentMethod Method, long Amount)[] tenders) =>
+        FecRowsAsync(ttc, ht, taxJson, null, isVoid, tenders);
+
     private static async Task<List<Row>> FecRowsAsync(
-        long ttc, long ht, string taxJson, bool isVoid, params (PaymentMethod Method, long Amount)[] tenders)
+        long ttc, long ht, string taxJson, string? htJson, bool isVoid, params (PaymentMethod Method, long Amount)[] tenders)
     {
         var options = new DbContextOptionsBuilder<AppDbContext>()
             .UseInMemoryDatabase(databaseName: "FecDb_" + Guid.NewGuid().ToString("N"))
@@ -242,6 +246,7 @@ public sealed class FecExportServiceTests
             TotalTtcAmount = Money.FromCents(sign * ttc),
             TotalHtAmount = Money.FromCents(sign * ht),
             TaxBreakdownJson = taxJson,
+            HtBreakdownJson = htJson,
             CreatedAtUtc = now,
             VoidedReceiptId = isVoid ? Guid.NewGuid() : null
         };
@@ -335,5 +340,64 @@ public sealed class FecExportServiceTests
         rows.Single(r => r.Account == "706000").Credit.Should().Be(979);
         rows.Single(r => r.Account == "445700").Credit.Should().Be(21);
         ShouldBalancePerEntry(rows);
+    }
+
+    // ---------- HT par taux persisté (HtBreakdownJson) ----------
+
+    // 2,1 % : TTC 10,00 -> HT 9,79 + TVA 0,21 ; 5,5 % : TTC 10,00 -> HT 9,48 + TVA 0,52. Sans HT persisté, la déduction depuis la TVA
+    // attribue 9,45 au taux 5,5 % (valeur cohérente avec 0,52 la plus proche de TVA / taux) et 9,82 au 2,1 %.
+    private const string TwoLowRatesVat = "{\"2.1\": 21, \"5.5\": 52}";
+
+    [Fact]
+    public async Task HtBreakdownJson_GivesTheExactHtPerRateAccount()
+    {
+        var rows = await FecRowsAsync(2000, 1927, TwoLowRatesVat, "{\"2.1\":979,\"5.5\":948}", false, (PaymentMethod.CreditCard, 2000));
+
+        rows.Single(r => r.Account == "706000").Credit.Should().Be(979);
+        rows.Single(r => r.Account == "706550").Credit.Should().Be(948);
+        rows.Single(r => r.Account == "445700").Credit.Should().Be(21);
+        rows.Single(r => r.Account == "445755").Credit.Should().Be(52);
+        ShouldBalancePerEntry(rows);
+    }
+
+    [Fact]
+    public async Task HtBreakdownJson_OnAVoidReceipt_IsDebitedPerRate()
+    {
+        var rows = await FecRowsAsync(2000, 1927, "{\"2.1\": -21, \"5.5\": -52}", "{\"2.1\":-979,\"5.5\":-948}", true, (PaymentMethod.CreditCard, 2000));
+
+        rows.Single(r => r.Account == "706000").Debit.Should().Be(979);
+        rows.Single(r => r.Account == "706550").Debit.Should().Be(948);
+        rows.Single(r => r.Account == "445755").Debit.Should().Be(52);
+        ShouldBalancePerEntry(rows);
+    }
+
+    [Fact]
+    public async Task HtBreakdownJson_KeepsAZeroRateGroupExact()
+    {
+        var rows = await FecRowsAsync(1700, 1500, "{\"0\": 0, \"20\": 200}", "{\"0\":500,\"20\":1000}", false, (PaymentMethod.CreditCard, 1700));
+
+        rows.Single(r => r.Account == "706000").Credit.Should().Be(500);
+        rows.Single(r => r.Account == "706200").Credit.Should().Be(1000);
+        ShouldBalancePerEntry(rows);
+    }
+
+    [Fact]
+    public async Task ReceiptWithoutHtBreakdownJson_KeepsTheLegacyDeduction()
+    {
+        var rows = await FecRowsAsync(2000, 1927, TwoLowRatesVat, false, (PaymentMethod.CreditCard, 2000));
+
+        rows.Where(r => r.Account.StartsWith("706", StringComparison.Ordinal)).Sum(r => r.Credit).Should().Be(1927);
+        rows.Single(r => r.Account == "706550").Credit.Should().Be(945);
+        rows.Single(r => r.Account == "706000").Credit.Should().Be(982);
+        ShouldBalancePerEntry(rows);
+    }
+
+    [Fact]
+    public async Task UnreadableHtBreakdownJson_FallsBackToTheLegacyDeduction()
+    {
+        var rows = await FecRowsAsync(2000, 1927, TwoLowRatesVat, "pas du json", false, (PaymentMethod.CreditCard, 2000));
+
+        rows.Single(r => r.Account == "706550").Credit.Should().Be(945);
+        rows.Single(r => r.Account == "706000").Credit.Should().Be(982);
     }
 }

@@ -4,10 +4,13 @@ struct FiscalReceiptAmounts: Equatable {
     let ttcCents: Int
     let htCents: Int
     let taxBreakdownJson: String
+    /// HT par taux en centimes, mêmes clés et même ordre que `taxBreakdownJson`. Colonne `HtBreakdownJson`, NON signée (hors hash).
+    var htBreakdownJson: String? = nil
 }
 
 /// Montants d'un reçu : même règle que `ReceiptTaxCalculator` (.NET). La TVA et le HT viennent de la ventilation de la commande par
 /// taux effectif (`OrderMath.totals`) ; un règlement partiel répartit le montant fiscal sur les groupes au plus fort reste.
+/// Le HT par taux (`HtBreakdownJson`) vient de la même répartition : Σ HT par taux = HT du reçu.
 /// Corriger une de ces règles se fait des deux côtés (voir `CLAUDE.md`).
 enum FiscalReceiptMath {
     /// - Parameters:
@@ -27,15 +30,20 @@ enum FiscalReceiptMath {
 
         var htCents = 0
         var entries: [String] = []
+        var htEntries: [String] = []
         for (line, share) in zip(totals.vatLines, shares) {
             let parts = OrderMath.split(ttc: Money(cents: share), ratePercent: line.ratePercent)
             htCents += parts.ht.cents
             entries.append("\"\(line.ratePercent)\":\(parts.vat.cents)")
+            htEntries.append("\"\(line.ratePercent)\":\(parts.ht.cents)")
         }
-        return FiscalReceiptAmounts(ttcCents: paid, htCents: htCents, taxBreakdownJson: "{" + entries.joined(separator: ",") + "}")
+        return FiscalReceiptAmounts(
+            ttcCents: paid, htCents: htCents, taxBreakdownJson: "{" + entries.joined(separator: ",") + "}",
+            htBreakdownJson: "{" + htEntries.joined(separator: ",") + "}"
+        )
     }
 
-    /// Annulation : toutes les valeurs du JSON de TVA changent de signe, clés et ordre inchangés.
+    /// Annulation : toutes les valeurs du JSON de TVA (ou de HT par taux) changent de signe, clés et ordre inchangés.
     static func negatedTaxJson(_ json: String) -> String {
         guard let regex = try? NSRegularExpression(pattern: "\"([^\"]+)\":(-?[0-9]+)") else { return json }
         let range = NSRange(json.startIndex..., in: json)

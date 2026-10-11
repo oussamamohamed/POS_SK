@@ -81,7 +81,7 @@ Principe : un **générateur .NET** produit la fixture à partir du code réel (
 - Cas limites : commande à total nul, un seul centime, total très élevé, parts qui arrondissent différemment selon l'ordre des groupes.
 - Un jeu **aléatoire déterministe** (graine fixe, plusieurs centaines de commandes générées par le test) rejoue les invariants 1 à 6, pour couvrir ce que la matrice n'énumère pas ; en cas d'échec, la graine et la commande fautive sont affichées.
 
-**Tests unitaires .NET supplémentaires** : `Order.CalculateTaxBreakdown` seul (toutes les remises), reçu du `CheckoutPaymentService` (invariants ci-dessus), Z et FEC sur une commande à emporter (la TVA est bien déclarée au taux réduit, HT par taux exact).
+**Tests unitaires .NET supplémentaires** : `Order.CalculateTaxBreakdown` seul (toutes les remises), reçu du `CheckoutPaymentService` (invariants ci-dessus), Z et FEC sur une commande à emporter (la TVA est bien déclarée au taux réduit, HT par taux exact : le reçu persiste le HT par taux dans la colonne non signée `HtBreakdownJson`, que le FEC reprend telle quelle pour ventiler les comptes 706 ; les reçus historiques, `NULL`, gardent le repli par déduction depuis la TVA, approximatif de quelques centimes entre taux bas).
 
 ## Journée simulée (test bout en bout, X et Z)
 
