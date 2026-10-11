@@ -11,12 +11,16 @@ using Microsoft.EntityFrameworkCore;
 using RestaurantPos.Application.Common.Interfaces;
 using RestaurantPos.Application.DTOs;
 using RestaurantPos.Domain.Entities;
+using RestaurantPos.Domain.ValueObjects;
 using RestaurantPos.Infrastructure.Persistence;
 
 namespace RestaurantPos.Infrastructure.Services;
 
 public sealed class FecExportService : IFecExportService
 {
+    // Compte 4686 (créditeurs divers) : pas de plan comptable de pourboires existant dans le dépôt, choix le plus simple.
+    private const string TipsAccount = "468600";
+
     private readonly AppDbContext _dbContext;
 
     public FecExportService(AppDbContext dbContext)
@@ -181,6 +185,33 @@ public sealed class FecExportService : IFecExportService
                     cumulativeCreditCents += creditCents;
                     totalRecords++;
                 }
+
+                // Pourboire : encaissé avec le règlement mais hors reçu fiscal (TTC) ; dette envers le personnel, pas un produit.
+                // Sans cette contrepartie l'écriture serait déséquilibrée du montant du pourboire.
+                long tipCents = receipt.Tenders.Sum(t => Math.Abs(t.Amount.AmountInCents)) - Math.Abs(receipt.TotalTtcAmount.AmountInCents);
+                if (tipCents > 0)
+                {
+                    long tipDebit = isVoid ? tipCents : 0;
+                    long tipCredit = isVoid ? 0 : tipCents;
+
+                    sb.AppendLine(FormatFecLine(
+                        "VT",
+                        "Journal des Ventes",
+                        ecritureNumStr,
+                        ecritureDateStr,
+                        TipsAccount,
+                        "Pourboires a reverser",
+                        pieceRef,
+                        ecritureDateStr,
+                        $"Pourboire {pieceRef}",
+                        tipDebit,
+                        tipCredit,
+                        validDateStr
+                    ));
+                    cumulativeDebitCents += tipDebit;
+                    cumulativeCreditCents += tipCredit;
+                    totalRecords++;
+                }
             }
             else
             {
@@ -293,63 +324,96 @@ public sealed class FecExportService : IFecExportService
         };
     }
 
+    /// <summary>Montants en valeur absolue : le sens (vente ou annulation) est porté par <c>isVoid</c> à l'écriture.</summary>
     private sealed record VatBreakdownItem(decimal TaxRatePercent, long HtCents, long VatCents);
 
+    /// <summary>
+    /// Le JSON signé du reçu ne porte que la TVA par taux ; le HT par taux en est déduit. Pour un taux t &gt; 0, le HT retenu est
+    /// la valeur cohérente avec la TVA (<see cref="TaxBreakdownItem.Calculate"/>) la plus proche de TVA / t. Un taux 0 % (TVA nulle,
+    /// HT invisible dans le JSON) ou, à défaut, le plus petit taux (le plus sensible à l'arrondi) absorbe le reste : la somme des HT vaut
+    /// toujours le HT du reçu. Limite : à plusieurs taux bas, le HT exact par taux n'est pas récupérable depuis le seul JSON (écart de
+    /// quelques centimes entre deux lignes, total exact) ; l'exactitude demanderait de persister le HT par taux sur le reçu.
+    /// </summary>
     private static List<VatBreakdownItem> ParseVatBreakdown(FiscalReceipt receipt)
     {
-        var items = new List<VatBreakdownItem>();
-        long totalTtcCents = receipt.TotalTtcAmount.AmountInCents;
-        long totalHtCents = receipt.TotalHtAmount.AmountInCents;
-        long totalVatCents = totalTtcCents - totalHtCents;
+        long totalHtCents = Math.Abs(receipt.TotalHtAmount.AmountInCents);
+        long totalVatCents = Math.Abs(receipt.TotalTtcAmount.AmountInCents) - totalHtCents;
 
         if (!string.IsNullOrWhiteSpace(receipt.TaxBreakdownJson) && receipt.TaxBreakdownJson != "{}")
         {
             try
             {
                 var dict = JsonSerializer.Deserialize<Dictionary<string, long>>(receipt.TaxBreakdownJson);
-                if (dict != null && dict.Count > 0)
+                var parsed = new List<(decimal Rate, long Vat)>();
+                foreach (var kvp in dict ?? [])
                 {
-                    long allocatedHtCents = 0;
-                    var parsedList = new List<(decimal Rate, long VatCents)>();
-
-                    foreach (var kvp in dict)
+                    if (decimal.TryParse(kvp.Key, NumberStyles.Any, CultureInfo.InvariantCulture, out var rate))
                     {
-                        if (decimal.TryParse(kvp.Key, NumberStyles.Any, CultureInfo.InvariantCulture, out var rate))
-                        {
-                            parsedList.Add((rate, kvp.Value));
-                        }
+                        parsed.Add((rate, Math.Abs(kvp.Value)));
+                    }
+                }
+
+                if (parsed.Count > 0)
+                {
+                    int absorber = parsed.FindIndex(p => p.Rate == 0m);
+                    if (absorber < 0)
+                    {
+                        absorber = parsed.IndexOf(parsed.OrderBy(p => p.Rate).First());
                     }
 
-                    for (int i = 0; i < parsedList.Count; i++)
+                    var ranges = parsed.Select(p => p.Rate > 0m ? FeasibleHt(p.Rate, p.Vat) : (Lo: 0L, Hi: 0L, Est: 0L)).ToArray();
+                    var ht = ranges.Select(r => r.Est).ToArray();
+                    ht[absorber] = 0;
+                    long residual = totalHtCents - ht.Sum();
+
+                    // Reste négatif (estimations trop hautes) : on le reprend sur les taux les plus ambigus, dans leur plage cohérente.
+                    foreach (int i in Enumerable.Range(0, ht.Length).Where(i => i != absorber).OrderBy(i => parsed[i].Rate))
                     {
-                        var (rate, vat) = parsedList[i];
-                        long ht;
-                        if (i == parsedList.Count - 1)
+                        if (residual >= 0)
                         {
-                            // Last bucket takes remainder to guarantee sum(HtCents) == totalHtCents
-                            ht = Math.Max(0, totalHtCents - allocatedHtCents);
-                        }
-                        else
-                        {
-                            decimal rateFactor = rate / 100.0m;
-                            ht = rateFactor > 0 ? (long)Math.Round(vat / rateFactor, MidpointRounding.AwayFromZero) : 0;
-                            allocatedHtCents += ht;
+                            break;
                         }
 
-                        items.Add(new VatBreakdownItem(rate, ht, vat));
+                        long shift = Math.Min(-residual, ht[i] - ranges[i].Lo);
+                        ht[i] -= shift;
+                        residual += shift;
                     }
 
-                    return items;
+                    ht[absorber] = residual;
+
+                    return parsed.Select((p, i) => new VatBreakdownItem(p.Rate, ht[i], p.Vat)).ToList();
                 }
             }
-            catch
+            catch (JsonException)
             {
-                // Fallback if JSON parsing fails
+                // JSON illisible : repli ci-dessous.
             }
         }
 
         // Default single rate (10%) fallback
-        items.Add(new VatBreakdownItem(10.0m, totalHtCents, totalVatCents));
-        return items;
+        return [new VatBreakdownItem(10.0m, totalHtCents, totalVatCents)];
+    }
+
+    /// <summary>
+    /// HT possibles pour une TVA donnée au taux donné (TVA = TTC - HT, HT = round(TTC / (1 + t))) : plage [Lo, Hi] et valeur la plus
+    /// proche de TVA / t (Est). Plage vide (reçu hors règle actuelle) : estimation seule.
+    /// </summary>
+    private static (long Lo, long Hi, long Est) FeasibleHt(decimal ratePercent, long vatCents)
+    {
+        long estimate = (long)Math.Round(vatCents / (ratePercent / 100m), MidpointRounding.AwayFromZero);
+        long window = (long)Math.Ceiling(100m / ratePercent) + 2;
+        var feasible = new List<long>();
+        for (long b = Math.Max(0, estimate - window); b <= estimate + window; b++)
+        {
+            var c = TaxBreakdownItem.Calculate(ratePercent, b + vatCents);
+            if (c.TaxableBaseCents == b && c.TaxAmountCents == vatCents)
+            {
+                feasible.Add(b);
+            }
+        }
+
+        return feasible.Count == 0
+            ? (estimate, estimate, estimate)
+            : (feasible[0], feasible[^1], feasible.OrderBy(b => Math.Abs(b - estimate)).First());
     }
 }

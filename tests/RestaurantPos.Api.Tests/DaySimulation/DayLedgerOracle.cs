@@ -8,6 +8,7 @@ public sealed class TerminalLedger
     public long HtCents { get; set; }
     public int ReceiptCount { get; set; }
     public SortedDictionary<decimal, long> VatByRate { get; } = [];
+    public SortedDictionary<decimal, long> HtByRate { get; } = [];
     public Dictionary<string, long> TenderByMethod { get; } = [];
 }
 
@@ -60,6 +61,11 @@ public static class DayLedgerOracle
                 ledger.Total.VatByRate[rate] = ledger.Total.VatByRate.GetValueOrDefault(rate) + vat;
             }
 
+            foreach (var (rate, ht) in t.HtByRate)
+            {
+                ledger.Total.HtByRate[rate] = ledger.Total.HtByRate.GetValueOrDefault(rate) + ht;
+            }
+
             foreach (var (method, amount) in t.TenderByMethod)
             {
                 ledger.Total.TenderByMethod[method] = ledger.Total.TenderByMethod.GetValueOrDefault(method) + amount;
@@ -96,7 +102,7 @@ public static class DayLedgerOracle
 
         var payments = op.Payments ?? [];
         long fiscalPaidSoFar = 0;
-        var sales = new List<(long Ttc, long Ht, long[] Vat)>();
+        var sales = new List<(long Ttc, long Ht, long[] Vat, long[] HtByGroup)>();
         for (int p = 0; p < payments.Count; p++)
         {
             long paid = payments[p].Sum(x => x.AmountCents);
@@ -106,15 +112,17 @@ public static class DayLedgerOracle
             long[] shares = Allocate(fiscal, orderShares); // fiscal == total rend orderShares tel quel
             long ht = 0;
             var vat = new long[groups.Count];
+            var htByGroup = new long[groups.Count];
             for (int g = 0; g < groups.Count; g++)
             {
                 (long baseHt, long tax) = Split(shares[g], rates[g]);
                 ht += baseHt;
                 vat[g] = tax;
+                htByGroup[g] = baseHt;
             }
 
-            sales.Add((fiscal, ht, vat));
-            AddReceipt(t, rates, fiscal, ht, vat, +1);
+            sales.Add((fiscal, ht, vat, htByGroup));
+            AddReceipt(t, rates, fiscal, ht, vat, htByGroup, +1);
             foreach (var tender in payments[p])
             {
                 t.TenderByMethod[tender.Method] = t.TenderByMethod.GetValueOrDefault(tender.Method) + tender.AmountCents;
@@ -124,7 +132,7 @@ public static class DayLedgerOracle
         if (op.VoidPaymentIndex is { } index)
         {
             var original = sales[index];
-            AddReceipt(t, rates, original.Ttc, original.Ht, original.Vat, -1);
+            AddReceipt(t, rates, original.Ttc, original.Ht, original.Vat, original.HtByGroup, -1);
             foreach (var tender in payments[index])
             {
                 t.TenderByMethod[tender.Method] -= tender.AmountCents;
@@ -132,7 +140,7 @@ public static class DayLedgerOracle
         }
     }
 
-    private static void AddReceipt(TerminalLedger t, decimal[] rates, long ttc, long ht, long[] vat, int sign)
+    private static void AddReceipt(TerminalLedger t, decimal[] rates, long ttc, long ht, long[] vat, long[] htByGroup, int sign)
     {
         t.TtcCents += sign * ttc;
         t.HtCents += sign * ht;
@@ -140,6 +148,7 @@ public static class DayLedgerOracle
         for (int g = 0; g < rates.Length; g++)
         {
             t.VatByRate[rates[g]] = t.VatByRate.GetValueOrDefault(rates[g]) + (sign * vat[g]);
+            t.HtByRate[rates[g]] = t.HtByRate.GetValueOrDefault(rates[g]) + (sign * htByGroup[g]);
         }
     }
 

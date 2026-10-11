@@ -174,6 +174,7 @@ En cas de contrôle fiscal ou d'audit indépendant :
 ### 5.3 Export FEC (Fichier des Écritures Comptables)
 - Conforme aux prescriptions de l'article A.47 A-1 du Livre des Procédures Fiscales.
 - Délimité par barres verticales (`|`), sans séparateur de milliers, virgule pour décimales.
-- Équilibré au centime entre Débit et Crédit.
+- Équilibré au centime entre Débit et Crédit, pour chaque écriture : le pourboire (règlement au-delà du TTC du reçu) est crédité au compte 468600 « Pourboires à reverser » (débité pour une annulation), et le HT négatif d'un reçu d'annulation est écrit en débit du compte 706.
+- Le HT par taux est déduit de la TVA par taux du JSON du reçu (seule ventilation signée) : le total HT est exact, la répartition entre taux bas peut s'écarter de quelques centimes.
 - Nom normalisé : `<SIREN>FEC<YYYYMMDD>.txt`.
 - Validable par l'outil officiel de la DGFiP **« Test Compta Demat »**.

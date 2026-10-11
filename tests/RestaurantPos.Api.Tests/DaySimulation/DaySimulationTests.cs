@@ -310,27 +310,36 @@ public class DaySimulationTests(DayFixture day) : IClassFixture<DayFixture>
         var fec = await ReadFecAsync();
         string because = Ctx(day.Scenario.Seed, day.Scenario.Operations.Count, "*", "FEC");
 
-        // Reçus de vente (hors annulations) : le FEC crédite HT + TVA et débite les règlements, pourboire compris. L'écart est exactement le pourboire.
+        // Équilibre strict au centime : sur tout le fichier et pour chaque écriture (pourboire inclus : contrepartie 4686).
+        fec.GroupBy(l => l.Num).Where(g => g.Sum(l => l.Debit) != g.Sum(l => l.Credit)).Select(g => $"{g.Key} ({g.Sum(l => l.Debit) - g.Sum(l => l.Credit)})")
+            .Should().BeEmpty($"{because} : chaque écriture est équilibrée");
+        fec.Sum(l => l.Debit).Should().Be(fec.Sum(l => l.Credit), $"{because} : Σ débit = Σ crédit");
+
         // Le grand livre « sans annulation » donne les ventes d'origine.
         var originals = DayLedgerOracle.Compute(
             day.Scenario.Operations.Select(o => o with { VoidPaymentIndex = null }), day.Run.TerminalIds);
         var sales = fec.Where(l => !l.IsVoid).ToList();
-        long tips = day.Scenario.Operations.Where(o => o.Type is "table_order" or "counter_order" && o.Payments is { Count: > 0 }).Sum(o => o.TipCents);
-        (sales.Sum(l => l.Debit) - sales.Sum(l => l.Credit)).Should().Be(tips, $"{because} : débit - crédit des ventes = pourboires");
         sales.Where(l => l.Account.StartsWith("706", StringComparison.Ordinal)).Sum(l => l.Credit - l.Debit).Should().Be(originals.Total.HtCents, $"{because} : ventes 706 = HT des ventes d'origine");
         VatByAccount(sales).Should().BeEquivalentTo(ExpectedVatByAccount(originals), $"{because} : TVA collectée des ventes d'origine");
 
         // TVA nette (annulations comprises) = TVA du grand livre : les lignes de TVA des annulations sont bien écrites.
         VatByAccount(fec).Should().BeEquivalentTo(ExpectedVatByAccount(day.Ledger), $"{because} : TVA collectée nette par compte");
         fec.Where(l => l.IsVoid).Should().NotBeEmpty("la journée annule au moins un reçu");
+
+        // HT 706 net par compte (annulations comprises) vs HT par taux du grand livre. Le total 706 est exact (voir TheFecKeepsTheHtOfVoidReceipts) ;
+        // par compte, le FEC ne connaît que la TVA par taux (le JSON signé du reçu) et en déduit le HT, ambigu de quelques centimes aux taux
+        // bas : tolérance de 0,1 %. L'exactitude par taux demanderait de persister le HT par taux sur le reçu.
+        var actualHt = Net706ByAccount(fec);
+        var expectedHt = ExpectedHtByAccount(day.Ledger);
+        actualHt.Keys.Should().BeEquivalentTo(expectedHt.Keys, $"{because} : mêmes comptes 706");
+        foreach (var (account, expected) in expectedHt)
+        {
+            Math.Abs(actualHt[account] - expected).Should().BeLessThanOrEqualTo(expected / 1000, $"{because} : HT du compte {account}");
+        }
     }
 
-    /// <summary>
-    /// DÉFAUT DE PRODUCTION CONNU (FecExportService.ParseVatBreakdown) : pour un reçu d'annulation (montants négatifs), le dernier taux reçoit
-    /// <c>Math.Max(0, totalHt - allocatedHt)</c> = 0 : sa ligne de ventes 706 n'est pas écrite, le FEC perd cet HT et son débit-crédit ne
-    /// se solde plus. Ce test dit ce qui doit être vrai une fois corrigé ; il est ignoré tant que le code de production n'est pas touché.
-    /// </summary>
-    [Fact(Skip = "Défaut connu du FEC : l'HT du dernier taux d'un reçu d'annulation n'est pas écrit (Math.Max(0, HT négatif)). À corriger côté production.")]
+    /// <summary>Un reçu d'annulation (montants négatifs) écrit son HT 706 en débit : le FEC net retombe sur le HT du grand livre.</summary>
+    [Fact]
     public async Task TheFecKeepsTheHtOfVoidReceipts()
     {
         var fec = await ReadFecAsync();
@@ -339,7 +348,7 @@ public class DaySimulationTests(DayFixture day) : IClassFixture<DayFixture>
             $"{Ctx(day.Scenario.Seed, day.Scenario.Operations.Count, "*", "FEC")} : ventes 706 nettes = HT du grand livre");
     }
 
-    private sealed record FecLine(string Account, string Piece, long Debit, long Credit)
+    private sealed record FecLine(string Num, string Account, string Piece, long Debit, long Credit)
     {
         public bool IsVoid => Piece.Contains("-VOID-", StringComparison.Ordinal);
     }
@@ -352,7 +361,7 @@ public class DaySimulationTests(DayFixture day) : IClassFixture<DayFixture>
         using var response = await client.SendAsync(request);
         response.IsSuccessStatusCode.Should().BeTrue();
         var lines = (await response.Content.ReadAsStringAsync()).Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .Skip(1).Select(l => l.Split('\t')).Select(c => new FecLine(c[4], c[8], ToCents(c[11]), ToCents(c[12]))).ToList();
+            .Skip(1).Select(l => l.Split('\t')).Select(c => new FecLine(c[2], c[4], c[8], ToCents(c[11]), ToCents(c[12]))).ToList();
         lines.Should().NotBeEmpty();
         return lines;
     }
@@ -360,6 +369,13 @@ public class DaySimulationTests(DayFixture day) : IClassFixture<DayFixture>
     private static Dictionary<string, long> VatByAccount(IEnumerable<FecLine> lines) => lines
         .Where(l => l.Account.StartsWith("4457", StringComparison.Ordinal))
         .GroupBy(l => l.Account).ToDictionary(g => g.Key, g => g.Sum(l => l.Credit - l.Debit)).Where(kv => kv.Value != 0).ToDictionary(kv => kv.Key, kv => kv.Value);
+
+    private static Dictionary<string, long> Net706ByAccount(IEnumerable<FecLine> lines) => lines
+        .Where(l => l.Account.StartsWith("706", StringComparison.Ordinal))
+        .GroupBy(l => l.Account).ToDictionary(g => g.Key, g => g.Sum(l => l.Credit - l.Debit)).Where(kv => kv.Value != 0).ToDictionary(kv => kv.Key, kv => kv.Value);
+
+    private static Dictionary<string, long> ExpectedHtByAccount(DayLedger ledger) => ledger.Total.HtByRate
+        .GroupBy(kv => SalesAccount(kv.Key), kv => kv.Value).ToDictionary(g => g.Key, g => g.Sum()).Where(kv => kv.Value != 0).ToDictionary(kv => kv.Key, kv => kv.Value);
 
     private static Dictionary<string, long> ExpectedVatByAccount(DayLedger ledger) => ledger.Total.VatByRate
         .GroupBy(kv => VatAccount(kv.Key), kv => kv.Value).ToDictionary(g => g.Key, g => g.Sum()).Where(kv => kv.Value != 0).ToDictionary(kv => kv.Key, kv => kv.Value);
@@ -473,6 +489,14 @@ public class DaySimulationTests(DayFixture day) : IClassFixture<DayFixture>
     private static string Json(DayScenario scenario) => JsonSerializer.Serialize(scenario, DayScenarioJsonContext.Default.DayScenario);
 
     private static long ToCents(string euros) => (long)(decimal.Parse(euros, CultureInfo.InvariantCulture) * 100m);
+
+    private static string SalesAccount(decimal rate) => rate switch
+    {
+        >= 19.5m and <= 20.5m => "706200",
+        >= 9.5m and <= 10.5m => "706100",
+        >= 5.0m and <= 6.0m => "706550",
+        _ => "706000",
+    };
 
     private static string VatAccount(decimal rate) => rate switch
     {
