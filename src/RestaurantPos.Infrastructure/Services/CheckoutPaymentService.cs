@@ -115,13 +115,7 @@ public class CheckoutPaymentService : ICheckoutPaymentService
 
                 // Une seule source de calcul : la ventilation de la commande (taux effectif, remise), répartie sur le reçu.
                 var receiptTax = ReceiptTaxCalculator.Compute(order, fiscalPaidCents);
-                var vatDict = new Dictionary<decimal, long>();
-                foreach (var kvp in receiptTax.VatByRate)
-                {
-                    vatDict[kvp.Key] = kvp.Value;
-                }
-
-                string taxJson = JsonSerializer.Serialize(vatDict);
+                string taxJson = ReceiptTaxCalculator.ToJson(receiptTax.VatByRate);
                 long receiptTtcCents = receiptTax.TtcCents;
                 long receiptHtCents = receiptTax.HtCents;
 

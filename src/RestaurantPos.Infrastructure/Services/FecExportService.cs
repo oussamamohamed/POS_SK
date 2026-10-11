@@ -216,7 +216,7 @@ public sealed class FecExportService : IFecExportService
             else
             {
                 // Fallback settlement to cash (530000) if no specific tenders recorded
-                long amountCents = receipt.TotalTtcAmount.AmountInCents;
+                long amountCents = Math.Abs(receipt.TotalTtcAmount.AmountInCents);
                 long debitCents = isVoid ? 0 : amountCents;
                 long creditCents = isVoid ? amountCents : 0;
 
@@ -413,7 +413,7 @@ public sealed class FecExportService : IFecExportService
         {
             var ht = ParseByRate(receipt.HtBreakdownJson);
             var vat = string.IsNullOrWhiteSpace(receipt.TaxBreakdownJson) ? [] : ParseByRate(receipt.TaxBreakdownJson);
-            if (ht is null || vat is null || ht.Count == 0)
+            if (ht is null || vat is null || ht.Count == 0 || !IsCoherent(receipt, ht, vat))
             {
                 return null;
             }
@@ -426,6 +426,31 @@ public sealed class FecExportService : IFecExportService
         {
             return null;
         }
+    }
+
+    /// <summary>
+    /// La colonne n'est pas signée : on ne la croit que si elle colle au reçu signé. Mêmes taux que la TVA signée, Σ|HT| = |TTC| - Σ|TVA|,
+    /// et, pour chaque taux &gt; 0, HT dans la plage cohérente avec la TVA. Sinon repli par déduction.
+    /// </summary>
+    private static bool IsCoherent(FiscalReceipt receipt, Dictionary<decimal, long> ht, Dictionary<decimal, long> vat)
+    {
+        if (!ht.Keys.ToHashSet().SetEquals(vat.Keys)
+            || ht.Values.Sum(Math.Abs) != Math.Abs(receipt.TotalTtcAmount.AmountInCents) - vat.Values.Sum(Math.Abs))
+        {
+            return false;
+        }
+
+        return ht.All(h =>
+        {
+            if (h.Key <= 0m)
+            {
+                return true;
+            }
+
+            var (lo, hi, _) = FeasibleHt(h.Key, Math.Abs(vat[h.Key]));
+            long abs = Math.Abs(h.Value);
+            return abs >= lo && abs <= hi;
+        });
     }
 
     private static Dictionary<decimal, long>? ParseByRate(string json)

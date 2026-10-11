@@ -400,4 +400,31 @@ public sealed class FecExportServiceTests
         rows.Single(r => r.Account == "706550").Credit.Should().Be(945);
         rows.Single(r => r.Account == "706000").Credit.Should().Be(982);
     }
+
+    [Theory]
+    [InlineData("{\"2.1\":1500,\"5.5\":427}")] // somme conservée, ventilation hors plage faisable
+    [InlineData("{\"2.1\":979,\"5.5\":900}")] // somme fausse
+    [InlineData("{\"2.1\":979,\"10\":948}")] // clés différentes de la TVA signée
+    public async Task IncoherentHtBreakdownJson_FallsBackToTheLegacyDeduction(string htJson)
+    {
+        var rows = await FecRowsAsync(2000, 1927, TwoLowRatesVat, htJson, false, (PaymentMethod.CreditCard, 2000));
+
+        rows.Where(r => r.Account.StartsWith("706", StringComparison.Ordinal)).Sum(r => r.Credit).Should().Be(1927);
+        rows.Single(r => r.Account == "706550").Credit.Should().Be(945);
+        rows.Single(r => r.Account == "706000").Credit.Should().Be(982);
+        ShouldBalancePerEntry(rows);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ReceiptWithoutTenders_SettlesToCashWithAbsoluteAmount(bool isVoid)
+    {
+        var rows = await FecRowsAsync(1100, 1000, "{\"10.0\": " + (isVoid ? "-100" : "100") + "}", isVoid);
+
+        var cash = rows.Single(r => r.Account == "530000");
+        (isVoid ? cash.Credit : cash.Debit).Should().Be(1100);
+        (isVoid ? cash.Debit : cash.Credit).Should().Be(0);
+        ShouldBalancePerEntry(rows);
+    }
 }
