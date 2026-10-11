@@ -117,13 +117,26 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 4000,
+        "discountCents": 0,
+        "totalTtcCents": 4000,
+        "totalHtCents": 3636,
+        "totalVatCents": 364,
+        "groups": [
+          {
+            "rate": "10",
+            "ttcCents": 4000,
+            "baseHtCents": 3636,
+            "vatCents": 364
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 4000,
-              "tenderedCents": 5000
+              "amountCents": 4000
             }
           ],
           "expected": {
@@ -177,13 +190,38 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 4380,
+        "discountCents": 0,
+        "totalTtcCents": 4380,
+        "totalHtCents": 3899,
+        "totalVatCents": 481,
+        "groups": [
+          {
+            "rate": "5.5",
+            "ttcCents": 1350,
+            "baseHtCents": 1280,
+            "vatCents": 70
+          },
+          {
+            "rate": "10",
+            "ttcCents": 1250,
+            "baseHtCents": 1136,
+            "vatCents": 114
+          },
+          {
+            "rate": "20",
+            "ttcCents": 1780,
+            "baseHtCents": 1483,
+            "vatCents": 297
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 4380,
-              "tenderedCents": 4380
+              "amountCents": 4380
             }
           ],
           "expected": {
@@ -214,13 +252,26 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 1000,
+        "discountCents": 0,
+        "totalTtcCents": 1000,
+        "totalHtCents": 948,
+        "totalVatCents": 52,
+        "groups": [
+          {
+            "rate": "5.5",
+            "ttcCents": 1000,
+            "baseHtCents": 948,
+            "vatCents": 52
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 1000,
-              "tenderedCents": 1000
+              "amountCents": 1000
             }
           ],
           "expected": {
@@ -269,13 +320,38 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 3500,
+        "discountCents": 0,
+        "totalTtcCents": 3500,
+        "totalHtCents": 3070,
+        "totalVatCents": 430,
+        "groups": [
+          {
+            "rate": "5.5",
+            "ttcCents": 1000,
+            "baseHtCents": 948,
+            "vatCents": 52
+          },
+          {
+            "rate": "10",
+            "ttcCents": 500,
+            "baseHtCents": 455,
+            "vatCents": 45
+          },
+          {
+            "rate": "20",
+            "ttcCents": 2000,
+            "baseHtCents": 1667,
+            "vatCents": 333
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 3500,
-              "tenderedCents": 3500
+              "amountCents": 3500
             }
           ],
           "expected": {
@@ -315,13 +391,32 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 3000,
+        "discountCents": 300,
+        "totalTtcCents": 2700,
+        "totalHtCents": 2318,
+        "totalVatCents": 382,
+        "groups": [
+          {
+            "rate": "10",
+            "ttcCents": 900,
+            "baseHtCents": 818,
+            "vatCents": 82
+          },
+          {
+            "rate": "20",
+            "ttcCents": 1800,
+            "baseHtCents": 1500,
+            "vatCents": 300
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 2700,
-              "tenderedCents": 2700
+              "amountCents": 2700
             }
           ],
           "expected": {
@@ -370,13 +465,38 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 3777,
+        "discountCents": 1259,
+        "totalTtcCents": 2518,
+        "totalHtCents": 2208,
+        "totalVatCents": 310,
+        "groups": [
+          {
+            "rate": "5.5",
+            "ttcCents": 518,
+            "baseHtCents": 491,
+            "vatCents": 27
+          },
+          {
+            "rate": "10",
+            "ttcCents": 667,
+            "baseHtCents": 606,
+            "vatCents": 61
+          },
+          {
+            "rate": "20",
+            "ttcCents": 1333,
+            "baseHtCents": 1111,
+            "vatCents": 222
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 2518,
-              "tenderedCents": 2518
+              "amountCents": 2518
             }
           ],
           "expected": {
@@ -416,9 +536,34 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 3000,
+        "discountCents": 3000,
+        "totalTtcCents": 0,
+        "totalHtCents": 0,
+        "totalVatCents": 0,
+        "groups": [
+          {
+            "rate": "10",
+            "ttcCents": 0,
+            "baseHtCents": 0,
+            "vatCents": 0
+          },
+          {
+            "rate": "20",
+            "ttcCents": 0,
+            "baseHtCents": 0,
+            "vatCents": 0
+          }
+        ]
+      },
       "payments": [
         {
-          "tenders": [],
+          "tenders": [
+            {
+              "amountCents": 0
+            }
+          ],
           "expected": {
             "totalTtcCents": 0,
             "totalHtCents": 0,
@@ -456,13 +601,32 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 3000,
+        "discountCents": 300,
+        "totalTtcCents": 2700,
+        "totalHtCents": 2318,
+        "totalVatCents": 382,
+        "groups": [
+          {
+            "rate": "10",
+            "ttcCents": 900,
+            "baseHtCents": 818,
+            "vatCents": 82
+          },
+          {
+            "rate": "20",
+            "ttcCents": 1800,
+            "baseHtCents": 1500,
+            "vatCents": 300
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 2700,
-              "tenderedCents": 3000
+              "amountCents": 2700
             }
           ],
           "expected": {
@@ -493,9 +657,28 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 1000,
+        "discountCents": 1000,
+        "totalTtcCents": 0,
+        "totalHtCents": 0,
+        "totalVatCents": 0,
+        "groups": [
+          {
+            "rate": "10",
+            "ttcCents": 0,
+            "baseHtCents": 0,
+            "vatCents": 0
+          }
+        ]
+      },
       "payments": [
         {
-          "tenders": [],
+          "tenders": [
+            {
+              "amountCents": 0
+            }
+          ],
           "expected": {
             "totalTtcCents": 0,
             "totalHtCents": 0,
@@ -524,9 +707,28 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 1000,
+        "discountCents": 1000,
+        "totalTtcCents": 0,
+        "totalHtCents": 0,
+        "totalVatCents": 0,
+        "groups": [
+          {
+            "rate": "10",
+            "ttcCents": 0,
+            "baseHtCents": 0,
+            "vatCents": 0
+          }
+        ]
+      },
       "payments": [
         {
-          "tenders": [],
+          "tenders": [
+            {
+              "amountCents": 0
+            }
+          ],
           "expected": {
             "totalTtcCents": 0,
             "totalHtCents": 0,
@@ -564,13 +766,32 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 3030,
+        "discountCents": 0,
+        "totalTtcCents": 3030,
+        "totalHtCents": 2619,
+        "totalVatCents": 411,
+        "groups": [
+          {
+            "rate": "10",
+            "ttcCents": 1250,
+            "baseHtCents": 1136,
+            "vatCents": 114
+          },
+          {
+            "rate": "20",
+            "ttcCents": 1780,
+            "baseHtCents": 1483,
+            "vatCents": 297
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 1000,
-              "tenderedCents": 1000
+              "amountCents": 1000
             }
           ],
           "expected": {
@@ -584,9 +805,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 2030,
-              "tenderedCents": 2530
+              "amountCents": 2030
             }
           ],
           "expected": {
@@ -640,13 +859,38 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 2001,
+        "discountCents": 0,
+        "totalTtcCents": 2001,
+        "totalHtCents": 1743,
+        "totalVatCents": 258,
+        "groups": [
+          {
+            "rate": "5.5",
+            "ttcCents": 1,
+            "baseHtCents": 1,
+            "vatCents": 0
+          },
+          {
+            "rate": "10",
+            "ttcCents": 1000,
+            "baseHtCents": 909,
+            "vatCents": 91
+          },
+          {
+            "rate": "20",
+            "ttcCents": 1000,
+            "baseHtCents": 833,
+            "vatCents": 167
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 668,
-              "tenderedCents": 668
+              "amountCents": 668
             }
           ],
           "expected": {
@@ -660,9 +904,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 667,
-              "tenderedCents": 667
+              "amountCents": 667
             }
           ],
           "expected": {
@@ -676,9 +918,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 666,
-              "tenderedCents": 666
+              "amountCents": 666
             }
           ],
           "expected": {
@@ -732,13 +972,38 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 2999,
+        "discountCents": 1000,
+        "totalTtcCents": 1999,
+        "totalHtCents": 1742,
+        "totalVatCents": 257,
+        "groups": [
+          {
+            "rate": "0",
+            "ttcCents": 1,
+            "baseHtCents": 1,
+            "vatCents": 0
+          },
+          {
+            "rate": "5.5",
+            "ttcCents": 666,
+            "baseHtCents": 631,
+            "vatCents": 35
+          },
+          {
+            "rate": "20",
+            "ttcCents": 1332,
+            "baseHtCents": 1110,
+            "vatCents": 222
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 400,
-              "tenderedCents": 400
+              "amountCents": 400
             }
           ],
           "expected": {
@@ -752,9 +1017,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 400,
-              "tenderedCents": 400
+              "amountCents": 400
             }
           ],
           "expected": {
@@ -768,9 +1031,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 400,
-              "tenderedCents": 400
+              "amountCents": 400
             }
           ],
           "expected": {
@@ -784,9 +1045,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 400,
-              "tenderedCents": 400
+              "amountCents": 400
             }
           ],
           "expected": {
@@ -800,9 +1059,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 399,
-              "tenderedCents": 399
+              "amountCents": 399
             }
           ],
           "expected": {
@@ -833,13 +1090,26 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 1250,
+        "discountCents": 0,
+        "totalTtcCents": 1250,
+        "totalHtCents": 1136,
+        "totalVatCents": 114,
+        "groups": [
+          {
+            "rate": "10",
+            "ttcCents": 1250,
+            "baseHtCents": 1136,
+            "vatCents": 114
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 1450,
-              "tenderedCents": 2200
+              "amountCents": 1450
             }
           ],
           "expected": {
@@ -879,13 +1149,32 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 3250,
+        "discountCents": 0,
+        "totalTtcCents": 3250,
+        "totalHtCents": 2803,
+        "totalVatCents": 447,
+        "groups": [
+          {
+            "rate": "10",
+            "ttcCents": 1250,
+            "baseHtCents": 1136,
+            "vatCents": 114
+          },
+          {
+            "rate": "20",
+            "ttcCents": 2000,
+            "baseHtCents": 1667,
+            "vatCents": 333
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 1000,
-              "tenderedCents": 1000
+              "amountCents": 1000
             }
           ],
           "expected": {
@@ -899,9 +1188,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 2600,
-              "tenderedCents": 2600
+              "amountCents": 2600
             }
           ],
           "expected": {
@@ -955,13 +1242,32 @@
           "modifiersExtraCents": 50
         }
       ],
+      "order": {
+        "subtotalCents": 2150,
+        "discountCents": 0,
+        "totalTtcCents": 2150,
+        "totalHtCents": 1928,
+        "totalVatCents": 222,
+        "groups": [
+          {
+            "rate": "10",
+            "ttcCents": 1800,
+            "baseHtCents": 1636,
+            "vatCents": 164
+          },
+          {
+            "rate": "20",
+            "ttcCents": 350,
+            "baseHtCents": 292,
+            "vatCents": 58
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 2150,
-              "tenderedCents": 2150
+              "amountCents": 2150
             }
           ],
           "expected": {
@@ -992,9 +1298,28 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 0,
+        "discountCents": 0,
+        "totalTtcCents": 0,
+        "totalHtCents": 0,
+        "totalVatCents": 0,
+        "groups": [
+          {
+            "rate": "10",
+            "ttcCents": 0,
+            "baseHtCents": 0,
+            "vatCents": 0
+          }
+        ]
+      },
       "payments": [
         {
-          "tenders": [],
+          "tenders": [
+            {
+              "amountCents": 0
+            }
+          ],
           "expected": {
             "totalTtcCents": 0,
             "totalHtCents": 0,
@@ -1023,13 +1348,26 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 1,
+        "discountCents": 0,
+        "totalTtcCents": 1,
+        "totalHtCents": 1,
+        "totalVatCents": 0,
+        "groups": [
+          {
+            "rate": "20",
+            "ttcCents": 1,
+            "baseHtCents": 1,
+            "vatCents": 0
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 1,
-              "tenderedCents": 1
+              "amountCents": 1
             }
           ],
           "expected": {
@@ -1096,13 +1434,50 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 1665,
+        "discountCents": 7,
+        "totalTtcCents": 1658,
+        "totalHtCents": 1549,
+        "totalVatCents": 109,
+        "groups": [
+          {
+            "rate": "0",
+            "ttcCents": 332,
+            "baseHtCents": 332,
+            "vatCents": 0
+          },
+          {
+            "rate": "2.1",
+            "ttcCents": 332,
+            "baseHtCents": 325,
+            "vatCents": 7
+          },
+          {
+            "rate": "5.5",
+            "ttcCents": 332,
+            "baseHtCents": 315,
+            "vatCents": 17
+          },
+          {
+            "rate": "10",
+            "ttcCents": 331,
+            "baseHtCents": 301,
+            "vatCents": 30
+          },
+          {
+            "rate": "20",
+            "ttcCents": 331,
+            "baseHtCents": 276,
+            "vatCents": 55
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 1658,
-              "tenderedCents": 1658
+              "amountCents": 1658
             }
           ],
           "expected": {
@@ -1142,13 +1517,32 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 152222207,
+        "discountCents": 0,
+        "totalTtcCents": 152222207,
+        "totalHtCents": 133670021,
+        "totalVatCents": 18552186,
+        "groups": [
+          {
+            "rate": "10",
+            "ttcCents": 89999991,
+            "baseHtCents": 81818174,
+            "vatCents": 8181817
+          },
+          {
+            "rate": "20",
+            "ttcCents": 62222216,
+            "baseHtCents": 51851847,
+            "vatCents": 10370369
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 152222207,
-              "tenderedCents": 152222207
+              "amountCents": 152222207
             }
           ],
           "expected": {
@@ -1215,13 +1609,44 @@
           "modifiersExtraCents": 113
         }
       ],
+      "order": {
+        "subtotalCents": 15594,
+        "discountCents": 5197,
+        "totalTtcCents": 10397,
+        "totalHtCents": 10079,
+        "totalVatCents": 318,
+        "groups": [
+          {
+            "rate": "0",
+            "ttcCents": 3367,
+            "baseHtCents": 3367,
+            "vatCents": 0
+          },
+          {
+            "rate": "2.1",
+            "ttcCents": 3928,
+            "baseHtCents": 3847,
+            "vatCents": 81
+          },
+          {
+            "rate": "5.5",
+            "ttcCents": 1155,
+            "baseHtCents": 1095,
+            "vatCents": 60
+          },
+          {
+            "rate": "10",
+            "ttcCents": 1947,
+            "baseHtCents": 1770,
+            "vatCents": 177
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 2777,
-              "tenderedCents": 3415
+              "amountCents": 2777
             }
           ],
           "expected": {
@@ -1235,9 +1660,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 1977,
-              "tenderedCents": 1977
+              "amountCents": 1977
             }
           ],
           "expected": {
@@ -1251,9 +1674,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 572,
-              "tenderedCents": 1091
+              "amountCents": 572
             }
           ],
           "expected": {
@@ -1267,9 +1688,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 3670,
-              "tenderedCents": 3670
+              "amountCents": 3670
             }
           ],
           "expected": {
@@ -1283,9 +1702,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 1401,
-              "tenderedCents": 2145
+              "amountCents": 1401
             }
           ],
           "expected": {
@@ -1361,13 +1778,44 @@
           "modifiersExtraCents": 109
         }
       ],
+      "order": {
+        "subtotalCents": 37080,
+        "discountCents": 3708,
+        "totalTtcCents": 33372,
+        "totalHtCents": 31505,
+        "totalVatCents": 1867,
+        "groups": [
+          {
+            "rate": "0",
+            "ttcCents": 0,
+            "baseHtCents": 0,
+            "vatCents": 0
+          },
+          {
+            "rate": "2.1",
+            "ttcCents": 0,
+            "baseHtCents": 0,
+            "vatCents": 0
+          },
+          {
+            "rate": "5.5",
+            "ttcCents": 32261,
+            "baseHtCents": 30579,
+            "vatCents": 1682
+          },
+          {
+            "rate": "20",
+            "ttcCents": 1111,
+            "baseHtCents": 926,
+            "vatCents": 185
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 33372,
-              "tenderedCents": 33872
+              "amountCents": 33372
             }
           ],
           "expected": {
@@ -1434,13 +1882,38 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 20381,
+        "discountCents": 0,
+        "totalTtcCents": 20381,
+        "totalHtCents": 18731,
+        "totalVatCents": 1650,
+        "groups": [
+          {
+            "rate": "5.5",
+            "ttcCents": 9921,
+            "baseHtCents": 9404,
+            "vatCents": 517
+          },
+          {
+            "rate": "10",
+            "ttcCents": 8058,
+            "baseHtCents": 7325,
+            "vatCents": 733
+          },
+          {
+            "rate": "20",
+            "ttcCents": 2402,
+            "baseHtCents": 2002,
+            "vatCents": 400
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 3337,
-              "tenderedCents": 4119
+              "amountCents": 3337
             }
           ],
           "expected": {
@@ -1454,9 +1927,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 311,
-              "tenderedCents": 311
+              "amountCents": 311
             }
           ],
           "expected": {
@@ -1470,9 +1941,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 2449,
-              "tenderedCents": 2500
+              "amountCents": 2449
             }
           ],
           "expected": {
@@ -1486,9 +1955,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 9256,
-              "tenderedCents": 9256
+              "amountCents": 9256
             }
           ],
           "expected": {
@@ -1502,9 +1969,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 5028,
-              "tenderedCents": 5182
+              "amountCents": 5028
             }
           ],
           "expected": {
@@ -1549,13 +2014,32 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 21518,
+        "discountCents": 7302,
+        "totalTtcCents": 14216,
+        "totalHtCents": 14001,
+        "totalVatCents": 215,
+        "groups": [
+          {
+            "rate": "0",
+            "ttcCents": 3758,
+            "baseHtCents": 3758,
+            "vatCents": 0
+          },
+          {
+            "rate": "2.1",
+            "ttcCents": 10458,
+            "baseHtCents": 10243,
+            "vatCents": 215
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 14216,
-              "tenderedCents": 14328
+              "amountCents": 14216
             }
           ],
           "expected": {
@@ -1613,13 +2097,38 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 17310,
+        "discountCents": 0,
+        "totalTtcCents": 17310,
+        "totalHtCents": 14913,
+        "totalVatCents": 2397,
+        "groups": [
+          {
+            "rate": "0",
+            "ttcCents": 570,
+            "baseHtCents": 570,
+            "vatCents": 0
+          },
+          {
+            "rate": "10",
+            "ttcCents": 5184,
+            "baseHtCents": 4713,
+            "vatCents": 471
+          },
+          {
+            "rate": "20",
+            "ttcCents": 11556,
+            "baseHtCents": 9630,
+            "vatCents": 1926
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 14179,
-              "tenderedCents": 14708
+              "amountCents": 14179
             }
           ],
           "expected": {
@@ -1633,9 +2142,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 3131,
-              "tenderedCents": 3131
+              "amountCents": 3131
             }
           ],
           "expected": {
@@ -1707,13 +2214,38 @@
           "modifiersExtraCents": 206
         }
       ],
+      "order": {
+        "subtotalCents": 28330,
+        "discountCents": 9442,
+        "totalTtcCents": 18888,
+        "totalHtCents": 18396,
+        "totalVatCents": 492,
+        "groups": [
+          {
+            "rate": "0",
+            "ttcCents": 4580,
+            "baseHtCents": 4580,
+            "vatCents": 0
+          },
+          {
+            "rate": "2.1",
+            "ttcCents": 8059,
+            "baseHtCents": 7893,
+            "vatCents": 166
+          },
+          {
+            "rate": "5.5",
+            "ttcCents": 6249,
+            "baseHtCents": 5923,
+            "vatCents": 326
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 19381,
-              "tenderedCents": 19549
+              "amountCents": 19381
             }
           ],
           "expected": {
@@ -1753,13 +2285,26 @@
           "modifiersExtraCents": 280
         }
       ],
+      "order": {
+        "subtotalCents": 17534,
+        "discountCents": 0,
+        "totalTtcCents": 17534,
+        "totalHtCents": 14612,
+        "totalVatCents": 2922,
+        "groups": [
+          {
+            "rate": "20",
+            "ttcCents": 17534,
+            "baseHtCents": 14612,
+            "vatCents": 2922
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 1609,
-              "tenderedCents": 1636
+              "amountCents": 1609
             }
           ],
           "expected": {
@@ -1773,9 +2318,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 913,
-              "tenderedCents": 913
+              "amountCents": 913
             }
           ],
           "expected": {
@@ -1789,9 +2332,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 15320,
-              "tenderedCents": 15594
+              "amountCents": 15320
             }
           ],
           "expected": {
@@ -1863,13 +2404,38 @@
           "modifiersExtraCents": 40
         }
       ],
+      "order": {
+        "subtotalCents": 10074,
+        "discountCents": 3358,
+        "totalTtcCents": 6716,
+        "totalHtCents": 5919,
+        "totalVatCents": 797,
+        "groups": [
+          {
+            "rate": "0",
+            "ttcCents": 0,
+            "baseHtCents": 0,
+            "vatCents": 0
+          },
+          {
+            "rate": "10",
+            "ttcCents": 4251,
+            "baseHtCents": 3865,
+            "vatCents": 386
+          },
+          {
+            "rate": "20",
+            "ttcCents": 2465,
+            "baseHtCents": 2054,
+            "vatCents": 411
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 2255,
-              "tenderedCents": 2472
+              "amountCents": 2255
             }
           ],
           "expected": {
@@ -1883,9 +2449,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 4461,
-              "tenderedCents": 4461
+              "amountCents": 4461
             }
           ],
           "expected": {
@@ -1925,13 +2489,26 @@
           "modifiersExtraCents": 42
         }
       ],
+      "order": {
+        "subtotalCents": 19920,
+        "discountCents": 0,
+        "totalTtcCents": 19920,
+        "totalHtCents": 18882,
+        "totalVatCents": 1038,
+        "groups": [
+          {
+            "rate": "5.5",
+            "ttcCents": 19920,
+            "baseHtCents": 18882,
+            "vatCents": 1038
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 19920,
-              "tenderedCents": 20493
+              "amountCents": 19920
             }
           ],
           "expected": {
@@ -1962,13 +2539,26 @@
           "modifiersExtraCents": 101
         }
       ],
+      "order": {
+        "subtotalCents": 9980,
+        "discountCents": 9980,
+        "totalTtcCents": 0,
+        "totalHtCents": 0,
+        "totalVatCents": 0,
+        "groups": [
+          {
+            "rate": "0",
+            "ttcCents": 0,
+            "baseHtCents": 0,
+            "vatCents": 0
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 306,
-              "tenderedCents": 662
+              "amountCents": 306
             }
           ],
           "expected": {
@@ -2035,13 +2625,38 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 32239,
+        "discountCents": 0,
+        "totalTtcCents": 32239,
+        "totalHtCents": 30840,
+        "totalVatCents": 1399,
+        "groups": [
+          {
+            "rate": "2.1",
+            "ttcCents": 23533,
+            "baseHtCents": 23049,
+            "vatCents": 484
+          },
+          {
+            "rate": "5.5",
+            "ttcCents": 4680,
+            "baseHtCents": 4436,
+            "vatCents": 244
+          },
+          {
+            "rate": "20",
+            "ttcCents": 4026,
+            "baseHtCents": 3355,
+            "vatCents": 671
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 1411,
-              "tenderedCents": 1769
+              "amountCents": 1411
             }
           ],
           "expected": {
@@ -2055,9 +2670,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 4399,
-              "tenderedCents": 4399
+              "amountCents": 4399
             }
           ],
           "expected": {
@@ -2071,9 +2684,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 11179,
-              "tenderedCents": 11949
+              "amountCents": 11179
             }
           ],
           "expected": {
@@ -2087,9 +2698,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 9432,
-              "tenderedCents": 9432
+              "amountCents": 9432
             }
           ],
           "expected": {
@@ -2103,9 +2712,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 5818,
-              "tenderedCents": 6586
+              "amountCents": 5818
             }
           ],
           "expected": {
@@ -2154,13 +2761,32 @@
           "modifiersExtraCents": 20
         }
       ],
+      "order": {
+        "subtotalCents": 15429,
+        "discountCents": 0,
+        "totalTtcCents": 15429,
+        "totalHtCents": 14118,
+        "totalVatCents": 1311,
+        "groups": [
+          {
+            "rate": "0",
+            "ttcCents": 1008,
+            "baseHtCents": 1008,
+            "vatCents": 0
+          },
+          {
+            "rate": "10",
+            "ttcCents": 14421,
+            "baseHtCents": 13110,
+            "vatCents": 1311
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 1063,
-              "tenderedCents": 1806
+              "amountCents": 1063
             }
           ],
           "expected": {
@@ -2174,9 +2800,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 158,
-              "tenderedCents": 158
+              "amountCents": 158
             }
           ],
           "expected": {
@@ -2190,9 +2814,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 12205,
-              "tenderedCents": 12618
+              "amountCents": 12205
             }
           ],
           "expected": {
@@ -2206,9 +2828,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 1602,
-              "tenderedCents": 1602
+              "amountCents": 1602
             }
           ],
           "expected": {
@@ -2222,9 +2842,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 401,
-              "tenderedCents": 1119
+              "amountCents": 401
             }
           ],
           "expected": {
@@ -2260,13 +2878,26 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 4354,
+        "discountCents": 0,
+        "totalTtcCents": 4354,
+        "totalHtCents": 4354,
+        "totalVatCents": 0,
+        "groups": [
+          {
+            "rate": "0",
+            "ttcCents": 4354,
+            "baseHtCents": 4354,
+            "vatCents": 0
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 4712,
-              "tenderedCents": 5481
+              "amountCents": 4712
             }
           ],
           "expected": {
@@ -2324,13 +2955,32 @@
           "modifiersExtraCents": 95
         }
       ],
+      "order": {
+        "subtotalCents": 19515,
+        "discountCents": 6558,
+        "totalTtcCents": 12957,
+        "totalHtCents": 12583,
+        "totalVatCents": 374,
+        "groups": [
+          {
+            "rate": "2.1",
+            "ttcCents": 9548,
+            "baseHtCents": 9352,
+            "vatCents": 196
+          },
+          {
+            "rate": "5.5",
+            "ttcCents": 3409,
+            "baseHtCents": 3231,
+            "vatCents": 178
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 873,
-              "tenderedCents": 1391
+              "amountCents": 873
             }
           ],
           "expected": {
@@ -2344,9 +2994,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 5567,
-              "tenderedCents": 5567
+              "amountCents": 5567
             }
           ],
           "expected": {
@@ -2360,9 +3008,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 2920,
-              "tenderedCents": 3312
+              "amountCents": 2920
             }
           ],
           "expected": {
@@ -2376,9 +3022,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 2503,
-              "tenderedCents": 2503
+              "amountCents": 2503
             }
           ],
           "expected": {
@@ -2392,9 +3036,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 1094,
-              "tenderedCents": 1105
+              "amountCents": 1094
             }
           ],
           "expected": {
@@ -2475,13 +3117,44 @@
           "modifiersExtraCents": 99
         }
       ],
+      "order": {
+        "subtotalCents": 30529,
+        "discountCents": 1526,
+        "totalTtcCents": 29003,
+        "totalHtCents": 25876,
+        "totalVatCents": 3127,
+        "groups": [
+          {
+            "rate": "0",
+            "ttcCents": 1835,
+            "baseHtCents": 1835,
+            "vatCents": 0
+          },
+          {
+            "rate": "2.1",
+            "ttcCents": 5250,
+            "baseHtCents": 5142,
+            "vatCents": 108
+          },
+          {
+            "rate": "5.5",
+            "ttcCents": 5535,
+            "baseHtCents": 5246,
+            "vatCents": 289
+          },
+          {
+            "rate": "20",
+            "ttcCents": 16383,
+            "baseHtCents": 13653,
+            "vatCents": 2730
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 29003,
-              "tenderedCents": 29071
+              "amountCents": 29003
             }
           ],
           "expected": {
@@ -2557,13 +3230,32 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 31983,
+        "discountCents": 596,
+        "totalTtcCents": 31387,
+        "totalHtCents": 29814,
+        "totalVatCents": 1573,
+        "groups": [
+          {
+            "rate": "0",
+            "ttcCents": 1208,
+            "baseHtCents": 1208,
+            "vatCents": 0
+          },
+          {
+            "rate": "5.5",
+            "ttcCents": 30179,
+            "baseHtCents": 28606,
+            "vatCents": 1573
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 9311,
-              "tenderedCents": 9644
+              "amountCents": 9311
             }
           ],
           "expected": {
@@ -2577,9 +3269,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 19309,
-              "tenderedCents": 19309
+              "amountCents": 19309
             }
           ],
           "expected": {
@@ -2593,9 +3283,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 3189,
-              "tenderedCents": 3266
+              "amountCents": 3189
             }
           ],
           "expected": {
@@ -2662,13 +3350,38 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 12642,
+        "discountCents": 1264,
+        "totalTtcCents": 11378,
+        "totalHtCents": 9743,
+        "totalVatCents": 1635,
+        "groups": [
+          {
+            "rate": "0",
+            "ttcCents": 0,
+            "baseHtCents": 0,
+            "vatCents": 0
+          },
+          {
+            "rate": "5.5",
+            "ttcCents": 2273,
+            "baseHtCents": 2155,
+            "vatCents": 118
+          },
+          {
+            "rate": "20",
+            "ttcCents": 9105,
+            "baseHtCents": 7588,
+            "vatCents": 1517
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 11378,
-              "tenderedCents": 12170
+              "amountCents": 11378
             }
           ],
           "expected": {
@@ -2708,13 +3421,32 @@
           "modifiersExtraCents": 202
         }
       ],
+      "order": {
+        "subtotalCents": 8742,
+        "discountCents": 4371,
+        "totalTtcCents": 4371,
+        "totalHtCents": 3899,
+        "totalVatCents": 472,
+        "groups": [
+          {
+            "rate": "0",
+            "ttcCents": 1541,
+            "baseHtCents": 1541,
+            "vatCents": 0
+          },
+          {
+            "rate": "20",
+            "ttcCents": 2830,
+            "baseHtCents": 2358,
+            "vatCents": 472
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 4371,
-              "tenderedCents": 4529
+              "amountCents": 4371
             }
           ],
           "expected": {
@@ -2772,13 +3504,38 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 15892,
+        "discountCents": 7856,
+        "totalTtcCents": 8036,
+        "totalHtCents": 7756,
+        "totalVatCents": 280,
+        "groups": [
+          {
+            "rate": "0",
+            "ttcCents": 1221,
+            "baseHtCents": 1221,
+            "vatCents": 0
+          },
+          {
+            "rate": "2.1",
+            "ttcCents": 2356,
+            "baseHtCents": 2308,
+            "vatCents": 48
+          },
+          {
+            "rate": "5.5",
+            "ttcCents": 4459,
+            "baseHtCents": 4227,
+            "vatCents": 232
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 934,
-              "tenderedCents": 978
+              "amountCents": 934
             }
           ],
           "expected": {
@@ -2792,9 +3549,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 481,
-              "tenderedCents": 481
+              "amountCents": 481
             }
           ],
           "expected": {
@@ -2808,9 +3563,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 2854,
-              "tenderedCents": 3244
+              "amountCents": 2854
             }
           ],
           "expected": {
@@ -2824,9 +3577,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 3746,
-              "tenderedCents": 3746
+              "amountCents": 3746
             }
           ],
           "expected": {
@@ -2840,9 +3591,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 21,
-              "tenderedCents": 503
+              "amountCents": 21
             }
           ],
           "expected": {
@@ -2887,13 +3636,32 @@
           "modifiersExtraCents": 165
         }
       ],
+      "order": {
+        "subtotalCents": 22581,
+        "discountCents": 0,
+        "totalTtcCents": 22581,
+        "totalHtCents": 21183,
+        "totalVatCents": 1398,
+        "groups": [
+          {
+            "rate": "2.1",
+            "ttcCents": 9317,
+            "baseHtCents": 9125,
+            "vatCents": 192
+          },
+          {
+            "rate": "10",
+            "ttcCents": 13264,
+            "baseHtCents": 12058,
+            "vatCents": 1206
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 22986,
-              "tenderedCents": 23514
+              "amountCents": 22986
             }
           ],
           "expected": {
@@ -2942,13 +3710,32 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 8259,
+        "discountCents": 0,
+        "totalTtcCents": 8259,
+        "totalHtCents": 7639,
+        "totalVatCents": 620,
+        "groups": [
+          {
+            "rate": "2.1",
+            "ttcCents": 1860,
+            "baseHtCents": 1822,
+            "vatCents": 38
+          },
+          {
+            "rate": "10",
+            "ttcCents": 6399,
+            "baseHtCents": 5817,
+            "vatCents": 582
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 2106,
-              "tenderedCents": 2468
+              "amountCents": 2106
             }
           ],
           "expected": {
@@ -2962,9 +3749,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 2448,
-              "tenderedCents": 2448
+              "amountCents": 2448
             }
           ],
           "expected": {
@@ -2978,9 +3763,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 2157,
-              "tenderedCents": 2383
+              "amountCents": 2157
             }
           ],
           "expected": {
@@ -2994,9 +3777,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 394,
-              "tenderedCents": 394
+              "amountCents": 394
             }
           ],
           "expected": {
@@ -3010,9 +3791,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 1200,
-              "tenderedCents": 1914
+              "amountCents": 1200
             }
           ],
           "expected": {
@@ -3048,13 +3827,26 @@
           "modifiersExtraCents": 16
         }
       ],
+      "order": {
+        "subtotalCents": 9902,
+        "discountCents": 4951,
+        "totalTtcCents": 4951,
+        "totalHtCents": 4849,
+        "totalVatCents": 102,
+        "groups": [
+          {
+            "rate": "2.1",
+            "ttcCents": 4951,
+            "baseHtCents": 4849,
+            "vatCents": 102
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 4951,
-              "tenderedCents": 5739
+              "amountCents": 4951
             }
           ],
           "expected": {
@@ -3130,13 +3922,50 @@
           "modifiersExtraCents": 127
         }
       ],
+      "order": {
+        "subtotalCents": 22917,
+        "discountCents": 0,
+        "totalTtcCents": 22917,
+        "totalHtCents": 22018,
+        "totalVatCents": 899,
+        "groups": [
+          {
+            "rate": "0",
+            "ttcCents": 10440,
+            "baseHtCents": 10440,
+            "vatCents": 0
+          },
+          {
+            "rate": "2.1",
+            "ttcCents": 2992,
+            "baseHtCents": 2930,
+            "vatCents": 62
+          },
+          {
+            "rate": "5.5",
+            "ttcCents": 2757,
+            "baseHtCents": 2613,
+            "vatCents": 144
+          },
+          {
+            "rate": "10",
+            "ttcCents": 5648,
+            "baseHtCents": 5135,
+            "vatCents": 513
+          },
+          {
+            "rate": "20",
+            "ttcCents": 1080,
+            "baseHtCents": 900,
+            "vatCents": 180
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 7244,
-              "tenderedCents": 7568
+              "amountCents": 7244
             }
           ],
           "expected": {
@@ -3150,9 +3979,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 8181,
-              "tenderedCents": 8181
+              "amountCents": 8181
             }
           ],
           "expected": {
@@ -3166,9 +3993,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 7492,
-              "tenderedCents": 8233
+              "amountCents": 7492
             }
           ],
           "expected": {
@@ -3226,13 +4051,32 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 8510,
+        "discountCents": 6814,
+        "totalTtcCents": 1696,
+        "totalHtCents": 1661,
+        "totalVatCents": 35,
+        "groups": [
+          {
+            "rate": "2.1",
+            "ttcCents": 1696,
+            "baseHtCents": 1661,
+            "vatCents": 35
+          },
+          {
+            "rate": "10",
+            "ttcCents": 0,
+            "baseHtCents": 0,
+            "vatCents": 0
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 1696,
-              "tenderedCents": 2234
+              "amountCents": 1696
             }
           ],
           "expected": {
@@ -3304,13 +4148,44 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 22430,
+        "discountCents": 2626,
+        "totalTtcCents": 19804,
+        "totalHtCents": 19061,
+        "totalVatCents": 743,
+        "groups": [
+          {
+            "rate": "0",
+            "ttcCents": 0,
+            "baseHtCents": 0,
+            "vatCents": 0
+          },
+          {
+            "rate": "2.1",
+            "ttcCents": 9158,
+            "baseHtCents": 8970,
+            "vatCents": 188
+          },
+          {
+            "rate": "5.5",
+            "ttcCents": 10646,
+            "baseHtCents": 10091,
+            "vatCents": 555
+          },
+          {
+            "rate": "20",
+            "ttcCents": 0,
+            "baseHtCents": 0,
+            "vatCents": 0
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 19959,
-              "tenderedCents": 20557
+              "amountCents": 19959
             }
           ],
           "expected": {
@@ -3386,13 +4261,44 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 23658,
+        "discountCents": 11829,
+        "totalTtcCents": 11829,
+        "totalHtCents": 11464,
+        "totalVatCents": 365,
+        "groups": [
+          {
+            "rate": "0",
+            "ttcCents": 4355,
+            "baseHtCents": 4355,
+            "vatCents": 0
+          },
+          {
+            "rate": "2.1",
+            "ttcCents": 4104,
+            "baseHtCents": 4020,
+            "vatCents": 84
+          },
+          {
+            "rate": "5.5",
+            "ttcCents": 649,
+            "baseHtCents": 615,
+            "vatCents": 34
+          },
+          {
+            "rate": "10",
+            "ttcCents": 2721,
+            "baseHtCents": 2474,
+            "vatCents": 247
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 286,
-              "tenderedCents": 739
+              "amountCents": 286
             }
           ],
           "expected": {
@@ -3406,9 +4312,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 7306,
-              "tenderedCents": 7306
+              "amountCents": 7306
             }
           ],
           "expected": {
@@ -3422,9 +4326,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 2630,
-              "tenderedCents": 2884
+              "amountCents": 2630
             }
           ],
           "expected": {
@@ -3438,9 +4340,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 792,
-              "tenderedCents": 792
+              "amountCents": 792
             }
           ],
           "expected": {
@@ -3454,9 +4354,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 951,
-              "tenderedCents": 1665
+              "amountCents": 951
             }
           ],
           "expected": {
@@ -3505,13 +4403,32 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 5594,
+        "discountCents": 2797,
+        "totalTtcCents": 2797,
+        "totalHtCents": 2739,
+        "totalVatCents": 58,
+        "groups": [
+          {
+            "rate": "2.1",
+            "ttcCents": 2797,
+            "baseHtCents": 2739,
+            "vatCents": 58
+          },
+          {
+            "rate": "20",
+            "ttcCents": 0,
+            "baseHtCents": 0,
+            "vatCents": 0
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 2147,
-              "tenderedCents": 2452
+              "amountCents": 2147
             }
           ],
           "expected": {
@@ -3525,9 +4442,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 351,
-              "tenderedCents": 351
+              "amountCents": 351
             }
           ],
           "expected": {
@@ -3541,9 +4456,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 299,
-              "tenderedCents": 509
+              "amountCents": 299
             }
           ],
           "expected": {
@@ -3574,13 +4487,26 @@
           "modifiersExtraCents": 49
         }
       ],
+      "order": {
+        "subtotalCents": 8809,
+        "discountCents": 4404,
+        "totalTtcCents": 4405,
+        "totalHtCents": 3671,
+        "totalVatCents": 734,
+        "groups": [
+          {
+            "rate": "20",
+            "ttcCents": 4405,
+            "baseHtCents": 3671,
+            "vatCents": 734
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 4405,
-              "tenderedCents": 4547
+              "amountCents": 4405
             }
           ],
           "expected": {
@@ -3647,13 +4573,38 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 23456,
+        "discountCents": 11728,
+        "totalTtcCents": 11728,
+        "totalHtCents": 11056,
+        "totalVatCents": 672,
+        "groups": [
+          {
+            "rate": "2.1",
+            "ttcCents": 8773,
+            "baseHtCents": 8593,
+            "vatCents": 180
+          },
+          {
+            "rate": "5.5",
+            "ttcCents": 0,
+            "baseHtCents": 0,
+            "vatCents": 0
+          },
+          {
+            "rate": "20",
+            "ttcCents": 2955,
+            "baseHtCents": 2463,
+            "vatCents": 492
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 449,
-              "tenderedCents": 499
+              "amountCents": 449
             }
           ],
           "expected": {
@@ -3667,9 +4618,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 5414,
-              "tenderedCents": 5414
+              "amountCents": 5414
             }
           ],
           "expected": {
@@ -3683,9 +4632,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 1577,
-              "tenderedCents": 1667
+              "amountCents": 1577
             }
           ],
           "expected": {
@@ -3699,9 +4646,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 2238,
-              "tenderedCents": 2238
+              "amountCents": 2238
             }
           ],
           "expected": {
@@ -3715,9 +4660,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 2050,
-              "tenderedCents": 2581
+              "amountCents": 2050
             }
           ],
           "expected": {
@@ -3766,13 +4709,32 @@
           "modifiersExtraCents": 26
         }
       ],
+      "order": {
+        "subtotalCents": 27144,
+        "discountCents": 0,
+        "totalTtcCents": 27144,
+        "totalHtCents": 24825,
+        "totalVatCents": 2319,
+        "groups": [
+          {
+            "rate": "0",
+            "ttcCents": 13228,
+            "baseHtCents": 13228,
+            "vatCents": 0
+          },
+          {
+            "rate": "20",
+            "ttcCents": 13916,
+            "baseHtCents": 11597,
+            "vatCents": 2319
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 27557,
-              "tenderedCents": 28139
+              "amountCents": 27557
             }
           ],
           "expected": {
@@ -3803,13 +4765,26 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 18235,
+        "discountCents": 7478,
+        "totalTtcCents": 10757,
+        "totalHtCents": 8964,
+        "totalVatCents": 1793,
+        "groups": [
+          {
+            "rate": "20",
+            "ttcCents": 10757,
+            "baseHtCents": 8964,
+            "vatCents": 1793
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 1299,
-              "tenderedCents": 2025
+              "amountCents": 1299
             }
           ],
           "expected": {
@@ -3823,9 +4798,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 522,
-              "tenderedCents": 522
+              "amountCents": 522
             }
           ],
           "expected": {
@@ -3839,9 +4812,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 1488,
-              "tenderedCents": 1902
+              "amountCents": 1488
             }
           ],
           "expected": {
@@ -3855,9 +4826,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 4550,
-              "tenderedCents": 4550
+              "amountCents": 4550
             }
           ],
           "expected": {
@@ -3871,9 +4840,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 2898,
-              "tenderedCents": 3036
+              "amountCents": 2898
             }
           ],
           "expected": {
@@ -3922,13 +4889,38 @@
           "modifiersExtraCents": 136
         }
       ],
+      "order": {
+        "subtotalCents": 24279,
+        "discountCents": 2136,
+        "totalTtcCents": 22143,
+        "totalHtCents": 19523,
+        "totalVatCents": 2620,
+        "groups": [
+          {
+            "rate": "2.1",
+            "ttcCents": 7328,
+            "baseHtCents": 7177,
+            "vatCents": 151
+          },
+          {
+            "rate": "10",
+            "ttcCents": 0,
+            "baseHtCents": 0,
+            "vatCents": 0
+          },
+          {
+            "rate": "20",
+            "ttcCents": 14815,
+            "baseHtCents": 12346,
+            "vatCents": 2469
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 22143,
-              "tenderedCents": 22330
+              "amountCents": 22143
             }
           ],
           "expected": {
@@ -3968,13 +4960,26 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 9051,
+        "discountCents": 0,
+        "totalTtcCents": 9051,
+        "totalHtCents": 7543,
+        "totalVatCents": 1508,
+        "groups": [
+          {
+            "rate": "20",
+            "ttcCents": 9051,
+            "baseHtCents": 7543,
+            "vatCents": 1508
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 9051,
-              "tenderedCents": 9437
+              "amountCents": 9051
             }
           ],
           "expected": {
@@ -4032,13 +5037,38 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 22090,
+        "discountCents": 3757,
+        "totalTtcCents": 18333,
+        "totalHtCents": 16335,
+        "totalVatCents": 1998,
+        "groups": [
+          {
+            "rate": "0",
+            "ttcCents": 1229,
+            "baseHtCents": 1229,
+            "vatCents": 0
+          },
+          {
+            "rate": "10",
+            "ttcCents": 11260,
+            "baseHtCents": 10236,
+            "vatCents": 1024
+          },
+          {
+            "rate": "20",
+            "ttcCents": 5844,
+            "baseHtCents": 4870,
+            "vatCents": 974
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 7914,
-              "tenderedCents": 8048
+              "amountCents": 7914
             }
           ],
           "expected": {
@@ -4052,9 +5082,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 10419,
-              "tenderedCents": 10419
+              "amountCents": 10419
             }
           ],
           "expected": {
@@ -4103,13 +5131,38 @@
           "modifiersExtraCents": 218
         }
       ],
+      "order": {
+        "subtotalCents": 9813,
+        "discountCents": 0,
+        "totalTtcCents": 9813,
+        "totalHtCents": 9419,
+        "totalVatCents": 394,
+        "groups": [
+          {
+            "rate": "2.1",
+            "ttcCents": 6004,
+            "baseHtCents": 5881,
+            "vatCents": 123
+          },
+          {
+            "rate": "5.5",
+            "ttcCents": 1935,
+            "baseHtCents": 1834,
+            "vatCents": 101
+          },
+          {
+            "rate": "10",
+            "ttcCents": 1874,
+            "baseHtCents": 1704,
+            "vatCents": 170
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 6795,
-              "tenderedCents": 7410
+              "amountCents": 6795
             }
           ],
           "expected": {
@@ -4123,9 +5176,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 3018,
-              "tenderedCents": 3018
+              "amountCents": 3018
             }
           ],
           "expected": {
@@ -4161,13 +5212,26 @@
           "modifiersExtraCents": 221
         }
       ],
+      "order": {
+        "subtotalCents": 1588,
+        "discountCents": 0,
+        "totalTtcCents": 1588,
+        "totalHtCents": 1323,
+        "totalVatCents": 265,
+        "groups": [
+          {
+            "rate": "20",
+            "ttcCents": 1588,
+            "baseHtCents": 1323,
+            "vatCents": 265
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 1588,
-              "tenderedCents": 2043
+              "amountCents": 1588
             }
           ],
           "expected": {
@@ -4225,13 +5289,38 @@
           "modifiersExtraCents": 203
         }
       ],
+      "order": {
+        "subtotalCents": 5072,
+        "discountCents": 5072,
+        "totalTtcCents": 0,
+        "totalHtCents": 0,
+        "totalVatCents": 0,
+        "groups": [
+          {
+            "rate": "2.1",
+            "ttcCents": 0,
+            "baseHtCents": 0,
+            "vatCents": 0
+          },
+          {
+            "rate": "5.5",
+            "ttcCents": 0,
+            "baseHtCents": 0,
+            "vatCents": 0
+          },
+          {
+            "rate": "20",
+            "ttcCents": 0,
+            "baseHtCents": 0,
+            "vatCents": 0
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 355,
-              "tenderedCents": 395
+              "amountCents": 355
             }
           ],
           "expected": {
@@ -4307,13 +5396,38 @@
           "modifiersExtraCents": 292
         }
       ],
+      "order": {
+        "subtotalCents": 35694,
+        "discountCents": 17847,
+        "totalTtcCents": 17847,
+        "totalHtCents": 17388,
+        "totalVatCents": 459,
+        "groups": [
+          {
+            "rate": "0",
+            "ttcCents": 5494,
+            "baseHtCents": 5494,
+            "vatCents": 0
+          },
+          {
+            "rate": "2.1",
+            "ttcCents": 9434,
+            "baseHtCents": 9240,
+            "vatCents": 194
+          },
+          {
+            "rate": "10",
+            "ttcCents": 2919,
+            "baseHtCents": 2654,
+            "vatCents": 265
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 18273,
-              "tenderedCents": 18408
+              "amountCents": 18273
             }
           ],
           "expected": {
@@ -4353,9 +5467,28 @@
           "modifiersExtraCents": 182
         }
       ],
+      "order": {
+        "subtotalCents": 1404,
+        "discountCents": 1404,
+        "totalTtcCents": 0,
+        "totalHtCents": 0,
+        "totalVatCents": 0,
+        "groups": [
+          {
+            "rate": "5.5",
+            "ttcCents": 0,
+            "baseHtCents": 0,
+            "vatCents": 0
+          }
+        ]
+      },
       "payments": [
         {
-          "tenders": [],
+          "tenders": [
+            {
+              "amountCents": 0
+            }
+          ],
           "expected": {
             "totalTtcCents": 0,
             "totalHtCents": 0,
@@ -4407,9 +5540,34 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 23924,
+        "discountCents": 23924,
+        "totalTtcCents": 0,
+        "totalHtCents": 0,
+        "totalVatCents": 0,
+        "groups": [
+          {
+            "rate": "10",
+            "ttcCents": 0,
+            "baseHtCents": 0,
+            "vatCents": 0
+          },
+          {
+            "rate": "20",
+            "ttcCents": 0,
+            "baseHtCents": 0,
+            "vatCents": 0
+          }
+        ]
+      },
       "payments": [
         {
-          "tenders": [],
+          "tenders": [
+            {
+              "amountCents": 0
+            }
+          ],
           "expected": {
             "totalTtcCents": 0,
             "totalHtCents": 0,
@@ -4465,13 +5623,38 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 8306,
+        "discountCents": 0,
+        "totalTtcCents": 8306,
+        "totalHtCents": 8116,
+        "totalVatCents": 190,
+        "groups": [
+          {
+            "rate": "0",
+            "ttcCents": 6211,
+            "baseHtCents": 6211,
+            "vatCents": 0
+          },
+          {
+            "rate": "5.5",
+            "ttcCents": 0,
+            "baseHtCents": 0,
+            "vatCents": 0
+          },
+          {
+            "rate": "10",
+            "ttcCents": 2095,
+            "baseHtCents": 1905,
+            "vatCents": 190
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 3988,
-              "tenderedCents": 4043
+              "amountCents": 3988
             }
           ],
           "expected": {
@@ -4485,9 +5668,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 4318,
-              "tenderedCents": 4318
+              "amountCents": 4318
             }
           ],
           "expected": {
@@ -4527,13 +5708,26 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 3946,
+        "discountCents": 1973,
+        "totalTtcCents": 1973,
+        "totalHtCents": 1870,
+        "totalVatCents": 103,
+        "groups": [
+          {
+            "rate": "5.5",
+            "ttcCents": 1973,
+            "baseHtCents": 1870,
+            "vatCents": 103
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 433,
-              "tenderedCents": 1161
+              "amountCents": 433
             }
           ],
           "expected": {
@@ -4547,9 +5741,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 1069,
-              "tenderedCents": 1069
+              "amountCents": 1069
             }
           ],
           "expected": {
@@ -4563,9 +5755,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 471,
-              "tenderedCents": 932
+              "amountCents": 471
             }
           ],
           "expected": {
@@ -4596,13 +5786,26 @@
           "modifiersExtraCents": 91
         }
       ],
+      "order": {
+        "subtotalCents": 2535,
+        "discountCents": 2535,
+        "totalTtcCents": 0,
+        "totalHtCents": 0,
+        "totalVatCents": 0,
+        "groups": [
+          {
+            "rate": "5.5",
+            "ttcCents": 0,
+            "baseHtCents": 0,
+            "vatCents": 0
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 463,
-              "tenderedCents": 855
+              "amountCents": 463
             }
           ],
           "expected": {
@@ -4669,13 +5872,32 @@
           "modifiersExtraCents": 173
         }
       ],
+      "order": {
+        "subtotalCents": 28462,
+        "discountCents": 6604,
+        "totalTtcCents": 21858,
+        "totalHtCents": 19865,
+        "totalVatCents": 1993,
+        "groups": [
+          {
+            "rate": "5.5",
+            "ttcCents": 14407,
+            "baseHtCents": 13656,
+            "vatCents": 751
+          },
+          {
+            "rate": "20",
+            "ttcCents": 7451,
+            "baseHtCents": 6209,
+            "vatCents": 1242
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 12258,
-              "tenderedCents": 12557
+              "amountCents": 12258
             }
           ],
           "expected": {
@@ -4689,9 +5911,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 1439,
-              "tenderedCents": 1439
+              "amountCents": 1439
             }
           ],
           "expected": {
@@ -4705,9 +5925,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 1963,
-              "tenderedCents": 2720
+              "amountCents": 1963
             }
           ],
           "expected": {
@@ -4721,9 +5939,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 5738,
-              "tenderedCents": 5738
+              "amountCents": 5738
             }
           ],
           "expected": {
@@ -4737,9 +5953,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 460,
-              "tenderedCents": 1247
+              "amountCents": 460
             }
           ],
           "expected": {
@@ -4820,13 +6034,38 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 41769,
+        "discountCents": 3976,
+        "totalTtcCents": 37793,
+        "totalHtCents": 34754,
+        "totalVatCents": 3039,
+        "groups": [
+          {
+            "rate": "2.1",
+            "ttcCents": 9445,
+            "baseHtCents": 9251,
+            "vatCents": 194
+          },
+          {
+            "rate": "5.5",
+            "ttcCents": 16409,
+            "baseHtCents": 15554,
+            "vatCents": 855
+          },
+          {
+            "rate": "20",
+            "ttcCents": 11939,
+            "baseHtCents": 9949,
+            "vatCents": 1990
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 37793,
-              "tenderedCents": 38116
+              "amountCents": 37793
             }
           ],
           "expected": {
@@ -4880,13 +6119,32 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 16224,
+        "discountCents": 550,
+        "totalTtcCents": 15674,
+        "totalHtCents": 14512,
+        "totalVatCents": 1162,
+        "groups": [
+          {
+            "rate": "0",
+            "ttcCents": 8700,
+            "baseHtCents": 8700,
+            "vatCents": 0
+          },
+          {
+            "rate": "20",
+            "ttcCents": 6974,
+            "baseHtCents": 5812,
+            "vatCents": 1162
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 516,
-              "tenderedCents": 521
+              "amountCents": 516
             }
           ],
           "expected": {
@@ -4900,9 +6158,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 7851,
-              "tenderedCents": 7851
+              "amountCents": 7851
             }
           ],
           "expected": {
@@ -4916,9 +6172,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 7454,
-              "tenderedCents": 7541
+              "amountCents": 7454
             }
           ],
           "expected": {
@@ -4967,9 +6221,28 @@
           "modifiersExtraCents": 282
         }
       ],
+      "order": {
+        "subtotalCents": 38187,
+        "discountCents": 38187,
+        "totalTtcCents": 0,
+        "totalHtCents": 0,
+        "totalVatCents": 0,
+        "groups": [
+          {
+            "rate": "0",
+            "ttcCents": 0,
+            "baseHtCents": 0,
+            "vatCents": 0
+          }
+        ]
+      },
       "payments": [
         {
-          "tenders": [],
+          "tenders": [
+            {
+              "amountCents": 0
+            }
+          ],
           "expected": {
             "totalTtcCents": 0,
             "totalHtCents": 0,
@@ -4998,9 +6271,28 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 2514,
+        "discountCents": 2514,
+        "totalTtcCents": 0,
+        "totalHtCents": 0,
+        "totalVatCents": 0,
+        "groups": [
+          {
+            "rate": "5.5",
+            "ttcCents": 0,
+            "baseHtCents": 0,
+            "vatCents": 0
+          }
+        ]
+      },
       "payments": [
         {
-          "tenders": [],
+          "tenders": [
+            {
+              "amountCents": 0
+            }
+          ],
           "expected": {
             "totalTtcCents": 0,
             "totalHtCents": 0,
@@ -5056,13 +6348,38 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 15699,
+        "discountCents": 0,
+        "totalTtcCents": 15699,
+        "totalHtCents": 14338,
+        "totalVatCents": 1361,
+        "groups": [
+          {
+            "rate": "0",
+            "ttcCents": 0,
+            "baseHtCents": 0,
+            "vatCents": 0
+          },
+          {
+            "rate": "5.5",
+            "ttcCents": 1721,
+            "baseHtCents": 1631,
+            "vatCents": 90
+          },
+          {
+            "rate": "10",
+            "ttcCents": 13978,
+            "baseHtCents": 12707,
+            "vatCents": 1271
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 15699,
-              "tenderedCents": 15810
+              "amountCents": 15699
             }
           ],
           "expected": {
@@ -5111,13 +6428,38 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 22156,
+        "discountCents": 776,
+        "totalTtcCents": 21380,
+        "totalHtCents": 19181,
+        "totalVatCents": 2199,
+        "groups": [
+          {
+            "rate": "0",
+            "ttcCents": 3353,
+            "baseHtCents": 3353,
+            "vatCents": 0
+          },
+          {
+            "rate": "2.1",
+            "ttcCents": 5513,
+            "baseHtCents": 5400,
+            "vatCents": 113
+          },
+          {
+            "rate": "20",
+            "ttcCents": 12514,
+            "baseHtCents": 10428,
+            "vatCents": 2086
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 3570,
-              "tenderedCents": 3848
+              "amountCents": 3570
             }
           ],
           "expected": {
@@ -5131,9 +6473,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 16647,
-              "tenderedCents": 16647
+              "amountCents": 16647
             }
           ],
           "expected": {
@@ -5147,9 +6487,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 1163,
-              "tenderedCents": 1427
+              "amountCents": 1163
             }
           ],
           "expected": {
@@ -5189,13 +6527,32 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 16610,
+        "discountCents": 2365,
+        "totalTtcCents": 14245,
+        "totalHtCents": 12770,
+        "totalVatCents": 1475,
+        "groups": [
+          {
+            "rate": "0",
+            "ttcCents": 5394,
+            "baseHtCents": 5394,
+            "vatCents": 0
+          },
+          {
+            "rate": "20",
+            "ttcCents": 8851,
+            "baseHtCents": 7376,
+            "vatCents": 1475
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 14245,
-              "tenderedCents": 14284
+              "amountCents": 14245
             }
           ],
           "expected": {
@@ -5244,13 +6601,38 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 13690,
+        "discountCents": 0,
+        "totalTtcCents": 13690,
+        "totalHtCents": 13257,
+        "totalVatCents": 433,
+        "groups": [
+          {
+            "rate": "0",
+            "ttcCents": 8932,
+            "baseHtCents": 8932,
+            "vatCents": 0
+          },
+          {
+            "rate": "5.5",
+            "ttcCents": 0,
+            "baseHtCents": 0,
+            "vatCents": 0
+          },
+          {
+            "rate": "10",
+            "ttcCents": 4758,
+            "baseHtCents": 4325,
+            "vatCents": 433
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 995,
-              "tenderedCents": 1449
+              "amountCents": 995
             }
           ],
           "expected": {
@@ -5264,9 +6646,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 9005,
-              "tenderedCents": 9005
+              "amountCents": 9005
             }
           ],
           "expected": {
@@ -5280,9 +6660,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 3690,
-              "tenderedCents": 4308
+              "amountCents": 3690
             }
           ],
           "expected": {
@@ -5358,13 +6736,44 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 19270,
+        "discountCents": 963,
+        "totalTtcCents": 18307,
+        "totalHtCents": 17913,
+        "totalVatCents": 394,
+        "groups": [
+          {
+            "rate": "0",
+            "ttcCents": 4020,
+            "baseHtCents": 4020,
+            "vatCents": 0
+          },
+          {
+            "rate": "2.1",
+            "ttcCents": 11123,
+            "baseHtCents": 10894,
+            "vatCents": 229
+          },
+          {
+            "rate": "5.5",
+            "ttcCents": 3164,
+            "baseHtCents": 2999,
+            "vatCents": 165
+          },
+          {
+            "rate": "20",
+            "ttcCents": 0,
+            "baseHtCents": 0,
+            "vatCents": 0
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 2892,
-              "tenderedCents": 3473
+              "amountCents": 2892
             }
           ],
           "expected": {
@@ -5378,9 +6787,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 4439,
-              "tenderedCents": 4439
+              "amountCents": 4439
             }
           ],
           "expected": {
@@ -5394,9 +6801,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 1857,
-              "tenderedCents": 2014
+              "amountCents": 1857
             }
           ],
           "expected": {
@@ -5410,9 +6815,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 3814,
-              "tenderedCents": 3814
+              "amountCents": 3814
             }
           ],
           "expected": {
@@ -5426,9 +6829,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 5457,
-              "tenderedCents": 6096
+              "amountCents": 5457
             }
           ],
           "expected": {
@@ -5468,13 +6869,26 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 24877,
+        "discountCents": 1244,
+        "totalTtcCents": 23633,
+        "totalHtCents": 23147,
+        "totalVatCents": 486,
+        "groups": [
+          {
+            "rate": "2.1",
+            "ttcCents": 23633,
+            "baseHtCents": 23147,
+            "vatCents": 486
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 23775,
-              "tenderedCents": 24438
+              "amountCents": 23775
             }
           ],
           "expected": {
@@ -5555,13 +6969,38 @@
           "modifiersExtraCents": 219
         }
       ],
+      "order": {
+        "subtotalCents": 10169,
+        "discountCents": 3389,
+        "totalTtcCents": 6780,
+        "totalHtCents": 6556,
+        "totalVatCents": 224,
+        "groups": [
+          {
+            "rate": "2.1",
+            "ttcCents": 4912,
+            "baseHtCents": 4811,
+            "vatCents": 101
+          },
+          {
+            "rate": "5.5",
+            "ttcCents": 1203,
+            "baseHtCents": 1140,
+            "vatCents": 63
+          },
+          {
+            "rate": "10",
+            "ttcCents": 665,
+            "baseHtCents": 605,
+            "vatCents": 60
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 6780,
-              "tenderedCents": 6979
+              "amountCents": 6780
             }
           ],
           "expected": {
@@ -5592,13 +7031,26 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 2691,
+        "discountCents": 0,
+        "totalTtcCents": 2691,
+        "totalHtCents": 2446,
+        "totalVatCents": 245,
+        "groups": [
+          {
+            "rate": "10",
+            "ttcCents": 2691,
+            "baseHtCents": 2446,
+            "vatCents": 245
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 2691,
-              "tenderedCents": 3064
+              "amountCents": 2691
             }
           ],
           "expected": {
@@ -5629,13 +7081,26 @@
           "modifiersExtraCents": 51
         }
       ],
+      "order": {
+        "subtotalCents": 4755,
+        "discountCents": 0,
+        "totalTtcCents": 4755,
+        "totalHtCents": 4657,
+        "totalVatCents": 98,
+        "groups": [
+          {
+            "rate": "2.1",
+            "ttcCents": 4755,
+            "baseHtCents": 4657,
+            "vatCents": 98
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 4755,
-              "tenderedCents": 5224
+              "amountCents": 4755
             }
           ],
           "expected": {
@@ -5666,13 +7131,26 @@
           "modifiersExtraCents": 175
         }
       ],
+      "order": {
+        "subtotalCents": 12039,
+        "discountCents": 1204,
+        "totalTtcCents": 10835,
+        "totalHtCents": 10835,
+        "totalVatCents": 0,
+        "groups": [
+          {
+            "rate": "0",
+            "ttcCents": 10835,
+            "baseHtCents": 10835,
+            "vatCents": 0
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 10835,
-              "tenderedCents": 11150
+              "amountCents": 10835
             }
           ],
           "expected": {
@@ -5721,13 +7199,32 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 3850,
+        "discountCents": 0,
+        "totalTtcCents": 3850,
+        "totalHtCents": 3676,
+        "totalVatCents": 174,
+        "groups": [
+          {
+            "rate": "2.1",
+            "ttcCents": 852,
+            "baseHtCents": 834,
+            "vatCents": 18
+          },
+          {
+            "rate": "5.5",
+            "ttcCents": 2998,
+            "baseHtCents": 2842,
+            "vatCents": 156
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 3850,
-              "tenderedCents": 3960
+              "amountCents": 3850
             }
           ],
           "expected": {
@@ -5794,13 +7291,44 @@
           "modifiersExtraCents": 63
         }
       ],
+      "order": {
+        "subtotalCents": 22931,
+        "discountCents": 1147,
+        "totalTtcCents": 21784,
+        "totalHtCents": 19307,
+        "totalVatCents": 2477,
+        "groups": [
+          {
+            "rate": "0",
+            "ttcCents": 1476,
+            "baseHtCents": 1476,
+            "vatCents": 0
+          },
+          {
+            "rate": "2.1",
+            "ttcCents": 4375,
+            "baseHtCents": 4285,
+            "vatCents": 90
+          },
+          {
+            "rate": "10",
+            "ttcCents": 3534,
+            "baseHtCents": 3213,
+            "vatCents": 321
+          },
+          {
+            "rate": "20",
+            "ttcCents": 12399,
+            "baseHtCents": 10333,
+            "vatCents": 2066
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 5296,
-              "tenderedCents": 5358
+              "amountCents": 5296
             }
           ],
           "expected": {
@@ -5814,9 +7342,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 985,
-              "tenderedCents": 985
+              "amountCents": 985
             }
           ],
           "expected": {
@@ -5830,9 +7356,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 10337,
-              "tenderedCents": 10722
+              "amountCents": 10337
             }
           ],
           "expected": {
@@ -5846,9 +7370,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 1487,
-              "tenderedCents": 1487
+              "amountCents": 1487
             }
           ],
           "expected": {
@@ -5862,9 +7384,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 3679,
-              "tenderedCents": 3869
+              "amountCents": 3679
             }
           ],
           "expected": {
@@ -5895,13 +7415,26 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 310,
+        "discountCents": 155,
+        "totalTtcCents": 155,
+        "totalHtCents": 147,
+        "totalVatCents": 8,
+        "groups": [
+          {
+            "rate": "5.5",
+            "ttcCents": 155,
+            "baseHtCents": 147,
+            "vatCents": 8
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 155,
-              "tenderedCents": 168
+              "amountCents": 155
             }
           ],
           "expected": {
@@ -5968,13 +7501,44 @@
           "modifiersExtraCents": 20
         }
       ],
+      "order": {
+        "subtotalCents": 16382,
+        "discountCents": 1987,
+        "totalTtcCents": 14395,
+        "totalHtCents": 13573,
+        "totalVatCents": 822,
+        "groups": [
+          {
+            "rate": "0",
+            "ttcCents": 0,
+            "baseHtCents": 0,
+            "vatCents": 0
+          },
+          {
+            "rate": "2.1",
+            "ttcCents": 0,
+            "baseHtCents": 0,
+            "vatCents": 0
+          },
+          {
+            "rate": "5.5",
+            "ttcCents": 13769,
+            "baseHtCents": 13051,
+            "vatCents": 718
+          },
+          {
+            "rate": "20",
+            "ttcCents": 626,
+            "baseHtCents": 522,
+            "vatCents": 104
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 2921,
-              "tenderedCents": 3359
+              "amountCents": 2921
             }
           ],
           "expected": {
@@ -5988,9 +7552,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 5520,
-              "tenderedCents": 5520
+              "amountCents": 5520
             }
           ],
           "expected": {
@@ -6004,9 +7566,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 389,
-              "tenderedCents": 708
+              "amountCents": 389
             }
           ],
           "expected": {
@@ -6020,9 +7580,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 263,
-              "tenderedCents": 263
+              "amountCents": 263
             }
           ],
           "expected": {
@@ -6036,9 +7594,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 5302,
-              "tenderedCents": 5509
+              "amountCents": 5302
             }
           ],
           "expected": {
@@ -6087,13 +7643,32 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 21923,
+        "discountCents": 7785,
+        "totalTtcCents": 14138,
+        "totalHtCents": 12831,
+        "totalVatCents": 1307,
+        "groups": [
+          {
+            "rate": "5.5",
+            "ttcCents": 9157,
+            "baseHtCents": 8680,
+            "vatCents": 477
+          },
+          {
+            "rate": "20",
+            "ttcCents": 4981,
+            "baseHtCents": 4151,
+            "vatCents": 830
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 9302,
-              "tenderedCents": 9916
+              "amountCents": 9302
             }
           ],
           "expected": {
@@ -6107,9 +7682,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 4836,
-              "tenderedCents": 4836
+              "amountCents": 4836
             }
           ],
           "expected": {
@@ -6154,9 +7727,34 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 2008,
+        "discountCents": 2008,
+        "totalTtcCents": 0,
+        "totalHtCents": 0,
+        "totalVatCents": 0,
+        "groups": [
+          {
+            "rate": "2.1",
+            "ttcCents": 0,
+            "baseHtCents": 0,
+            "vatCents": 0
+          },
+          {
+            "rate": "20",
+            "ttcCents": 0,
+            "baseHtCents": 0,
+            "vatCents": 0
+          }
+        ]
+      },
       "payments": [
         {
-          "tenders": [],
+          "tenders": [
+            {
+              "amountCents": 0
+            }
+          ],
           "expected": {
             "totalTtcCents": 0,
             "totalHtCents": 0,
@@ -6185,13 +7783,26 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 1098,
+        "discountCents": 110,
+        "totalTtcCents": 988,
+        "totalHtCents": 968,
+        "totalVatCents": 20,
+        "groups": [
+          {
+            "rate": "2.1",
+            "ttcCents": 988,
+            "baseHtCents": 968,
+            "vatCents": 20
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 503,
-              "tenderedCents": 1012
+              "amountCents": 503
             }
           ],
           "expected": {
@@ -6205,9 +7816,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 485,
-              "tenderedCents": 485
+              "amountCents": 485
             }
           ],
           "expected": {
@@ -6288,9 +7897,46 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 31936,
+        "discountCents": 31936,
+        "totalTtcCents": 0,
+        "totalHtCents": 0,
+        "totalVatCents": 0,
+        "groups": [
+          {
+            "rate": "0",
+            "ttcCents": 0,
+            "baseHtCents": 0,
+            "vatCents": 0
+          },
+          {
+            "rate": "2.1",
+            "ttcCents": 0,
+            "baseHtCents": 0,
+            "vatCents": 0
+          },
+          {
+            "rate": "5.5",
+            "ttcCents": 0,
+            "baseHtCents": 0,
+            "vatCents": 0
+          },
+          {
+            "rate": "10",
+            "ttcCents": 0,
+            "baseHtCents": 0,
+            "vatCents": 0
+          }
+        ]
+      },
       "payments": [
         {
-          "tenders": [],
+          "tenders": [
+            {
+              "amountCents": 0
+            }
+          ],
           "expected": {
             "totalTtcCents": 0,
             "totalHtCents": 0,
@@ -6369,13 +8015,44 @@
           "modifiersExtraCents": 46
         }
       ],
+      "order": {
+        "subtotalCents": 29257,
+        "discountCents": 0,
+        "totalTtcCents": 29257,
+        "totalHtCents": 26817,
+        "totalVatCents": 2440,
+        "groups": [
+          {
+            "rate": "2.1",
+            "ttcCents": 8938,
+            "baseHtCents": 8754,
+            "vatCents": 184
+          },
+          {
+            "rate": "5.5",
+            "ttcCents": 5118,
+            "baseHtCents": 4851,
+            "vatCents": 267
+          },
+          {
+            "rate": "10",
+            "ttcCents": 7176,
+            "baseHtCents": 6524,
+            "vatCents": 652
+          },
+          {
+            "rate": "20",
+            "ttcCents": 8025,
+            "baseHtCents": 6688,
+            "vatCents": 1337
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 197,
-              "tenderedCents": 204
+              "amountCents": 197
             }
           ],
           "expected": {
@@ -6389,9 +8066,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 8934,
-              "tenderedCents": 8934
+              "amountCents": 8934
             }
           ],
           "expected": {
@@ -6405,9 +8080,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 6279,
-              "tenderedCents": 7067
+              "amountCents": 6279
             }
           ],
           "expected": {
@@ -6421,9 +8094,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 13649,
-              "tenderedCents": 13649
+              "amountCents": 13649
             }
           ],
           "expected": {
@@ -6437,9 +8108,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 198,
-              "tenderedCents": 501
+              "amountCents": 198
             }
           ],
           "expected": {
@@ -6497,13 +8166,38 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 15312,
+        "discountCents": 5175,
+        "totalTtcCents": 10137,
+        "totalHtCents": 9555,
+        "totalVatCents": 582,
+        "groups": [
+          {
+            "rate": "0",
+            "ttcCents": 3049,
+            "baseHtCents": 3049,
+            "vatCents": 0
+          },
+          {
+            "rate": "5.5",
+            "ttcCents": 1598,
+            "baseHtCents": 1515,
+            "vatCents": 83
+          },
+          {
+            "rate": "10",
+            "ttcCents": 5490,
+            "baseHtCents": 4991,
+            "vatCents": 499
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 2692,
-              "tenderedCents": 2812
+              "amountCents": 2692
             }
           ],
           "expected": {
@@ -6517,9 +8211,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 7,
-              "tenderedCents": 7
+              "amountCents": 7
             }
           ],
           "expected": {
@@ -6533,9 +8225,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 714,
-              "tenderedCents": 1309
+              "amountCents": 714
             }
           ],
           "expected": {
@@ -6549,9 +8239,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 6233,
-              "tenderedCents": 6233
+              "amountCents": 6233
             }
           ],
           "expected": {
@@ -6565,9 +8253,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 676,
-              "tenderedCents": 1205
+              "amountCents": 676
             }
           ],
           "expected": {
@@ -6616,13 +8302,38 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 13042,
+        "discountCents": 0,
+        "totalTtcCents": 13042,
+        "totalHtCents": 12356,
+        "totalVatCents": 686,
+        "groups": [
+          {
+            "rate": "0",
+            "ttcCents": 869,
+            "baseHtCents": 869,
+            "vatCents": 0
+          },
+          {
+            "rate": "5.5",
+            "ttcCents": 10845,
+            "baseHtCents": 10280,
+            "vatCents": 565
+          },
+          {
+            "rate": "10",
+            "ttcCents": 1328,
+            "baseHtCents": 1207,
+            "vatCents": 121
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 11619,
-              "tenderedCents": 12308
+              "amountCents": 11619
             }
           ],
           "expected": {
@@ -6636,9 +8347,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 1058,
-              "tenderedCents": 1058
+              "amountCents": 1058
             }
           ],
           "expected": {
@@ -6652,9 +8361,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 365,
-              "tenderedCents": 773
+              "amountCents": 365
             }
           ],
           "expected": {
@@ -6717,13 +8424,32 @@
           "modifiersExtraCents": 48
         }
       ],
+      "order": {
+        "subtotalCents": 15770,
+        "discountCents": 7382,
+        "totalTtcCents": 8388,
+        "totalHtCents": 8143,
+        "totalVatCents": 245,
+        "groups": [
+          {
+            "rate": "2.1",
+            "ttcCents": 6093,
+            "baseHtCents": 5968,
+            "vatCents": 125
+          },
+          {
+            "rate": "5.5",
+            "ttcCents": 2295,
+            "baseHtCents": 2175,
+            "vatCents": 120
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 1291,
-              "tenderedCents": 1317
+              "amountCents": 1291
             }
           ],
           "expected": {
@@ -6737,9 +8463,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 7097,
-              "tenderedCents": 7097
+              "amountCents": 7097
             }
           ],
           "expected": {
@@ -6815,13 +8539,50 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 34072,
+        "discountCents": 0,
+        "totalTtcCents": 34072,
+        "totalHtCents": 31616,
+        "totalVatCents": 2456,
+        "groups": [
+          {
+            "rate": "0",
+            "ttcCents": 3124,
+            "baseHtCents": 3124,
+            "vatCents": 0
+          },
+          {
+            "rate": "2.1",
+            "ttcCents": 1382,
+            "baseHtCents": 1354,
+            "vatCents": 28
+          },
+          {
+            "rate": "5.5",
+            "ttcCents": 10941,
+            "baseHtCents": 10371,
+            "vatCents": 570
+          },
+          {
+            "rate": "10",
+            "ttcCents": 16455,
+            "baseHtCents": 14959,
+            "vatCents": 1496
+          },
+          {
+            "rate": "20",
+            "ttcCents": 2170,
+            "baseHtCents": 1808,
+            "vatCents": 362
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 26358,
-              "tenderedCents": 26684
+              "amountCents": 26358
             }
           ],
           "expected": {
@@ -6835,9 +8596,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 7714,
-              "tenderedCents": 7714
+              "amountCents": 7714
             }
           ],
           "expected": {
@@ -6882,13 +8641,32 @@
           "modifiersExtraCents": 143
         }
       ],
+      "order": {
+        "subtotalCents": 6074,
+        "discountCents": 0,
+        "totalTtcCents": 6074,
+        "totalHtCents": 5910,
+        "totalVatCents": 164,
+        "groups": [
+          {
+            "rate": "2.1",
+            "ttcCents": 5811,
+            "baseHtCents": 5691,
+            "vatCents": 120
+          },
+          {
+            "rate": "20",
+            "ttcCents": 263,
+            "baseHtCents": 219,
+            "vatCents": 44
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 3651,
-              "tenderedCents": 3790
+              "amountCents": 3651
             }
           ],
           "expected": {
@@ -6902,9 +8680,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 2590,
-              "tenderedCents": 2590
+              "amountCents": 2590
             }
           ],
           "expected": {
@@ -6976,13 +8752,44 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 26675,
+        "discountCents": 4364,
+        "totalTtcCents": 22311,
+        "totalHtCents": 20803,
+        "totalVatCents": 1508,
+        "groups": [
+          {
+            "rate": "0",
+            "ttcCents": 7852,
+            "baseHtCents": 7852,
+            "vatCents": 0
+          },
+          {
+            "rate": "2.1",
+            "ttcCents": 6171,
+            "baseHtCents": 6044,
+            "vatCents": 127
+          },
+          {
+            "rate": "10",
+            "ttcCents": 0,
+            "baseHtCents": 0,
+            "vatCents": 0
+          },
+          {
+            "rate": "20",
+            "ttcCents": 8288,
+            "baseHtCents": 6907,
+            "vatCents": 1381
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 8355,
-              "tenderedCents": 9049
+              "amountCents": 8355
             }
           ],
           "expected": {
@@ -6996,9 +8803,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 13956,
-              "tenderedCents": 13956
+              "amountCents": 13956
             }
           ],
           "expected": {
@@ -7074,13 +8879,44 @@
           "modifiersExtraCents": 64
         }
       ],
+      "order": {
+        "subtotalCents": 22612,
+        "discountCents": 0,
+        "totalTtcCents": 22612,
+        "totalHtCents": 21447,
+        "totalVatCents": 1165,
+        "groups": [
+          {
+            "rate": "0",
+            "ttcCents": 0,
+            "baseHtCents": 0,
+            "vatCents": 0
+          },
+          {
+            "rate": "2.1",
+            "ttcCents": 5808,
+            "baseHtCents": 5689,
+            "vatCents": 119
+          },
+          {
+            "rate": "5.5",
+            "ttcCents": 12427,
+            "baseHtCents": 11779,
+            "vatCents": 648
+          },
+          {
+            "rate": "10",
+            "ttcCents": 4377,
+            "baseHtCents": 3979,
+            "vatCents": 398
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 22776,
-              "tenderedCents": 23475
+              "amountCents": 22776
             }
           ],
           "expected": {
@@ -7111,9 +8947,28 @@
           "modifiersExtraCents": 45
         }
       ],
+      "order": {
+        "subtotalCents": 1763,
+        "discountCents": 1763,
+        "totalTtcCents": 0,
+        "totalHtCents": 0,
+        "totalVatCents": 0,
+        "groups": [
+          {
+            "rate": "20",
+            "ttcCents": 0,
+            "baseHtCents": 0,
+            "vatCents": 0
+          }
+        ]
+      },
       "payments": [
         {
-          "tenders": [],
+          "tenders": [
+            {
+              "amountCents": 0
+            }
+          ],
           "expected": {
             "totalTtcCents": 0,
             "totalHtCents": 0,
@@ -7156,13 +9011,32 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 19508,
+        "discountCents": 0,
+        "totalTtcCents": 19508,
+        "totalHtCents": 17954,
+        "totalVatCents": 1554,
+        "groups": [
+          {
+            "rate": "5.5",
+            "ttcCents": 5648,
+            "baseHtCents": 5354,
+            "vatCents": 294
+          },
+          {
+            "rate": "10",
+            "ttcCents": 13860,
+            "baseHtCents": 12600,
+            "vatCents": 1260
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 471,
-              "tenderedCents": 1123
+              "amountCents": 471
             }
           ],
           "expected": {
@@ -7176,9 +9050,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 14087,
-              "tenderedCents": 14087
+              "amountCents": 14087
             }
           ],
           "expected": {
@@ -7192,9 +9064,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 3407,
-              "tenderedCents": 4051
+              "amountCents": 3407
             }
           ],
           "expected": {
@@ -7208,9 +9078,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 1457,
-              "tenderedCents": 1457
+              "amountCents": 1457
             }
           ],
           "expected": {
@@ -7224,9 +9092,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 86,
-              "tenderedCents": 833
+              "amountCents": 86
             }
           ],
           "expected": {
@@ -7266,13 +9132,32 @@
           "modifiersExtraCents": 154
         }
       ],
+      "order": {
+        "subtotalCents": 3360,
+        "discountCents": 0,
+        "totalTtcCents": 3360,
+        "totalHtCents": 3258,
+        "totalVatCents": 102,
+        "groups": [
+          {
+            "rate": "2.1",
+            "ttcCents": 2901,
+            "baseHtCents": 2841,
+            "vatCents": 60
+          },
+          {
+            "rate": "10",
+            "ttcCents": 459,
+            "baseHtCents": 417,
+            "vatCents": 42
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 3360,
-              "tenderedCents": 3892
+              "amountCents": 3360
             }
           ],
           "expected": {
@@ -7317,9 +9202,34 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 838,
+        "discountCents": 838,
+        "totalTtcCents": 0,
+        "totalHtCents": 0,
+        "totalVatCents": 0,
+        "groups": [
+          {
+            "rate": "0",
+            "ttcCents": 0,
+            "baseHtCents": 0,
+            "vatCents": 0
+          },
+          {
+            "rate": "5.5",
+            "ttcCents": 0,
+            "baseHtCents": 0,
+            "vatCents": 0
+          }
+        ]
+      },
       "payments": [
         {
-          "tenders": [],
+          "tenders": [
+            {
+              "amountCents": 0
+            }
+          ],
           "expected": {
             "totalTtcCents": 0,
             "totalHtCents": 0,
@@ -7384,13 +9294,50 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 35522,
+        "discountCents": 0,
+        "totalTtcCents": 35522,
+        "totalHtCents": 32751,
+        "totalVatCents": 2771,
+        "groups": [
+          {
+            "rate": "0",
+            "ttcCents": 16205,
+            "baseHtCents": 16205,
+            "vatCents": 0
+          },
+          {
+            "rate": "2.1",
+            "ttcCents": 1340,
+            "baseHtCents": 1312,
+            "vatCents": 28
+          },
+          {
+            "rate": "5.5",
+            "ttcCents": 1615,
+            "baseHtCents": 1531,
+            "vatCents": 84
+          },
+          {
+            "rate": "10",
+            "ttcCents": 898,
+            "baseHtCents": 816,
+            "vatCents": 82
+          },
+          {
+            "rate": "20",
+            "ttcCents": 15464,
+            "baseHtCents": 12887,
+            "vatCents": 2577
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 35522,
-              "tenderedCents": 35891
+              "amountCents": 35522
             }
           ],
           "expected": {
@@ -7444,13 +9391,32 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 13724,
+        "discountCents": 0,
+        "totalTtcCents": 13724,
+        "totalHtCents": 13008,
+        "totalVatCents": 716,
+        "groups": [
+          {
+            "rate": "0",
+            "ttcCents": 5852,
+            "baseHtCents": 5852,
+            "vatCents": 0
+          },
+          {
+            "rate": "10",
+            "ttcCents": 7872,
+            "baseHtCents": 7156,
+            "vatCents": 716
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 14066,
-              "tenderedCents": 14331
+              "amountCents": 14066
             }
           ],
           "expected": {
@@ -7517,13 +9483,44 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 30066,
+        "discountCents": 0,
+        "totalTtcCents": 30066,
+        "totalHtCents": 28985,
+        "totalVatCents": 1081,
+        "groups": [
+          {
+            "rate": "0",
+            "ttcCents": 0,
+            "baseHtCents": 0,
+            "vatCents": 0
+          },
+          {
+            "rate": "2.1",
+            "ttcCents": 17304,
+            "baseHtCents": 16948,
+            "vatCents": 356
+          },
+          {
+            "rate": "5.5",
+            "ttcCents": 11238,
+            "baseHtCents": 10652,
+            "vatCents": 586
+          },
+          {
+            "rate": "10",
+            "ttcCents": 1524,
+            "baseHtCents": 1385,
+            "vatCents": 139
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 17187,
-              "tenderedCents": 17246
+              "amountCents": 17187
             }
           ],
           "expected": {
@@ -7537,9 +9534,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 12879,
-              "tenderedCents": 12879
+              "amountCents": 12879
             }
           ],
           "expected": {
@@ -7611,13 +9606,44 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 27611,
+        "discountCents": 0,
+        "totalTtcCents": 27611,
+        "totalHtCents": 26615,
+        "totalVatCents": 996,
+        "groups": [
+          {
+            "rate": "0",
+            "ttcCents": 15460,
+            "baseHtCents": 15460,
+            "vatCents": 0
+          },
+          {
+            "rate": "5.5",
+            "ttcCents": 8984,
+            "baseHtCents": 8516,
+            "vatCents": 468
+          },
+          {
+            "rate": "10",
+            "ttcCents": 0,
+            "baseHtCents": 0,
+            "vatCents": 0
+          },
+          {
+            "rate": "20",
+            "ttcCents": 3167,
+            "baseHtCents": 2639,
+            "vatCents": 528
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 23287,
-              "tenderedCents": 23801
+              "amountCents": 23287
             }
           ],
           "expected": {
@@ -7631,9 +9657,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 4324,
-              "tenderedCents": 4324
+              "amountCents": 4324
             }
           ],
           "expected": {
@@ -7700,13 +9724,44 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 29376,
+        "discountCents": 0,
+        "totalTtcCents": 29376,
+        "totalHtCents": 27856,
+        "totalVatCents": 1520,
+        "groups": [
+          {
+            "rate": "0",
+            "ttcCents": 6625,
+            "baseHtCents": 6625,
+            "vatCents": 0
+          },
+          {
+            "rate": "2.1",
+            "ttcCents": 7791,
+            "baseHtCents": 7631,
+            "vatCents": 160
+          },
+          {
+            "rate": "5.5",
+            "ttcCents": 0,
+            "baseHtCents": 0,
+            "vatCents": 0
+          },
+          {
+            "rate": "10",
+            "ttcCents": 14960,
+            "baseHtCents": 13600,
+            "vatCents": 1360
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 26205,
-              "tenderedCents": 26405
+              "amountCents": 26205
             }
           ],
           "expected": {
@@ -7720,9 +9775,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 3171,
-              "tenderedCents": 3171
+              "amountCents": 3171
             }
           ],
           "expected": {
@@ -7780,13 +9833,44 @@
           "modifiersExtraCents": 160
         }
       ],
+      "order": {
+        "subtotalCents": 13305,
+        "discountCents": 2514,
+        "totalTtcCents": 10791,
+        "totalHtCents": 10471,
+        "totalVatCents": 320,
+        "groups": [
+          {
+            "rate": "0",
+            "ttcCents": 4242,
+            "baseHtCents": 4242,
+            "vatCents": 0
+          },
+          {
+            "rate": "2.1",
+            "ttcCents": 5284,
+            "baseHtCents": 5175,
+            "vatCents": 109
+          },
+          {
+            "rate": "5.5",
+            "ttcCents": 0,
+            "baseHtCents": 0,
+            "vatCents": 0
+          },
+          {
+            "rate": "20",
+            "ttcCents": 1265,
+            "baseHtCents": 1054,
+            "vatCents": 211
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 11261,
-              "tenderedCents": 11972
+              "amountCents": 11261
             }
           ],
           "expected": {
@@ -7817,13 +9901,26 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 1738,
+        "discountCents": 0,
+        "totalTtcCents": 1738,
+        "totalHtCents": 1702,
+        "totalVatCents": 36,
+        "groups": [
+          {
+            "rate": "2.1",
+            "ttcCents": 1738,
+            "baseHtCents": 1702,
+            "vatCents": 36
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 1947,
-              "tenderedCents": 2515
+              "amountCents": 1947
             }
           ],
           "expected": {
@@ -7904,13 +10001,44 @@
           "modifiersExtraCents": 202
         }
       ],
+      "order": {
+        "subtotalCents": 8058,
+        "discountCents": 4029,
+        "totalTtcCents": 4029,
+        "totalHtCents": 3549,
+        "totalVatCents": 480,
+        "groups": [
+          {
+            "rate": "2.1",
+            "ttcCents": 0,
+            "baseHtCents": 0,
+            "vatCents": 0
+          },
+          {
+            "rate": "5.5",
+            "ttcCents": 1361,
+            "baseHtCents": 1290,
+            "vatCents": 71
+          },
+          {
+            "rate": "10",
+            "ttcCents": 474,
+            "baseHtCents": 431,
+            "vatCents": 43
+          },
+          {
+            "rate": "20",
+            "ttcCents": 2194,
+            "baseHtCents": 1828,
+            "vatCents": 366
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 4516,
-              "tenderedCents": 4680
+              "amountCents": 4516
             }
           ],
           "expected": {
@@ -7982,13 +10110,44 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 38271,
+        "discountCents": 1914,
+        "totalTtcCents": 36357,
+        "totalHtCents": 35089,
+        "totalVatCents": 1268,
+        "groups": [
+          {
+            "rate": "0",
+            "ttcCents": 1876,
+            "baseHtCents": 1876,
+            "vatCents": 0
+          },
+          {
+            "rate": "2.1",
+            "ttcCents": 16802,
+            "baseHtCents": 16456,
+            "vatCents": 346
+          },
+          {
+            "rate": "5.5",
+            "ttcCents": 17679,
+            "baseHtCents": 16757,
+            "vatCents": 922
+          },
+          {
+            "rate": "20",
+            "ttcCents": 0,
+            "baseHtCents": 0,
+            "vatCents": 0
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 36357,
-              "tenderedCents": 36663
+              "amountCents": 36357
             }
           ],
           "expected": {
@@ -8033,13 +10192,32 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 13584,
+        "discountCents": 2876,
+        "totalTtcCents": 10708,
+        "totalHtCents": 10432,
+        "totalVatCents": 276,
+        "groups": [
+          {
+            "rate": "2.1",
+            "ttcCents": 8945,
+            "baseHtCents": 8761,
+            "vatCents": 184
+          },
+          {
+            "rate": "5.5",
+            "ttcCents": 1763,
+            "baseHtCents": 1671,
+            "vatCents": 92
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 1397,
-              "tenderedCents": 1444
+              "amountCents": 1397
             }
           ],
           "expected": {
@@ -8053,9 +10231,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 2835,
-              "tenderedCents": 2835
+              "amountCents": 2835
             }
           ],
           "expected": {
@@ -8069,9 +10245,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 2396,
-              "tenderedCents": 2754
+              "amountCents": 2396
             }
           ],
           "expected": {
@@ -8085,9 +10259,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 3973,
-              "tenderedCents": 3973
+              "amountCents": 3973
             }
           ],
           "expected": {
@@ -8101,9 +10273,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 112,
-              "tenderedCents": 627
+              "amountCents": 112
             }
           ],
           "expected": {
@@ -8152,13 +10322,38 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 19630,
+        "discountCents": 276,
+        "totalTtcCents": 19354,
+        "totalHtCents": 18063,
+        "totalVatCents": 1291,
+        "groups": [
+          {
+            "rate": "2.1",
+            "ttcCents": 3891,
+            "baseHtCents": 3811,
+            "vatCents": 80
+          },
+          {
+            "rate": "5.5",
+            "ttcCents": 5028,
+            "baseHtCents": 4766,
+            "vatCents": 262
+          },
+          {
+            "rate": "10",
+            "ttcCents": 10435,
+            "baseHtCents": 9486,
+            "vatCents": 949
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 19354,
-              "tenderedCents": 19665
+              "amountCents": 19354
             }
           ],
           "expected": {
@@ -8225,13 +10420,38 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 63932,
+        "discountCents": 0,
+        "totalTtcCents": 63932,
+        "totalHtCents": 61916,
+        "totalVatCents": 2016,
+        "groups": [
+          {
+            "rate": "2.1",
+            "ttcCents": 45941,
+            "baseHtCents": 44996,
+            "vatCents": 945
+          },
+          {
+            "rate": "5.5",
+            "ttcCents": 16835,
+            "baseHtCents": 15957,
+            "vatCents": 878
+          },
+          {
+            "rate": "20",
+            "ttcCents": 1156,
+            "baseHtCents": 963,
+            "vatCents": 193
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 63932,
-              "tenderedCents": 64112
+              "amountCents": 63932
             }
           ],
           "expected": {
@@ -8298,13 +10518,44 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 17471,
+        "discountCents": 874,
+        "totalTtcCents": 16597,
+        "totalHtCents": 16089,
+        "totalVatCents": 508,
+        "groups": [
+          {
+            "rate": "0",
+            "ttcCents": 6127,
+            "baseHtCents": 6127,
+            "vatCents": 0
+          },
+          {
+            "rate": "2.1",
+            "ttcCents": 3067,
+            "baseHtCents": 3004,
+            "vatCents": 63
+          },
+          {
+            "rate": "5.5",
+            "ttcCents": 5886,
+            "baseHtCents": 5579,
+            "vatCents": 307
+          },
+          {
+            "rate": "10",
+            "ttcCents": 1517,
+            "baseHtCents": 1379,
+            "vatCents": 138
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 9997,
-              "tenderedCents": 10195
+              "amountCents": 9997
             }
           ],
           "expected": {
@@ -8318,9 +10569,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 4687,
-              "tenderedCents": 4687
+              "amountCents": 4687
             }
           ],
           "expected": {
@@ -8334,9 +10583,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 1913,
-              "tenderedCents": 2588
+              "amountCents": 1913
             }
           ],
           "expected": {
@@ -8372,13 +10619,26 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 13775,
+        "discountCents": 3612,
+        "totalTtcCents": 10163,
+        "totalHtCents": 9239,
+        "totalVatCents": 924,
+        "groups": [
+          {
+            "rate": "10",
+            "ttcCents": 10163,
+            "baseHtCents": 9239,
+            "vatCents": 924
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 1685,
-              "tenderedCents": 1923
+              "amountCents": 1685
             }
           ],
           "expected": {
@@ -8392,9 +10652,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 2065,
-              "tenderedCents": 2065
+              "amountCents": 2065
             }
           ],
           "expected": {
@@ -8408,9 +10666,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 2868,
-              "tenderedCents": 2995
+              "amountCents": 2868
             }
           ],
           "expected": {
@@ -8424,9 +10680,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 354,
-              "tenderedCents": 354
+              "amountCents": 354
             }
           ],
           "expected": {
@@ -8440,9 +10694,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 3191,
-              "tenderedCents": 3209
+              "amountCents": 3191
             }
           ],
           "expected": {
@@ -8518,13 +10770,38 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 7223,
+        "discountCents": 653,
+        "totalTtcCents": 6570,
+        "totalHtCents": 6511,
+        "totalVatCents": 59,
+        "groups": [
+          {
+            "rate": "0",
+            "ttcCents": 5924,
+            "baseHtCents": 5924,
+            "vatCents": 0
+          },
+          {
+            "rate": "2.1",
+            "ttcCents": 0,
+            "baseHtCents": 0,
+            "vatCents": 0
+          },
+          {
+            "rate": "10",
+            "ttcCents": 646,
+            "baseHtCents": 587,
+            "vatCents": 59
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 6570,
-              "tenderedCents": 7095
+              "amountCents": 6570
             }
           ],
           "expected": {
@@ -8600,13 +10877,38 @@
           "modifiersExtraCents": 41
         }
       ],
+      "order": {
+        "subtotalCents": 22010,
+        "discountCents": 0,
+        "totalTtcCents": 22010,
+        "totalHtCents": 20516,
+        "totalVatCents": 1494,
+        "groups": [
+          {
+            "rate": "2.1",
+            "ttcCents": 3866,
+            "baseHtCents": 3786,
+            "vatCents": 80
+          },
+          {
+            "rate": "5.5",
+            "ttcCents": 6081,
+            "baseHtCents": 5764,
+            "vatCents": 317
+          },
+          {
+            "rate": "10",
+            "ttcCents": 12063,
+            "baseHtCents": 10966,
+            "vatCents": 1097
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 7620,
-              "tenderedCents": 7913
+              "amountCents": 7620
             }
           ],
           "expected": {
@@ -8620,9 +10922,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 3403,
-              "tenderedCents": 3403
+              "amountCents": 3403
             }
           ],
           "expected": {
@@ -8636,9 +10936,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 1620,
-              "tenderedCents": 2291
+              "amountCents": 1620
             }
           ],
           "expected": {
@@ -8652,9 +10950,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 3803,
-              "tenderedCents": 3803
+              "amountCents": 3803
             }
           ],
           "expected": {
@@ -8668,9 +10964,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 5564,
-              "tenderedCents": 6019
+              "amountCents": 5564
             }
           ],
           "expected": {
@@ -8710,13 +11004,32 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 7973,
+        "discountCents": 399,
+        "totalTtcCents": 7574,
+        "totalHtCents": 6792,
+        "totalVatCents": 782,
+        "groups": [
+          {
+            "rate": "0",
+            "ttcCents": 2880,
+            "baseHtCents": 2880,
+            "vatCents": 0
+          },
+          {
+            "rate": "20",
+            "ttcCents": 4694,
+            "baseHtCents": 3912,
+            "vatCents": 782
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 5868,
-              "tenderedCents": 5938
+              "amountCents": 5868
             }
           ],
           "expected": {
@@ -8730,9 +11043,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 1706,
-              "tenderedCents": 1706
+              "amountCents": 1706
             }
           ],
           "expected": {
@@ -8808,13 +11119,38 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 35797,
+        "discountCents": 0,
+        "totalTtcCents": 35797,
+        "totalHtCents": 34531,
+        "totalVatCents": 1266,
+        "groups": [
+          {
+            "rate": "0",
+            "ttcCents": 7448,
+            "baseHtCents": 7448,
+            "vatCents": 0
+          },
+          {
+            "rate": "2.1",
+            "ttcCents": 18640,
+            "baseHtCents": 18257,
+            "vatCents": 383
+          },
+          {
+            "rate": "10",
+            "ttcCents": 9709,
+            "baseHtCents": 8826,
+            "vatCents": 883
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 36025,
-              "tenderedCents": 36111
+              "amountCents": 36025
             }
           ],
           "expected": {
@@ -8890,13 +11226,44 @@
           "modifiersExtraCents": 107
         }
       ],
+      "order": {
+        "subtotalCents": 15245,
+        "discountCents": 7346,
+        "totalTtcCents": 7899,
+        "totalHtCents": 7502,
+        "totalVatCents": 397,
+        "groups": [
+          {
+            "rate": "0",
+            "ttcCents": 1921,
+            "baseHtCents": 1921,
+            "vatCents": 0
+          },
+          {
+            "rate": "2.1",
+            "ttcCents": 2746,
+            "baseHtCents": 2690,
+            "vatCents": 56
+          },
+          {
+            "rate": "5.5",
+            "ttcCents": 1726,
+            "baseHtCents": 1636,
+            "vatCents": 90
+          },
+          {
+            "rate": "20",
+            "ttcCents": 1506,
+            "baseHtCents": 1255,
+            "vatCents": 251
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 2959,
-              "tenderedCents": 3328
+              "amountCents": 2959
             }
           ],
           "expected": {
@@ -8910,9 +11277,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 463,
-              "tenderedCents": 463
+              "amountCents": 463
             }
           ],
           "expected": {
@@ -8926,9 +11291,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 4477,
-              "tenderedCents": 4827
+              "amountCents": 4477
             }
           ],
           "expected": {
@@ -8968,13 +11331,32 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 6701,
+        "discountCents": 0,
+        "totalTtcCents": 6701,
+        "totalHtCents": 6092,
+        "totalVatCents": 609,
+        "groups": [
+          {
+            "rate": "5.5",
+            "ttcCents": 0,
+            "baseHtCents": 0,
+            "vatCents": 0
+          },
+          {
+            "rate": "10",
+            "ttcCents": 6701,
+            "baseHtCents": 6092,
+            "vatCents": 609
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 795,
-              "tenderedCents": 1536
+              "amountCents": 795
             }
           ],
           "expected": {
@@ -8988,9 +11370,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 6265,
-              "tenderedCents": 6265
+              "amountCents": 6265
             }
           ],
           "expected": {
@@ -9039,13 +11419,38 @@
           "modifiersExtraCents": 181
         }
       ],
+      "order": {
+        "subtotalCents": 5250,
+        "discountCents": 2625,
+        "totalTtcCents": 2625,
+        "totalHtCents": 2460,
+        "totalVatCents": 165,
+        "groups": [
+          {
+            "rate": "2.1",
+            "ttcCents": 1863,
+            "baseHtCents": 1825,
+            "vatCents": 38
+          },
+          {
+            "rate": "10",
+            "ttcCents": 0,
+            "baseHtCents": 0,
+            "vatCents": 0
+          },
+          {
+            "rate": "20",
+            "ttcCents": 762,
+            "baseHtCents": 635,
+            "vatCents": 127
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 2625,
-              "tenderedCents": 3094
+              "amountCents": 2625
             }
           ],
           "expected": {
@@ -9112,13 +11517,38 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 9906,
+        "discountCents": 2463,
+        "totalTtcCents": 7443,
+        "totalHtCents": 6203,
+        "totalVatCents": 1240,
+        "groups": [
+          {
+            "rate": "0",
+            "ttcCents": 0,
+            "baseHtCents": 0,
+            "vatCents": 0
+          },
+          {
+            "rate": "10",
+            "ttcCents": 0,
+            "baseHtCents": 0,
+            "vatCents": 0
+          },
+          {
+            "rate": "20",
+            "ttcCents": 7443,
+            "baseHtCents": 6203,
+            "vatCents": 1240
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 813,
-              "tenderedCents": 833
+              "amountCents": 813
             }
           ],
           "expected": {
@@ -9132,9 +11562,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 6007,
-              "tenderedCents": 6007
+              "amountCents": 6007
             }
           ],
           "expected": {
@@ -9148,9 +11576,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 623,
-              "tenderedCents": 716
+              "amountCents": 623
             }
           ],
           "expected": {
@@ -9195,13 +11621,32 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 15105,
+        "discountCents": 6792,
+        "totalTtcCents": 8313,
+        "totalHtCents": 7644,
+        "totalVatCents": 669,
+        "groups": [
+          {
+            "rate": "5.5",
+            "ttcCents": 2227,
+            "baseHtCents": 2111,
+            "vatCents": 116
+          },
+          {
+            "rate": "10",
+            "ttcCents": 6086,
+            "baseHtCents": 5533,
+            "vatCents": 553
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 3290,
-              "tenderedCents": 3413
+              "amountCents": 3290
             }
           ],
           "expected": {
@@ -9215,9 +11660,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 5056,
-              "tenderedCents": 5056
+              "amountCents": 5056
             }
           ],
           "expected": {
@@ -9293,13 +11736,38 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 30039,
+        "discountCents": 1502,
+        "totalTtcCents": 28537,
+        "totalHtCents": 27938,
+        "totalVatCents": 599,
+        "groups": [
+          {
+            "rate": "0",
+            "ttcCents": 1110,
+            "baseHtCents": 1110,
+            "vatCents": 0
+          },
+          {
+            "rate": "2.1",
+            "ttcCents": 26306,
+            "baseHtCents": 25765,
+            "vatCents": 541
+          },
+          {
+            "rate": "5.5",
+            "ttcCents": 1121,
+            "baseHtCents": 1063,
+            "vatCents": 58
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 17483,
-              "tenderedCents": 17724
+              "amountCents": 17483
             }
           ],
           "expected": {
@@ -9313,9 +11781,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 11054,
-              "tenderedCents": 11054
+              "amountCents": 11054
             }
           ],
           "expected": {
@@ -9355,13 +11821,32 @@
           "modifiersExtraCents": 83
         }
       ],
+      "order": {
+        "subtotalCents": 17264,
+        "discountCents": 8632,
+        "totalTtcCents": 8632,
+        "totalHtCents": 8594,
+        "totalVatCents": 38,
+        "groups": [
+          {
+            "rate": "0",
+            "ttcCents": 6773,
+            "baseHtCents": 6773,
+            "vatCents": 0
+          },
+          {
+            "rate": "2.1",
+            "ttcCents": 1859,
+            "baseHtCents": 1821,
+            "vatCents": 38
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 8850,
-              "tenderedCents": 9472
+              "amountCents": 8850
             }
           ],
           "expected": {
@@ -9442,13 +11927,44 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 12192,
+        "discountCents": 6096,
+        "totalTtcCents": 6096,
+        "totalHtCents": 5864,
+        "totalVatCents": 232,
+        "groups": [
+          {
+            "rate": "0",
+            "ttcCents": 0,
+            "baseHtCents": 0,
+            "vatCents": 0
+          },
+          {
+            "rate": "2.1",
+            "ttcCents": 4581,
+            "baseHtCents": 4487,
+            "vatCents": 94
+          },
+          {
+            "rate": "10",
+            "ttcCents": 1515,
+            "baseHtCents": 1377,
+            "vatCents": 138
+          },
+          {
+            "rate": "20",
+            "ttcCents": 0,
+            "baseHtCents": 0,
+            "vatCents": 0
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 2464,
-              "tenderedCents": 2913
+              "amountCents": 2464
             }
           ],
           "expected": {
@@ -9462,9 +11978,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 1394,
-              "tenderedCents": 1394
+              "amountCents": 1394
             }
           ],
           "expected": {
@@ -9478,9 +11992,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 1345,
-              "tenderedCents": 1584
+              "amountCents": 1345
             }
           ],
           "expected": {
@@ -9494,9 +12006,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 111,
-              "tenderedCents": 111
+              "amountCents": 111
             }
           ],
           "expected": {
@@ -9510,9 +12020,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 782,
-              "tenderedCents": 861
+              "amountCents": 782
             }
           ],
           "expected": {
@@ -9552,13 +12060,32 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 9704,
+        "discountCents": 3884,
+        "totalTtcCents": 5820,
+        "totalHtCents": 5619,
+        "totalVatCents": 201,
+        "groups": [
+          {
+            "rate": "2.1",
+            "ttcCents": 4660,
+            "baseHtCents": 4564,
+            "vatCents": 96
+          },
+          {
+            "rate": "10",
+            "ttcCents": 1160,
+            "baseHtCents": 1055,
+            "vatCents": 105
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 4061,
-              "tenderedCents": 4211
+              "amountCents": 4061
             }
           ],
           "expected": {
@@ -9572,9 +12099,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 1324,
-              "tenderedCents": 1324
+              "amountCents": 1324
             }
           ],
           "expected": {
@@ -9588,9 +12113,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 744,
-              "tenderedCents": 1366
+              "amountCents": 744
             }
           ],
           "expected": {
@@ -9653,13 +12176,38 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 12460,
+        "discountCents": 623,
+        "totalTtcCents": 11837,
+        "totalHtCents": 11025,
+        "totalVatCents": 812,
+        "groups": [
+          {
+            "rate": "0",
+            "ttcCents": 5191,
+            "baseHtCents": 5191,
+            "vatCents": 0
+          },
+          {
+            "rate": "10",
+            "ttcCents": 3895,
+            "baseHtCents": 3541,
+            "vatCents": 354
+          },
+          {
+            "rate": "20",
+            "ttcCents": 2751,
+            "baseHtCents": 2293,
+            "vatCents": 458
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 11837,
-              "tenderedCents": 12481
+              "amountCents": 11837
             }
           ],
           "expected": {
@@ -9726,13 +12274,44 @@
           "modifiersExtraCents": 33
         }
       ],
+      "order": {
+        "subtotalCents": 26061,
+        "discountCents": 2166,
+        "totalTtcCents": 23895,
+        "totalHtCents": 21704,
+        "totalVatCents": 2191,
+        "groups": [
+          {
+            "rate": "0",
+            "ttcCents": 1102,
+            "baseHtCents": 1102,
+            "vatCents": 0
+          },
+          {
+            "rate": "5.5",
+            "ttcCents": 7812,
+            "baseHtCents": 7405,
+            "vatCents": 407
+          },
+          {
+            "rate": "10",
+            "ttcCents": 9405,
+            "baseHtCents": 8550,
+            "vatCents": 855
+          },
+          {
+            "rate": "20",
+            "ttcCents": 5576,
+            "baseHtCents": 4647,
+            "vatCents": 929
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 1915,
-              "tenderedCents": 2599
+              "amountCents": 1915
             }
           ],
           "expected": {
@@ -9746,9 +12325,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 10669,
-              "tenderedCents": 10669
+              "amountCents": 10669
             }
           ],
           "expected": {
@@ -9762,9 +12339,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 7030,
-              "tenderedCents": 7382
+              "amountCents": 7030
             }
           ],
           "expected": {
@@ -9778,9 +12353,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 3613,
-              "tenderedCents": 3613
+              "amountCents": 3613
             }
           ],
           "expected": {
@@ -9794,9 +12367,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 668,
-              "tenderedCents": 1108
+              "amountCents": 668
             }
           ],
           "expected": {
@@ -9836,13 +12407,32 @@
           "modifiersExtraCents": 272
         }
       ],
+      "order": {
+        "subtotalCents": 12737,
+        "discountCents": 0,
+        "totalTtcCents": 12737,
+        "totalHtCents": 12119,
+        "totalVatCents": 618,
+        "groups": [
+          {
+            "rate": "0",
+            "ttcCents": 892,
+            "baseHtCents": 892,
+            "vatCents": 0
+          },
+          {
+            "rate": "5.5",
+            "ttcCents": 11845,
+            "baseHtCents": 11227,
+            "vatCents": 618
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 9581,
-              "tenderedCents": 9970
+              "amountCents": 9581
             }
           ],
           "expected": {
@@ -9856,9 +12446,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 1254,
-              "tenderedCents": 1254
+              "amountCents": 1254
             }
           ],
           "expected": {
@@ -9872,9 +12460,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 161,
-              "tenderedCents": 578
+              "amountCents": 161
             }
           ],
           "expected": {
@@ -9888,9 +12474,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 872,
-              "tenderedCents": 872
+              "amountCents": 872
             }
           ],
           "expected": {
@@ -9904,9 +12488,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 1211,
-              "tenderedCents": 1279
+              "amountCents": 1211
             }
           ],
           "expected": {
@@ -9973,13 +12555,44 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 42512,
+        "discountCents": 14169,
+        "totalTtcCents": 28343,
+        "totalHtCents": 25898,
+        "totalVatCents": 2445,
+        "groups": [
+          {
+            "rate": "2.1",
+            "ttcCents": 6846,
+            "baseHtCents": 6705,
+            "vatCents": 141
+          },
+          {
+            "rate": "5.5",
+            "ttcCents": 4284,
+            "baseHtCents": 4061,
+            "vatCents": 223
+          },
+          {
+            "rate": "10",
+            "ttcCents": 10389,
+            "baseHtCents": 9445,
+            "vatCents": 944
+          },
+          {
+            "rate": "20",
+            "ttcCents": 6824,
+            "baseHtCents": 5687,
+            "vatCents": 1137
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 3415,
-              "tenderedCents": 3760
+              "amountCents": 3415
             }
           ],
           "expected": {
@@ -9993,9 +12606,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 24928,
-              "tenderedCents": 24928
+              "amountCents": 24928
             }
           ],
           "expected": {
@@ -10035,13 +12646,32 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 4568,
+        "discountCents": 457,
+        "totalTtcCents": 4111,
+        "totalHtCents": 4020,
+        "totalVatCents": 91,
+        "groups": [
+          {
+            "rate": "0",
+            "ttcCents": 2363,
+            "baseHtCents": 2363,
+            "vatCents": 0
+          },
+          {
+            "rate": "5.5",
+            "ttcCents": 1748,
+            "baseHtCents": 1657,
+            "vatCents": 91
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 2026,
-              "tenderedCents": 2723
+              "amountCents": 2026
             }
           ],
           "expected": {
@@ -10055,9 +12685,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 2415,
-              "tenderedCents": 2415
+              "amountCents": 2415
             }
           ],
           "expected": {
@@ -10088,13 +12716,26 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 7714,
+        "discountCents": 6234,
+        "totalTtcCents": 1480,
+        "totalHtCents": 1480,
+        "totalVatCents": 0,
+        "groups": [
+          {
+            "rate": "0",
+            "ttcCents": 1480,
+            "baseHtCents": 1480,
+            "vatCents": 0
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 221,
-              "tenderedCents": 497
+              "amountCents": 221
             }
           ],
           "expected": {
@@ -10108,9 +12749,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 800,
-              "tenderedCents": 800
+              "amountCents": 800
             }
           ],
           "expected": {
@@ -10124,9 +12763,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 459,
-              "tenderedCents": 1204
+              "amountCents": 459
             }
           ],
           "expected": {
@@ -10157,13 +12794,26 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 4154,
+        "discountCents": 4154,
+        "totalTtcCents": 0,
+        "totalHtCents": 0,
+        "totalVatCents": 0,
+        "groups": [
+          {
+            "rate": "5.5",
+            "ttcCents": 0,
+            "baseHtCents": 0,
+            "vatCents": 0
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 464,
-              "tenderedCents": 998
+              "amountCents": 464
             }
           ],
           "expected": {
@@ -10230,13 +12880,38 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 25924,
+        "discountCents": 1927,
+        "totalTtcCents": 23997,
+        "totalHtCents": 23531,
+        "totalVatCents": 466,
+        "groups": [
+          {
+            "rate": "0",
+            "ttcCents": 5436,
+            "baseHtCents": 5436,
+            "vatCents": 0
+          },
+          {
+            "rate": "2.1",
+            "ttcCents": 15901,
+            "baseHtCents": 15574,
+            "vatCents": 327
+          },
+          {
+            "rate": "5.5",
+            "ttcCents": 2660,
+            "baseHtCents": 2521,
+            "vatCents": 139
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 16606,
-              "tenderedCents": 16837
+              "amountCents": 16606
             }
           ],
           "expected": {
@@ -10250,9 +12925,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 5619,
-              "tenderedCents": 5619
+              "amountCents": 5619
             }
           ],
           "expected": {
@@ -10266,9 +12939,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 1772,
-              "tenderedCents": 2088
+              "amountCents": 1772
             }
           ],
           "expected": {
@@ -10299,13 +12970,26 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 2604,
+        "discountCents": 0,
+        "totalTtcCents": 2604,
+        "totalHtCents": 2367,
+        "totalVatCents": 237,
+        "groups": [
+          {
+            "rate": "10",
+            "ttcCents": 2604,
+            "baseHtCents": 2367,
+            "vatCents": 237
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 163,
-              "tenderedCents": 697
+              "amountCents": 163
             }
           ],
           "expected": {
@@ -10319,9 +13003,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 122,
-              "tenderedCents": 122
+              "amountCents": 122
             }
           ],
           "expected": {
@@ -10335,9 +13017,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 612,
-              "tenderedCents": 1017
+              "amountCents": 612
             }
           ],
           "expected": {
@@ -10351,9 +13031,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 891,
-              "tenderedCents": 891
+              "amountCents": 891
             }
           ],
           "expected": {
@@ -10367,9 +13045,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 816,
-              "tenderedCents": 959
+              "amountCents": 816
             }
           ],
           "expected": {
@@ -10409,13 +13085,26 @@
           "modifiersExtraCents": 186
         }
       ],
+      "order": {
+        "subtotalCents": 12369,
+        "discountCents": 6114,
+        "totalTtcCents": 6255,
+        "totalHtCents": 6255,
+        "totalVatCents": 0,
+        "groups": [
+          {
+            "rate": "0",
+            "ttcCents": 6255,
+            "baseHtCents": 6255,
+            "vatCents": 0
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 1282,
-              "tenderedCents": 1949
+              "amountCents": 1282
             }
           ],
           "expected": {
@@ -10429,9 +13118,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 1078,
-              "tenderedCents": 1078
+              "amountCents": 1078
             }
           ],
           "expected": {
@@ -10445,9 +13132,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 1313,
-              "tenderedCents": 1761
+              "amountCents": 1313
             }
           ],
           "expected": {
@@ -10461,9 +13146,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 2029,
-              "tenderedCents": 2029
+              "amountCents": 2029
             }
           ],
           "expected": {
@@ -10477,9 +13160,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 682,
-              "tenderedCents": 1139
+              "amountCents": 682
             }
           ],
           "expected": {
@@ -10519,13 +13200,32 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 2709,
+        "discountCents": 135,
+        "totalTtcCents": 2574,
+        "totalHtCents": 2145,
+        "totalVatCents": 429,
+        "groups": [
+          {
+            "rate": "10",
+            "ttcCents": 0,
+            "baseHtCents": 0,
+            "vatCents": 0
+          },
+          {
+            "rate": "20",
+            "ttcCents": 2574,
+            "baseHtCents": 2145,
+            "vatCents": 429
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 199,
-              "tenderedCents": 808
+              "amountCents": 199
             }
           ],
           "expected": {
@@ -10539,9 +13239,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 1238,
-              "tenderedCents": 1238
+              "amountCents": 1238
             }
           ],
           "expected": {
@@ -10555,9 +13253,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 1137,
-              "tenderedCents": 1485
+              "amountCents": 1137
             }
           ],
           "expected": {
@@ -10602,13 +13298,32 @@
           "modifiersExtraCents": 116
         }
       ],
+      "order": {
+        "subtotalCents": 21890,
+        "discountCents": 0,
+        "totalTtcCents": 21890,
+        "totalHtCents": 21074,
+        "totalVatCents": 816,
+        "groups": [
+          {
+            "rate": "0",
+            "ttcCents": 6240,
+            "baseHtCents": 6240,
+            "vatCents": 0
+          },
+          {
+            "rate": "5.5",
+            "ttcCents": 15650,
+            "baseHtCents": 14834,
+            "vatCents": 816
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 11889,
-              "tenderedCents": 12065
+              "amountCents": 11889
             }
           ],
           "expected": {
@@ -10622,9 +13337,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 6505,
-              "tenderedCents": 6505
+              "amountCents": 6505
             }
           ],
           "expected": {
@@ -10638,9 +13351,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 3496,
-              "tenderedCents": 4006
+              "amountCents": 3496
             }
           ],
           "expected": {
@@ -10698,13 +13409,44 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 20460,
+        "discountCents": 6134,
+        "totalTtcCents": 14326,
+        "totalHtCents": 13538,
+        "totalVatCents": 788,
+        "groups": [
+          {
+            "rate": "0",
+            "ttcCents": 957,
+            "baseHtCents": 957,
+            "vatCents": 0
+          },
+          {
+            "rate": "2.1",
+            "ttcCents": 752,
+            "baseHtCents": 737,
+            "vatCents": 15
+          },
+          {
+            "rate": "5.5",
+            "ttcCents": 9652,
+            "baseHtCents": 9149,
+            "vatCents": 503
+          },
+          {
+            "rate": "10",
+            "ttcCents": 2965,
+            "baseHtCents": 2695,
+            "vatCents": 270
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 14326,
-              "tenderedCents": 14832
+              "amountCents": 14326
             }
           ],
           "expected": {
@@ -10758,13 +13500,38 @@
           "modifiersExtraCents": 0
         }
       ],
+      "order": {
+        "subtotalCents": 21284,
+        "discountCents": 2456,
+        "totalTtcCents": 18828,
+        "totalHtCents": 17942,
+        "totalVatCents": 886,
+        "groups": [
+          {
+            "rate": "0",
+            "ttcCents": 8106,
+            "baseHtCents": 8106,
+            "vatCents": 0
+          },
+          {
+            "rate": "2.1",
+            "ttcCents": 1267,
+            "baseHtCents": 1241,
+            "vatCents": 26
+          },
+          {
+            "rate": "10",
+            "ttcCents": 9455,
+            "baseHtCents": 8595,
+            "vatCents": 860
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 1490,
-              "tenderedCents": 1760
+              "amountCents": 1490
             }
           ],
           "expected": {
@@ -10778,9 +13545,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 1004,
-              "tenderedCents": 1004
+              "amountCents": 1004
             }
           ],
           "expected": {
@@ -10794,9 +13559,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 7543,
-              "tenderedCents": 8222
+              "amountCents": 7543
             }
           ],
           "expected": {
@@ -10810,9 +13573,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 1495,
-              "tenderedCents": 1495
+              "amountCents": 1495
             }
           ],
           "expected": {
@@ -10826,9 +13587,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 7296,
-              "tenderedCents": 7465
+              "amountCents": 7296
             }
           ],
           "expected": {
@@ -10877,13 +13636,38 @@
           "modifiersExtraCents": 199
         }
       ],
+      "order": {
+        "subtotalCents": 8831,
+        "discountCents": 0,
+        "totalTtcCents": 8831,
+        "totalHtCents": 7723,
+        "totalVatCents": 1108,
+        "groups": [
+          {
+            "rate": "0",
+            "ttcCents": 918,
+            "baseHtCents": 918,
+            "vatCents": 0
+          },
+          {
+            "rate": "2.1",
+            "ttcCents": 1443,
+            "baseHtCents": 1413,
+            "vatCents": 30
+          },
+          {
+            "rate": "20",
+            "ttcCents": 6470,
+            "baseHtCents": 5392,
+            "vatCents": 1078
+          }
+        ]
+      },
       "payments": [
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 529,
-              "tenderedCents": 1206
+              "amountCents": 529
             }
           ],
           "expected": {
@@ -10897,9 +13681,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 243,
-              "tenderedCents": 243
+              "amountCents": 243
             }
           ],
           "expected": {
@@ -10913,9 +13695,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 1630,
-              "tenderedCents": 2356
+              "amountCents": 1630
             }
           ],
           "expected": {
@@ -10929,9 +13709,7 @@
         {
           "tenders": [
             {
-              "method": 1,
-              "amountCents": 3773,
-              "tenderedCents": 3773
+              "amountCents": 3773
             }
           ],
           "expected": {
@@ -10945,9 +13723,7 @@
         {
           "tenders": [
             {
-              "method": 0,
-              "amountCents": 2656,
-              "tenderedCents": 3050
+              "amountCents": 2656
             }
           ],
           "expected": {

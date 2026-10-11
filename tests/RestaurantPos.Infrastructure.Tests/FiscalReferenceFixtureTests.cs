@@ -133,11 +133,18 @@ public class FiscalReferenceFixtureTests
                 isComp = l.IsComp,
                 modifiersExtraCents = l.ModifiersExtraCents,
             }).ToList(),
-            payments = o.Payments.Select((p, i) => new
+            order = new
             {
-                tenders = spec.Payments[i].AmountCents == 0 && p.TenderAmountCents == 0
-                    ? []
-                    : new[] { new { method = (int)spec.Payments[i].Method, amountCents = p.TenderAmountCents, tenderedCents = spec.Payments[i].Method == PaymentMethod.Cash ? p.TenderAmountCents + spec.Payments[i].ExtraTenderedCents : p.TenderAmountCents } },
+                subtotalCents = o.Order.SubtotalCents,
+                discountCents = o.Order.DiscountCents,
+                totalTtcCents = o.Order.TotalTtcCents,
+                totalHtCents = o.Order.TotalHtCents,
+                totalVatCents = o.Order.TotalVatCents,
+                groups = o.Order.Groups.Select(g => new { rate = FiscalScenarios.Rate(g.Rate), ttcCents = g.TtcCents, baseHtCents = g.BaseHtCents, vatCents = g.VatCents }).ToList(),
+            },
+            payments = o.Payments.Select(p => new
+            {
+                tenders = new[] { new { amountCents = p.TenderAmountCents } },
                 expected = new
                 {
                     totalTtcCents = p.TtcCents,
