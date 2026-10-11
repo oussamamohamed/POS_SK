@@ -10,3 +10,4 @@ Base de référence (avant tâche 1) : PosKit 394 · UI 52 · .NET 418
 | 2 Reçu tiré de la ventilation (`ReceiptTaxCalculator`), scénarios partagés `FiscalScenarios`, invariants | fait | 591 | non relancé (FiscalReceiptMathTests rouges attendus jusqu à la tâche 4) | - | aucun |
 | 3 Fixture enrichie (bloc `order` + groupes, `tenders` réduits au montant réglé) | fait | 591 | non relancé (rouge attendu jusqu à la tâche 4) | - | aucun |
 | 4 Swift : `OrderMath.allocate`, `totals` et `FiscalReceiptMath` alignés | fait | non touché | 400 (toutes vertes) | - | aucun |
+| 5 Journée simulée : modèle, grand livre indépendant, harnais d API, journées minimale et riche X/Z | fait | 601 | non touché | - | aucun |
