@@ -1,3 +1,4 @@
+using System.Globalization;
 using FluentAssertions;
 using RestaurantPos.Domain.Entities;
 using RestaurantPos.Domain.Enums;
@@ -126,6 +127,29 @@ public class OrderTaxBreakdownTests
             OrderDestination.EatIn, DiscountType.Percentage, 33.33m,
             Line(1000, 2, 10m, discountPercent: 10m), Line(500, 1, 10m, comp: true), Line(300, 3, 20m, extraCents: 50), Line(1, 1, 5.5m), Line(199, 7, 2.1m));
         AssertInvariants(order, nameof(LineDiscountsModifiersAndQuantities_FeedTheGroups));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void EquivalentRates_FormOneGroup_WithANormalisedScale_WhateverTheLineOrder(bool reversed)
+    {
+        OrderItem[] lines = [Line(1000, 1, 10m), Line(500, 1, 10.0m)];
+        if (reversed)
+        {
+            Array.Reverse(lines);
+        }
+
+        var b = Build(OrderDestination.EatIn, null, 0, lines).CalculateTaxBreakdown();
+        b.Should().ContainSingle();
+        b[0].TaxRatePercent.ToString(CultureInfo.InvariantCulture).Should().Be("10");
+    }
+
+    [Fact]
+    public void RateWithTrailingZero_IsRenderedWithoutIt()
+    {
+        var b = Build(OrderDestination.EatIn, null, 0, Line(1000, 1, 5.50m)).CalculateTaxBreakdown();
+        b.Single().TaxRatePercent.ToString(CultureInfo.InvariantCulture).Should().Be("5.5");
     }
 
     [Fact]

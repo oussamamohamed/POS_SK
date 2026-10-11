@@ -5,6 +5,7 @@ namespace RestaurantPos.Domain.ValueObjects;
 /// <summary>
 /// Répartit un montant en centimes au prorata de poids, par la méthode du plus fort reste : somme des parts exacte,
 /// jamais de part négative ni supérieure à son poids, résultat déterministe (restes égaux départagés par l'ordre des groupes).
+/// Les poids doivent être positifs ou nuls.
 /// </summary>
 public static class TaxAllocation
 {

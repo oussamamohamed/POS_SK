@@ -30,7 +30,7 @@ Une seule source de vérité pour la ventilation fiscale d'une commande, utilis�
 2. **Remise de commande** : la remise (pourcentage ou montant fixe, bornée à zéro) est répartie entre les groupes au prorata du TTC de chaque groupe, selon la **méthode du plus fort reste** (somme exacte, aucune part négative, restes égaux départagés par l'ordre des groupes), qui remplace aussi la règle « dernier groupe prend le reste » de `OrderMath.totals` côté iPad (elle pouvait produire une part négative). Les groupes sont ordonnés par **taux effectif croissant**.
 3. **Découpe** : pour chaque groupe, base HT et TVA par `TaxBreakdownItem.Calculate(taux, part)` (TVA = part − base).
 4. **Totaux** : `TotalHt` = somme des bases ; `Σ TVA = TotalTtc − TotalHt`.
-5. **Reçu** : `TaxBreakdownJson` = TVA par taux effectif (clés et ordre d'apparition inchangés), `TotalHtAmount` = somme des bases, `TotalTtcAmount` = montant fiscal encaissé.
+5. **Reçu** : `TaxBreakdownJson` = TVA par taux effectif (clés = taux effectifs, en ordre croissant des taux), `TotalHtAmount` = somme des bases, `TotalTtcAmount` = montant fiscal encaissé.
 
 ## Règlements partiels et pourboire
 
@@ -74,7 +74,7 @@ Principe : un **générateur .NET** produit la fixture à partir du code réel (
 - Destination : sur place, à emporter, avec et sans taux à emporter défini par ligne.
 - Taux : un, deux, trois, quatre taux mélangés (0 %, 2,1 %, 5,5 %, 10 %, 20 %), mêmes taux en groupes de lignes différentes, ligne à taux de base et ligne à taux à emporter dans la même commande.
 - Lignes : quantité > 1, suppléments, remise ligne (10 %, 33,33 %, 100 %), gratuité, ligne à 0, ligne de 1 centime, lignes à prix impairs qui créent des arrondis au demi-centime.
-- Remise de commande : aucune ; pourcentage (10 %, 33,33 %, 100 %) ; montant fixe inférieur au total, égal au total, supérieur au total (borné à zéro) ; remise de commande combinée à des remises de ligne et des gratuités ; remise sur commande à plusieurs taux (répartition et reste sur le dernier groupe).
+- Remise de commande : aucune ; pourcentage (10 %, 33,33 %, 100 %) ; montant fixe inférieur au total, égal au total, supérieur au total (borné à zéro) ; remise de commande combinée à des remises de ligne et des gratuités ; remise sur commande à plusieurs taux (répartition au plus fort reste).
 - Pourboire : aucun, présent avec règlement unique, présent avec règlement partiel puis solde, pourboire seul sur le dernier règlement.
 - Règlements : un seul ; deux, trois et cinq règlements égaux avec reste de division ; règlements inégaux ; règlements mixtes (espèces avec rendu monnaie, carte, titre-restaurant, carte cadeau) ; règlement partiel laissant un solde (commande non soldée) ; règlement à zéro (commande offerte).
 - Annulations : annulation d'un reçu simple, d'un des reçus d'un règlement fractionné, d'un reçu à emporter à taux réduit, d'un reçu avec remise.

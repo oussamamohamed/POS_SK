@@ -81,7 +81,7 @@ public class Order
             .Select(g => (Rate: g.Key, Ttc: g.Sum(x => x.CalculateTotalTtc().AmountInCents)))
             .ToList();
         long[] shares = TaxAllocation.Allocate(CalculateTotalTtc().AmountInCents, groups.Select(g => g.Ttc).ToList());
-        return groups.Select((g, i) => TaxBreakdownItem.Calculate(g.Rate, shares[i])).ToList();
+        return groups.Select((g, i) => TaxBreakdownItem.Calculate(g.Rate / 1.0000000000000000000000000000m, shares[i])).ToList();
     }
 }
 

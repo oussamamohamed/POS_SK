@@ -6,4 +6,4 @@ Base de référence (avant tâche 1) : PosKit 394 · UI 52 · .NET 418
 
 | Tâche | Statut | .NET | PosKit | Tests UI | Findings de revue ouverts |
 |---|---|---|---|---|---|
-| 1 Répartiteur `TaxAllocation`, ventilation `Order.CalculateTaxBreakdown`, amendement de la spec | fait | 440 | 394 (1 échec attendu : parité `fiscal_reference.json`, HT remise fixe 2576 -> 2318, à résoudre côté Swift) | - | aucun |
+| 1 Répartiteur `TaxAllocation`, ventilation `Order.CalculateTaxBreakdown`, amendement de la spec | fait | 443 | 394 (1 échec attendu : parité `fiscal_reference.json`, HT remise fixe 2576 -> 2318, à résoudre côté Swift) | - | aucun |
