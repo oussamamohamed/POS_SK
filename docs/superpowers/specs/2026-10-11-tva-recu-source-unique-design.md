@@ -47,7 +47,10 @@ Inclus :
 3. Fixture `fiscal_reference.json` régénérée, enrichie (voir « Tests »).
 4. Retrait des deux écarts documentés dans `CLAUDE.md`, mise à jour de `docs/fiscal.md` si la formule y est décrite, mise à jour des tests existants qui figeaient les anciens montants (`ReportAccuracyTests`, `FecExportServiceTests`, `FiscalArchive…`, `PeriodClosure…`, etc.).
 
+5. Test bout en bout d'une **journée simulée** avec vérification de X et Z (voir « Journée simulée »).
+
 Hors périmètre (à traiter séparément) :
+- Rejeu Swift de la journée simulée (attend les rapports X/Z de l'iPad, sous-projet 3).
 - Remise globale de type `Comp` : le .NET l'ignore dans `CalculateTotalTtc` alors que l'iPad la met à zéro. À constater et rapporter, sans le changer ici.
 - Tout changement de format de signature ou de schéma (aucun).
 - Client web (`app.js`) : seulement s'il recalcule la ventilation (à vérifier dans le plan).
@@ -80,6 +83,35 @@ Principe : un **générateur .NET** produit la fixture à partir du code réel (
 - Un jeu **aléatoire déterministe** (graine fixe, plusieurs centaines de commandes générées par le test) rejoue les invariants 1 à 6, pour couvrir ce que la matrice n'énumère pas ; en cas d'échec, la graine et la commande fautive sont affichées.
 
 **Tests unitaires .NET supplémentaires** : `Order.CalculateTaxBreakdown` seul (toutes les remises), reçu du `CheckoutPaymentService` (invariants ci-dessus), Z et FEC sur une commande à emporter (la TVA est bien déclarée au taux réduit, HT par taux exact).
+
+## Journée simulée (test bout en bout, X et Z)
+
+Un test d'intégration rejoue une **journée complète** sur l'API réelle (`PosApiApplicationFactory`, base en mémoire) et vérifie que les rapports **X** (aperçu) et **Z** (clôture scellée) correspondent à la réalité de la journée et sont cohérents entre eux.
+
+**Acteurs et volume**
+- Plusieurs serveurs (comptes de service distincts, plus un responsable et un administrateur) répartis sur **deux ou trois terminaux appairés** (`T01`, `T02`, `T03`) : X et Z sont calculés par terminal (le rapport ne ventile pas par serveur), on vérifie donc chaque terminal **et** le cumul de la salle.
+- Quelques dizaines de commandes, générées de façon déterministe (graine fixe, journal des opérations affiché en cas d'échec).
+
+**Opérations rejouées** (toutes par les endpoints publics, jamais en écrivant directement dans la base) :
+- Commandes **sur place** (tables, couverts, ajout de lignes, envoi cuisine, règlements fractionnés) et **à emporter / comptoir** (numéro de retrait, vente directe), avec taux de TVA mélangés et taux réduits à emporter.
+- Remises de ligne et de commande (pourcentage et montant fixe), gratuités, suppléments, pourboires.
+- Moyens de paiement mixtes : espèces avec rendu monnaie, carte, titre-restaurant, carte cadeau, facturation chambre.
+- Mises en attente puis rappel, mise en attente annulée avec PIN responsable.
+- Annulations de reçus (reçu simple, reçu d'un règlement fractionné, reçu à emporter), duplicata de reçu.
+- Un rapport **X** pris en cours de journée (plusieurs fois, sur chaque terminal) pour vérifier qu'il ne modifie rien.
+
+**Oracle indépendant** : le test tient son propre grand livre, calculé **à partir des entrées** (lignes, taux, remises, règlements) et non à partir des reçus : TTC, HT, TVA par taux, total par moyen de paiement (montants encaissés nets du rendu monnaie), nombre de reçus et d'annulations, par terminal. Il sert de « réalité » à laquelle X et Z sont comparés.
+
+**Vérifications**
+1. **X en cours de journée** : égal au grand livre à cet instant, par terminal ; deux X consécutifs sans opération sont identiques ; X ne crée ni séquence de clôture ni écriture fiscale.
+2. **Z refusé tant qu'une commande reste ouverte** (`409 has_open_orders`), puis accepté une fois toutes les commandes soldées ou annulées.
+3. **Z = grand livre** par terminal : TTC, HT, nombre de reçus (annulations comprises), TVA par taux (clé et montant), total par moyen de paiement ; `TTC − HT = Σ TVA` ; Σ des moyens de paiement = TTC ; les annulations réduisent exactement les totaux.
+4. **Cohérence X ↔ Z** : le X pris juste avant le Z a les mêmes chiffres que le Z ; après le Z, un X repart de zéro (nouvelle période) et ne reprend pas les ventes déjà scellées.
+5. **Cumuls** : Σ des Z des terminaux = grand livre de la salle ; le **grand total perpétuel** du Z du jour augmente exactement du TTC de la journée ; une **deuxième journée** (quelques opérations puis un second Z) ne double pas la première et chaîne correctement (`ClosureSequence`, hash précédent).
+6. **Intégrité** : vérification des chaînes (`verify-chains`) vide après la journée ; le journal contient une entrée `Z_CLOSURE` par clôture, `RECEIPT_VOIDED` par annulation, `DUPLICATE_PRINTED` par duplicata, et l'audit de mise en attente annulée ; le FEC de la journée est équilibré au centime et sa TVA par taux est celle du grand livre.
+7. **Reproductibilité** : la graine est fixe ; un second passage donne les mêmes totaux (hors identifiants et horodatages).
+
+**Réutilisation** : le scénario de la journée est décrit comme des **données** (suite d'opérations + totaux attendus) et non comme du code, pour que le mode autonome de l'iPad puisse le rejouer quand ses rapports X et Z existeront (sous-projet 3). Ce rejeu Swift est hors périmètre ici.
 
 ## Risques
 
