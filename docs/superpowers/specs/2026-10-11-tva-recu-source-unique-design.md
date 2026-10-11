@@ -111,7 +111,7 @@ Un test d'intégration rejoue une **journée complète** sur l'API réelle (`Pos
 6. **Intégrité** : vérification des chaînes (`verify-chains`) vide après la journée ; le journal contient une entrée `Z_CLOSURE` par clôture, `RECEIPT_VOIDED` par annulation, `DUPLICATE_PRINTED` par duplicata, et l'audit de mise en attente annulée ; le FEC de la journée est équilibré au centime et sa TVA par taux est celle du grand livre.
 7. **Reproductibilité** : la graine est fixe ; un second passage donne les mêmes totaux (hors identifiants et horodatages).
 
-**Réutilisation** : le scénario de la journée est décrit comme des **données** (suite d'opérations + totaux attendus) et non comme du code, pour que le mode autonome de l'iPad puisse le rejouer quand ses rapports X et Z existeront (sous-projet 3). Ce rejeu Swift est hors périmètre ici.
+**Réutilisation** : le scénario de la journée est décrit comme des **données** (suite d'opérations + totaux attendus) et non comme du code, pour que le mode autonome de l'iPad puisse le rejouer quand ses rapports X et Z existeront (sous-projet 3). Ce rejeu Swift est hors périmètre de ce correctif mais **obligatoire** : il est inscrit comme condition d'entrée et de sortie du sous-projet 3 dans `docs/plans/ipad-standalone-2-progress.md` (condition 8). Le format des données du scénario (suite d'opérations, grand livre attendu par terminal) doit donc être conçu dès maintenant pour être lisible par le Swift, par exemple en JSON dans `Tests/PosKitTests/Fixtures`, et non enfermé dans du code C#.
 
 ## Risques
 
