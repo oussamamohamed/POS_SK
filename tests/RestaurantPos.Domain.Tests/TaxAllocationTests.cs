@@ -72,4 +72,11 @@ public class TaxAllocationTests
             }
         }
     }
+
+    [Fact]
+    public void Allocate_NegativeWeights_AreTreatedAsZero()
+    {
+        TaxAllocation.Allocate(2, [-1, -1, 5]).Should().Equal(0, 0, 2);
+        TaxAllocation.Allocate(9, [-1, -1, 5]).Should().Equal(0, 0, 5);
+    }
 }

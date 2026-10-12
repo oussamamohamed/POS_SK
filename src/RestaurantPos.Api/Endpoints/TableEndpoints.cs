@@ -53,6 +53,11 @@ public static class TableEndpoints
 
         group.MapPost("/{tableNumber}/items", async (string tableNumber, AddOrderItemsRequest req, ITableManagementService tableService) =>
         {
+            if (req.Items.Any(i => i.Quantity <= 0 || i.UnitPrice < 0 || i.ModifiersPriceExtra < 0))
+            {
+                return Results.BadRequest(new { Message = Texts.T("errors.order_item_invalid") });
+            }
+
             var updated = await tableService.AddOrUpdateTableOrderItemsAsync(tableNumber, req.Items);
             return Results.Ok(updated);
         });

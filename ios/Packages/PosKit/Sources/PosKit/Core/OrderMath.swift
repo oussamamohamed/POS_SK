@@ -147,7 +147,9 @@ public enum OrderMath {
 
     /// Répartit `total` (centimes) au prorata de `weights` par la méthode du plus fort reste : somme exacte, aucune part négative ni
     /// supérieure à son poids, restes égaux départagés par l'ordre des groupes. Miroir de `TaxAllocation.Allocate` (.NET).
-    public static func allocate(total: Int, weights: [Int]) -> [Int] {
+    /// Un poids négatif (rejeté par l'API) compte pour 0, comme côté .NET.
+    public static func allocate(total: Int, weights rawWeights: [Int]) -> [Int] {
+        let weights = rawWeights.map { max(0, $0) }
         var shares = [Int](repeating: 0, count: weights.count)
         let sum = weights.reduce(0, +)
         guard total > 0, sum > 0 else { return shares }

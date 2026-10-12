@@ -54,7 +54,9 @@ extension LocalPosAPI {
 
     public func addItems(table number: String, items: [OrderItemInput]) async throws -> ActiveOrder {
         try requireAuth()
-        guard items.allSatisfy({ $0.quantity > 0 }) else { throw APIError.server(status: 400, message: "La quantité doit être positive.") }
+        guard items.allSatisfy({ $0.quantity > 0 && $0.unitPrice >= .zero && $0.modifiersPriceExtra >= .zero }) else {
+            throw APIError.server(status: 400, message: "Ligne de commande invalide : la quantité doit être positive et les montants ne peuvent pas être négatifs.")
+        }
         let floor = floorRepository, orders = orderRepository
         try db.transaction {
             if try !floor.tableExists(number) { try floor.insert(DiningTable(tableNumber: number, capacity: 2)) }
