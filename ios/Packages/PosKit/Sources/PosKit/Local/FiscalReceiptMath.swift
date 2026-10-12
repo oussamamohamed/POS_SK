@@ -5,7 +5,7 @@ struct FiscalReceiptAmounts: Equatable {
     let htCents: Int
     let taxBreakdownJson: String
     /// HT par taux en centimes, mêmes clés et même ordre que `taxBreakdownJson`. Colonne `HtBreakdownJson`, NON signée (hors hash).
-    var htBreakdownJson: String? = nil
+    let htBreakdownJson: String?
 }
 
 /// Montants d'un reçu : même règle que `ReceiptTaxCalculator` (.NET). La TVA et le HT viennent de la ventilation de la commande par
