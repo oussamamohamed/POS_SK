@@ -91,6 +91,9 @@
   <data name="errors.table_merge_failed" xml:space="preserve">
     <value>Table merge failed.</value>
   </data>
+  <data name="errors.discount_value_precision" xml:space="preserve">
+    <value>Discount value is limited to 2 decimal places.</value>
+  </data>
   <data name="errors.discount_failed" xml:space="preserve">
     <value>Discount operation failed.</value>
   </data>

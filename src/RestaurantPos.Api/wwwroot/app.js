@@ -1183,8 +1183,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         elements.cartItemsList.innerHTML = '';
         let totalHt = 0;
         let totalVat = 0;
-        let totalTtc = 0;
-
         if (state.cart.length === 0) {
             elements.cartItemsList.innerHTML = `
                 <div style="text-align:center;color:#64748b;padding:40px 10px;">
@@ -1213,7 +1211,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             totalHt += lineHt;
             totalVat += lineVat;
-            totalTtc += lineTtc;
 
             const courseClass = (item.course || 'Direct').toLowerCase();
 
@@ -1245,16 +1242,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             `;
             elements.cartItemsList.appendChild(row);
         });
-
-        // Apply global discount if active
-        if (state.globalDiscount) {
-            if (state.globalDiscount.type === 0 || state.globalDiscount.type === 'Percentage') {
-                const discVal = state.globalDiscount.value;
-                totalTtc = Math.max(0, totalTtc * (1.0 - (discVal / 100.0)));
-            } else if (state.globalDiscount.type === 1 || state.globalDiscount.type === 'FixedAmount') {
-                totalTtc = Math.max(0, totalTtc - state.globalDiscount.value);
-            }
-        }
 
         elements.summaryHt.textContent = `${totalHt.toFixed(2)} €`;
         elements.summaryVat.textContent = `${totalVat.toFixed(2)} €`;
@@ -1552,7 +1539,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (target === 'global') {
                     const unit = elements.selectDiscountUnit.value;
                     const type = unit === 'Percentage' ? 0 : 1;
-                    const val = parseFloat(elements.inputDiscountVal.value);
+                    const val = Math.round(parseFloat(elements.inputDiscountVal.value) * 100) / 100; // 2 décimales max : le serveur refuse au-delà
 
                     const res = await fetch(`/api/orders/${state.activeOrderId}/discount`, {
                         method: 'POST',

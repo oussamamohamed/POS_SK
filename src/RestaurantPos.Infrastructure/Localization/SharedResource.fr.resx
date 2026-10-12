@@ -91,6 +91,9 @@
   <data name="errors.table_merge_failed" xml:space="preserve">
     <value>Échec de la fusion de tables.</value>
   </data>
+  <data name="errors.discount_value_precision" xml:space="preserve">
+    <value>La valeur de la remise est limitée à 2 décimales.</value>
+  </data>
   <data name="errors.discount_failed" xml:space="preserve">
     <value>Opération de remise échouée.</value>
   </data>

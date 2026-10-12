@@ -91,6 +91,9 @@
   <data name="errors.table_merge_failed" xml:space="preserve">
     <value>فشل دمج الطاولات.</value>
   </data>
+  <data name="errors.discount_value_precision" xml:space="preserve">
+    <value>قيمة الخصم محدودة بخانتين عشريتين.</value>
+  </data>
   <data name="errors.discount_failed" xml:space="preserve">
     <value>فشلت عملية الخصم.</value>
   </data>

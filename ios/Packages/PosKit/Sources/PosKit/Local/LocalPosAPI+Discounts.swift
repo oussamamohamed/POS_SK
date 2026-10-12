@@ -2,6 +2,8 @@ import Foundation
 
 extension LocalPosAPI {
     private static let discountFailed = APIError.server(status: 400, message: "Opération de remise échouée.")
+    /// Au-delà de 2 décimales, serveur (arrondi au plus loin de zéro) et clients arrondiraient différemment au centime.
+    private static let discountTooPrecise = APIError.server(status: 400, message: "La valeur de la remise est limitée à 2 décimales.")
     private static let compFailed = APIError.server(status: 400, message: "Opération de gratuité échouée.")
 
     /// Remise globale sur la commande. Refusée (même message générique que le serveur) si la valeur est négative, si un pourcentage dépasse
@@ -9,6 +11,9 @@ extension LocalPosAPI {
     public func applyDiscount(orderId: UUID, type: DiscountType, value: Decimal, reason: String, operatorId: UUID?) async throws {
         try requireAuth()
         let trimmed = reason.trimmingCharacters(in: .whitespacesAndNewlines)
+        var cents = value * 100, wholeCents = Decimal()
+        NSDecimalRound(&wholeCents, &cents, 0, .plain)
+        guard cents == wholeCents else { throw Self.discountTooPrecise }
         guard value >= 0, !trimmed.isEmpty, !(type == .percentage && value > 100) else { throw Self.discountFailed }
         let orders = orderRepository, payments = fiscalRepository
         try db.transaction {

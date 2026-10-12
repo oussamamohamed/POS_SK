@@ -45,6 +45,17 @@ struct LocalDiscountTests {
         #expect(after.totalTtcAmount == Money(cents: 1950) && after.globalDiscountType == nil && after.globalDiscountValue == 0)
     }
 
+    @Test func discountWithMoreThanTwoDecimalsIsRefused() async throws {
+        let api = try await makeLocalAPI()
+        let burger = try await localProduct(api, "Burger Gourmet Rossini")
+        let order = try await seat(api, "T1", [localInput(burger)])
+        let tooPrecise = APIError.server(status: 400, message: "La valeur de la remise est limitée à 2 décimales.")
+        for (type, value) in [(DiscountType.fixedAmount, Decimal(string: "1.005")!), (.percentage, Decimal(string: "12.345")!)] {
+            await #expect(throws: tooPrecise) { try await api.applyDiscount(orderId: order.orderId, type: type, value: value, reason: "Geste", operatorId: nil) }
+        }
+        try await api.applyDiscount(orderId: order.orderId, type: .percentage, value: Decimal(string: "12.35")!, reason: "Geste", operatorId: nil)
+    }
+
     @Test func removeDiscountRestoresTheTotal() async throws {
         let api = try await makeLocalAPI()
         let burger = try await localProduct(api, "Burger Gourmet Rossini")
