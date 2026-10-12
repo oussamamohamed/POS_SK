@@ -27,15 +27,20 @@ Tous les findings mineurs du lot sont traités, sauf les deux points ci-dessous.
 | Finding | Résolution |
 |---|---|
 | Poids négatifs (`TaxAllocation.Allocate`, `OrderMath.allocate`) | Résolu : l'API n'a aucun usage légitime d'une ligne négative ; `POST /api/tables/{t}/items` renvoie 400 (`errors.order_item_invalid`) si quantité ≤ 0, prix < 0 ou supplément < 0 ; `LocalPosAPI.addItems` aligné (même condition, même message) ; garde défensive des deux côtés (poids négatif compté 0), test `[-1,-1,5]`. |
-| M3 : libellé « Pourboire » sur tout excédent du FEC | Résolu : le surpaiement sans pourboire est possible (l'API ne plafonne pas le montant d'un règlement) ; libellé neutre « Excédent de règlement / pourboire ». |
+| M3 : libellé « Pourboire » sur tout excédent du FEC | Résolu : libellé neutre « Excédent de règlement / pourboire » conservé ; le surpaiement lui-même est désormais refusé (voir « Surpaiement et règlements ≤ 0 »). |
 | M2 : absorbeur sans borne haute du repli FEC | Non traité volontairement. Le repli ne sert plus qu'aux JSON incohérents et aux bases antérieures à la colonne ; suppression à décider (voir rapport). |
 | m3 Swift : valeur par défaut `htBreakdownJson = nil` | Résolu : propriété sans défaut, appelants explicites. |
 | `InMemoryPosAPI` : TVA d'un reçu partiel selon l'ancienne règle | Résolu : alignée sur `FiscalReceiptMath.amounts`, test de parité `InMemoryReceiptParityTests`. |
 | Pas de scénario « total nul + pourboire » | Résolu : deux scénarios ajoutés (comp et remise 100 %), fixture régénérée (142 scénarios), rejeu Swift vert. |
 | `docs/fiscal.md` : FEC « barres verticales, virgule » | Résolu : tabulations et points, comme le code. |
 | Spec : `isPartial` et « schéma (aucun) » | Résolu. |
+| Surpaiement et règlements ≤ 0 | Résolu : `CheckoutPaymentService.ProcessPaymentTendersAsync` refuse (`IsSuccess = false`, rien d'écrit) un règlement ≤ 0, un total réglé supérieur au solde dû (pourboire inclus dans le dû ; le rendu monnaie passe par `Tendered`) et une liste vide hors commande à total nul. `checkout/pay`, `orders/counter/checkout` (qui renvoyait 200 sur échec) et `sync/receipt` (plus de ligne à prix négatif ni de commande orpheline) répondent 400. Parité iPad : `LocalPosAPI.settle` refusait déjà, même message « Échec de l'encaissement. ». |
+| m1 : prix négatif à la modification d'un article | Résolu : `UpdateProductAsync` refuse comme `CreateProductAsync` ; les endpoints répondent 400 (`errors.product_price_negative`) ; `min="0"` sur `editProdPrice` ; `LocalPosAPI.createProduct` / `updateProduct` alignés. |
+| m3 : test `errors.order_item_invalid` | Résolu : le test vérifie le texte localisé. |
+| Client web : total TTC des tables en flottant | Résolu : `calculateTotalTtc` calcule en centimes entiers avec les arrondis du serveur (par ligne, puis remise de commande). |
 
 ## Findings ouverts restants
 
 - Compte 468600 (pourboires et excédents de règlement) à valider par l'expert-comptable.
 - Rejeu Swift de `day_scenario.json` à faire au sous-projet 3 (condition 8 de `ipad-standalone-2-progress.md`).
+- FEC : séparateur décimal (point ou virgule) à valider avec Test Compta Demat / l'expert-comptable (la tabulation est certaine) ; `docs/fiscal.md` ne prétend plus à la conformité A.47 A-1.
