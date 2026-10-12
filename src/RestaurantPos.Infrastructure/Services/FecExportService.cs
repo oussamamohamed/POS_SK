@@ -186,7 +186,7 @@ public sealed class FecExportService : IFecExportService
                     totalRecords++;
                 }
 
-                // Pourboire : encaissé avec le règlement mais hors reçu fiscal (TTC) ; dette envers le personnel, pas un produit.
+                // Excédent de règlement (pourboire déclaré, ou surpaiement sans pourboire que l'API ne plafonne pas) : encaissé hors reçu fiscal (TTC) ; dette, pas un produit.
                 // Sans cette contrepartie l'écriture serait déséquilibrée du montant du pourboire.
                 long tipCents = receipt.Tenders.Sum(t => Math.Abs(t.Amount.AmountInCents)) - Math.Abs(receipt.TotalTtcAmount.AmountInCents);
                 if (tipCents > 0)
@@ -200,10 +200,10 @@ public sealed class FecExportService : IFecExportService
                         ecritureNumStr,
                         ecritureDateStr,
                         TipsAccount,
-                        "Pourboires a reverser",
+                        "Pourboires et excedents de reglement a reverser",
                         pieceRef,
                         ecritureDateStr,
-                        $"Pourboire {pieceRef}",
+                        $"Excedent de reglement / pourboire {pieceRef}",
                         tipDebit,
                         tipCredit,
                         validDateStr

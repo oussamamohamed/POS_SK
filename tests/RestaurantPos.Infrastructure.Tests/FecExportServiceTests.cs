@@ -222,7 +222,7 @@ public sealed class FecExportServiceTests
     }
     // ---------- Défauts de production du FEC (journée simulée) ----------
 
-    private sealed record Row(string Num, string Account, long Debit, long Credit);
+    private sealed record Row(string Num, string Account, long Debit, long Credit, string Lib = "");
 
     private static Task<List<Row>> FecRowsAsync(
         long ttc, long ht, string taxJson, bool isVoid, params (PaymentMethod Method, long Amount)[] tenders) =>
@@ -270,7 +270,7 @@ public sealed class FecExportServiceTests
         return Encoding.UTF8.GetString(result.FileBytes)
             .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Skip(1)
             .Select(l => l.Split('\t'))
-            .Select(c => new Row(c[2], c[4], Cents(c[11]), Cents(c[12])))
+            .Select(c => new Row(c[2], c[4], Cents(c[11]), Cents(c[12]), c[10]))
             .ToList();
     }
 
@@ -325,6 +325,8 @@ public sealed class FecExportServiceTests
 
         var tip = rows.Single(r => r.Account == "468600");
         (isVoid ? tip.Debit : tip.Credit).Should().Be(200);
+        // L'excédent peut venir d'un surpaiement sans pourboire déclaré : libellé neutre, jamais « Pourboire » seul.
+        tip.Lib.Should().StartWith("Excedent de reglement / pourboire");
         (rows.Single(r => r.Account == "706100").Debit + rows.Single(r => r.Account == "706100").Credit).Should().Be(1000);
         ShouldBalancePerEntry(rows);
     }
