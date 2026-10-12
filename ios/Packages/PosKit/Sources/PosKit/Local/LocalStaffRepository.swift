@@ -64,7 +64,7 @@ struct LocalStaffRepository {
     }
 
     private static func matches(_ row: SQLRow, pin: String) -> Bool {
-        PinHasher.hash(pin: pin, salt: row.string("PinSalt") ?? "") == row.string("PinHash")
+        PinHasher.verify(pin: pin, salt: row.string("PinSalt") ?? "", storedHash: row.string("PinHash") ?? "")
     }
 
     private static func decode(_ row: SQLRow) -> StaffMember {

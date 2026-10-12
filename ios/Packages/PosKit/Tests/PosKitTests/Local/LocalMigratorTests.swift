@@ -28,8 +28,14 @@ struct LocalMigratorTests {
     }
 
     @Test func pinHashMatchesDotNetAlgorithm() {
-        // SHA-256("00ff" + "1234"), hexadécimal minuscule — même calcul que OperatorAuthenticationService.HashPin.
-        #expect(PinHasher.hash(pin: "1234", salt: "00ff") == "60dfb59aeea14604cda73d3d6d1d95f4fbf93cb8dad2d5d4b4ae93ae28c4e330")
+        // PBKDF2-HMAC-SHA256 (100k itérations, 32 octets) — même calcul que OperatorAuthenticationService.HashPin.
+        let pbkdf2Expected = "f514b714a2476681856adaa9698f3dda21a7e05d8900f404a26d12538c78b29f"
+        let legacySha256Expected = "60dfb59aeea14604cda73d3d6d1d95f4fbf93cb8dad2d5d4b4ae93ae28c4e330"
+
+        #expect(PinHasher.hash(pin: "1234", salt: "00ff") == pbkdf2Expected)
+        #expect(PinHasher.verify(pin: "1234", salt: "00ff", storedHash: pbkdf2Expected))
+        #expect(PinHasher.verify(pin: "1234", salt: "00ff", storedHash: legacySha256Expected))
+        #expect(!PinHasher.verify(pin: "wrong", salt: "00ff", storedHash: pbkdf2Expected))
     }
 
     @Test func saltsAre32LowercaseHexCharsAndDiffer() {

@@ -13,7 +13,7 @@ extension LocalPosAPI {
     }
 
     public func saveGridLayout(_ request: UpdateGridLayoutRequest) async throws -> TouchGridLayout {
-        try requireAuth()
+        try requireManager()
         var layout = try gridRepository.layout(categoryId: request.categoryId, page: request.pageIndex)
             ?? TouchGridLayout(categoryId: request.categoryId, pageIndex: request.pageIndex, version: 0)
         layout.columnsCount = request.columnsCount
@@ -27,7 +27,7 @@ extension LocalPosAPI {
     }
 
     public func swapGridSlots(layoutId: UUID, from: GridPosition, to: GridPosition) async throws -> TouchGridLayout {
-        try requireAuth()
+        try requireManager()
         guard var layout = try gridRepository.layout(id: layoutId) else { throw APIError.notFound("Grille introuvable") }
         let a = layout.slots.firstIndex { $0.rowIndex == from.row && $0.columnIndex == from.column }
         let b = layout.slots.firstIndex { $0.rowIndex == to.row && $0.columnIndex == to.column }
@@ -47,7 +47,7 @@ extension LocalPosAPI {
     }
 
     public func updateGridDimensions(categoryId: String, columns: Int, rows: Int, applyToAll: Bool) async throws -> [TouchGridLayout] {
-        try requireAuth()
+        try requireManager()
         let targets = try gridRepository.layouts().filter { applyToAll || $0.categoryId == categoryId }
         try db.transaction {
             for var layout in targets {

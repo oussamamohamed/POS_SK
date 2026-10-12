@@ -9,7 +9,7 @@ extension LocalPosAPI {
     /// Création (`isNew`) ou mise à jour. Comme le serveur : nom et adresse nettoyés, port 9100 par défaut, papier 58 ou 80 mm (sinon 80),
     /// imprimante créée active. Écarts : nom ou IP vide refusé en 400 (le .NET lève une exception), identifiant inconnu en 404.
     public func savePrinter(_ printer: Printer, isNew: Bool) async throws {
-        try requireAuth()
+        try requireManager()
         let name = printer.name.trimmingCharacters(in: .whitespacesAndNewlines)
         let address = printer.ipAddress.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !name.isEmpty, !address.isEmpty else {
@@ -31,7 +31,7 @@ extension LocalPosAPI {
 
     /// L'envoi direct arrive avec le sous-projet « impression » : le test répond clairement qu'il n'est pas disponible.
     public func testPrinter(id: UUID) async throws -> TestPrintResult {
-        try requireAuth()
+        try requireManager()
         guard try printerRepository.printer(id: id) != nil else { throw Self.printerNotFound }
         return TestPrintResult(success: false, message: "L'impression directe n'est pas encore disponible en mode autonome.")
     }

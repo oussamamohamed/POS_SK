@@ -9,7 +9,7 @@ extension LocalPosAPI {
     /// Remise globale sur la commande. Refusée (même message générique que le serveur) si la valeur est négative, si un pourcentage dépasse
     /// 100, si le motif est vide ou si la commande est inconnue. Chaque remise est journalisée dans `OrderDiscountAudits`.
     public func applyDiscount(orderId: UUID, type: DiscountType, value: Decimal, reason: String, operatorId: UUID?) async throws {
-        try requireAuth()
+        try requireManager()
         let trimmed = reason.trimmingCharacters(in: .whitespacesAndNewlines)
         var cents = value * 100, wholeCents = Decimal()
         NSDecimalRound(&wholeCents, &cents, 0, .plain)
@@ -33,7 +33,7 @@ extension LocalPosAPI {
     }
 
     public func removeDiscount(orderId: UUID) async throws {
-        try requireAuth()
+        try requireManager()
         // Écart assumé : commande inconnue → 404 (le .NET lève une exception non gérée) ; commande réglée ou annulée → 409.
         let orders = orderRepository, payments = fiscalRepository
         try db.transaction {
@@ -46,7 +46,7 @@ extension LocalPosAPI {
 
     /// Offre une ligne (gratuité). L'économie journalisée est `prix unitaire × quantité`, hors options (comme `CompOrderItemAsync`).
     public func compItem(orderId: UUID, lineId: UUID, reason: String, operatorId: UUID?) async throws {
-        try requireAuth()
+        try requireManager()
         let trimmed = reason.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { throw Self.compFailed }
         let orders = orderRepository, payments = fiscalRepository

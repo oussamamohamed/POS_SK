@@ -193,7 +193,7 @@ public actor InMemoryPosAPI: PosAPI {
     }
 
     public func saveGridLayout(_ request: UpdateGridLayoutRequest) async throws -> TouchGridLayout {
-        try await step("saveGridLayout")
+        try await step("saveGridLayout"); try requireManager()
         let key = layoutKey(request.categoryId, request.pageIndex)
         var layout = layouts[key] ?? TouchGridLayout(categoryId: request.categoryId, pageIndex: request.pageIndex)
         layout.columnsCount = request.columnsCount
@@ -205,7 +205,7 @@ public actor InMemoryPosAPI: PosAPI {
     }
 
     public func swapGridSlots(layoutId: UUID, from: GridPosition, to: GridPosition) async throws -> TouchGridLayout {
-        try await step("swapGridSlots")
+        try await step("swapGridSlots"); try requireManager()
         guard let key = layouts.first(where: { $0.value.id == layoutId })?.key, var layout = layouts[key] else { throw APIError.notFound("Grille introuvable") }
         let a = layout.slots.firstIndex { $0.rowIndex == from.row && $0.columnIndex == from.column }
         let b = layout.slots.firstIndex { $0.rowIndex == to.row && $0.columnIndex == to.column }
@@ -225,7 +225,7 @@ public actor InMemoryPosAPI: PosAPI {
     }
 
     public func updateGridDimensions(categoryId: String, columns: Int, rows: Int, applyToAll: Bool) async throws -> [TouchGridLayout] {
-        try await step("updateGridDimensions")
+        try await step("updateGridDimensions"); try requireManager()
         var updated: [TouchGridLayout] = []
         for (key, var layout) in layouts where applyToAll || layout.categoryId == categoryId {
             layout.columnsCount = columns
@@ -368,7 +368,7 @@ public actor InMemoryPosAPI: PosAPI {
     }
 
     public func applyDiscount(orderId: UUID, type: DiscountType, value: Decimal, reason: String, operatorId: UUID?) async throws {
-        try await step("applyDiscount"); try requireAuth()
+        try await step("applyDiscount"); try requireManager()
         // Même règle que le serveur et `LocalPosAPI` : au-delà de 2 décimales, refus.
         var cents = value * 100, wholeCents = Decimal()
         NSDecimalRound(&wholeCents, &cents, 0, .plain)
@@ -380,14 +380,14 @@ public actor InMemoryPosAPI: PosAPI {
     }
 
     public func removeDiscount(orderId: UUID) async throws {
-        try await step("removeDiscount")
+        try await step("removeDiscount"); try requireManager()
         orders[orderId]?.order.globalDiscountType = nil
         orders[orderId]?.order.globalDiscountValue = 0
         orders[orderId]?.order.globalDiscountReason = nil
     }
 
     public func compItem(orderId: UUID, lineId: UUID, reason: String, operatorId: UUID?) async throws {
-        try await step("compItem"); try requireAuth()
+        try await step("compItem"); try requireManager()
         guard let j = orders[orderId]?.order.lines.firstIndex(where: { $0.lineId == lineId }) else { throw APIError.server(status: 400, message: "Opération de gratuité échouée.") }
         orders[orderId]!.order.lines[j].isComp = true
     }
@@ -760,7 +760,7 @@ public actor InMemoryPosAPI: PosAPI {
     public func printers() async throws -> [Printer] { try await step("printers"); return printersStore }
 
     public func savePrinter(_ printer: Printer, isNew: Bool) async throws {
-        try await step("savePrinter"); try requireAuth()
+        try await step("savePrinter"); try requireManager()
         if isNew {
             printersStore.append(printer)
         } else if let i = printersStore.firstIndex(where: { $0.id == printer.id }) {
