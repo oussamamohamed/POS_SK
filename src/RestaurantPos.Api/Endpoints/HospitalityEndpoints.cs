@@ -43,7 +43,11 @@ public static class HospitalityEndpoints
                 : Results.BadRequest(new { Success = false, Message = Texts.T("errors.table_merge_failed") });
         });
 
-        orderGroup.MapPost("/{orderId:guid}/discount", async (Guid orderId, ApplyOrderDiscountRequest req, IOrderDiscountService discountService) =>
+        orderGroup.MapPost("/{orderId:guid}/discount", async (
+            Guid orderId,
+            ApplyOrderDiscountRequest req,
+            IOrderDiscountService discountService,
+            System.Security.Claims.ClaimsPrincipal user) =>
         {
             // Plus de 2 décimales : serveur (AwayFromZero) et clients (Math.round) divergeraient d'un centime.
             if (req.Value != Math.Round(req.Value, 2))
@@ -51,35 +55,56 @@ public static class HospitalityEndpoints
                 return Results.BadRequest(new { Success = false, Message = Texts.T("errors.discount_value_precision") });
             }
 
+            var opId = Guid.Empty;
+            var subClaim = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+                ?? user.FindFirst("sub")?.Value;
+            if (!Guid.TryParse(subClaim, out opId) && req.OperatorId.HasValue)
+            {
+                opId = req.OperatorId.Value;
+            }
+
             try
             {
-                var updated = await discountService.ApplyGlobalDiscountAsync(orderId, req.Type, req.Value, req.Reason, req.OperatorId ?? Guid.Empty);
+                var updated = await discountService.ApplyGlobalDiscountAsync(orderId, req.Type, req.Value, req.Reason, opId);
                 return Results.Ok(new { Success = true, TotalTtc = updated.TotalTtc.ToDecimal() });
             }
             catch (Exception)
             {
                 return Results.BadRequest(new { Success = false, Message = Texts.T("errors.discount_failed") });
             }
-        });
+        }).RequireAuthorization("RequireManagerOrAdmin");
 
-        orderGroup.MapPost("/{orderId:guid}/items/{itemId:guid}/comp", async (Guid orderId, Guid itemId, CompOrderItemRequest req, IOrderDiscountService discountService) =>
+        orderGroup.MapPost("/{orderId:guid}/items/{itemId:guid}/comp", async (
+            Guid orderId,
+            Guid itemId,
+            CompOrderItemRequest req,
+            IOrderDiscountService discountService,
+            System.Security.Claims.ClaimsPrincipal user) =>
         {
+            var opId = Guid.Empty;
+            var subClaim = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+                ?? user.FindFirst("sub")?.Value;
+            if (!Guid.TryParse(subClaim, out opId) && req.OperatorId.HasValue)
+            {
+                opId = req.OperatorId.Value;
+            }
+
             try
             {
-                var updated = await discountService.CompOrderItemAsync(orderId, itemId, req.Reason, req.OperatorId ?? Guid.Empty);
+                var updated = await discountService.CompOrderItemAsync(orderId, itemId, req.Reason, opId);
                 return Results.Ok(new { Success = true, TotalTtc = updated.TotalTtc.ToDecimal() });
             }
             catch (Exception)
             {
                 return Results.BadRequest(new { Success = false, Message = Texts.T("errors.comp_failed") });
             }
-        });
+        }).RequireAuthorization("RequireManagerOrAdmin");
 
         orderGroup.MapDelete("/{orderId:guid}/discount", async (Guid orderId, IOrderDiscountService discountService) =>
         {
             var updated = await discountService.RemoveDiscountAsync(orderId);
             return Results.Ok(new { Success = true, TotalTtc = updated.TotalTtc.ToDecimal() });
-        });
+        }).RequireAuthorization("RequireManagerOrAdmin");
 
         tableGroup.MapPost("/{tableNumber}/fire-suite", async (string tableNumber, AppDbContext db, IHubContext<KitchenHub> hubContext, PrintDispatcher printing) =>
         {

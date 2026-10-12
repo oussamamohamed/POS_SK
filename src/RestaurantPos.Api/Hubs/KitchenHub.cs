@@ -1,12 +1,14 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using RestaurantPos.Application.Common.Interfaces;
 using RestaurantPos.Infrastructure.Printing;
 
 namespace RestaurantPos.Api.Hubs;
 
+[Authorize(Policy = "RequireKitchenOrAdmin")]
 public class KitchenHub : Hub<IKitchenHubClient>
 {
     private readonly IKitchenRoutingService _routingService;

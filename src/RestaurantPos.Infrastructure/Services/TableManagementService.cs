@@ -347,11 +347,36 @@ public class TableManagementService : ITableManagementService
 
                 foreach (var input in items)
                 {
+                    var product = await _dbContext.Products.FindAsync([input.ProductId], ct).ConfigureAwait(false);
+                    var productName = product?.Name ?? input.ProductName;
+                    var taxRatePercent = product?.TaxRatePercent ?? input.TaxRatePercent;
+                    var taxRateTakeawayPercent = product != null ? product.TaxRateTakeawayPercent : input.TaxRateTakeawayPercent;
+                    var isFoodVoucherEligible = product?.IsFoodVoucherEligible ?? input.IsFoodVoucherEligible;
+                    var preparationStationId = product?.PreparationStationId ?? input.PreparationStationId;
+
+                    Money unitPrice;
+                    Money? originalUnitPrice;
+                    if (product != null && !input.IsHappyHourApplied)
+                    {
+                        unitPrice = product.Price;
+                        originalUnitPrice = null;
+                    }
+                    else if (product != null && input.IsHappyHourApplied)
+                    {
+                        unitPrice = Money.FromDecimal(input.UnitPrice, "EUR");
+                        originalUnitPrice = product.Price;
+                    }
+                    else
+                    {
+                        unitPrice = Money.FromDecimal(input.UnitPrice, "EUR");
+                        originalUnitPrice = input.OriginalUnitPrice.HasValue ? Money.FromDecimal(input.OriginalUnitPrice.Value, "EUR") : null;
+                    }
+
                     var existing = order.Items.FirstOrDefault(i =>
                         !i.IsDispatched &&
                         i.ProductId == input.ProductId &&
                         i.Course == input.Course &&
-                        i.UnitPrice.ToDecimal() == input.UnitPrice &&
+                        i.UnitPrice == unitPrice &&
                         i.IsHappyHourApplied == input.IsHappyHourApplied &&
                         i.ModifiersPriceExtra.ToDecimal() == input.ModifiersPriceExtra &&
                         string.Join(",", i.SelectedModifiers) == string.Join(",", input.Modifiers ?? []));
@@ -367,18 +392,18 @@ public class TableManagementService : ITableManagementService
                             Id = UuidV7.NewGuid(),
                             OrderId = order.Id,
                             ProductId = input.ProductId,
-                            ProductName = input.ProductName,
+                            ProductName = productName,
                             Quantity = input.Quantity,
-                            UnitPrice = Money.FromDecimal(input.UnitPrice, "EUR"),
-                            TaxRatePercent = input.TaxRatePercent,
-                            TaxRateTakeawayPercent = input.TaxRateTakeawayPercent,
-                            IsFoodVoucherEligible = input.IsFoodVoucherEligible,
-                            PreparationStationId = input.PreparationStationId,
+                            UnitPrice = unitPrice,
+                            TaxRatePercent = taxRatePercent,
+                            TaxRateTakeawayPercent = taxRateTakeawayPercent,
+                            IsFoodVoucherEligible = isFoodVoucherEligible,
+                            PreparationStationId = preparationStationId,
                             SelectedModifiers = input.Modifiers?.ToList() ?? [],
                             ModifiersPriceExtra = Money.FromDecimal(input.ModifiersPriceExtra, "EUR"),
                             Course = input.Course,
                             IsHappyHourApplied = input.IsHappyHourApplied,
-                            OriginalUnitPrice = input.OriginalUnitPrice.HasValue ? Money.FromDecimal(input.OriginalUnitPrice.Value, "EUR") : null,
+                            OriginalUnitPrice = originalUnitPrice,
                             AppliedHappyHourScheduleId = input.AppliedHappyHourScheduleId,
                             OrderedAtUtc = DateTimeOffset.UtcNow
                         };

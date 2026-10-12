@@ -32,9 +32,27 @@ public class OperatorAuthenticationService : IOperatorAuthenticationService
         foreach (var user in activeUsers)
         {
             string computedHash = HashPin(rawPin, user.PinSalt);
-            if (CryptographicOperations.FixedTimeEquals(
-                    Encoding.UTF8.GetBytes(computedHash),
-                    Encoding.UTF8.GetBytes(user.PinHash)))
+            bool matched = CryptographicOperations.FixedTimeEquals(
+                Encoding.UTF8.GetBytes(computedHash),
+                Encoding.UTF8.GetBytes(user.PinHash));
+
+            if (!matched)
+            {
+                // Check legacy single-round SHA-256 for transparent backward compatibility
+                byte[] legacyCombined = Encoding.UTF8.GetBytes(user.PinSalt + rawPin);
+                string legacyHash = Convert.ToHexString(SHA256.HashData(legacyCombined)).ToLowerInvariant();
+                if (CryptographicOperations.FixedTimeEquals(
+                        Encoding.UTF8.GetBytes(legacyHash),
+                        Encoding.UTF8.GetBytes(user.PinHash)))
+                {
+                    matched = true;
+                    user.PinHash = computedHash;
+                    _dbContext.Users.Update(user);
+                    await _dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+                }
+            }
+
+            if (matched)
             {
                 return new OperatorAuthenticationResult(
                     IsSuccess: true,
@@ -50,8 +68,13 @@ public class OperatorAuthenticationService : IOperatorAuthenticationService
 
     public string HashPin(string rawPin, string salt)
     {
-        byte[] combined = Encoding.UTF8.GetBytes(salt + rawPin);
-        byte[] hash = SHA256.HashData(combined);
+        byte[] saltBytes = Encoding.UTF8.GetBytes(salt);
+        byte[] hash = Rfc2898DeriveBytes.Pbkdf2(
+            Encoding.UTF8.GetBytes(rawPin),
+            saltBytes,
+            iterations: 100_000,
+            hashAlgorithm: HashAlgorithmName.SHA256,
+            outputLength: 32);
         return Convert.ToHexString(hash).ToLowerInvariant();
     }
 
@@ -61,3 +84,4 @@ public class OperatorAuthenticationService : IOperatorAuthenticationService
         return Convert.ToHexString(saltBytes).ToLowerInvariant();
     }
 }
+

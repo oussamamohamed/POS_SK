@@ -13,9 +13,15 @@ echo "========================================================"
 
 # Verification de l'API
 if curl -s -f "$API_URL/api/health" > /dev/null 2>&1; then
-    echo "[1/2] Serveur API en ligne ($API_URL) -> Appel endpoint de seed..."
-    RESPONSE=$(curl -s -X POST "$API_URL/api/admin/seed-test-data" -H "Content-Type: application/json")
-    echo "Reponse API: $RESPONSE"
+    echo "[1/2] Serveur API en ligne ($API_URL) -> Authentification Admin et appel endpoint de seed..."
+    TOKEN=$(curl -s -X POST "$API_URL/api/auth/login" -H "Content-Type: application/json" -d '{"pin":"9999"}' | grep -o '"token":"[^"]*' | cut -d'"' -f4)
+    if [ -n "$TOKEN" ]; then
+        RESPONSE=$(curl -s -X POST "$API_URL/api/admin/seed-test-data" -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json")
+        echo "Reponse API: $RESPONSE"
+    else
+        echo "Authentification echouee, execution directe CLI .NET..."
+        dotnet run --project src/RestaurantPos.Api/RestaurantPos.Api.csproj -c Release --no-launch-profile -- --seed-prod-data
+    fi
 else
     echo "[1/2] Serveur API non detecte sur le port 5000 -> Execution directe CLI .NET..."
     dotnet run --project src/RestaurantPos.Api/RestaurantPos.Api.csproj -c Release --no-launch-profile -- --seed-prod-data

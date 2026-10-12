@@ -85,7 +85,7 @@ public static class SyncEndpoints
                 ProcessedMessagesCount = processedCount,
                 ServerTimestampUtc = DateTimeOffset.UtcNow
             });
-        });
+        }).RequireAuthorization();
 
         group.MapPost("/sync/receipt", async (SyncReceiptDto req, ICheckoutPaymentService checkout, AppDbContext db, HttpContext http) =>
         {
@@ -170,7 +170,7 @@ public static class SyncEndpoints
                 Status = "Synchronized",
                 LastSyncUtc = DateTimeOffset.UtcNow
             });
-        });
+        }).RequireAuthorization();
 
         group.MapGet("/sync/fiscal/x-report", async (string? terminalId, INF525FiscalAuditService fiscal) =>
         {
@@ -188,15 +188,39 @@ public static class SyncEndpoints
                 summary.PeriodStartUtc,
                 summary.PeriodEndUtc
             });
-        });
+        }).RequireAuthorization("RequireManagerOrAdmin");
 
-        group.MapPost("/sync/fiscal/z-closure", async (ZClosureRequest req, INF525FiscalAuditService fiscal) =>
+        group.MapPost("/sync/fiscal/z-closure", async (
+            ZClosureRequest req,
+            INF525FiscalAuditService fiscal,
+            System.Security.Claims.ClaimsPrincipal user,
+            HttpContext http) =>
         {
-            var terminalId = string.IsNullOrWhiteSpace(req.TerminalId) ? "POS_MAIN_TERM" : req.TerminalId;
-            var managerId = req.ManagerId == Guid.Empty ? Guid.NewGuid() : req.ManagerId;
-            var managerName = string.IsNullOrWhiteSpace(req.ManagerName) ? "Responsable Caisse (iPad)" : req.ManagerName;
+            var terminalId = RequireDeviceFilter.PairedDevice(http).TerminalId;
+            var sub = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+                ?? user.FindFirst("sub")?.Value;
+            var name = user.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value
+                ?? user.FindFirst("name")?.Value
+                ?? "Manager";
 
-            var closure = await fiscal.ExecuteDailyZClosureAsync(terminalId, managerId, managerName);
+            if (!Guid.TryParse(sub, out var managerId))
+            {
+                return Results.Unauthorized();
+            }
+
+            var open = await fiscal.FindOpenOrdersAsync();
+            if (open.Count > 0)
+            {
+                var list = string.Join(", ", open.Select(o => $"{o.Label} ({(o.RemainingTtcCents / 100m).ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)})"));
+                return Results.Json(new
+                {
+                    code = "open_orders",
+                    message = Texts.T("errors.z_closure_open_orders", ("count", open.Count), ("orders", list)),
+                    openOrders = open.Select(o => new { tableNumber = o.Label, remainingTtc = o.RemainingTtcCents / 100m })
+                }, statusCode: StatusCodes.Status409Conflict);
+            }
+
+            var closure = await fiscal.ExecuteDailyZClosureAsync(terminalId, managerId, name);
             return Results.Ok(new
             {
                 closure.ClosureSequence,
@@ -207,6 +231,6 @@ public static class SyncEndpoints
                 closure.SignatureHash,
                 closure.ClosedAtUtc
             });
-        });
+        }).RequireAuthorization("RequireManagerOrAdmin").RequirePairedDevice();
     }
 }

@@ -39,24 +39,55 @@ public static class HappyHourEndpoints
         }).AllowAnonymous();
 
         // 3. Supervisor Override: Activate / Extend
-        group.MapPost("/override/activate", async (ActivateOverrideRequest req, IHappyHourPricingService hhService, Microsoft.AspNetCore.SignalR.IHubContext<RestaurantPos.Api.Hubs.PosHub, RestaurantPos.Api.Hubs.IPosHubClient> hub) =>
+        group.MapPost("/override/activate", async (
+            ActivateOverrideRequest req,
+            IHappyHourPricingService hhService,
+            IPinRateLimiterService rateLimiter,
+            HttpContext context,
+            Microsoft.AspNetCore.SignalR.IHubContext<RestaurantPos.Api.Hubs.PosHub, RestaurantPos.Api.Hubs.IPosHubClient> hub) =>
         {
+            var clientKey = context.Connection.RemoteIpAddress?.ToString() ?? "unknown-client";
+            if (rateLimiter.IsLocked(clientKey))
+            {
+                var remaining = rateLimiter.GetRemainingLockout(clientKey);
+                return Results.Json(new { Message = Texts.T("errors.login_rate_limited", ("seconds", Math.Ceiling(remaining.TotalSeconds))) }, statusCode: StatusCodes.Status429TooManyRequests);
+            }
+
             var res = await hhService.ActivateOverrideAsync(req);
             if (!res.Success)
             {
+                rateLimiter.RecordFailedAttempt(clientKey);
                 return Results.Json(new { Message = res.Message }, statusCode: StatusCodes.Status403Forbidden);
             }
+
+            rateLimiter.ResetAttempts(clientKey);
             var status = await hhService.GetCurrentStatusAsync(req.TerminalId);
             await hub.Clients.All.OnHappyHourStatusChanged(status);
             return Results.Ok(res);
         }).AllowAnonymous();
-        group.MapPost("/override/stop", async (StopOverrideRequest req, IHappyHourPricingService hhService, Microsoft.AspNetCore.SignalR.IHubContext<RestaurantPos.Api.Hubs.PosHub, RestaurantPos.Api.Hubs.IPosHubClient> hub) =>
+
+        group.MapPost("/override/stop", async (
+            StopOverrideRequest req,
+            IHappyHourPricingService hhService,
+            IPinRateLimiterService rateLimiter,
+            HttpContext context,
+            Microsoft.AspNetCore.SignalR.IHubContext<RestaurantPos.Api.Hubs.PosHub, RestaurantPos.Api.Hubs.IPosHubClient> hub) =>
         {
+            var clientKey = context.Connection.RemoteIpAddress?.ToString() ?? "unknown-client";
+            if (rateLimiter.IsLocked(clientKey))
+            {
+                var remaining = rateLimiter.GetRemainingLockout(clientKey);
+                return Results.Json(new { Message = Texts.T("errors.login_rate_limited", ("seconds", Math.Ceiling(remaining.TotalSeconds))) }, statusCode: StatusCodes.Status429TooManyRequests);
+            }
+
             var res = await hhService.StopOverrideAsync(req);
             if (!res.Success)
             {
+                rateLimiter.RecordFailedAttempt(clientKey);
                 return Results.Json(new { Message = res.Message }, statusCode: StatusCodes.Status403Forbidden);
             }
+
+            rateLimiter.ResetAttempts(clientKey);
             var status = await hhService.GetCurrentStatusAsync(req.TerminalId);
             await hub.Clients.All.OnHappyHourStatusChanged(status);
             return Results.Ok(res);
@@ -127,7 +158,7 @@ public static class HappyHourEndpoints
             await db.SaveChangesAsync();
 
             return Results.Ok(new { schedule.Id, Message = Texts.T("messages.happy_hour_created") });
-        }).AllowAnonymous();
+        }).RequireAuthorization("RequireManagerOrAdmin");
 
         group.MapDelete("/schedules/{id:guid}", async (Guid id, AppDbContext db) =>
         {
@@ -141,7 +172,7 @@ public static class HappyHourEndpoints
             await db.SaveChangesAsync();
 
             return Results.Ok(new { Message = Texts.T("messages.time_slot_deleted") });
-        }).AllowAnonymous();
+        }).RequireAuthorization("RequireManagerOrAdmin");
 
         // 6. Batch Apply Price Rules
         group.MapPost("/schedules/{scheduleId:guid}/rules/batch", async (
@@ -160,7 +191,7 @@ public static class HappyHourEndpoints
             await hub.Clients.All.OnHappyHourStatusChanged(status);
 
             return Results.Ok(res);
-        }).AllowAnonymous();
+        }).RequireAuthorization("RequireManagerOrAdmin");
 
         // 7. Batch Delete Price Rules
         group.MapDelete("/schedules/{scheduleId:guid}/rules/batch", async (
@@ -179,6 +210,6 @@ public static class HappyHourEndpoints
             await hub.Clients.All.OnHappyHourStatusChanged(status);
 
             return Results.Ok(res);
-        }).AllowAnonymous();
+        }).RequireAuthorization("RequireManagerOrAdmin");
     }
 }

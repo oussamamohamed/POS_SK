@@ -41,7 +41,7 @@ public static class GridEndpoints
             var saved = await gridService.SaveLayoutAsync(req);
             await hubContext.Clients.All.SendAsync("OnGridLayoutUpdated", saved);
             return Results.Ok(saved);
-        });
+        }).RequireAuthorization("RequireManagerOrAdmin");
 
         group.MapPost("/swap", async (SwapGridSlotsRequest req, IGridManagementService gridService, IHubContext<KitchenHub> hubContext) =>
         {
@@ -52,7 +52,7 @@ public static class GridEndpoints
             }
             await hubContext.Clients.All.SendAsync("OnGridLayoutUpdated", swapped);
             return Results.Ok(swapped);
-        });
+        }).RequireAuthorization("RequireManagerOrAdmin");
 
         group.MapPost("/dimensions", async (UpdateGridDimensionsRequest req, IGridManagementService gridService, IHubContext<KitchenHub> hubContext) =>
         {
@@ -62,6 +62,6 @@ public static class GridEndpoints
                 await hubContext.Clients.All.SendAsync("OnGridLayoutUpdated", layout);
             }
             return Results.Ok(updatedList);
-        });
+        }).RequireAuthorization("RequireManagerOrAdmin");
     }
 }

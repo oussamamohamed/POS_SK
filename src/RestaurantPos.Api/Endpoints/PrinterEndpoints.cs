@@ -25,19 +25,19 @@ public static class PrinterEndpoints
         {
             var created = await printerService.RegisterPrinterAsync(req);
             return Results.Ok(created);
-        });
+        }).RequireAuthorization("RequireManagerOrAdmin");
 
         group.MapPut("/{id:guid}", async (Guid id, UpdatePrinterRequest req, IPrinterConfigurationService printerService) =>
         {
             var regReq = new PrinterRegistrationRequest(req.Name, req.IpAddress, req.Port, req.PaperWidthMm, req.HasCashDrawer, req.TargetStations ?? [], req.TextMode);
             var updated = await printerService.UpdatePrinterAsync(id, regReq, req.IsActive ?? true);
             return Results.Ok(updated);
-        });
+        }).RequireAuthorization("RequireManagerOrAdmin");
 
         group.MapPost("/{id:guid}/test", async (Guid id, IPrinterConfigurationService printerService) =>
         {
             var result = await printerService.SendTestPrintAsync(id);
             return Results.Ok(result);
-        });
+        }).RequireAuthorization("RequireManagerOrAdmin");
     }
 }

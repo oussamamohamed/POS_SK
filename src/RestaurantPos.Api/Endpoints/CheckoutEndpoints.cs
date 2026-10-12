@@ -167,9 +167,21 @@ public static class CheckoutEndpoints
         }).RequirePairedDevice();
 
         // Void receipt endpoint
-        group.MapPost("/void/{receiptId:guid}", async (Guid receiptId, VoidReceiptRequest req, ICheckoutPaymentService checkout, AppDbContext db, INF525FiscalAuditService fiscal, HttpContext http) =>
+        group.MapPost("/void/{receiptId:guid}", async (Guid receiptId, VoidReceiptRequest req, ICheckoutPaymentService checkout, AppDbContext db, INF525FiscalAuditService fiscal, HttpContext http, ClaimsPrincipal user) =>
         {
-            if (req.OperatorId == Guid.Empty)
+            var operatorId = Guid.Empty;
+            var subClaim = user.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                ?? user.FindFirst("sub")?.Value;
+            if (Guid.TryParse(subClaim, out var parsedId))
+            {
+                operatorId = parsedId;
+            }
+            else if (req.OperatorId != Guid.Empty)
+            {
+                operatorId = req.OperatorId;
+            }
+
+            if (operatorId == Guid.Empty)
             {
                 return Results.BadRequest(new { Message = Texts.T("errors.operator_required_for_void") });
             }
@@ -180,7 +192,7 @@ public static class CheckoutEndpoints
                 return Results.Json(new { code = "void_after_closure", message = Texts.T("errors.void_after_closure") }, statusCode: StatusCodes.Status409Conflict);
             }
 
-            var result = await checkout.VoidReceiptAsync(receiptId, RequireDeviceFilter.PairedDevice(http).TerminalId, req.OperatorId);
+            var result = await checkout.VoidReceiptAsync(receiptId, RequireDeviceFilter.PairedDevice(http).TerminalId, operatorId);
             if (!result.IsSuccess)
             {
                 return Results.BadRequest(new { Message = Texts.T("errors.void_failed") });

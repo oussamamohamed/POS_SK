@@ -304,7 +304,7 @@ public static class DayRunner
                 new VoidHeldOrderRequest(ManagerPin, "Client parti", terminalId), waiter.Token);
         }
 
-        private static async Task<Guid> OpenCounterAsync(DayOperation op, HttpClient client, string terminalId, OrderDestination destination, Operator waiter)
+        private async Task<Guid> OpenCounterAsync(DayOperation op, HttpClient client, string terminalId, OrderDestination destination, Operator waiter)
         {
             var opened = await SendAsync(client, HttpMethod.Post, "/api/orders/counter/direct",
                 new DirectCounterOpenRequest(terminalId, destination), waiter.Token);
@@ -313,7 +313,7 @@ public static class DayRunner
             return orderId;
         }
 
-        private static async Task AddLinesAsync(DayOperation op, HttpClient client, string table, Guid orderId, Operator waiter)
+        private async Task AddLinesAsync(DayOperation op, HttpClient client, string table, Guid orderId, Operator waiter)
         {
             var lines = (op.Lines ?? []).Select(l => (Line: l, ProductId: Guid.NewGuid())).ToList();
             await SendAsync(client, HttpMethod.Post, $"/api/tables/{table}/items", new AddOrderItemsRequest(lines.Select(x =>
@@ -324,7 +324,7 @@ public static class DayRunner
             if (op.Discount is { } discount)
             {
                 await SendAsync(client, HttpMethod.Post, $"/api/orders/{orderId}/discount",
-                    new ApplyOrderDiscountRequest(Enum.Parse<DiscountType>(discount.Type), discount.Value, "Geste commercial", waiter.Id), waiter.Token);
+                    new ApplyOrderDiscountRequest(Enum.Parse<DiscountType>(discount.Type), discount.Value, "Geste commercial", Manager.Id), Manager.Token);
             }
 
             if (lines.Any(x => x.Line.Comp))
@@ -335,7 +335,7 @@ public static class DayRunner
                 foreach (var (_, productId) in lines.Where(x => x.Line.Comp))
                 {
                     await SendAsync(client, HttpMethod.Post, $"/api/orders/{orderId}/items/{lineIds[productId]}/comp",
-                        new CompOrderItemRequest("Offert", waiter.Id), waiter.Token);
+                        new CompOrderItemRequest("Offert", Manager.Id), Manager.Token);
                 }
             }
         }

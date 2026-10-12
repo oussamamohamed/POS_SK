@@ -121,10 +121,10 @@ public partial class Program
             .AddJwtBearer(options =>
             {
                 var secret = builder.Configuration["Jwt:Secret"];
-                if (string.IsNullOrWhiteSpace(secret))
+                if (string.IsNullOrWhiteSpace(secret) || (!builder.Environment.IsDevelopment() && !builder.Environment.IsEnvironment("Testing") && secret.StartsWith("ProdSecretKey", StringComparison.OrdinalIgnoreCase)))
                 {
-                    if (!builder.Environment.IsDevelopment())
-                        throw new InvalidOperationException("'Jwt:Secret' must be configured in non-development environments.");
+                    if (!builder.Environment.IsDevelopment() && !builder.Environment.IsEnvironment("Testing"))
+                        throw new InvalidOperationException("'Jwt:Secret' must be securely configured via environment variable in non-development environments.");
                     secret = "SuperSecretKeyForRestaurantPosSystemThatIsAtLeast32BytesLong!";
                 }
                 options.TokenValidationParameters = new TokenValidationParameters
@@ -138,7 +138,7 @@ public partial class Program
                     IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(secret))
                 };
 
-                // Allow SignalR WebSockets & HTTP requests to pass JWT via query parameter, cookie, or dev fallback
+                // Allow SignalR WebSockets & HTTP requests to pass JWT via query parameter or cookie
                 options.Events = new JwtBearerEvents
                 {
                     OnMessageReceived = context =>
@@ -154,30 +154,6 @@ public partial class Program
                         if (string.IsNullOrEmpty(accessToken))
                         {
                             accessToken = context.Request.Cookies["pos_jwt_token"];
-                        }
-
-                        // 3. Development-only: auto-generate a manager session for direct browser testing.
-                        // SECURITY: Only use IsDevelopment() — never the Host header (client-controlled, spoofable).
-                        if (string.IsNullOrEmpty(accessToken) &&
-                            string.IsNullOrEmpty(context.Request.Headers.Authorization.ToString()) &&
-                            builder.Environment.IsDevelopment())
-                        {
-                            var tokenGen = context.HttpContext.RequestServices.GetService<IJwtTokenGeneratorService>();
-                            if (tokenGen != null)
-                            {
-                                accessToken = tokenGen.GenerateToken(
-                                    Guid.Parse("01a067d9-b8b9-7b6a-8b3c-d272e6128c35"),
-                                    "Alexandre Dupont (Manager)",
-                                    UserRole.FloorManager);
-
-                                context.HttpContext.Response.Cookies.Append("pos_jwt_token", accessToken, new CookieOptions
-                                {
-                                    HttpOnly = true,
-                                    SameSite = SameSiteMode.Lax,
-                                    Secure = !builder.Environment.IsDevelopment(),
-                                    Expires = DateTimeOffset.UtcNow.AddHours(12)
-                                });
-                            }
                         }
 
                         if (!string.IsNullOrEmpty(accessToken))
@@ -497,7 +473,7 @@ public partial class Program
         {
             await SeedDatabase(db, staffService, catalogService, printerService, layoutService, force: true);
             return Results.Ok(new { Success = true, Message = Texts.T("messages.test_data_seeded") });
-        });
+        }).RequireAuthorization("RequireManagerOrAdmin");
 
         // 2. Auth PIN Login
         app.MapAuthEndpoints();

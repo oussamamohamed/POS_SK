@@ -28,7 +28,7 @@ public static class StaffEndpoints
                 u.IsActive,
                 u.CreatedAtUtc
             }));
-        }).AllowAnonymous();
+        }).RequireAuthorization("RequireManagerOrAdmin");
 
         group.MapGet("/operators", async (IStaffManagementService staff) =>
         {
@@ -41,7 +41,7 @@ public static class StaffEndpoints
                 u.IsActive,
                 u.CreatedAtUtc
             }));
-        }).AllowAnonymous();
+        }).RequireAuthorization("RequireManagerOrAdmin");
 
         group.MapPost("/", async (CreateStaffRequest req, IStaffManagementService staff) =>
         {

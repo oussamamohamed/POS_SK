@@ -46,10 +46,7 @@ public partial class StaffManagementService : IStaffManagementService
         var activeUsers = await _dbContext.Users.Where(u => u.IsActive).ToListAsync(ct).ConfigureAwait(false);
         foreach (var activeUser in activeUsers)
         {
-            string computedHash = HashPin(pin, activeUser.PinSalt);
-            if (CryptographicOperations.FixedTimeEquals(
-                    Encoding.UTF8.GetBytes(computedHash),
-                    Encoding.UTF8.GetBytes(activeUser.PinHash)))
+            if (VerifyPinMatches(pin, activeUser.PinSalt, activeUser.PinHash))
             {
                 throw new InvalidOperationException("Ce code PIN est déjà utilisé par un autre opérateur actif.");
             }
@@ -102,10 +99,7 @@ public partial class StaffManagementService : IStaffManagementService
 
         foreach (var activeUser in activeUsers)
         {
-            string computedHash = HashPin(newPin, activeUser.PinSalt);
-            if (CryptographicOperations.FixedTimeEquals(
-                    Encoding.UTF8.GetBytes(computedHash),
-                    Encoding.UTF8.GetBytes(activeUser.PinHash)))
+            if (VerifyPinMatches(newPin, activeUser.PinSalt, activeUser.PinHash))
             {
                 throw new InvalidOperationException("Ce code PIN est déjà utilisé par un autre opérateur actif.");
             }
@@ -138,10 +132,28 @@ public partial class StaffManagementService : IStaffManagementService
         }
     }
 
+    private static bool VerifyPinMatches(string pin, string salt, string storedHash)
+    {
+        string computedHash = HashPin(pin, salt);
+        if (CryptographicOperations.FixedTimeEquals(Encoding.UTF8.GetBytes(computedHash), Encoding.UTF8.GetBytes(storedHash)))
+        {
+            return true;
+        }
+
+        byte[] legacyCombined = Encoding.UTF8.GetBytes(salt + pin);
+        string legacyHash = Convert.ToHexString(SHA256.HashData(legacyCombined)).ToLowerInvariant();
+        return CryptographicOperations.FixedTimeEquals(Encoding.UTF8.GetBytes(legacyHash), Encoding.UTF8.GetBytes(storedHash));
+    }
+
     private static string HashPin(string rawPin, string salt)
     {
-        byte[] combined = Encoding.UTF8.GetBytes(salt + rawPin);
-        byte[] hash = SHA256.HashData(combined);
+        byte[] saltBytes = Encoding.UTF8.GetBytes(salt);
+        byte[] hash = Rfc2898DeriveBytes.Pbkdf2(
+            Encoding.UTF8.GetBytes(rawPin),
+            saltBytes,
+            iterations: 100_000,
+            hashAlgorithm: HashAlgorithmName.SHA256,
+            outputLength: 32);
         return Convert.ToHexString(hash).ToLowerInvariant();
     }
 
