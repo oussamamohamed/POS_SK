@@ -118,4 +118,20 @@ public class BackOfficeCatalogServiceTests
             updatedProd.Description.Should().Be("Boeuf Limousin");
         }
     }
+    [Fact]
+    public async Task UpdateProductAsync_RejectsNegativePrice_AndLeavesProductUnchanged()
+    {
+        var (context, cache) = CreateContextAndCache();
+        using (context)
+        {
+            var service = new BackOfficeCatalogService(context, cache);
+            var category = await service.CreateCategoryAsync("Plats", "#3498DB", 1, "utensils");
+            var product = await service.CreateProductAsync("Burger", category.Id, 16.50m, 10.0m, null, null, 1, false, null);
+
+            var act = () => service.UpdateProductAsync(product.Id, "Burger", category.Id, -0.01m, 10.0m, null, null, 1, true, true, false, null);
+
+            await act.Should().ThrowAsync<ArgumentOutOfRangeException>();
+            (await context.Products.FindAsync(product.Id))!.Price.ToDecimal().Should().Be(16.50m);
+        }
+    }
 }

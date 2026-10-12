@@ -160,6 +160,9 @@
   <data name="errors.order_item_invalid" xml:space="preserve">
     <value>Invalid order line: quantity must be positive and amounts must not be negative.</value>
   </data>
+  <data name="errors.product_price_negative" xml:space="preserve">
+    <value>Product price must not be negative.</value>
+  </data>
   <data name="errors.tip_invalid" xml:space="preserve">
     <value>Invalid tip amount.</value>
   </data>

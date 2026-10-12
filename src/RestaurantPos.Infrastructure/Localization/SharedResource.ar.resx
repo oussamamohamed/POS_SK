@@ -160,6 +160,9 @@
   <data name="errors.order_item_invalid" xml:space="preserve">
     <value>سطر الطلب غير صالح: يجب أن تكون الكمية موجبة ولا يمكن أن تكون المبالغ سالبة.</value>
   </data>
+  <data name="errors.product_price_negative" xml:space="preserve">
+    <value>لا يمكن أن يكون سعر المنتج سالباً.</value>
+  </data>
   <data name="errors.tip_invalid" xml:space="preserve">
     <value>مبلغ الإكرامية غير صالح.</value>
   </data>

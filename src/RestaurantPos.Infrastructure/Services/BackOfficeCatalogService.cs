@@ -160,6 +160,7 @@ public class BackOfficeCatalogService : IBackOfficeCatalogService
 
     public async Task<Product> UpdateProductAsync(Guid productId, string name, string categoryId, decimal price, decimal taxRatePercent, string? description, string? colorHex, int displayOrder, bool isAvailable, bool isActive, bool isQuickKey, string? stationId, CancellationToken ct = default)
     {
+        ArgumentOutOfRangeException.ThrowIfNegative(price);
         var product = await _dbContext.Products.FindAsync([productId], ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException($"Article introuvable: {productId}");
 

@@ -160,6 +160,9 @@
   <data name="errors.order_item_invalid" xml:space="preserve">
     <value>Ligne de commande invalide : la quantité doit être positive et les montants ne peuvent pas être négatifs.</value>
   </data>
+  <data name="errors.product_price_negative" xml:space="preserve">
+    <value>Le prix d'un article ne peut pas être négatif.</value>
+  </data>
   <data name="errors.tip_invalid" xml:space="preserve">
     <value>Montant de pourboire invalide.</value>
   </data>
