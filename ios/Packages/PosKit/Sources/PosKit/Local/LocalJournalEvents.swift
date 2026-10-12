@@ -7,6 +7,7 @@ enum LocalJournalEvents {
     static let heldOrderVoided = "EVENT_HELD_ORDER_VOIDED"
     static let happyHourActivated = "EVENT_HAPPY_HOUR_OVERRIDE_ACTIVATED"
     static let happyHourStopped = "EVENT_HAPPY_HOUR_OVERRIDE_STOPPED"
+    static let zClosure = "Z_CLOSURE"
     static let backupCompleted = "BACKUP_COMPLETED"
     static let backupFailed = "BACKUP_FAILED"
 }

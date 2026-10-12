@@ -47,10 +47,8 @@ struct SidebarRail: View {
     @Environment(Router.self) private var router
     @Environment(AppEnvironment.self) private var environment
 
-    /// Le fiscal n'existe pas encore en mode autonome (sous-projet 2) : sa section est masquée plutôt que de répondre « non disponible ».
     private func isVisible(_ section: Router.Section) -> Bool {
-        if environment.isStandalone && section == .fiscal { return false }
-        return !section.requiresManager || model.session.isManager
+        !section.requiresManager || model.session.isManager
     }
 
     var body: some View {

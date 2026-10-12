@@ -50,8 +50,8 @@ struct LocalAuthTests {
 
     @Test func unsupportedMethodsAnswer501() async throws {
         let api = try await makeLocalAPI()
-        await #expect(throws: APIError.server(status: 501, message: "Non disponible en mode autonome : xReport(terminalId:)")) {
-            try await api.xReport(terminalId: "T01")
+        await #expect(throws: APIError.server(status: 501, message: "Non disponible en mode autonome : pair(code:)")) {
+            _ = try await api.pair(code: "123456")
         }
     }
 }

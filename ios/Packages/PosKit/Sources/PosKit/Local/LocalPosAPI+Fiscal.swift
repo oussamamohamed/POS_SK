@@ -34,4 +34,160 @@ extension LocalPosAPI {
             return ReprintResult(printQueued: false, duplicateNumber: try fiscal.recordDuplicate(of: receipt, operatorId: manager.id, now: now))
         }
     }
+
+    // MARK: - Rapport X & Clôture Z (NF525)
+
+    public func xReport(terminalId: String) async throws -> FiscalReport {
+        try requireManager()
+        let term = terminalId.isEmpty ? Self.standaloneTerminalId : terminalId
+        let sum = try fiscalRepository.summary(terminalId: term, now: clock())
+        return FiscalReport(
+            terminalId: term,
+            closureSequence: nil,
+            totalSalesTtc: Money(cents: sum.totalSalesTtcCents),
+            totalSalesHt: Money(cents: sum.totalSalesHtCents),
+            receiptCount: sum.receiptCount,
+            vatBreakdown: sum.vatBreakdown,
+            paymentTotals: sum.paymentTotals,
+            perpetualGrandTotal: Money(cents: sum.perpetualGrandTotalCents),
+            signatureHash: nil,
+            closedAtUtc: nil,
+            periodEndUtc: sum.periodEndUtc,
+            printQueued: nil
+        )
+    }
+
+    public func latestClosure(terminalId: String) async throws -> FiscalReport? {
+        try requireManager()
+        let term = terminalId.isEmpty ? Self.standaloneTerminalId : terminalId
+        guard let closure = try fiscalRepository.latestClosure(terminalId: term) else { return nil }
+        let count = try fiscalRepository.receiptCountForClosure(terminalId: term, sequence: closure.sequence, periodStartUtc: closure.periodStartUtc, periodEndUtc: closure.periodEndUtc)
+        var vat: [String: Money] = [:]
+        let taxesData = Data(closure.taxesSummaryJson.utf8)
+        if let dict = try? JSONSerialization.jsonObject(with: taxesData) as? [String: Any] {
+            for (rate, val) in dict {
+                let cents: Int = (val as? Int) ?? Int((val as? Double) ?? 0)
+                vat[rate] = Money(cents: cents)
+            }
+        }
+        var tenders: [String: Money] = [:]
+        let tendersData = Data(closure.tenderTotalsJson.utf8)
+        if let dict = try? JSONSerialization.jsonObject(with: tendersData) as? [String: Any] {
+            for (method, val) in dict {
+                let cents: Int = (val as? Int) ?? Int((val as? Double) ?? 0)
+                tenders[method] = Money(cents: cents)
+            }
+        }
+        return FiscalReport(
+            terminalId: closure.terminalId,
+            closureSequence: closure.sequence,
+            totalSalesTtc: Money(cents: closure.totalSalesTtcCents),
+            totalSalesHt: Money(cents: closure.totalSalesHtCents),
+            receiptCount: count,
+            vatBreakdown: vat,
+            paymentTotals: tenders,
+            perpetualGrandTotal: Money(cents: closure.perpetualGrandTotalCents),
+            signatureHash: closure.signatureHash,
+            closedAtUtc: closure.createdAtUtc,
+            periodEndUtc: closure.periodEndUtc,
+            printQueued: false
+        )
+    }
+
+    public func zClosure(terminalId: String, managerId: UUID, managerName: String) async throws -> FiscalReport {
+        let manager = try requireManager()
+        let term = terminalId.isEmpty ? Self.standaloneTerminalId : terminalId
+        let now = clock()
+
+        // 1. Vérification des commandes ouvertes en salle
+        let tables = try floorRepository.tables()
+        var openOrders: [String] = []
+        for table in tables {
+            guard let order = try activeOrder(on: table), !order.lines.isEmpty else { continue }
+            let paid = try fiscalRepository.paidCents(orderId: order.orderId)
+            let remaining = max(0, (order.totalTtcAmount?.cents ?? 0) - paid)
+            if remaining > 0 {
+                let formatted = String(format: "%d.%02d", remaining / 100, remaining % 100)
+                openOrders.append("\(table.tableNumber) (\(formatted))")
+            }
+        }
+        if !openOrders.isEmpty {
+            throw APIError.server(
+                status: 409,
+                message: "Clôture Z impossible : \(openOrders.count) commande(s) en cours : \(openOrders.joined(separator: ", "))"
+            )
+        }
+
+        // 2. Vérification des commandes en attente (held orders)
+        let held = try holdRepository.active(terminalId: term)
+        if !held.isEmpty {
+            throw APIError.server(
+                status: 409,
+                message: "Clôture Z impossible : \(held.count) commande(s) en attente subsistent sur la caisse \(term)."
+            )
+        }
+
+        let fiscal = fiscalRepository
+        let closure = try db.transaction { () throws -> DailyFiscalClosureRecord in
+            try fiscal.insertClosure(terminalId: term, managerId: manager.id, managerName: manager.name, now: now)
+        }
+
+        let count = try fiscal.receiptCountForClosure(terminalId: term, sequence: closure.sequence, periodStartUtc: closure.periodStartUtc, periodEndUtc: closure.periodEndUtc)
+        var vat: [String: Money] = [:]
+        let taxesData = Data(closure.taxesSummaryJson.utf8)
+        if let dict = try? JSONSerialization.jsonObject(with: taxesData) as? [String: Any] {
+            for (rate, val) in dict {
+                let cents: Int = (val as? Int) ?? Int((val as? Double) ?? 0)
+                vat[rate] = Money(cents: cents)
+            }
+        }
+        var tenders: [String: Money] = [:]
+        let tendersData = Data(closure.tenderTotalsJson.utf8)
+        if let dict = try? JSONSerialization.jsonObject(with: tendersData) as? [String: Any] {
+            for (method, val) in dict {
+                let cents: Int = (val as? Int) ?? Int((val as? Double) ?? 0)
+                tenders[method] = Money(cents: cents)
+            }
+        }
+
+        return FiscalReport(
+            terminalId: closure.terminalId,
+            closureSequence: closure.sequence,
+            totalSalesTtc: Money(cents: closure.totalSalesTtcCents),
+            totalSalesHt: Money(cents: closure.totalSalesHtCents),
+            receiptCount: count,
+            vatBreakdown: vat,
+            paymentTotals: tenders,
+            perpetualGrandTotal: Money(cents: closure.perpetualGrandTotalCents),
+            signatureHash: closure.signatureHash,
+            closedAtUtc: closure.createdAtUtc,
+            periodEndUtc: closure.periodEndUtc,
+            printQueued: false
+        )
+    }
+
+    public func printXReport(terminalId: String) async throws -> Bool {
+        try requireManager()
+        return false
+    }
+
+    public func reprintLatestClosure(terminalId: String) async throws -> ReprintResult {
+        let manager = try requireManager()
+        let term = terminalId.isEmpty ? Self.standaloneTerminalId : terminalId
+        let fiscal = fiscalRepository
+        let now = clock()
+        return try db.transaction { () throws -> ReprintResult in
+            guard let closure = try fiscal.latestClosure(terminalId: term) else {
+                throw APIError.notFound("Aucune clôture trouvée.")
+            }
+            let duplicateNumber = try fiscal.recordClosureDuplicate(of: closure, operatorId: manager.id, now: now)
+            return ReprintResult(printQueued: false, duplicateNumber: duplicateNumber)
+        }
+    }
+
+    public func verifyChains() async throws -> FiscalVerificationResult {
+        try requireManager()
+        return try fiscalRepository.verifyAllChains(now: clock())
+    }
 }
+

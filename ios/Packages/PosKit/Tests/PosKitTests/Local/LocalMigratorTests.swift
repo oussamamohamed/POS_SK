@@ -9,7 +9,7 @@ struct LocalMigratorTests {
         try LocalMigrator.migrate(db)
         #expect(try db.userVersion() == LocalMigrator.steps.count)
         let tables = try db.query("SELECT name FROM sqlite_master WHERE type = 'table'").compactMap { $0.string("name") }
-        for expected in ["Users", "Categories", "Products", "ModifierGroups", "ModifierOptions", "DiningTables", "RestaurantSettings", "GridLayouts", "GridSlots"] {
+        for expected in ["Users", "Categories", "Products", "ModifierGroups", "ModifierOptions", "DiningTables", "RestaurantSettings", "GridLayouts", "GridSlots", "DailyFiscalClosures"] {
             #expect(tables.contains(expected))
         }
     }
