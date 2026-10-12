@@ -20,13 +20,28 @@ Base de référence (avant tâche 1) : PosKit 394 · UI 52 · .NET 418
 
 Statut : terminé. .NET 636 (Domain 47, Infrastructure 412, Api 177) · PosKit 405 · Tests UI 52 (verts).
 
-## Findings ouverts restants (non bloquants)
+## Finitions (branche `fix/finitions-tva-recu`)
 
-- M2 : borne haute de l'absorbeur du FEC (reçus legacy sans `HtBreakdownJson` seulement).
-- M3 : libellé « Pourboire » appliqué à tout excédent du FEC.
-- m3 Swift : valeur par défaut `htBreakdownJson = nil` acceptée.
-- `InMemoryPosAPI.swift:396` (double de test / `-UITestMode`) : répartition de TVA d'un reçu partiel selon l'ancienne règle ; hors périmètre.
-- Recommandations mineures de la revue de la tâche 2 : `tenders` de la fixture reconstruit à part, ordre des clés JSON reposant sur l'ordre d'insertion du `Dictionary`, pas de scénario combinant total nul et pourboire.
-- Compte 468600 (pourboires) à valider par l'expert-comptable.
-- Écart pré-existant : `docs/fiscal.md` décrit un FEC « barres verticales, virgule décimale » alors que le code écrit des tabulations et des points.
+Tous les findings mineurs du lot sont traités, sauf les deux points ci-dessous. .NET 736 (Domain 68, Infrastructure 428, Api 240 ; ces totaux incluent les fichiers de test non suivis déjà présents dans l'arbre de travail) · PosKit 411. Après les trois mineurs de la re-revue : .NET 749 (Domain 68, Infrastructure 428, Api 253) · PosKit 413. Tests UI non relancés : aucun montant visible modifié (le rapport X de `testFiscalXAndZReports` vérifie un règlement unique, 14,50, inchangé).
+
+| Finding | Résolution |
+|---|---|
+| Poids négatifs (`TaxAllocation.Allocate`, `OrderMath.allocate`) | Résolu : l'API n'a aucun usage légitime d'une ligne négative ; `POST /api/tables/{t}/items` renvoie 400 (`errors.order_item_invalid`) si quantité ≤ 0, prix < 0 ou supplément < 0 ; `LocalPosAPI.addItems` aligné (même condition, même message) ; garde défensive des deux côtés (poids négatif compté 0), test `[-1,-1,5]`. |
+| M3 : libellé « Pourboire » sur tout excédent du FEC | Résolu : libellé neutre « Excédent de règlement / pourboire » conservé ; le surpaiement lui-même est désormais refusé (voir « Surpaiement et règlements ≤ 0 »). |
+| M2 : absorbeur sans borne haute du repli FEC | Non traité volontairement. Le repli ne sert plus qu'aux JSON incohérents et aux bases antérieures à la colonne ; suppression à décider (voir rapport). |
+| m3 Swift : valeur par défaut `htBreakdownJson = nil` | Résolu : propriété sans défaut, appelants explicites. |
+| `InMemoryPosAPI` : TVA d'un reçu partiel selon l'ancienne règle | Résolu : alignée sur `FiscalReceiptMath.amounts`, test de parité `InMemoryReceiptParityTests`. |
+| Pas de scénario « total nul + pourboire » | Résolu : deux scénarios ajoutés (comp et remise 100 %), fixture régénérée (142 scénarios), rejeu Swift vert. |
+| `docs/fiscal.md` : FEC « barres verticales, virgule » | Résolu : tabulations et points, comme le code. |
+| Spec : `isPartial` et « schéma (aucun) » | Résolu. |
+| Surpaiement et règlements ≤ 0 | Résolu : `CheckoutPaymentService.ProcessPaymentTendersAsync` refuse (`IsSuccess = false`, rien d'écrit) un règlement ≤ 0, un total réglé supérieur au solde dû (pourboire inclus dans le dû ; le rendu monnaie passe par `Tendered`) et une liste vide hors commande à total nul. `checkout/pay`, `orders/counter/checkout` (qui renvoyait 200 sur échec) et `sync/receipt` (plus de ligne à prix négatif ni de commande orpheline) répondent 400. Les refus se décident avant toute écriture : `PaymentSettlementRules` (règles partagées avec le service) est évalué par le comptoir avant numéro de retrait, pourboire et avoir (l'avoir n'est émis qu'après le règlement enregistré), et par `checkout/pay` avant de créer une commande à la volée (règlements tous > 0). Une commande réglée ou annulée n'est plus encaissable (parité `isModifiable` de `LocalPosAPI.settle`). Une valeur de remise à plus de 2 décimales est refusée en 400 (`errors.discount_value_precision`), le web arrondit à la saisie. Parité iPad : `LocalPosAPI.settle` refusait déjà, même message « Échec de l'encaissement. ». |
+| Mineurs re-revue : commande à la volée, comptoir, remise iPad | Résolu : `checkout/pay` refuse avant création (pourboire ≠ 0, règlement arrondi à 0 centime, Tendered négatif) via `AreTendersAcceptable`, aucune commande orpheline ; `orders/counter/checkout` restitue pourboire, opérateur et mentions de retrait (ChangeTracker.Clear puis relecture) si `ProcessPaymentTendersAsync` lève, puis relance l'exception comme `checkout/pay` (le compteur de numéro de retrait reste consommé) ; iPad : la remise saisie est arrondie à 2 décimales avant l'appel, `InMemoryPosAPI.applyDiscount` refuse > 2 décimales comme `LocalPosAPI`. |
+| m1 : prix négatif à la modification d'un article | Résolu : `UpdateProductAsync` refuse comme `CreateProductAsync` ; les endpoints répondent 400 (`errors.product_price_negative`) ; `min="0"` sur `editProdPrice` ; `LocalPosAPI.createProduct` / `updateProduct` alignés. |
+| m3 : test `errors.order_item_invalid` | Résolu : le test vérifie le texte localisé. |
+| Client web : total TTC des tables en flottant | Résolu : `calculateTotalTtc` calcule en centimes entiers avec les arrondis du serveur (par ligne, puis remise de commande). |
+
+## Findings ouverts restants
+
+- Compte 468600 (pourboires et excédents de règlement) à valider par l'expert-comptable.
 - Rejeu Swift de `day_scenario.json` à faire au sous-projet 3 (condition 8 de `ipad-standalone-2-progress.md`).
+- FEC : séparateur décimal (point ou virgule) à valider avec Test Compta Demat / l'expert-comptable (la tabulation est certaine) ; `docs/fiscal.md` ne prétend plus à la conformité A.47 A-1.

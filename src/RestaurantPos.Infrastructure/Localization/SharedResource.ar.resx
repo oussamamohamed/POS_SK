@@ -91,6 +91,9 @@
   <data name="errors.table_merge_failed" xml:space="preserve">
     <value>فشل دمج الطاولات.</value>
   </data>
+  <data name="errors.discount_value_precision" xml:space="preserve">
+    <value>قيمة الخصم محدودة بخانتين عشريتين.</value>
+  </data>
   <data name="errors.discount_failed" xml:space="preserve">
     <value>فشلت عملية الخصم.</value>
   </data>
@@ -156,6 +159,12 @@
   </data>
   <data name="errors.payment_failed" xml:space="preserve">
     <value>فشل الدفع.</value>
+  </data>
+  <data name="errors.order_item_invalid" xml:space="preserve">
+    <value>سطر الطلب غير صالح: يجب أن تكون الكمية موجبة ولا يمكن أن تكون المبالغ سالبة.</value>
+  </data>
+  <data name="errors.product_price_negative" xml:space="preserve">
+    <value>لا يمكن أن يكون سعر المنتج سالباً.</value>
   </data>
   <data name="errors.tip_invalid" xml:space="preserve">
     <value>مبلغ الإكرامية غير صالح.</value>

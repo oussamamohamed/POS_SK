@@ -12,6 +12,8 @@ public actor InMemoryPosAPI: PosAPI {
         var order: ActiveOrder
         var tipCents = 0
         var paidCents = 0
+        /// TTC fiscal déjà couvert par les reçus de la commande (hors pourboire), pour borner le reçu suivant.
+        var fiscalTtcCents = 0
     }
 
     private var staffRecords: [StaffRecord]
@@ -367,6 +369,10 @@ public actor InMemoryPosAPI: PosAPI {
 
     public func applyDiscount(orderId: UUID, type: DiscountType, value: Decimal, reason: String, operatorId: UUID?) async throws {
         try await step("applyDiscount"); try requireAuth()
+        // Même règle que le serveur et `LocalPosAPI` : au-delà de 2 décimales, refus.
+        var cents = value * 100, wholeCents = Decimal()
+        NSDecimalRound(&wholeCents, &cents, 0, .plain)
+        guard cents == wholeCents else { throw APIError.server(status: 400, message: "La valeur de la remise est limitée à 2 décimales.") }
         guard orders[orderId] != nil else { throw APIError.server(status: 400, message: "Opération de remise échouée.") }
         orders[orderId]!.order.globalDiscountType = type
         orders[orderId]!.order.globalDiscountValue = value
@@ -388,16 +394,15 @@ public actor InMemoryPosAPI: PosAPI {
 
     // MARK: Encaissement
 
-    private func record(receiptFor order: ActiveOrder, terminal: String, paidCents: Int, dueCents: Int, method: PaymentMethod) -> String {
+    /// Même règle que le mode autonome et le .NET : `FiscalReceiptMath.amounts` (plus fort reste par taux, pourboire exclu du reçu).
+    private func record(receiptFor record: OrderRecord, terminal: String, paidCents: Int, method: PaymentMethod) -> (number: String, ttcCents: Int) {
         receiptCounter += 1
-        let t = totals(of: order)
-        let ratio = dueCents > 0 && paidCents < dueCents ? Decimal(paidCents) / Decimal(dueCents) : 1
-        var vat: [String: Int] = [:]
-        for line in t.vatLines { vat["\(line.ratePercent)", default: 0] += Money.roundAwayFromZero(Decimal(line.vat.cents) * ratio) }
-        let ttc = ratio == 1 ? t.totalTtc.cents : paidCents
-        let ht = Money.roundAwayFromZero(Decimal(t.totalHt.cents) * ratio)
-        receipts.append((terminal, ttc, ht, vat, method))
-        return "\(terminal)-\(String(format: "%06d", receiptCounter))"
+        let amounts = FiscalReceiptMath.amounts(
+            order: record.order, totalPaidCents: paidCents, tipCents: record.tipCents, priorFiscalTtcCents: record.fiscalTtcCents
+        )
+        let vat = (try? JSONSerialization.jsonObject(with: Data(amounts.taxBreakdownJson.utf8)) as? [String: Int]) ?? [:]
+        receipts.append((terminal, amounts.ttcCents, amounts.htCents, vat, method))
+        return ("\(terminal)-\(String(format: "%06d", receiptCounter))", amounts.ttcCents)
     }
 
     private func settle(orderId: UUID, terminal: String, tenders: [(PaymentMethod, Int, Int)]) throws -> (receipt: String, paid: Int, change: Int, remaining: Int) {
@@ -408,8 +413,9 @@ public actor InMemoryPosAPI: PosAPI {
         let remainingBefore = max(0, due - record.paidCents)
         let change = max(0, tendered - remainingBefore)
         let remaining = max(0, due - (record.paidCents + paid))
-        let receipt = self.record(receiptFor: record.order, terminal: terminal, paidCents: paid, dueCents: due, method: tenders.first?.0 ?? .cash)
+        let receipt = self.record(receiptFor: record, terminal: terminal, paidCents: paid, method: tenders.first?.0 ?? .cash)
         record.paidCents += paid
+        record.fiscalTtcCents += receipt.ttcCents
         orders[orderId] = record
         if remaining == 0, let i = tablesStore.firstIndex(where: { $0.activeOrderId == orderId }) {
             tablesStore[i].activeOrderId = nil
@@ -418,7 +424,7 @@ public actor InMemoryPosAPI: PosAPI {
             tablesStore[i].openedAtUtc = nil
             tablesStore[i].assignedWaiterName = nil
         }
-        return (receipt, paid, change, remaining)
+        return (receipt.number, paid, change, remaining)
     }
 
     public func pay(_ request: PaymentRequest) async throws -> PaymentResult {

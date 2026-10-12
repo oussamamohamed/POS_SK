@@ -1183,8 +1183,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         elements.cartItemsList.innerHTML = '';
         let totalHt = 0;
         let totalVat = 0;
-        let totalTtc = 0;
-
         if (state.cart.length === 0) {
             elements.cartItemsList.innerHTML = `
                 <div style="text-align:center;color:#64748b;padding:40px 10px;">
@@ -1213,7 +1211,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             totalHt += lineHt;
             totalVat += lineVat;
-            totalTtc += lineTtc;
 
             const courseClass = (item.course || 'Direct').toLowerCase();
 
@@ -1246,16 +1243,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             elements.cartItemsList.appendChild(row);
         });
 
-        // Apply global discount if active
-        if (state.globalDiscount) {
-            if (state.globalDiscount.type === 0 || state.globalDiscount.type === 'Percentage') {
-                const discVal = state.globalDiscount.value;
-                totalTtc = Math.max(0, totalTtc * (1.0 - (discVal / 100.0)));
-            } else if (state.globalDiscount.type === 1 || state.globalDiscount.type === 'FixedAmount') {
-                totalTtc = Math.max(0, totalTtc - state.globalDiscount.value);
-            }
-        }
-
         elements.summaryHt.textContent = `${totalHt.toFixed(2)} €`;
         elements.summaryVat.textContent = `${totalVat.toFixed(2)} €`;
         if (document.getElementById('summaryVatLabel')) {
@@ -1263,7 +1250,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 ? t('order.vat_label')
                 : t('order.vat_label_eatin');
         }
-        elements.summaryTtc.textContent = `${totalTtc.toFixed(2)} €`;
+        elements.summaryTtc.textContent = `${calculateTotalTtc().toFixed(2)} €`; // même total que l'encaissement
 
         // Attach quantity buttons
         elements.cartItemsList.querySelectorAll('.btn-qty').forEach(btn => {
@@ -1552,7 +1539,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (target === 'global') {
                     const unit = elements.selectDiscountUnit.value;
                     const type = unit === 'Percentage' ? 0 : 1;
-                    const val = parseFloat(elements.inputDiscountVal.value);
+                    const val = Math.round(parseFloat(elements.inputDiscountVal.value) * 100) / 100; // 2 décimales max : le serveur refuse au-delà
 
                     const res = await fetch(`/api/orders/${state.activeOrderId}/discount`, {
                         method: 'POST',
@@ -1870,23 +1857,29 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
+    /** Remise en pourcentage arrondie au centime (moitié vers le haut), comme `Math.Round(..., AwayFromZero)` du serveur. */
+    function discountedCents(cents, percent) {
+        return Math.floor((cents * (10000 - Math.round(percent * 100)) + 5000) / 10000);
+    }
+
+    /** Total TTC calculé en centimes entiers avec les arrondis du serveur (par ligne, puis remise de commande). */
     function calculateTotalTtc() {
-        let total = state.cart.reduce((sum, item) => {
+        let cents = state.cart.reduce((sum, item) => {
             if (item.isComp) return sum;
-            const effectiveUnitPrice = Number(item.product.price || 0) + Number(item.modifiersPriceExtra || 0);
-            let line = effectiveUnitPrice * item.quantity;
-            if (item.discountPercent > 0) line *= (1.0 - item.discountPercent / 100.0);
+            const unitCents = Math.round(Number(item.product.price || 0) * 100) + Math.round(Number(item.modifiersPriceExtra || 0) * 100);
+            let line = unitCents * item.quantity;
+            if (item.discountPercent > 0) line = Math.max(0, discountedCents(line, item.discountPercent));
             return sum + line;
         }, 0);
 
         if (state.globalDiscount) {
             if (state.globalDiscount.type === 0 || state.globalDiscount.type === 'Percentage') {
-                total = Math.max(0, total * (1.0 - (state.globalDiscount.value / 100.0)));
+                cents = Math.max(0, discountedCents(cents, state.globalDiscount.value));
             } else if (state.globalDiscount.type === 1 || state.globalDiscount.type === 'FixedAmount') {
-                total = Math.max(0, total - state.globalDiscount.value);
+                cents = Math.max(0, cents - Math.round(state.globalDiscount.value * 100));
             }
         }
-        return total;
+        return cents / 100;
     }
 
     /** Montant restant dû : tient compte des paiements partiels déjà encaissés (split). */

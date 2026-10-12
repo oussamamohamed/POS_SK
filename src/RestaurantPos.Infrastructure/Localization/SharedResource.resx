@@ -91,6 +91,9 @@
   <data name="errors.table_merge_failed" xml:space="preserve">
     <value>Table merge failed.</value>
   </data>
+  <data name="errors.discount_value_precision" xml:space="preserve">
+    <value>Discount value is limited to 2 decimal places.</value>
+  </data>
   <data name="errors.discount_failed" xml:space="preserve">
     <value>Discount operation failed.</value>
   </data>
@@ -156,6 +159,12 @@
   </data>
   <data name="errors.payment_failed" xml:space="preserve">
     <value>Payment failed.</value>
+  </data>
+  <data name="errors.order_item_invalid" xml:space="preserve">
+    <value>Invalid order line: quantity must be positive and amounts must not be negative.</value>
+  </data>
+  <data name="errors.product_price_negative" xml:space="preserve">
+    <value>Product price must not be negative.</value>
   </data>
   <data name="errors.tip_invalid" xml:space="preserve">
     <value>Invalid tip amount.</value>

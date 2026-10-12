@@ -319,7 +319,7 @@
                                     <div class="form-row">
                                         <div class="form-group">
                                             <label data-i18n="admin.price_label">Prix TTC (€) :</label>
-                                            <input type="number" step="0.10" id="inputProdPrice" value="15.00" required>
+                                            <input type="number" step="0.10" min="0" id="inputProdPrice" value="15.00" required>
                                         </div>
                                         <div class="form-group">
                                             <label data-i18n="admin.vat_percent_label">TVA (%) :</label>
@@ -1448,7 +1448,7 @@
                 <div id="groupDiscountValue" class="form-row" style="display:flex; gap:12px;">
                     <div class="form-group" style="flex:1;">
                         <label data-i18n="order.discount_value_label">Valeur :</label>
-                        <input type="number" step="0.5" id="inputDiscountVal" value="10" required style="width:100%; padding:10px; border-radius: 2px; background:rgba(255,255,255,0.05); border:1px solid var(--border-color); color:white;" />
+                        <input type="number" step="0.01" min="0" id="inputDiscountVal" value="10" required style="width:100%; padding:10px; border-radius: 2px; background:rgba(255,255,255,0.05); border:1px solid var(--border-color); color:white;" />
                     </div>
                     <div class="form-group" style="flex:1;">
                         <label data-i18n="order.discount_unit_label">Unité :</label>
@@ -1593,7 +1593,7 @@
                     </div>
                     <div class="form-group" style="flex:1;">
                         <label for="editProdPrice" data-i18n="admin.price_required_label">Prix TTC (€) * :</label>
-                        <input type="number" step="0.10" id="editProdPrice" required style="width:100%; padding:10px; border-radius: 2px; background:rgba(255,255,255,0.05); border:1px solid var(--border-color); color:white;" />
+                        <input type="number" step="0.10" min="0" id="editProdPrice" required style="width:100%; padding:10px; border-radius: 2px; background:rgba(255,255,255,0.05); border:1px solid var(--border-color); color:white;" />
                     </div>
                 </div>
                 <div class="form-row" style="display:flex; gap:12px;">

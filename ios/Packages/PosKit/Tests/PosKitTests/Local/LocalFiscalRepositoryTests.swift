@@ -54,7 +54,7 @@ struct LocalFiscalRepositoryTests {
 
     @Test func aReceiptWithoutHtBreakdownKeepsNullAndItsVoidToo() throws {
         let (repo, db) = try makeRepository()
-        let legacy = FiscalReceiptAmounts(ttcCents: 1250, htCents: 1136, taxBreakdownJson: "{\"10\":114}")
+        let legacy = FiscalReceiptAmounts(ttcCents: 1250, htCents: 1136, taxBreakdownJson: "{\"10\":114}", htBreakdownJson: nil)
         let sale = try repo.appendReceipt(orderId: UUID(), terminalId: "T01", amounts: legacy, tenders: cash, now: at)
         let voided = try #require(try repo.voidReceipt(originalId: sale.id, terminalId: "T01", operatorId: UUID(), now: at))
         #expect(sale.htBreakdownJson == nil && voided.htBreakdownJson == nil)

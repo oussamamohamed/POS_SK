@@ -241,4 +241,113 @@ public class CheckoutPaymentServiceTests
         receipts[0].TotalTtcAmount.AmountInCents.Should().Be(1500);
         receipts[1].TotalTtcAmount.AmountInCents.Should().Be(1500);
     }
+    private static async Task<(AppDbContext Db, CheckoutPaymentService Service, Order Order)> CreateOrderAsync(
+        decimal unitPrice, decimal tip = 0m)
+    {
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase(databaseName: "CheckoutGuardDb_" + Guid.NewGuid().ToString("N"))
+            .Options;
+        var db = new AppDbContext(options);
+        var service = new CheckoutPaymentService(db, new NF525FiscalAuditService(db));
+        var order = new Order { TableNumber = "T09", TipAmount = Money.FromDecimal(tip) };
+        order.Items.Add(new OrderItem
+        {
+            ProductName = "Plat",
+            Quantity = 1,
+            UnitPrice = Money.FromDecimal(unitPrice),
+            TaxRatePercent = 10m
+        });
+        db.Orders.Add(order);
+        await db.SaveChangesAsync();
+        return (db, service, order);
+    }
+
+    [Theory]
+    [InlineData(1001)] // un centime de trop
+    [InlineData(5000)]
+    public async Task Overpayment_IsRejected_AndWritesNothing(long amountCents)
+    {
+        var (db, service, order) = await CreateOrderAsync(10.00m);
+        using var _ = db;
+
+        var result = await service.ProcessPaymentTendersAsync(order.Id, "POS01", [new(PaymentMethod.CreditCard, amountCents, amountCents)]);
+
+        result.IsSuccess.Should().BeFalse();
+        (await db.FiscalReceipts.CountAsync()).Should().Be(0);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-500)]
+    public async Task NonPositiveTender_IsRejected(long amountCents)
+    {
+        var (db, service, order) = await CreateOrderAsync(10.00m);
+        using var _ = db;
+
+        var result = await service.ProcessPaymentTendersAsync(order.Id, "POS01",
+            [new(PaymentMethod.Cash, 1000, 1000), new(PaymentMethod.CreditCard, amountCents, Math.Max(0, amountCents))]);
+
+        result.IsSuccess.Should().BeFalse();
+        (await db.FiscalReceipts.CountAsync()).Should().Be(0);
+    }
+
+    [Fact]
+    public async Task NoTenders_OnNonZeroOrder_IsRejected()
+    {
+        var (db, service, order) = await CreateOrderAsync(10.00m);
+        using var _ = db;
+
+        var result = await service.ProcessPaymentTendersAsync(order.Id, "POS01", []);
+
+        result.IsSuccess.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task NoTenders_OnZeroTotalOrder_IsAccepted()
+    {
+        var (db, service, order) = await CreateOrderAsync(0m);
+        using var _ = db;
+
+        var result = await service.ProcessPaymentTendersAsync(order.Id, "POS01", []);
+
+        result.IsSuccess.Should().BeTrue();
+        (await db.FiscalReceipts.CountAsync()).Should().Be(1);
+    }
+
+    [Fact]
+    public async Task ExactPayment_IsAccepted_AndCashChangeComesFromTendered()
+    {
+        var (db, service, order) = await CreateOrderAsync(10.00m);
+        using var _ = db;
+
+        var result = await service.ProcessPaymentTendersAsync(order.Id, "POS01", [new(PaymentMethod.Cash, 1000, 2000)]);
+
+        result.IsSuccess.Should().BeTrue();
+        result.ChangeGivenCents.Should().Be(1000);
+        var tender = (await db.FiscalReceipts.Include(r => r.Tenders).SingleAsync()).Tenders.Single();
+        tender.Amount.AmountInCents.Should().Be(1000);
+    }
+
+    [Fact]
+    public async Task PaymentCoveringTotalPlusTip_IsAccepted_ButNotOneCentMore()
+    {
+        var (db, service, order) = await CreateOrderAsync(10.00m, tip: 2.00m);
+        using var _ = db;
+
+        (await service.ProcessPaymentTendersAsync(order.Id, "POS01", [new(PaymentMethod.CreditCard, 1201, 1201)]))
+            .IsSuccess.Should().BeFalse();
+        (await service.ProcessPaymentTendersAsync(order.Id, "POS01", [new(PaymentMethod.CreditCard, 1200, 1200)]))
+            .IsSuccess.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task PartialPayments_CannotExceedRemainingBalance()
+    {
+        var (db, service, order) = await CreateOrderAsync(10.00m);
+        using var _ = db;
+
+        (await service.ProcessPaymentTendersAsync(order.Id, "POS01", [new(PaymentMethod.CreditCard, 600, 600)])).IsSuccess.Should().BeTrue();
+        (await service.ProcessPaymentTendersAsync(order.Id, "POS01", [new(PaymentMethod.CreditCard, 401, 401)])).IsSuccess.Should().BeFalse();
+        (await service.ProcessPaymentTendersAsync(order.Id, "POS01", [new(PaymentMethod.CreditCard, 400, 400)])).IsSuccess.Should().BeTrue();
+    }
 }

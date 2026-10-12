@@ -126,6 +126,11 @@ public static class CatalogEndpoints
 
         group.MapPost("/products", async (CreateProductRequest req, IBackOfficeCatalogService catalog) =>
         {
+            if (req.Price < 0)
+            {
+                return Results.BadRequest(new { Message = Texts.T("errors.product_price_negative") });
+            }
+
             var created = await catalog.CreateProductAsync(
                 req.Name,
                 req.CategoryId,
@@ -150,6 +155,11 @@ public static class CatalogEndpoints
 
         group.MapPut("/products/{id:guid}", async (Guid id, UpdateProductRequest req, IBackOfficeCatalogService catalog) =>
         {
+            if (req.Price < 0)
+            {
+                return Results.BadRequest(new { Message = Texts.T("errors.product_price_negative") });
+            }
+
             var updated = await catalog.UpdateProductAsync(
                 id,
                 req.Name,

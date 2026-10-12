@@ -171,6 +171,8 @@ internal static class FiscalScenarios
         yield return new("tip-with-split", OrderDestination.EatIn, [new(1250, 1, 10m), new(2000, 1, 20m)], [Card(1000), Card(2250)], TipCents: 350, VoidPayment: 1);
         yield return new("line-discount-comp-and-modifiers", OrderDestination.EatIn, [new(1000, 2, 10m, DiscountPercent: 10m), new(500, 1, 10m, IsComp: true), new(300, 1, 20m, ModifiersExtraCents: 50)], [Card(2150)]); // 1800 + 0 + 350
         yield return new("zero-total-comp", OrderDestination.EatIn, [new(500, 1, 10m, IsComp: true)], [new(0)]);
+        yield return new("zero-total-comp-with-tip", OrderDestination.EatIn, [new(500, 1, 10m, IsComp: true)], [new(0, PaymentMethod.Cash)], TipCents: 200);
+        yield return new("zero-total-discount-100-with-tip", OrderDestination.EatIn, [new(1000, 1, 10m), new(2000, 1, 20m)], [new(0)], DiscountType.Percentage, 100m, TipCents: 150);
         yield return new("one-cent", OrderDestination.EatIn, [new(1, 1, 20m)], [Card(1)]);
         yield return new("many-rates", OrderDestination.EatIn, [new(333, 1, 0m), new(333, 1, 2.1m), new(333, 1, 5.5m), new(333, 1, 10m), new(333, 1, 20m)], [PaySpec.Rest()], DiscountType.FixedAmount, 0.07m);
         yield return new("big-total", OrderDestination.EatIn, [new(9_999_999, 9, 10m), new(8_888_888, 7, 20m)], [PaySpec.Rest()]);

@@ -77,4 +77,21 @@ struct LocalCatalogTests {
         #expect(try await api.products().contains { $0.id == created.id } == false)
         await #expect(throws: APIError.notFound(nil)) { try await api.archiveProduct(id: UUID()) }
     }
+    @Test func negativeProductPriceIsRefusedOnCreateAndUpdate() async throws {
+        let api = try await makeLocalAPI()
+        let refused = APIError.server(status: 400, message: "Le prix d'un article ne peut pas être négatif.")
+        await #expect(throws: refused) {
+            try await api.createProduct(ProductDraft(name: "Gratuit moins un", categoryId: "CAT_DRINKS", price: Money(cents: -1)))
+        }
+        #expect(try await api.products().contains { $0.name == "Gratuit moins un" } == false)
+
+        let pizza = try #require(try await api.products().first { $0.name == "Pizza Margherita AOP" })
+        var edited = ProductDraft(product: pizza)
+        edited.price = Money(cents: -100)
+        await #expect(throws: refused) { try await api.updateProduct(id: pizza.id, edited) }
+        #expect(try await api.products().first { $0.id == pizza.id }?.price == Money(cents: 1250))
+        // Un prix nul reste accepté (article offert).
+        edited.price = .zero
+        try await api.updateProduct(id: pizza.id, edited)
+    }
 }

@@ -17,6 +17,7 @@ using RestaurantPos.Domain.ValueObjects;
 using RestaurantPos.Infrastructure.Localization;
 using RestaurantPos.Infrastructure.Persistence;
 using RestaurantPos.Infrastructure.Printing;
+using RestaurantPos.Infrastructure.Services;
 
 namespace RestaurantPos.Api.Endpoints;
 
@@ -214,8 +215,41 @@ public static class CounterSaleEndpoints
 
             string terminalId = RequireDeviceFilter.PairedDevice(http).TerminalId;
 
-            // 1. Assign sequential daily pickup number (#A-01 .. #A-99)
+            var paymentTenderRequests = req.Tenders.Select(t => new PaymentTenderRequest(
+                t.Method,
+                (long)Math.Round(t.Amount * 100),
+                (long)Math.Round(t.Tendered * 100)
+            )).ToList();
+
+            // 1. Tout refus se décide AVANT la moindre écriture (numéro de retrait, pourboire, avoir) : une relance repart d'une commande intacte.
+            var tipCents = req.TipAmount > 0 ? Money.FromDecimal(req.TipAmount, "EUR").AmountInCents : order.TipAmount.AmountInCents;
+            var dueCents = order.TotalTtc.AmountInCents + tipCents;
+            if (!PaymentSettlementRules.AreTendersAcceptable(paymentTenderRequests, order.Status, order.Items.Count > 0, dueCents, await PaymentSettlementRules.PaidCentsAsync(db, order.Id)))
+            {
+                return Results.BadRequest(new { Message = Texts.T("errors.payment_failed") });
+            }
+
+            // 2. Meal voucher overpayment and eligibility policy enforcement
+            var policy = req.MealVoucherPolicy ?? MealVoucherOverpaymentPolicy.CapAtBalance;
+            MealVoucherValidationResult? voucherValidation = null;
+            var voucherTender = req.Tenders.FirstOrDefault(t => t.Method == PaymentMethod.MealVoucher);
+            if (voucherTender != null)
+            {
+                voucherValidation = mealVoucherPolicyService.ValidateVoucherTender(order, voucherTender.Amount, voucherTender.FacialValue, policy);
+                if (!voucherValidation.IsAllowed)
+                {
+                    return Results.BadRequest(new { Message = voucherValidation.ErrorMessage });
+                }
+            }
+
+            // 3. Assign sequential daily pickup number (#A-01 .. #A-99)
             string pickupNumber = await counterService.GetNextPickupNumberAsync(terminalId);
+            var previousTip = order.TipAmount;
+            var previousOperatorId = order.OperatorId;
+            var previousPickupNumber = order.PickupNumber;
+            var previousDestination = order.Destination;
+            var previousBuzzer = order.PickupBuzzer;
+            var previousScheduledAtUtc = order.PickupScheduledAtUtc;
             order.PickupNumber = pickupNumber;
             order.Destination = req.Destination;
             order.PickupBuzzer = req.PickupBuzzer;
@@ -227,55 +261,64 @@ public static class CounterSaleEndpoints
             }
             if (req.TipAmount > 0)
             {
-                order.TipAmount = Money.FromDecimal(req.TipAmount, "EUR");
+                order.TipAmount = Money.FromCents(tipCents);
             }
             await db.SaveChangesAsync();
 
-            // 2. Meal voucher overpayment and eligibility policy enforcement
-            CustomerCreditVoucherDto? issuedCreditVoucher = null;
-            var policy = req.MealVoucherPolicy ?? MealVoucherOverpaymentPolicy.CapAtBalance;
-
-            var voucherTender = req.Tenders.FirstOrDefault(t => t.Method == PaymentMethod.MealVoucher);
-            if (voucherTender != null)
+            // 4. Process payment tenders through NF525 checkout service
+            CheckoutResult checkoutResult;
+            try
             {
-                var validation = mealVoucherPolicyService.ValidateVoucherTender(order, voucherTender.Amount, voucherTender.FacialValue, policy);
-                if (!validation.IsAllowed)
-                {
-                    return Results.BadRequest(new { Message = validation.ErrorMessage });
-                }
-
-                if (policy == MealVoucherOverpaymentPolicy.CustomerCreditVoucher && validation.SurplusAmount > 0)
-                {
-                    string voucherCode = "CR-" + Guid.NewGuid().ToString("N")[..8].ToUpperInvariant();
-                    var creditVoucher = new CustomerCreditVoucher
-                    {
-                        VoucherCode = voucherCode,
-                        OriginalOrderId = order.Id,
-                        TerminalId = terminalId,
-                        Amount = Money.FromDecimal(validation.SurplusAmount, "EUR"),
-                        ExpiresAtUtc = DateTimeOffset.UtcNow.AddDays(90)
-                    };
-                    db.CustomerCreditVouchers.Add(creditVoucher);
-                    await db.SaveChangesAsync();
-
-                    issuedCreditVoucher = new CustomerCreditVoucherDto(voucherCode, validation.SurplusAmount, creditVoucher.ExpiresAtUtc);
-                }
+                checkoutResult = await checkout.ProcessPaymentTendersAsync(order.Id, terminalId, paymentTenderRequests);
+            }
+            catch
+            {
+                // Exception (base occupée, conflit) : le suivi EF peut contenir le reçu non écrit, on repart d'un contexte propre
+                // et on restitue pourboire, opérateur, numéro de retrait et mentions de retrait. ponytail: le compteur de retrait reste consommé.
+                db.ChangeTracker.Clear();
+                var failedOrder = await db.Orders.FirstAsync(o => o.Id == req.OrderId);
+                failedOrder.TipAmount = previousTip;
+                failedOrder.OperatorId = previousOperatorId;
+                failedOrder.PickupNumber = previousPickupNumber;
+                failedOrder.Destination = previousDestination;
+                failedOrder.PickupBuzzer = previousBuzzer;
+                failedOrder.PickupScheduledAtUtc = previousScheduledAtUtc;
+                await db.SaveChangesAsync();
+                throw;
             }
 
-            // 3. Process payment tenders through NF525 checkout service
-            var paymentTenderRequests = req.Tenders.Select(t => new PaymentTenderRequest(
-                t.Method,
-                (long)Math.Round(t.Amount * 100),
-                (long)Math.Round(t.Tendered * 100)
-            )).ToList();
+            if (!checkoutResult.IsSuccess)
+            {
+                // Échec résiduel (concurrence) : on restitue le pourboire d'origine.
+                order.TipAmount = previousTip;
+                await db.SaveChangesAsync();
+                return Results.BadRequest(new { Message = Texts.T("errors.payment_failed") });
+            }
 
-            var checkoutResult = await checkout.ProcessPaymentTendersAsync(order.Id, terminalId, paymentTenderRequests);
+            // 5. Avoir client émis seulement une fois le règlement enregistré
+            CustomerCreditVoucherDto? issuedCreditVoucher = null;
+            if (voucherValidation is { SurplusAmount: > 0 } && policy == MealVoucherOverpaymentPolicy.CustomerCreditVoucher)
+            {
+                string voucherCode = "CR-" + Guid.NewGuid().ToString("N")[..8].ToUpperInvariant();
+                var creditVoucher = new CustomerCreditVoucher
+                {
+                    VoucherCode = voucherCode,
+                    OriginalOrderId = order.Id,
+                    TerminalId = terminalId,
+                    Amount = Money.FromDecimal(voucherValidation.SurplusAmount, "EUR"),
+                    ExpiresAtUtc = DateTimeOffset.UtcNow.AddDays(90)
+                };
+                db.CustomerCreditVouchers.Add(creditVoucher);
+                await db.SaveChangesAsync();
+
+                issuedCreditVoucher = new CustomerCreditVoucherDto(voucherCode, voucherValidation.SurplusAmount, creditVoucher.ExpiresAtUtc);
+            }
 
             bool hasCash = req.Tenders.Any(t => t.Method == PaymentMethod.Cash);
             bool printPickupVoucher = true; // Systematic takeaway pickup coupon
             bool printFiscalReceipt = req.RequestFiscalReceiptPrint; // Anti-waste AGEC: only if requested
 
-            bool printQueued = checkoutResult.IsSuccess && checkoutResult.RemainingBalanceCents == 0
+            bool printQueued = checkoutResult.RemainingBalanceCents == 0
                 && await printing.QueueCounterSaleAsync(order.Id, terminalId, checkoutResult.ReceiptNumber, printFiscalReceipt, hasCash);
 
             return Results.Ok(new CounterCheckoutResponse(

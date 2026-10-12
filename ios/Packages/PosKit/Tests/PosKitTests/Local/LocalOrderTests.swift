@@ -45,12 +45,17 @@ struct LocalOrderTests {
         #expect(order.totalTtcAmount == Money(cents: 3 * 1950 + 1950 + 850))
     }
 
-    @Test func nonPositiveQuantityIsRejected() async throws {
+    @Test func nonPositiveQuantityOrNegativeAmountIsRejected() async throws {
         let api = try await makeLocalAPI()
         let burger = try await localProduct(api, "Burger Gourmet Rossini")
-        for bad in [0, -1] {
-            await #expect(throws: APIError.server(status: 400, message: "La quantité doit être positive.")) {
-                try await api.addItems(table: "T3", items: [localInput(burger, quantity: bad)])
+        let message = "Ligne de commande invalide : la quantité doit être positive et les montants ne peuvent pas être négatifs."
+        var negativePrice = localInput(burger)
+        negativePrice.unitPrice = Money(cents: -100)
+        let inputs = [localInput(burger, quantity: 0), localInput(burger, quantity: -1), negativePrice,
+                      localInput(burger, extra: Money(cents: -50))]
+        for bad in inputs {
+            await #expect(throws: APIError.server(status: 400, message: message)) {
+                try await api.addItems(table: "T3", items: [bad])
             }
         }
         #expect(try await api.activeOrder(table: "T3") == nil)

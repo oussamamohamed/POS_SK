@@ -45,6 +45,12 @@ public static class HospitalityEndpoints
 
         orderGroup.MapPost("/{orderId:guid}/discount", async (Guid orderId, ApplyOrderDiscountRequest req, IOrderDiscountService discountService) =>
         {
+            // Plus de 2 décimales : serveur (AwayFromZero) et clients (Math.round) divergeraient d'un centime.
+            if (req.Value != Math.Round(req.Value, 2))
+            {
+                return Results.BadRequest(new { Success = false, Message = Texts.T("errors.discount_value_precision") });
+            }
+
             try
             {
                 var updated = await discountService.ApplyGlobalDiscountAsync(orderId, req.Type, req.Value, req.Reason, req.OperatorId ?? Guid.Empty);

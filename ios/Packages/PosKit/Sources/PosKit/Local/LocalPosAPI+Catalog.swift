@@ -16,8 +16,11 @@ extension LocalPosAPI {
         }
     }
 
+    static let negativeProductPrice = APIError.server(status: 400, message: "Le prix d'un article ne peut pas être négatif.")
+
     public func createProduct(_ d: ProductDraft) async throws {
         try requireManager()
+        guard d.price >= .zero else { throw Self.negativeProductPrice }
         try catalogRepository.insert(Product(
             name: d.name, categoryId: d.categoryId, description: d.description, price: d.price, taxRatePercent: d.taxRatePercent,
             colorHex: d.colorHex, displayOrder: d.displayOrder, isQuickKey: d.isQuickKey, preparationStationId: d.stationId
@@ -26,6 +29,7 @@ extension LocalPosAPI {
 
     public func updateProduct(id: UUID, _ d: ProductDraft) async throws {
         try requireManager()
+        guard d.price >= .zero else { throw Self.negativeProductPrice }
         guard try catalogRepository.update(productId: id, d) else { throw APIError.notFound(nil) }
     }
 

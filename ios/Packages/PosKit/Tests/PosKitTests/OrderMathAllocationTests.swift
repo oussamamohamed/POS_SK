@@ -48,4 +48,9 @@ struct OrderMathAllocationTests {
             }
         }
     }
+
+    @Test func treatsNegativeWeightsAsZero() {
+        #expect(OrderMath.allocate(total: 2, weights: [-1, -1, 5]) == [0, 0, 2])
+        #expect(OrderMath.allocate(total: 9, weights: [-1, -1, 5]) == [0, 0, 5])
+    }
 }

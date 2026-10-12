@@ -34,13 +34,7 @@
       ],
       "tipCents": 0,
       "payments": [
-        [
-          {
-            "method": "Cash",
-            "amountCents": 0,
-            "extraTenderedCents": 0
-          }
-        ]
+        []
       ],
       "reprint": false,
       "holdAndRecall": false,
@@ -69,13 +63,7 @@
       },
       "tipCents": 0,
       "payments": [
-        [
-          {
-            "method": "CreditCard",
-            "amountCents": 0,
-            "extraTenderedCents": 0
-          }
-        ]
+        []
       ],
       "reprint": false,
       "holdAndRecall": false,

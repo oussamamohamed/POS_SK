@@ -33,6 +33,11 @@ public class OrderDiscountService : IOrderDiscountService
             throw new ArgumentException("La valeur de la remise ne peut pas être négative.");
         }
 
+        if (value != Math.Round(value, 2))
+        {
+            throw new ArgumentException("La valeur de la remise est limitée à 2 décimales (arrondi identique sur tous les clients).");
+        }
+
         if (string.IsNullOrWhiteSpace(reason))
         {
             throw new ArgumentException("Le motif de la remise est obligatoire.");
