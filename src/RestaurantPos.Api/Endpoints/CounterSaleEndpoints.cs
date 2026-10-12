@@ -245,6 +245,11 @@ public static class CounterSaleEndpoints
             // 3. Assign sequential daily pickup number (#A-01 .. #A-99)
             string pickupNumber = await counterService.GetNextPickupNumberAsync(terminalId);
             var previousTip = order.TipAmount;
+            var previousOperatorId = order.OperatorId;
+            var previousPickupNumber = order.PickupNumber;
+            var previousDestination = order.Destination;
+            var previousBuzzer = order.PickupBuzzer;
+            var previousScheduledAtUtc = order.PickupScheduledAtUtc;
             order.PickupNumber = pickupNumber;
             order.Destination = req.Destination;
             order.PickupBuzzer = req.PickupBuzzer;
@@ -261,7 +266,27 @@ public static class CounterSaleEndpoints
             await db.SaveChangesAsync();
 
             // 4. Process payment tenders through NF525 checkout service
-            var checkoutResult = await checkout.ProcessPaymentTendersAsync(order.Id, terminalId, paymentTenderRequests);
+            CheckoutResult checkoutResult;
+            try
+            {
+                checkoutResult = await checkout.ProcessPaymentTendersAsync(order.Id, terminalId, paymentTenderRequests);
+            }
+            catch
+            {
+                // Exception (base occupée, conflit) : le suivi EF peut contenir le reçu non écrit, on repart d'un contexte propre
+                // et on restitue pourboire, opérateur, numéro de retrait et mentions de retrait. ponytail: le compteur de retrait reste consommé.
+                db.ChangeTracker.Clear();
+                var failedOrder = await db.Orders.FirstAsync(o => o.Id == req.OrderId);
+                failedOrder.TipAmount = previousTip;
+                failedOrder.OperatorId = previousOperatorId;
+                failedOrder.PickupNumber = previousPickupNumber;
+                failedOrder.Destination = previousDestination;
+                failedOrder.PickupBuzzer = previousBuzzer;
+                failedOrder.PickupScheduledAtUtc = previousScheduledAtUtc;
+                await db.SaveChangesAsync();
+                throw;
+            }
+
             if (!checkoutResult.IsSuccess)
             {
                 // Échec résiduel (concurrence) : on restitue le pourboire d'origine.

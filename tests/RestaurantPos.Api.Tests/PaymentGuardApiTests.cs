@@ -36,10 +36,10 @@ public class PaymentGuardApiTests : IClassFixture<PosApiApplicationFactory>
         return (client, paired.TerminalId);
     }
 
-    private async Task<Guid> SeedOrderAsync(long unitPriceCents, OrderStatus status = OrderStatus.Open)
+    private async Task<Guid> SeedOrderAsync(long unitPriceCents, OrderStatus status = OrderStatus.Open, Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<Program>? factory = null)
     {
         var orderId = Guid.NewGuid();
-        using var scope = _factory.Services.CreateScope();
+        using var scope = (factory ?? _factory).Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var order = new Order { Id = orderId, TableNumber = "Comptoir", Status = status };
         order.Items.Add(new OrderItem
@@ -268,5 +268,41 @@ public class PaymentGuardApiTests : IClassFixture<PosApiApplicationFactory>
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         using var scope = _factory.Services.CreateScope();
         (await scope.ServiceProvider.GetRequiredService<AppDbContext>().Orders.AnyAsync(o => o.Id == orderId)).Should().BeFalse();
+    }
+
+    private sealed class ThrowingCheckout : RestaurantPos.Application.Common.Interfaces.ICheckoutPaymentService
+    {
+        public Task<RestaurantPos.Application.Common.Interfaces.CheckoutResult> ProcessPaymentTendersAsync(Guid orderId, string terminalId, IReadOnlyList<RestaurantPos.Application.Common.Interfaces.PaymentTenderRequest> tenders, CancellationToken cancellationToken = default)
+            => throw new InvalidOperationException("base occupée");
+
+        public Task<RestaurantPos.Application.Common.Interfaces.CheckoutResult> VoidReceiptAsync(Guid originalReceiptId, string terminalId, Guid operatorId, CancellationToken cancellationToken = default)
+            => throw new NotSupportedException();
+
+        public IReadOnlyList<long> CalculateEqualSplitPartitions(long totalAmountCents, int numberOfGuests)
+            => throw new NotSupportedException();
+    }
+
+    [Fact]
+    public async Task CounterCheckout_ServiceThrows_RestoresTipAndPickupNumber()
+    {
+        var factory = _factory.WithWebHostBuilder(b => b.ConfigureServices(s =>
+            s.AddScoped<RestaurantPos.Application.Common.Interfaces.ICheckoutPaymentService, ThrowingCheckout>()));
+        var client = factory.CreateClient();
+        var login = await client.PostAsJsonAsync("/api/auth/login", new PinLoginRequest("9999"));
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", (await login.Content.ReadFromJsonAsync<LoginResultDto>())!.Token);
+        var terminalId = (await DeviceTestHelper.PairAsync(factory, client)).TerminalId;
+        var orderId = await SeedOrderAsync(1000, factory: factory);
+
+        // Le serveur de test propage l'exception non gérée (en production : 500, comme checkout/pay).
+        var call = () => client.PostAsJsonAsync("/api/orders/counter/checkout", new CounterCheckoutRequest(
+            orderId, terminalId, OrderDestination.Takeaway, null, null, 2m, false, null,
+            [new CounterPaymentTender(PaymentMethod.CreditCard, 12m, 12m)]));
+
+        await call.Should().ThrowAsync<InvalidOperationException>().WithMessage("base occupée");
+        using var scope = factory.Services.CreateScope();
+        var order = await scope.ServiceProvider.GetRequiredService<AppDbContext>().Orders.AsNoTracking().FirstAsync(o => o.Id == orderId);
+        order.TipAmount.AmountInCents.Should().Be(0);
+        order.PickupNumber.Should().BeNullOrEmpty();
+        order.OperatorId.Should().Be(Guid.Empty);
     }
 }
