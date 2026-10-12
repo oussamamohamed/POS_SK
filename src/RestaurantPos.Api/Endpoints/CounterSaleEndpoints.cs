@@ -270,12 +270,16 @@ public static class CounterSaleEndpoints
             )).ToList();
 
             var checkoutResult = await checkout.ProcessPaymentTendersAsync(order.Id, terminalId, paymentTenderRequests);
+            if (!checkoutResult.IsSuccess)
+            {
+                return Results.BadRequest(new { Message = Texts.T("errors.payment_failed") });
+            }
 
             bool hasCash = req.Tenders.Any(t => t.Method == PaymentMethod.Cash);
             bool printPickupVoucher = true; // Systematic takeaway pickup coupon
             bool printFiscalReceipt = req.RequestFiscalReceiptPrint; // Anti-waste AGEC: only if requested
 
-            bool printQueued = checkoutResult.IsSuccess && checkoutResult.RemainingBalanceCents == 0
+            bool printQueued = checkoutResult.RemainingBalanceCents == 0
                 && await printing.QueueCounterSaleAsync(order.Id, terminalId, checkoutResult.ReceiptNumber, printFiscalReceipt, hasCash);
 
             return Results.Ok(new CounterCheckoutResponse(

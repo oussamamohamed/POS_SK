@@ -95,6 +95,12 @@ public static class SyncEndpoints
 
             if (order is null)
             {
+                // Commande créée à la volée : le total ne peut être ni nul ni négatif ; règlements > 0 et sans dépasser le total.
+                if (totalCents <= 0 || (req.Tenders ?? []).Any(t => t.AmountCents <= 0) || (req.Tenders ?? []).Sum(t => t.AmountCents) > totalCents)
+                {
+                    return Results.BadRequest(new { Message = Texts.T("errors.sync_payment_failed") });
+                }
+
                 order = new Order
                 {
                     Id = orderId,

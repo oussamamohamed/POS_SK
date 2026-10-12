@@ -186,7 +186,7 @@ public sealed class FecExportService : IFecExportService
                     totalRecords++;
                 }
 
-                // Excédent de règlement (pourboire déclaré, ou surpaiement sans pourboire que l'API ne plafonne pas) : encaissé hors reçu fiscal (TTC) ; dette, pas un produit.
+                // Excédent de règlement (pourboire déclaré ; le surpaiement est refusé par CheckoutPaymentService, libellé neutre conservé) : encaissé hors reçu fiscal (TTC) ; dette, pas un produit.
                 // Sans cette contrepartie l'écriture serait déséquilibrée du montant du pourboire.
                 long tipCents = receipt.Tenders.Sum(t => Math.Abs(t.Amount.AmountInCents)) - Math.Abs(receipt.TotalTtcAmount.AmountInCents);
                 if (tipCents > 0)

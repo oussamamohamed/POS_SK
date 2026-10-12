@@ -73,9 +73,9 @@ public static class DayScenarioGenerator
         return
         [
             // total nul : tout est offert
-            Order("m0", "A", "waiter1", "1", 2, [new("Offert", 1, 1200, 10m, Comp: true)], null, [[new("Cash", 0)]]),
+            Order("m0", "A", "waiter1", "1", 2, [new("Offert", 1, 1200, 10m, Comp: true)], null, [[]]), // aucun règlement : l'API refuse un règlement à 0
             // remise fixe de 10 € sur 5,00 € : total borné à zéro
-            Order("m1", "B", "waiter2", "2", 1, [new("Café", 2, 250, 20m)], new("FixedAmount", 10m), [[new("CreditCard", 0)]]),
+            Order("m1", "B", "waiter2", "2", 1, [new("Café", 2, 250, 20m)], new("FixedAmount", 10m), [[]]),
             // règlement de 1 centime, puis le reste
             Order("m2", "C", "waiter3", "3", 2, [new("Pain", 1, 1000, 5.5m)], null, [[new("Cash", 1)], [new("CreditCard", 999)]]),
             // 10,03 € en cinq règlements dont un reste de division
