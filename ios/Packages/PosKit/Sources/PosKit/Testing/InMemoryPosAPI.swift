@@ -369,6 +369,10 @@ public actor InMemoryPosAPI: PosAPI {
 
     public func applyDiscount(orderId: UUID, type: DiscountType, value: Decimal, reason: String, operatorId: UUID?) async throws {
         try await step("applyDiscount"); try requireAuth()
+        // Même règle que le serveur et `LocalPosAPI` : au-delà de 2 décimales, refus.
+        var cents = value * 100, wholeCents = Decimal()
+        NSDecimalRound(&wholeCents, &cents, 0, .plain)
+        guard cents == wholeCents else { throw APIError.server(status: 400, message: "La valeur de la remise est limitée à 2 décimales.") }
         guard orders[orderId] != nil else { throw APIError.server(status: 400, message: "Opération de remise échouée.") }
         orders[orderId]!.order.globalDiscountType = type
         orders[orderId]!.order.globalDiscountValue = value

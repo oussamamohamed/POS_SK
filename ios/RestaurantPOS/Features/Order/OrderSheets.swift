@@ -227,7 +227,10 @@ struct DiscountSheet: View {
                 model.notifier.warning(String(localized: "order.invalid_discount_value"))
                 return
             }
-            ok = await model.ticket.applyGlobalDiscount(type: unit == .percent ? .percentage : .fixedAmount, value: value, reason: finalReason)
+            // Même règle que le web (Math.round(x*100)/100) et LocalPosAPI : 2 décimales max, sinon le serveur répond 400.
+            var raw = value, rounded = Decimal()
+            NSDecimalRound(&rounded, &raw, 2, .plain)
+            ok = await model.ticket.applyGlobalDiscount(type: unit == .percent ? .percentage : .fixedAmount, value: rounded, reason: finalReason)
         case .line(let id):
             ok = await model.ticket.comp(lineId: id, reason: finalReason)
         }

@@ -74,3 +74,24 @@ struct InMemoryReceiptParityTests {
         try await check(payments: [1500], tip: 200, lines: [line("Pizza", cents: 1000, rate: 10), line("Pain", cents: 500, rate: 5.5)])
     }
 }
+
+/// `-UITestMode` : le double refuse une remise à plus de 2 décimales avec le même message que le serveur et le mode autonome.
+@Suite("InMemoryPosAPI : précision de la remise")
+struct InMemoryDiscountPrecisionTests {
+    @Test func discountWithMoreThanTwoDecimalsIsRefused() async throws {
+        let api = InMemoryPosAPI()
+        _ = try await api.login(pin: "1234")
+        try await api.openTable(number: "T7", covers: 2, operatorId: nil, waiterName: "Test")
+        let line = OrderItemInput(
+            productId: UUID(), productName: "Plat", quantity: 1, unitPrice: Money(cents: 1000), taxRatePercent: 10,
+            preparationStationId: nil, modifiers: [], course: .direct, modifiersPriceExtra: .zero,
+            taxRateTakeawayPercent: nil, isHappyHourApplied: false, originalUnitPrice: nil, appliedHappyHourScheduleId: nil
+        )
+        let order = try await api.addItems(table: "T7", items: [line])
+        let tooPrecise = APIError.server(status: 400, message: "La valeur de la remise est limitée à 2 décimales.")
+        for (type, value) in [(DiscountType.fixedAmount, Decimal(string: "1.005")!), (.percentage, Decimal(string: "12.345")!)] {
+            await #expect(throws: tooPrecise) { try await api.applyDiscount(orderId: order.orderId, type: type, value: value, reason: "Geste", operatorId: nil) }
+        }
+        try await api.applyDiscount(orderId: order.orderId, type: .percentage, value: Decimal(string: "12.35")!, reason: "Geste", operatorId: nil)
+    }
+}
