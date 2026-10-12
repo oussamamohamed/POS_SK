@@ -1361,6 +1361,123 @@
       "voided": null
     },
     {
+      "name": "zero-total-comp-with-tip",
+      "destination": 1,
+      "globalDiscountType": null,
+      "globalDiscountValue": "0",
+      "tipCents": 200,
+      "lines": [
+        {
+          "unitPriceCents": 500,
+          "quantity": 1,
+          "taxRatePercent": "10",
+          "takeawayRatePercent": null,
+          "discountPercent": "0",
+          "isComp": true,
+          "modifiersExtraCents": 0
+        }
+      ],
+      "order": {
+        "subtotalCents": 0,
+        "discountCents": 0,
+        "totalTtcCents": 0,
+        "totalHtCents": 0,
+        "totalVatCents": 0,
+        "groups": [
+          {
+            "rate": "10",
+            "ttcCents": 0,
+            "baseHtCents": 0,
+            "vatCents": 0
+          }
+        ]
+      },
+      "payments": [
+        {
+          "tenders": [
+            {
+              "amountCents": 200
+            }
+          ],
+          "expected": {
+            "totalTtcCents": 0,
+            "totalHtCents": 0,
+            "taxBreakdownJson": "{\u002210\u0022:0}",
+            "htBreakdownJson": "{\u002210\u0022:0}",
+            "changeGivenCents": 0,
+            "remainingBalanceCents": 0
+          }
+        }
+      ],
+      "voided": null
+    },
+    {
+      "name": "zero-total-discount-100-with-tip",
+      "destination": 1,
+      "globalDiscountType": 0,
+      "globalDiscountValue": "100",
+      "tipCents": 150,
+      "lines": [
+        {
+          "unitPriceCents": 1000,
+          "quantity": 1,
+          "taxRatePercent": "10",
+          "takeawayRatePercent": null,
+          "discountPercent": "0",
+          "isComp": false,
+          "modifiersExtraCents": 0
+        },
+        {
+          "unitPriceCents": 2000,
+          "quantity": 1,
+          "taxRatePercent": "20",
+          "takeawayRatePercent": null,
+          "discountPercent": "0",
+          "isComp": false,
+          "modifiersExtraCents": 0
+        }
+      ],
+      "order": {
+        "subtotalCents": 3000,
+        "discountCents": 3000,
+        "totalTtcCents": 0,
+        "totalHtCents": 0,
+        "totalVatCents": 0,
+        "groups": [
+          {
+            "rate": "10",
+            "ttcCents": 0,
+            "baseHtCents": 0,
+            "vatCents": 0
+          },
+          {
+            "rate": "20",
+            "ttcCents": 0,
+            "baseHtCents": 0,
+            "vatCents": 0
+          }
+        ]
+      },
+      "payments": [
+        {
+          "tenders": [
+            {
+              "amountCents": 150
+            }
+          ],
+          "expected": {
+            "totalTtcCents": 0,
+            "totalHtCents": 0,
+            "taxBreakdownJson": "{\u002210\u0022:0,\u002220\u0022:0}",
+            "htBreakdownJson": "{\u002210\u0022:0,\u002220\u0022:0}",
+            "changeGivenCents": 0,
+            "remainingBalanceCents": 0
+          }
+        }
+      ],
+      "voided": null
+    },
+    {
       "name": "one-cent",
       "destination": 1,
       "globalDiscountType": null,
