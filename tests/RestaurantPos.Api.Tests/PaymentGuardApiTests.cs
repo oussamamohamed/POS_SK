@@ -246,4 +246,27 @@ public class PaymentGuardApiTests : IClassFixture<PosApiApplicationFactory>
         result!.RemainingBalance.Should().Be(0m);
         result.TotalPaid.Should().Be(10m);
     }
+
+    [Theory]
+    [InlineData(-1, 10, 10, 10, 10)] // pourboire négatif
+    [InlineData(2, 10, 10, 10, 10)] // pourboire > 0 : toujours refusé sur une commande créée à la volée
+    [InlineData(0, 10, -5, 10, 10)] // Tendered négatif
+    [InlineData(0, 10, 10, 0.004, 0.004)] // second règlement arrondi à 0 centime
+    public async Task CheckoutPay_OnTheFlyOrderRefusedLate_Returns400_AndLeavesNoOrder(double tip, double amount, double tendered, double amount2, double tendered2)
+    {
+        var (client, _) = await PairedClientAsync();
+        var orderId = Guid.NewGuid();
+        List<TenderItemRequest> tenders = [new(PaymentMethod.CreditCard, (decimal)amount, (decimal)tendered, 0m)];
+        if (amount2 != amount)
+        {
+            tenders.Add(new(PaymentMethod.Cash, (decimal)amount2, (decimal)tendered2, 0m));
+        }
+
+        var response = await client.PostAsJsonAsync("/api/checkout/pay", new PaymentSettlementRequest(
+            orderId, null, Guid.NewGuid(), tenders, "POS_TEST", TipAmount: (decimal)tip));
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        using var scope = _factory.Services.CreateScope();
+        (await scope.ServiceProvider.GetRequiredService<AppDbContext>().Orders.AnyAsync(o => o.Id == orderId)).Should().BeFalse();
+    }
 }

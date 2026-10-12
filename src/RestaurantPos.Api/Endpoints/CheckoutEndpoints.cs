@@ -58,6 +58,13 @@ public static class CheckoutEndpoints
                 // Commande créée à la volée : règlements tous > 0 et total > 0 (comme sync/receipt), sinon rien n'est créé.
                 if (totalTendersCents > 0 && (req.Tenders ?? []).All(t => t.Amount > 0))
                 {
+                    // Tout refus se décide avant la création : un pourboire est toujours refusé ici (somme des règlements < reste + pourboire).
+                    var flyTenders = req.Tenders!.Select(t => new PaymentTenderRequest(t.Method, (long)Math.Round(t.Amount * 100), (long)Math.Round(t.Tendered * 100))).ToList();
+                    if (req.TipAmount != 0 || !PaymentSettlementRules.AreTendersAcceptable(flyTenders, OrderStatus.Open, true, totalTendersCents, 0))
+                    {
+                        return Results.BadRequest(new { Message = Texts.T("errors.payment_failed") });
+                    }
+
                     var newOrder = new Order
                     {
                         Id = orderId != Guid.Empty ? orderId : Guid.NewGuid(),
