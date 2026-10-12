@@ -109,10 +109,12 @@ final class StandaloneUITests: PosUITestCase {
         XCTAssertTrue(label(of: "table.T1").contains("Libre"))
     }
 
-    func testFiscalSectionIsHiddenAndWaiterKeepsHisRights() {
+    func testFiscalSectionIsVisibleForManagerAndHiddenForWaiter() {
         launchStandalone()
         assertExists("nav.admin")
-        assertNotExists("nav.fiscal")
+        assertExists("nav.fiscal")
+        tap("nav.fiscal")
+        assertExists("fiscal.previewX")
         app.terminate()
 
         launchStandalone(pin: "2468")
