@@ -1,11 +1,14 @@
 using System;
+using System.Globalization;
 using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json;
 using System.Threading.Tasks;
 using FluentAssertions;
 using RestaurantPos.Application.Common.Interfaces;
 using RestaurantPos.Application.DTOs;
 using RestaurantPos.Domain.Entities;
+using RestaurantPos.Infrastructure.Localization;
 using Xunit;
 
 namespace RestaurantPos.Api.Tests;
@@ -44,7 +47,8 @@ public class OrderItemValidationTests : IClassFixture<PosApiApplicationFactory>
         var response = await client.PostAsJsonAsync($"/api/tables/{tableNumber}/items", req);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-        (await response.Content.ReadAsStringAsync()).Should().ContainEquivalentOf("message");
+        var body = await response.Content.ReadFromJsonAsync<JsonElement>();
+        body.GetProperty("message").GetString().Should().Be(Texts.Get(new CultureInfo("en"), "errors.order_item_invalid"));
         var order = await client.GetAsync($"/api/tables/{tableNumber}/order");
         var dto = await order.Content.ReadFromJsonAsync<ActiveTableOrderDto>();
         dto!.Lines.Should().BeEmpty();
