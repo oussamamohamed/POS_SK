@@ -22,7 +22,7 @@ Statut : terminé. .NET 636 (Domain 47, Infrastructure 412, Api 177) · PosKit 4
 
 ## Finitions (branche `fix/finitions-tva-recu`)
 
-Tous les findings mineurs du lot sont traités, sauf les deux points ci-dessous. .NET 711 (Domain 68, Infrastructure 418, Api 225 ; ces totaux incluent les fichiers de test non suivis déjà présents dans l'arbre de travail) · PosKit 410. Tests UI non relancés : aucun montant visible modifié (le rapport X de `testFiscalXAndZReports` vérifie un règlement unique, 14,50, inchangé).
+Tous les findings mineurs du lot sont traités, sauf les deux points ci-dessous. .NET 736 (Domain 68, Infrastructure 428, Api 240 ; ces totaux incluent les fichiers de test non suivis déjà présents dans l'arbre de travail) · PosKit 411. Tests UI non relancés : aucun montant visible modifié (le rapport X de `testFiscalXAndZReports` vérifie un règlement unique, 14,50, inchangé).
 
 | Finding | Résolution |
 |---|---|
