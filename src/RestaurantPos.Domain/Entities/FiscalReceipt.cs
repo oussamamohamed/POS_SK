@@ -34,6 +34,13 @@ public class FiscalReceipt
     public Money TotalTtcAmount { get; set; } = Money.Zero();
     public Money TotalHtAmount { get; set; } = Money.Zero();
     public string TaxBreakdownJson { get; set; } = "{}";
+
+    /// <summary>
+    /// HT par taux en centimes (<c>{"10":909,"5.5":948}</c>, mêmes clés et ordre que <see cref="TaxBreakdownJson"/>), posé à la création du reçu.
+    /// Colonne NON signée : hors de <c>SignatureHash</c>, elle ne change ni le hash ni le JSON signé. <c>null</c> pour les reçus antérieurs
+    /// à son introduction (le FEC en déduit alors le HT de la TVA).
+    /// </summary>
+    public string? HtBreakdownJson { get; set; }
     public string PreviousSignatureHash { get; set; } = string.Empty;
     public string SignatureHash { get; set; } = string.Empty;
     public DateTimeOffset CreatedAtUtc { get; init; } = DateTimeOffset.UtcNow;

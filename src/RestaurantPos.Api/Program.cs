@@ -418,6 +418,7 @@ public partial class Program
             }
             catch { }
             try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE PrintJobs ADD COLUMN DuplicateOfDocumentId TEXT NULL;"); } catch { }
+            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE FiscalReceipts ADD COLUMN HtBreakdownJson TEXT NULL;"); } catch { }
             try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE PrintJobs ADD COLUMN DuplicateNumber INTEGER NULL;"); } catch { }
             try { dbContext.Database.ExecuteSqlRaw("CREATE INDEX IF NOT EXISTS IX_PrintJobs_DuplicateOfDocumentId ON PrintJobs (DuplicateOfDocumentId);"); } catch { }
 

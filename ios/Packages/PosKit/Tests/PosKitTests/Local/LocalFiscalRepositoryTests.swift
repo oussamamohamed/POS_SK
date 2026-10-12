@@ -10,7 +10,7 @@ struct LocalFiscalRepositoryTests {
         return (LocalFiscalRepository(db: db), db)
     }
 
-    private static let amounts = FiscalReceiptAmounts(ttcCents: 1250, htCents: 1136, taxBreakdownJson: "{\"10\":114}")
+    private static let amounts = FiscalReceiptAmounts(ttcCents: 1250, htCents: 1136, taxBreakdownJson: "{\"10\":114}", htBreakdownJson: "{\"10\":1136}")
     private let cash = [FiscalTenderInput(method: .cash, amount: 1250, tendered: 2000, change: 750)]
     private let at = Date(timeIntervalSince1970: 1_760_087_880.123)
 
@@ -34,6 +34,31 @@ struct LocalFiscalRepositoryTests {
         #expect(first.signature == expected && rows[0].string("SignatureHash") == expected)
         let tender = try #require(try db.query("SELECT * FROM PaymentTenders WHERE FiscalReceiptId = ?", [.uuid(first.id)]).first)
         #expect(tender.int("Amount") == 1250 && tender.int("Tendered") == 2000 && tender.int("ChangeGiven") == 750 && tender.int("Method") == 0)
+    }
+
+    @Test func theHtBreakdownIsStoredUnsignedAndMirroredByTheVoid() throws {
+        let (repo, db) = try makeRepository()
+        let sale = try append(repo)
+        #expect(sale.htBreakdownJson == "{\"10\":1136}")
+        #expect(try db.query("SELECT HtBreakdownJson FROM FiscalReceipts WHERE Id = ?", [.uuid(sale.id)]).first?.string("HtBreakdownJson") == "{\"10\":1136}")
+        // hors signature : même hash qu'avec la seule TVA
+        #expect(sale.signature == FiscalHashing.receiptHash(
+            previousHash: FiscalHashing.genesisHash, terminalId: "T01", sequence: 1, amountCents: 1250,
+            timestamp: FiscalHashing.timestampText(FiscalHashing.roundedToMilliseconds(at)), taxBreakdownJson: "{\"10\":114}"
+        ))
+        let voided = try #require(try repo.voidReceipt(originalId: sale.id, terminalId: "T01", operatorId: UUID(), now: at))
+        #expect(voided.htBreakdownJson == "{\"10\":-1136}")
+        #expect(try repo.receipt(id: voided.id)?.htBreakdownJson == "{\"10\":-1136}")
+        #expect(try repo.verifyChains().isEmpty)
+    }
+
+    @Test func aReceiptWithoutHtBreakdownKeepsNullAndItsVoidToo() throws {
+        let (repo, db) = try makeRepository()
+        let legacy = FiscalReceiptAmounts(ttcCents: 1250, htCents: 1136, taxBreakdownJson: "{\"10\":114}")
+        let sale = try repo.appendReceipt(orderId: UUID(), terminalId: "T01", amounts: legacy, tenders: cash, now: at)
+        let voided = try #require(try repo.voidReceipt(originalId: sale.id, terminalId: "T01", operatorId: UUID(), now: at))
+        #expect(sale.htBreakdownJson == nil && voided.htBreakdownJson == nil)
+        #expect(try db.query("SELECT COUNT(*) AS n FROM FiscalReceipts WHERE HtBreakdownJson IS NULL").first?.int("n") == 2)
     }
 
     @Test func eachTerminalHasItsOwnChain() throws {
@@ -166,7 +191,7 @@ struct LocalFiscalRepositoryTests {
 }
 
 /// Générateur déterministe (SplitMix64) : le test d'aller-retour des dates reste reproductible.
-private struct SplitMix64: RandomNumberGenerator {
+struct SplitMix64: RandomNumberGenerator {
     private var state: UInt64
     init(seed: UInt64) { state = seed }
     mutating func next() -> UInt64 {

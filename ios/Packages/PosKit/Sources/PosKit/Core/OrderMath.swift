@@ -145,6 +145,27 @@ public enum OrderMath {
         }
     }
 
+    /// Répartit `total` (centimes) au prorata de `weights` par la méthode du plus fort reste : somme exacte, aucune part négative ni
+    /// supérieure à son poids, restes égaux départagés par l'ordre des groupes. Miroir de `TaxAllocation.Allocate` (.NET).
+    public static func allocate(total: Int, weights: [Int]) -> [Int] {
+        var shares = [Int](repeating: 0, count: weights.count)
+        let sum = weights.reduce(0, +)
+        guard total > 0, sum > 0 else { return shares }
+        if total >= sum { return weights }
+        var remainders: [(index: Int, remainder: Int)] = []
+        var allocated = 0
+        for (index, weight) in weights.enumerated() {
+            let product = total * weight // <= ~1e16 : tient dans un Int 64 bits
+            shares[index] = product / sum
+            remainders.append((index, product % sum))
+            allocated += shares[index]
+        }
+        let left = total - allocated
+        let order = remainders.sorted { $0.remainder != $1.remainder ? $0.remainder > $1.remainder : $0.index < $1.index }
+        for entry in order.prefix(left) { shares[entry.index] += 1 }
+        return shares
+    }
+
     public static func totals(lines: [CartLine], destination: OrderDestination, discount: GlobalDiscount?) -> OrderTotals {
         let subtotal = lines.reduce(Money.zero) { $0 + lineTotal($1) }
         let total = discountedTotal(subtotal: subtotal, discount: discount)
@@ -155,19 +176,10 @@ public enum OrderMath {
             groups[effectiveTaxRate(line, destination: destination), default: .zero] += lineTotal(line)
         }
         let rates = groups.keys.sorted()
+        let shares = allocate(total: total.cents, weights: rates.map { groups[$0]!.cents })
         var vatLines: [VatLine] = []
-        var allocated = Money.zero
-        for (index, rate) in rates.enumerated() {
-            let groupTtc = groups[rate]!
-            let share: Money
-            if index == rates.count - 1 {
-                share = total - allocated
-            } else if subtotal.cents > 0 {
-                share = Money(cents: Money.roundAwayFromZero(Decimal(groupTtc.cents) * Decimal(total.cents) / Decimal(subtotal.cents)))
-            } else {
-                share = .zero
-            }
-            allocated += share
+        for (rate, shareCents) in zip(rates, shares) {
+            let share = Money(cents: shareCents)
             let parts = split(ttc: share, ratePercent: rate)
             vatLines.append(VatLine(ratePercent: rate, baseHt: parts.ht, vat: parts.vat, ttc: share))
         }

@@ -16,6 +16,7 @@ struct FiscalReceiptRecord: Equatable {
     let ttcCents: Int
     let htCents: Int
     let taxBreakdownJson: String
+    let htBreakdownJson: String?
     let signature: String
 }
 
@@ -65,7 +66,8 @@ struct LocalFiscalRepository {
             )
         }
         let amounts = FiscalReceiptAmounts(
-            ttcCents: -original.ttcCents, htCents: -original.htCents, taxBreakdownJson: FiscalReceiptMath.negatedTaxJson(original.taxBreakdownJson)
+            ttcCents: -original.ttcCents, htCents: -original.htCents, taxBreakdownJson: FiscalReceiptMath.negatedTaxJson(original.taxBreakdownJson),
+            htBreakdownJson: original.htBreakdownJson.map(FiscalReceiptMath.negatedTaxJson)
         )
         let voided = try insertReceipt(orderId: original.orderId, terminalId: terminalId, amounts: amounts, tenders: tenders, voidedReceiptId: originalId, now: now)
         try appendJournal(
@@ -108,11 +110,12 @@ struct LocalFiscalRepository {
         try db.run(
             """
             INSERT INTO FiscalReceipts (Id, TerminalId, ReceiptNumber, OrderId, SequenceNumber, TotalTtcAmount, TotalHtAmount, TaxBreakdownJson,
-                PreviousSignatureHash, SignatureHash, CreatedAtUtc, IsVoid, VoidedReceiptId)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)
+                PreviousSignatureHash, SignatureHash, CreatedAtUtc, IsVoid, VoidedReceiptId, HtBreakdownJson)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)
             """,
             [.uuid(id), .text(terminalId), .text(number), .uuid(orderId), .integer(sequence), .integer(amounts.ttcCents), .integer(amounts.htCents),
-             .text(amounts.taxBreakdownJson), .text(previousHash), .text(signature), .text(FiscalHashing.storedText(timestamp)), .uuid(voidedReceiptId)]
+             .text(amounts.taxBreakdownJson), .text(previousHash), .text(signature), .text(FiscalHashing.storedText(timestamp)), .uuid(voidedReceiptId),
+             amounts.htBreakdownJson.map { .text($0) } ?? .null]
         )
         for tender in tenders {
             try db.run(
@@ -122,7 +125,7 @@ struct LocalFiscalRepository {
         }
         return FiscalReceiptRecord(
             id: id, orderId: orderId, terminalId: terminalId, receiptNumber: number, sequence: sequence, ttcCents: amounts.ttcCents,
-            htCents: amounts.htCents, taxBreakdownJson: amounts.taxBreakdownJson, signature: signature
+            htCents: amounts.htCents, taxBreakdownJson: amounts.taxBreakdownJson, htBreakdownJson: amounts.htBreakdownJson, signature: signature
         )
     }
 
@@ -131,7 +134,8 @@ struct LocalFiscalRepository {
         return FiscalReceiptRecord(
             id: id, orderId: orderId, terminalId: row.string("TerminalId") ?? "", receiptNumber: row.string("ReceiptNumber") ?? "",
             sequence: row.int("SequenceNumber") ?? 0, ttcCents: row.int("TotalTtcAmount") ?? 0, htCents: row.int("TotalHtAmount") ?? 0,
-            taxBreakdownJson: row.string("TaxBreakdownJson") ?? "{}", signature: row.string("SignatureHash") ?? ""
+            taxBreakdownJson: row.string("TaxBreakdownJson") ?? "{}", htBreakdownJson: row.string("HtBreakdownJson"),
+            signature: row.string("SignatureHash") ?? ""
         )
     }
 

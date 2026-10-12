@@ -4,12 +4,13 @@ struct FiscalReceiptAmounts: Equatable {
     let ttcCents: Int
     let htCents: Int
     let taxBreakdownJson: String
+    /// HT par taux en centimes, mêmes clés et même ordre que `taxBreakdownJson`. Colonne `HtBreakdownJson`, NON signée (hors hash).
+    var htBreakdownJson: String? = nil
 }
 
-/// Port exact des montants d'un reçu dans `CheckoutPaymentService.ProcessPaymentTendersAsync` (.NET), **incohérences comprises** :
-/// - le JSON de TVA somme `OrderItem.TaxAmount` par `TaxRatePercent` de la ligne (jamais le taux à emporter, jamais la remise globale) ;
-/// - le HT vient de `Order.CalculateTaxBreakdown` (taux effectif ; remise globale en pourcentage seulement, pas en montant fixe) ;
-/// - pour un règlement partiel, TVA et HT sont mis à l'échelle par `fiscalPaid / orderTtc` avec `Math.Round` sans mode (arrondi au pair).
+/// Montants d'un reçu : même règle que `ReceiptTaxCalculator` (.NET). La TVA et le HT viennent de la ventilation de la commande par
+/// taux effectif (`OrderMath.totals`) ; un règlement partiel répartit le montant fiscal sur les groupes au plus fort reste.
+/// Le HT par taux (`HtBreakdownJson`) vient de la même répartition : Σ HT par taux = HT du reçu.
 /// Corriger une de ces règles se fait des deux côtés (voir `CLAUDE.md`).
 enum FiscalReceiptMath {
     /// - Parameters:
@@ -18,32 +19,31 @@ enum FiscalReceiptMath {
     ///   - priorFiscalTtcCents: TTC des reçus antérieurs de la commande, hors annulations et hors reçus annulés.
     static func amounts(order: ActiveOrder, totalPaidCents: Int, tipCents: Int, priorFiscalTtcCents: Int) -> FiscalReceiptAmounts {
         let cart = order.lines.map(CartLine.init(serverLine:))
-        let orderTtc = OrderMath.totals(lines: cart, destination: order.destination, discount: order.globalDiscount).totalTtc.cents
-        let totalDue = orderTtc + tipCents
+        let totals = OrderMath.totals(lines: cart, destination: order.destination, discount: order.globalDiscount)
+        let orderTtc = totals.totalTtc.cents
         let hasTip = tipCents > 0
+        // Montant fiscal du reçu : jamais le pourboire ; avec pourboire il est borné au TTC restant après les reçus antérieurs.
         let fiscalPaid = hasTip ? min(totalPaidCents, max(0, orderTtc - priorFiscalTtcCents)) : totalPaidCents
-        let isPartial = hasTip ? (priorFiscalTtcCents > 0 || fiscalPaid < orderTtc) : totalPaidCents < totalDue
-        let ratio: Decimal = (orderTtc > 0 && isPartial) ? Decimal(fiscalPaid) / Decimal(orderTtc) : 1
+        let paid = min(max(fiscalPaid, 0), orderTtc)
+        let orderShares = totals.vatLines.map { $0.ttc.cents }
+        let shares = paid == orderTtc ? orderShares : OrderMath.allocate(total: paid, weights: orderShares)
 
-        var rates: [Decimal] = [] // ordre d'apparition, comme le `Dictionary` .NET
-        var vat: [Decimal: Int] = [:]
-        for line in cart {
-            let itemVat = OrderMath.split(ttc: OrderMath.lineTotal(line), ratePercent: line.taxRatePercent).vat.cents
-            let scaled = ratio == 1 ? itemVat : bankersRound(Decimal(itemVat) * ratio)
-            if vat[line.taxRatePercent] == nil { rates.append(line.taxRatePercent) }
-            vat[line.taxRatePercent, default: 0] += scaled
+        var htCents = 0
+        var entries: [String] = []
+        var htEntries: [String] = []
+        for (line, share) in zip(totals.vatLines, shares) {
+            let parts = OrderMath.split(ttc: Money(cents: share), ratePercent: line.ratePercent)
+            htCents += parts.ht.cents
+            entries.append("\"\(line.ratePercent)\":\(parts.vat.cents)")
+            htEntries.append("\"\(line.ratePercent)\":\(parts.ht.cents)")
         }
-        let json = "{" + rates.map { "\"\($0)\":\(vat[$0] ?? 0)" }.joined(separator: ",") + "}"
-
-        let orderHt = htCents(cart, destination: order.destination, discount: order.globalDiscount)
         return FiscalReceiptAmounts(
-            ttcCents: ratio == 1 ? orderTtc : fiscalPaid,
-            htCents: ratio == 1 ? orderHt : bankersRound(Decimal(orderHt) * ratio),
-            taxBreakdownJson: json
+            ttcCents: paid, htCents: htCents, taxBreakdownJson: "{" + entries.joined(separator: ",") + "}",
+            htBreakdownJson: "{" + htEntries.joined(separator: ",") + "}"
         )
     }
 
-    /// Annulation : toutes les valeurs du JSON de TVA changent de signe, clés et ordre inchangés.
+    /// Annulation : toutes les valeurs du JSON de TVA (ou de HT par taux) changent de signe, clés et ordre inchangés.
     static func negatedTaxJson(_ json: String) -> String {
         guard let regex = try? NSRegularExpression(pattern: "\"([^\"]+)\":(-?[0-9]+)") else { return json }
         let range = NSRange(json.startIndex..., in: json)
@@ -53,28 +53,5 @@ enum FiscalReceiptMath {
             return "\"\(json[keyRange])\":\(-value)"
         }
         return "{" + pairs.joined(separator: ",") + "}"
-    }
-
-    /// `Order.TotalHt` : somme des bases HT par taux effectif.
-    private static func htCents(_ cart: [CartLine], destination: OrderDestination, discount: GlobalDiscount?) -> Int {
-        var groups: [Decimal: Int] = [:]
-        for line in cart {
-            groups[OrderMath.effectiveTaxRate(line, destination: destination), default: 0] += OrderMath.lineTotal(line).cents
-        }
-        return groups.reduce(0) { total, group in
-            var groupTtc = group.value
-            if let discount, discount.type == .percentage, discount.value > 0 {
-                groupTtc = Money.roundAwayFromZero(Decimal(groupTtc) * (1 - discount.value / 100))
-            }
-            return total + OrderMath.split(ttc: Money(cents: max(0, groupTtc)), ratePercent: group.key).ht.cents
-        }
-    }
-
-    /// `Math.Round(decimal)` du .NET : arrondi au pair.
-    static func bankersRound(_ value: Decimal) -> Int {
-        var input = value
-        var result = Decimal()
-        NSDecimalRound(&result, &input, 0, .bankers)
-        return NSDecimalNumber(decimal: result).intValue
     }
 }

@@ -1,0 +1,3757 @@
+{
+  "seed": 20261011,
+  "terminals": [
+    {
+      "key": "A",
+      "name": "Caisse A"
+    },
+    {
+      "key": "B",
+      "name": "Caisse B"
+    },
+    {
+      "key": "C",
+      "name": "Caisse C"
+    }
+  ],
+  "operations": [
+    {
+      "type": "table_order",
+      "terminal": "A",
+      "waiter": "waiter1",
+      "table": "1",
+      "covers": 2,
+      "destination": "EatIn",
+      "lines": [
+        {
+          "name": "Offert",
+          "quantity": 1,
+          "unitPriceCents": 1200,
+          "taxRatePercent": "10",
+          "modifiersExtraCents": 0,
+          "comp": true
+        }
+      ],
+      "tipCents": 0,
+      "payments": [
+        [
+          {
+            "method": "Cash",
+            "amountCents": 0,
+            "extraTenderedCents": 0
+          }
+        ]
+      ],
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "m0"
+    },
+    {
+      "type": "table_order",
+      "terminal": "B",
+      "waiter": "waiter2",
+      "table": "2",
+      "covers": 1,
+      "destination": "EatIn",
+      "lines": [
+        {
+          "name": "Caf\u00E9",
+          "quantity": 2,
+          "unitPriceCents": 250,
+          "taxRatePercent": "20",
+          "modifiersExtraCents": 0,
+          "comp": false
+        }
+      ],
+      "discount": {
+        "type": "FixedAmount",
+        "value": "10"
+      },
+      "tipCents": 0,
+      "payments": [
+        [
+          {
+            "method": "CreditCard",
+            "amountCents": 0,
+            "extraTenderedCents": 0
+          }
+        ]
+      ],
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "m1"
+    },
+    {
+      "type": "table_order",
+      "terminal": "C",
+      "waiter": "waiter3",
+      "table": "3",
+      "covers": 2,
+      "destination": "EatIn",
+      "lines": [
+        {
+          "name": "Pain",
+          "quantity": 1,
+          "unitPriceCents": 1000,
+          "taxRatePercent": "5.5",
+          "modifiersExtraCents": 0,
+          "comp": false
+        }
+      ],
+      "tipCents": 0,
+      "payments": [
+        [
+          {
+            "method": "Cash",
+            "amountCents": 1,
+            "extraTenderedCents": 0
+          }
+        ],
+        [
+          {
+            "method": "CreditCard",
+            "amountCents": 999,
+            "extraTenderedCents": 0
+          }
+        ]
+      ],
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "m2"
+    },
+    {
+      "type": "table_order",
+      "terminal": "A",
+      "waiter": "waiter4",
+      "table": "4",
+      "covers": 4,
+      "destination": "EatIn",
+      "lines": [
+        {
+          "name": "Plat",
+          "quantity": 1,
+          "unitPriceCents": 1003,
+          "taxRatePercent": "10",
+          "modifiersExtraCents": 0,
+          "comp": false
+        }
+      ],
+      "tipCents": 0,
+      "payments": [
+        [
+          {
+            "method": "Cash",
+            "amountCents": 200,
+            "extraTenderedCents": 300
+          }
+        ],
+        [
+          {
+            "method": "Cash",
+            "amountCents": 200,
+            "extraTenderedCents": 0
+          }
+        ],
+        [
+          {
+            "method": "CreditCard",
+            "amountCents": 200,
+            "extraTenderedCents": 0
+          }
+        ],
+        [
+          {
+            "method": "MealVoucher",
+            "amountCents": 200,
+            "extraTenderedCents": 0
+          }
+        ],
+        [
+          {
+            "method": "GiftCard",
+            "amountCents": 203,
+            "extraTenderedCents": 0
+          }
+        ]
+      ],
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "m3"
+    },
+    {
+      "type": "table_order",
+      "terminal": "B",
+      "waiter": "waiter1",
+      "table": "2",
+      "covers": 3,
+      "destination": "EatIn",
+      "lines": [
+        {
+          "name": "Article 1",
+          "quantity": 2,
+          "unitPriceCents": 832,
+          "taxRatePercent": "10",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 2",
+          "quantity": 4,
+          "unitPriceCents": 1536,
+          "taxRatePercent": "10",
+          "modifiersExtraCents": 80,
+          "comp": false
+        },
+        {
+          "name": "Article 3",
+          "quantity": 2,
+          "unitPriceCents": 1855,
+          "taxRatePercent": "0",
+          "taxRateTakeawayPercent": "10",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 4",
+          "quantity": 1,
+          "unitPriceCents": 1538,
+          "taxRatePercent": "5.5",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 5",
+          "quantity": 3,
+          "unitPriceCents": 1997,
+          "taxRatePercent": "5.5",
+          "modifiersExtraCents": 0,
+          "comp": false
+        }
+      ],
+      "tipCents": 0,
+      "payments": [
+        [
+          {
+            "method": "CreditCard",
+            "amountCents": 10651,
+            "extraTenderedCents": 0
+          }
+        ],
+        [
+          {
+            "method": "CreditCard",
+            "amountCents": 8716,
+            "extraTenderedCents": 0
+          }
+        ]
+      ],
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "o4"
+    },
+    {
+      "type": "table_order",
+      "terminal": "B",
+      "waiter": "waiter2",
+      "table": "12",
+      "covers": 6,
+      "destination": "Takeaway",
+      "lines": [
+        {
+          "name": "Article 1",
+          "quantity": 3,
+          "unitPriceCents": 2006,
+          "taxRatePercent": "5.5",
+          "taxRateTakeawayPercent": "5.5",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 2",
+          "quantity": 4,
+          "unitPriceCents": 896,
+          "taxRatePercent": "20",
+          "modifiersExtraCents": 190,
+          "comp": false
+        },
+        {
+          "name": "Article 3",
+          "quantity": 1,
+          "unitPriceCents": 2225,
+          "taxRatePercent": "0",
+          "taxRateTakeawayPercent": "10",
+          "modifiersExtraCents": 156,
+          "comp": false
+        }
+      ],
+      "tipCents": 0,
+      "payments": [
+        [
+          {
+            "method": "Cash",
+            "amountCents": 11655,
+            "extraTenderedCents": 0
+          }
+        ],
+        [
+          {
+            "method": "GiftCard",
+            "amountCents": 311,
+            "extraTenderedCents": 0
+          },
+          {
+            "method": "MealVoucher",
+            "amountCents": 99,
+            "extraTenderedCents": 0
+          }
+        ],
+        [
+          {
+            "method": "Cash",
+            "amountCents": 678,
+            "extraTenderedCents": 0
+          }
+        ]
+      ],
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "o5"
+    },
+    {
+      "type": "table_order",
+      "terminal": "A",
+      "waiter": "waiter3",
+      "table": "5",
+      "covers": 2,
+      "destination": "EatIn",
+      "lines": [
+        {
+          "name": "Article 1",
+          "quantity": 3,
+          "unitPriceCents": 817,
+          "taxRatePercent": "2.1",
+          "taxRateTakeawayPercent": "10",
+          "modifiersExtraCents": 194,
+          "comp": false
+        }
+      ],
+      "tipCents": 0,
+      "payments": [
+        [
+          {
+            "method": "GiftCard",
+            "amountCents": 3033,
+            "extraTenderedCents": 0
+          }
+        ]
+      ],
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "o6"
+    },
+    {
+      "type": "table_order",
+      "terminal": "B",
+      "waiter": "waiter3",
+      "table": "4",
+      "covers": 2,
+      "destination": "EatIn",
+      "lines": [
+        {
+          "name": "Article 1",
+          "quantity": 1,
+          "unitPriceCents": 887,
+          "taxRatePercent": "2.1",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 2",
+          "quantity": 3,
+          "unitPriceCents": 1443,
+          "taxRatePercent": "20",
+          "taxRateTakeawayPercent": "10",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 3",
+          "quantity": 4,
+          "unitPriceCents": 1359,
+          "taxRatePercent": "20",
+          "modifiersExtraCents": 0,
+          "comp": false
+        }
+      ],
+      "discount": {
+        "type": "Percentage",
+        "value": "33.33"
+      },
+      "tipCents": 0,
+      "payments": [
+        [
+          {
+            "method": "CreditCard",
+            "amountCents": 7102,
+            "extraTenderedCents": 0
+          }
+        ]
+      ],
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "o7"
+    },
+    {
+      "type": "counter_order",
+      "terminal": "C",
+      "waiter": "waiter3",
+      "covers": 0,
+      "destination": "EatIn",
+      "lines": [
+        {
+          "name": "Article 1",
+          "quantity": 4,
+          "unitPriceCents": 1552,
+          "taxRatePercent": "10",
+          "taxRateTakeawayPercent": "10",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 2",
+          "quantity": 4,
+          "unitPriceCents": 1926,
+          "taxRatePercent": "10",
+          "taxRateTakeawayPercent": "10",
+          "modifiersExtraCents": 0,
+          "comp": false
+        }
+      ],
+      "tipCents": 0,
+      "payments": [
+        [
+          {
+            "method": "Cash",
+            "amountCents": 13912,
+            "extraTenderedCents": 420
+          }
+        ]
+      ],
+      "reprint": true,
+      "holdAndRecall": true,
+      "ref": "o8"
+    },
+    {
+      "type": "counter_order",
+      "terminal": "A",
+      "waiter": "waiter4",
+      "covers": 0,
+      "destination": "EatIn",
+      "lines": [
+        {
+          "name": "Article 1",
+          "quantity": 3,
+          "unitPriceCents": 1792,
+          "taxRatePercent": "10",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 2",
+          "quantity": 4,
+          "unitPriceCents": 2308,
+          "taxRatePercent": "2.1",
+          "taxRateTakeawayPercent": "10",
+          "modifiersExtraCents": 0,
+          "comp": false
+        }
+      ],
+      "discount": {
+        "type": "FixedAmount",
+        "value": "5"
+      },
+      "tipCents": 0,
+      "payments": [
+        [
+          {
+            "method": "CreditCard",
+            "amountCents": 14108,
+            "extraTenderedCents": 0
+          }
+        ]
+      ],
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "o9"
+    },
+    {
+      "type": "counter_order",
+      "terminal": "C",
+      "waiter": "waiter4",
+      "covers": 0,
+      "destination": "Takeaway",
+      "lines": [
+        {
+          "name": "Article 1",
+          "quantity": 4,
+          "unitPriceCents": 1837,
+          "taxRatePercent": "20",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 2",
+          "quantity": 1,
+          "unitPriceCents": 768,
+          "taxRatePercent": "0",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 3",
+          "quantity": 1,
+          "unitPriceCents": 150,
+          "taxRatePercent": "5.5",
+          "taxRateTakeawayPercent": "5.5",
+          "modifiersExtraCents": 69,
+          "comp": false
+        },
+        {
+          "name": "Article 4",
+          "quantity": 4,
+          "unitPriceCents": 814,
+          "taxRatePercent": "0",
+          "taxRateTakeawayPercent": "5.5",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 5",
+          "quantity": 4,
+          "unitPriceCents": 1918,
+          "taxRatePercent": "2.1",
+          "modifiersExtraCents": 0,
+          "comp": false
+        }
+      ],
+      "discount": {
+        "type": "FixedAmount",
+        "value": "5"
+      },
+      "tipCents": 0,
+      "payments": [
+        [
+          {
+            "method": "Cash",
+            "amountCents": 9828,
+            "extraTenderedCents": 0
+          }
+        ],
+        [
+          {
+            "method": "GiftCard",
+            "amountCents": 4906,
+            "extraTenderedCents": 0
+          }
+        ],
+        [
+          {
+            "method": "GiftCard",
+            "amountCents": 4029,
+            "extraTenderedCents": 0
+          }
+        ]
+      ],
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "o10"
+    },
+    {
+      "type": "hold_then_void",
+      "terminal": "C",
+      "waiter": "waiter2",
+      "covers": 0,
+      "destination": "Takeaway",
+      "lines": [
+        {
+          "name": "Caf\u00E9",
+          "quantity": 1,
+          "unitPriceCents": 200,
+          "taxRatePercent": "10",
+          "taxRateTakeawayPercent": "5.5",
+          "modifiersExtraCents": 0,
+          "comp": false
+        }
+      ],
+      "tipCents": 0,
+      "reprint": false,
+      "holdAndRecall": false
+    },
+    {
+      "type": "table_order",
+      "terminal": "B",
+      "waiter": "waiter4",
+      "table": "3",
+      "covers": 6,
+      "destination": "EatIn",
+      "lines": [
+        {
+          "name": "Article 1",
+          "quantity": 4,
+          "unitPriceCents": 316,
+          "taxRatePercent": "5.5",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 2",
+          "quantity": 3,
+          "unitPriceCents": 600,
+          "taxRatePercent": "20",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 3",
+          "quantity": 2,
+          "unitPriceCents": 1276,
+          "taxRatePercent": "20",
+          "modifiersExtraCents": 93,
+          "comp": false
+        },
+        {
+          "name": "Article 4",
+          "quantity": 1,
+          "unitPriceCents": 909,
+          "taxRatePercent": "0",
+          "taxRateTakeawayPercent": "10",
+          "modifiersExtraCents": 81,
+          "comp": false
+        },
+        {
+          "name": "Article 5",
+          "quantity": 1,
+          "unitPriceCents": 2329,
+          "taxRatePercent": "20",
+          "modifiersExtraCents": 0,
+          "comp": true
+        },
+        {
+          "name": "Article 6",
+          "quantity": 2,
+          "unitPriceCents": 1922,
+          "taxRatePercent": "20",
+          "modifiersExtraCents": 0,
+          "comp": false
+        }
+      ],
+      "discount": {
+        "type": "Percentage",
+        "value": "10"
+      },
+      "tipCents": 327,
+      "payments": [
+        [
+          {
+            "method": "CreditCard",
+            "amountCents": 9407,
+            "extraTenderedCents": 0
+          }
+        ],
+        [
+          {
+            "method": "GiftCard",
+            "amountCents": 492,
+            "extraTenderedCents": 0
+          }
+        ]
+      ],
+      "voidPaymentIndex": 1,
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "o12"
+    },
+    {
+      "type": "counter_order",
+      "terminal": "A",
+      "waiter": "waiter3",
+      "covers": 0,
+      "destination": "EatIn",
+      "lines": [
+        {
+          "name": "Article 1",
+          "quantity": 4,
+          "unitPriceCents": 948,
+          "taxRatePercent": "0",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 2",
+          "quantity": 1,
+          "unitPriceCents": 1520,
+          "taxRatePercent": "2.1",
+          "taxRateTakeawayPercent": "5.5",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 3",
+          "quantity": 1,
+          "unitPriceCents": 504,
+          "taxRatePercent": "10",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 4",
+          "quantity": 1,
+          "unitPriceCents": 2382,
+          "taxRatePercent": "2.1",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 5",
+          "quantity": 2,
+          "unitPriceCents": 1853,
+          "taxRatePercent": "2.1",
+          "taxRateTakeawayPercent": "5.5",
+          "modifiersExtraCents": 0,
+          "comp": false
+        }
+      ],
+      "discount": {
+        "type": "FixedAmount",
+        "value": "1"
+      },
+      "tipCents": 219,
+      "payments": [
+        [
+          {
+            "method": "GiftCard",
+            "amountCents": 10038,
+            "extraTenderedCents": 0
+          },
+          {
+            "method": "Cash",
+            "amountCents": 1985,
+            "extraTenderedCents": 751
+          }
+        ]
+      ],
+      "voidPaymentIndex": 0,
+      "reprint": true,
+      "holdAndRecall": false,
+      "ref": "o13"
+    },
+    {
+      "type": "hold_then_void",
+      "terminal": "A",
+      "waiter": "waiter2",
+      "covers": 0,
+      "destination": "Takeaway",
+      "lines": [
+        {
+          "name": "Caf\u00E9",
+          "quantity": 1,
+          "unitPriceCents": 200,
+          "taxRatePercent": "10",
+          "taxRateTakeawayPercent": "5.5",
+          "modifiersExtraCents": 0,
+          "comp": false
+        }
+      ],
+      "tipCents": 0,
+      "reprint": false,
+      "holdAndRecall": false
+    },
+    {
+      "type": "table_order",
+      "terminal": "A",
+      "waiter": "waiter1",
+      "table": "1",
+      "covers": 4,
+      "destination": "Takeaway",
+      "lines": [
+        {
+          "name": "Article 1",
+          "quantity": 1,
+          "unitPriceCents": 548,
+          "taxRatePercent": "2.1",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 2",
+          "quantity": 2,
+          "unitPriceCents": 2141,
+          "taxRatePercent": "2.1",
+          "taxRateTakeawayPercent": "5.5",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 3",
+          "quantity": 3,
+          "unitPriceCents": 2465,
+          "taxRatePercent": "5.5",
+          "modifiersExtraCents": 0,
+          "comp": true
+        },
+        {
+          "name": "Article 4",
+          "quantity": 3,
+          "unitPriceCents": 793,
+          "taxRatePercent": "20",
+          "modifiersExtraCents": 0,
+          "comp": false
+        }
+      ],
+      "tipCents": 373,
+      "payments": [
+        [
+          {
+            "method": "Cash",
+            "amountCents": 4537,
+            "extraTenderedCents": 1264
+          },
+          {
+            "method": "GiftCard",
+            "amountCents": 494,
+            "extraTenderedCents": 0
+          }
+        ],
+        [
+          {
+            "method": "Cash",
+            "amountCents": 2551,
+            "extraTenderedCents": 0
+          }
+        ]
+      ],
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "o15"
+    },
+    {
+      "type": "x_report",
+      "terminal": "A",
+      "covers": 0,
+      "tipCents": 0,
+      "reprint": false,
+      "holdAndRecall": false
+    },
+    {
+      "type": "x_report",
+      "terminal": "B",
+      "covers": 0,
+      "tipCents": 0,
+      "reprint": false,
+      "holdAndRecall": false
+    },
+    {
+      "type": "x_report",
+      "terminal": "C",
+      "covers": 0,
+      "tipCents": 0,
+      "reprint": false,
+      "holdAndRecall": false
+    },
+    {
+      "type": "table_order",
+      "terminal": "C",
+      "waiter": "waiter3",
+      "table": "7",
+      "covers": 3,
+      "destination": "EatIn",
+      "lines": [
+        {
+          "name": "Article 1",
+          "quantity": 2,
+          "unitPriceCents": 407,
+          "taxRatePercent": "2.1",
+          "taxRateTakeawayPercent": "10",
+          "modifiersExtraCents": 100,
+          "comp": false
+        },
+        {
+          "name": "Article 2",
+          "quantity": 4,
+          "unitPriceCents": 1790,
+          "taxRatePercent": "20",
+          "taxRateTakeawayPercent": "5.5",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 3",
+          "quantity": 2,
+          "unitPriceCents": 2436,
+          "taxRatePercent": "5.5",
+          "taxRateTakeawayPercent": "10",
+          "modifiersExtraCents": 0,
+          "comp": false
+        }
+      ],
+      "discount": {
+        "type": "FixedAmount",
+        "value": "2.5"
+      },
+      "tipCents": 0,
+      "payments": [
+        [
+          {
+            "method": "GiftCard",
+            "amountCents": 1845,
+            "extraTenderedCents": 0
+          }
+        ],
+        [
+          {
+            "method": "CreditCard",
+            "amountCents": 3185,
+            "extraTenderedCents": 0
+          },
+          {
+            "method": "CreditCard",
+            "amountCents": 7766,
+            "extraTenderedCents": 0
+          }
+        ]
+      ],
+      "reprint": true,
+      "holdAndRecall": false,
+      "ref": "o19"
+    },
+    {
+      "type": "counter_order",
+      "terminal": "A",
+      "waiter": "waiter4",
+      "covers": 0,
+      "destination": "EatIn",
+      "lines": [
+        {
+          "name": "Article 1",
+          "quantity": 4,
+          "unitPriceCents": 1320,
+          "taxRatePercent": "0",
+          "taxRateTakeawayPercent": "5.5",
+          "modifiersExtraCents": 184,
+          "comp": false
+        },
+        {
+          "name": "Article 2",
+          "quantity": 4,
+          "unitPriceCents": 2035,
+          "taxRatePercent": "5.5",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 3",
+          "quantity": 3,
+          "unitPriceCents": 1119,
+          "taxRatePercent": "5.5",
+          "taxRateTakeawayPercent": "10",
+          "modifiersExtraCents": 159,
+          "comp": false
+        }
+      ],
+      "discount": {
+        "type": "Percentage",
+        "value": "15"
+      },
+      "tipCents": 349,
+      "payments": [
+        [
+          {
+            "method": "CreditCard",
+            "amountCents": 7546,
+            "extraTenderedCents": 0
+          }
+        ],
+        [
+          {
+            "method": "Cash",
+            "amountCents": 4205,
+            "extraTenderedCents": 17
+          }
+        ],
+        [
+          {
+            "method": "CreditCard",
+            "amountCents": 3890,
+            "extraTenderedCents": 0
+          }
+        ]
+      ],
+      "reprint": true,
+      "holdAndRecall": false,
+      "ref": "o20"
+    },
+    {
+      "type": "table_order",
+      "terminal": "C",
+      "waiter": "waiter3",
+      "table": "6",
+      "covers": 4,
+      "destination": "EatIn",
+      "lines": [
+        {
+          "name": "Article 1",
+          "quantity": 2,
+          "unitPriceCents": 1295,
+          "taxRatePercent": "5.5",
+          "modifiersExtraCents": 0,
+          "comp": false
+        }
+      ],
+      "tipCents": 0,
+      "payments": [
+        [
+          {
+            "method": "CreditCard",
+            "amountCents": 562,
+            "extraTenderedCents": 0
+          }
+        ],
+        [
+          {
+            "method": "GiftCard",
+            "amountCents": 651,
+            "extraTenderedCents": 0
+          }
+        ],
+        [
+          {
+            "method": "CreditCard",
+            "amountCents": 173,
+            "extraTenderedCents": 0
+          }
+        ],
+        [
+          {
+            "method": "MealVoucher",
+            "amountCents": 1204,
+            "extraTenderedCents": 0
+          }
+        ]
+      ],
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "o21"
+    },
+    {
+      "type": "table_order",
+      "terminal": "C",
+      "waiter": "waiter2",
+      "table": "1",
+      "covers": 5,
+      "destination": "EatIn",
+      "lines": [
+        {
+          "name": "Article 1",
+          "quantity": 3,
+          "unitPriceCents": 547,
+          "taxRatePercent": "20",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 2",
+          "quantity": 1,
+          "unitPriceCents": 1965,
+          "taxRatePercent": "5.5",
+          "taxRateTakeawayPercent": "5.5",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 3",
+          "quantity": 3,
+          "unitPriceCents": 2237,
+          "taxRatePercent": "0",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 4",
+          "quantity": 4,
+          "unitPriceCents": 1443,
+          "taxRatePercent": "5.5",
+          "modifiersExtraCents": 93,
+          "comp": true
+        },
+        {
+          "name": "Article 5",
+          "quantity": 1,
+          "unitPriceCents": 1279,
+          "taxRatePercent": "2.1",
+          "taxRateTakeawayPercent": "5.5",
+          "modifiersExtraCents": 0,
+          "comp": false
+        }
+      ],
+      "discount": {
+        "type": "FixedAmount",
+        "value": "1"
+      },
+      "tipCents": 0,
+      "payments": [
+        [
+          {
+            "method": "GiftCard",
+            "amountCents": 6440,
+            "extraTenderedCents": 0
+          }
+        ],
+        [
+          {
+            "method": "GiftCard",
+            "amountCents": 5056,
+            "extraTenderedCents": 0
+          }
+        ]
+      ],
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "o22"
+    },
+    {
+      "type": "table_order",
+      "terminal": "B",
+      "waiter": "waiter3",
+      "table": "6",
+      "covers": 5,
+      "destination": "Takeaway",
+      "lines": [
+        {
+          "name": "Article 1",
+          "quantity": 1,
+          "unitPriceCents": 1348,
+          "taxRatePercent": "0",
+          "taxRateTakeawayPercent": "5.5",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 2",
+          "quantity": 2,
+          "unitPriceCents": 609,
+          "taxRatePercent": "20",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 3",
+          "quantity": 1,
+          "unitPriceCents": 1086,
+          "taxRatePercent": "0",
+          "taxRateTakeawayPercent": "5.5",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 4",
+          "quantity": 3,
+          "unitPriceCents": 2475,
+          "taxRatePercent": "10",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 5",
+          "quantity": 2,
+          "unitPriceCents": 1366,
+          "taxRatePercent": "20",
+          "modifiersExtraCents": 0,
+          "comp": false
+        }
+      ],
+      "discount": {
+        "type": "Percentage",
+        "value": "15"
+      },
+      "tipCents": 0,
+      "payments": [
+        [
+          {
+            "method": "Cash",
+            "amountCents": 366,
+            "extraTenderedCents": 0
+          },
+          {
+            "method": "GiftCard",
+            "amountCents": 3718,
+            "extraTenderedCents": 0
+          }
+        ],
+        [
+          {
+            "method": "CreditCard",
+            "amountCents": 7654,
+            "extraTenderedCents": 0
+          }
+        ]
+      ],
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "o23"
+    },
+    {
+      "type": "counter_order",
+      "terminal": "A",
+      "waiter": "waiter3",
+      "covers": 0,
+      "destination": "EatIn",
+      "lines": [
+        {
+          "name": "Article 1",
+          "quantity": 2,
+          "unitPriceCents": 1775,
+          "taxRatePercent": "0",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 2",
+          "quantity": 3,
+          "unitPriceCents": 2497,
+          "taxRatePercent": "5.5",
+          "taxRateTakeawayPercent": "5.5",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 3",
+          "quantity": 2,
+          "unitPriceCents": 256,
+          "taxRatePercent": "10",
+          "modifiersExtraCents": 0,
+          "comp": false
+        }
+      ],
+      "discount": {
+        "type": "Percentage",
+        "value": "33.33"
+      },
+      "tipCents": 0,
+      "payments": [
+        [
+          {
+            "method": "CreditCard",
+            "amountCents": 180,
+            "extraTenderedCents": 0
+          }
+        ],
+        [
+          {
+            "method": "Cash",
+            "amountCents": 7053,
+            "extraTenderedCents": 1271
+          },
+          {
+            "method": "MealVoucher",
+            "amountCents": 469,
+            "extraTenderedCents": 0
+          }
+        ]
+      ],
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "o24"
+    },
+    {
+      "type": "counter_order",
+      "terminal": "C",
+      "waiter": "waiter1",
+      "covers": 0,
+      "destination": "EatIn",
+      "lines": [
+        {
+          "name": "Article 1",
+          "quantity": 1,
+          "unitPriceCents": 532,
+          "taxRatePercent": "5.5",
+          "modifiersExtraCents": 0,
+          "comp": false
+        }
+      ],
+      "discount": {
+        "type": "FixedAmount",
+        "value": "5"
+      },
+      "tipCents": 123,
+      "payments": [
+        [
+          {
+            "method": "MealVoucher",
+            "amountCents": 155,
+            "extraTenderedCents": 0
+          }
+        ]
+      ],
+      "voidPaymentIndex": 0,
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "o25"
+    },
+    {
+      "type": "table_order",
+      "terminal": "C",
+      "waiter": "waiter4",
+      "table": "6",
+      "covers": 1,
+      "destination": "EatIn",
+      "lines": [
+        {
+          "name": "Article 1",
+          "quantity": 3,
+          "unitPriceCents": 2040,
+          "taxRatePercent": "0",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 2",
+          "quantity": 3,
+          "unitPriceCents": 2247,
+          "taxRatePercent": "20",
+          "modifiersExtraCents": 117,
+          "comp": false
+        }
+      ],
+      "tipCents": 0,
+      "payments": [
+        [
+          {
+            "method": "MealVoucher",
+            "amountCents": 2386,
+            "extraTenderedCents": 0
+          }
+        ],
+        [
+          {
+            "method": "CreditCard",
+            "amountCents": 5876,
+            "extraTenderedCents": 0
+          },
+          {
+            "method": "Cash",
+            "amountCents": 4950,
+            "extraTenderedCents": 0
+          }
+        ]
+      ],
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "o26"
+    },
+    {
+      "type": "table_order",
+      "terminal": "A",
+      "waiter": "waiter4",
+      "table": "6",
+      "covers": 6,
+      "destination": "EatIn",
+      "lines": [
+        {
+          "name": "Article 1",
+          "quantity": 4,
+          "unitPriceCents": 1781,
+          "taxRatePercent": "0",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 2",
+          "quantity": 4,
+          "unitPriceCents": 728,
+          "taxRatePercent": "20",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 3",
+          "quantity": 2,
+          "unitPriceCents": 173,
+          "taxRatePercent": "20",
+          "modifiersExtraCents": 166,
+          "comp": false
+        },
+        {
+          "name": "Article 4",
+          "quantity": 4,
+          "unitPriceCents": 1433,
+          "taxRatePercent": "0",
+          "modifiersExtraCents": 149,
+          "comp": false
+        }
+      ],
+      "tipCents": 0,
+      "payments": [
+        [
+          {
+            "method": "CreditCard",
+            "amountCents": 6488,
+            "extraTenderedCents": 0
+          }
+        ],
+        [
+          {
+            "method": "CreditCard",
+            "amountCents": 9270,
+            "extraTenderedCents": 0
+          },
+          {
+            "method": "MealVoucher",
+            "amountCents": 1284,
+            "extraTenderedCents": 0
+          }
+        ]
+      ],
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "o27"
+    },
+    {
+      "type": "counter_order",
+      "terminal": "C",
+      "waiter": "waiter1",
+      "covers": 0,
+      "destination": "EatIn",
+      "lines": [
+        {
+          "name": "Article 1",
+          "quantity": 3,
+          "unitPriceCents": 1218,
+          "taxRatePercent": "0",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 2",
+          "quantity": 1,
+          "unitPriceCents": 360,
+          "taxRatePercent": "2.1",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 3",
+          "quantity": 3,
+          "unitPriceCents": 590,
+          "taxRatePercent": "5.5",
+          "taxRateTakeawayPercent": "5.5",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 4",
+          "quantity": 4,
+          "unitPriceCents": 2063,
+          "taxRatePercent": "2.1",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 5",
+          "quantity": 4,
+          "unitPriceCents": 824,
+          "taxRatePercent": "10",
+          "taxRateTakeawayPercent": "10",
+          "modifiersExtraCents": 79,
+          "comp": false
+        }
+      ],
+      "tipCents": 0,
+      "payments": [
+        [
+          {
+            "method": "Cash",
+            "amountCents": 4039,
+            "extraTenderedCents": 0
+          },
+          {
+            "method": "GiftCard",
+            "amountCents": 11961,
+            "extraTenderedCents": 0
+          }
+        ],
+        [
+          {
+            "method": "Cash",
+            "amountCents": 1648,
+            "extraTenderedCents": 0
+          }
+        ]
+      ],
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "o28"
+    },
+    {
+      "type": "counter_order",
+      "terminal": "C",
+      "waiter": "waiter4",
+      "covers": 0,
+      "destination": "Takeaway",
+      "lines": [
+        {
+          "name": "Article 1",
+          "quantity": 2,
+          "unitPriceCents": 669,
+          "taxRatePercent": "0",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 2",
+          "quantity": 3,
+          "unitPriceCents": 1944,
+          "taxRatePercent": "5.5",
+          "taxRateTakeawayPercent": "5.5",
+          "modifiersExtraCents": 172,
+          "comp": false
+        },
+        {
+          "name": "Article 3",
+          "quantity": 2,
+          "unitPriceCents": 2166,
+          "taxRatePercent": "2.1",
+          "taxRateTakeawayPercent": "5.5",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 4",
+          "quantity": 4,
+          "unitPriceCents": 476,
+          "taxRatePercent": "0",
+          "modifiersExtraCents": 175,
+          "comp": false
+        },
+        {
+          "name": "Article 5",
+          "quantity": 4,
+          "unitPriceCents": 1813,
+          "taxRatePercent": "0",
+          "modifiersExtraCents": 129,
+          "comp": false
+        }
+      ],
+      "tipCents": 0,
+      "payments": [
+        [
+          {
+            "method": "Cash",
+            "amountCents": 22390,
+            "extraTenderedCents": 0
+          }
+        ]
+      ],
+      "voidPaymentIndex": 0,
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "o29"
+    },
+    {
+      "type": "table_order",
+      "terminal": "C",
+      "waiter": "waiter2",
+      "table": "12",
+      "covers": 4,
+      "destination": "EatIn",
+      "lines": [
+        {
+          "name": "Article 1",
+          "quantity": 4,
+          "unitPriceCents": 1613,
+          "taxRatePercent": "20",
+          "taxRateTakeawayPercent": "10",
+          "modifiersExtraCents": 0,
+          "comp": false
+        }
+      ],
+      "tipCents": 0,
+      "payments": [
+        [
+          {
+            "method": "Cash",
+            "amountCents": 2319,
+            "extraTenderedCents": 0
+          },
+          {
+            "method": "Cash",
+            "amountCents": 4133,
+            "extraTenderedCents": 0
+          }
+        ]
+      ],
+      "voidPaymentIndex": 0,
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "o30"
+    },
+    {
+      "type": "x_report",
+      "terminal": "A",
+      "covers": 0,
+      "tipCents": 0,
+      "reprint": false,
+      "holdAndRecall": false
+    },
+    {
+      "type": "x_report",
+      "terminal": "B",
+      "covers": 0,
+      "tipCents": 0,
+      "reprint": false,
+      "holdAndRecall": false
+    },
+    {
+      "type": "x_report",
+      "terminal": "C",
+      "covers": 0,
+      "tipCents": 0,
+      "reprint": false,
+      "holdAndRecall": false
+    },
+    {
+      "type": "counter_order",
+      "terminal": "B",
+      "waiter": "waiter2",
+      "covers": 0,
+      "destination": "EatIn",
+      "lines": [
+        {
+          "name": "Article 1",
+          "quantity": 3,
+          "unitPriceCents": 136,
+          "taxRatePercent": "5.5",
+          "taxRateTakeawayPercent": "5.5",
+          "modifiersExtraCents": 148,
+          "comp": false
+        }
+      ],
+      "discount": {
+        "type": "FixedAmount",
+        "value": "1"
+      },
+      "tipCents": 0,
+      "payments": [
+        [
+          {
+            "method": "CreditCard",
+            "amountCents": 379,
+            "extraTenderedCents": 0
+          }
+        ],
+        [
+          {
+            "method": "GiftCard",
+            "amountCents": 310,
+            "extraTenderedCents": 0
+          }
+        ],
+        [
+          {
+            "method": "CreditCard",
+            "amountCents": 2,
+            "extraTenderedCents": 0
+          },
+          {
+            "method": "Cash",
+            "amountCents": 61,
+            "extraTenderedCents": 31
+          }
+        ]
+      ],
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "o34"
+    },
+    {
+      "type": "counter_order",
+      "terminal": "C",
+      "waiter": "waiter3",
+      "covers": 0,
+      "destination": "EatIn",
+      "lines": [
+        {
+          "name": "Article 1",
+          "quantity": 2,
+          "unitPriceCents": 281,
+          "taxRatePercent": "0",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 2",
+          "quantity": 2,
+          "unitPriceCents": 461,
+          "taxRatePercent": "0",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 3",
+          "quantity": 3,
+          "unitPriceCents": 1737,
+          "taxRatePercent": "10",
+          "modifiersExtraCents": 138,
+          "comp": false
+        },
+        {
+          "name": "Article 4",
+          "quantity": 4,
+          "unitPriceCents": 2001,
+          "taxRatePercent": "2.1",
+          "modifiersExtraCents": 55,
+          "comp": false
+        },
+        {
+          "name": "Article 5",
+          "quantity": 4,
+          "unitPriceCents": 2164,
+          "taxRatePercent": "20",
+          "modifiersExtraCents": 0,
+          "comp": false
+        }
+      ],
+      "discount": {
+        "type": "FixedAmount",
+        "value": "5"
+      },
+      "tipCents": 0,
+      "payments": [
+        [
+          {
+            "method": "CreditCard",
+            "amountCents": 15425,
+            "extraTenderedCents": 0
+          }
+        ],
+        [
+          {
+            "method": "MealVoucher",
+            "amountCents": 2053,
+            "extraTenderedCents": 0
+          },
+          {
+            "method": "Cash",
+            "amountCents": 3355,
+            "extraTenderedCents": 0
+          }
+        ],
+        [
+          {
+            "method": "MealVoucher",
+            "amountCents": 446,
+            "extraTenderedCents": 0
+          },
+          {
+            "method": "Cash",
+            "amountCents": 615,
+            "extraTenderedCents": 1342
+          }
+        ],
+        [
+          {
+            "method": "GiftCard",
+            "amountCents": 844,
+            "extraTenderedCents": 0
+          },
+          {
+            "method": "MealVoucher",
+            "amountCents": 751,
+            "extraTenderedCents": 0
+          }
+        ]
+      ],
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "o35"
+    },
+    {
+      "type": "table_order",
+      "terminal": "B",
+      "waiter": "waiter3",
+      "table": "7",
+      "covers": 5,
+      "destination": "EatIn",
+      "lines": [
+        {
+          "name": "Article 1",
+          "quantity": 3,
+          "unitPriceCents": 2169,
+          "taxRatePercent": "0",
+          "taxRateTakeawayPercent": "10",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 2",
+          "quantity": 3,
+          "unitPriceCents": 1444,
+          "taxRatePercent": "0",
+          "modifiersExtraCents": 190,
+          "comp": false
+        },
+        {
+          "name": "Article 3",
+          "quantity": 4,
+          "unitPriceCents": 243,
+          "taxRatePercent": "2.1",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 4",
+          "quantity": 1,
+          "unitPriceCents": 2125,
+          "taxRatePercent": "5.5",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 5",
+          "quantity": 3,
+          "unitPriceCents": 657,
+          "taxRatePercent": "2.1",
+          "modifiersExtraCents": 186,
+          "comp": false
+        }
+      ],
+      "tipCents": 0,
+      "payments": [
+        [
+          {
+            "method": "GiftCard",
+            "amountCents": 3835,
+            "extraTenderedCents": 0
+          },
+          {
+            "method": "CreditCard",
+            "amountCents": 13200,
+            "extraTenderedCents": 0
+          }
+        ]
+      ],
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "o36"
+    },
+    {
+      "type": "table_order",
+      "terminal": "A",
+      "waiter": "waiter2",
+      "table": "3",
+      "covers": 2,
+      "destination": "EatIn",
+      "lines": [
+        {
+          "name": "Article 1",
+          "quantity": 4,
+          "unitPriceCents": 752,
+          "taxRatePercent": "0",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 2",
+          "quantity": 1,
+          "unitPriceCents": 404,
+          "taxRatePercent": "5.5",
+          "modifiersExtraCents": 0,
+          "comp": false
+        }
+      ],
+      "discount": {
+        "type": "FixedAmount",
+        "value": "2.5"
+      },
+      "tipCents": 0,
+      "payments": [
+        [
+          {
+            "method": "GiftCard",
+            "amountCents": 333,
+            "extraTenderedCents": 0
+          }
+        ],
+        [
+          {
+            "method": "GiftCard",
+            "amountCents": 1103,
+            "extraTenderedCents": 0
+          }
+        ],
+        [
+          {
+            "method": "GiftCard",
+            "amountCents": 9,
+            "extraTenderedCents": 0
+          }
+        ],
+        [
+          {
+            "method": "MealVoucher",
+            "amountCents": 1717,
+            "extraTenderedCents": 0
+          }
+        ]
+      ],
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "o37"
+    },
+    {
+      "type": "hold_then_void",
+      "terminal": "B",
+      "waiter": "waiter2",
+      "covers": 0,
+      "destination": "Takeaway",
+      "lines": [
+        {
+          "name": "Caf\u00E9",
+          "quantity": 1,
+          "unitPriceCents": 200,
+          "taxRatePercent": "10",
+          "taxRateTakeawayPercent": "5.5",
+          "modifiersExtraCents": 0,
+          "comp": false
+        }
+      ],
+      "tipCents": 0,
+      "reprint": false,
+      "holdAndRecall": false
+    },
+    {
+      "type": "counter_order",
+      "terminal": "C",
+      "waiter": "waiter4",
+      "covers": 0,
+      "destination": "Takeaway",
+      "lines": [
+        {
+          "name": "Article 1",
+          "quantity": 2,
+          "unitPriceCents": 1076,
+          "taxRatePercent": "0",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 2",
+          "quantity": 2,
+          "unitPriceCents": 609,
+          "taxRatePercent": "10",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 3",
+          "quantity": 1,
+          "unitPriceCents": 2155,
+          "taxRatePercent": "2.1",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 4",
+          "quantity": 4,
+          "unitPriceCents": 2355,
+          "taxRatePercent": "20",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 5",
+          "quantity": 2,
+          "unitPriceCents": 1900,
+          "taxRatePercent": "0",
+          "modifiersExtraCents": 138,
+          "comp": false
+        }
+      ],
+      "discount": {
+        "type": "Percentage",
+        "value": "10"
+      },
+      "tipCents": 0,
+      "payments": [
+        [
+          {
+            "method": "CreditCard",
+            "amountCents": 5161,
+            "extraTenderedCents": 0
+          }
+        ],
+        [
+          {
+            "method": "CreditCard",
+            "amountCents": 11958,
+            "extraTenderedCents": 0
+          }
+        ]
+      ],
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "o39"
+    },
+    {
+      "type": "counter_order",
+      "terminal": "A",
+      "waiter": "waiter1",
+      "covers": 0,
+      "destination": "Takeaway",
+      "lines": [
+        {
+          "name": "Article 1",
+          "quantity": 2,
+          "unitPriceCents": 1662,
+          "taxRatePercent": "2.1",
+          "taxRateTakeawayPercent": "5.5",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 2",
+          "quantity": 1,
+          "unitPriceCents": 115,
+          "taxRatePercent": "2.1",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 3",
+          "quantity": 4,
+          "unitPriceCents": 357,
+          "taxRatePercent": "10",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 4",
+          "quantity": 2,
+          "unitPriceCents": 2107,
+          "taxRatePercent": "20",
+          "taxRateTakeawayPercent": "10",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 5",
+          "quantity": 3,
+          "unitPriceCents": 442,
+          "taxRatePercent": "5.5",
+          "modifiersExtraCents": 106,
+          "comp": false
+        },
+        {
+          "name": "Article 6",
+          "quantity": 4,
+          "unitPriceCents": 1802,
+          "taxRatePercent": "10",
+          "modifiersExtraCents": 142,
+          "comp": false
+        }
+      ],
+      "tipCents": 0,
+      "payments": [
+        [
+          {
+            "method": "CreditCard",
+            "amountCents": 18501,
+            "extraTenderedCents": 0
+          }
+        ]
+      ],
+      "reprint": true,
+      "holdAndRecall": false,
+      "ref": "o40"
+    },
+    {
+      "type": "table_order",
+      "terminal": "C",
+      "waiter": "waiter4",
+      "table": "10",
+      "covers": 6,
+      "destination": "EatIn",
+      "lines": [
+        {
+          "name": "Article 1",
+          "quantity": 2,
+          "unitPriceCents": 1802,
+          "taxRatePercent": "0",
+          "modifiersExtraCents": 74,
+          "comp": false
+        },
+        {
+          "name": "Article 2",
+          "quantity": 3,
+          "unitPriceCents": 2400,
+          "taxRatePercent": "5.5",
+          "modifiersExtraCents": 76,
+          "comp": false
+        }
+      ],
+      "tipCents": 0,
+      "payments": [
+        [
+          {
+            "method": "Cash",
+            "amountCents": 1756,
+            "extraTenderedCents": 748
+          },
+          {
+            "method": "Cash",
+            "amountCents": 9424,
+            "extraTenderedCents": 968
+          }
+        ]
+      ],
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "o41"
+    },
+    {
+      "type": "counter_order",
+      "terminal": "A",
+      "waiter": "waiter4",
+      "covers": 0,
+      "destination": "EatIn",
+      "lines": [
+        {
+          "name": "Article 1",
+          "quantity": 3,
+          "unitPriceCents": 686,
+          "taxRatePercent": "0",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 2",
+          "quantity": 1,
+          "unitPriceCents": 688,
+          "taxRatePercent": "0",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 3",
+          "quantity": 2,
+          "unitPriceCents": 1967,
+          "taxRatePercent": "2.1",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 4",
+          "quantity": 2,
+          "unitPriceCents": 1497,
+          "taxRatePercent": "2.1",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 5",
+          "quantity": 2,
+          "unitPriceCents": 1392,
+          "taxRatePercent": "2.1",
+          "modifiersExtraCents": 171,
+          "comp": false
+        },
+        {
+          "name": "Article 6",
+          "quantity": 1,
+          "unitPriceCents": 1677,
+          "taxRatePercent": "20",
+          "modifiersExtraCents": 188,
+          "comp": false
+        }
+      ],
+      "discount": {
+        "type": "Percentage",
+        "value": "15"
+      },
+      "tipCents": 0,
+      "payments": [
+        [
+          {
+            "method": "GiftCard",
+            "amountCents": 12465,
+            "extraTenderedCents": 0
+          }
+        ]
+      ],
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "o42"
+    },
+    {
+      "type": "counter_order",
+      "terminal": "C",
+      "waiter": "waiter3",
+      "covers": 0,
+      "destination": "Takeaway",
+      "lines": [
+        {
+          "name": "Article 1",
+          "quantity": 4,
+          "unitPriceCents": 859,
+          "taxRatePercent": "10",
+          "taxRateTakeawayPercent": "10",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 2",
+          "quantity": 1,
+          "unitPriceCents": 266,
+          "taxRatePercent": "0",
+          "taxRateTakeawayPercent": "5.5",
+          "modifiersExtraCents": 0,
+          "comp": true
+        },
+        {
+          "name": "Article 3",
+          "quantity": 3,
+          "unitPriceCents": 1721,
+          "taxRatePercent": "2.1",
+          "modifiersExtraCents": 174,
+          "comp": false
+        },
+        {
+          "name": "Article 4",
+          "quantity": 1,
+          "unitPriceCents": 2169,
+          "taxRatePercent": "0",
+          "modifiersExtraCents": 0,
+          "comp": true
+        }
+      ],
+      "discount": {
+        "type": "Percentage",
+        "value": "10"
+      },
+      "tipCents": 0,
+      "payments": [
+        [
+          {
+            "method": "CreditCard",
+            "amountCents": 1821,
+            "extraTenderedCents": 0
+          }
+        ],
+        [
+          {
+            "method": "GiftCard",
+            "amountCents": 650,
+            "extraTenderedCents": 0
+          },
+          {
+            "method": "CreditCard",
+            "amountCents": 3719,
+            "extraTenderedCents": 0
+          }
+        ],
+        [
+          {
+            "method": "GiftCard",
+            "amountCents": 518,
+            "extraTenderedCents": 0
+          }
+        ],
+        [
+          {
+            "method": "CreditCard",
+            "amountCents": 1339,
+            "extraTenderedCents": 0
+          },
+          {
+            "method": "CreditCard",
+            "amountCents": 162,
+            "extraTenderedCents": 0
+          }
+        ]
+      ],
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "o43"
+    },
+    {
+      "type": "table_order",
+      "terminal": "A",
+      "waiter": "waiter3",
+      "table": "7",
+      "covers": 3,
+      "destination": "EatIn",
+      "lines": [
+        {
+          "name": "Article 1",
+          "quantity": 3,
+          "unitPriceCents": 1243,
+          "taxRatePercent": "0",
+          "modifiersExtraCents": 137,
+          "comp": false
+        },
+        {
+          "name": "Article 2",
+          "quantity": 2,
+          "unitPriceCents": 1165,
+          "taxRatePercent": "2.1",
+          "taxRateTakeawayPercent": "5.5",
+          "modifiersExtraCents": 81,
+          "comp": false
+        },
+        {
+          "name": "Article 3",
+          "quantity": 1,
+          "unitPriceCents": 2103,
+          "taxRatePercent": "20",
+          "taxRateTakeawayPercent": "5.5",
+          "modifiersExtraCents": 0,
+          "comp": true
+        },
+        {
+          "name": "Article 4",
+          "quantity": 1,
+          "unitPriceCents": 1356,
+          "taxRatePercent": "2.1",
+          "taxRateTakeawayPercent": "10",
+          "modifiersExtraCents": 0,
+          "comp": false
+        }
+      ],
+      "tipCents": 0,
+      "payments": [
+        [
+          {
+            "method": "Cash",
+            "amountCents": 938,
+            "extraTenderedCents": 0
+          }
+        ],
+        [
+          {
+            "method": "CreditCard",
+            "amountCents": 3959,
+            "extraTenderedCents": 0
+          }
+        ],
+        [
+          {
+            "method": "Cash",
+            "amountCents": 337,
+            "extraTenderedCents": 0
+          }
+        ],
+        [
+          {
+            "method": "GiftCard",
+            "amountCents": 2126,
+            "extraTenderedCents": 0
+          },
+          {
+            "method": "CreditCard",
+            "amountCents": 628,
+            "extraTenderedCents": 0
+          }
+        ]
+      ],
+      "voidPaymentIndex": 3,
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "o44"
+    },
+    {
+      "type": "counter_order",
+      "terminal": "A",
+      "waiter": "waiter2",
+      "covers": 0,
+      "destination": "Takeaway",
+      "lines": [
+        {
+          "name": "Article 1",
+          "quantity": 1,
+          "unitPriceCents": 1482,
+          "taxRatePercent": "10",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 2",
+          "quantity": 2,
+          "unitPriceCents": 1669,
+          "taxRatePercent": "0",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 3",
+          "quantity": 4,
+          "unitPriceCents": 2064,
+          "taxRatePercent": "5.5",
+          "taxRateTakeawayPercent": "5.5",
+          "modifiersExtraCents": 0,
+          "comp": false
+        }
+      ],
+      "tipCents": 0,
+      "payments": [
+        [
+          {
+            "method": "CreditCard",
+            "amountCents": 2671,
+            "extraTenderedCents": 0
+          }
+        ],
+        [
+          {
+            "method": "GiftCard",
+            "amountCents": 10405,
+            "extraTenderedCents": 0
+          }
+        ]
+      ],
+      "reprint": true,
+      "holdAndRecall": false,
+      "ref": "o45"
+    },
+    {
+      "type": "x_report",
+      "terminal": "A",
+      "covers": 0,
+      "tipCents": 0,
+      "reprint": false,
+      "holdAndRecall": false
+    },
+    {
+      "type": "x_report",
+      "terminal": "B",
+      "covers": 0,
+      "tipCents": 0,
+      "reprint": false,
+      "holdAndRecall": false
+    },
+    {
+      "type": "x_report",
+      "terminal": "C",
+      "covers": 0,
+      "tipCents": 0,
+      "reprint": false,
+      "holdAndRecall": false
+    },
+    {
+      "type": "counter_order",
+      "terminal": "C",
+      "waiter": "waiter4",
+      "covers": 0,
+      "destination": "EatIn",
+      "lines": [
+        {
+          "name": "Article 1",
+          "quantity": 2,
+          "unitPriceCents": 588,
+          "taxRatePercent": "10",
+          "taxRateTakeawayPercent": "5.5",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 2",
+          "quantity": 1,
+          "unitPriceCents": 857,
+          "taxRatePercent": "20",
+          "modifiersExtraCents": 54,
+          "comp": false
+        }
+      ],
+      "tipCents": 0,
+      "payments": [
+        [
+          {
+            "method": "Cash",
+            "amountCents": 2087,
+            "extraTenderedCents": 554
+          }
+        ]
+      ],
+      "reprint": true,
+      "holdAndRecall": false,
+      "ref": "o49"
+    },
+    {
+      "type": "table_order",
+      "terminal": "C",
+      "waiter": "waiter2",
+      "table": "3",
+      "covers": 5,
+      "destination": "EatIn",
+      "lines": [
+        {
+          "name": "Article 1",
+          "quantity": 3,
+          "unitPriceCents": 1457,
+          "taxRatePercent": "2.1",
+          "taxRateTakeawayPercent": "10",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 2",
+          "quantity": 4,
+          "unitPriceCents": 263,
+          "taxRatePercent": "10",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 3",
+          "quantity": 1,
+          "unitPriceCents": 2494,
+          "taxRatePercent": "10",
+          "modifiersExtraCents": 70,
+          "comp": false
+        },
+        {
+          "name": "Article 4",
+          "quantity": 2,
+          "unitPriceCents": 1728,
+          "taxRatePercent": "5.5",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 5",
+          "quantity": 4,
+          "unitPriceCents": 64,
+          "taxRatePercent": "5.5",
+          "modifiersExtraCents": 0,
+          "comp": true
+        }
+      ],
+      "tipCents": 0,
+      "payments": [
+        [
+          {
+            "method": "GiftCard",
+            "amountCents": 8014,
+            "extraTenderedCents": 0
+          },
+          {
+            "method": "GiftCard",
+            "amountCents": 3429,
+            "extraTenderedCents": 0
+          }
+        ]
+      ],
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "o50"
+    },
+    {
+      "type": "counter_order",
+      "terminal": "C",
+      "waiter": "waiter2",
+      "covers": 0,
+      "destination": "EatIn",
+      "lines": [
+        {
+          "name": "Article 1",
+          "quantity": 3,
+          "unitPriceCents": 194,
+          "taxRatePercent": "10",
+          "modifiersExtraCents": 0,
+          "comp": false
+        }
+      ],
+      "discount": {
+        "type": "Percentage",
+        "value": "33.33"
+      },
+      "tipCents": 0,
+      "payments": [
+        [
+          {
+            "method": "Cash",
+            "amountCents": 388,
+            "extraTenderedCents": 0
+          }
+        ]
+      ],
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "o51"
+    },
+    {
+      "type": "table_order",
+      "terminal": "A",
+      "waiter": "waiter2",
+      "table": "1",
+      "covers": 1,
+      "destination": "EatIn",
+      "lines": [
+        {
+          "name": "Article 1",
+          "quantity": 2,
+          "unitPriceCents": 1603,
+          "taxRatePercent": "5.5",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 2",
+          "quantity": 3,
+          "unitPriceCents": 186,
+          "taxRatePercent": "0",
+          "taxRateTakeawayPercent": "5.5",
+          "modifiersExtraCents": 135,
+          "comp": false
+        },
+        {
+          "name": "Article 3",
+          "quantity": 1,
+          "unitPriceCents": 2440,
+          "taxRatePercent": "0",
+          "taxRateTakeawayPercent": "5.5",
+          "modifiersExtraCents": 128,
+          "comp": false
+        },
+        {
+          "name": "Article 4",
+          "quantity": 4,
+          "unitPriceCents": 247,
+          "taxRatePercent": "5.5",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 5",
+          "quantity": 2,
+          "unitPriceCents": 356,
+          "taxRatePercent": "0",
+          "modifiersExtraCents": 0,
+          "comp": false
+        }
+      ],
+      "tipCents": 0,
+      "payments": [
+        [
+          {
+            "method": "GiftCard",
+            "amountCents": 7946,
+            "extraTenderedCents": 0
+          },
+          {
+            "method": "Cash",
+            "amountCents": 491,
+            "extraTenderedCents": 0
+          }
+        ]
+      ],
+      "voidPaymentIndex": 0,
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "o52"
+    },
+    {
+      "type": "counter_order",
+      "terminal": "C",
+      "waiter": "waiter3",
+      "covers": 0,
+      "destination": "EatIn",
+      "lines": [
+        {
+          "name": "Article 1",
+          "quantity": 2,
+          "unitPriceCents": 619,
+          "taxRatePercent": "0",
+          "modifiersExtraCents": 186,
+          "comp": false
+        },
+        {
+          "name": "Article 2",
+          "quantity": 4,
+          "unitPriceCents": 971,
+          "taxRatePercent": "10",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 3",
+          "quantity": 1,
+          "unitPriceCents": 475,
+          "taxRatePercent": "20",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 4",
+          "quantity": 1,
+          "unitPriceCents": 156,
+          "taxRatePercent": "2.1",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 5",
+          "quantity": 3,
+          "unitPriceCents": 2021,
+          "taxRatePercent": "10",
+          "taxRateTakeawayPercent": "5.5",
+          "modifiersExtraCents": 0,
+          "comp": false
+        }
+      ],
+      "discount": {
+        "type": "FixedAmount",
+        "value": "2.5"
+      },
+      "tipCents": 0,
+      "payments": [
+        [
+          {
+            "method": "Cash",
+            "amountCents": 11938,
+            "extraTenderedCents": 0
+          }
+        ]
+      ],
+      "reprint": false,
+      "holdAndRecall": true,
+      "ref": "o53"
+    },
+    {
+      "type": "counter_order",
+      "terminal": "C",
+      "waiter": "waiter2",
+      "covers": 0,
+      "destination": "Takeaway",
+      "lines": [
+        {
+          "name": "Article 1",
+          "quantity": 3,
+          "unitPriceCents": 1868,
+          "taxRatePercent": "0",
+          "modifiersExtraCents": 142,
+          "comp": false
+        },
+        {
+          "name": "Article 2",
+          "quantity": 4,
+          "unitPriceCents": 418,
+          "taxRatePercent": "2.1",
+          "taxRateTakeawayPercent": "5.5",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 3",
+          "quantity": 1,
+          "unitPriceCents": 1936,
+          "taxRatePercent": "0",
+          "taxRateTakeawayPercent": "5.5",
+          "modifiersExtraCents": 97,
+          "comp": false
+        },
+        {
+          "name": "Article 4",
+          "quantity": 4,
+          "unitPriceCents": 1351,
+          "taxRatePercent": "5.5",
+          "modifiersExtraCents": 0,
+          "comp": false
+        }
+      ],
+      "discount": {
+        "type": "Percentage",
+        "value": "10"
+      },
+      "tipCents": 0,
+      "payments": [
+        [
+          {
+            "method": "MealVoucher",
+            "amountCents": 1146,
+            "extraTenderedCents": 0
+          }
+        ],
+        [
+          {
+            "method": "CreditCard",
+            "amountCents": 7963,
+            "extraTenderedCents": 0
+          },
+          {
+            "method": "CreditCard",
+            "amountCents": 4516,
+            "extraTenderedCents": 0
+          }
+        ]
+      ],
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "o54"
+    },
+    {
+      "type": "counter_order",
+      "terminal": "A",
+      "waiter": "waiter2",
+      "covers": 0,
+      "destination": "EatIn",
+      "lines": [
+        {
+          "name": "Article 1",
+          "quantity": 3,
+          "unitPriceCents": 1872,
+          "taxRatePercent": "20",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 2",
+          "quantity": 3,
+          "unitPriceCents": 567,
+          "taxRatePercent": "10",
+          "modifiersExtraCents": 0,
+          "comp": false
+        }
+      ],
+      "discount": {
+        "type": "Percentage",
+        "value": "33.33"
+      },
+      "tipCents": 0,
+      "payments": [
+        [
+          {
+            "method": "CreditCard",
+            "amountCents": 336,
+            "extraTenderedCents": 0
+          },
+          {
+            "method": "MealVoucher",
+            "amountCents": 493,
+            "extraTenderedCents": 0
+          }
+        ],
+        [
+          {
+            "method": "MealVoucher",
+            "amountCents": 1245,
+            "extraTenderedCents": 0
+          }
+        ],
+        [
+          {
+            "method": "Cash",
+            "amountCents": 2804,
+            "extraTenderedCents": 0
+          }
+        ]
+      ],
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "o55"
+    },
+    {
+      "type": "table_order",
+      "terminal": "C",
+      "waiter": "waiter4",
+      "table": "7",
+      "covers": 3,
+      "destination": "EatIn",
+      "lines": [
+        {
+          "name": "Article 1",
+          "quantity": 2,
+          "unitPriceCents": 2136,
+          "taxRatePercent": "0",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 2",
+          "quantity": 4,
+          "unitPriceCents": 2464,
+          "taxRatePercent": "10",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 3",
+          "quantity": 1,
+          "unitPriceCents": 281,
+          "taxRatePercent": "0",
+          "modifiersExtraCents": 0,
+          "comp": false
+        }
+      ],
+      "discount": {
+        "type": "Percentage",
+        "value": "33.33"
+      },
+      "tipCents": 0,
+      "payments": [
+        [
+          {
+            "method": "Cash",
+            "amountCents": 2776,
+            "extraTenderedCents": 0
+          },
+          {
+            "method": "GiftCard",
+            "amountCents": 6779,
+            "extraTenderedCents": 0
+          }
+        ],
+        [
+          {
+            "method": "Cash",
+            "amountCents": 17,
+            "extraTenderedCents": 1630
+          }
+        ],
+        [
+          {
+            "method": "GiftCard",
+            "amountCents": 11,
+            "extraTenderedCents": 0
+          },
+          {
+            "method": "GiftCard",
+            "amountCents": 11,
+            "extraTenderedCents": 0
+          }
+        ],
+        [
+          {
+            "method": "Cash",
+            "amountCents": 11,
+            "extraTenderedCents": 0
+          }
+        ],
+        [
+          {
+            "method": "Cash",
+            "amountCents": 1,
+            "extraTenderedCents": 0
+          }
+        ]
+      ],
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "o56"
+    },
+    {
+      "type": "counter_order",
+      "terminal": "C",
+      "waiter": "waiter3",
+      "covers": 0,
+      "destination": "Takeaway",
+      "lines": [
+        {
+          "name": "Article 1",
+          "quantity": 4,
+          "unitPriceCents": 2179,
+          "taxRatePercent": "0",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 2",
+          "quantity": 4,
+          "unitPriceCents": 1041,
+          "taxRatePercent": "2.1",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 3",
+          "quantity": 4,
+          "unitPriceCents": 1048,
+          "taxRatePercent": "5.5",
+          "modifiersExtraCents": 0,
+          "comp": false
+        }
+      ],
+      "tipCents": 0,
+      "payments": [
+        [
+          {
+            "method": "CreditCard",
+            "amountCents": 7272,
+            "extraTenderedCents": 0
+          },
+          {
+            "method": "Cash",
+            "amountCents": 9800,
+            "extraTenderedCents": 1245
+          }
+        ]
+      ],
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "o57"
+    },
+    {
+      "type": "table_order",
+      "terminal": "A",
+      "waiter": "waiter2",
+      "table": "3",
+      "covers": 4,
+      "destination": "EatIn",
+      "lines": [
+        {
+          "name": "Article 1",
+          "quantity": 2,
+          "unitPriceCents": 2230,
+          "taxRatePercent": "10",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 2",
+          "quantity": 2,
+          "unitPriceCents": 1289,
+          "taxRatePercent": "2.1",
+          "modifiersExtraCents": 0,
+          "comp": false
+        }
+      ],
+      "discount": {
+        "type": "Percentage",
+        "value": "10"
+      },
+      "tipCents": 0,
+      "payments": [
+        [
+          {
+            "method": "MealVoucher",
+            "amountCents": 1672,
+            "extraTenderedCents": 0
+          },
+          {
+            "method": "CreditCard",
+            "amountCents": 4662,
+            "extraTenderedCents": 0
+          }
+        ]
+      ],
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "o58"
+    },
+    {
+      "type": "counter_order",
+      "terminal": "A",
+      "waiter": "waiter4",
+      "covers": 0,
+      "destination": "EatIn",
+      "lines": [
+        {
+          "name": "Article 1",
+          "quantity": 1,
+          "unitPriceCents": 1995,
+          "taxRatePercent": "5.5",
+          "taxRateTakeawayPercent": "5.5",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 2",
+          "quantity": 1,
+          "unitPriceCents": 361,
+          "taxRatePercent": "20",
+          "modifiersExtraCents": 60,
+          "comp": false
+        }
+      ],
+      "discount": {
+        "type": "Percentage",
+        "value": "33.33"
+      },
+      "tipCents": 148,
+      "payments": [
+        [
+          {
+            "method": "MealVoucher",
+            "amountCents": 1759,
+            "extraTenderedCents": 0
+          }
+        ]
+      ],
+      "voidPaymentIndex": 0,
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "o59"
+    },
+    {
+      "type": "hold_then_void",
+      "terminal": "B",
+      "waiter": "waiter1",
+      "covers": 0,
+      "destination": "Takeaway",
+      "lines": [
+        {
+          "name": "Caf\u00E9",
+          "quantity": 1,
+          "unitPriceCents": 200,
+          "taxRatePercent": "10",
+          "taxRateTakeawayPercent": "5.5",
+          "modifiersExtraCents": 0,
+          "comp": false
+        }
+      ],
+      "tipCents": 0,
+      "reprint": false,
+      "holdAndRecall": false
+    },
+    {
+      "type": "x_report",
+      "terminal": "A",
+      "covers": 0,
+      "tipCents": 0,
+      "reprint": false,
+      "holdAndRecall": false
+    },
+    {
+      "type": "x_report",
+      "terminal": "B",
+      "covers": 0,
+      "tipCents": 0,
+      "reprint": false,
+      "holdAndRecall": false
+    },
+    {
+      "type": "x_report",
+      "terminal": "C",
+      "covers": 0,
+      "tipCents": 0,
+      "reprint": false,
+      "holdAndRecall": false
+    },
+    {
+      "type": "counter_order",
+      "terminal": "A",
+      "waiter": "waiter1",
+      "covers": 0,
+      "destination": "EatIn",
+      "lines": [
+        {
+          "name": "Article 1",
+          "quantity": 2,
+          "unitPriceCents": 1193,
+          "taxRatePercent": "20",
+          "modifiersExtraCents": 104,
+          "comp": false
+        },
+        {
+          "name": "Article 2",
+          "quantity": 4,
+          "unitPriceCents": 106,
+          "taxRatePercent": "2.1",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 3",
+          "quantity": 3,
+          "unitPriceCents": 1793,
+          "taxRatePercent": "0",
+          "taxRateTakeawayPercent": "5.5",
+          "modifiersExtraCents": 0,
+          "comp": false
+        }
+      ],
+      "tipCents": 0,
+      "payments": [
+        [
+          {
+            "method": "CreditCard",
+            "amountCents": 6074,
+            "extraTenderedCents": 0
+          }
+        ],
+        [
+          {
+            "method": "CreditCard",
+            "amountCents": 2323,
+            "extraTenderedCents": 0
+          }
+        ]
+      ],
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "o64"
+    },
+    {
+      "type": "table_order",
+      "terminal": "B",
+      "waiter": "waiter4",
+      "table": "8",
+      "covers": 5,
+      "destination": "EatIn",
+      "lines": [
+        {
+          "name": "Article 1",
+          "quantity": 1,
+          "unitPriceCents": 1243,
+          "taxRatePercent": "2.1",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 2",
+          "quantity": 1,
+          "unitPriceCents": 296,
+          "taxRatePercent": "10",
+          "modifiersExtraCents": 0,
+          "comp": false
+        }
+      ],
+      "discount": {
+        "type": "FixedAmount",
+        "value": "2.5"
+      },
+      "tipCents": 0,
+      "payments": [
+        [
+          {
+            "method": "GiftCard",
+            "amountCents": 74,
+            "extraTenderedCents": 0
+          },
+          {
+            "method": "Cash",
+            "amountCents": 392,
+            "extraTenderedCents": 0
+          }
+        ],
+        [
+          {
+            "method": "CreditCard",
+            "amountCents": 143,
+            "extraTenderedCents": 0
+          }
+        ],
+        [
+          {
+            "method": "Cash",
+            "amountCents": 333,
+            "extraTenderedCents": 1784
+          }
+        ],
+        [
+          {
+            "method": "GiftCard",
+            "amountCents": 237,
+            "extraTenderedCents": 0
+          },
+          {
+            "method": "GiftCard",
+            "amountCents": 22,
+            "extraTenderedCents": 0
+          }
+        ],
+        [
+          {
+            "method": "MealVoucher",
+            "amountCents": 88,
+            "extraTenderedCents": 0
+          }
+        ]
+      ],
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "o65"
+    },
+    {
+      "type": "table_order",
+      "terminal": "B",
+      "waiter": "waiter4",
+      "table": "10",
+      "covers": 5,
+      "destination": "EatIn",
+      "lines": [
+        {
+          "name": "Article 1",
+          "quantity": 2,
+          "unitPriceCents": 1562,
+          "taxRatePercent": "10",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 2",
+          "quantity": 2,
+          "unitPriceCents": 1727,
+          "taxRatePercent": "0",
+          "modifiersExtraCents": 102,
+          "comp": false
+        }
+      ],
+      "tipCents": 88,
+      "payments": [
+        [
+          {
+            "method": "CreditCard",
+            "amountCents": 3230,
+            "extraTenderedCents": 0
+          }
+        ],
+        [
+          {
+            "method": "GiftCard",
+            "amountCents": 3640,
+            "extraTenderedCents": 0
+          }
+        ]
+      ],
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "o66"
+    },
+    {
+      "type": "hold_then_void",
+      "terminal": "B",
+      "waiter": "waiter1",
+      "covers": 0,
+      "destination": "Takeaway",
+      "lines": [
+        {
+          "name": "Caf\u00E9",
+          "quantity": 1,
+          "unitPriceCents": 200,
+          "taxRatePercent": "10",
+          "taxRateTakeawayPercent": "5.5",
+          "modifiersExtraCents": 0,
+          "comp": false
+        }
+      ],
+      "tipCents": 0,
+      "reprint": false,
+      "holdAndRecall": false
+    },
+    {
+      "type": "counter_order",
+      "terminal": "A",
+      "waiter": "waiter2",
+      "covers": 0,
+      "destination": "Takeaway",
+      "lines": [
+        {
+          "name": "Article 1",
+          "quantity": 3,
+          "unitPriceCents": 369,
+          "taxRatePercent": "5.5",
+          "taxRateTakeawayPercent": "10",
+          "modifiersExtraCents": 187,
+          "comp": false
+        },
+        {
+          "name": "Article 2",
+          "quantity": 4,
+          "unitPriceCents": 403,
+          "taxRatePercent": "0",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 3",
+          "quantity": 1,
+          "unitPriceCents": 1792,
+          "taxRatePercent": "5.5",
+          "taxRateTakeawayPercent": "5.5",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 4",
+          "quantity": 1,
+          "unitPriceCents": 2076,
+          "taxRatePercent": "0",
+          "taxRateTakeawayPercent": "5.5",
+          "modifiersExtraCents": 0,
+          "comp": false
+        }
+      ],
+      "discount": {
+        "type": "Percentage",
+        "value": "15"
+      },
+      "tipCents": 206,
+      "payments": [
+        [
+          {
+            "method": "CreditCard",
+            "amountCents": 4497,
+            "extraTenderedCents": 0
+          }
+        ],
+        [
+          {
+            "method": "GiftCard",
+            "amountCents": 1392,
+            "extraTenderedCents": 0
+          }
+        ],
+        [
+          {
+            "method": "Cash",
+            "amountCents": 393,
+            "extraTenderedCents": 303
+          }
+        ]
+      ],
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "o68"
+    },
+    {
+      "type": "table_order",
+      "terminal": "B",
+      "waiter": "waiter2",
+      "table": "1",
+      "covers": 5,
+      "destination": "EatIn",
+      "lines": [
+        {
+          "name": "Article 1",
+          "quantity": 4,
+          "unitPriceCents": 2291,
+          "taxRatePercent": "5.5",
+          "taxRateTakeawayPercent": "10",
+          "modifiersExtraCents": 183,
+          "comp": false
+        },
+        {
+          "name": "Article 2",
+          "quantity": 1,
+          "unitPriceCents": 1358,
+          "taxRatePercent": "2.1",
+          "modifiersExtraCents": 139,
+          "comp": false
+        }
+      ],
+      "discount": {
+        "type": "FixedAmount",
+        "value": "5"
+      },
+      "tipCents": 0,
+      "payments": [
+        [
+          {
+            "method": "CreditCard",
+            "amountCents": 10893,
+            "extraTenderedCents": 0
+          }
+        ]
+      ],
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "o69"
+    },
+    {
+      "type": "counter_order",
+      "terminal": "A",
+      "waiter": "waiter4",
+      "covers": 0,
+      "destination": "EatIn",
+      "lines": [
+        {
+          "name": "Article 1",
+          "quantity": 1,
+          "unitPriceCents": 1321,
+          "taxRatePercent": "0",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 2",
+          "quantity": 3,
+          "unitPriceCents": 266,
+          "taxRatePercent": "0",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 3",
+          "quantity": 4,
+          "unitPriceCents": 166,
+          "taxRatePercent": "20",
+          "taxRateTakeawayPercent": "10",
+          "modifiersExtraCents": 0,
+          "comp": false
+        }
+      ],
+      "discount": {
+        "type": "Percentage",
+        "value": "10"
+      },
+      "tipCents": 0,
+      "payments": [
+        [
+          {
+            "method": "GiftCard",
+            "amountCents": 2505,
+            "extraTenderedCents": 0
+          }
+        ]
+      ],
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "o70"
+    },
+    {
+      "type": "counter_order",
+      "terminal": "A",
+      "waiter": "waiter2",
+      "covers": 0,
+      "destination": "Takeaway",
+      "lines": [
+        {
+          "name": "Article 1",
+          "quantity": 2,
+          "unitPriceCents": 68,
+          "taxRatePercent": "2.1",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 2",
+          "quantity": 4,
+          "unitPriceCents": 2379,
+          "taxRatePercent": "2.1",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 3",
+          "quantity": 4,
+          "unitPriceCents": 1482,
+          "taxRatePercent": "2.1",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 4",
+          "quantity": 4,
+          "unitPriceCents": 511,
+          "taxRatePercent": "0",
+          "modifiersExtraCents": 92,
+          "comp": false
+        },
+        {
+          "name": "Article 5",
+          "quantity": 2,
+          "unitPriceCents": 972,
+          "taxRatePercent": "5.5",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Article 6",
+          "quantity": 2,
+          "unitPriceCents": 795,
+          "taxRatePercent": "10",
+          "modifiersExtraCents": 0,
+          "comp": false
+        }
+      ],
+      "tipCents": 0,
+      "payments": [
+        [
+          {
+            "method": "Cash",
+            "amountCents": 21526,
+            "extraTenderedCents": 0
+          }
+        ]
+      ],
+      "reprint": false,
+      "holdAndRecall": true,
+      "ref": "o71"
+    },
+    {
+      "type": "x_report",
+      "terminal": "A",
+      "covers": 0,
+      "tipCents": 0,
+      "reprint": false,
+      "holdAndRecall": false
+    },
+    {
+      "type": "x_report",
+      "terminal": "B",
+      "covers": 0,
+      "tipCents": 0,
+      "reprint": false,
+      "holdAndRecall": false
+    },
+    {
+      "type": "x_report",
+      "terminal": "C",
+      "covers": 0,
+      "tipCents": 0,
+      "reprint": false,
+      "holdAndRecall": false
+    },
+    {
+      "type": "z_closure",
+      "terminal": "A",
+      "covers": 0,
+      "tipCents": 0,
+      "reprint": false,
+      "holdAndRecall": false
+    },
+    {
+      "type": "z_closure",
+      "terminal": "B",
+      "covers": 0,
+      "tipCents": 0,
+      "reprint": false,
+      "holdAndRecall": false
+    },
+    {
+      "type": "z_closure",
+      "terminal": "C",
+      "covers": 0,
+      "tipCents": 0,
+      "reprint": false,
+      "holdAndRecall": false
+    },
+    {
+      "type": "x_report",
+      "terminal": "A",
+      "covers": 0,
+      "tipCents": 0,
+      "reprint": false,
+      "holdAndRecall": false
+    },
+    {
+      "type": "x_report",
+      "terminal": "B",
+      "covers": 0,
+      "tipCents": 0,
+      "reprint": false,
+      "holdAndRecall": false
+    },
+    {
+      "type": "x_report",
+      "terminal": "C",
+      "covers": 0,
+      "tipCents": 0,
+      "reprint": false,
+      "holdAndRecall": false
+    },
+    {
+      "type": "void_receipt",
+      "terminal": "A",
+      "covers": 0,
+      "tipCents": 0,
+      "voidPaymentIndex": 0,
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "m3"
+    },
+    {
+      "type": "void_receipt",
+      "terminal": "B",
+      "covers": 0,
+      "tipCents": 0,
+      "voidPaymentIndex": 0,
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "o4"
+    },
+    {
+      "type": "void_receipt",
+      "terminal": "C",
+      "covers": 0,
+      "tipCents": 0,
+      "voidPaymentIndex": 0,
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "m2"
+    }
+  ],
+  "expected": {
+    "A": {
+      "ttcCents": 167543,
+      "htCents": 159580,
+      "receiptCount": 47,
+      "vatByRate": {
+        "0": 0,
+        "2.1": 861,
+        "5.5": 1996,
+        "10": 2690,
+        "20": 2416
+      },
+      "tenderByMethod": {
+        "Cash": 44744,
+        "CreditCard": 84705,
+        "GiftCard": 31942,
+        "MealVoucher": 7080
+      }
+    },
+    "B": {
+      "ttcCents": 97108,
+      "htCents": 90017,
+      "receiptCount": 24,
+      "vatByRate": {
+        "0": 0,
+        "2.1": 134,
+        "5.5": 1516,
+        "10": 1838,
+        "20": 3603
+      },
+      "tenderByMethod": {
+        "Cash": 13485,
+        "CreditCard": 71377,
+        "GiftCard": 12147,
+        "MealVoucher": 187
+      }
+    },
+    "C": {
+      "ttcCents": 217573,
+      "htCents": 203384,
+      "receiptCount": 47,
+      "vatByRate": {
+        "0": 0,
+        "2.1": 868,
+        "5.5": 2020,
+        "10": 4430,
+        "20": 6871
+      },
+      "tenderByMethod": {
+        "Cash": 76546,
+        "CreditCard": 77897,
+        "GiftCard": 55144,
+        "MealVoucher": 7986
+      }
+    }
+  },
+  "total": {
+    "ttcCents": 482224,
+    "htCents": 452981,
+    "receiptCount": 118,
+    "vatByRate": {
+      "0": 0,
+      "2.1": 1863,
+      "5.5": 5532,
+      "10": 8958,
+      "20": 12890
+    },
+    "tenderByMethod": {
+      "Cash": 134775,
+      "CreditCard": 233979,
+      "GiftCard": 99233,
+      "MealVoucher": 15253
+    }
+  }
+}
