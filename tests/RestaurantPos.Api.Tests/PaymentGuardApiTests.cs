@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
@@ -10,6 +11,7 @@ using RestaurantPos.Application.DTOs;
 using RestaurantPos.Domain.Entities;
 using RestaurantPos.Domain.Enums;
 using RestaurantPos.Domain.ValueObjects;
+using RestaurantPos.Infrastructure.Localization;
 using RestaurantPos.Infrastructure.Persistence;
 
 namespace RestaurantPos.Api.Tests;
@@ -34,12 +36,12 @@ public class PaymentGuardApiTests : IClassFixture<PosApiApplicationFactory>
         return (client, paired.TerminalId);
     }
 
-    private async Task<Guid> SeedOrderAsync(long unitPriceCents)
+    private async Task<Guid> SeedOrderAsync(long unitPriceCents, OrderStatus status = OrderStatus.Open)
     {
         var orderId = Guid.NewGuid();
         using var scope = _factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        var order = new Order { Id = orderId, TableNumber = "Comptoir", Status = OrderStatus.Open };
+        var order = new Order { Id = orderId, TableNumber = "Comptoir", Status = status };
         order.Items.Add(new OrderItem
         {
             OrderId = orderId,
@@ -64,7 +66,7 @@ public class PaymentGuardApiTests : IClassFixture<PosApiApplicationFactory>
     {
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         var body = await response.Content.ReadFromJsonAsync<JsonElement>();
-        body.GetProperty("message").GetString().Should().NotBeNullOrWhiteSpace().And.NotBe(key);
+        body.GetProperty("message").GetString().Should().Be(Texts.Get(new CultureInfo("en"), key));
     }
 
     [Theory]
@@ -178,5 +180,70 @@ public class PaymentGuardApiTests : IClassFixture<PosApiApplicationFactory>
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         using var scope = _factory.Services.CreateScope();
         (await scope.ServiceProvider.GetRequiredService<AppDbContext>().Orders.AnyAsync(o => o.Id == orderId)).Should().BeFalse();
+    }
+
+    [Theory]
+    [InlineData(OrderStatus.Cancelled, 1000)]
+    [InlineData(OrderStatus.Paid, 0)] // commande offerte déjà soldée : pas de second reçu
+    public async Task Payment_OnClosedOrder_IsRefused_WithoutReceipt(OrderStatus status, long unitPriceCents)
+    {
+        var (client, terminalId) = await PairedClientAsync();
+        var orderId = await SeedOrderAsync(unitPriceCents, status);
+        List<TenderItemRequest> tenders = unitPriceCents == 0 ? [] : [new TenderItemRequest(PaymentMethod.CreditCard, 10m, 10m, 0m)];
+
+        var pay = await client.PostAsJsonAsync("/api/checkout/pay", new PaymentSettlementRequest(orderId, null, Guid.NewGuid(), tenders, "POS_TEST"));
+        await AssertPaymentFailedAsync(pay);
+
+        var counter = await client.PostAsJsonAsync("/api/orders/counter/checkout", new CounterCheckoutRequest(
+            orderId, terminalId, OrderDestination.Takeaway, null, null, 0m, false, null,
+            unitPriceCents == 0 ? [] : [new CounterPaymentTender(PaymentMethod.CreditCard, 10m, 10m)]));
+        await AssertPaymentFailedAsync(counter);
+        (await ReceiptCountAsync(orderId)).Should().Be(0);
+    }
+
+    [Fact]
+    public async Task CheckoutPay_OnTheFlyOrderWithNegativeTender_Returns400_AndLeavesNoOrder()
+    {
+        var (client, _) = await PairedClientAsync();
+        var orderId = Guid.NewGuid();
+
+        var response = await client.PostAsJsonAsync("/api/checkout/pay", new PaymentSettlementRequest(
+            orderId, null, Guid.NewGuid(),
+            [new TenderItemRequest(PaymentMethod.CreditCard, 10m, 10m, 0m), new TenderItemRequest(PaymentMethod.Cash, -5m, 0m, 0m)], "POS_TEST"));
+
+        await AssertPaymentFailedAsync(response);
+        using var scope = _factory.Services.CreateScope();
+        (await scope.ServiceProvider.GetRequiredService<AppDbContext>().Orders.AnyAsync(o => o.Id == orderId)).Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task CounterCheckout_RefusedPayment_WritesNothing_AndRetryWithoutTipOwesTheRightTotal()
+    {
+        var (client, terminalId) = await PairedClientAsync();
+        var orderId = await SeedOrderAsync(1000);
+
+        // Pourboire 5 € + règlement trop élevé + titre-restaurant excédentaire (avoir) : refus, rien d'écrit.
+        var refused = await client.PostAsJsonAsync("/api/orders/counter/checkout", new CounterCheckoutRequest(
+            orderId, terminalId, OrderDestination.Takeaway, null, null, 5m, false, MealVoucherOverpaymentPolicy.CustomerCreditVoucher,
+            [new CounterPaymentTender(PaymentMethod.MealVoucher, 10m, 10m, 14m), new CounterPaymentTender(PaymentMethod.CreditCard, 20m, 20m)]));
+        await AssertPaymentFailedAsync(refused);
+
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var order = await db.Orders.AsNoTracking().FirstAsync(o => o.Id == orderId);
+            order.TipAmount.AmountInCents.Should().Be(0);
+            order.PickupNumber.Should().BeNullOrEmpty();
+            order.OperatorId.Should().Be(Guid.Empty);
+            (await db.CustomerCreditVouchers.AnyAsync(v => v.OriginalOrderId == orderId)).Should().BeFalse();
+        }
+
+        var retry = await client.PostAsJsonAsync("/api/orders/counter/checkout", new CounterCheckoutRequest(
+            orderId, terminalId, OrderDestination.Takeaway, null, null, 0m, false, null,
+            [new CounterPaymentTender(PaymentMethod.CreditCard, 10m, 10m)]));
+        retry.StatusCode.Should().Be(HttpStatusCode.OK);
+        var result = await retry.Content.ReadFromJsonAsync<CounterCheckoutResponse>();
+        result!.RemainingBalance.Should().Be(0m);
+        result.TotalPaid.Should().Be(10m);
     }
 }

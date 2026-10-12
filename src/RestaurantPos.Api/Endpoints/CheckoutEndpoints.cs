@@ -12,6 +12,7 @@ using RestaurantPos.Domain.ValueObjects;
 using RestaurantPos.Infrastructure.Localization;
 using RestaurantPos.Infrastructure.Persistence;
 using RestaurantPos.Infrastructure.Printing;
+using RestaurantPos.Infrastructure.Services;
 
 namespace RestaurantPos.Api.Endpoints;
 
@@ -54,7 +55,8 @@ public static class CheckoutEndpoints
             if (orderId == Guid.Empty || !await db.Orders.AnyAsync(o => o.Id == orderId))
             {
                 long totalTendersCents = req.Tenders != null ? (long)Math.Round(req.Tenders.Sum(t => t.Amount) * 100) : 0;
-                if (totalTendersCents > 0)
+                // Commande créée à la volée : règlements tous > 0 et total > 0 (comme sync/receipt), sinon rien n'est créé.
+                if (totalTendersCents > 0 && (req.Tenders ?? []).All(t => t.Amount > 0))
                 {
                     var newOrder = new Order
                     {
@@ -75,6 +77,10 @@ public static class CheckoutEndpoints
                     db.Orders.Add(newOrder);
                     await db.SaveChangesAsync();
                     orderId = newOrder.Id;
+                }
+                else if ((req.Tenders ?? []).Any(t => t.Amount <= 0))
+                {
+                    return Results.BadRequest(new { Message = Texts.T("errors.payment_failed") });
                 }
                 else
                 {
@@ -98,9 +104,7 @@ public static class CheckoutEndpoints
             if (tipCents > 0)
             {
                 tippedOrder = await db.Orders.Include(o => o.Items).FirstAsync(o => o.Id == orderId);
-                var voidedIds = await db.FiscalReceipts.Where(r => r.OrderId == orderId && r.VoidedReceiptId != null).Select(r => r.VoidedReceiptId!.Value).ToListAsync();
-                var paidCents = (await db.FiscalReceipts.Include(r => r.Tenders).Where(r => r.OrderId == orderId && r.VoidedReceiptId == null && !voidedIds.Contains(r.Id)).ToListAsync())
-                    .SelectMany(r => r.Tenders).Sum(t => t.Amount.AmountInCents);
+                var paidCents = await PaymentSettlementRules.PaidCentsAsync(db, orderId);
                 var remainingCents = tippedOrder.TotalTtc.AmountInCents + tippedOrder.TipAmount.AmountInCents - paidCents;
                 // Un pourboire sur un paiement partiel entrerait dans le montant fiscal du reçu (ratio) : refusé.
                 if (tenderRequests.Sum(t => t.AmountInCents) < remainingCents + tipCents)

@@ -89,12 +89,9 @@ public class CheckoutPaymentService : ICheckoutPaymentService
 
                 long remainingBeforeThisPaymentCents = Math.Max(0, totalDueCents - previousPaidCents);
 
-                // Refus (rien n'est écrit) : règlement ≤ 0, surpaiement (le dû inclut le pourboire ; le rendu monnaie
-                // passe par Tendered, jamais par Amount), ou liste vide hors commande à total nul (offerte / remisée à 100 %).
-                bool isFreeOrder = tenders.Count == 0 && totalDueCents == 0 && order.Items.Count > 0;
-                bool tendersValid = isFreeOrder
-                    || (tenders.Count > 0 && tenders.All(t => t.AmountInCents > 0 && t.TenderedInCents >= 0));
-                if (!tendersValid || totalPaidCents > remainingBeforeThisPaymentCents)
+                // Refus (rien n'est écrit) : commande réglée/annulée, règlement ≤ 0, surpaiement (le dû inclut le pourboire ;
+                // le rendu monnaie passe par Tendered, jamais par Amount), ou liste vide hors commande à total nul.
+                if (!PaymentSettlementRules.AreTendersAcceptable(tenders, order.Status, order.Items.Count > 0, totalDueCents, previousPaidCents))
                 {
                     return new CheckoutResult(false, 0, 0, 0, string.Empty, null);
                 }
