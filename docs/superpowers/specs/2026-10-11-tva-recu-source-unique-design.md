@@ -34,7 +34,7 @@ Une seule source de vérité pour la ventilation fiscale d'une commande, utilis�
 
 ## Règlements partiels et pourboire
 
-- La détection du pourboire et du règlement partiel (`fiscalPaid`, `isPartial`, `priorFiscalTtc`) ne change pas.
+- La détection du pourboire (`fiscalPaid`, `priorFiscalTtc`) ne change pas. Le drapeau `isPartial` a été retiré : un règlement est partiel quand `paid < orderTtc`, ce que `ReceiptTaxCalculator.Compute(order, fiscalPaid)` traite sans cas particulier (équivalent via `paid == orderTtc`).
 - La part d'un reçu de montant `X` est `Allocate(X, parts de la commande par taux)` (plus fort reste), sans rejouer l'historique des reçus. Pour chaque reçu, `TTC − HT = Σ TVA` exactement ; `Σ TTC des reçus = TTC de la commande` exactement ; par taux, la somme des reçus s'écarte du total de la commande d'au plus 1 centime par reçu (arrondi de la TVA ticket par ticket).
 - Annulation : inchangée (valeurs négatées).
 
@@ -51,7 +51,7 @@ Inclus :
 Hors périmètre (à traiter séparément) :
 - Rejeu Swift de la journée simulée (attend les rapports X/Z de l'iPad, sous-projet 3).
 - Remise globale de type `Comp` : le .NET l'ignore dans `CalculateTotalTtc` alors que l'iPad la met à zéro. À constater et rapporter, sans le changer ici.
-- Tout changement de format de signature ou de schéma (aucun).
+- Tout changement de format de signature (aucun : le JSON de TVA signé et le hash sont inchangés). Seul changement de schéma : la colonne `HtBreakdownJson` (HT par taux, non signée, posée à l'INSERT), ajoutée en cours de lot pour obtenir un FEC exact au centime ; `ALTER TABLE` idempotent dans `Program.cs`.
 - Client web (`app.js`) : seulement s'il recalcule la ventilation (à vérifier dans le plan).
 
 ## Tests
