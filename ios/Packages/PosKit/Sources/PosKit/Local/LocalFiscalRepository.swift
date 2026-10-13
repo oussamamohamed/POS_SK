@@ -102,6 +102,16 @@ struct LocalFiscalRepository {
         return voided
     }
 
+    /// Le reçu appartient-il à une période déjà clôturée (Z) de son poste ? Miroir de `IsInClosedPeriodAsync` : seule la Z du poste émetteur compte.
+    func isInClosedPeriod(receiptId: UUID) throws -> Bool {
+        try !db.query(
+            """
+            SELECT 1 AS x FROM FiscalReceipts r
+            WHERE r.Id = ? AND EXISTS (SELECT 1 FROM DailyFiscalClosures c WHERE c.TerminalId = r.TerminalId AND r.CreatedAtUtc <= c.PeriodEndUtc)
+            """, [.uuid(receiptId)]
+        ).isEmpty
+    }
+
     func receipt(id: UUID) throws -> FiscalReceiptRecord? {
         try db.query("SELECT * FROM FiscalReceipts WHERE Id = ?", [.uuid(id)]).first.flatMap(record)
     }

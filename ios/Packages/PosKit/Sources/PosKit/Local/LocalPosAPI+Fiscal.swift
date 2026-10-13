@@ -15,6 +15,9 @@ extension LocalPosAPI {
             guard roomTenders.isEmpty else {
                 throw APIError.server(status: 409, message: "Annulation impossible : ce reçu comprend une facturation chambre (la note de chambre ne serait pas rétablie).")
             }
+            guard try !fiscal.isInClosedPeriod(receiptId: receiptId) else {
+                throw APIError.server(status: 409, message: "Ce ticket appartient à une période clôturée (Z) et ne peut plus être annulé.")
+            }
             guard let original = try fiscal.receipt(id: receiptId),
                   let voided = try fiscal.voidReceipt(originalId: receiptId, terminalId: Self.standaloneTerminalId, operatorId: manager.id, now: now)
             else { throw APIError.server(status: 400, message: "Annulation du reçu impossible.") }
