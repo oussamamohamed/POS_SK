@@ -127,13 +127,22 @@ public class PeriodClosureReferenceFixtureTests
                 var r = await service.ExecutePeriodClosureAsync("T01", type, s.Key, Manager, "Responsable", Utc(s.Now));
                 steps.Add(new
                 {
-                    type = s.Type, key = s.Key, nowUtc = Text(Utc(s.Now)),
+                    type = s.Type,
+                    key = s.Key,
+                    nowUtc = Text(Utc(s.Now)),
                     result = new
                     {
-                        sequence = r.ClosureSequence, periodStartUtc = Text(r.PeriodStartUtc), periodEndUtc = Text(r.PeriodEndUtc),
-                        ttcCents = r.TotalTtcCents, htCents = r.TotalHtCents, taxesJson = r.TaxesSummaryJson, tendersJson = r.TenderTotalsJson,
-                        perpetualCents = r.PerpetualGrandTotalCents, dailyClosureCount = r.DailyClosureCount,
-                        previousSignatureHash = r.PreviousSignatureHash, signatureHash = r.SignatureHash,
+                        sequence = r.ClosureSequence,
+                        periodStartUtc = Text(r.PeriodStartUtc),
+                        periodEndUtc = Text(r.PeriodEndUtc),
+                        ttcCents = r.TotalTtcCents,
+                        htCents = r.TotalHtCents,
+                        taxesJson = r.TaxesSummaryJson,
+                        tendersJson = r.TenderTotalsJson,
+                        perpetualCents = r.PerpetualGrandTotalCents,
+                        dailyClosureCount = r.DailyClosureCount,
+                        previousSignatureHash = r.PreviousSignatureHash,
+                        signatureHash = r.SignatureHash,
                     },
                 });
             }
@@ -145,11 +154,19 @@ public class PeriodClosureReferenceFixtureTests
 
         return new
         {
-            name = c.Name, fiscalYearStartMonth = c.Month, fiscalYearStartDay = c.Day,
+            name = c.Name,
+            fiscalYearStartMonth = c.Month,
+            fiscalYearStartDay = c.Day,
             dailyClosures = c.Dailies.Select(d => new
             {
-                sequence = d.Sequence, periodStartUtc = d.Start, periodEndUtc = d.End, ttcCents = d.Ttc, htCents = d.Ht,
-                taxesJson = d.Taxes, tendersJson = d.Tenders, perpetualCents = d.Perpetual,
+                sequence = d.Sequence,
+                periodStartUtc = d.Start,
+                periodEndUtc = d.End,
+                ttcCents = d.Ttc,
+                htCents = d.Ht,
+                taxesJson = d.Taxes,
+                tendersJson = d.Tenders,
+                perpetualCents = d.Perpetual,
             }),
             steps,
         };
