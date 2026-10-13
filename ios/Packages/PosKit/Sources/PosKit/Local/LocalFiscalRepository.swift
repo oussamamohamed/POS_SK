@@ -441,7 +441,7 @@ struct LocalFiscalRepository {
         )
     }
 
-    private func closureRecord(_ row: SQLRow) -> DailyFiscalClosureRecord? {
+    func closureRecord(_ row: SQLRow) -> DailyFiscalClosureRecord? {
         guard let id = row.uuid("Id") else { return nil }
         return DailyFiscalClosureRecord(
             id: id,

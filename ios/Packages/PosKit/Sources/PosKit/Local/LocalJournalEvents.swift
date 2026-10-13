@@ -10,4 +10,5 @@ enum LocalJournalEvents {
     static let zClosure = "Z_CLOSURE"
     static let backupCompleted = "BACKUP_COMPLETED"
     static let backupFailed = "BACKUP_FAILED"
+    static let periodClosure = "PERIOD_CLOSURE"
 }

@@ -55,6 +55,24 @@ enum FiscalHashing {
 
 /// JSON écrit comme `System.Text.Json` par défaut : le texte signé doit être identique octet pour octet à celui du .NET.
 enum FiscalJSON {
+    /// Lit un objet `{"clé":entier,…}` en conservant l'ordre des clés (le .NET fusionne dans l'ordre d'insertion). `nil` si le texte n'est pas de cette forme.
+    /// ponytail: clés sans guillemet, virgule ni deux-points échappés (taux de TVA et noms de moyens de paiement) ; passer à un vrai parseur si les clés deviennent libres.
+    static func parseIntObject(_ json: String) -> [(String, Int)]? {
+        let text = json.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard text.hasPrefix("{"), text.hasSuffix("}") else { return nil }
+        let inner = text.dropFirst().dropLast().trimmingCharacters(in: .whitespacesAndNewlines)
+        if inner.isEmpty { return [] }
+        var entries: [(String, Int)] = []
+        for part in inner.split(separator: ",") {
+            guard let colon = part.lastIndex(of: ":") else { return nil }
+            let key = part[..<colon].trimmingCharacters(in: .whitespaces)
+            let value = part[part.index(after: colon)...].trimmingCharacters(in: .whitespaces)
+            guard key.count >= 2, key.hasPrefix("\""), key.hasSuffix("\""), let number = Int(value) else { return nil }
+            entries.append((String(key.dropFirst().dropLast()), number))
+        }
+        return entries
+    }
+
     /// Chaîne : ASCII imprimable seul, le reste (et `" < > & ' + \``) en `\uXXXX`.
     static func string(_ value: String) -> String {
         var out = "\""
