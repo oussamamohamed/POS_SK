@@ -88,4 +88,42 @@ struct LocalFiscalSchemaTests {
         }
         #expect(try db.query("SELECT TotalTtcAmount FROM FiscalReceipts").first?.int("TotalTtcAmount") == 1000)
     }
+
+    private static let insertPeriodClosure = """
+    INSERT INTO PeriodClosures (Id, TerminalId, PeriodType, PeriodKey, ClosureSequence, PeriodStartUtc, PeriodEndUtc, TotalTtcAmount, TotalHtAmount,
+        TaxesSummaryJson, TenderTotalsJson, PerpetualGrandTotalCents, DailyClosureCount, PreviousSignatureHash, SignatureHash, SealedByUserId,
+        SealedByUserName, CreatedAtUtc)
+    VALUES ('P1', 'T01', 1, '2025-01', 1, '2024-12-31T23:00:00.000Z', '2025-01-31T23:00:00.000Z', 1000, 909, '{}', '{}', 1000, 1, 'GENESIS', 'SIG',
+        'U1', 'Chef', '2026-02-01T10:00:00.000Z')
+    """
+
+    @Test func migrationV8CreatesThePeriodClosuresTable() throws {
+        let db = try makeDB()
+        #expect(LocalMigrator.steps.count >= 8)
+        #expect(try db.query("SELECT 1 AS x FROM sqlite_master WHERE type = 'table' AND name = 'PeriodClosures'").count == 1)
+    }
+
+    @Test func periodClosuresAreAppendOnly() throws {
+        let db = try makeDB()
+        try db.run(Self.insertPeriodClosure)
+        #expect(throws: (any Error).self) { try db.run("UPDATE PeriodClosures SET TotalTtcAmount = 1 WHERE Id = 'P1'") }
+        #expect(throws: (any Error).self) { try db.run("DELETE FROM PeriodClosures WHERE Id = 'P1'") }
+    }
+
+    @Test func aPeriodCanOnlyBeClosedOncePerTerminalAndType() throws {
+        let db = try makeDB()
+        try db.run(Self.insertPeriodClosure)
+        #expect(throws: (any Error).self) {
+            try db.run(Self.insertPeriodClosure.replacingOccurrences(of: "'P1'", with: "'P2'").replacingOccurrences(of: ", 1, '2024-12-31", with: ", 2, '2024-12-31"))
+        }
+    }
+
+    @Test func upgradingAV7DatabaseAddsThePeriodClosuresTable() throws {
+        let older = try SQLiteDatabase(path: ":memory:")
+        for script in LocalMigrator.steps.prefix(7) { try older.exec(script) }
+        try older.exec("PRAGMA user_version = 7")
+        try LocalMigrator.migrate(older)
+        #expect(try older.userVersion() == LocalMigrator.steps.count)
+        #expect(try older.query("SELECT 1 AS x FROM sqlite_master WHERE name = 'PeriodClosures'").count == 1)
+    }
 }
