@@ -1,0 +1,747 @@
+{
+  "timeZone": "Europe/Paris",
+  "cases": [
+    {
+      "name": "exercice civil 2025 : refus, 12 mensuelles puis l\u0027annuelle",
+      "fiscalYearStartMonth": 1,
+      "fiscalYearStartDay": 1,
+      "dailyClosures": [
+        {
+          "sequence": 1,
+          "periodStartUtc": "2025-01-15T10:00:00.000Z",
+          "periodEndUtc": "2025-01-15T21:00:00.000Z",
+          "ttcCents": 10000,
+          "htCents": 9091,
+          "taxesJson": "{\u002210\u0022:909}",
+          "tendersJson": "{\u0022Cash\u0022:10000}",
+          "perpetualCents": 10000
+        },
+        {
+          "sequence": 2,
+          "periodStartUtc": "2025-02-15T10:00:00.000Z",
+          "periodEndUtc": "2025-02-15T21:00:00.000Z",
+          "ttcCents": 20000,
+          "htCents": 18265,
+          "taxesJson": "{\u00225.5\u0022:900,\u002210\u0022:835}",
+          "tendersJson": "{\u0022CreditCard\u0022:20000}",
+          "perpetualCents": 30000
+        },
+        {
+          "sequence": 3,
+          "periodStartUtc": "2025-02-28T23:30:00.000Z",
+          "periodEndUtc": "2025-03-01T08:00:00.000Z",
+          "ttcCents": 5000,
+          "htCents": 4546,
+          "taxesJson": "{\u002210\u0022:454}",
+          "tendersJson": "{\u0022Cash\u0022:5000}",
+          "perpetualCents": 35000
+        },
+        {
+          "sequence": 4,
+          "periodStartUtc": "2025-03-15T10:00:00.000Z",
+          "periodEndUtc": "2025-03-15T21:00:00.000Z",
+          "ttcCents": 30000,
+          "htCents": 27273,
+          "taxesJson": "{\u002210\u0022:2727}",
+          "tendersJson": "{\u0022Cash\u0022:10000,\u0022CreditCard\u0022:20000}",
+          "perpetualCents": 65000
+        },
+        {
+          "sequence": 5,
+          "periodStartUtc": "2025-04-15T10:00:00.000Z",
+          "periodEndUtc": "2025-04-15T21:00:00.000Z",
+          "ttcCents": 40000,
+          "htCents": 35000,
+          "taxesJson": "{\u002220\u0022:5000}",
+          "tendersJson": "{\u0022CreditCard\u0022:40000}",
+          "perpetualCents": 105000
+        },
+        {
+          "sequence": 6,
+          "periodStartUtc": "2025-05-15T10:00:00.000Z",
+          "periodEndUtc": "2025-05-15T21:00:00.000Z",
+          "ttcCents": 1000,
+          "htCents": 910,
+          "taxesJson": "{\u002210\u0022:90}",
+          "tendersJson": "{\u0022Cash\u0022:1000}",
+          "perpetualCents": 106000
+        },
+        {
+          "sequence": 7,
+          "periodStartUtc": "2025-06-15T10:00:00.000Z",
+          "periodEndUtc": "2025-06-15T21:00:00.000Z",
+          "ttcCents": 2000,
+          "htCents": 1819,
+          "taxesJson": "{\u002210\u0022:181}",
+          "tendersJson": "{\u0022Cash\u0022:2000}",
+          "perpetualCents": 108000
+        },
+        {
+          "sequence": 8,
+          "periodStartUtc": "2025-07-15T10:00:00.000Z",
+          "periodEndUtc": "2025-07-15T21:00:00.000Z",
+          "ttcCents": 3000,
+          "htCents": 2728,
+          "taxesJson": "{\u002210\u0022:272}",
+          "tendersJson": "{\u0022Cash\u0022:3000}",
+          "perpetualCents": 111000
+        },
+        {
+          "sequence": 9,
+          "periodStartUtc": "2025-08-15T10:00:00.000Z",
+          "periodEndUtc": "2025-08-15T21:00:00.000Z",
+          "ttcCents": 4000,
+          "htCents": 3637,
+          "taxesJson": "{\u002210\u0022:363}",
+          "tendersJson": "{\u0022Cash\u0022:4000}",
+          "perpetualCents": 115000
+        },
+        {
+          "sequence": 10,
+          "periodStartUtc": "2025-09-15T10:00:00.000Z",
+          "periodEndUtc": "2025-09-15T21:00:00.000Z",
+          "ttcCents": 5000,
+          "htCents": 4546,
+          "taxesJson": "{\u002210\u0022:454}",
+          "tendersJson": "{\u0022Cash\u0022:5000}",
+          "perpetualCents": 120000
+        },
+        {
+          "sequence": 11,
+          "periodStartUtc": "2025-10-26T10:00:00.000Z",
+          "periodEndUtc": "2025-10-26T21:00:00.000Z",
+          "ttcCents": 6000,
+          "htCents": 5455,
+          "taxesJson": "{\u002210\u0022:545}",
+          "tendersJson": "{\u0022Cash\u0022:6000}",
+          "perpetualCents": 126000
+        },
+        {
+          "sequence": 12,
+          "periodStartUtc": "2025-11-15T10:00:00.000Z",
+          "periodEndUtc": "2025-11-15T21:00:00.000Z",
+          "ttcCents": 7000,
+          "htCents": 6364,
+          "taxesJson": "{\u002210\u0022:636}",
+          "tendersJson": "{\u0022Cash\u0022:7000}",
+          "perpetualCents": 133000
+        },
+        {
+          "sequence": 13,
+          "periodStartUtc": "2025-12-15T10:00:00.000Z",
+          "periodEndUtc": "2025-12-15T21:00:00.000Z",
+          "ttcCents": 8000,
+          "htCents": 7273,
+          "taxesJson": "{\u002210\u0022:727}",
+          "tendersJson": "{\u0022Cash\u0022:8000}",
+          "perpetualCents": 141000
+        }
+      ],
+      "steps": [
+        {
+          "type": "monthly",
+          "key": "2026-02",
+          "nowUtc": "2026-02-10T10:00:00.000Z",
+          "error": "period_not_ended",
+          "days": null,
+          "months": null
+        },
+        {
+          "type": "annual",
+          "key": "2025",
+          "nowUtc": "2026-02-01T10:00:00.000Z",
+          "error": "missing_monthly_closures",
+          "days": null,
+          "months": [
+            "2025-01",
+            "2025-02",
+            "2025-03",
+            "2025-04",
+            "2025-05",
+            "2025-06",
+            "2025-07",
+            "2025-08",
+            "2025-09",
+            "2025-10",
+            "2025-11",
+            "2025-12"
+          ]
+        },
+        {
+          "type": "monthly",
+          "key": "2025-01",
+          "nowUtc": "2026-02-01T10:00:00.000Z",
+          "result": {
+            "sequence": 1,
+            "periodStartUtc": "2024-12-31T23:00:00.000Z",
+            "periodEndUtc": "2025-01-31T23:00:00.000Z",
+            "ttcCents": 10000,
+            "htCents": 9091,
+            "taxesJson": "{\u002210\u0022:909}",
+            "tendersJson": "{\u0022Cash\u0022:10000}",
+            "perpetualCents": 10000,
+            "dailyClosureCount": 1,
+            "previousSignatureHash": "GENESIS_0000000000000000000000000000000000000000000000000000000000000000",
+            "signatureHash": "6ccc1fea9d52ed032e022b876b181e9b42b48c4dc22fda50401eee79ea6051d1"
+          }
+        },
+        {
+          "type": "monthly",
+          "key": "2025-02",
+          "nowUtc": "2026-02-01T10:00:00.000Z",
+          "result": {
+            "sequence": 2,
+            "periodStartUtc": "2025-01-31T23:00:00.000Z",
+            "periodEndUtc": "2025-02-28T23:00:00.000Z",
+            "ttcCents": 20000,
+            "htCents": 18265,
+            "taxesJson": "{\u00225.5\u0022:900,\u002210\u0022:835}",
+            "tendersJson": "{\u0022CreditCard\u0022:20000}",
+            "perpetualCents": 30000,
+            "dailyClosureCount": 1,
+            "previousSignatureHash": "6ccc1fea9d52ed032e022b876b181e9b42b48c4dc22fda50401eee79ea6051d1",
+            "signatureHash": "f4dff804f203b9b0bb56f479df52653ed30cd7733c0c21625d980ea3fecbde68"
+          }
+        },
+        {
+          "type": "monthly",
+          "key": "2025-03",
+          "nowUtc": "2026-02-01T10:00:00.000Z",
+          "result": {
+            "sequence": 3,
+            "periodStartUtc": "2025-02-28T23:00:00.000Z",
+            "periodEndUtc": "2025-03-31T22:00:00.000Z",
+            "ttcCents": 35000,
+            "htCents": 31819,
+            "taxesJson": "{\u002210\u0022:3181}",
+            "tendersJson": "{\u0022Cash\u0022:15000,\u0022CreditCard\u0022:20000}",
+            "perpetualCents": 65000,
+            "dailyClosureCount": 2,
+            "previousSignatureHash": "f4dff804f203b9b0bb56f479df52653ed30cd7733c0c21625d980ea3fecbde68",
+            "signatureHash": "3278562d2b1f9b36323c444e9bfd953e772651688d21f0eef9c036d2fbba48f0"
+          }
+        },
+        {
+          "type": "monthly",
+          "key": "2025-04",
+          "nowUtc": "2026-02-01T10:00:00.000Z",
+          "result": {
+            "sequence": 4,
+            "periodStartUtc": "2025-03-31T22:00:00.000Z",
+            "periodEndUtc": "2025-04-30T22:00:00.000Z",
+            "ttcCents": 40000,
+            "htCents": 35000,
+            "taxesJson": "{\u002220\u0022:5000}",
+            "tendersJson": "{\u0022CreditCard\u0022:40000}",
+            "perpetualCents": 105000,
+            "dailyClosureCount": 1,
+            "previousSignatureHash": "3278562d2b1f9b36323c444e9bfd953e772651688d21f0eef9c036d2fbba48f0",
+            "signatureHash": "634a3e160ad19ac6b19d44552e3be52ccdd76171cbaa247f53b8c3cc8f066b8c"
+          }
+        },
+        {
+          "type": "monthly",
+          "key": "2025-05",
+          "nowUtc": "2026-02-01T10:00:00.000Z",
+          "result": {
+            "sequence": 5,
+            "periodStartUtc": "2025-04-30T22:00:00.000Z",
+            "periodEndUtc": "2025-05-31T22:00:00.000Z",
+            "ttcCents": 1000,
+            "htCents": 910,
+            "taxesJson": "{\u002210\u0022:90}",
+            "tendersJson": "{\u0022Cash\u0022:1000}",
+            "perpetualCents": 106000,
+            "dailyClosureCount": 1,
+            "previousSignatureHash": "634a3e160ad19ac6b19d44552e3be52ccdd76171cbaa247f53b8c3cc8f066b8c",
+            "signatureHash": "52b20be1c6e3591e07c51d96d4812c7eee085cc8c3076bd09efa9f1c9a9797bf"
+          }
+        },
+        {
+          "type": "monthly",
+          "key": "2025-06",
+          "nowUtc": "2026-02-01T10:00:00.000Z",
+          "result": {
+            "sequence": 6,
+            "periodStartUtc": "2025-05-31T22:00:00.000Z",
+            "periodEndUtc": "2025-06-30T22:00:00.000Z",
+            "ttcCents": 2000,
+            "htCents": 1819,
+            "taxesJson": "{\u002210\u0022:181}",
+            "tendersJson": "{\u0022Cash\u0022:2000}",
+            "perpetualCents": 108000,
+            "dailyClosureCount": 1,
+            "previousSignatureHash": "52b20be1c6e3591e07c51d96d4812c7eee085cc8c3076bd09efa9f1c9a9797bf",
+            "signatureHash": "f3c304c0a4eb690b3171d00c7e8c7b628abddf29b0cb1db709d4d732f3f4b1c4"
+          }
+        },
+        {
+          "type": "monthly",
+          "key": "2025-07",
+          "nowUtc": "2026-02-01T10:00:00.000Z",
+          "result": {
+            "sequence": 7,
+            "periodStartUtc": "2025-06-30T22:00:00.000Z",
+            "periodEndUtc": "2025-07-31T22:00:00.000Z",
+            "ttcCents": 3000,
+            "htCents": 2728,
+            "taxesJson": "{\u002210\u0022:272}",
+            "tendersJson": "{\u0022Cash\u0022:3000}",
+            "perpetualCents": 111000,
+            "dailyClosureCount": 1,
+            "previousSignatureHash": "f3c304c0a4eb690b3171d00c7e8c7b628abddf29b0cb1db709d4d732f3f4b1c4",
+            "signatureHash": "3248940649b4bcc91c76aaba741a17437b60235a1fe4e285320822075a110728"
+          }
+        },
+        {
+          "type": "monthly",
+          "key": "2025-08",
+          "nowUtc": "2026-02-01T10:00:00.000Z",
+          "result": {
+            "sequence": 8,
+            "periodStartUtc": "2025-07-31T22:00:00.000Z",
+            "periodEndUtc": "2025-08-31T22:00:00.000Z",
+            "ttcCents": 4000,
+            "htCents": 3637,
+            "taxesJson": "{\u002210\u0022:363}",
+            "tendersJson": "{\u0022Cash\u0022:4000}",
+            "perpetualCents": 115000,
+            "dailyClosureCount": 1,
+            "previousSignatureHash": "3248940649b4bcc91c76aaba741a17437b60235a1fe4e285320822075a110728",
+            "signatureHash": "b5edf4c2c86255694cdba34bdd3a777a124ab51e76286d18f0370fd07633741f"
+          }
+        },
+        {
+          "type": "monthly",
+          "key": "2025-09",
+          "nowUtc": "2026-02-01T10:00:00.000Z",
+          "result": {
+            "sequence": 9,
+            "periodStartUtc": "2025-08-31T22:00:00.000Z",
+            "periodEndUtc": "2025-09-30T22:00:00.000Z",
+            "ttcCents": 5000,
+            "htCents": 4546,
+            "taxesJson": "{\u002210\u0022:454}",
+            "tendersJson": "{\u0022Cash\u0022:5000}",
+            "perpetualCents": 120000,
+            "dailyClosureCount": 1,
+            "previousSignatureHash": "b5edf4c2c86255694cdba34bdd3a777a124ab51e76286d18f0370fd07633741f",
+            "signatureHash": "f7940e082d5e89983603818f2be65294b24b2a83ea950b605645563024782187"
+          }
+        },
+        {
+          "type": "monthly",
+          "key": "2025-10",
+          "nowUtc": "2026-02-01T10:00:00.000Z",
+          "result": {
+            "sequence": 10,
+            "periodStartUtc": "2025-09-30T22:00:00.000Z",
+            "periodEndUtc": "2025-10-31T23:00:00.000Z",
+            "ttcCents": 6000,
+            "htCents": 5455,
+            "taxesJson": "{\u002210\u0022:545}",
+            "tendersJson": "{\u0022Cash\u0022:6000}",
+            "perpetualCents": 126000,
+            "dailyClosureCount": 1,
+            "previousSignatureHash": "f7940e082d5e89983603818f2be65294b24b2a83ea950b605645563024782187",
+            "signatureHash": "4a3c3d680f9ea4ae20d885de4c3712f20ada31b586bbfb41948f8cf29136ea36"
+          }
+        },
+        {
+          "type": "monthly",
+          "key": "2025-11",
+          "nowUtc": "2026-02-01T10:00:00.000Z",
+          "result": {
+            "sequence": 11,
+            "periodStartUtc": "2025-10-31T23:00:00.000Z",
+            "periodEndUtc": "2025-11-30T23:00:00.000Z",
+            "ttcCents": 7000,
+            "htCents": 6364,
+            "taxesJson": "{\u002210\u0022:636}",
+            "tendersJson": "{\u0022Cash\u0022:7000}",
+            "perpetualCents": 133000,
+            "dailyClosureCount": 1,
+            "previousSignatureHash": "4a3c3d680f9ea4ae20d885de4c3712f20ada31b586bbfb41948f8cf29136ea36",
+            "signatureHash": "d1d54186d8951587bbf609ce4ce93a56569d5f444fbf77f0629d2ef69ac8e591"
+          }
+        },
+        {
+          "type": "monthly",
+          "key": "2025-12",
+          "nowUtc": "2026-02-01T10:00:00.000Z",
+          "result": {
+            "sequence": 12,
+            "periodStartUtc": "2025-11-30T23:00:00.000Z",
+            "periodEndUtc": "2025-12-31T23:00:00.000Z",
+            "ttcCents": 8000,
+            "htCents": 7273,
+            "taxesJson": "{\u002210\u0022:727}",
+            "tendersJson": "{\u0022Cash\u0022:8000}",
+            "perpetualCents": 141000,
+            "dailyClosureCount": 1,
+            "previousSignatureHash": "d1d54186d8951587bbf609ce4ce93a56569d5f444fbf77f0629d2ef69ac8e591",
+            "signatureHash": "849eee8afaf272c4fe7bb1b492f407d18c634e525917b9b05a388943bf3a3e68"
+          }
+        },
+        {
+          "type": "monthly",
+          "key": "2025-01",
+          "nowUtc": "2026-02-02T10:00:00.000Z",
+          "error": "period_already_closed",
+          "days": null,
+          "months": null
+        },
+        {
+          "type": "annual",
+          "key": "2025",
+          "nowUtc": "2026-02-03T10:00:00.000Z",
+          "result": {
+            "sequence": 1,
+            "periodStartUtc": "2024-12-31T23:00:00.000Z",
+            "periodEndUtc": "2025-12-31T23:00:00.000Z",
+            "ttcCents": 141000,
+            "htCents": 126907,
+            "taxesJson": "{\u002210\u0022:8193,\u00225.5\u0022:900,\u002220\u0022:5000}",
+            "tendersJson": "{\u0022Cash\u0022:61000,\u0022CreditCard\u0022:80000}",
+            "perpetualCents": 141000,
+            "dailyClosureCount": 13,
+            "previousSignatureHash": "GENESIS_0000000000000000000000000000000000000000000000000000000000000000",
+            "signatureHash": "b3b7503947e7a6bf2c17256f0db050777fc96777d50d5e83a5a1a275972d873a"
+          }
+        }
+      ]
+    },
+    {
+      "name": "exercice du 15 avril : totaux de l\u0027annuelle issus des Z journali\u00E8res",
+      "fiscalYearStartMonth": 4,
+      "fiscalYearStartDay": 15,
+      "dailyClosures": [
+        {
+          "sequence": 1,
+          "periodStartUtc": "2025-01-15T10:00:00.000Z",
+          "periodEndUtc": "2025-01-15T21:00:00.000Z",
+          "ttcCents": 10000,
+          "htCents": 9091,
+          "taxesJson": "{\u002210\u0022:909}",
+          "tendersJson": "{\u0022Cash\u0022:10000}",
+          "perpetualCents": 10000
+        },
+        {
+          "sequence": 2,
+          "periodStartUtc": "2025-02-15T10:00:00.000Z",
+          "periodEndUtc": "2025-02-15T21:00:00.000Z",
+          "ttcCents": 20000,
+          "htCents": 18265,
+          "taxesJson": "{\u00225.5\u0022:900,\u002210\u0022:835}",
+          "tendersJson": "{\u0022CreditCard\u0022:20000}",
+          "perpetualCents": 30000
+        },
+        {
+          "sequence": 3,
+          "periodStartUtc": "2025-02-28T23:30:00.000Z",
+          "periodEndUtc": "2025-03-01T08:00:00.000Z",
+          "ttcCents": 5000,
+          "htCents": 4546,
+          "taxesJson": "{\u002210\u0022:454}",
+          "tendersJson": "{\u0022Cash\u0022:5000}",
+          "perpetualCents": 35000
+        },
+        {
+          "sequence": 4,
+          "periodStartUtc": "2025-03-15T10:00:00.000Z",
+          "periodEndUtc": "2025-03-15T21:00:00.000Z",
+          "ttcCents": 30000,
+          "htCents": 27273,
+          "taxesJson": "{\u002210\u0022:2727}",
+          "tendersJson": "{\u0022Cash\u0022:10000,\u0022CreditCard\u0022:20000}",
+          "perpetualCents": 65000
+        },
+        {
+          "sequence": 5,
+          "periodStartUtc": "2025-04-15T10:00:00.000Z",
+          "periodEndUtc": "2025-04-15T21:00:00.000Z",
+          "ttcCents": 40000,
+          "htCents": 35000,
+          "taxesJson": "{\u002220\u0022:5000}",
+          "tendersJson": "{\u0022CreditCard\u0022:40000}",
+          "perpetualCents": 105000
+        },
+        {
+          "sequence": 6,
+          "periodStartUtc": "2025-05-15T10:00:00.000Z",
+          "periodEndUtc": "2025-05-15T21:00:00.000Z",
+          "ttcCents": 1000,
+          "htCents": 910,
+          "taxesJson": "{\u002210\u0022:90}",
+          "tendersJson": "{\u0022Cash\u0022:1000}",
+          "perpetualCents": 106000
+        },
+        {
+          "sequence": 7,
+          "periodStartUtc": "2025-06-15T10:00:00.000Z",
+          "periodEndUtc": "2025-06-15T21:00:00.000Z",
+          "ttcCents": 2000,
+          "htCents": 1819,
+          "taxesJson": "{\u002210\u0022:181}",
+          "tendersJson": "{\u0022Cash\u0022:2000}",
+          "perpetualCents": 108000
+        },
+        {
+          "sequence": 8,
+          "periodStartUtc": "2025-07-15T10:00:00.000Z",
+          "periodEndUtc": "2025-07-15T21:00:00.000Z",
+          "ttcCents": 3000,
+          "htCents": 2728,
+          "taxesJson": "{\u002210\u0022:272}",
+          "tendersJson": "{\u0022Cash\u0022:3000}",
+          "perpetualCents": 111000
+        },
+        {
+          "sequence": 9,
+          "periodStartUtc": "2025-08-15T10:00:00.000Z",
+          "periodEndUtc": "2025-08-15T21:00:00.000Z",
+          "ttcCents": 4000,
+          "htCents": 3637,
+          "taxesJson": "{\u002210\u0022:363}",
+          "tendersJson": "{\u0022Cash\u0022:4000}",
+          "perpetualCents": 115000
+        },
+        {
+          "sequence": 10,
+          "periodStartUtc": "2025-09-15T10:00:00.000Z",
+          "periodEndUtc": "2025-09-15T21:00:00.000Z",
+          "ttcCents": 5000,
+          "htCents": 4546,
+          "taxesJson": "{\u002210\u0022:454}",
+          "tendersJson": "{\u0022Cash\u0022:5000}",
+          "perpetualCents": 120000
+        },
+        {
+          "sequence": 11,
+          "periodStartUtc": "2025-10-26T10:00:00.000Z",
+          "periodEndUtc": "2025-10-26T21:00:00.000Z",
+          "ttcCents": 6000,
+          "htCents": 5455,
+          "taxesJson": "{\u002210\u0022:545}",
+          "tendersJson": "{\u0022Cash\u0022:6000}",
+          "perpetualCents": 126000
+        },
+        {
+          "sequence": 12,
+          "periodStartUtc": "2025-11-15T10:00:00.000Z",
+          "periodEndUtc": "2025-11-15T21:00:00.000Z",
+          "ttcCents": 7000,
+          "htCents": 6364,
+          "taxesJson": "{\u002210\u0022:636}",
+          "tendersJson": "{\u0022Cash\u0022:7000}",
+          "perpetualCents": 133000
+        },
+        {
+          "sequence": 13,
+          "periodStartUtc": "2025-12-15T10:00:00.000Z",
+          "periodEndUtc": "2025-12-15T21:00:00.000Z",
+          "ttcCents": 8000,
+          "htCents": 7273,
+          "taxesJson": "{\u002210\u0022:727}",
+          "tendersJson": "{\u0022Cash\u0022:8000}",
+          "perpetualCents": 141000
+        }
+      ],
+      "steps": [
+        {
+          "type": "annual",
+          "key": "2025",
+          "nowUtc": "2026-05-01T10:00:00.000Z",
+          "result": {
+            "sequence": 1,
+            "periodStartUtc": "2025-04-14T22:00:00.000Z",
+            "periodEndUtc": "2026-04-14T22:00:00.000Z",
+            "ttcCents": 76000,
+            "htCents": 67732,
+            "taxesJson": "{\u002220\u0022:5000,\u002210\u0022:3268}",
+            "tendersJson": "{\u0022CreditCard\u0022:40000,\u0022Cash\u0022:36000}",
+            "perpetualCents": 141000,
+            "dailyClosureCount": 9,
+            "previousSignatureHash": "GENESIS_0000000000000000000000000000000000000000000000000000000000000000",
+            "signatureHash": "be66f8689b8ee3541e8ecbdc2c2c4b5d083b8f4e885e38044f7793c40adefc07"
+          }
+        }
+      ]
+    },
+    {
+      "name": "mois sans Z : z\u00E9ro, perp\u00E9tuel repris du dernier Z ant\u00E9rieur",
+      "fiscalYearStartMonth": 1,
+      "fiscalYearStartDay": 1,
+      "dailyClosures": [
+        {
+          "sequence": 1,
+          "periodStartUtc": "2025-01-15T10:00:00.000Z",
+          "periodEndUtc": "2025-01-15T21:00:00.000Z",
+          "ttcCents": 10000,
+          "htCents": 9091,
+          "taxesJson": "{\u002210\u0022:909}",
+          "tendersJson": "{\u0022Cash\u0022:10000}",
+          "perpetualCents": 10000
+        },
+        {
+          "sequence": 2,
+          "periodStartUtc": "2025-02-15T10:00:00.000Z",
+          "periodEndUtc": "2025-02-15T21:00:00.000Z",
+          "ttcCents": 20000,
+          "htCents": 18265,
+          "taxesJson": "{\u00225.5\u0022:900,\u002210\u0022:835}",
+          "tendersJson": "{\u0022CreditCard\u0022:20000}",
+          "perpetualCents": 30000
+        },
+        {
+          "sequence": 3,
+          "periodStartUtc": "2025-02-28T23:30:00.000Z",
+          "periodEndUtc": "2025-03-01T08:00:00.000Z",
+          "ttcCents": 5000,
+          "htCents": 4546,
+          "taxesJson": "{\u002210\u0022:454}",
+          "tendersJson": "{\u0022Cash\u0022:5000}",
+          "perpetualCents": 35000
+        },
+        {
+          "sequence": 4,
+          "periodStartUtc": "2025-03-15T10:00:00.000Z",
+          "periodEndUtc": "2025-03-15T21:00:00.000Z",
+          "ttcCents": 30000,
+          "htCents": 27273,
+          "taxesJson": "{\u002210\u0022:2727}",
+          "tendersJson": "{\u0022Cash\u0022:10000,\u0022CreditCard\u0022:20000}",
+          "perpetualCents": 65000
+        },
+        {
+          "sequence": 5,
+          "periodStartUtc": "2025-04-15T10:00:00.000Z",
+          "periodEndUtc": "2025-04-15T21:00:00.000Z",
+          "ttcCents": 40000,
+          "htCents": 35000,
+          "taxesJson": "{\u002220\u0022:5000}",
+          "tendersJson": "{\u0022CreditCard\u0022:40000}",
+          "perpetualCents": 105000
+        },
+        {
+          "sequence": 6,
+          "periodStartUtc": "2025-05-15T10:00:00.000Z",
+          "periodEndUtc": "2025-05-15T21:00:00.000Z",
+          "ttcCents": 1000,
+          "htCents": 910,
+          "taxesJson": "{\u002210\u0022:90}",
+          "tendersJson": "{\u0022Cash\u0022:1000}",
+          "perpetualCents": 106000
+        },
+        {
+          "sequence": 7,
+          "periodStartUtc": "2025-06-15T10:00:00.000Z",
+          "periodEndUtc": "2025-06-15T21:00:00.000Z",
+          "ttcCents": 2000,
+          "htCents": 1819,
+          "taxesJson": "{\u002210\u0022:181}",
+          "tendersJson": "{\u0022Cash\u0022:2000}",
+          "perpetualCents": 108000
+        },
+        {
+          "sequence": 8,
+          "periodStartUtc": "2025-07-15T10:00:00.000Z",
+          "periodEndUtc": "2025-07-15T21:00:00.000Z",
+          "ttcCents": 3000,
+          "htCents": 2728,
+          "taxesJson": "{\u002210\u0022:272}",
+          "tendersJson": "{\u0022Cash\u0022:3000}",
+          "perpetualCents": 111000
+        },
+        {
+          "sequence": 9,
+          "periodStartUtc": "2025-08-15T10:00:00.000Z",
+          "periodEndUtc": "2025-08-15T21:00:00.000Z",
+          "ttcCents": 4000,
+          "htCents": 3637,
+          "taxesJson": "{\u002210\u0022:363}",
+          "tendersJson": "{\u0022Cash\u0022:4000}",
+          "perpetualCents": 115000
+        },
+        {
+          "sequence": 10,
+          "periodStartUtc": "2025-09-15T10:00:00.000Z",
+          "periodEndUtc": "2025-09-15T21:00:00.000Z",
+          "ttcCents": 5000,
+          "htCents": 4546,
+          "taxesJson": "{\u002210\u0022:454}",
+          "tendersJson": "{\u0022Cash\u0022:5000}",
+          "perpetualCents": 120000
+        },
+        {
+          "sequence": 11,
+          "periodStartUtc": "2025-10-26T10:00:00.000Z",
+          "periodEndUtc": "2025-10-26T21:00:00.000Z",
+          "ttcCents": 6000,
+          "htCents": 5455,
+          "taxesJson": "{\u002210\u0022:545}",
+          "tendersJson": "{\u0022Cash\u0022:6000}",
+          "perpetualCents": 126000
+        },
+        {
+          "sequence": 12,
+          "periodStartUtc": "2025-11-15T10:00:00.000Z",
+          "periodEndUtc": "2025-11-15T21:00:00.000Z",
+          "ttcCents": 7000,
+          "htCents": 6364,
+          "taxesJson": "{\u002210\u0022:636}",
+          "tendersJson": "{\u0022Cash\u0022:7000}",
+          "perpetualCents": 133000
+        },
+        {
+          "sequence": 13,
+          "periodStartUtc": "2025-12-15T10:00:00.000Z",
+          "periodEndUtc": "2025-12-15T21:00:00.000Z",
+          "ttcCents": 8000,
+          "htCents": 7273,
+          "taxesJson": "{\u002210\u0022:727}",
+          "tendersJson": "{\u0022Cash\u0022:8000}",
+          "perpetualCents": 141000
+        }
+      ],
+      "steps": [
+        {
+          "type": "monthly",
+          "key": "2025-04",
+          "nowUtc": "2026-02-01T10:00:00.000Z",
+          "result": {
+            "sequence": 1,
+            "periodStartUtc": "2025-03-31T22:00:00.000Z",
+            "periodEndUtc": "2025-04-30T22:00:00.000Z",
+            "ttcCents": 40000,
+            "htCents": 35000,
+            "taxesJson": "{\u002220\u0022:5000}",
+            "tendersJson": "{\u0022CreditCard\u0022:40000}",
+            "perpetualCents": 105000,
+            "dailyClosureCount": 1,
+            "previousSignatureHash": "GENESIS_0000000000000000000000000000000000000000000000000000000000000000",
+            "signatureHash": "602676454022bee81c4f4e815251d2a1e3ac7fd9b2f24832da5aaf7c8976c7c2"
+          }
+        },
+        {
+          "type": "monthly",
+          "key": "2024-12",
+          "nowUtc": "2026-02-01T10:00:00.000Z",
+          "result": {
+            "sequence": 2,
+            "periodStartUtc": "2024-11-30T23:00:00.000Z",
+            "periodEndUtc": "2024-12-31T23:00:00.000Z",
+            "ttcCents": 0,
+            "htCents": 0,
+            "taxesJson": "{}",
+            "tendersJson": "{}",
+            "perpetualCents": 0,
+            "dailyClosureCount": 0,
+            "previousSignatureHash": "602676454022bee81c4f4e815251d2a1e3ac7fd9b2f24832da5aaf7c8976c7c2",
+            "signatureHash": "297c76bb55f4167ebe9679ab23586db893a0cef82d552c8213d37c5d274e1dfd"
+          }
+        }
+      ]
+    }
+  ]
+}
