@@ -177,26 +177,35 @@ public class PeriodClosureReferenceFixtureTests
     [Fact]
     public async Task GeneratesOrChecksThePeriodClosureFixture()
     {
-        Environment.SetEnvironmentVariable("TZ", "Europe/Paris");
-        TimeZoneInfo.ClearCachedData();
-        TimeZoneInfo.Local.GetUtcOffset(new DateTime(2025, 7, 1)).Should().Be(TimeSpan.FromHours(2), "le générateur doit tourner en heure de Paris");
-
-        var cases = new List<object>();
-        foreach (var c in Cases())
+        string? previousTz = Environment.GetEnvironmentVariable("TZ");
+        try
         {
-            cases.Add(await RunAsync(c));
+            Environment.SetEnvironmentVariable("TZ", "Europe/Paris");
+            TimeZoneInfo.ClearCachedData();
+            TimeZoneInfo.Local.GetUtcOffset(new DateTime(2025, 7, 1)).Should().Be(TimeSpan.FromHours(2), "le générateur doit tourner en heure de Paris");
+
+            var cases = new List<object>();
+            foreach (var c in Cases())
+            {
+                cases.Add(await RunAsync(c));
+            }
+
+            string json = JsonSerializer.Serialize(
+                new { timeZone = "Europe/Paris", cases },
+                JsonOptions);
+
+            if (Environment.GetEnvironmentVariable("WRITE_PERIOD_FIXTURE") == "1")
+            {
+                File.WriteAllText(FixturePath(), json);
+            }
+
+            File.ReadAllText(FixturePath()).ReplaceLineEndings().Should().Be(json.ReplaceLineEndings(),
+                "la fixture iPad doit refléter le .NET ; régénérer avec WRITE_PERIOD_FIXTURE=1");
         }
-
-        string json = JsonSerializer.Serialize(
-            new { timeZone = "Europe/Paris", cases },
-            JsonOptions);
-
-        if (Environment.GetEnvironmentVariable("WRITE_PERIOD_FIXTURE") == "1")
+        finally
         {
-            File.WriteAllText(FixturePath(), json);
+            Environment.SetEnvironmentVariable("TZ", previousTz);
+            TimeZoneInfo.ClearCachedData();
         }
-
-        File.ReadAllText(FixturePath()).ReplaceLineEndings().Should().Be(json.ReplaceLineEndings(),
-            "la fixture iPad doit refléter le .NET ; régénérer avec WRITE_PERIOD_FIXTURE=1");
     }
 }

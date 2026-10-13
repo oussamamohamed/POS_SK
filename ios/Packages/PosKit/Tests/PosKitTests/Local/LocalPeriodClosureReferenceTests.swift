@@ -132,7 +132,7 @@ struct LocalPeriodClosureReferenceTests {
         try LocalMigrator.migrate(db)
         let repo = LocalFiscalRepository(db: db)
         let calendar = Calendar(identifier: .gregorian)
-        for key in ["2025-13", "2025-1", "abcd-01", ""] {
+        for key in ["2025-13", "2025-1", "abcd-01", "", "0225-01", "1025-10", "+202", "2025-00", "2025-01\n", "3025-01"] {
             #expect(throws: PeriodClosureError.invalidKey) {
                 try repo.executePeriodClosure(terminalId: "T01", type: .monthly, key: key, managerId: UUID(), managerName: "M",
                                               fiscalYearStartMonth: 1, fiscalYearStartDay: 1, calendar: calendar, now: Date())
@@ -142,5 +142,62 @@ struct LocalPeriodClosureReferenceTests {
             try repo.executePeriodClosure(terminalId: "T01", type: .annual, key: "2025", managerId: UUID(), managerName: "M",
                                           fiscalYearStartMonth: 2, fiscalYearStartDay: 30, calendar: calendar, now: Date())
         }
+    }
+
+    @Test func annualKeysOutsideTheDotNetPatternAreRefused() throws {
+        let db = try SQLiteDatabase(path: ":memory:")
+        try LocalMigrator.migrate(db)
+        let repo = LocalFiscalRepository(db: db)
+        for key in ["0225", "+202", "1025", "202", "20255", "3025"] {
+            #expect(throws: PeriodClosureError.invalidKey) {
+                try repo.executePeriodClosure(terminalId: "T01", type: .annual, key: key, managerId: UUID(), managerName: "M",
+                                              fiscalYearStartMonth: 1, fiscalYearStartDay: 1, calendar: Calendar(identifier: .gregorian), now: Date())
+            }
+        }
+        #expect(try repo.periodClosures(terminalId: "T01", type: nil).isEmpty)
+    }
+
+    @Test func aValidOldKeyPassesKeyValidation() throws {
+        let db = try SQLiteDatabase(path: ":memory:")
+        try LocalMigrator.migrate(db)
+        let repo = LocalFiscalRepository(db: db)
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = try #require(TimeZone(identifier: "Europe/Paris"))
+        // 1999-12 est une clé valide : la période est finie et vide, la clôture s'écrit.
+        let record = try repo.executePeriodClosure(terminalId: "T01", type: .monthly, key: "1999-12", managerId: UUID(), managerName: "M",
+                                                   fiscalYearStartMonth: 1, fiscalYearStartDay: 1, calendar: calendar, now: Date())
+        #expect(record.periodKey == "1999-12")
+        #expect(throws: PeriodClosureError.alreadyClosed) {
+            try repo.executePeriodClosure(terminalId: "T01", type: .monthly, key: "1999-12", managerId: UUID(), managerName: "M",
+                                          fiscalYearStartMonth: 1, fiscalYearStartDay: 1, calendar: calendar, now: Date())
+        }
+    }
+
+    @Test func aNonGregorianDeviceCalendarGivesTheSameResult() throws {
+        let reference = try Self.reference()
+        let paris = try #require(TimeZone(identifier: reference.timeZone))
+        func replay(_ identifier: Calendar.Identifier) throws -> [String] {
+            var calendar = Calendar(identifier: identifier)
+            calendar.timeZone = paris
+            var signatures: [String] = []
+            for c in reference.cases {
+                let db = try SQLiteDatabase(path: ":memory:")
+                try LocalMigrator.migrate(db)
+                for d in c.dailyClosures { try Self.insertDaily(db, d) }
+                let repo = LocalFiscalRepository(db: db)
+                for step in c.steps where step.error == nil {
+                    let record = try repo.executePeriodClosure(
+                        terminalId: "T01", type: step.type == "monthly" ? .monthly : .annual, key: step.key, managerId: Self.manager, managerName: "R",
+                        fiscalYearStartMonth: c.fiscalYearStartMonth, fiscalYearStartDay: c.fiscalYearStartDay, calendar: calendar,
+                        now: try #require(SQLDate.parse(step.nowUtc)))
+                    signatures.append(record.signatureHash)
+                }
+            }
+            return signatures
+        }
+        let gregorian = try replay(.gregorian)
+        #expect(!gregorian.isEmpty)
+        #expect(try replay(.japanese) == gregorian)
+        #expect(try replay(.buddhist) == gregorian)
     }
 }

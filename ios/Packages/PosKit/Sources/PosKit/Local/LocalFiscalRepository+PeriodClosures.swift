@@ -40,8 +40,11 @@ extension LocalFiscalRepository {
     /// Annuelle : somme des 12 mensuelles si l'exercice commence le 1er, sinon des Z journalières. Aucune transaction ouverte ici.
     func executePeriodClosure(
         terminalId: String, type: FiscalPeriodType, key: String, managerId: UUID, managerName: String,
-        fiscalYearStartMonth: Int, fiscalYearStartDay: Int, calendar: Calendar, now: Date
+        fiscalYearStartMonth: Int, fiscalYearStartDay: Int, calendar deviceCalendar: Calendar, now: Date
     ) throws -> PeriodClosureRecord {
+        // Calendrier grégorien imposé : un calendrier d'appareil japonais ou bouddhiste fausserait années, bornes et jours manquants.
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = deviceCalendar.timeZone
         let start = try Self.periodStart(type: type, key: key, month: fiscalYearStartMonth, day: fiscalYearStartDay, calendar: calendar)
         guard let rawEnd = calendar.date(byAdding: type == .monthly ? .month : .year, value: 1, to: start) else { throw PeriodClosureError.invalidKey }
         let end = FiscalHashing.roundedToMilliseconds(rawEnd)
@@ -157,12 +160,13 @@ extension LocalFiscalRepository {
         let components: DateComponents
         switch type {
         case .monthly:
-            let parts = key.split(separator: "-", omittingEmptySubsequences: false)
-            guard parts.count == 2, parts[0].count == 4, parts[1].count == 2, let y = Int(parts[0]), let m = Int(parts[1]), (1...12).contains(m)
+            guard key.range(of: #"^(19|2[0-9])[0-9]{2}-(0[1-9]|1[0-2])\z"#, options: .regularExpression) != nil,
+                  let y = Int(key.prefix(4)), let m = Int(key.suffix(2))
             else { throw PeriodClosureError.invalidKey }
             components = DateComponents(year: y, month: m, day: 1)
         case .annual:
-            guard key.count == 4, let y = Int(key) else { throw PeriodClosureError.invalidKey }
+            guard key.range(of: #"^(19|2[0-9])[0-9]{2}\z"#, options: .regularExpression) != nil, let y = Int(key)
+            else { throw PeriodClosureError.invalidKey }
             components = DateComponents(year: y, month: month, day: day)
         }
         guard let start = calendar.date(from: components),
