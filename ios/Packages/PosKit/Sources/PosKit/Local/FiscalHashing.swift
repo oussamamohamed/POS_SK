@@ -18,6 +18,17 @@ enum FiscalHashing {
         return sha256("\(previousHash)|\(chainSequence)|\(eventType)|\(timestamp)|\(terminalId ?? "")|\(operatorText)|\(payloadJson)", lowercase: true)
     }
 
+    /// `ComputePeriodClosureHash` : hexadécimal minuscule, `periodType` entier (`Monthly = 1`, `Annual = 2`), fin de période au format « O ».
+    static func periodClosureHash(
+        previousHash: String, terminalId: String, periodType: Int, periodKey: String, totalTtcCents: Int, totalHtCents: Int,
+        taxesJson: String, tendersJson: String, perpetualGrandTotalCents: Int, periodEnd: Date
+    ) -> String {
+        sha256(
+            "\(previousHash)|\(terminalId)|\(periodType)|\(periodKey)|\(totalTtcCents)|\(totalHtCents)|\(taxesJson)|\(tendersJson)|\(perpetualGrandTotalCents)|\(timestampText(periodEnd))",
+            lowercase: true
+        )
+    }
+
     /// `Guid.ToString()` : minuscules.
     static func guidText(_ id: UUID) -> String { id.uuidString.lowercased() }
 

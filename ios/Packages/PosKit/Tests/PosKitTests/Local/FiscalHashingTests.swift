@@ -113,4 +113,16 @@ struct FiscalHashingTests {
             #expect(FiscalHashing.roundedToMilliseconds(rounded) == rounded)
         }
     }
+
+    @Test func periodClosureHashJoinsTheFieldsLikeTheDotNet() {
+        let end = SQLDate.parse("2025-01-31T23:00:00.000Z")!
+        let hash = FiscalHashing.periodClosureHash(
+            previousHash: FiscalHashing.genesisHash, terminalId: "T01", periodType: 1, periodKey: "2025-01",
+            totalTtcCents: 10000, totalHtCents: 9091, taxesJson: "{\"10\":909}", tendersJson: "{\"Cash\":10000}",
+            perpetualGrandTotalCents: 10000, periodEnd: end
+        )
+        let raw = "\(FiscalHashing.genesisHash)|T01|1|2025-01|10000|9091|{\"10\":909}|{\"Cash\":10000}|10000|2025-01-31T23:00:00.0000000+00:00"
+        #expect(hash == FiscalHashing.sha256(raw, lowercase: true))
+        #expect(hash == hash.lowercased() && hash.count == 64)
+    }
 }
