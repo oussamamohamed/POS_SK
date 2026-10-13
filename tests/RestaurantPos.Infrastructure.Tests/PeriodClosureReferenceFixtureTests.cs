@@ -90,8 +90,10 @@ public class PeriodClosureReferenceFixtureTests
             new("exercice civil 2025 : refus, 12 mensuelles puis l'annuelle", 1, 1, YearOfDailies(), civilYear),
             new("exercice du 15 avril : totaux de l'annuelle issus des Z journalières", 4, 15, YearOfDailies(),
                 [new("annual", "2025", "2026-05-01T10:00:00.000Z")]),
-            new("mois sans Z : zéro, perpétuel repris du dernier Z antérieur", 1, 1, YearOfDailies(),
+            new("mois avec un Z puis mois sans aucun Z antérieur : zéro", 1, 1, YearOfDailies(),
                 [new("monthly", "2025-04", "2026-02-01T10:00:00.000Z"), new("monthly", "2024-12", "2026-02-01T10:00:00.000Z")]),
+            new("mois sans Z après des Z antérieurs : perpétuel repris du dernier Z", 1, 1, YearOfDailies().Take(4).ToList(),
+                [new("monthly", "2025-06", "2026-02-01T10:00:00.000Z")]),
         ];
     }
 
