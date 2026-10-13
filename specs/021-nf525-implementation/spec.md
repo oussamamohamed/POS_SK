@@ -4,7 +4,7 @@
 
 **Créée** : 2026-09-30 — réécrite le même jour après revue
 
-**Statut** : Brouillon
+**Statut** : Implémentée (72 tâches sur 72 faites dans `tasks.md`; conformité FEC et attestation tiers à valider, voir `docs/fiscal.md`)
 
 **Demande** : « je veux implémenter la spec nf525 dans mon système d'encaissement et l'enrichir avec les fonctionnalités qui manquent »
 

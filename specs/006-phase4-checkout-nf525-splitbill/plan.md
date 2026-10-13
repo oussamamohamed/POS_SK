@@ -14,9 +14,9 @@ Deliver legal checkout settlement and French NF525 fiscal compliance: multi-tend
 
 **Primary Dependencies**:
 - Cryptography: `System.Security.Cryptography.SHA256`
-- Core & Application: `CommunityToolkit.Mvvm`, `MediatR`
-- Client UI: .NET MAUI (`PaymentModal.xaml`, `SplitBillModal.xaml`, `FiscalReportsPage.xaml`)
-- Storage: EF Core with PostgreSQL and SQLite
+- Core & Application: services simples (`CheckoutPaymentService`, `NF525FiscalAuditService`), sans MediatR
+- Client UI: client web (`wwwroot/app.js`) et app SwiftUI (`ios/`, package `PosKit`); le client MAUI a été supprimé
+- Storage: EF Core avec SQLite
 
 **Storage**:
 - `FiscalReceipts`, `DailyFiscalClosures`, `PaymentTenders`

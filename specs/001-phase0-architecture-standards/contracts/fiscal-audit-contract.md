@@ -5,56 +5,40 @@
 
 ## 1. SHA-256 Chaining Formula Specification
 
-Every finalized transaction computes its cryptographic signature as:
-$$\text{CurrentHash} = \text{Hex}(\text{SHA256}(\text{CanonicalPayload}))$$
+*Aligné sur `NF525FiscalAuditService.ComputeReceiptHashSignature` (2026-10-01). Le code fait foi.*
+
+Every finalized receipt (and every Z-closure) computes its signature as:
+$$\text{CurrentHash} = \text{Hex}(\text{SHA256}(\text{UTF8}(\text{CanonicalPayload})))$$
 
 ### Canonical Payload Construction:
-$$\text{CanonicalPayload} = \text{PreviousHash} + "|" + \text{TerminalPrefix} + "-" + \text{SequentialNumber} + "|" + \text{Iso8601UtcTimestamp} + "|" + \text{TotalTtcCents} + "|" + \text{TaxSummaryString}$$
+`{PreviousHash}|{TerminalId}|{SequenceNumber}|{AmountCents}|{TimestampUtc:O}|{TaxBreakdownJson}`
 
-**Example**:
-- `PreviousHash`: `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855` (Genesis hash for first ticket)
-- `Ticket`: `POS01-001042`
-- `Iso8601UtcTimestamp`: `2026-08-15T20:45:00.0000000Z`
-- `TotalTtcCents`: `2900` (29.00 EUR)
-- `TaxSummaryString`: `[10.00:2636:264]` (Base HT 26.36 EUR, Tax 2.64 EUR)
+- `PreviousHash`: `SignatureHash` of the previous receipt of the same terminal; `GenesisHash` = `GENESIS_` + 64 zeros for the first one.
+- `TimestampUtc:O`: round-trip ISO 8601 (e.g. `2026-08-15T20:45:00.0000000+00:00`).
+- `TaxBreakdownJson`: the exact string stored in `FiscalReceipt.TaxBreakdownJson`; its serialization MUST NOT change.
+- Z-closures use the same function, chained to the previous closure (`PreviousSignatureHash`).
 
-Canonical String:
-`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855|POS01-001042|2026-08-15T20:45:00.0000000Z|2900|[10.00:2636:264]`
+Changing field order, formatting or serialization breaks verification of existing chains.
 
 ---
 
-## 2. Technical Event Log (JET) Event Types
+## 2. Technical Event Log (JET)
 
-The JET engine captures all non-sales operational events with strict audit immutability:
+*Aligné sur `docs/fiscal.md` §2.3 (2026-10-13).* Le JET est la table `TechnicalJournalEntry`, chaîne unique pour tout le restaurant:
 
-| Event Code | Action Name | Required Context Data |
-| :--- | :--- | :--- |
-| `JET_DRAWER_OPEN` | Manual / No-Sale Drawer Kick | `OperatorId`, `ReasonCode`, `TerminalId` |
-| `JET_ITEM_VOID` | Line Item Cancellation Post-Validation | `OrderId`, `ItemId`, `OriginalPriceCents`, `Reason` |
-| `JET_TICKET_REPRINT` | Duplicate Receipt Printing | `ReceiptId`, `TerminalPrefix`, `SequentialNumber` |
-| `JET_OPERATOR_SWITCH` | Fast Operator Sign-In/Out | `PreviousOperatorId`, `NewOperatorId`, `Timestamp` |
-| `JET_Z_REPORT_CLOSE` | Fiscal Daily Closure | `FiscalDay`, `GrandTotalCents`, `ZSequenceNumber` |
+`HEX_lower(SHA256("{previousHash}|{chainSequence}|{eventType}|{occurredAtUtc:O}|{terminalId}|{operatorId}|{payloadJson}"))` (`FiscalHashing.ComputeJetHash`).
+
+Événements: `Z_CLOSURE`, `PERIOD_CLOSURE`, `RECEIPT_VOIDED`, `DUPLICATE_PRINTED`, `DEVICE_PAIRED`, `DEVICE_REVOKED`, `FISCAL_SETTINGS_CHANGED`, `FEC_EXPORTED`, `ARCHIVE_CREATED`, `ARCHIVE_EXPORTED`. Les anciennes entrées de `TransactionJournalEntry` (`EVENT_*`) restent hors chaîne.
+
+*Cible non implémentée*: `JET_DRAWER_OPEN` (ouverture de tiroir sans vente), `JET_ITEM_VOID` (annulation de ligne après validation), `JET_OPERATOR_SWITCH`.
 
 ---
 
 ## 3. Audit Verification Interface Contract
 
-```csharp
-public interface IFiscalAuditService
-{
-    ValueTask<FiscalReceiptRecord> SealReceiptAsync(
-        FiscalReceiptDraft draft, 
-        CancellationToken cancellationToken = default);
+*Interfaces réelles* (`RestaurantPos.Application.Common.Interfaces`):
 
-    ValueTask<AuditChainValidationResult> VerifyLedgerChainAsync(
-        string terminalPrefix, 
-        long startSequence, 
-        long endSequence, 
-        CancellationToken cancellationToken = default);
+- `INF525FiscalAuditService`: `ComputeReceiptHashSignature`, `GenerateXReportAsync`, `ExecuteDailyZClosureAsync`, `GetLatestZClosureAsync`, `ValidateAuditChainIntegrityAsync` (reçus), `FindOpenOrdersAsync`, `IsInClosedPeriodAsync`, `ExecutePeriodClosureAsync`, `GetPeriodClosuresAsync`.
+- `IFiscalChainVerificationService.VerifyAllChainsAsync`: recalcule les cinq chaînes (reçus, Z, JET, clôtures de période, archives) ; `POST /api/fiscal/verify-chains`.
 
-    ValueTask<FiscalZReport> GenerateZReportAsync(
-        DateTime date, 
-        Guid authorizedManagerId, 
-        CancellationToken cancellationToken = default);
-}
-```
+Les reçus sont scellés dans `CheckoutPaymentService`. Formules des cinq chaînes: `docs/fiscal.md` §2 et `FiscalHashing`.
