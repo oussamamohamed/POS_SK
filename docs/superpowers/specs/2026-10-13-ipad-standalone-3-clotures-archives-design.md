@@ -22,7 +22,7 @@ Acquis avant ce sous-projet : reçus chaînés, JET, annulations, duplicata, rap
 - **ZIP « stocké »** (sans compression), écrit à la main avec CRC32 : pas de dépendance, format lisible par tout outil. Ni octets ni SHA-256 identiques au .NET (horodatages et identifiants différents) : la parité porte sur les signatures de clôture, la forme du manifeste et la chaîne d'archives.
 - **Contenu des cinq JSON de l'archive** : mêmes noms de propriétés que les entités .NET (`System.Text.Json`, PascalCase, indenté), pour qu'un auditeur lise les deux pareil.
 - **FEC.** Le .NET ne filtre pas par poste (tous les reçus de la période). La référence est donc un scénario .NET à un seul poste ; le FEC Swift doit y être identique octet pour octet.
-- **Migrations** : V8 (`FiscalPeriodClosures`) puis V9 (`FiscalArchives`), jamais de modification d'un script publié. Mêmes tables et colonnes que `AppDbContext`, avec triggers d'immuabilité comme V5/V7.
+- **Migrations** : V8 (`PeriodClosures`, nom du `DbSet` .NET) puis V9 (`FiscalArchives`), jamais de modification d'un script publié. Mêmes tables et colonnes que `AppDbContext`, avec triggers d'immuabilité comme V5/V7.
 
 ## Découpage en lots
 
@@ -30,7 +30,7 @@ Un lot = une branche, un fichier de suivi `docs/plans/ipad-standalone-3<x>-progr
 
 ### 3a. Clôtures de période
 
-- Migration V8 : `FiscalPeriodClosures` (colonnes de `FiscalPeriodClosure`), index uniques `(TerminalId, PeriodType, PeriodKey)` et `(TerminalId, PeriodType, ClosureSequence)`, triggers `NoUpdate` / `NoDelete`.
+- Migration V8 : `PeriodClosures` (colonnes de `FiscalPeriodClosure`), index uniques `(TerminalId, PeriodType, PeriodKey)` et `(TerminalId, PeriodType, ClosureSequence)`, triggers `NoUpdate` / `NoDelete`.
 - `LocalFiscalRepository` : `executePeriodClosure(type, key, manager, now)` et `periodClosures(type)`. Algorithme du .NET (`ExecutePeriodClosureAsync`) :
   - Mensuelle : bornes du mois dans le fuseau local, totaux = somme des Z journalières dont la période **commence** dans le mois.
   - Annuelle : bornes de l'exercice (`FiscalYearStartMonth/Day` des réglages). Si l'exercice commence le 1er, totaux = somme des 12 mensuelles ; sinon, somme des Z journalières.
@@ -54,7 +54,7 @@ Un lot = une branche, un fichier de suivi `docs/plans/ipad-standalone-3<x>-progr
 
 ### 3d. Vérification et interface
 
-- `verifyAllChains` couvre en plus `FiscalPeriodClosures` (par poste et type) et `FiscalArchives` (globale) ; mêmes codes d'échec que le .NET.
+- `verifyAllChains` couvre en plus `PeriodClosures` (par poste et type) et `FiscalArchives` (globale) ; mêmes codes d'échec que le .NET.
 - Section Fiscal en mode autonome : liste et création des clôtures mensuelle et annuelle (avec les erreurs métier lisibles), liste et création des archives, export FEC (dates, SIREN, société), `ShareLink` pour l'archive et le FEC. Chaînes de l'interface en FR / EN / AR comme le reste de l'app.
 - **Preuve** : tests PosKit pour `verifyAllChains` (falsification SQL contournant un trigger sur une copie de base) et XCUITest en `-UITestLocal` : créer une clôture, créer une archive, exporter le FEC, voir la vérification verte.
 
