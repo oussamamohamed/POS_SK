@@ -126,4 +126,43 @@ struct LocalFiscalSchemaTests {
         #expect(try older.userVersion() == LocalMigrator.steps.count)
         #expect(try older.query("SELECT 1 AS x FROM sqlite_master WHERE name = 'PeriodClosures'").count == 1)
     }
+
+    private static let insertArchive = """
+    INSERT INTO FiscalArchives (Id, PeriodClosureId, PeriodType, PeriodKey, FileName, FileSha256, FileSizeBytes, ArchiveSequence,
+        PreviousSignatureHash, SignatureHash, CreatedByUserId, CreatedAtUtc)
+    VALUES ('A1', 'P1', 1, '2025-01', 'archive-T01-M-2025-01.zip', 'abc', 10, 1, 'GENESIS', 'SIG', 'U1', '2026-02-01T10:00:00.000Z')
+    """
+
+    @Test func migrationV9CreatesTheFiscalArchivesTable() throws {
+        let db = try makeDB()
+        #expect(LocalMigrator.steps.count >= 9)
+        #expect(try db.query("SELECT 1 AS x FROM sqlite_master WHERE type = 'table' AND name = 'FiscalArchives'").count == 1)
+    }
+
+    @Test func fiscalArchivesAreAppendOnly() throws {
+        let db = try makeDB()
+        try db.run(Self.insertArchive)
+        #expect(throws: (any Error).self) { try db.run("UPDATE FiscalArchives SET FileSha256 = 'x' WHERE Id = 'A1'") }
+        #expect(throws: (any Error).self) { try db.run("DELETE FROM FiscalArchives WHERE Id = 'A1'") }
+    }
+
+    @Test func oneArchivePerClosureAndOneArchivePerSequenceNumber() throws {
+        let db = try makeDB()
+        try db.run(Self.insertArchive)
+        #expect(throws: (any Error).self) { // même clôture, autre séquence
+            try db.run(Self.insertArchive.replacingOccurrences(of: "'A1', 'P1'", with: "'A2', 'P1'").replacingOccurrences(of: ", 10, 1, ", with: ", 10, 2, "))
+        }
+        #expect(throws: (any Error).self) { // autre clôture, même séquence
+            try db.run(Self.insertArchive.replacingOccurrences(of: "'A1', 'P1'", with: "'A3', 'P3'"))
+        }
+    }
+
+    @Test func upgradingAV8DatabaseAddsTheFiscalArchivesTable() throws {
+        let older = try SQLiteDatabase(path: ":memory:")
+        for script in LocalMigrator.steps.prefix(8) { try older.exec(script) }
+        try older.exec("PRAGMA user_version = 8")
+        try LocalMigrator.migrate(older)
+        #expect(try older.userVersion() == LocalMigrator.steps.count)
+        #expect(try older.query("SELECT 1 AS x FROM sqlite_master WHERE name = 'FiscalArchives'").count == 1)
+    }
 }
