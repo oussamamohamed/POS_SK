@@ -54,7 +54,6 @@ public class NF525FiscalAuditService : INF525FiscalAuditService
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 
-        // Début de période : fin du dernier Z de tout type (même vide), sinon premier reçu du poste, sinon maintenant.
         var lastClosure = closures.OrderByDescending(c => c.ClosureSequence).FirstOrDefault();
 
         var periodEnd = DateTimeOffset.UtcNow;
@@ -65,6 +64,7 @@ public class NF525FiscalAuditService : INF525FiscalAuditService
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 
+        // Début de période : fin du dernier Z de tout type (même vide), sinon premier reçu du poste, sinon maintenant.
         var firstPeriodStart = allReceipts.Count > 0 ? allReceipts.Min(r => r.CreatedAtUtc) : periodEnd;
         var periodStart = lastClosure?.PeriodEndUtc ?? firstPeriodStart;
 
