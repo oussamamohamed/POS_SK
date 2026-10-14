@@ -11,4 +11,6 @@ enum LocalJournalEvents {
     static let backupCompleted = "BACKUP_COMPLETED"
     static let backupFailed = "BACKUP_FAILED"
     static let periodClosure = "PERIOD_CLOSURE"
+    static let archiveCreated = "ARCHIVE_CREATED"
+    static let archiveExported = "ARCHIVE_EXPORTED"
 }
