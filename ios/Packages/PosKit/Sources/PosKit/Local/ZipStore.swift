@@ -16,22 +16,37 @@ enum CRC32 {
 }
 
 /// Archive ZIP « stockée » (méthode 0, sans compression) : en-têtes locaux, répertoire central, fin de répertoire. Lisible par tout outil.
-/// ponytail: ni ZIP64 ni compression ; limite 4 Gio et 65 535 entrées (une archive fiscale mensuelle pèse quelques Mo).
+/// ponytail: ni ZIP64 ni compression ; limites 4 Gio (donnée, archive) et 65 535 entrées / octets de nom, refusées par `ZipStoreError`
+/// (une archive fiscale mensuelle pèse quelques Mo). Upgrade : ZIP64 si une archive dépasse ces bornes.
+enum ZipStoreError: Error, Equatable {
+    case tooLarge(String)
+    case tooManyEntries
+    case nameTooLong(String)
+}
+
 enum ZipStoreWriter {
-    static func archive(_ entries: [(name: String, data: Data)], modifiedAt: Date) -> Data {
+    static func archive(_ entries: [(name: String, data: Data)], modifiedAt: Date) throws -> Data {
+        guard entries.count <= Int(UInt16.max) else { throw ZipStoreError.tooManyEntries }
+        var total = 0
+        for entry in entries {
+            guard entry.name.utf8.count <= Int(UInt16.max) else { throw ZipStoreError.nameTooLong(entry.name) }
+            total += entry.data.count + entry.name.utf8.count * 2 + 100
+            guard entry.data.count <= Int(UInt32.max), total <= Int(UInt32.max) else { throw ZipStoreError.tooLarge(entry.name) }
+        }
         let (time, date) = dosDateTime(modifiedAt)
         var body = ByteWriter(), central = ByteWriter()
         for entry in entries {
             let name = Array(entry.name.utf8)
+            let flags: UInt16 = name.contains(where: { $0 >= 0x80 }) ? 0x0800 : 0 // bit 11 : nom en UTF-8
             let size = UInt32(entry.data.count)
             let crc = CRC32.checksum(entry.data)
             let offset = UInt32(body.bytes.count)
 
-            body.u32(0x0403_4B50); body.u16(20); body.u16(0); body.u16(0); body.u16(time); body.u16(date)
+            body.u32(0x0403_4B50); body.u16(20); body.u16(flags); body.u16(0); body.u16(time); body.u16(date)
             body.u32(crc); body.u32(size); body.u32(size); body.u16(UInt16(name.count)); body.u16(0)
             body.raw(name); body.raw([UInt8](entry.data))
 
-            central.u32(0x0201_4B50); central.u16(20); central.u16(20); central.u16(0); central.u16(0); central.u16(time); central.u16(date)
+            central.u32(0x0201_4B50); central.u16(20); central.u16(20); central.u16(flags); central.u16(0); central.u16(time); central.u16(date)
             central.u32(crc); central.u32(size); central.u32(size); central.u16(UInt16(name.count)); central.u16(0); central.u16(0)
             central.u16(0); central.u16(0); central.u32(0); central.u32(offset)
             central.raw(name)
