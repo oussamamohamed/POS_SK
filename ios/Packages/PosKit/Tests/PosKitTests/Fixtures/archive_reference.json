@@ -1,0 +1,453 @@
+{
+  "receipts": [
+    {
+      "id": "a0b1c2d3-e4f5-4000-8000-000000000001",
+      "terminalId": "T01",
+      "receiptNumber": "T01-000001",
+      "orderId": "a0b1c2d3-e4f5-4000-8000-000000000501",
+      "sequenceNumber": 1,
+      "ttcCents": 1000,
+      "htCents": 909,
+      "taxBreakdownJson": "{\u002210\u0022:91}",
+      "htBreakdownJson": "{\u002210\u0022:909}",
+      "previousSignatureHash": "GENESIS_0000000000000000000000000000000000000000000000000000000000000000",
+      "signatureHash": "SIG-R1",
+      "createdAtUtc": "2025-02-28T22:59:59.999Z",
+      "voidedReceiptId": null,
+      "tenders": [
+        {
+          "id": "a0b1c2d3-e4f5-4000-8000-000000000011",
+          "method": 0,
+          "amount": 1000,
+          "tendered": 2000,
+          "changeGiven": 1000
+        }
+      ]
+    },
+    {
+      "id": "a0b1c2d3-e4f5-4000-8000-000000000002",
+      "terminalId": "T01",
+      "receiptNumber": "T01-000002",
+      "orderId": "a0b1c2d3-e4f5-4000-8000-000000000502",
+      "sequenceNumber": 2,
+      "ttcCents": 1950,
+      "htCents": 1773,
+      "taxBreakdownJson": "{\u002210\u0022:177}",
+      "htBreakdownJson": "{\u002210\u0022:1773}",
+      "previousSignatureHash": "SIG-R1",
+      "signatureHash": "SIG-R2",
+      "createdAtUtc": "2025-02-28T23:00:00.000Z",
+      "voidedReceiptId": null,
+      "tenders": [
+        {
+          "id": "a0b1c2d3-e4f5-4000-8000-000000000012",
+          "method": 1,
+          "amount": 1000,
+          "tendered": 1000,
+          "changeGiven": 0
+        },
+        {
+          "id": "a0b1c2d3-e4f5-4000-8000-000000000013",
+          "method": 2,
+          "amount": 950,
+          "tendered": 950,
+          "changeGiven": 0
+        }
+      ]
+    },
+    {
+      "id": "a0b1c2d3-e4f5-4000-8000-000000000003",
+      "terminalId": "T01",
+      "receiptNumber": "T01-000003",
+      "orderId": "a0b1c2d3-e4f5-4000-8000-000000000503",
+      "sequenceNumber": 3,
+      "ttcCents": 2500,
+      "htCents": 2370,
+      "taxBreakdownJson": "{\u00225.5\u0022:130}",
+      "htBreakdownJson": "{\u00225.5\u0022:2370}",
+      "previousSignatureHash": "SIG-R2",
+      "signatureHash": "SIG-R3",
+      "createdAtUtc": "2025-03-15T12:34:56.120Z",
+      "voidedReceiptId": null,
+      "tenders": [
+        {
+          "id": "a0b1c2d3-e4f5-4000-8000-000000000014",
+          "method": 0,
+          "amount": 2500,
+          "tendered": 2500,
+          "changeGiven": 0
+        }
+      ]
+    },
+    {
+      "id": "a0b1c2d3-e4f5-4000-8000-000000000004",
+      "terminalId": "T01",
+      "receiptNumber": "T01-000004",
+      "orderId": "a0b1c2d3-e4f5-4000-8000-000000000503",
+      "sequenceNumber": 4,
+      "ttcCents": -2500,
+      "htCents": -2370,
+      "taxBreakdownJson": "{\u00225.5\u0022:-130}",
+      "htBreakdownJson": null,
+      "previousSignatureHash": "SIG-R3",
+      "signatureHash": "SIG-R4",
+      "createdAtUtc": "2025-03-16T09:00:00.000Z",
+      "voidedReceiptId": "a0b1c2d3-e4f5-4000-8000-000000000003",
+      "tenders": [
+        {
+          "id": "a0b1c2d3-e4f5-4000-8000-000000000015",
+          "method": 0,
+          "amount": -2500,
+          "tendered": -2500,
+          "changeGiven": 0
+        }
+      ]
+    },
+    {
+      "id": "a0b1c2d3-e4f5-4000-8000-000000000005",
+      "terminalId": "T01",
+      "receiptNumber": "T01-000005",
+      "orderId": "a0b1c2d3-e4f5-4000-8000-000000000505",
+      "sequenceNumber": 5,
+      "ttcCents": 800,
+      "htCents": 727,
+      "taxBreakdownJson": "{\u002210\u0022:73}",
+      "htBreakdownJson": "{\u002210\u0022:727}",
+      "previousSignatureHash": "SIG-R4",
+      "signatureHash": "SIG-R5",
+      "createdAtUtc": "2025-03-31T22:00:00.000Z",
+      "voidedReceiptId": null,
+      "tenders": []
+    },
+    {
+      "id": "a0b1c2d3-e4f5-4000-8000-000000000006",
+      "terminalId": "T01",
+      "receiptNumber": "T01-000006",
+      "orderId": "a0b1c2d3-e4f5-4000-8000-000000000506",
+      "sequenceNumber": 6,
+      "ttcCents": 1200,
+      "htCents": 1091,
+      "taxBreakdownJson": "{\u002210\u0022:109}",
+      "htBreakdownJson": "{\u002210\u0022:1091}",
+      "previousSignatureHash": "SIG-R5",
+      "signatureHash": "SIG-R6",
+      "createdAtUtc": "2025-04-02T10:00:00.000Z",
+      "voidedReceiptId": null,
+      "tenders": [
+        {
+          "id": "a0b1c2d3-e4f5-4000-8000-000000000016",
+          "method": 1,
+          "amount": 1200,
+          "tendered": 1200,
+          "changeGiven": 0
+        }
+      ]
+    },
+    {
+      "id": "a0b1c2d3-e4f5-4000-8000-000000000007",
+      "terminalId": "T02",
+      "receiptNumber": "T02-000001",
+      "orderId": "a0b1c2d3-e4f5-4000-8000-000000000507",
+      "sequenceNumber": 1,
+      "ttcCents": 3000,
+      "htCents": 2727,
+      "taxBreakdownJson": "{\u002210\u0022:273}",
+      "htBreakdownJson": "{\u002210\u0022:2727}",
+      "previousSignatureHash": "GENESIS_0000000000000000000000000000000000000000000000000000000000000000",
+      "signatureHash": "SIG-R7",
+      "createdAtUtc": "2025-03-10T10:00:00.000Z",
+      "voidedReceiptId": null,
+      "tenders": [
+        {
+          "id": "a0b1c2d3-e4f5-4000-8000-000000000017",
+          "method": 0,
+          "amount": 3000,
+          "tendered": 3000,
+          "changeGiven": 0
+        }
+      ]
+    }
+  ],
+  "dailyClosures": [
+    {
+      "id": "a0b1c2d3-e4f5-4000-8000-000000000021",
+      "terminalId": "T01",
+      "closureSequence": 1,
+      "periodStartUtc": "2025-02-27T23:00:00.000Z",
+      "periodEndUtc": "2025-02-28T22:59:59.999Z",
+      "ttcCents": 1000,
+      "htCents": 909,
+      "taxesSummaryJson": "{\u002210\u0022:91}",
+      "tenderTotalsJson": "{\u0022Cash\u0022:1000}",
+      "perpetualGrandTotalCents": 1000,
+      "previousSignatureHash": "GENESIS_0000000000000000000000000000000000000000000000000000000000000000",
+      "signatureHash": "SIG-Z1",
+      "sealedByUserName": "Chef",
+      "sealedByUserId": "a0b1c2d3-e4f5-4000-8000-000000000900"
+    },
+    {
+      "id": "a0b1c2d3-e4f5-4000-8000-000000000022",
+      "terminalId": "T01",
+      "closureSequence": 2,
+      "periodStartUtc": "2025-02-28T23:30:00.000Z",
+      "periodEndUtc": "2025-03-01T08:00:00.000Z",
+      "ttcCents": 1950,
+      "htCents": 1773,
+      "taxesSummaryJson": "{\u002210\u0022:177}",
+      "tenderTotalsJson": "{\u0022CreditCard\u0022:1000,\u0022MealVoucher\u0022:950}",
+      "perpetualGrandTotalCents": 2950,
+      "previousSignatureHash": "SIG-Z1",
+      "signatureHash": "SIG-Z2",
+      "sealedByUserName": "Chef",
+      "sealedByUserId": "a0b1c2d3-e4f5-4000-8000-000000000900"
+    },
+    {
+      "id": "a0b1c2d3-e4f5-4000-8000-000000000023",
+      "terminalId": "T01",
+      "closureSequence": 3,
+      "periodStartUtc": "2025-03-31T22:00:00.000Z",
+      "periodEndUtc": "2025-04-02T21:00:00.000Z",
+      "ttcCents": 2000,
+      "htCents": 1818,
+      "taxesSummaryJson": "{\u002210\u0022:182}",
+      "tenderTotalsJson": "{\u0022CreditCard\u0022:1200,\u0022Cash\u0022:800}",
+      "perpetualGrandTotalCents": 4950,
+      "previousSignatureHash": "SIG-Z2",
+      "signatureHash": "SIG-Z3",
+      "sealedByUserName": "H\u00E9l\u00E8ne",
+      "sealedByUserId": "a0b1c2d3-e4f5-4000-8000-000000000900"
+    },
+    {
+      "id": "a0b1c2d3-e4f5-4000-8000-000000000024",
+      "terminalId": "T02",
+      "closureSequence": 1,
+      "periodStartUtc": "2025-03-10T08:00:00.000Z",
+      "periodEndUtc": "2025-03-10T22:00:00.000Z",
+      "ttcCents": 3000,
+      "htCents": 2727,
+      "taxesSummaryJson": "{\u002210\u0022:273}",
+      "tenderTotalsJson": "{\u0022Cash\u0022:3000}",
+      "perpetualGrandTotalCents": 3000,
+      "previousSignatureHash": "GENESIS_0000000000000000000000000000000000000000000000000000000000000000",
+      "signatureHash": "SIG-Z4",
+      "sealedByUserName": "Chef",
+      "sealedByUserId": "a0b1c2d3-e4f5-4000-8000-000000000900"
+    }
+  ],
+  "periodClosures": [
+    {
+      "id": "a0b1c2d3-e4f5-4000-8000-000000000031",
+      "terminalId": "T01",
+      "periodType": 1,
+      "periodKey": "2024-12",
+      "closureSequence": 1,
+      "periodStartUtc": "2024-11-30T23:00:00.000Z",
+      "periodEndUtc": "2024-12-31T23:00:00.000Z",
+      "ttcCents": 0,
+      "htCents": 0,
+      "taxesSummaryJson": "{}",
+      "tenderTotalsJson": "{}",
+      "perpetualGrandTotalCents": 0,
+      "dailyClosureCount": 0,
+      "previousSignatureHash": "GENESIS_0000000000000000000000000000000000000000000000000000000000000000",
+      "signatureHash": "SIG-M1",
+      "sealedByUserId": "a0b1c2d3-e4f5-4000-8000-000000000900",
+      "sealedByUserName": "Chef",
+      "createdAtUtc": "2025-01-02T09:00:00.000Z"
+    },
+    {
+      "id": "a0b1c2d3-e4f5-4000-8000-000000000032",
+      "terminalId": "T01",
+      "periodType": 1,
+      "periodKey": "2025-03",
+      "closureSequence": 2,
+      "periodStartUtc": "2025-02-28T23:00:00.000Z",
+      "periodEndUtc": "2025-03-31T22:00:00.000Z",
+      "ttcCents": 1950,
+      "htCents": 1773,
+      "taxesSummaryJson": "{\u002210\u0022:177}",
+      "tenderTotalsJson": "{\u0022CreditCard\u0022:1000,\u0022MealVoucher\u0022:950}",
+      "perpetualGrandTotalCents": 2950,
+      "dailyClosureCount": 1,
+      "previousSignatureHash": "SIG-M1",
+      "signatureHash": "SIG-M2",
+      "sealedByUserId": "a0b1c2d3-e4f5-4000-8000-000000000900",
+      "sealedByUserName": "Chef",
+      "createdAtUtc": "2025-04-01T08:00:00.000Z"
+    },
+    {
+      "id": "a0b1c2d3-e4f5-4000-8000-000000000033",
+      "terminalId": "T01",
+      "periodType": 1,
+      "periodKey": "2025-04",
+      "closureSequence": 3,
+      "periodStartUtc": "2025-03-31T22:00:00.000Z",
+      "periodEndUtc": "2025-04-30T22:00:00.000Z",
+      "ttcCents": 2000,
+      "htCents": 1818,
+      "taxesSummaryJson": "{\u002210\u0022:182}",
+      "tenderTotalsJson": "{\u0022CreditCard\u0022:1200,\u0022Cash\u0022:800}",
+      "perpetualGrandTotalCents": 4950,
+      "dailyClosureCount": 1,
+      "previousSignatureHash": "SIG-M2",
+      "signatureHash": "SIG-M3",
+      "sealedByUserId": "a0b1c2d3-e4f5-4000-8000-000000000900",
+      "sealedByUserName": "Chef",
+      "createdAtUtc": "2025-05-01T08:00:00.000Z"
+    },
+    {
+      "id": "a0b1c2d3-e4f5-4000-8000-000000000034",
+      "terminalId": "T01",
+      "periodType": 2,
+      "periodKey": "2025",
+      "closureSequence": 1,
+      "periodStartUtc": "2024-12-31T23:00:00.000Z",
+      "periodEndUtc": "2025-12-31T23:00:00.000Z",
+      "ttcCents": 3950,
+      "htCents": 3591,
+      "taxesSummaryJson": "{\u002210\u0022:359}",
+      "tenderTotalsJson": "{\u0022CreditCard\u0022:2200,\u0022MealVoucher\u0022:950,\u0022Cash\u0022:800}",
+      "perpetualGrandTotalCents": 4950,
+      "dailyClosureCount": 2,
+      "previousSignatureHash": "GENESIS_0000000000000000000000000000000000000000000000000000000000000000",
+      "signatureHash": "SIG-A1",
+      "sealedByUserId": "a0b1c2d3-e4f5-4000-8000-000000000900",
+      "sealedByUserName": "H\u00E9l\u00E8ne \u0022Chef\u0022",
+      "createdAtUtc": "2026-01-05T09:00:00.000Z"
+    }
+  ],
+  "journalEntries": [
+    {
+      "id": "a0b1c2d3-e4f5-4000-8000-000000000041",
+      "localSequence": 1,
+      "terminalId": "T01",
+      "occurredAtUtc": "2025-02-28T22:59:59.999Z",
+      "idempotencyKey": "idem-1",
+      "eventType": "Z_CLOSURE",
+      "payloadJson": "{\u0022ClosureSequence\u0022:1}",
+      "entryHash": "HASH-1",
+      "chainSequence": 1,
+      "previousHash": "GENESIS_0000000000000000000000000000000000000000000000000000000000000000",
+      "operatorId": "a0b1c2d3-e4f5-4000-8000-000000000900"
+    },
+    {
+      "id": "a0b1c2d3-e4f5-4000-8000-000000000042",
+      "localSequence": 2,
+      "terminalId": null,
+      "occurredAtUtc": "2025-02-28T23:00:00.000Z",
+      "idempotencyKey": "idem-2",
+      "eventType": "BACKUP_COMPLETED",
+      "payloadJson": "{\u0022fileName\u0022:\u0022caf\u00E9 \u003C1\u003E \u0026 \u0027a\u0027\u002Bb.posbak\u0022,\u0022sizeBytes\u0022:10}",
+      "entryHash": "HASH-2",
+      "chainSequence": 2,
+      "previousHash": null,
+      "operatorId": null
+    },
+    {
+      "id": "a0b1c2d3-e4f5-4000-8000-000000000043",
+      "localSequence": 3,
+      "terminalId": "T02",
+      "occurredAtUtc": "2025-03-20T10:00:00.500Z",
+      "idempotencyKey": "idem-3",
+      "eventType": "RECEIPT_VOIDED",
+      "payloadJson": "{\u0022ReceiptId\u0022:\u0022x\u0022}",
+      "entryHash": "HASH-3",
+      "chainSequence": 3,
+      "previousHash": "HASH-2",
+      "operatorId": "a0b1c2d3-e4f5-4000-8000-000000000901"
+    },
+    {
+      "id": "a0b1c2d3-e4f5-4000-8000-000000000044",
+      "localSequence": 4,
+      "terminalId": "T01",
+      "occurredAtUtc": "2025-03-31T22:00:00.000Z",
+      "idempotencyKey": "idem-4",
+      "eventType": "Z_CLOSURE",
+      "payloadJson": "{\u0022ClosureSequence\u0022:3}",
+      "entryHash": "HASH-4",
+      "chainSequence": 4,
+      "previousHash": "HASH-3",
+      "operatorId": "a0b1c2d3-e4f5-4000-8000-000000000900"
+    },
+    {
+      "id": "a0b1c2d3-e4f5-4000-8000-000000000045",
+      "localSequence": 5,
+      "terminalId": "T01",
+      "occurredAtUtc": "2025-04-01T00:00:00.000Z",
+      "idempotencyKey": "idem-5",
+      "eventType": "PERIOD_CLOSURE",
+      "payloadJson": "{\u0022PeriodKey\u0022:\u00222025-03\u0022}",
+      "entryHash": "HASH-5",
+      "chainSequence": 5,
+      "previousHash": "HASH-4",
+      "operatorId": "a0b1c2d3-e4f5-4000-8000-000000000900"
+    },
+    {
+      "id": "a0b1c2d3-e4f5-4000-8000-000000000046",
+      "localSequence": 6,
+      "terminalId": "T01",
+      "occurredAtUtc": "2026-01-05T09:00:00.000Z",
+      "idempotencyKey": "idem-6",
+      "eventType": "PERIOD_CLOSURE",
+      "payloadJson": "{\u0022PeriodKey\u0022:\u00222025\u0022}",
+      "entryHash": "HASH-6",
+      "chainSequence": 6,
+      "previousHash": "HASH-5",
+      "operatorId": "a0b1c2d3-e4f5-4000-8000-000000000900"
+    }
+  ],
+  "archives": [
+    {
+      "periodClosureId": "a0b1c2d3-e4f5-4000-8000-000000000032",
+      "fileName": "archive-T01-M-2025-03.zip",
+      "files": {
+        "receipts": "[\n  {\n    \u0022Id\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000002\u0022,\n    \u0022TerminalId\u0022: \u0022T01\u0022,\n    \u0022ReceiptNumber\u0022: \u0022T01-000002\u0022,\n    \u0022OrderId\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000502\u0022,\n    \u0022SequenceNumber\u0022: 2,\n    \u0022TotalTtcAmount\u0022: {\n      \u0022AmountInCents\u0022: 1950,\n      \u0022Currency\u0022: \u0022EUR\u0022\n    },\n    \u0022TotalHtAmount\u0022: {\n      \u0022AmountInCents\u0022: 1773,\n      \u0022Currency\u0022: \u0022EUR\u0022\n    },\n    \u0022TaxBreakdownJson\u0022: \u0022{\\u002210\\u0022:177}\u0022,\n    \u0022HtBreakdownJson\u0022: \u0022{\\u002210\\u0022:1773}\u0022,\n    \u0022PreviousSignatureHash\u0022: \u0022SIG-R1\u0022,\n    \u0022SignatureHash\u0022: \u0022SIG-R2\u0022,\n    \u0022CreatedAtUtc\u0022: \u00222025-02-28T23:00:00\u002B00:00\u0022,\n    \u0022IsVoid\u0022: false,\n    \u0022VoidedReceiptId\u0022: null,\n    \u0022Tenders\u0022: [\n      {\n        \u0022Id\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000012\u0022,\n        \u0022FiscalReceiptId\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000002\u0022,\n        \u0022Method\u0022: 1,\n        \u0022Amount\u0022: {\n          \u0022AmountInCents\u0022: 1000,\n          \u0022Currency\u0022: \u0022EUR\u0022\n        },\n        \u0022Tendered\u0022: {\n          \u0022AmountInCents\u0022: 1000,\n          \u0022Currency\u0022: \u0022EUR\u0022\n        },\n        \u0022ChangeGiven\u0022: {\n          \u0022AmountInCents\u0022: 0,\n          \u0022Currency\u0022: \u0022EUR\u0022\n        }\n      },\n      {\n        \u0022Id\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000013\u0022,\n        \u0022FiscalReceiptId\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000002\u0022,\n        \u0022Method\u0022: 2,\n        \u0022Amount\u0022: {\n          \u0022AmountInCents\u0022: 950,\n          \u0022Currency\u0022: \u0022EUR\u0022\n        },\n        \u0022Tendered\u0022: {\n          \u0022AmountInCents\u0022: 950,\n          \u0022Currency\u0022: \u0022EUR\u0022\n        },\n        \u0022ChangeGiven\u0022: {\n          \u0022AmountInCents\u0022: 0,\n          \u0022Currency\u0022: \u0022EUR\u0022\n        }\n      }\n    ]\n  },\n  {\n    \u0022Id\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000003\u0022,\n    \u0022TerminalId\u0022: \u0022T01\u0022,\n    \u0022ReceiptNumber\u0022: \u0022T01-000003\u0022,\n    \u0022OrderId\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000503\u0022,\n    \u0022SequenceNumber\u0022: 3,\n    \u0022TotalTtcAmount\u0022: {\n      \u0022AmountInCents\u0022: 2500,\n      \u0022Currency\u0022: \u0022EUR\u0022\n    },\n    \u0022TotalHtAmount\u0022: {\n      \u0022AmountInCents\u0022: 2370,\n      \u0022Currency\u0022: \u0022EUR\u0022\n    },\n    \u0022TaxBreakdownJson\u0022: \u0022{\\u00225.5\\u0022:130}\u0022,\n    \u0022HtBreakdownJson\u0022: \u0022{\\u00225.5\\u0022:2370}\u0022,\n    \u0022PreviousSignatureHash\u0022: \u0022SIG-R2\u0022,\n    \u0022SignatureHash\u0022: \u0022SIG-R3\u0022,\n    \u0022CreatedAtUtc\u0022: \u00222025-03-15T12:34:56.12\u002B00:00\u0022,\n    \u0022IsVoid\u0022: false,\n    \u0022VoidedReceiptId\u0022: null,\n    \u0022Tenders\u0022: [\n      {\n        \u0022Id\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000014\u0022,\n        \u0022FiscalReceiptId\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000003\u0022,\n        \u0022Method\u0022: 0,\n        \u0022Amount\u0022: {\n          \u0022AmountInCents\u0022: 2500,\n          \u0022Currency\u0022: \u0022EUR\u0022\n        },\n        \u0022Tendered\u0022: {\n          \u0022AmountInCents\u0022: 2500,\n          \u0022Currency\u0022: \u0022EUR\u0022\n        },\n        \u0022ChangeGiven\u0022: {\n          \u0022AmountInCents\u0022: 0,\n          \u0022Currency\u0022: \u0022EUR\u0022\n        }\n      }\n    ]\n  },\n  {\n    \u0022Id\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000004\u0022,\n    \u0022TerminalId\u0022: \u0022T01\u0022,\n    \u0022ReceiptNumber\u0022: \u0022T01-000004\u0022,\n    \u0022OrderId\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000503\u0022,\n    \u0022SequenceNumber\u0022: 4,\n    \u0022TotalTtcAmount\u0022: {\n      \u0022AmountInCents\u0022: -2500,\n      \u0022Currency\u0022: \u0022EUR\u0022\n    },\n    \u0022TotalHtAmount\u0022: {\n      \u0022AmountInCents\u0022: -2370,\n      \u0022Currency\u0022: \u0022EUR\u0022\n    },\n    \u0022TaxBreakdownJson\u0022: \u0022{\\u00225.5\\u0022:-130}\u0022,\n    \u0022HtBreakdownJson\u0022: null,\n    \u0022PreviousSignatureHash\u0022: \u0022SIG-R3\u0022,\n    \u0022SignatureHash\u0022: \u0022SIG-R4\u0022,\n    \u0022CreatedAtUtc\u0022: \u00222025-03-16T09:00:00\u002B00:00\u0022,\n    \u0022IsVoid\u0022: false,\n    \u0022VoidedReceiptId\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000003\u0022,\n    \u0022Tenders\u0022: [\n      {\n        \u0022Id\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000015\u0022,\n        \u0022FiscalReceiptId\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000004\u0022,\n        \u0022Method\u0022: 0,\n        \u0022Amount\u0022: {\n          \u0022AmountInCents\u0022: -2500,\n          \u0022Currency\u0022: \u0022EUR\u0022\n        },\n        \u0022Tendered\u0022: {\n          \u0022AmountInCents\u0022: -2500,\n          \u0022Currency\u0022: \u0022EUR\u0022\n        },\n        \u0022ChangeGiven\u0022: {\n          \u0022AmountInCents\u0022: 0,\n          \u0022Currency\u0022: \u0022EUR\u0022\n        }\n      }\n    ]\n  },\n  {\n    \u0022Id\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000005\u0022,\n    \u0022TerminalId\u0022: \u0022T01\u0022,\n    \u0022ReceiptNumber\u0022: \u0022T01-000005\u0022,\n    \u0022OrderId\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000505\u0022,\n    \u0022SequenceNumber\u0022: 5,\n    \u0022TotalTtcAmount\u0022: {\n      \u0022AmountInCents\u0022: 800,\n      \u0022Currency\u0022: \u0022EUR\u0022\n    },\n    \u0022TotalHtAmount\u0022: {\n      \u0022AmountInCents\u0022: 727,\n      \u0022Currency\u0022: \u0022EUR\u0022\n    },\n    \u0022TaxBreakdownJson\u0022: \u0022{\\u002210\\u0022:73}\u0022,\n    \u0022HtBreakdownJson\u0022: \u0022{\\u002210\\u0022:727}\u0022,\n    \u0022PreviousSignatureHash\u0022: \u0022SIG-R4\u0022,\n    \u0022SignatureHash\u0022: \u0022SIG-R5\u0022,\n    \u0022CreatedAtUtc\u0022: \u00222025-03-31T22:00:00\u002B00:00\u0022,\n    \u0022IsVoid\u0022: false,\n    \u0022VoidedReceiptId\u0022: null,\n    \u0022Tenders\u0022: []\n  }\n]",
+        "closures": "[\n  {\n    \u0022Id\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000022\u0022,\n    \u0022TerminalId\u0022: \u0022T01\u0022,\n    \u0022ClosureSequence\u0022: 2,\n    \u0022PeriodStartUtc\u0022: \u00222025-02-28T23:30:00\u002B00:00\u0022,\n    \u0022PeriodEndUtc\u0022: \u00222025-03-01T08:00:00\u002B00:00\u0022,\n    \u0022TotalSalesTtc\u0022: {\n      \u0022AmountInCents\u0022: 1950,\n      \u0022Currency\u0022: \u0022EUR\u0022\n    },\n    \u0022TotalSalesHt\u0022: {\n      \u0022AmountInCents\u0022: 1773,\n      \u0022Currency\u0022: \u0022EUR\u0022\n    },\n    \u0022TaxesSummaryJson\u0022: \u0022{\\u002210\\u0022:177}\u0022,\n    \u0022TenderTotalsJson\u0022: \u0022{\\u0022CreditCard\\u0022:1000,\\u0022MealVoucher\\u0022:950}\u0022,\n    \u0022PerpetualGrandTotalCents\u0022: 2950,\n    \u0022PreviousSignatureHash\u0022: \u0022SIG-Z1\u0022,\n    \u0022SignatureHash\u0022: \u0022SIG-Z2\u0022,\n    \u0022SealedByUserName\u0022: \u0022Chef\u0022,\n    \u0022SealedByUserId\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000900\u0022\n  },\n  {\n    \u0022Id\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000023\u0022,\n    \u0022TerminalId\u0022: \u0022T01\u0022,\n    \u0022ClosureSequence\u0022: 3,\n    \u0022PeriodStartUtc\u0022: \u00222025-03-31T22:00:00\u002B00:00\u0022,\n    \u0022PeriodEndUtc\u0022: \u00222025-04-02T21:00:00\u002B00:00\u0022,\n    \u0022TotalSalesTtc\u0022: {\n      \u0022AmountInCents\u0022: 2000,\n      \u0022Currency\u0022: \u0022EUR\u0022\n    },\n    \u0022TotalSalesHt\u0022: {\n      \u0022AmountInCents\u0022: 1818,\n      \u0022Currency\u0022: \u0022EUR\u0022\n    },\n    \u0022TaxesSummaryJson\u0022: \u0022{\\u002210\\u0022:182}\u0022,\n    \u0022TenderTotalsJson\u0022: \u0022{\\u0022CreditCard\\u0022:1200,\\u0022Cash\\u0022:800}\u0022,\n    \u0022PerpetualGrandTotalCents\u0022: 4950,\n    \u0022PreviousSignatureHash\u0022: \u0022SIG-Z2\u0022,\n    \u0022SignatureHash\u0022: \u0022SIG-Z3\u0022,\n    \u0022SealedByUserName\u0022: \u0022H\\u00E9l\\u00E8ne\u0022,\n    \u0022SealedByUserId\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000900\u0022\n  }\n]",
+        "periodClosures": "[\n  {\n    \u0022Id\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000032\u0022,\n    \u0022TerminalId\u0022: \u0022T01\u0022,\n    \u0022PeriodType\u0022: 1,\n    \u0022PeriodKey\u0022: \u00222025-03\u0022,\n    \u0022ClosureSequence\u0022: 2,\n    \u0022PeriodStartUtc\u0022: \u00222025-02-28T23:00:00\u002B00:00\u0022,\n    \u0022PeriodEndUtc\u0022: \u00222025-03-31T22:00:00\u002B00:00\u0022,\n    \u0022TotalTtcAmount\u0022: {\n      \u0022AmountInCents\u0022: 1950,\n      \u0022Currency\u0022: \u0022EUR\u0022\n    },\n    \u0022TotalHtAmount\u0022: {\n      \u0022AmountInCents\u0022: 1773,\n      \u0022Currency\u0022: \u0022EUR\u0022\n    },\n    \u0022TaxesSummaryJson\u0022: \u0022{\\u002210\\u0022:177}\u0022,\n    \u0022TenderTotalsJson\u0022: \u0022{\\u0022CreditCard\\u0022:1000,\\u0022MealVoucher\\u0022:950}\u0022,\n    \u0022PerpetualGrandTotalCents\u0022: 2950,\n    \u0022DailyClosureCount\u0022: 1,\n    \u0022PreviousSignatureHash\u0022: \u0022SIG-M1\u0022,\n    \u0022SignatureHash\u0022: \u0022SIG-M2\u0022,\n    \u0022SealedByUserId\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000900\u0022,\n    \u0022SealedByUserName\u0022: \u0022Chef\u0022,\n    \u0022CreatedAtUtc\u0022: \u00222025-04-01T08:00:00\u002B00:00\u0022\n  }\n]",
+        "journal": "[\n  {\n    \u0022Id\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000042\u0022,\n    \u0022LocalSequence\u0022: 2,\n    \u0022TerminalId\u0022: null,\n    \u0022OccurredAtUtc\u0022: \u00222025-02-28T23:00:00\u002B00:00\u0022,\n    \u0022IdempotencyKey\u0022: \u0022idem-2\u0022,\n    \u0022EventType\u0022: \u0022BACKUP_COMPLETED\u0022,\n    \u0022PayloadJson\u0022: \u0022{\\u0022fileName\\u0022:\\u0022caf\\u00E9 \\u003C1\\u003E \\u0026 \\u0027a\\u0027\\u002Bb.posbak\\u0022,\\u0022sizeBytes\\u0022:10}\u0022,\n    \u0022EntryHash\u0022: \u0022HASH-2\u0022,\n    \u0022ChainSequence\u0022: 2,\n    \u0022PreviousHash\u0022: null,\n    \u0022OperatorId\u0022: null\n  },\n  {\n    \u0022Id\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000043\u0022,\n    \u0022LocalSequence\u0022: 3,\n    \u0022TerminalId\u0022: \u0022T02\u0022,\n    \u0022OccurredAtUtc\u0022: \u00222025-03-20T10:00:00.5\u002B00:00\u0022,\n    \u0022IdempotencyKey\u0022: \u0022idem-3\u0022,\n    \u0022EventType\u0022: \u0022RECEIPT_VOIDED\u0022,\n    \u0022PayloadJson\u0022: \u0022{\\u0022ReceiptId\\u0022:\\u0022x\\u0022}\u0022,\n    \u0022EntryHash\u0022: \u0022HASH-3\u0022,\n    \u0022ChainSequence\u0022: 3,\n    \u0022PreviousHash\u0022: \u0022HASH-2\u0022,\n    \u0022OperatorId\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000901\u0022\n  },\n  {\n    \u0022Id\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000044\u0022,\n    \u0022LocalSequence\u0022: 4,\n    \u0022TerminalId\u0022: \u0022T01\u0022,\n    \u0022OccurredAtUtc\u0022: \u00222025-03-31T22:00:00\u002B00:00\u0022,\n    \u0022IdempotencyKey\u0022: \u0022idem-4\u0022,\n    \u0022EventType\u0022: \u0022Z_CLOSURE\u0022,\n    \u0022PayloadJson\u0022: \u0022{\\u0022ClosureSequence\\u0022:3}\u0022,\n    \u0022EntryHash\u0022: \u0022HASH-4\u0022,\n    \u0022ChainSequence\u0022: 4,\n    \u0022PreviousHash\u0022: \u0022HASH-3\u0022,\n    \u0022OperatorId\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000900\u0022\n  }\n]",
+        "manifest": "{\n  \u0022archiveId\u0022: \u0022*\u0022,\n  \u0022periodClosureId\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000032\u0022,\n  \u0022terminalId\u0022: \u0022T01\u0022,\n  \u0022periodType\u0022: 1,\n  \u0022periodKey\u0022: \u00222025-03\u0022,\n  \u0022periodStartUtc\u0022: \u00222025-02-28T23:00:00\u002B00:00\u0022,\n  \u0022periodEndUtc\u0022: \u00222025-03-31T22:00:00\u002B00:00\u0022,\n  \u0022createdAtUtc\u0022: \u0022*\u0022,\n  \u0022counts\u0022: {\n    \u0022receipts\u0022: 4,\n    \u0022closures\u0022: 2,\n    \u0022periodClosures\u0022: 1,\n    \u0022journalEntries\u0022: 3\n  },\n  \u0022files\u0022: {\n    \u0022receipts.json\u0022: \u002236bced09d0c3756a9574d65723e582f95b5301fd2ac37f9f7daa8bb6cae0a6d0\u0022,\n    \u0022closures.json\u0022: \u00223e895721a86d7f76e125ad0cf417e28cd0560bf70d0a48199a4443c25fc20dff\u0022,\n    \u0022period-closures.json\u0022: \u0022f578715568d05d3a8d650e823982d79dc7d1c326832d0d11f61dcf9705478a94\u0022,\n    \u0022journal.json\u0022: \u00229a7bd5c574a52e14c6c87052d840e1bd992f9c124db3024bd79b35ab42c9f815\u0022\n  }\n}"
+      },
+      "sha256": {
+        "receipts": "36bced09d0c3756a9574d65723e582f95b5301fd2ac37f9f7daa8bb6cae0a6d0",
+        "closures": "3e895721a86d7f76e125ad0cf417e28cd0560bf70d0a48199a4443c25fc20dff",
+        "periodClosures": "f578715568d05d3a8d650e823982d79dc7d1c326832d0d11f61dcf9705478a94",
+        "journal": "9a7bd5c574a52e14c6c87052d840e1bd992f9c124db3024bd79b35ab42c9f815"
+      }
+    },
+    {
+      "periodClosureId": "a0b1c2d3-e4f5-4000-8000-000000000034",
+      "fileName": "archive-T01-A-2025.zip",
+      "files": {
+        "receipts": "[\n  {\n    \u0022Id\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000001\u0022,\n    \u0022TerminalId\u0022: \u0022T01\u0022,\n    \u0022ReceiptNumber\u0022: \u0022T01-000001\u0022,\n    \u0022OrderId\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000501\u0022,\n    \u0022SequenceNumber\u0022: 1,\n    \u0022TotalTtcAmount\u0022: {\n      \u0022AmountInCents\u0022: 1000,\n      \u0022Currency\u0022: \u0022EUR\u0022\n    },\n    \u0022TotalHtAmount\u0022: {\n      \u0022AmountInCents\u0022: 909,\n      \u0022Currency\u0022: \u0022EUR\u0022\n    },\n    \u0022TaxBreakdownJson\u0022: \u0022{\\u002210\\u0022:91}\u0022,\n    \u0022HtBreakdownJson\u0022: \u0022{\\u002210\\u0022:909}\u0022,\n    \u0022PreviousSignatureHash\u0022: \u0022GENESIS_0000000000000000000000000000000000000000000000000000000000000000\u0022,\n    \u0022SignatureHash\u0022: \u0022SIG-R1\u0022,\n    \u0022CreatedAtUtc\u0022: \u00222025-02-28T22:59:59.999\u002B00:00\u0022,\n    \u0022IsVoid\u0022: false,\n    \u0022VoidedReceiptId\u0022: null,\n    \u0022Tenders\u0022: [\n      {\n        \u0022Id\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000011\u0022,\n        \u0022FiscalReceiptId\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000001\u0022,\n        \u0022Method\u0022: 0,\n        \u0022Amount\u0022: {\n          \u0022AmountInCents\u0022: 1000,\n          \u0022Currency\u0022: \u0022EUR\u0022\n        },\n        \u0022Tendered\u0022: {\n          \u0022AmountInCents\u0022: 2000,\n          \u0022Currency\u0022: \u0022EUR\u0022\n        },\n        \u0022ChangeGiven\u0022: {\n          \u0022AmountInCents\u0022: 1000,\n          \u0022Currency\u0022: \u0022EUR\u0022\n        }\n      }\n    ]\n  },\n  {\n    \u0022Id\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000002\u0022,\n    \u0022TerminalId\u0022: \u0022T01\u0022,\n    \u0022ReceiptNumber\u0022: \u0022T01-000002\u0022,\n    \u0022OrderId\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000502\u0022,\n    \u0022SequenceNumber\u0022: 2,\n    \u0022TotalTtcAmount\u0022: {\n      \u0022AmountInCents\u0022: 1950,\n      \u0022Currency\u0022: \u0022EUR\u0022\n    },\n    \u0022TotalHtAmount\u0022: {\n      \u0022AmountInCents\u0022: 1773,\n      \u0022Currency\u0022: \u0022EUR\u0022\n    },\n    \u0022TaxBreakdownJson\u0022: \u0022{\\u002210\\u0022:177}\u0022,\n    \u0022HtBreakdownJson\u0022: \u0022{\\u002210\\u0022:1773}\u0022,\n    \u0022PreviousSignatureHash\u0022: \u0022SIG-R1\u0022,\n    \u0022SignatureHash\u0022: \u0022SIG-R2\u0022,\n    \u0022CreatedAtUtc\u0022: \u00222025-02-28T23:00:00\u002B00:00\u0022,\n    \u0022IsVoid\u0022: false,\n    \u0022VoidedReceiptId\u0022: null,\n    \u0022Tenders\u0022: [\n      {\n        \u0022Id\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000012\u0022,\n        \u0022FiscalReceiptId\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000002\u0022,\n        \u0022Method\u0022: 1,\n        \u0022Amount\u0022: {\n          \u0022AmountInCents\u0022: 1000,\n          \u0022Currency\u0022: \u0022EUR\u0022\n        },\n        \u0022Tendered\u0022: {\n          \u0022AmountInCents\u0022: 1000,\n          \u0022Currency\u0022: \u0022EUR\u0022\n        },\n        \u0022ChangeGiven\u0022: {\n          \u0022AmountInCents\u0022: 0,\n          \u0022Currency\u0022: \u0022EUR\u0022\n        }\n      },\n      {\n        \u0022Id\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000013\u0022,\n        \u0022FiscalReceiptId\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000002\u0022,\n        \u0022Method\u0022: 2,\n        \u0022Amount\u0022: {\n          \u0022AmountInCents\u0022: 950,\n          \u0022Currency\u0022: \u0022EUR\u0022\n        },\n        \u0022Tendered\u0022: {\n          \u0022AmountInCents\u0022: 950,\n          \u0022Currency\u0022: \u0022EUR\u0022\n        },\n        \u0022ChangeGiven\u0022: {\n          \u0022AmountInCents\u0022: 0,\n          \u0022Currency\u0022: \u0022EUR\u0022\n        }\n      }\n    ]\n  },\n  {\n    \u0022Id\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000003\u0022,\n    \u0022TerminalId\u0022: \u0022T01\u0022,\n    \u0022ReceiptNumber\u0022: \u0022T01-000003\u0022,\n    \u0022OrderId\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000503\u0022,\n    \u0022SequenceNumber\u0022: 3,\n    \u0022TotalTtcAmount\u0022: {\n      \u0022AmountInCents\u0022: 2500,\n      \u0022Currency\u0022: \u0022EUR\u0022\n    },\n    \u0022TotalHtAmount\u0022: {\n      \u0022AmountInCents\u0022: 2370,\n      \u0022Currency\u0022: \u0022EUR\u0022\n    },\n    \u0022TaxBreakdownJson\u0022: \u0022{\\u00225.5\\u0022:130}\u0022,\n    \u0022HtBreakdownJson\u0022: \u0022{\\u00225.5\\u0022:2370}\u0022,\n    \u0022PreviousSignatureHash\u0022: \u0022SIG-R2\u0022,\n    \u0022SignatureHash\u0022: \u0022SIG-R3\u0022,\n    \u0022CreatedAtUtc\u0022: \u00222025-03-15T12:34:56.12\u002B00:00\u0022,\n    \u0022IsVoid\u0022: false,\n    \u0022VoidedReceiptId\u0022: null,\n    \u0022Tenders\u0022: [\n      {\n        \u0022Id\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000014\u0022,\n        \u0022FiscalReceiptId\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000003\u0022,\n        \u0022Method\u0022: 0,\n        \u0022Amount\u0022: {\n          \u0022AmountInCents\u0022: 2500,\n          \u0022Currency\u0022: \u0022EUR\u0022\n        },\n        \u0022Tendered\u0022: {\n          \u0022AmountInCents\u0022: 2500,\n          \u0022Currency\u0022: \u0022EUR\u0022\n        },\n        \u0022ChangeGiven\u0022: {\n          \u0022AmountInCents\u0022: 0,\n          \u0022Currency\u0022: \u0022EUR\u0022\n        }\n      }\n    ]\n  },\n  {\n    \u0022Id\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000004\u0022,\n    \u0022TerminalId\u0022: \u0022T01\u0022,\n    \u0022ReceiptNumber\u0022: \u0022T01-000004\u0022,\n    \u0022OrderId\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000503\u0022,\n    \u0022SequenceNumber\u0022: 4,\n    \u0022TotalTtcAmount\u0022: {\n      \u0022AmountInCents\u0022: -2500,\n      \u0022Currency\u0022: \u0022EUR\u0022\n    },\n    \u0022TotalHtAmount\u0022: {\n      \u0022AmountInCents\u0022: -2370,\n      \u0022Currency\u0022: \u0022EUR\u0022\n    },\n    \u0022TaxBreakdownJson\u0022: \u0022{\\u00225.5\\u0022:-130}\u0022,\n    \u0022HtBreakdownJson\u0022: null,\n    \u0022PreviousSignatureHash\u0022: \u0022SIG-R3\u0022,\n    \u0022SignatureHash\u0022: \u0022SIG-R4\u0022,\n    \u0022CreatedAtUtc\u0022: \u00222025-03-16T09:00:00\u002B00:00\u0022,\n    \u0022IsVoid\u0022: false,\n    \u0022VoidedReceiptId\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000003\u0022,\n    \u0022Tenders\u0022: [\n      {\n        \u0022Id\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000015\u0022,\n        \u0022FiscalReceiptId\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000004\u0022,\n        \u0022Method\u0022: 0,\n        \u0022Amount\u0022: {\n          \u0022AmountInCents\u0022: -2500,\n          \u0022Currency\u0022: \u0022EUR\u0022\n        },\n        \u0022Tendered\u0022: {\n          \u0022AmountInCents\u0022: -2500,\n          \u0022Currency\u0022: \u0022EUR\u0022\n        },\n        \u0022ChangeGiven\u0022: {\n          \u0022AmountInCents\u0022: 0,\n          \u0022Currency\u0022: \u0022EUR\u0022\n        }\n      }\n    ]\n  },\n  {\n    \u0022Id\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000005\u0022,\n    \u0022TerminalId\u0022: \u0022T01\u0022,\n    \u0022ReceiptNumber\u0022: \u0022T01-000005\u0022,\n    \u0022OrderId\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000505\u0022,\n    \u0022SequenceNumber\u0022: 5,\n    \u0022TotalTtcAmount\u0022: {\n      \u0022AmountInCents\u0022: 800,\n      \u0022Currency\u0022: \u0022EUR\u0022\n    },\n    \u0022TotalHtAmount\u0022: {\n      \u0022AmountInCents\u0022: 727,\n      \u0022Currency\u0022: \u0022EUR\u0022\n    },\n    \u0022TaxBreakdownJson\u0022: \u0022{\\u002210\\u0022:73}\u0022,\n    \u0022HtBreakdownJson\u0022: \u0022{\\u002210\\u0022:727}\u0022,\n    \u0022PreviousSignatureHash\u0022: \u0022SIG-R4\u0022,\n    \u0022SignatureHash\u0022: \u0022SIG-R5\u0022,\n    \u0022CreatedAtUtc\u0022: \u00222025-03-31T22:00:00\u002B00:00\u0022,\n    \u0022IsVoid\u0022: false,\n    \u0022VoidedReceiptId\u0022: null,\n    \u0022Tenders\u0022: []\n  },\n  {\n    \u0022Id\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000006\u0022,\n    \u0022TerminalId\u0022: \u0022T01\u0022,\n    \u0022ReceiptNumber\u0022: \u0022T01-000006\u0022,\n    \u0022OrderId\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000506\u0022,\n    \u0022SequenceNumber\u0022: 6,\n    \u0022TotalTtcAmount\u0022: {\n      \u0022AmountInCents\u0022: 1200,\n      \u0022Currency\u0022: \u0022EUR\u0022\n    },\n    \u0022TotalHtAmount\u0022: {\n      \u0022AmountInCents\u0022: 1091,\n      \u0022Currency\u0022: \u0022EUR\u0022\n    },\n    \u0022TaxBreakdownJson\u0022: \u0022{\\u002210\\u0022:109}\u0022,\n    \u0022HtBreakdownJson\u0022: \u0022{\\u002210\\u0022:1091}\u0022,\n    \u0022PreviousSignatureHash\u0022: \u0022SIG-R5\u0022,\n    \u0022SignatureHash\u0022: \u0022SIG-R6\u0022,\n    \u0022CreatedAtUtc\u0022: \u00222025-04-02T10:00:00\u002B00:00\u0022,\n    \u0022IsVoid\u0022: false,\n    \u0022VoidedReceiptId\u0022: null,\n    \u0022Tenders\u0022: [\n      {\n        \u0022Id\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000016\u0022,\n        \u0022FiscalReceiptId\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000006\u0022,\n        \u0022Method\u0022: 1,\n        \u0022Amount\u0022: {\n          \u0022AmountInCents\u0022: 1200,\n          \u0022Currency\u0022: \u0022EUR\u0022\n        },\n        \u0022Tendered\u0022: {\n          \u0022AmountInCents\u0022: 1200,\n          \u0022Currency\u0022: \u0022EUR\u0022\n        },\n        \u0022ChangeGiven\u0022: {\n          \u0022AmountInCents\u0022: 0,\n          \u0022Currency\u0022: \u0022EUR\u0022\n        }\n      }\n    ]\n  }\n]",
+        "closures": "[\n  {\n    \u0022Id\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000021\u0022,\n    \u0022TerminalId\u0022: \u0022T01\u0022,\n    \u0022ClosureSequence\u0022: 1,\n    \u0022PeriodStartUtc\u0022: \u00222025-02-27T23:00:00\u002B00:00\u0022,\n    \u0022PeriodEndUtc\u0022: \u00222025-02-28T22:59:59.999\u002B00:00\u0022,\n    \u0022TotalSalesTtc\u0022: {\n      \u0022AmountInCents\u0022: 1000,\n      \u0022Currency\u0022: \u0022EUR\u0022\n    },\n    \u0022TotalSalesHt\u0022: {\n      \u0022AmountInCents\u0022: 909,\n      \u0022Currency\u0022: \u0022EUR\u0022\n    },\n    \u0022TaxesSummaryJson\u0022: \u0022{\\u002210\\u0022:91}\u0022,\n    \u0022TenderTotalsJson\u0022: \u0022{\\u0022Cash\\u0022:1000}\u0022,\n    \u0022PerpetualGrandTotalCents\u0022: 1000,\n    \u0022PreviousSignatureHash\u0022: \u0022GENESIS_0000000000000000000000000000000000000000000000000000000000000000\u0022,\n    \u0022SignatureHash\u0022: \u0022SIG-Z1\u0022,\n    \u0022SealedByUserName\u0022: \u0022Chef\u0022,\n    \u0022SealedByUserId\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000900\u0022\n  },\n  {\n    \u0022Id\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000022\u0022,\n    \u0022TerminalId\u0022: \u0022T01\u0022,\n    \u0022ClosureSequence\u0022: 2,\n    \u0022PeriodStartUtc\u0022: \u00222025-02-28T23:30:00\u002B00:00\u0022,\n    \u0022PeriodEndUtc\u0022: \u00222025-03-01T08:00:00\u002B00:00\u0022,\n    \u0022TotalSalesTtc\u0022: {\n      \u0022AmountInCents\u0022: 1950,\n      \u0022Currency\u0022: \u0022EUR\u0022\n    },\n    \u0022TotalSalesHt\u0022: {\n      \u0022AmountInCents\u0022: 1773,\n      \u0022Currency\u0022: \u0022EUR\u0022\n    },\n    \u0022TaxesSummaryJson\u0022: \u0022{\\u002210\\u0022:177}\u0022,\n    \u0022TenderTotalsJson\u0022: \u0022{\\u0022CreditCard\\u0022:1000,\\u0022MealVoucher\\u0022:950}\u0022,\n    \u0022PerpetualGrandTotalCents\u0022: 2950,\n    \u0022PreviousSignatureHash\u0022: \u0022SIG-Z1\u0022,\n    \u0022SignatureHash\u0022: \u0022SIG-Z2\u0022,\n    \u0022SealedByUserName\u0022: \u0022Chef\u0022,\n    \u0022SealedByUserId\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000900\u0022\n  },\n  {\n    \u0022Id\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000023\u0022,\n    \u0022TerminalId\u0022: \u0022T01\u0022,\n    \u0022ClosureSequence\u0022: 3,\n    \u0022PeriodStartUtc\u0022: \u00222025-03-31T22:00:00\u002B00:00\u0022,\n    \u0022PeriodEndUtc\u0022: \u00222025-04-02T21:00:00\u002B00:00\u0022,\n    \u0022TotalSalesTtc\u0022: {\n      \u0022AmountInCents\u0022: 2000,\n      \u0022Currency\u0022: \u0022EUR\u0022\n    },\n    \u0022TotalSalesHt\u0022: {\n      \u0022AmountInCents\u0022: 1818,\n      \u0022Currency\u0022: \u0022EUR\u0022\n    },\n    \u0022TaxesSummaryJson\u0022: \u0022{\\u002210\\u0022:182}\u0022,\n    \u0022TenderTotalsJson\u0022: \u0022{\\u0022CreditCard\\u0022:1200,\\u0022Cash\\u0022:800}\u0022,\n    \u0022PerpetualGrandTotalCents\u0022: 4950,\n    \u0022PreviousSignatureHash\u0022: \u0022SIG-Z2\u0022,\n    \u0022SignatureHash\u0022: \u0022SIG-Z3\u0022,\n    \u0022SealedByUserName\u0022: \u0022H\\u00E9l\\u00E8ne\u0022,\n    \u0022SealedByUserId\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000900\u0022\n  }\n]",
+        "periodClosures": "[\n  {\n    \u0022Id\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000032\u0022,\n    \u0022TerminalId\u0022: \u0022T01\u0022,\n    \u0022PeriodType\u0022: 1,\n    \u0022PeriodKey\u0022: \u00222025-03\u0022,\n    \u0022ClosureSequence\u0022: 2,\n    \u0022PeriodStartUtc\u0022: \u00222025-02-28T23:00:00\u002B00:00\u0022,\n    \u0022PeriodEndUtc\u0022: \u00222025-03-31T22:00:00\u002B00:00\u0022,\n    \u0022TotalTtcAmount\u0022: {\n      \u0022AmountInCents\u0022: 1950,\n      \u0022Currency\u0022: \u0022EUR\u0022\n    },\n    \u0022TotalHtAmount\u0022: {\n      \u0022AmountInCents\u0022: 1773,\n      \u0022Currency\u0022: \u0022EUR\u0022\n    },\n    \u0022TaxesSummaryJson\u0022: \u0022{\\u002210\\u0022:177}\u0022,\n    \u0022TenderTotalsJson\u0022: \u0022{\\u0022CreditCard\\u0022:1000,\\u0022MealVoucher\\u0022:950}\u0022,\n    \u0022PerpetualGrandTotalCents\u0022: 2950,\n    \u0022DailyClosureCount\u0022: 1,\n    \u0022PreviousSignatureHash\u0022: \u0022SIG-M1\u0022,\n    \u0022SignatureHash\u0022: \u0022SIG-M2\u0022,\n    \u0022SealedByUserId\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000900\u0022,\n    \u0022SealedByUserName\u0022: \u0022Chef\u0022,\n    \u0022CreatedAtUtc\u0022: \u00222025-04-01T08:00:00\u002B00:00\u0022\n  },\n  {\n    \u0022Id\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000033\u0022,\n    \u0022TerminalId\u0022: \u0022T01\u0022,\n    \u0022PeriodType\u0022: 1,\n    \u0022PeriodKey\u0022: \u00222025-04\u0022,\n    \u0022ClosureSequence\u0022: 3,\n    \u0022PeriodStartUtc\u0022: \u00222025-03-31T22:00:00\u002B00:00\u0022,\n    \u0022PeriodEndUtc\u0022: \u00222025-04-30T22:00:00\u002B00:00\u0022,\n    \u0022TotalTtcAmount\u0022: {\n      \u0022AmountInCents\u0022: 2000,\n      \u0022Currency\u0022: \u0022EUR\u0022\n    },\n    \u0022TotalHtAmount\u0022: {\n      \u0022AmountInCents\u0022: 1818,\n      \u0022Currency\u0022: \u0022EUR\u0022\n    },\n    \u0022TaxesSummaryJson\u0022: \u0022{\\u002210\\u0022:182}\u0022,\n    \u0022TenderTotalsJson\u0022: \u0022{\\u0022CreditCard\\u0022:1200,\\u0022Cash\\u0022:800}\u0022,\n    \u0022PerpetualGrandTotalCents\u0022: 4950,\n    \u0022DailyClosureCount\u0022: 1,\n    \u0022PreviousSignatureHash\u0022: \u0022SIG-M2\u0022,\n    \u0022SignatureHash\u0022: \u0022SIG-M3\u0022,\n    \u0022SealedByUserId\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000900\u0022,\n    \u0022SealedByUserName\u0022: \u0022Chef\u0022,\n    \u0022CreatedAtUtc\u0022: \u00222025-05-01T08:00:00\u002B00:00\u0022\n  },\n  {\n    \u0022Id\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000034\u0022,\n    \u0022TerminalId\u0022: \u0022T01\u0022,\n    \u0022PeriodType\u0022: 2,\n    \u0022PeriodKey\u0022: \u00222025\u0022,\n    \u0022ClosureSequence\u0022: 1,\n    \u0022PeriodStartUtc\u0022: \u00222024-12-31T23:00:00\u002B00:00\u0022,\n    \u0022PeriodEndUtc\u0022: \u00222025-12-31T23:00:00\u002B00:00\u0022,\n    \u0022TotalTtcAmount\u0022: {\n      \u0022AmountInCents\u0022: 3950,\n      \u0022Currency\u0022: \u0022EUR\u0022\n    },\n    \u0022TotalHtAmount\u0022: {\n      \u0022AmountInCents\u0022: 3591,\n      \u0022Currency\u0022: \u0022EUR\u0022\n    },\n    \u0022TaxesSummaryJson\u0022: \u0022{\\u002210\\u0022:359}\u0022,\n    \u0022TenderTotalsJson\u0022: \u0022{\\u0022CreditCard\\u0022:2200,\\u0022MealVoucher\\u0022:950,\\u0022Cash\\u0022:800}\u0022,\n    \u0022PerpetualGrandTotalCents\u0022: 4950,\n    \u0022DailyClosureCount\u0022: 2,\n    \u0022PreviousSignatureHash\u0022: \u0022GENESIS_0000000000000000000000000000000000000000000000000000000000000000\u0022,\n    \u0022SignatureHash\u0022: \u0022SIG-A1\u0022,\n    \u0022SealedByUserId\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000900\u0022,\n    \u0022SealedByUserName\u0022: \u0022H\\u00E9l\\u00E8ne \\u0022Chef\\u0022\u0022,\n    \u0022CreatedAtUtc\u0022: \u00222026-01-05T09:00:00\u002B00:00\u0022\n  }\n]",
+        "journal": "[\n  {\n    \u0022Id\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000041\u0022,\n    \u0022LocalSequence\u0022: 1,\n    \u0022TerminalId\u0022: \u0022T01\u0022,\n    \u0022OccurredAtUtc\u0022: \u00222025-02-28T22:59:59.999\u002B00:00\u0022,\n    \u0022IdempotencyKey\u0022: \u0022idem-1\u0022,\n    \u0022EventType\u0022: \u0022Z_CLOSURE\u0022,\n    \u0022PayloadJson\u0022: \u0022{\\u0022ClosureSequence\\u0022:1}\u0022,\n    \u0022EntryHash\u0022: \u0022HASH-1\u0022,\n    \u0022ChainSequence\u0022: 1,\n    \u0022PreviousHash\u0022: \u0022GENESIS_0000000000000000000000000000000000000000000000000000000000000000\u0022,\n    \u0022OperatorId\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000900\u0022\n  },\n  {\n    \u0022Id\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000042\u0022,\n    \u0022LocalSequence\u0022: 2,\n    \u0022TerminalId\u0022: null,\n    \u0022OccurredAtUtc\u0022: \u00222025-02-28T23:00:00\u002B00:00\u0022,\n    \u0022IdempotencyKey\u0022: \u0022idem-2\u0022,\n    \u0022EventType\u0022: \u0022BACKUP_COMPLETED\u0022,\n    \u0022PayloadJson\u0022: \u0022{\\u0022fileName\\u0022:\\u0022caf\\u00E9 \\u003C1\\u003E \\u0026 \\u0027a\\u0027\\u002Bb.posbak\\u0022,\\u0022sizeBytes\\u0022:10}\u0022,\n    \u0022EntryHash\u0022: \u0022HASH-2\u0022,\n    \u0022ChainSequence\u0022: 2,\n    \u0022PreviousHash\u0022: null,\n    \u0022OperatorId\u0022: null\n  },\n  {\n    \u0022Id\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000043\u0022,\n    \u0022LocalSequence\u0022: 3,\n    \u0022TerminalId\u0022: \u0022T02\u0022,\n    \u0022OccurredAtUtc\u0022: \u00222025-03-20T10:00:00.5\u002B00:00\u0022,\n    \u0022IdempotencyKey\u0022: \u0022idem-3\u0022,\n    \u0022EventType\u0022: \u0022RECEIPT_VOIDED\u0022,\n    \u0022PayloadJson\u0022: \u0022{\\u0022ReceiptId\\u0022:\\u0022x\\u0022}\u0022,\n    \u0022EntryHash\u0022: \u0022HASH-3\u0022,\n    \u0022ChainSequence\u0022: 3,\n    \u0022PreviousHash\u0022: \u0022HASH-2\u0022,\n    \u0022OperatorId\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000901\u0022\n  },\n  {\n    \u0022Id\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000044\u0022,\n    \u0022LocalSequence\u0022: 4,\n    \u0022TerminalId\u0022: \u0022T01\u0022,\n    \u0022OccurredAtUtc\u0022: \u00222025-03-31T22:00:00\u002B00:00\u0022,\n    \u0022IdempotencyKey\u0022: \u0022idem-4\u0022,\n    \u0022EventType\u0022: \u0022Z_CLOSURE\u0022,\n    \u0022PayloadJson\u0022: \u0022{\\u0022ClosureSequence\\u0022:3}\u0022,\n    \u0022EntryHash\u0022: \u0022HASH-4\u0022,\n    \u0022ChainSequence\u0022: 4,\n    \u0022PreviousHash\u0022: \u0022HASH-3\u0022,\n    \u0022OperatorId\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000900\u0022\n  },\n  {\n    \u0022Id\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000045\u0022,\n    \u0022LocalSequence\u0022: 5,\n    \u0022TerminalId\u0022: \u0022T01\u0022,\n    \u0022OccurredAtUtc\u0022: \u00222025-04-01T00:00:00\u002B00:00\u0022,\n    \u0022IdempotencyKey\u0022: \u0022idem-5\u0022,\n    \u0022EventType\u0022: \u0022PERIOD_CLOSURE\u0022,\n    \u0022PayloadJson\u0022: \u0022{\\u0022PeriodKey\\u0022:\\u00222025-03\\u0022}\u0022,\n    \u0022EntryHash\u0022: \u0022HASH-5\u0022,\n    \u0022ChainSequence\u0022: 5,\n    \u0022PreviousHash\u0022: \u0022HASH-4\u0022,\n    \u0022OperatorId\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000900\u0022\n  }\n]",
+        "manifest": "{\n  \u0022archiveId\u0022: \u0022*\u0022,\n  \u0022periodClosureId\u0022: \u0022a0b1c2d3-e4f5-4000-8000-000000000034\u0022,\n  \u0022terminalId\u0022: \u0022T01\u0022,\n  \u0022periodType\u0022: 2,\n  \u0022periodKey\u0022: \u00222025\u0022,\n  \u0022periodStartUtc\u0022: \u00222024-12-31T23:00:00\u002B00:00\u0022,\n  \u0022periodEndUtc\u0022: \u00222025-12-31T23:00:00\u002B00:00\u0022,\n  \u0022createdAtUtc\u0022: \u0022*\u0022,\n  \u0022counts\u0022: {\n    \u0022receipts\u0022: 6,\n    \u0022closures\u0022: 3,\n    \u0022periodClosures\u0022: 3,\n    \u0022journalEntries\u0022: 5\n  },\n  \u0022files\u0022: {\n    \u0022receipts.json\u0022: \u0022725b5d2ddbe5b5727dc43a5e84f147744ba3a245613963c70f5adb9ea18f805f\u0022,\n    \u0022closures.json\u0022: \u002246377f413df3c2ac9eb2024e03afcec228cf7ee0fdce5695971eccd4e2736029\u0022,\n    \u0022period-closures.json\u0022: \u0022a0771d18e928f6ecd8c18610a99d8719ca524f45265cc33d6fbfad3da7362ea4\u0022,\n    \u0022journal.json\u0022: \u0022a717428b9343c458e8ebeccfc97d06fb7df73b03ebaa2f5b20ede7cbcc48b55d\u0022\n  }\n}"
+      },
+      "sha256": {
+        "receipts": "725b5d2ddbe5b5727dc43a5e84f147744ba3a245613963c70f5adb9ea18f805f",
+        "closures": "46377f413df3c2ac9eb2024e03afcec228cf7ee0fdce5695971eccd4e2736029",
+        "periodClosures": "a0771d18e928f6ecd8c18610a99d8719ca524f45265cc33d6fbfad3da7362ea4",
+        "journal": "a717428b9343c458e8ebeccfc97d06fb7df73b03ebaa2f5b20ede7cbcc48b55d"
+      }
+    }
+  ],
+  "signatureVectors": [
+    {
+      "previousHash": "GENESIS_0000000000000000000000000000000000000000000000000000000000000000",
+      "periodType": 1,
+      "periodKey": "2025-03",
+      "fileSha256": "0010608316897c840b3c018637cca452ff84a963cb6c1cbb8018fb56b9bfd724",
+      "createdAtUtc": "2025-04-01T08:00:00.000Z",
+      "signatureHash": "7840832d97535ffea42ec8fcaf337bcf24e3072ab8a584f39ae19c066d425e36"
+    },
+    {
+      "previousHash": "7840832d97535ffea42ec8fcaf337bcf24e3072ab8a584f39ae19c066d425e36",
+      "periodType": 2,
+      "periodKey": "2025",
+      "fileSha256": "932cd6272e32e3648258aa46895084fcd31dd7a366702febe48b0adeb9f07018",
+      "createdAtUtc": "2026-01-05T09:00:01.120Z",
+      "signatureHash": "192ac13491a6c1291172217f83f11b37a57365b0490d4ac916576e9405737878"
+    }
+  ]
+}
