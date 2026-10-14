@@ -21,11 +21,8 @@ struct LocalPeriodClosureAPITests {
     }
 
     @Test func aMonthIsClosedFromItsDailyClosuresAndIsListed() async throws {
-        let clock = LocalTestClock("2026-09-09T21:00:00Z")
+        let clock = LocalTestClock("2026-09-10T12:00:00Z")
         let api = try await makeLocalAPI(clock: clock)
-        // Parité .NET : le premier Z d'un poste commence à l'epoch, donc hors du mois ; seul le second Z est compté.
-        _ = try await api.zClosure(terminalId: "T01", managerId: UUID(), managerName: "Chef")
-        clock.set("2026-09-10T12:00:00Z")
         try await payOneBurger(api, table: "T1")
         clock.set("2026-09-10T21:00:00Z")
         let z = try await api.zClosure(terminalId: "T01", managerId: UUID(), managerName: "Chef")
@@ -39,6 +36,55 @@ struct LocalPeriodClosureAPITests {
         #expect(closure.previousSignatureHash == FiscalHashing.genesisHash)
         #expect(try await api.periodClosures(terminalId: nil, periodType: nil).map(\.periodKey) == ["2026-09"])
         #expect(try await api.periodClosures(terminalId: "T01", periodType: .annual).isEmpty)
+    }
+
+    @Test func aMonthWhoseOnlyZIsTheFirstEverZClosesWithoutMissingDays() async throws {
+        let (api, _, clock) = try await makeAPIWithDatabase()
+        try await payOneBurger(api, table: "T1")
+        clock.set("2026-09-10T21:00:00Z")
+        let z = try await api.zClosure(terminalId: "T01", managerId: UUID(), managerName: "Chef")
+        clock.set("2026-10-02T09:00:00Z")
+
+        let closure = try await api.executePeriodClosure(terminalId: "T01", periodType: .monthly, periodKey: "2026-09")
+        #expect(closure.dailyClosureCount == 1)
+        #expect(closure.totalTtcCents == z.totalSalesTtc.cents)
+        #expect(z.totalSalesTtc.cents == 1950)
+    }
+
+    @Test func theFirstZStartsAtTheEarliestReceiptOrAtItsOwnDateWithoutReceipt() async throws {
+        let (api, db, clock) = try await makeAPIWithDatabase()
+        let firstReceipt = clock.now
+        try await payOneBurger(api, table: "T1")
+        clock.set("2026-09-10T21:00:00Z")
+        _ = try await api.zClosure(terminalId: "T01", managerId: UUID(), managerName: "Chef")
+        let row = try #require(try db.query("SELECT PeriodStartUtc FROM DailyFiscalClosures WHERE ClosureSequence = 1").first)
+        #expect(row.string("PeriodStartUtc") == FiscalHashing.storedText(firstReceipt))
+
+        let (api2, db2, clock2) = try await makeAPIWithDatabase()
+        _ = try await api2.zClosure(terminalId: "T01", managerId: UUID(), managerName: "Chef")
+        let row2 = try #require(try db2.query("SELECT PeriodStartUtc, PeriodEndUtc FROM DailyFiscalClosures").first)
+        #expect(row2.string("PeriodStartUtc") == row2.string("PeriodEndUtc"))
+        #expect(row2.string("PeriodStartUtc") == FiscalHashing.storedText(clock2.now))
+    }
+
+    @Test func aZStartsWhereTheLastZEndedEvenWhenThatZWasEmpty() async throws {
+        let (api, db, clock) = try await makeAPIWithDatabase()
+        clock.set("2026-01-31T10:00:00Z")
+        try await payOneBurger(api, table: "T1")
+        clock.set("2026-01-31T21:00:00Z")
+        _ = try await api.zClosure(terminalId: "T01", managerId: UUID(), managerName: "Chef")
+        clock.set("2026-02-01T21:00:00Z")
+        let emptyZ = try await api.zClosure(terminalId: "T01", managerId: UUID(), managerName: "Chef")
+        #expect(emptyZ.totalSalesTtc.cents == 0)
+        clock.set("2026-02-02T10:00:00Z")
+        try await payOneBurger(api, table: "T2")
+        clock.set("2026-02-02T21:00:00Z")
+        let z3 = try await api.zClosure(terminalId: "T01", managerId: UUID(), managerName: "Chef")
+
+        let row = try #require(try db.query("SELECT PeriodStartUtc FROM DailyFiscalClosures WHERE ClosureSequence = 3").first)
+        #expect(row.string("PeriodStartUtc") == "2026-02-01T21:00:00.000Z")
+        #expect(z3.totalSalesTtc.cents == 1950)
+        #expect(z3.receiptCount == 1)
     }
 
     @Test func theClosureIsJournaledWithTheDotNetPayload() async throws {

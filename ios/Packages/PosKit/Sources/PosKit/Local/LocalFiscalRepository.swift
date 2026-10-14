@@ -279,8 +279,19 @@ struct LocalFiscalRepository {
 
     func summary(terminalId: String, now: Date) throws -> FiscalSummary {
         let lastClosure = try latestClosure(terminalId: terminalId)
-        let periodStart = lastClosure?.periodEndUtc ?? Date(timeIntervalSince1970: 0)
         let periodEnd = now
+        // Début de période : fin du dernier Z de tout type (même vide), sinon premier reçu du poste, sinon maintenant (parité .NET).
+        let periodStart: Date
+        if let lastClosure {
+            periodStart = lastClosure.periodEndUtc
+        } else if let first = try db.query(
+            "SELECT MIN(CreatedAtUtc) AS first FROM FiscalReceipts WHERE TerminalId = ?",
+            [.text(terminalId)]
+        ).first?.date("first") {
+            periodStart = first
+        } else {
+            periodStart = periodEnd
+        }
 
         let receiptsQuery: String
         let receiptsParams: [SQLValue]
