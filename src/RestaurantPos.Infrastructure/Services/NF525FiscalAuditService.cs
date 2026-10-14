@@ -54,13 +54,9 @@ public class NF525FiscalAuditService : INF525FiscalAuditService
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 
-        var lastClosure = closures
-            .Where(c => c.TotalSalesTtc.AmountInCents > 0)
-            .OrderByDescending(c => c.ClosureSequence)
-            .FirstOrDefault()
-            ?? closures.OrderByDescending(c => c.ClosureSequence).FirstOrDefault();
+        // Début de période : fin du dernier Z de tout type (même vide), sinon premier reçu du poste, sinon maintenant.
+        var lastClosure = closures.OrderByDescending(c => c.ClosureSequence).FirstOrDefault();
 
-        var periodStart = lastClosure?.PeriodEndUtc ?? DateTimeOffset.MinValue;
         var periodEnd = DateTimeOffset.UtcNow;
 
         var allReceipts = await _dbContext.FiscalReceipts
@@ -69,6 +65,9 @@ public class NF525FiscalAuditService : INF525FiscalAuditService
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 
+        var firstPeriodStart = allReceipts.Count > 0 ? allReceipts.Min(r => r.CreatedAtUtc) : periodEnd;
+        var periodStart = lastClosure?.PeriodEndUtc ?? firstPeriodStart;
+
         var receipts = allReceipts
             .Where(r => r.CreatedAtUtc >= periodStart && r.CreatedAtUtc <= periodEnd)
             .ToList();
@@ -76,7 +75,7 @@ public class NF525FiscalAuditService : INF525FiscalAuditService
         // If no receipts found starting from lastClosure, but there are unclosed receipts:
         if (receipts.Count == 0 && allReceipts.Count > 0 && (lastClosure == null || allReceipts.Any(r => r.CreatedAtUtc > lastClosure.PeriodEndUtc)))
         {
-            periodStart = lastClosure?.PeriodEndUtc ?? DateTimeOffset.MinValue;
+            periodStart = lastClosure?.PeriodEndUtc ?? firstPeriodStart;
             receipts = allReceipts.Where(r => r.CreatedAtUtc >= periodStart && r.CreatedAtUtc <= periodEnd).ToList();
         }
 
