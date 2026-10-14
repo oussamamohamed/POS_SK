@@ -29,6 +29,16 @@ enum FiscalHashing {
         )
     }
 
+    /// `ComputeArchiveHash` : hexadécimal minuscule, `periodType` entier, date de création au format « O ». Chaîne globale (toutes archives).
+    static func archiveHash(previousHash: String, periodType: Int, periodKey: String, fileSha256: String, createdAt: Date) -> String {
+        sha256("\(previousHash)|\(periodType)|\(periodKey)|\(fileSha256)|\(timestampText(createdAt))", lowercase: true)
+    }
+
+    /// SHA-256 d'octets bruts en hexadécimal minuscule (`Convert.ToHexStringLower(SHA256.HashData(…))`).
+    static func sha256Hex(_ data: Data) -> String {
+        SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()
+    }
+
     /// `Guid.ToString()` : minuscules.
     static func guidText(_ id: UUID) -> String { id.uuidString.lowercased() }
 

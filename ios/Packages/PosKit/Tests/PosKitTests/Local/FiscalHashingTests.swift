@@ -125,4 +125,37 @@ struct FiscalHashingTests {
         #expect(hash == FiscalHashing.sha256(raw, lowercase: true))
         #expect(hash == hash.lowercased() && hash.count == 64)
     }
+
+    @Test func archiveHashMatchesTheDotNetVectors() throws {
+        struct Vectors: Decodable {
+            struct Vector: Decodable {
+                var previousHash: String
+                var periodType: Int
+                var periodKey: String
+                var fileSha256: String
+                var createdAtUtc: String
+                var signatureHash: String
+            }
+            var signatureVectors: [Vector]
+        }
+        let vectors = try JSONDecoder().decode(Vectors.self, from: ContractDecodingTests.fixture("archive_reference")).signatureVectors
+        #expect(vectors.count == 2)
+        for v in vectors {
+            let createdAt = try #require(SQLDate.parse(v.createdAtUtc))
+            #expect(FiscalHashing.archiveHash(
+                previousHash: v.previousHash, periodType: v.periodType, periodKey: v.periodKey, fileSha256: v.fileSha256, createdAt: createdAt
+            ) == v.signatureHash)
+        }
+    }
+
+    @Test func archiveHashJoinsTheFieldsLikeTheDotNet() {
+        let createdAt = SQLDate.parse("2026-01-05T09:00:01.120Z")!
+        let raw = "\(FiscalHashing.genesisHash)|2|2025|abc|2026-01-05T09:00:01.1200000+00:00"
+        #expect(FiscalHashing.archiveHash(previousHash: FiscalHashing.genesisHash, periodType: 2, periodKey: "2025", fileSha256: "abc", createdAt: createdAt)
+            == FiscalHashing.sha256(raw, lowercase: true))
+    }
+
+    @Test func sha256HexIsLowercase() {
+        #expect(FiscalHashing.sha256Hex(Data("abc".utf8)) == "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad")
+    }
 }
