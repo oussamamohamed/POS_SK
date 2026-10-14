@@ -149,6 +149,10 @@ extension LocalFiscalRepository {
         return try db.query(sql, params).compactMap(periodClosureRecord)
     }
 
+    func periodClosure(id: UUID) throws -> PeriodClosureRecord? {
+        try db.query("SELECT * FROM PeriodClosures WHERE Id = ?", [.uuid(id)]).first.flatMap(periodClosureRecord)
+    }
+
     func dailyClosures(terminalId: String) throws -> [DailyFiscalClosureRecord] {
         try db.query("SELECT * FROM DailyFiscalClosures WHERE TerminalId = ? ORDER BY ClosureSequence", [.text(terminalId)]).compactMap(closureRecord)
     }

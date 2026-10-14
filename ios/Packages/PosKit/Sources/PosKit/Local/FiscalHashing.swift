@@ -36,7 +36,14 @@ enum FiscalHashing {
 
     /// SHA-256 d'octets bruts en hexadécimal minuscule (`Convert.ToHexStringLower(SHA256.HashData(…))`).
     static func sha256Hex(_ data: Data) -> String {
-        SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()
+        let digits = Array("0123456789abcdef".utf8)
+        var out: [UInt8] = []
+        out.reserveCapacity(64)
+        for byte in SHA256.hash(data: data) {
+            out.append(digits[Int(byte >> 4)])
+            out.append(digits[Int(byte & 15)])
+        }
+        return String(decoding: out, as: UTF8.self)
     }
 
     /// `Guid.ToString()` : minuscules.
