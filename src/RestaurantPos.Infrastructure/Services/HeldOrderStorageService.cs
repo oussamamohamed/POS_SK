@@ -96,6 +96,12 @@ public class HeldOrderStorageService : IHeldOrderStorageService
         heldOrder.VoidedByStaffId = supervisorStaffId;
         heldOrder.VoidReason = reason;
 
+        var order = await _context.Orders.FirstOrDefaultAsync(o => o.Id == heldOrder.OrderId, cancellationToken);
+        if (order != null && order.Status != OrderStatus.Paid)
+        {
+            order.Status = OrderStatus.Cancelled;
+        }
+
         await _context.SaveChangesAsync(cancellationToken);
         return true;
     }

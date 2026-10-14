@@ -24,6 +24,7 @@ public enum APIError: Error, Equatable, Sendable, LocalizedError {
     }
 
     public var isNotFound: Bool { if case .notFound = self { true } else { false } }
+    public var isUnsupported: Bool { if case let .server(status, _) = self, status == 501 { true } else { false } }
 }
 
 /// Contrat de l'API REST `RestaurantPos.Api`. Toute l'app dépend de ce protocole :

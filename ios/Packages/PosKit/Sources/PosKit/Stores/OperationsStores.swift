@@ -267,7 +267,9 @@ public final class FiscalStore {
         do {
             periodClosures = try await api.periodClosures(terminalId: settings.terminalId, periodType: type)
         } catch {
-            notifier.error(error)
+            if (error as? APIError)?.isUnsupported != true {
+                notifier.error(error)
+            }
         }
     }
 
@@ -295,7 +297,9 @@ public final class FiscalStore {
         do {
             archives = try await api.archives()
         } catch {
-            notifier.error(error)
+            if (error as? APIError)?.isUnsupported != true {
+                notifier.error(error)
+            }
         }
     }
 

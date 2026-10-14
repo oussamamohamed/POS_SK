@@ -95,7 +95,9 @@ public class CheckoutPaymentService : ICheckoutPaymentService
                 {
                     return new CheckoutResult(false, 0, 0, 0, string.Empty, null);
                 }
-                long changeGivenCents = Math.Max(0, totalTenderedCents - remainingBeforeThisPaymentCents);
+                long changeGivenCents = tenders
+                    .Where(t => t.Method == PaymentMethod.Cash)
+                    .Sum(t => Math.Max(0, t.TenderedInCents - t.AmountInCents));
                 long remainingBalanceCents = Math.Max(0, totalDueCents - (previousPaidCents + totalPaidCents));
 
                 // Fetch last receipt for terminal to chain cryptographic signature (inside transaction lock)
@@ -226,7 +228,7 @@ public class CheckoutPaymentService : ICheckoutPaymentService
                     .FirstOrDefaultAsync(r => r.Id == originalReceiptId, ct)
                     .ConfigureAwait(false);
 
-                if (original is null || original.TerminalId != terminalId || original.VoidedReceiptId != null)
+                if (original is null || original.TerminalId != terminalId || original.VoidedReceiptId != null || original.Tenders.Any(t => t.Method == PaymentMethod.RoomCharge))
                 {
                     return new CheckoutResult(false, 0, 0, 0, string.Empty, null);
                 }

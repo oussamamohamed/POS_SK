@@ -55,6 +55,10 @@ public class Order
 
     public Money CalculateTotalTtc()
     {
+        if (GlobalDiscountType == DiscountType.Comp)
+        {
+            return Money.Zero();
+        }
         long itemsTotalCents = Items.Sum(i => i.CalculateTotalTtc().AmountInCents);
         if (GlobalDiscountType == DiscountType.Percentage && GlobalDiscountValue > 0)
         {

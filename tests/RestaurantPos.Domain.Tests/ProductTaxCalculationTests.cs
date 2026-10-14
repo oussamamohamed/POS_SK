@@ -56,4 +56,24 @@ public class ProductTaxCalculationTests
         vat20.TaxableBaseCents.Should().Be(500);  // 600 / 1.20 = 500
         vat20.TaxAmountCents.Should().Be(100);    // 100 cents (1.00 EUR)
     }
+
+    [Fact]
+    public void CalculateTotalTtc_WithGlobalCompDiscount_ReturnsZero()
+    {
+        var order = new Order
+        {
+            TableNumber = "T01",
+            GlobalDiscountType = DiscountType.Comp,
+            GlobalDiscountValue = 0m
+        };
+        order.Items.Add(new OrderItem
+        {
+            ProductName = "Menu Déjeuner",
+            UnitPrice = Money.FromDecimal(25.00m),
+            Quantity = 2,
+            TaxRatePercent = 10.0m
+        });
+
+        order.CalculateTotalTtc().Should().Be(Money.Zero());
+    }
 }

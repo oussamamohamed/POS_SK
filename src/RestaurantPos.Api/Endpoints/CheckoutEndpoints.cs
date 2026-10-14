@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using RestaurantPos.Application.Common.Interfaces;
 using RestaurantPos.Application.DTOs;
 using RestaurantPos.Domain.Entities;
+using RestaurantPos.Domain.Enums;
 using RestaurantPos.Domain.ValueObjects;
 using RestaurantPos.Infrastructure.Localization;
 using RestaurantPos.Infrastructure.Persistence;
@@ -24,7 +25,7 @@ public static class CheckoutEndpoints
                        .WithTags("Checkout & Payments")
                        .RequireAuthorization();
 
-        group.MapPost("/pay", async (PaymentSettlementRequest req, ICheckoutPaymentService checkout, AppDbContext db, PrintDispatcher printing, HttpContext http) =>
+        group.MapPost("/pay", async (PaymentSettlementRequest req, ICheckoutPaymentService checkout, AppDbContext db, IMealVoucherPolicyService mealVoucherPolicyService, PrintDispatcher printing, HttpContext http) =>
         {
             var orderId = req.OrderId;
             if (orderId == Guid.Empty || !await db.Orders.AnyAsync(o => o.Id == orderId))
@@ -100,6 +101,20 @@ public static class CheckoutEndpoints
                 (long)Math.Round(t.Amount * 100),
                 (long)Math.Round(t.Tendered * 100)
             )).ToList();
+
+            var voucherTender = (req.Tenders ?? []).FirstOrDefault(t => t.Method == PaymentMethod.MealVoucher);
+            if (voucherTender != null)
+            {
+                var orderForVoucher = await db.Orders.Include(o => o.Items).FirstOrDefaultAsync(o => o.Id == orderId);
+                if (orderForVoucher != null)
+                {
+                    var voucherValidation = mealVoucherPolicyService.ValidateVoucherTender(orderForVoucher, voucherTender.Amount, voucherTender.Tendered > 0 ? voucherTender.Tendered : null, MealVoucherOverpaymentPolicy.CapAtBalance);
+                    if (!voucherValidation.IsAllowed)
+                    {
+                        return Results.BadRequest(new { Message = voucherValidation.ErrorMessage });
+                    }
+                }
+            }
 
             if (req.TipAmount < 0)
             {
@@ -190,6 +205,12 @@ public static class CheckoutEndpoints
             if (original is not null && await fiscal.IsInClosedPeriodAsync(original.TerminalId, original.CreatedAtUtc))
             {
                 return Results.Json(new { code = "void_after_closure", message = Texts.T("errors.void_after_closure") }, statusCode: StatusCodes.Status409Conflict);
+            }
+
+            var hasRoomTender = await db.PaymentTenders.AnyAsync(t => t.FiscalReceiptId == receiptId && t.Method == PaymentMethod.RoomCharge);
+            if (hasRoomTender)
+            {
+                return Results.Json(new { message = "Annulation impossible : ce reçu comprend une facturation chambre (la note de chambre ne serait pas rétablie)." }, statusCode: StatusCodes.Status409Conflict);
             }
 
             var result = await checkout.VoidReceiptAsync(receiptId, RequireDeviceFilter.PairedDevice(http).TerminalId, operatorId);

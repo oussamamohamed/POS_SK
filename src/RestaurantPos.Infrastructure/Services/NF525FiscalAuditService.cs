@@ -60,7 +60,7 @@ public class NF525FiscalAuditService : INF525FiscalAuditService
 
         var allReceipts = await _dbContext.FiscalReceipts
             .Include(r => r.Tenders)
-            .Where(r => isMainTerminal || r.TerminalId == terminalId)
+            .Where(r => isMainTerminal ? (r.TerminalId == terminalId || r.TerminalId == "POS_MAIN_TERM" || r.TerminalId == "POS01") : r.TerminalId == terminalId)
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 

@@ -15,6 +15,7 @@ using RestaurantPos.Domain.Common;
 using RestaurantPos.Infrastructure.Localization;
 using RestaurantPos.Infrastructure.Persistence;
 using RestaurantPos.Infrastructure.Printing;
+using RestaurantPos.Infrastructure.Services;
 
 namespace RestaurantPos.Api.Endpoints;
 
@@ -115,26 +116,29 @@ public static class HospitalityEndpoints
                 if (order is not null)
                 {
                     var suiteItems = order.Items.Where(i => i.Course == CourseType.Suite).ToList();
-                    var ticket = new KitchenTicket
+                    if (suiteItems.Count > 0)
                     {
-                        Id = UuidV7.NewGuid(),
-                        OrderId = order.Id,
-                        TableNumber = tableNumber,
-                        StationId = "HOT_KITCHEN",
-                        Status = TicketStatus.Pending,
-                        DispatchedAtUtc = DateTimeOffset.UtcNow,
-                        Items = suiteItems.Select(i => new KitchenTicketItem
+                        var ticket = new KitchenTicket
                         {
                             Id = UuidV7.NewGuid(),
-                            ProductId = i.ProductId,
-                            ProductName = $"[RÉCLAME SUITE] {i.ProductName}",
-                            Quantity = i.Quantity,
-                            ModifiersSummary = i.SelectedModifiers.Count > 0 ? string.Join(", ", i.SelectedModifiers) : null
-                        }).ToList()
-                    };
-                    db.KitchenTickets.Add(ticket);
-                    await db.SaveChangesAsync();
-                    await printing.QueueKitchenTicketsAsync([ticket.Id]);
+                            OrderId = order.Id,
+                            TableNumber = tableNumber,
+                            StationId = "HOT_KITCHEN",
+                            Status = TicketStatus.Pending,
+                            DispatchedAtUtc = DateTimeOffset.UtcNow,
+                            Items = suiteItems.Select(i => new KitchenTicketItem
+                            {
+                                Id = UuidV7.NewGuid(),
+                                ProductId = i.ProductId,
+                                ProductName = $"[RÉCLAME SUITE] {i.ProductName}",
+                                Quantity = i.Quantity,
+                                ModifiersSummary = i.SelectedModifiers.Count > 0 ? string.Join(", ", i.SelectedModifiers) : null
+                            }).ToList()
+                        };
+                        db.KitchenTickets.Add(ticket);
+                        await db.SaveChangesAsync();
+                        await printing.QueueKitchenTicketsAsync([ticket.Id]);
+                    }
                 }
             }
             await hubContext.Clients.All.SendAsync("ReceiveKitchenUpdate", "SUITE_CLAIMED", tableNumber);
@@ -153,7 +157,7 @@ public static class HospitalityEndpoints
             return room is not null ? Results.Ok(room) : Results.NotFound(new { Message = Texts.T("errors.room_not_found", ("room", roomNumber)) });
         });
 
-        hotelGroup.MapPost("/room-charge", async (RoomChargeRequest req, IRoomBillingService roomService, ITableManagementService tableService) =>
+        hotelGroup.MapPost("/room-charge", async (RoomChargeRequest req, IRoomBillingService roomService, ITableManagementService tableService, ICheckoutPaymentService checkoutService, IDeviceService deviceService, AppDbContext db, HttpContext http) =>
         {
             try
             {
@@ -167,6 +171,29 @@ public static class HospitalityEndpoints
                     req.SignatureDataUrl,
                     req.Notes
                 );
+
+                string terminalId = "POS_MAIN_TERM";
+                if (http.Request.Headers.TryGetValue("X-Device-Token", out var token) && !string.IsNullOrWhiteSpace(token))
+                {
+                    var dev = await deviceService.AuthenticateAsync(token.ToString(), http.RequestAborted);
+                    if (dev != null && !string.IsNullOrWhiteSpace(dev.TerminalId)) terminalId = dev.TerminalId;
+                }
+
+                var order = await db.Orders.FirstOrDefaultAsync(o => o.Id == req.OrderId);
+                if (order != null && PaymentSettlementRules.IsSettleable(order.Status))
+                {
+                    if (req.TipAmount > 0)
+                    {
+                        order.TipAmount = Money.FromDecimal(req.TipAmount, "EUR");
+                        await db.SaveChangesAsync();
+                    }
+                    long totalCents = Money.FromDecimal(req.Amount + req.TipAmount, "EUR").AmountInCents;
+                    var tenders = new List<PaymentTenderRequest>
+                    {
+                        new(PaymentMethod.RoomCharge, totalCents, totalCents)
+                    };
+                    await checkoutService.ProcessPaymentTendersAsync(req.OrderId, terminalId, tenders);
+                }
 
                 await tableService.UpdateTableStatusAsync(req.TableNumber, TableStatus.Free);
 

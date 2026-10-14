@@ -145,7 +145,9 @@ public class HeldOrderStorageServiceTests
         var staffId = Guid.NewGuid();
         var supervisorId = Guid.NewGuid();
 
-        var order = new Order { Id = Guid.NewGuid(), TableNumber = "Comptoir" };
+        var order = new Order { Id = Guid.NewGuid(), TableNumber = "Comptoir", Status = OrderStatus.Open };
+        db.Orders.Add(order);
+        await db.SaveChangesAsync();
         var held = await service.HoldOrderAsync(order, "T01", staffId, "Client 99");
 
         var ok = await service.VoidHeldOrderAsync(held.Id, supervisorId, "Client parti sans régler");
@@ -157,6 +159,9 @@ public class HeldOrderStorageServiceTests
         inDb.VoidedByStaffId.Should().Be(supervisorId);
         inDb.VoidReason.Should().Be("Client parti sans régler");
         inDb.VoidedAtUtc.Should().NotBeNull();
+
+        var cancelledOrder = await db.Orders.FindAsync(order.Id);
+        cancelledOrder!.Status.Should().Be(OrderStatus.Cancelled);
 
         // Already voided, cannot void again or recall
         (await service.VoidHeldOrderAsync(held.Id, supervisorId, "Raison 2")).Should().BeFalse();

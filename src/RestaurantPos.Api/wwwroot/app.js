@@ -1274,7 +1274,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         item.quantity += 1;
                     }
                 } else if (action === 'minus') {
-                    if (item.lineId) {
+                    if (item.lineId && item.isDispatched) {
                         showToast(t('order.item_locked_warning'), 'warning');
                         return;
                     }
@@ -1873,7 +1873,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         }, 0);
 
         if (state.globalDiscount) {
-            if (state.globalDiscount.type === 0 || state.globalDiscount.type === 'Percentage') {
+            if (state.globalDiscount.type === 2 || state.globalDiscount.type === 'Comp') {
+                cents = 0;
+            } else if (state.globalDiscount.type === 0 || state.globalDiscount.type === 'Percentage') {
                 cents = Math.max(0, discountedCents(cents, state.globalDiscount.value));
             } else if (state.globalDiscount.type === 1 || state.globalDiscount.type === 'FixedAmount') {
                 cents = Math.max(0, cents - Math.round(state.globalDiscount.value * 100));

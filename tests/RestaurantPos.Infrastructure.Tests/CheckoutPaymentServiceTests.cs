@@ -350,4 +350,35 @@ public class CheckoutPaymentServiceTests
         (await service.ProcessPaymentTendersAsync(order.Id, "POS01", [new(PaymentMethod.CreditCard, 401, 401)])).IsSuccess.Should().BeFalse();
         (await service.ProcessPaymentTendersAsync(order.Id, "POS01", [new(PaymentMethod.CreditCard, 400, 400)])).IsSuccess.Should().BeTrue();
     }
+
+    [Fact]
+    public async Task SplitBill_CashChangeCalculatedFromTenderedMinusAmount_EvenWhenTenderedLessThanTotalDue()
+    {
+        // 100 EUR bill, customer pays their 20 EUR part with a 50 EUR bill.
+        // Change must be 30 EUR (50 - 20), not 0.
+        var (db, service, order) = await CreateOrderAsync(100.00m);
+        using var _ = db;
+
+        var result = await service.ProcessPaymentTendersAsync(order.Id, "POS01", [new(PaymentMethod.Cash, 2000, 5000)]);
+
+        result.IsSuccess.Should().BeTrue();
+        result.TotalPaidCents.Should().Be(2000);
+        result.ChangeGivenCents.Should().Be(3000);
+        result.RemainingBalanceCents.Should().Be(8000);
+    }
+
+    [Fact]
+    public async Task VoidReceipt_RefusesVoid_WhenPaidWithRoomCharge()
+    {
+        var (db, service, order) = await CreateOrderAsync(45.00m);
+        using var _ = db;
+
+        var payResult = await service.ProcessPaymentTendersAsync(order.Id, "POS01", [new(PaymentMethod.RoomCharge, 4500, 4500)]);
+        payResult.IsSuccess.Should().BeTrue();
+
+        var receipt = await db.FiscalReceipts.SingleAsync(r => r.ReceiptNumber == payResult.ReceiptNumber);
+        var voidResult = await service.VoidReceiptAsync(receipt.Id, "POS01", Guid.NewGuid());
+
+        voidResult.IsSuccess.Should().BeFalse();
+    }
 }

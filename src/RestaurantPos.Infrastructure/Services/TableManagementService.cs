@@ -146,24 +146,52 @@ public class TableManagementService : ITableManagementService
                     _dbContext.DiningTables.Add(table);
                 }
 
-                var order = new Order
+                Order order;
+                if (table.ActiveOrderId.HasValue)
                 {
-                    Id = UuidV7.NewGuid(),
-                    TableNumber = tableNumber,
-                    OperatorId = operatorId,
-                    Status = OrderStatus.Open,
-                    Destination = DestinationForTable(tableNumber),
-                    CreatedAtUtc = DateTimeOffset.UtcNow
-                };
-
-                _dbContext.Orders.Add(order);
+                    var existingOrder = await _dbContext.Orders
+                        .Include(o => o.Items)
+                        .FirstOrDefaultAsync(o => o.Id == table.ActiveOrderId.Value, ct)
+                        .ConfigureAwait(false);
+                    if (existingOrder != null && existingOrder.Status == OrderStatus.Open)
+                    {
+                        order = existingOrder;
+                    }
+                    else
+                    {
+                        order = new Order
+                        {
+                            Id = UuidV7.NewGuid(),
+                            TableNumber = tableNumber,
+                            OperatorId = operatorId,
+                            Status = OrderStatus.Open,
+                            Destination = DestinationForTable(tableNumber),
+                            CreatedAtUtc = DateTimeOffset.UtcNow
+                        };
+                        _dbContext.Orders.Add(order);
+                        table.ActiveOrderId = order.Id;
+                    }
+                }
+                else
+                {
+                    order = new Order
+                    {
+                        Id = UuidV7.NewGuid(),
+                        TableNumber = tableNumber,
+                        OperatorId = operatorId,
+                        Status = OrderStatus.Open,
+                        Destination = DestinationForTable(tableNumber),
+                        CreatedAtUtc = DateTimeOffset.UtcNow
+                    };
+                    _dbContext.Orders.Add(order);
+                    table.ActiveOrderId = order.Id;
+                }
 
                 table.Status = TableStatus.Occupied;
                 table.CoversCount = coversCount;
                 table.AssignedWaiterId = operatorId;
                 table.AssignedWaiterName = operatorName;
-                table.ActiveOrderId = order.Id;
-                table.OpenedAtUtc = DateTimeOffset.UtcNow;
+                table.OpenedAtUtc ??= DateTimeOffset.UtcNow;
                 table.UpdatedAtUtc = DateTimeOffset.UtcNow;
 
                 await _dbContext.SaveChangesAsync(ct).ConfigureAwait(false);
@@ -476,7 +504,7 @@ public class TableManagementService : ITableManagementService
                 var source = await _dbContext.DiningTables.FindAsync([sourceTableNumber], ct).ConfigureAwait(false);
                 var target = await _dbContext.DiningTables.FindAsync([targetTableNumber], ct).ConfigureAwait(false);
 
-                if (source is null || target is null || source.ActiveOrderId is null)
+                if (source is null || target is null || source.ActiveOrderId is null || target.ActiveOrderId is not null)
                 {
                     return false;
                 }

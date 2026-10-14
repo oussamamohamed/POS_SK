@@ -148,14 +148,27 @@ public static class CounterSaleEndpoints
         // 5. Recall Held Order
         group.MapPost("/held/{holdId:guid}/recall", async (Guid holdId, AppDbContext db, IHeldOrderStorageService heldStorage, ITableManagementService tableService) =>
         {
+            const string counterTableNumber = "Comptoir";
+            var table = await db.DiningTables.FirstOrDefaultAsync(t => t.TableNumber == counterTableNumber);
+            if (table?.ActiveOrderId != null)
+            {
+                var current = await db.Orders.Include(o => o.Items).FirstOrDefaultAsync(o => o.Id == table.ActiveOrderId.Value);
+                if (current != null && current.Items.Count > 0 && current.Status == OrderStatus.Open)
+                {
+                    return Results.Json(new { Message = "Le comptoir a déjà une vente en cours." }, statusCode: StatusCodes.Status409Conflict);
+                }
+                if (current != null && current.Items.Count == 0 && current.Status == OrderStatus.Open)
+                {
+                    current.Status = OrderStatus.Cancelled;
+                }
+            }
+
             var order = await heldStorage.RecallOrderAsync(holdId);
             if (order == null)
             {
                 return Results.NotFound(new { Message = Texts.T("errors.held_order_not_found_or_recalled") });
             }
 
-            const string counterTableNumber = "Comptoir";
-            var table = await db.DiningTables.FirstOrDefaultAsync(t => t.TableNumber == counterTableNumber);
             if (table == null)
             {
                 table = new DiningTable { TableNumber = counterTableNumber, Capacity = 1, Status = TableStatus.Occupied, PositionX = 0, PositionY = 0 };
@@ -336,5 +349,38 @@ public static class CounterSaleEndpoints
                 printQueued
             ));
         }).RequirePairedDevice();
+
+        // 8. Lookup and Redeem Customer Credit Vouchers
+        group.MapGet("/vouchers/{code}", async (string code, AppDbContext db) =>
+        {
+            var voucher = await db.CustomerCreditVouchers.FirstOrDefaultAsync(v => v.VoucherCode == code);
+            if (voucher == null)
+            {
+                return Results.NotFound(new { Message = "Avoir introuvable." });
+            }
+            if (voucher.IsRedeemed)
+            {
+                return Results.BadRequest(new { Message = "Cet avoir a déjà été utilisé." });
+            }
+            if (voucher.ExpiresAtUtc < DateTimeOffset.UtcNow)
+            {
+                return Results.BadRequest(new { Message = "Cet avoir est expiré." });
+            }
+            return Results.Ok(new CustomerCreditVoucherDto(voucher.VoucherCode, voucher.Amount.ToDecimal(), voucher.ExpiresAtUtc));
+        });
+
+        group.MapPost("/vouchers/{code}/redeem", async (string code, Guid orderId, AppDbContext db) =>
+        {
+            var voucher = await db.CustomerCreditVouchers.FirstOrDefaultAsync(v => v.VoucherCode == code);
+            if (voucher == null || voucher.IsRedeemed || voucher.ExpiresAtUtc < DateTimeOffset.UtcNow)
+            {
+                return Results.BadRequest(new { Message = "Avoir invalide ou déjà utilisé." });
+            }
+            voucher.IsRedeemed = true;
+            voucher.RedeemedAtUtc = DateTimeOffset.UtcNow;
+            voucher.RedeemedOrderId = orderId;
+            await db.SaveChangesAsync();
+            return Results.Ok(new { Success = true, Message = "Avoir utilisé avec succès." });
+        });
     }
 }

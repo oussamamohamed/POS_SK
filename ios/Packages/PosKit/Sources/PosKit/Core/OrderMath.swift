@@ -134,7 +134,7 @@ public enum OrderMath {
     }
 
     public static func discountedTotal(subtotal: Money, discount: GlobalDiscount?) -> Money {
-        guard let discount, discount.value > 0 else { return subtotal }
+        guard let discount, discount.type == .comp || discount.value > 0 else { return subtotal }
         switch discount.type {
         case .percentage:
             return subtotal.multiplied(by: 1 - discount.value / 100).clampedAtZero()
