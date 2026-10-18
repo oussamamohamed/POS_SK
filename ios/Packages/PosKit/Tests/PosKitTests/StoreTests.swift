@@ -522,6 +522,39 @@ struct OperationsTests {
         #expect(created == false)
         #expect(model.notifier.toasts.last?.kind == .error)
     }
+
+    @Test func theFecFileNeverLeavesTheTemporaryFolder() async throws {
+        let (model, _) = await makeModel()
+        model.settings.siren = "../../evil"
+        await model.fiscal.exportFec(from: Date(timeIntervalSince1970: 0), to: Date())
+        let file = try #require(model.fiscal.exportedFile)
+        #expect(file.deletingLastPathComponent().standardizedFileURL == FileManager.default.temporaryDirectory.standardizedFileURL)
+        #expect(file.lastPathComponent.hasPrefix("evilFEC"))
+    }
+
+    @Test func archiveSharingAndVerdictAreKept() async {
+        let (model, api) = await makeModel()
+        _ = await model.fiscal.executePeriodClosure(type: .monthly, key: "2026-08")
+        _ = await model.fiscal.createArchive(periodClosureId: model.fiscal.periodClosures[0].id)
+        let archive = model.fiscal.archives[0]
+        #expect(await model.fiscal.shareArchive(id: archive.id))
+        #expect(model.fiscal.exportedArchiveFile?.lastPathComponent == SafeFileName.sanitized(archive.fileName, fallback: "archive.zip"))
+        #expect(await api.calls.contains("archiveFile"))
+        _ = await model.fiscal.verifyArchive(data: Data("CORRUPT".utf8), fileName: archive.fileName)
+        #expect(model.fiscal.archiveVerification?.reason == "hash_mismatch")
+        #expect(await model.fiscal.shareArchive(id: UUID()) == false)
+        #expect(model.fiscal.exportedArchiveFile == nil)
+    }
+
+    @Test func anArchiveFileAboveTheCeilingIsRefusedWithoutReadingIt() async throws {
+        let (model, api) = await makeModel()
+        model.fiscal.maxArchiveFileBytes = 4
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent("big-\(UUID().uuidString).zip")
+        try Data("12345".utf8).write(to: url)
+        #expect(await model.fiscal.verifyArchiveFile(at: url) == nil)
+        #expect(await api.calls.contains("verifyArchive") == false)
+        #expect(model.notifier.lastMessage == L10n.string("fiscal.archive_too_large"))
+    }
 }
 
 @MainActor
@@ -770,5 +803,15 @@ struct SettingsStoreTests {
         #expect(store.settings?.receiptLanguage == "fr")
         #expect(store.settings?.companyName == "Bistro Parisien")
         #expect(store.settings?.siret == "98765432109876")
+    }
+}
+
+@Suite("Noms de fichiers sûrs")
+struct SafeFileNameTests {
+    @Test func onlyTheLastSafeComponentIsKept() {
+        #expect(SafeFileName.sanitized("../../evilFEC1.txt", fallback: "f") == "evilFEC1.txt")
+        #expect(SafeFileName.sanitized("a\\b/archive-T01-M-2026-09.zip", fallback: "f") == "archive-T01-M-2026-09.zip")
+        #expect(SafeFileName.sanitized("FEC du 1er été.txt", fallback: "f") == "FEC_du_1er__t_.txt")
+        for unsafe in ["", "..", ".", "a/..", "/"] { #expect(SafeFileName.sanitized(unsafe, fallback: "f") == "f", Comment(rawValue: unsafe)) }
     }
 }

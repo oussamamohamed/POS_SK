@@ -177,3 +177,5 @@
 "fiscal.archive_error_unrecoverable" = "Archive file missing and it cannot be rebuilt identically (fingerprint differs).";
 "fiscal.archive_error_closure_missing" = "Period closure not found.";
 "fiscal.archive_error_empty_file" = "No file received.";
+"fiscal.archive_too_large" = "File too large to verify on this device (over 64 MB).";
+"fiscal.archive_unreadable_file" = "Unable to read the selected file.";

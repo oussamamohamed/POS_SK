@@ -101,6 +101,8 @@ public protocol PosAPI: Sendable {
     func archives() async throws -> [FiscalArchive]
     func createArchive(periodClosureId: UUID) async throws -> FiscalArchive
     func verifyArchive(data: Data, fileName: String) async throws -> ArchiveVerificationResult
+    /// Fichier ZIP d'une archive, copié dans un dossier local, pour le partage (`GET /api/fiscal/archives/{id}/file`).
+    func archiveFile(id: UUID) async throws -> URL
 
     // Personnel & imprimantes
     func staff() async throws -> [StaffMember]

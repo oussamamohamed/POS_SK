@@ -732,6 +732,14 @@ public actor InMemoryPosAPI: PosAPI {
         return ArchiveVerificationResult(isValid: false, archiveId: nil, reason: "unknown_archive")
     }
 
+    public func archiveFile(id: UUID) async throws -> URL {
+        try await step("archiveFile"); try requireManager()
+        guard let archive = storedArchives.first(where: { $0.id == id }) else { throw APIError.notFound("Fichier d'archive introuvable.") }
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent(SafeFileName.sanitized(archive.fileName, fallback: "archive.zip"))
+        try Data("ARCHIVE_DATA".utf8).write(to: url, options: .atomic)
+        return url
+    }
+
     // MARK: Personnel & imprimantes
 
     public func staff() async throws -> [StaffMember] { try await step("staff"); return staffRecords.map(\.member) }

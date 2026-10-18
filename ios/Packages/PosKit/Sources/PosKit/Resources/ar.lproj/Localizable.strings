@@ -177,3 +177,5 @@
 "fiscal.archive_error_unrecoverable" = "ملف الأرشيف مفقود ولا يمكن إعادة بنائه بشكل مطابق (البصمة مختلفة).";
 "fiscal.archive_error_closure_missing" = "إقفال الفترة غير موجود.";
 "fiscal.archive_error_empty_file" = "لم يتم استلام أي ملف.";
+"fiscal.archive_too_large" = "الملف كبير جدًا للتحقق منه على هذا الجهاز (أكثر من 64 ميغابايت).";
+"fiscal.archive_unreadable_file" = "تعذّرت قراءة الملف المحدد.";

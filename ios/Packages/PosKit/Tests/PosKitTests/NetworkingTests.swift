@@ -53,6 +53,17 @@ struct HTTPPosAPITests {
 
     var last: URLRequest { StubURLProtocol.lock.withLock { StubURLProtocol.captured.last! } }
 
+    @Test func archiveFileIsDownloadedUnderASafeName() async throws {
+        let id = UUID()
+        let api = makeAPI { _ in .init(status: 200, body: "PK", headers: ["Content-Disposition": "attachment; filename=../archive-T01-M-2026-09.zip"]) }
+        let url = try await api.archiveFile(id: id)
+        #expect(last.httpMethod == "GET")
+        #expect(last.url?.path == "/api/fiscal/archives/\(id.uuidString.lowercased())/file")
+        #expect(url.lastPathComponent == "archive-T01-M-2026-09.zip")
+        #expect(url.deletingLastPathComponent().standardizedFileURL == FileManager.default.temporaryDirectory.standardizedFileURL)
+        #expect(try Data(contentsOf: url) == Data("PK".utf8))
+    }
+
     func body(_ request: URLRequest) throws -> [String: Any] {
         try #require(try JSONSerialization.jsonObject(with: request.httpBody ?? Data()) as? [String: Any])
     }

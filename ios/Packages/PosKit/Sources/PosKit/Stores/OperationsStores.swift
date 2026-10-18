@@ -117,6 +117,13 @@ public final class FiscalStore {
     public private(set) var exportedFile: URL?
     public private(set) var verificationResult: FiscalVerificationResult?
     public private(set) var lastDuplicateNumber: Int?
+    /// ZIP d'archive prêt à partager (`ShareLink`).
+    public private(set) var exportedArchiveFile: URL?
+    /// Dernier verdict de vérification d'un fichier d'archive, affiché sous la liste.
+    public private(set) var archiveVerification: ArchiveVerificationResult?
+    /// Plafond du fichier choisi pour la vérification, lu entièrement en mémoire.
+    /// ponytail: une archive mensuelle de restaurant pèse quelques Mo, 64 Mo couvre une annuelle chargée ; au-delà, lire par morceaux.
+    public var maxArchiveFileBytes = 64 << 20
 
     private let api: PosAPI
     private let notifier: Notifier
@@ -219,20 +226,23 @@ public final class FiscalStore {
         }
     }
 
-    public func exportFec(from: Date, to: Date) async {
+    /// Export FEC : SIREN des réglages ramené aux chiffres ASCII, société facultative (journalisée seulement), fichier écrit sous un nom sûr
+    /// dans le dossier temporaire.
+    public func exportFec(from: Date, to: Date, company: String? = nil) async {
         isWorking = true
+        exportedFile = nil
         fecStatus = L10n.string("fiscal.fec_generating")
         defer { isWorking = false }
         do {
-            let (serverName, data) = try await api.exportFec(from: from, to: to, siren: Siren.normalized(settings.siren))
-            // Le nom vient du serveur : jamais de chemin (« ../x ») hors du dossier temporaire.
-            let base = (serverName as NSString).lastPathComponent
-            let name = base.isEmpty || base == ".." || base == "." ? "FEC.txt" : base
-            let url = FileManager.default.temporaryDirectory.appendingPathComponent(name)
+            let trimmedCompany = company?.trimmingCharacters(in: .whitespacesAndNewlines)
+            let (name, data) = try await api.exportFec(
+                from: from, to: to, siren: Siren.normalized(settings.siren), company: trimmedCompany?.isEmpty == false ? trimmedCompany : nil
+            )
+            let url = FileManager.default.temporaryDirectory.appendingPathComponent(SafeFileName.sanitized(name, fallback: "FEC.txt"))
             try data.write(to: url, options: .atomic)
             exportedFile = url
-            fecStatus = String(format: L10n.string("fiscal.fec_generated"), name)
-            notifier.success(String(format: L10n.string("fiscal.fec_ready"), name))
+            fecStatus = String(format: L10n.string("fiscal.fec_generated"), url.lastPathComponent)
+            notifier.success(String(format: L10n.string("fiscal.fec_ready"), url.lastPathComponent))
         } catch APIError.forbidden, APIError.unauthorized {
             fecStatus = L10n.string("fiscal.fec_forbidden_status")
             notifier.error(L10n.string("fiscal.fec_forbidden"))
@@ -268,7 +278,7 @@ public final class FiscalStore {
 
     public func loadPeriodClosures(type: FiscalPeriodType? = nil) async {
         do {
-            periodClosures = try await api.periodClosures(terminalId: settings.terminalId, periodType: type)
+            periodClosures = try await api.periodClosures(terminalId: settings.terminalId, periodType: type).sorted { $0.createdAtUtc > $1.createdAtUtc }
         } catch {
             if (error as? APIError)?.isUnsupported != true {
                 notifier.error(error)
@@ -284,7 +294,9 @@ public final class FiscalStore {
         isWorking = true
         defer { isWorking = false }
         do {
-            let closure = try await api.executePeriodClosure(terminalId: settings.terminalId, periodType: type, periodKey: key)
+            let closure = try await api.executePeriodClosure(
+                terminalId: settings.terminalId, periodType: type, periodKey: key.trimmingCharacters(in: .whitespacesAndNewlines)
+            )
             periodClosures.insert(closure, at: 0)
             notifier.success(L10n.string("fiscal.period_closure_success"))
             return true
@@ -330,6 +342,7 @@ public final class FiscalStore {
         defer { isWorking = false }
         do {
             let res = try await api.verifyArchive(data: data, fileName: fileName)
+            archiveVerification = res
             if res.isValid {
                 notifier.success(L10n.string("fiscal.archive_valid"))
             } else if res.reason == "hash_mismatch" {
@@ -346,5 +359,32 @@ public final class FiscalStore {
             notifier.error(error)
             return nil
         }
+    }
+
+    /// Prépare le ZIP d'une archive pour le partage.
+    @discardableResult
+    public func shareArchive(id: UUID) async -> Bool {
+        do {
+            exportedArchiveFile = try await api.archiveFile(id: id)
+            return true
+        } catch {
+            exportedArchiveFile = nil
+            notifier.error(error)
+            return false
+        }
+    }
+
+    /// Vérifie un fichier choisi (`.fileImporter`) : taille contrôlée avant lecture, l'accès au fichier reste à la charge de l'appelant.
+    public func verifyArchiveFile(at url: URL) async -> ArchiveVerificationResult? {
+        let size = (try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0
+        guard size <= maxArchiveFileBytes else {
+            notifier.error(L10n.string("fiscal.archive_too_large"))
+            return nil
+        }
+        guard let data = try? Data(contentsOf: url) else {
+            notifier.error(L10n.string("fiscal.archive_unreadable_file"))
+            return nil
+        }
+        return await verifyArchive(data: data, fileName: url.lastPathComponent)
     }
 }

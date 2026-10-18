@@ -412,6 +412,15 @@ public actor HTTPPosAPI: PosAPI {
         return try await upload("POST", "fiscal/archives/verify", body: body, contentType: "multipart/form-data; boundary=\(boundary)")
     }
 
+    public func archiveFile(id: UUID) async throws -> URL {
+        let identifier = id.uuidString.lowercased()
+        let (data, response) = try await send(makeRequest("GET", "fiscal/archives/\(identifier)/file"))
+        let name = SafeFileName.sanitized(Self.attachmentName(response) ?? "", fallback: "archive-\(identifier).zip")
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent(name)
+        try data.write(to: url, options: .atomic)
+        return url
+    }
+
     // MARK: - Personnel & imprimantes
 
     public func staff() async throws -> [StaffMember] { try await call("GET", "staff/operators") }
