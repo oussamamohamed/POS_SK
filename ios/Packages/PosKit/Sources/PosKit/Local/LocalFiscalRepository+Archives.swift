@@ -3,6 +3,8 @@ import Foundation
 /// Refus métier d'une archive : une seule archive par clôture (`ArchiveExistsException`, code `archive_exists`).
 enum FiscalArchiveError: Error, Equatable {
     case exists
+    /// Une ligne de `FiscalArchives` est illisible : refuser plutôt que de forker la chaîne.
+    case corruptChain
 }
 
 extension LocalFiscalRepository {
@@ -16,7 +18,7 @@ extension LocalFiscalRepository {
         id: UUID, closure: PeriodClosureRecord, fileName: String, fileSha256: String, fileSizeBytes: Int, userId: UUID, createdAt: Date
     ) throws -> FiscalArchive {
         guard try fiscalArchive(periodClosureId: closure.id) == nil else { throw FiscalArchiveError.exists }
-        let last = try db.query("SELECT * FROM FiscalArchives ORDER BY ArchiveSequence DESC LIMIT 1").first.flatMap(archiveRecord)
+        let last = try db.query("SELECT * FROM FiscalArchives ORDER BY ArchiveSequence DESC LIMIT 1").first.map(archiveRecord)
         let sequence = (last?.archiveSequence ?? 0) + 1
         let previousHash = last?.signatureHash ?? FiscalHashing.genesisHash
         let timestamp = FiscalHashing.roundedToMilliseconds(createdAt)
@@ -59,7 +61,7 @@ extension LocalFiscalRepository {
     }
 
     func fiscalArchives() throws -> [FiscalArchive] {
-        try db.query("SELECT * FROM FiscalArchives ORDER BY ArchiveSequence DESC").compactMap(archiveRecord)
+        try db.query("SELECT * FROM FiscalArchives ORDER BY ArchiveSequence DESC").map(archiveRecord)
     }
 
     func fiscalArchive(id: UUID) throws -> FiscalArchive? {
@@ -110,11 +112,11 @@ extension LocalFiscalRepository {
     }
 
     private func firstArchive(where clause: String, _ value: SQLValue) throws -> FiscalArchive? {
-        try db.query("SELECT * FROM FiscalArchives WHERE \(clause) LIMIT 1", [value]).first.flatMap(archiveRecord)
+        try db.query("SELECT * FROM FiscalArchives WHERE \(clause) LIMIT 1", [value]).first.map(archiveRecord)
     }
 
-    private func archiveRecord(_ row: SQLRow) -> FiscalArchive? {
-        guard let id = row.uuid("Id"), let closureId = row.uuid("PeriodClosureId") else { return nil }
+    private func archiveRecord(_ row: SQLRow) throws -> FiscalArchive {
+        guard let id = row.uuid("Id"), let closureId = row.uuid("PeriodClosureId") else { throw FiscalArchiveError.corruptChain }
         return FiscalArchive(
             id: id, periodClosureId: closureId, periodType: row.int("PeriodType") == 2 ? .annual : .monthly, periodKey: row.string("PeriodKey") ?? "",
             fileName: row.string("FileName") ?? "", fileSha256: row.string("FileSha256") ?? "", fileSizeBytes: row.int("FileSizeBytes") ?? 0,

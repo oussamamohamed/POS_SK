@@ -24,13 +24,15 @@ extension LocalFiscalRepository {
         let start = SQLValue.text(FiscalHashing.storedText(closure.periodStartUtc))
         let end = SQLValue.text(FiscalHashing.storedText(closure.periodEndUtc))
         let terminal = SQLValue.text(closure.terminalId)
+        // La clause .NET `POS_MAIN_TERM` n'est pas reprise : le terminal de l'iPad est toujours T01.
 
         let receiptRows = try db.query(
             "SELECT * FROM FiscalReceipts WHERE TerminalId = ? AND CreatedAtUtc >= ? AND CreatedAtUtc <= ? ORDER BY SequenceNumber",
             [terminal, start, end]
         )
         let receipts = try receiptRows.map { (row: SQLRow) throws -> IndentedJSON in
-            // Ordre d'écriture des règlements (le .NET ne trie pas l'Include).
+            // .NET : PaymentTender.Id est un UuidV7 posé dans l'ordre de la requête, donc ordre d'Id = ordre d'insertion. L'iPad insère dans
+            // l'ordre de la requête avec des UUID v4 : rowid est l'ordre équivalent (ORDER BY Id brouillerait les reçus multi-règlements).
             let tenders = try db.query("SELECT * FROM PaymentTenders WHERE FiscalReceiptId = ? ORDER BY rowid", [row["Id"]])
             return Self.receiptJSON(row, tenders: tenders.map(Self.tenderJSON))
         }

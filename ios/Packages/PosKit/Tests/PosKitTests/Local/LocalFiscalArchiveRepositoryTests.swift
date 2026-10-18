@@ -133,4 +133,22 @@ struct LocalFiscalArchiveRepositoryTests {
         #expect(try f.repo.verifyArchive(data: firstZip, fileName: nil) == ArchiveVerificationResult(isValid: false, archiveId: first.id, reason: "chain_break"))
         #expect(try f.repo.verifyArchive(data: secondZip, fileName: nil) == ArchiveVerificationResult(isValid: false, archiveId: second.id, reason: "chain_break"))
     }
+
+    @Test func anUnreadableArchiveRowStopsTheChainInsteadOfForkingIt() throws {
+        let f = try Self.makeFixture()
+        try Self.archive(f, f.january, at: "2025-02-02T10:00:00.000Z")
+        try f.db.run(
+            """
+            INSERT INTO FiscalArchives (Id, PeriodClosureId, PeriodType, PeriodKey, FileName, FileSha256, FileSizeBytes, ArchiveSequence,
+                PreviousSignatureHash, SignatureHash, CreatedByUserId, CreatedAtUtc)
+            VALUES ('pas-un-uuid', ?, 1, 'X', 'x.zip', 'a', 1, 2, 'p', 's', ?, '2025-03-01T00:00:00.000Z')
+            """,
+            [.uuid(UUID()), .uuid(Self.manager)]
+        )
+        let journalBefore = try f.db.query("SELECT COUNT(*) AS n FROM JournalEntries").first?.int("n")
+        #expect(throws: FiscalArchiveError.corruptChain) { try f.repo.fiscalArchives() }
+        #expect(throws: FiscalArchiveError.corruptChain) { try Self.archive(f, f.february, at: "2025-03-02T10:00:00.000Z") }
+        #expect(try f.db.query("SELECT COUNT(*) AS n FROM FiscalArchives").first?.int("n") == 2)
+        #expect(try f.db.query("SELECT COUNT(*) AS n FROM JournalEntries").first?.int("n") == journalBefore)
+    }
 }

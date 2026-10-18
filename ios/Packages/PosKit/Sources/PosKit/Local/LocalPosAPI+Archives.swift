@@ -2,6 +2,7 @@ import Foundation
 
 extension LocalPosAPI {
     private static let archiveExists = APIError.server(status: 409, message: "Une archive existe déjà pour cette clôture.")
+    private static let archiveChainCorrupt = APIError.server(status: 500, message: "La chaîne des archives fiscales est illisible : création refusée.")
     private static let archiveFileMissing = APIError.notFound("Fichier d'archive introuvable.")
 
     /// Archives fiscales, la plus récente d'abord (`GET /api/fiscal/archives`). Réservé aux responsables.
@@ -40,6 +41,9 @@ extension LocalPosAPI {
         } catch FiscalArchiveError.exists {
             try? FileManager.default.removeItem(at: temporary)
             throw Self.archiveExists
+        } catch FiscalArchiveError.corruptChain {
+            try? FileManager.default.removeItem(at: temporary)
+            throw Self.archiveChainCorrupt
         } catch {
             try? FileManager.default.removeItem(at: temporary)
             throw error
