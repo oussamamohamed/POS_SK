@@ -8,7 +8,4 @@ extension LocalPosAPI {
     // MARK: Fiscal (sous-projet 3)
     public func exportFec(from: Date, to: Date, siren: String) async throws -> (fileName: String, data: Data) { throw unsupported() }
     public func dashboard(from: Date, to: Date) async throws -> FinancialDashboard { throw unsupported() }
-    public func archives() async throws -> [FiscalArchive] { throw unsupported() }
-    public func createArchive(periodClosureId: UUID) async throws -> FiscalArchive { throw unsupported() }
-    public func verifyArchive(data: Data, fileName: String) async throws -> ArchiveVerificationResult { throw unsupported() }
 }

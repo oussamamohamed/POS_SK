@@ -8,6 +8,8 @@ public actor LocalPosAPI: PosAPI {
     /// Horloge et calendrier injectables : verrouillage des PIN, Happy Hour (heure locale) et tests sans attente réelle.
     let clock: @Sendable () -> Date
     let calendar: Calendar
+    /// Dossier des fichiers d'archive fiscale (`.zip`) ; injectable pour les tests.
+    let archivesDirectory: URL
     var backupIterations = LocalBackupCrypto.defaultIterations
 
     private static let tokenPrefix = "local-"
@@ -16,14 +18,28 @@ public actor LocalPosAPI: PosAPI {
     /// Le poste autonome est son propre terminal : les numéros de reçu (`T01-…`) et de retrait (`#A-…`) en dépendent.
     public static let standaloneTerminalId = "T01"
 
-    /// `path` : fichier SQLite à créer ou rouvrir, ou `":memory:"` (tests).
-    public init(path: String, seed: LocalSeedMode = .demo, clock: @escaping @Sendable () -> Date = { Date() }, calendar: Calendar = .autoupdatingCurrent) throws {
+    /// `path` : fichier SQLite à créer ou rouvrir, ou `":memory:"` (tests). `archivesDirectory` : dossier des archives fiscales,
+    /// par défaut `<base>-archives/` à côté du fichier SQLite.
+    public init(
+        path: String, seed: LocalSeedMode = .demo, clock: @escaping @Sendable () -> Date = { Date() }, calendar: Calendar = .autoupdatingCurrent,
+        archivesDirectory: URL? = nil
+    ) throws {
         let db = try SQLiteDatabase(path: path)
         try LocalMigrator.migrate(db)
         try LocalSeeder.seedIfEmpty(db, mode: seed)
         self.db = db
         self.clock = clock
         self.calendar = calendar
+        self.archivesDirectory = archivesDirectory ?? Self.defaultArchivesDirectory(databasePath: path)
+    }
+
+    /// `<dossier de la base>/<nom de la base>-archives` ; un dossier temporaire unique pour une base en mémoire.
+    static func defaultArchivesDirectory(databasePath path: String) -> URL {
+        guard path != ":memory:" else {
+            return FileManager.default.temporaryDirectory.appendingPathComponent("pos-archives-\(UUID().uuidString)", isDirectory: true)
+        }
+        let file = URL(fileURLWithPath: path)
+        return file.deletingLastPathComponent().appendingPathComponent(file.deletingPathExtension().lastPathComponent + "-archives", isDirectory: true)
     }
 
     var staffRepository: LocalStaffRepository { LocalStaffRepository(db: db) }
