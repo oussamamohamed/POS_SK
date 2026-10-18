@@ -38,18 +38,19 @@ extension LocalPosAPI {
         )
     }
 
+    /// Refus métier lisibles dans la langue de l'app (le .NET renvoie un code et un message anglais) ; statuts identiques au serveur.
     private static func apiError(_ error: PeriodClosureError) -> APIError {
         switch error {
         case .invalidKey:
-            .server(status: 400, message: "Clé de période invalide : attendu AAAA-MM (mensuelle) ou AAAA (annuelle).")
+            .server(status: 400, message: L10n.string("fiscal.period_error_invalid_key"))
         case .notEnded:
-            .server(status: 409, message: "La période fiscale n'est pas encore terminée.")
+            .server(status: 409, message: L10n.string("fiscal.period_error_not_ended"))
         case .alreadyClosed:
-            .server(status: 409, message: "Cette période fiscale est déjà clôturée.")
+            .server(status: 409, message: L10n.string("fiscal.period_error_already_closed"))
         case .missingDailyClosures(let days):
-            .server(status: 409, message: "Clôtures journalières (Z) manquantes pour les jours avec des reçus : \(days.joined(separator: ", ")).")
+            .server(status: 409, message: String(format: L10n.string("fiscal.period_error_missing_daily"), days.joined(separator: ", ")))
         case .missingMonthlyClosures(let months):
-            .server(status: 409, message: "Clôtures mensuelles manquantes pour l'exercice : \(months.joined(separator: ", ")).")
+            .server(status: 409, message: String(format: L10n.string("fiscal.period_error_missing_monthly"), months.joined(separator: ", ")))
         }
     }
 }

@@ -165,3 +165,13 @@
 "fiscal.archive_chain_break" = "تم اكتشاف انقطاع في السلسلة لهذا الأرشيف";
 "fiscal.archive_forbidden" = "الأرشفة مخصصة للمسؤولين فقط";
 "fiscal.archived" = "مؤرشف";
+"fiscal.period_error_invalid_key" = "مفتاح الفترة غير صالح: المتوقع YYYY-MM (شهري) أو YYYY (سنوي).";
+"fiscal.period_error_not_ended" = "لم تنتهِ الفترة المالية بعد.";
+"fiscal.period_error_already_closed" = "تم إقفال هذه الفترة المالية بالفعل.";
+"fiscal.period_error_missing_daily" = "إقفالات يومية (Z) ناقصة للأيام التي تتضمن إيصالات: %@.";
+"fiscal.period_error_missing_monthly" = "إقفالات شهرية ناقصة للسنة المالية: %@.";
+"fiscal.archive_error_exists" = "يوجد أرشيف بالفعل لهذا الإقفال.";
+"fiscal.archive_error_chain_unreadable" = "سلسلة الأرشيفات المالية غير مقروءة.";
+"fiscal.archive_error_file_missing" = "ملف الأرشيف غير موجود.";
+"fiscal.archive_error_closure_missing" = "إقفال الفترة غير موجود.";
+"fiscal.archive_error_empty_file" = "لم يتم استلام أي ملف.";

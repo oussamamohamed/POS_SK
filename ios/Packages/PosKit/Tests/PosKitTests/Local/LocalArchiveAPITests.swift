@@ -90,7 +90,7 @@ struct LocalArchiveAPITests {
         let c = try await makeContext()
         let closure = try await closeSeptember(c)
         _ = try await c.api.createArchive(periodClosureId: closure.id)
-        await #expect(throws: APIError.server(status: 409, message: "Une archive existe déjà pour cette clôture.")) {
+        await #expect(throws: APIError.server(status: 409, message: L10n.string("fiscal.archive_error_exists"))) {
             _ = try await c.api.createArchive(periodClosureId: closure.id)
         }
         #expect(try c.db.query("SELECT 1 AS x FROM FiscalArchives").count == 1)
@@ -100,7 +100,7 @@ struct LocalArchiveAPITests {
 
     @Test func anUnknownClosureIsNotFoundAndWritesNothing() async throws {
         let c = try await makeContext()
-        await #expect(throws: APIError.notFound("Clôture de période introuvable.")) {
+        await #expect(throws: APIError.notFound(L10n.string("fiscal.archive_error_closure_missing"))) {
             _ = try await c.api.createArchive(periodClosureId: UUID())
         }
         #expect(try c.db.query("SELECT 1 AS x FROM FiscalArchives").isEmpty)
@@ -116,7 +116,7 @@ struct LocalArchiveAPITests {
         tampered[43] ^= 0xFF // 1er octet des données de receipts.json
         let result = try await c.api.verifyArchive(data: tampered, fileName: archive.fileName)
         #expect(result == ArchiveVerificationResult(isValid: false, archiveId: archive.id, reason: "hash_mismatch"))
-        await #expect(throws: APIError.server(status: 400, message: "Aucun fichier reçu.")) {
+        await #expect(throws: APIError.server(status: 400, message: L10n.string("fiscal.archive_error_empty_file"))) {
             _ = try await c.api.verifyArchive(data: Data(), fileName: archive.fileName)
         }
     }
@@ -134,8 +134,8 @@ struct LocalArchiveAPITests {
         #expect(row.string("TerminalId") == nil && row.string("OperatorId") == nil)
 
         try FileManager.default.removeItem(at: url)
-        await #expect(throws: APIError.notFound("Fichier d'archive introuvable.")) { _ = try await c.api.archiveFile(id: archive.id) }
-        await #expect(throws: APIError.notFound("Fichier d'archive introuvable.")) { _ = try await c.api.archiveFile(id: UUID()) }
+        await #expect(throws: APIError.notFound(L10n.string("fiscal.archive_error_file_missing"))) { _ = try await c.api.archiveFile(id: archive.id) }
+        await #expect(throws: APIError.notFound(L10n.string("fiscal.archive_error_file_missing"))) { _ = try await c.api.archiveFile(id: UUID()) }
     }
 
     @Test func aFailingExportJournalDoesNotPreventServingTheFile() async throws {

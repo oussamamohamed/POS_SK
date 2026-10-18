@@ -165,3 +165,13 @@
 "fiscal.archive_chain_break" = "Chain break detected for this archive";
 "fiscal.archive_forbidden" = "Archiving is reserved for managers";
 "fiscal.archived" = "Archived";
+"fiscal.period_error_invalid_key" = "Invalid period key: expected YYYY-MM (monthly) or YYYY (annual).";
+"fiscal.period_error_not_ended" = "The fiscal period has not ended yet.";
+"fiscal.period_error_already_closed" = "This fiscal period is already closed.";
+"fiscal.period_error_missing_daily" = "Missing daily (Z) closures for days with receipts: %@.";
+"fiscal.period_error_missing_monthly" = "Missing monthly closures for the fiscal year: %@.";
+"fiscal.archive_error_exists" = "An archive already exists for this closure.";
+"fiscal.archive_error_chain_unreadable" = "The fiscal archive chain is unreadable.";
+"fiscal.archive_error_file_missing" = "Archive file not found.";
+"fiscal.archive_error_closure_missing" = "Period closure not found.";
+"fiscal.archive_error_empty_file" = "No file received.";

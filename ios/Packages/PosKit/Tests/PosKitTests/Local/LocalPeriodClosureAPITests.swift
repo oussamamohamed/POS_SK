@@ -147,4 +147,28 @@ struct LocalPeriodClosureAPITests {
             Issue.record("la clé invalide aurait dû être refusée")
         } catch let APIError.server(status, _) { #expect(status == 400) }
     }
+
+    @Test func refusalsCarryLocalizedReadableMessages() async throws {
+        let clock = LocalTestClock("2026-09-10T12:00:00Z")
+        let api = try await makeLocalAPI(clock: clock)
+        await #expect(throws: APIError.server(status: 409, message: L10n.string("fiscal.period_error_not_ended"))) {
+            _ = try await api.executePeriodClosure(terminalId: "T01", periodType: .monthly, periodKey: "2026-09")
+        }
+        try await payOneBurger(api, table: "T1")
+        clock.set("2026-10-02T09:00:00Z")
+        await #expect(throws: APIError.server(status: 409, message: String(format: L10n.string("fiscal.period_error_missing_daily"), "2026-09-10"))) {
+            _ = try await api.executePeriodClosure(terminalId: "T01", periodType: .monthly, periodKey: "2026-09")
+        }
+        await #expect(throws: APIError.server(status: 400, message: L10n.string("fiscal.period_error_invalid_key"))) {
+            _ = try await api.executePeriodClosure(terminalId: "T01", periodType: .monthly, periodKey: "2026-13")
+        }
+        let months = (1...12).map { String(format: "2025-%02d", $0) }.joined(separator: ", ")
+        await #expect(throws: APIError.server(status: 409, message: String(format: L10n.string("fiscal.period_error_missing_monthly"), months))) {
+            _ = try await api.executePeriodClosure(terminalId: "T01", periodType: .annual, periodKey: "2025")
+        }
+        _ = try await api.executePeriodClosure(terminalId: "T01", periodType: .monthly, periodKey: "2026-08")
+        await #expect(throws: APIError.server(status: 409, message: L10n.string("fiscal.period_error_already_closed"))) {
+            _ = try await api.executePeriodClosure(terminalId: "T01", periodType: .monthly, periodKey: "2026-08")
+        }
+    }
 }

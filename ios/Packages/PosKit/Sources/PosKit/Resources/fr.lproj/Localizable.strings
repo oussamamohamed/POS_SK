@@ -165,3 +165,13 @@
 "fiscal.archive_chain_break" = "Rupture de chaîne détectée pour cette archive";
 "fiscal.archive_forbidden" = "Archivage réservé aux responsables";
 "fiscal.archived" = "Archivée";
+"fiscal.period_error_invalid_key" = "Clé de période invalide : attendu AAAA-MM (mensuelle) ou AAAA (annuelle).";
+"fiscal.period_error_not_ended" = "La période fiscale n'est pas encore terminée.";
+"fiscal.period_error_already_closed" = "Cette période fiscale est déjà clôturée.";
+"fiscal.period_error_missing_daily" = "Clôtures journalières (Z) manquantes pour les jours avec des reçus : %@.";
+"fiscal.period_error_missing_monthly" = "Clôtures mensuelles manquantes pour l'exercice : %@.";
+"fiscal.archive_error_exists" = "Une archive existe déjà pour cette clôture.";
+"fiscal.archive_error_chain_unreadable" = "La chaîne des archives fiscales est illisible.";
+"fiscal.archive_error_file_missing" = "Fichier d'archive introuvable.";
+"fiscal.archive_error_closure_missing" = "Clôture de période introuvable.";
+"fiscal.archive_error_empty_file" = "Aucun fichier reçu.";

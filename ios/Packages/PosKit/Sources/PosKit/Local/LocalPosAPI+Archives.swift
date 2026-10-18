@@ -1,9 +1,11 @@
 import Foundation
 
 extension LocalPosAPI {
-    private static let archiveExists = APIError.server(status: 409, message: "Une archive existe déjà pour cette clôture.")
-    private static let archiveChainCorrupt = APIError.server(status: 500, message: "La chaîne des archives fiscales est illisible : création refusée.")
-    private static let archiveFileMissing = APIError.notFound("Fichier d'archive introuvable.")
+    private static var archiveExists: APIError { .server(status: 409, message: L10n.string("fiscal.archive_error_exists")) }
+    private static var archiveChainCorrupt: APIError { .server(status: 500, message: L10n.string("fiscal.archive_error_chain_unreadable")) }
+    private static var archiveFileMissing: APIError { .notFound(L10n.string("fiscal.archive_error_file_missing")) }
+    private static var closureMissing: APIError { .notFound(L10n.string("fiscal.archive_error_closure_missing")) }
+    private static var emptyArchiveFile: APIError { .server(status: 400, message: L10n.string("fiscal.archive_error_empty_file")) }
 
     /// Archives fiscales, la plus récente d'abord (`GET /api/fiscal/archives`). Réservé aux responsables.
     public func archives() async throws -> [FiscalArchive] {
@@ -17,7 +19,7 @@ extension LocalPosAPI {
         let manager = try requireManager()
         let fiscal = fiscalRepository
         guard let closure = try fiscal.periodClosure(id: periodClosureId), closure.terminalId == Self.standaloneTerminalId else {
-            throw APIError.notFound("Clôture de période introuvable.")
+            throw Self.closureMissing
         }
         guard try fiscal.fiscalArchive(periodClosureId: periodClosureId) == nil else { throw Self.archiveExists }
 
@@ -59,7 +61,7 @@ extension LocalPosAPI {
     /// Fichier vide refusé en 400, comme la route .NET.
     public func verifyArchive(data: Data, fileName: String) async throws -> ArchiveVerificationResult {
         try requireManager()
-        guard !data.isEmpty else { throw APIError.server(status: 400, message: "Aucun fichier reçu.") }
+        guard !data.isEmpty else { throw Self.emptyArchiveFile }
         return try fiscalRepository.verifyArchive(data: data, fileName: fileName)
     }
 
