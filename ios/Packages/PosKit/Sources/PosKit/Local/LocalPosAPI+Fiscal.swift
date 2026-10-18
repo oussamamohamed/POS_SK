@@ -188,9 +188,29 @@ extension LocalPosAPI {
         }
     }
 
+    /// Vérifie toutes les chaînes (`POST /api/fiscal/verify`). Comme le .NET, une rupture est journalisée (`CHAIN_BREAK_DETECTED`, première
+    /// chaîne rompue, poste de la chaîne, sans opérateur) ; un échec de cette écriture ne change pas le verdict rendu.
     public func verifyChains() async throws -> FiscalVerificationResult {
         try requireManager()
-        return try fiscalRepository.verifyAllChains(now: clock())
+        let fiscal = fiscalRepository
+        let result = try fiscal.verifyAllChains(now: clock())
+        if let broken = result.chains.first(where: { !$0.isValid }) {
+            let now = clock()
+            _ = try? db.transaction {
+                try fiscal.appendJournal(
+                    eventType: LocalJournalEvents.chainBreakDetected,
+                    payloadJson: FiscalJSON.object([
+                        ("Chain", FiscalJSON.string(broken.chain)),
+                        ("TerminalId", broken.terminalId.map(FiscalJSON.string) ?? "null"),
+                        ("SequenceNumber", broken.break.map { "\($0.sequenceNumber)" } ?? "null"),
+                        ("Reference", broken.break.map { FiscalJSON.string($0.reference) } ?? "null"),
+                        ("Kind", broken.break.map { FiscalJSON.string($0.kind) } ?? "null"),
+                    ]),
+                    terminalId: broken.terminalId, operatorId: nil, now: now
+                )
+            }
+        }
+        return result
     }
 }
 

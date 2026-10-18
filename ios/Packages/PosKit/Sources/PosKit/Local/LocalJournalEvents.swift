@@ -14,4 +14,5 @@ enum LocalJournalEvents {
     static let fecExported = "FEC_EXPORTED"
     static let archiveCreated = "ARCHIVE_CREATED"
     static let archiveExported = "ARCHIVE_EXPORTED"
+    static let chainBreakDetected = "CHAIN_BREAK_DETECTED"
 }

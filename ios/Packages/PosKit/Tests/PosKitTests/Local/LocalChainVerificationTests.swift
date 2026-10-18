@@ -141,4 +141,42 @@ struct LocalChainVerificationTests {
         try Self.insertSignedClosure(db, type: 2, key: "2027", sequence: 2, previous: december, end: "2028-01-01T00:00:00.000Z")
         #expect(try status(db, "period_closures")?.break == FiscalChainBreak(sequenceNumber: 2, reference: "A-2027", kind: "previous_hash_mismatch"))
     }
+
+    /// API sur fichier avec une seconde connexion (les triggers retirés par cette connexion valent pour l'API).
+    private func makeAPIWithDatabase(clock: LocalTestClock) async throws -> (LocalPosAPI, SQLiteDatabase) {
+        let path = temporaryDatabasePath()
+        let api = try LocalPosAPI(path: path, clock: { clock.now }, calendar: localTestCalendar)
+        _ = try await api.login(pin: "1234")
+        return (api, try SQLiteDatabase(path: path))
+    }
+
+    @Test func aBrokenChainIsJournaledAndTheJournalStaysChained() async throws {
+        let clock = LocalTestClock("2026-10-02T09:00:00Z")
+        let (api, db) = try await makeAPIWithDatabase(clock: clock)
+        _ = try await api.executePeriodClosure(terminalId: "T01", periodType: .monthly, periodKey: "2026-09")
+        #expect(try await api.verifyChains().isValid)
+        #expect(try db.query("SELECT 1 AS x FROM JournalEntries WHERE EventType = 'CHAIN_BREAK_DETECTED'").isEmpty)
+
+        try db.exec("DROP TRIGGER TR_PeriodClosures_NoUpdate")
+        try db.run("UPDATE PeriodClosures SET TotalTtcAmount = 1")
+        #expect(try await api.verifyChains().isValid == false)
+        let entry = try #require(try db.query("SELECT * FROM JournalEntries WHERE EventType = 'CHAIN_BREAK_DETECTED'").first)
+        #expect(entry.string("PayloadJson")
+            == #"{"Chain":"period_closures","TerminalId":"T01","SequenceNumber":1,"Reference":"M-2026-09","Kind":"signature_mismatch"}"#)
+        #expect(entry.string("TerminalId") == "T01")
+        #expect(entry.string("OperatorId") == nil)
+        #expect(try await api.verifyChains().chains.first { $0.chain == "journal" }?.isValid == true)
+    }
+
+    @Test func aFailingBreakJournalDoesNotHideTheVerdict() async throws {
+        let clock = LocalTestClock("2026-10-02T09:00:00Z")
+        let (api, db) = try await makeAPIWithDatabase(clock: clock)
+        _ = try await api.executePeriodClosure(terminalId: "T01", periodType: .monthly, periodKey: "2026-09")
+        try db.exec("DROP TRIGGER TR_PeriodClosures_NoUpdate")
+        try db.run("UPDATE PeriodClosures SET TotalTtcAmount = 1")
+        try db.exec("CREATE TRIGGER failBreak BEFORE INSERT ON JournalEntries WHEN NEW.EventType = 'CHAIN_BREAK_DETECTED' BEGIN SELECT RAISE(ABORT, 'boom'); END")
+        let result = try await api.verifyChains()
+        #expect(result.isValid == false)
+        #expect(result.chains.first { $0.chain == "period_closures" }?.break?.kind == "signature_mismatch")
+    }
 }
