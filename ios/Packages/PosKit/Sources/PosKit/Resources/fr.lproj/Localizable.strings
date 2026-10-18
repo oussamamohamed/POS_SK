@@ -82,6 +82,7 @@
 "errors.transport" = "Serveur injoignable : %@";
 "errors.unauthorized" = "Session expirée : veuillez saisir votre code PIN.";
 "fiscal.fec_error" = "Erreur lors de la génération du FEC";
+"fiscal.fec_error_invalid_siren" = "SIREN invalide : 9 chiffres attendus (ou laisser vide).";
 "fiscal.fec_forbidden" = "Export FEC refusé : privilèges insuffisants";
 "fiscal.fec_forbidden_status" = "Privilèges insuffisants (responsable requis)";
 "fiscal.fec_generated" = "Fichier %@ généré";

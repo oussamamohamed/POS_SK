@@ -86,10 +86,60 @@ struct LocalFecAPITests {
         #expect(FiscalJSON.string("1\u{7F}😀\u{2028}é") == Self.escaped)
     }
 
-    @Test func sirenIsEscapedIdenticallyInTheJournalPayload() async throws {
+    @Test func companyIsEscapedIdenticallyInTheJournalPayload() async throws {
         let (api, db, clock) = try await makeAPIWithDatabase()
-        _ = try await api.exportFec(from: clock.now, to: clock.now, siren: "1\u{7F}😀\u{2028}é")
+        _ = try await api.exportFec(from: clock.now, to: clock.now, siren: "", company: "1\u{7F}😀\u{2028}é")
         let payload = try #require(try db.query("SELECT PayloadJson FROM JournalEntries WHERE EventType = 'FEC_EXPORTED'").first?.string("PayloadJson"))
-        #expect(payload.contains("\"Siren\":" + Self.escaped))
+        #expect(payload.contains("\"Company\":" + Self.escaped))
+    }
+
+    @Test func anInvalidSirenIsRefusedBeforeAnythingIsWritten() async throws {
+        let (api, db, clock) = try await makeAPIWithDatabase()
+        for siren in ["12345678", "1234567890", "../x", "12345678A", "١٢٣٤٥٦٧٨٩", "123 456 789"] {
+            await #expect(throws: APIError.server(status: 400, message: L10n.string("fiscal.fec_error_invalid_siren")), Comment(rawValue: siren)) {
+                _ = try await api.exportFec(from: clock.now, to: clock.now, siren: siren)
+            }
+        }
+        #expect(try db.query("SELECT 1 AS x FROM JournalEntries WHERE EventType = 'FEC_EXPORTED'").isEmpty)
+        let (fileName, _) = try await api.exportFec(from: clock.now, to: clock.now, siren: " 123456789 ")
+        #expect(fileName == "123456789FEC20261012.txt")
+    }
+
+    @Test func aFailedExportWritesNoJournalEntry() async throws {
+        let (api, db, clock) = try await makeAPIWithDatabase()
+        try db.run(
+            """
+            INSERT INTO FiscalReceipts (Id, TerminalId, ReceiptNumber, OrderId, SequenceNumber, TotalTtcAmount, TotalHtAmount, TaxBreakdownJson,
+                PreviousSignatureHash, SignatureHash, CreatedAtUtc, IsVoid)
+            VALUES (?, 'T01', 'T01-000001', ?, 1, 1100, 1000, '{"10":100}', '', '', 'pas une date', 0)
+            """,
+            [.uuid(UUID()), .uuid(UUID())]
+        )
+        await #expect(throws: APIError.self) {
+            _ = try await api.exportFec(from: clock.now.addingTimeInterval(-86_400), to: clock.now, siren: "123456789")
+        }
+        #expect(try db.query("SELECT 1 AS x FROM JournalEntries WHERE EventType = 'FEC_EXPORTED'").isEmpty)
+    }
+
+    @Test func theJournalKeepsAnEmptySirenAndTheCompanyAsGiven() async throws {
+        let (api, db, _) = try await makeAPIWithDatabase()
+        let from = try #require(SQLDate.parse("2026-10-01T00:00:00.000Z"))
+        let to = try #require(SQLDate.parse("2026-10-12T12:00:00.000Z"))
+        _ = try await api.exportFec(from: from, to: to, siren: "", company: "Chez \"Marie\" & Cie")
+        _ = try await api.exportFec(from: from, to: to, siren: "")
+        let payloads = try db.query("SELECT PayloadJson FROM JournalEntries WHERE EventType = 'FEC_EXPORTED' ORDER BY ChainSequence")
+            .compactMap { $0.string("PayloadJson") }
+        #expect(payloads == [
+            #"{"StartDateUtc":"2026-10-01T00:00:00+00:00","EndDateUtc":"2026-10-12T12:00:00+00:00","Siren":"","Company":"Chez \u0022Marie\u0022 \u0026 Cie","FileName":"000000000FEC20261012.txt"}"#,
+            #"{"StartDateUtc":"2026-10-01T00:00:00+00:00","EndDateUtc":"2026-10-12T12:00:00+00:00","Siren":"","Company":null,"FileName":"000000000FEC20261012.txt"}"#,
+        ])
+    }
+
+    @Test func sirenInputIsNormalizedToAsciiDigitsWithoutSpaces() {
+        #expect(Siren.normalized("١٢٣ ٤٥٦ ٧٨٩") == "123456789")
+        #expect(Siren.normalized(" 123 456 789 ") == "123456789")
+        #expect(Siren.normalized("12A/..") == "12A/..")
+        #expect(Siren.isValid("") && Siren.isValid("  ") && Siren.isValid(" 123456789 "))
+        #expect(!Siren.isValid("12345678") && !Siren.isValid("١٢٣٤٥٦٧٨٩") && !Siren.isValid("../x"))
     }
 }

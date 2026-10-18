@@ -343,17 +343,20 @@ public actor HTTPPosAPI: PosAPI {
         try await call("POST", "checkout/receipts/\(receiptIdentifier)/reprint", as: ReprintResult.self)
     }
 
-    public func exportFec(from: Date, to: Date, siren: String) async throws -> (fileName: String, data: Data) {
-        let request = try makeRequest("GET", "fiscal/fec", query: ["from": Self.iso(from), "to": Self.iso(to), "siren": siren])
-        let (data, response) = try await send(request)
-        var fileName = "\(siren)FEC.txt"
-        if let disposition = response.value(forHTTPHeaderField: "Content-Disposition"),
-           let range = disposition.range(of: "filename=") {
-            fileName = disposition[range.upperBound...]
-                .split(separator: ";").first.map(String.init)?
-                .trimmingCharacters(in: CharacterSet(charactersIn: "\"' ")) ?? fileName
+    public func exportFec(from: Date, to: Date, siren: String, company: String?) async throws -> (fileName: String, data: Data) {
+        var query = ["from": Self.iso(from), "to": Self.iso(to), "siren": siren]
+        if let company, !company.isEmpty { query["company"] = company }
+        let (data, response) = try await send(makeRequest("GET", "fiscal/fec", query: query))
+        return (Self.attachmentName(response) ?? "\(siren)FEC.txt", data)
+    }
+
+    /// `filename=` de l'en-tête `Content-Disposition` (`Results.File` du .NET), sans guillemets ; `nil` si absent.
+    static func attachmentName(_ response: HTTPURLResponse) -> String? {
+        guard let disposition = response.value(forHTTPHeaderField: "Content-Disposition"), let range = disposition.range(of: "filename=") else {
+            return nil
         }
-        return (fileName, data)
+        return disposition[range.upperBound...].split(separator: ";").first.map(String.init)?
+            .trimmingCharacters(in: CharacterSet(charactersIn: "\"' "))
     }
 
     public func dashboard(from: Date, to: Date) async throws -> FinancialDashboard {

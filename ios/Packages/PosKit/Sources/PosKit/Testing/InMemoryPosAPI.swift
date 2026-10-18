@@ -607,7 +607,7 @@ public actor InMemoryPosAPI: PosAPI {
         return report
     }
 
-    public func exportFec(from: Date, to: Date, siren: String) async throws -> (fileName: String, data: Data) {
+    public func exportFec(from: Date, to: Date, siren: String, company: String?) async throws -> (fileName: String, data: Data) {
         try await step("exportFec"); try requireManager()
         let header = "JournalCode|JournalLib|EcritureNum|EcritureDate|CompteNum|CompteLib|Debit|Credit\n"
         return ("\(siren)FEC\(Int(to.timeIntervalSince1970)).txt", Data(header.utf8))

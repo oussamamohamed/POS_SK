@@ -92,7 +92,8 @@ public protocol PosAPI: Sendable {
     func reprintLatestClosure(terminalId: String) async throws -> ReprintResult
     /// Réimprime un reçu fiscal ; retourne le résultat avec duplicateNumber.
     func reprintReceipt(receiptIdentifier: String) async throws -> ReprintResult
-    func exportFec(from: Date, to: Date, siren: String) async throws -> (fileName: String, data: Data)
+    /// Export FEC ; `company` (facultatif) n'est que journalisé (`FEC_EXPORTED`), comme le paramètre `company` du .NET.
+    func exportFec(from: Date, to: Date, siren: String, company: String?) async throws -> (fileName: String, data: Data)
     func dashboard(from: Date, to: Date) async throws -> FinancialDashboard
     func verifyChains() async throws -> FiscalVerificationResult
     func periodClosures(terminalId: String?, periodType: FiscalPeriodType?) async throws -> [FiscalPeriodClosure]
@@ -173,4 +174,11 @@ public struct ProductDraft: Hashable, Sendable {
 
     public static let stations = ["HOT_KITCHEN", "COLD", "GRILL", "DESSERT", "BAR"]
     public static let vatRates: [Decimal] = [5.5, 10, 20]
+}
+
+public extension PosAPI {
+    /// Export FEC sans société.
+    func exportFec(from: Date, to: Date, siren: String) async throws -> (fileName: String, data: Data) {
+        try await exportFec(from: from, to: to, siren: siren, company: nil)
+    }
 }

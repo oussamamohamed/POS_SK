@@ -82,6 +82,7 @@
 "errors.transport" = "تعذّر الوصول إلى الخادم: %@";
 "errors.unauthorized" = "انتهت الجلسة: يرجى إدخال رمز PIN.";
 "fiscal.fec_error" = "خطأ أثناء إنشاء FEC";
+"fiscal.fec_error_invalid_siren" = "رقم SIREN غير صالح: يلزم 9 أرقام (أو اتركه فارغًا).";
 "fiscal.fec_forbidden" = "تم رفض تصدير FEC: صلاحيات غير كافية";
 "fiscal.fec_forbidden_status" = "صلاحيات غير كافية (يلزم مسؤول)";
 "fiscal.fec_generated" = "تم إنشاء الملف %@";

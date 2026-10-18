@@ -224,7 +224,10 @@ public final class FiscalStore {
         fecStatus = L10n.string("fiscal.fec_generating")
         defer { isWorking = false }
         do {
-            let (name, data) = try await api.exportFec(from: from, to: to, siren: settings.siren)
+            let (serverName, data) = try await api.exportFec(from: from, to: to, siren: Siren.normalized(settings.siren))
+            // Le nom vient du serveur : jamais de chemin (« ../x ») hors du dossier temporaire.
+            let base = (serverName as NSString).lastPathComponent
+            let name = base.isEmpty || base == ".." || base == "." ? "FEC.txt" : base
             let url = FileManager.default.temporaryDirectory.appendingPathComponent(name)
             try data.write(to: url, options: .atomic)
             exportedFile = url

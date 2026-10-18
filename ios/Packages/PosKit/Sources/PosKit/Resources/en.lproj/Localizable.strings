@@ -82,6 +82,7 @@
 "errors.transport" = "Server unreachable: %@";
 "errors.unauthorized" = "Session expired: please enter your PIN.";
 "fiscal.fec_error" = "Error while generating the FEC";
+"fiscal.fec_error_invalid_siren" = "Invalid SIREN: 9 digits expected (or leave it empty).";
 "fiscal.fec_forbidden" = "FEC export denied: insufficient privileges";
 "fiscal.fec_forbidden_status" = "Insufficient privileges (manager required)";
 "fiscal.fec_generated" = "File %@ generated";
