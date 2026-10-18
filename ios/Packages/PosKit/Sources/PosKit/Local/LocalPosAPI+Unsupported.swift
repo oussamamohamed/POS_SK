@@ -6,6 +6,5 @@ extension LocalPosAPI {
     public func pair(code: String) async throws -> PairResponse { throw unsupported() }
 
     // MARK: Fiscal (sous-projet 3)
-    public func exportFec(from: Date, to: Date, siren: String) async throws -> (fileName: String, data: Data) { throw unsupported() }
     public func dashboard(from: Date, to: Date) async throws -> FinancialDashboard { throw unsupported() }
 }
