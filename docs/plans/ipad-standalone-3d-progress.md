@@ -7,7 +7,7 @@ Base : .NET 766 (Domain 69, Infrastructure 440, Api 257) · PosKit 521 (73 suite
 | Tâche | Statut | .NET | PosKit | Tests UI | Findings de revue ouverts |
 |---|---|---|---|---|---|
 | 1 Chaînes `period_closures` et `archives` | fait | - | 526 (74 suites) | - | - |
-| 2 JET `CHAIN_BREAK_DETECTED` | à faire | - | - | - | - |
+| 2 JET `CHAIN_BREAK_DETECTED` | fait | - | 528 (74 suites) | - | - |
 | 3 Refus métier localisés | à faire | - | - | - | - |
 | 4 Archives : ligne illisible, voisin illisible | à faire | - | - | - | - |
 | 5 `archiveFile` : récupération du fichier | à faire | - | - | - | - |
