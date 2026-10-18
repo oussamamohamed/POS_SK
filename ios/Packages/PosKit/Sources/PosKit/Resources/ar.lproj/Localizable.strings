@@ -173,5 +173,6 @@
 "fiscal.archive_error_exists" = "يوجد أرشيف بالفعل لهذا الإقفال.";
 "fiscal.archive_error_chain_unreadable" = "سلسلة الأرشيفات المالية غير مقروءة.";
 "fiscal.archive_error_file_missing" = "ملف الأرشيف غير موجود.";
+"fiscal.archive_error_unrecoverable" = "ملف الأرشيف مفقود ولا يمكن إعادة بنائه بشكل مطابق (البصمة مختلفة).";
 "fiscal.archive_error_closure_missing" = "إقفال الفترة غير موجود.";
 "fiscal.archive_error_empty_file" = "لم يتم استلام أي ملف.";

@@ -4,6 +4,7 @@ extension LocalPosAPI {
     private static var archiveExists: APIError { .server(status: 409, message: L10n.string("fiscal.archive_error_exists")) }
     private static var archiveChainCorrupt: APIError { .server(status: 500, message: L10n.string("fiscal.archive_error_chain_unreadable")) }
     private static var archiveFileMissing: APIError { .notFound(L10n.string("fiscal.archive_error_file_missing")) }
+    private static var archiveUnrecoverable: APIError { .notFound(L10n.string("fiscal.archive_error_unrecoverable")) }
     private static var closureMissing: APIError { .notFound(L10n.string("fiscal.archive_error_closure_missing")) }
     private static var emptyArchiveFile: APIError { .server(status: 400, message: L10n.string("fiscal.archive_error_empty_file")) }
 
@@ -65,7 +66,7 @@ extension LocalPosAPI {
         return try readingArchives { try fiscalRepository.verifyArchive(data: data, fileName: fileName) }
     }
 
-    /// Fichier d'une archive (`GET /api/fiscal/archives/{id}/file`), pour le partage. Journalise `ARCHIVE_EXPORTED` sans poste ni opérateur,
+    /// Fichier d'une archive (`GET /api/fiscal/archives/{id}/file`), pour le partage. Fichier absent : voir `recoverArchiveFile`. Journalise `ARCHIVE_EXPORTED` sans poste ni opérateur,
     /// comme le .NET ; un échec du journal ne bloque pas l'export.
     public func archiveFile(id: UUID) async throws -> URL {
         try requireManager()
@@ -73,7 +74,8 @@ extension LocalPosAPI {
         guard let archive = try readingArchives({ try fiscal.fiscalArchive(id: id) }) else { throw Self.archiveFileMissing }
         let folder = archivesDirectory.standardizedFileURL
         let file = folder.appendingPathComponent(archive.fileName).standardizedFileURL
-        guard file.path.hasPrefix(folder.path + "/"), FileManager.default.fileExists(atPath: file.path) else { throw Self.archiveFileMissing }
+        guard file.path.hasPrefix(folder.path + "/") else { throw Self.archiveFileMissing }
+        if !FileManager.default.fileExists(atPath: file.path) { try recoverArchiveFile(archive, to: file, in: folder) }
         let now = FiscalHashing.roundedToMilliseconds(clock())
         _ = try? db.transaction {
             try fiscal.appendJournal(
@@ -88,6 +90,24 @@ extension LocalPosAPI {
             )
         }
         return file
+    }
+
+    /// Fichier absent (déplacement raté après le COMMIT, restauration d'une sauvegarde `.posbak` qui n'inclut pas les archives) :
+    /// renomme le `<id>.tmp` laissé par `createArchive` s'il a l'empreinte signée ; sinon reconstruit le ZIP depuis la base (mêmes
+    /// identifiant et horodatage, données immuables, ZIP déterministe) et ne l'écrit que si son SHA-256 est celui de la ligne.
+    private func recoverArchiveFile(_ archive: FiscalArchive, to file: URL, in folder: URL) throws {
+        let expected = archive.fileSha256.lowercased()
+        let temporary = folder.appendingPathComponent("\(FiscalHashing.guidText(archive.id)).tmp")
+        if let data = try? Data(contentsOf: temporary), FiscalHashing.sha256Hex(data) == expected {
+            try FileManager.default.moveItem(at: temporary, to: file)
+            return
+        }
+        let fiscal = fiscalRepository
+        guard let closure = try fiscal.periodClosure(id: archive.periodClosureId) else { throw Self.archiveUnrecoverable }
+        let zip = try fiscal.archiveZip(for: closure, archiveId: archive.id, createdAt: archive.createdAtUtc)
+        guard FiscalHashing.sha256Hex(zip) == expected else { throw Self.archiveUnrecoverable }
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        try zip.write(to: file, options: .withoutOverwriting)
     }
 
     /// Une ligne de `FiscalArchives` illisible remonte en erreur lisible (500) au lieu de `FiscalArchiveError` brute.

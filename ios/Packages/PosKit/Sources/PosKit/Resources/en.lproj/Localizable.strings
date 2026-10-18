@@ -173,5 +173,6 @@
 "fiscal.archive_error_exists" = "An archive already exists for this closure.";
 "fiscal.archive_error_chain_unreadable" = "The fiscal archive chain is unreadable.";
 "fiscal.archive_error_file_missing" = "Archive file not found.";
+"fiscal.archive_error_unrecoverable" = "Archive file missing and it cannot be rebuilt identically (fingerprint differs).";
 "fiscal.archive_error_closure_missing" = "Period closure not found.";
 "fiscal.archive_error_empty_file" = "No file received.";

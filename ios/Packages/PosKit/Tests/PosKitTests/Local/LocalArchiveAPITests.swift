@@ -133,9 +133,53 @@ struct LocalArchiveAPITests {
             + "\"fileName\":\"archive-T01-M-2026-09.zip\",\"fileSha256\":\"\(archive.fileSha256)\"}")
         #expect(row.string("TerminalId") == nil && row.string("OperatorId") == nil)
 
-        try FileManager.default.removeItem(at: url)
-        await #expect(throws: APIError.notFound(L10n.string("fiscal.archive_error_file_missing"))) { _ = try await c.api.archiveFile(id: archive.id) }
         await #expect(throws: APIError.notFound(L10n.string("fiscal.archive_error_file_missing"))) { _ = try await c.api.archiveFile(id: UUID()) }
+    }
+
+    @Test func aMissingFileIsRebuiltIdenticallyAndServed() async throws {
+        let c = try await makeContext()
+        let archive = try await c.api.createArchive(periodClosureId: try await closeSeptember(c).id)
+        try FileManager.default.removeItem(at: c.folder.appendingPathComponent(archive.fileName))
+        let url = try await c.api.archiveFile(id: archive.id)
+        let data = try Data(contentsOf: url)
+        #expect(FiscalHashing.sha256Hex(data) == archive.fileSha256)
+        #expect(folderContents(c) == [archive.fileName])
+        #expect(try await c.api.verifyArchive(data: data, fileName: archive.fileName).isValid)
+        #expect(try c.db.query("SELECT 1 AS x FROM JournalEntries WHERE EventType = 'ARCHIVE_EXPORTED'").count == 1)
+    }
+
+    @Test func aTemporaryFileLeftByAFailedMoveIsRenamed() async throws {
+        let c = try await makeContext()
+        let archive = try await c.api.createArchive(periodClosureId: try await closeSeptember(c).id)
+        let temporary = c.folder.appendingPathComponent("\(FiscalHashing.guidText(archive.id)).tmp")
+        try FileManager.default.moveItem(at: c.folder.appendingPathComponent(archive.fileName), to: temporary)
+        let url = try await c.api.archiveFile(id: archive.id)
+        #expect(folderContents(c) == [archive.fileName]) // renommé, pas recopié à côté
+        #expect(FiscalHashing.sha256Hex(try Data(contentsOf: url)) == archive.fileSha256)
+    }
+
+    @Test func aTruncatedTemporaryFileIsIgnoredAndTheZipRebuilt() async throws {
+        let c = try await makeContext()
+        let archive = try await c.api.createArchive(periodClosureId: try await closeSeptember(c).id)
+        let temporary = c.folder.appendingPathComponent("\(FiscalHashing.guidText(archive.id)).tmp")
+        try FileManager.default.removeItem(at: c.folder.appendingPathComponent(archive.fileName))
+        try Data("PK tronqué".utf8).write(to: temporary)
+        let url = try await c.api.archiveFile(id: archive.id)
+        #expect(FiscalHashing.sha256Hex(try Data(contentsOf: url)) == archive.fileSha256)
+        #expect(Set(folderContents(c)) == [archive.fileName, temporary.lastPathComponent])
+    }
+
+    @Test func aFileThatCannotBeRebuiltIdenticallyIsRefusedAndNothingIsWritten() async throws {
+        let c = try await makeContext()
+        let archive = try await c.api.createArchive(periodClosureId: try await closeSeptember(c).id)
+        try FileManager.default.removeItem(at: c.folder.appendingPathComponent(archive.fileName))
+        try c.db.exec("DROP TRIGGER TR_FiscalReceipts_NoUpdate")
+        try c.db.run("UPDATE FiscalReceipts SET ReceiptNumber = 'ALTERE'")
+        await #expect(throws: APIError.notFound(L10n.string("fiscal.archive_error_unrecoverable"))) {
+            _ = try await c.api.archiveFile(id: archive.id)
+        }
+        #expect(folderContents(c).isEmpty)
+        #expect(try c.db.query("SELECT 1 AS x FROM JournalEntries WHERE EventType = 'ARCHIVE_EXPORTED'").isEmpty)
     }
 
     @Test func aFailingExportJournalDoesNotPreventServingTheFile() async throws {

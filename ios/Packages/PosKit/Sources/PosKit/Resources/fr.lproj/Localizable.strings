@@ -173,5 +173,6 @@
 "fiscal.archive_error_exists" = "Une archive existe déjà pour cette clôture.";
 "fiscal.archive_error_chain_unreadable" = "La chaîne des archives fiscales est illisible.";
 "fiscal.archive_error_file_missing" = "Fichier d'archive introuvable.";
+"fiscal.archive_error_unrecoverable" = "Fichier d'archive manquant et non reconstructible à l'identique (empreinte différente).";
 "fiscal.archive_error_closure_missing" = "Clôture de période introuvable.";
 "fiscal.archive_error_empty_file" = "Aucun fichier reçu.";
