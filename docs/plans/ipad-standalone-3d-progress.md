@@ -11,7 +11,7 @@ Base : .NET 766 (Domain 69, Infrastructure 440, Api 257) · PosKit 521 (73 suite
 | 3 Refus métier localisés | fait | - | 529 (74 suites) | - | - |
 | 4 Archives : ligne illisible, voisin illisible | fait | - | 531 (74 suites) | - | - |
 | 5 `archiveFile` : récupération du fichier | fait | - | 535 (74 suites) | - | - |
-| 6 FEC : filtre SQL, ordre des séquences | à faire | - | - | - | - |
+| 6 FEC : filtre SQL, ordre des séquences | fait | - | 539 (74 suites) | - | - |
 | 7 FEC : SIREN, société, charge utile du JET | à faire | - | - | - | - |
 | 8 `FiscalStore` : partage, verdict, plafond, noms sûrs | à faire | - | - | - | - |
 | 9 Écran Fiscal autonome + XCUITest | à faire | - | - | - | - |

@@ -116,4 +116,74 @@ struct LocalFecReferenceTests {
             _ = try LocalFecExporter(db: db).export(from: .distantPast, to: .distantFuture, siren: "123456789")
         }
     }
+
+    private static func migrated() throws -> SQLiteDatabase {
+        let db = try SQLiteDatabase(path: ":memory:")
+        try LocalMigrator.migrate(db)
+        return db
+    }
+
+    /// Reçu de 11,00 € (TVA 10 %) réglé en espèces.
+    private static func insertReceipt(_ db: SQLiteDatabase, number: String, sequence: Int, at stored: String) throws {
+        let id = UUID().uuidString
+        try db.run(
+            """
+            INSERT INTO FiscalReceipts (Id, TerminalId, ReceiptNumber, OrderId, SequenceNumber, TotalTtcAmount, TotalHtAmount, TaxBreakdownJson,
+                PreviousSignatureHash, SignatureHash, CreatedAtUtc, IsVoid)
+            VALUES (?, 'T01', ?, ?, ?, 1100, 1000, '{"10":100}', '', '', ?, 0)
+            """,
+            [.text(id), .text(number), .uuid(UUID()), .integer(sequence), .text(stored)]
+        )
+        try db.run(
+            "INSERT INTO PaymentTenders (Id, FiscalReceiptId, Method, Amount, Tendered, ChangeGiven) VALUES (?, ?, 0, 1100, 1100, 0)",
+            [.uuid(UUID()), .text(id)]
+        )
+    }
+
+    /// Pièces (`PieceRef`, 9e colonne) dans l'ordre des écritures, sans doublon consécutif.
+    private static func pieces(_ data: Data) -> [String] {
+        var seen: [String] = []
+        for line in String(decoding: data, as: UTF8.self).split(separator: "\n").dropFirst() {
+            let piece = String(line.split(separator: "\t", omittingEmptySubsequences: false)[8])
+            if seen.last != piece { seen.append(piece) }
+        }
+        return seen
+    }
+
+    @Test func receiptsAreWrittenInSequenceOrderWhateverTheInsertionOrder() throws {
+        let db = try Self.migrated()
+        try Self.insertReceipt(db, number: "T01-000002", sequence: 2, at: "2026-10-05T10:00:00.000Z")
+        try Self.insertReceipt(db, number: "T01-000001", sequence: 1, at: "2026-10-05T11:00:00.000Z")
+        let year = try LocalFecExporter(db: db).export(
+            from: try #require(SQLDate.parse("2026-01-01T00:00:00.000Z")), to: try #require(SQLDate.parse("2026-12-31T23:59:59.999Z")), siren: ""
+        )
+        #expect(Self.pieces(year.data) == ["T01-000001", "T01-000002"])
+    }
+
+    @Test func theSQLPeriodFilterKeepsTheExactBounds() throws {
+        let db = try Self.migrated()
+        try Self.insertReceipt(db, number: "T01-000001", sequence: 1, at: "2026-09-30T23:59:59.999Z")
+        try Self.insertReceipt(db, number: "T01-000002", sequence: 2, at: "2026-10-01T00:00:00.000Z")
+        try Self.insertReceipt(db, number: "T01-000003", sequence: 3, at: "2026-10-31T23:59:59.999Z")
+        try Self.insertReceipt(db, number: "T01-000004", sequence: 4, at: "2026-11-01T00:00:00.000Z")
+        let exporter = LocalFecExporter(db: db)
+        let first = try #require(SQLDate.parse("2026-10-01T00:00:00.000Z"))
+        let last = try #require(SQLDate.parse("2026-10-31T23:59:59.999Z"))
+        #expect(Self.pieces(try exporter.export(from: first, to: last, siren: "").data) == ["T01-000002", "T01-000003"])
+        #expect(Self.pieces(try exporter.export(from: last, to: first, siren: "").data) == ["T01-000002", "T01-000003"]) // dates inversées
+        // Borne à une fraction de milliseconde : le texte SQL l'arrondit, le filtre exact de `LocalFecWriter` tranche.
+        let afterFirst = first.addingTimeInterval(0.0004)
+        let december = try #require(SQLDate.parse("2026-12-01T00:00:00.000Z"))
+        #expect(Self.pieces(try exporter.export(from: afterFirst, to: december, siren: "").data) == ["T01-000003", "T01-000004"])
+    }
+
+    @Test func aDateStoredInAnotherFormStopsTheExport() throws {
+        let db = try Self.migrated()
+        try Self.insertReceipt(db, number: "T01-000001", sequence: 1, at: "2026-10-05 10:00:00")
+        #expect(throws: APIError.self) {
+            _ = try LocalFecExporter(db: db).export(
+                from: try #require(SQLDate.parse("2026-10-01T00:00:00.000Z")), to: try #require(SQLDate.parse("2026-10-31T00:00:00.000Z")), siren: ""
+            )
+        }
+    }
 }
