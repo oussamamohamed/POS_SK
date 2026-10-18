@@ -475,7 +475,8 @@ struct LocalFiscalRepository {
 
     // MARK: Vérification
 
-    /// Recalcule les chaînes (reçus par terminal, clôtures Z, JET). Renvoie les anomalies (`sequence_gap`, `previous_hash_mismatch`, `signature_mismatch`).
+    /// Recalcule les chaînes (reçus par terminal, clôtures Z, JET, clôtures de période, archives). Renvoie les anomalies
+    /// (`sequence_gap`, `previous_hash_mismatch`, `signature_mismatch`).
     func verifyChains() throws -> [String] {
         var issues: [String] = []
         let receiptTerminals = try db.query("SELECT DISTINCT TerminalId FROM FiscalReceipts ORDER BY TerminalId").compactMap { $0.string("TerminalId") }
@@ -532,10 +533,15 @@ struct LocalFiscalRepository {
             previous = row.string("EntryHash") ?? ""
             expected += 1
         }
+        // Clôtures de période et archives : même contrôle que `verifyAllChains` (la restauration d'une sauvegarde les couvre ainsi).
+        for status in try periodClosureChainStatuses() + [archiveChainStatus()] {
+            guard let broken = status.break else { continue }
+            issues.append("\(status.chain) \(status.terminalId ?? "-") \(broken.reference)#\(broken.sequenceNumber): \(broken.kind)")
+        }
         return issues
     }
 
-    /// Vérification complète structurée de toutes les chaînes locales (reçus, clôtures journalières Z, JET).
+    /// Vérification complète structurée, dans l'ordre du .NET : reçus, Z, clôtures de période, JET, archives.
     func verifyAllChains(now: Date) throws -> FiscalVerificationResult {
         var chainStatuses: [FiscalChainStatus] = []
 
@@ -621,7 +627,10 @@ struct LocalFiscalRepository {
             }
         }
 
-        // 3. Journal des événements techniques (JET)
+        // 3. Clôtures de période (par poste, chaque type depuis la genèse)
+        chainStatuses += try periodClosureChainStatuses()
+
+        // 4. Journal des événements techniques (JET)
         var previous = FiscalHashing.genesisHash
         var expected = 1
         var jetValid = true
@@ -654,6 +663,9 @@ struct LocalFiscalRepository {
             expected += 1
         }
         chainStatuses.append(FiscalChainStatus(chain: "journal", terminalId: nil, checkedCount: jetRows.count, isValid: jetValid, break: jetBreak))
+
+        // 5. Archives (chaîne globale)
+        chainStatuses.append(try archiveChainStatus())
 
         let overallValid = chainStatuses.allSatisfy(\.isValid)
         return FiscalVerificationResult(isValid: overallValid, checkedAtUtc: now, chains: chainStatuses)

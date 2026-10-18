@@ -141,7 +141,7 @@ struct LocalFiscalReportTests {
 
         let result = try await api.verifyChains()
         #expect(result.isValid)
-        #expect(result.chains.count == 3)
+        #expect(result.chains.map(\.chain) == ["receipts", "z_closures", "period_closures", "journal", "archives"])
         let receiptChain = result.chains.first { $0.chain == "receipts" }
         #expect(receiptChain?.isValid == true)
         #expect(receiptChain?.checkedCount == 1)
