@@ -78,4 +78,18 @@ struct LocalFecAPITests {
         }
         #expect(try db.query("SELECT 1 AS x FROM JournalEntries WHERE EventType = 'FEC_EXPORTED'").isEmpty)
     }
+
+    /// Même littéral que le test .NET `SystemTextJson_DefaultEscaping_MatchesTheIpadFiscalJsonString`.
+    private static let escaped = "\"1\\u007F\\uD83D\\uDE00\\u2028\\u00E9\""
+
+    @Test func fiscalJSONStringEscapesLikeSystemTextJson() {
+        #expect(FiscalJSON.string("1\u{7F}😀\u{2028}é") == Self.escaped)
+    }
+
+    @Test func sirenIsEscapedIdenticallyInTheJournalPayload() async throws {
+        let (api, db, clock) = try await makeAPIWithDatabase()
+        _ = try await api.exportFec(from: clock.now, to: clock.now, siren: "1\u{7F}😀\u{2028}é")
+        let payload = try #require(try db.query("SELECT PayloadJson FROM JournalEntries WHERE EventType = 'FEC_EXPORTED'").first?.string("PayloadJson"))
+        #expect(payload.contains("\"Siren\":" + Self.escaped))
+    }
 }

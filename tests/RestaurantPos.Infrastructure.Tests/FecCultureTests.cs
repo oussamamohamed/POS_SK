@@ -59,4 +59,11 @@ public sealed class FecCultureTests
         us.Should().Be(o);
         us.Should().Contain("(HT 5,5%)").And.Contain("TVA Collectee 5,5% T01-000001");
     }
+
+    [Fact]
+    public void SystemTextJson_DefaultEscaping_MatchesTheIpadFiscalJsonString()
+    {
+        // Littéral rejoué côté Swift (LocalFecAPITests) : FiscalJSON.string doit produire la même chaîne.
+        System.Text.Json.JsonSerializer.Serialize("1\u007F😀\u2028é").Should().Be("\"1\\u007F\\uD83D\\uDE00\\u2028\\u00E9\"");
+    }
 }
