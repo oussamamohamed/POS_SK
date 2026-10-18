@@ -151,4 +151,15 @@ struct LocalFiscalArchiveRepositoryTests {
         #expect(try f.db.query("SELECT COUNT(*) AS n FROM FiscalArchives").first?.int("n") == 2)
         #expect(try f.db.query("SELECT COUNT(*) AS n FROM JournalEntries").first?.int("n") == journalBefore)
     }
+
+    @Test func anUnreadablePreviousArchiveIsAChainBreakNotAnError() throws {
+        let f = try Self.makeFixture()
+        try Self.archive(f, f.january, at: "2025-02-02T10:00:00.000Z")
+        let (february, februaryZip) = try Self.archive(f, f.february, at: "2025-03-02T10:00:00.000Z")
+        // Falsification hors application : le trigger d'immuabilité est contourné sur cette base de test.
+        try f.db.exec("DROP TRIGGER TR_FiscalArchives_NoUpdate")
+        try f.db.run("UPDATE FiscalArchives SET Id = 'pas-un-uuid' WHERE ArchiveSequence = 1")
+        #expect(try f.repo.verifyArchive(data: februaryZip, fileName: nil)
+            == ArchiveVerificationResult(isValid: false, archiveId: february.id, reason: "chain_break"))
+    }
 }

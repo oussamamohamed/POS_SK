@@ -170,4 +170,17 @@ struct LocalArchiveAPITests {
         let b = LocalPosAPI.defaultArchivesDirectory(databasePath: ":memory:")
         #expect(a != b)
     }
+
+
+    @Test func anUnreadableArchiveRowGivesAReadableErrorEverywhere() async throws {
+        let c = try await makeContext()
+        let archive = try await c.api.createArchive(periodClosureId: try await closeSeptember(c).id)
+        let zip = try Data(contentsOf: c.folder.appendingPathComponent(archive.fileName))
+        try c.db.exec("DROP TRIGGER TR_FiscalArchives_NoUpdate")
+        try c.db.run("UPDATE FiscalArchives SET Id = 'pas-un-uuid'")
+        let unreadable = APIError.server(status: 500, message: L10n.string("fiscal.archive_error_chain_unreadable"))
+        await #expect(throws: unreadable) { _ = try await c.api.archives() }
+        await #expect(throws: unreadable) { _ = try await c.api.verifyArchive(data: zip, fileName: archive.fileName) }
+        await #expect(throws: unreadable) { _ = try await c.api.createArchive(periodClosureId: archive.periodClosureId) }
+    }
 }

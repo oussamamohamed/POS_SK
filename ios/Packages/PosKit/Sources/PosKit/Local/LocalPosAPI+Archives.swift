@@ -10,7 +10,7 @@ extension LocalPosAPI {
     /// Archives fiscales, la plus récente d'abord (`GET /api/fiscal/archives`). Réservé aux responsables.
     public func archives() async throws -> [FiscalArchive] {
         try requireManager()
-        return try fiscalRepository.fiscalArchives()
+        return try readingArchives { try fiscalRepository.fiscalArchives() }
     }
 
     /// Crée l'archive d'une clôture de période (`POST /api/fiscal/archives`) : ZIP écrit en `.tmp`, ligne et JET dans une transaction,
@@ -21,7 +21,7 @@ extension LocalPosAPI {
         guard let closure = try fiscal.periodClosure(id: periodClosureId), closure.terminalId == Self.standaloneTerminalId else {
             throw Self.closureMissing
         }
-        guard try fiscal.fiscalArchive(periodClosureId: periodClosureId) == nil else { throw Self.archiveExists }
+        guard try readingArchives({ try fiscal.fiscalArchive(periodClosureId: periodClosureId) }) == nil else { throw Self.archiveExists }
 
         let now = FiscalHashing.roundedToMilliseconds(clock())
         let archiveId = UUID()
@@ -62,7 +62,7 @@ extension LocalPosAPI {
     public func verifyArchive(data: Data, fileName: String) async throws -> ArchiveVerificationResult {
         try requireManager()
         guard !data.isEmpty else { throw Self.emptyArchiveFile }
-        return try fiscalRepository.verifyArchive(data: data, fileName: fileName)
+        return try readingArchives { try fiscalRepository.verifyArchive(data: data, fileName: fileName) }
     }
 
     /// Fichier d'une archive (`GET /api/fiscal/archives/{id}/file`), pour le partage. Journalise `ARCHIVE_EXPORTED` sans poste ni opérateur,
@@ -70,7 +70,7 @@ extension LocalPosAPI {
     public func archiveFile(id: UUID) async throws -> URL {
         try requireManager()
         let fiscal = fiscalRepository
-        guard let archive = try fiscal.fiscalArchive(id: id) else { throw Self.archiveFileMissing }
+        guard let archive = try readingArchives({ try fiscal.fiscalArchive(id: id) }) else { throw Self.archiveFileMissing }
         let folder = archivesDirectory.standardizedFileURL
         let file = folder.appendingPathComponent(archive.fileName).standardizedFileURL
         guard file.path.hasPrefix(folder.path + "/"), FileManager.default.fileExists(atPath: file.path) else { throw Self.archiveFileMissing }
@@ -88,5 +88,10 @@ extension LocalPosAPI {
             )
         }
         return file
+    }
+
+    /// Une ligne de `FiscalArchives` illisible remonte en erreur lisible (500) au lieu de `FiscalArchiveError` brute.
+    private func readingArchives<T>(_ body: () throws -> T) throws -> T {
+        do { return try body() } catch FiscalArchiveError.corruptChain { throw Self.archiveChainCorrupt }
     }
 }

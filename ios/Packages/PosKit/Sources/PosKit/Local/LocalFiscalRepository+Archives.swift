@@ -103,7 +103,8 @@ extension LocalFiscalRepository {
         let chainBreak = ArchiveVerificationResult(isValid: false, archiveId: archive.id, reason: "chain_break")
         guard archive.signatureHash.lowercased() == computed else { return chainBreak }
         if archive.archiveSequence > 1 {
-            let previous = try firstArchive(where: "ArchiveSequence = ?", .integer(archive.archiveSequence - 1))
+            // Archive précédente illisible : le lien ne peut pas être prouvé, c'est une rupture (verdict, pas une erreur).
+            let previous = try? firstArchive(where: "ArchiveSequence = ?", .integer(archive.archiveSequence - 1))
             guard previous?.signatureHash.lowercased() == archive.previousSignatureHash.lowercased() else { return chainBreak }
         } else if archive.previousSignatureHash.lowercased() != FiscalHashing.genesisHash.lowercased() {
             return chainBreak
