@@ -812,6 +812,8 @@ struct SafeFileNameTests {
         #expect(SafeFileName.sanitized("../../evilFEC1.txt", fallback: "f") == "evilFEC1.txt")
         #expect(SafeFileName.sanitized("a\\b/archive-T01-M-2026-09.zip", fallback: "f") == "archive-T01-M-2026-09.zip")
         #expect(SafeFileName.sanitized("FEC du 1er été.txt", fallback: "f") == "FEC_du_1er__t_.txt")
+        let long = SafeFileName.sanitized(String(repeating: "a", count: 300) + ".zip", fallback: "f")
+        #expect(long.count == SafeFileName.maxLength && long.hasSuffix(".zip"))
         for unsafe in ["", "..", ".", "a/..", "/"] { #expect(SafeFileName.sanitized(unsafe, fallback: "f") == "f", Comment(rawValue: unsafe)) }
     }
 }

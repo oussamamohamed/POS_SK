@@ -365,7 +365,13 @@ public final class FiscalStore {
     @discardableResult
     public func shareArchive(id: UUID) async -> Bool {
         do {
-            exportedArchiveFile = try await api.archiveFile(id: id)
+            // Copie jetable sous un nom sûr : l'original (preuve fiscale) n'est jamais exposé à la feuille de partage.
+            let original = try await api.archiveFile(id: id)
+            let folder = FileManager.default.temporaryDirectory.appendingPathComponent("archive-share-\(UUID().uuidString)", isDirectory: true)
+            try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+            let copy = folder.appendingPathComponent(SafeFileName.sanitized(original.lastPathComponent, fallback: "archive.zip"))
+            try FileManager.default.copyItem(at: original, to: copy)
+            exportedArchiveFile = copy
             return true
         } catch {
             exportedArchiveFile = nil
@@ -376,7 +382,10 @@ public final class FiscalStore {
 
     /// Vérifie un fichier choisi (`.fileImporter`) : taille contrôlée avant lecture, l'accès au fichier reste à la charge de l'appelant.
     public func verifyArchiveFile(at url: URL) async -> ArchiveVerificationResult? {
-        let size = (try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0
+        guard let size = try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize else {
+            notifier.error(L10n.string("fiscal.archive_unreadable_file"))
+            return nil
+        }
         guard size <= maxArchiveFileBytes else {
             notifier.error(L10n.string("fiscal.archive_too_large"))
             return nil

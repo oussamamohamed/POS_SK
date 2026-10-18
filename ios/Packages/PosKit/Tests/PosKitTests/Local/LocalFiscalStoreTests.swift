@@ -39,7 +39,11 @@ struct LocalFiscalStoreTests {
         let archive = try #require(model.fiscal.archives.first)
         #expect(await model.fiscal.shareArchive(id: archive.id))
         let shared = try #require(model.fiscal.exportedArchiveFile)
-        #expect(shared.standardizedFileURL == folder.appendingPathComponent(archive.fileName).standardizedFileURL)
+        let original = folder.appendingPathComponent(archive.fileName)
+        #expect(shared.standardizedFileURL != original.standardizedFileURL)
+        #expect(shared.lastPathComponent == SafeFileName.sanitized(archive.fileName, fallback: "archive.zip"))
+        #expect(try Data(contentsOf: shared) == Data(contentsOf: original))
+        #expect(FileManager.default.fileExists(atPath: original.path))
         #expect(await model.fiscal.verifyArchiveFile(at: shared)?.isValid == true)
         #expect(model.fiscal.archiveVerification?.isValid == true)
 
@@ -55,5 +59,12 @@ struct LocalFiscalStoreTests {
         await model.fiscal.exportFec(from: Date(timeIntervalSince1970: 0), to: Date(timeIntervalSince1970: 1_791_000_000))
         #expect(model.fiscal.exportedFile == nil)
         #expect(model.notifier.lastMessage == L10n.string("fiscal.fec_error_invalid_siren"))
+    }
+
+    @Test func anUnreadableFileSizeIsRefused() async throws {
+        let (model, _) = try await makeModel(clock: LocalTestClock("2026-10-02T09:00:00Z"))
+        let missing = FileManager.default.temporaryDirectory.appendingPathComponent("absent-\(UUID().uuidString).zip")
+        #expect(await model.fiscal.verifyArchiveFile(at: missing) == nil)
+        #expect(model.notifier.lastMessage == L10n.string("fiscal.archive_unreadable_file"))
     }
 }
