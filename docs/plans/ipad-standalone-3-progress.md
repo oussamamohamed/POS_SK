@@ -9,6 +9,7 @@ Base de référence : .NET 753 (68 + 428 + 257) · PosKit 420
 | Rapports X, Z et vérification des chaînes (commit b953d35) | fait | 753 | 420 | - | aucun |
 | Rejeu de la journée simulée (`LocalDaySimulationTests`) : X/Z des 3 postes = grand livre .NET | fait | 753 | 423 | - | aucun |
 | Refus d'annulation après Z (409, miroir de `void_after_closure`), écart relevé par le rejeu | fait | 753 | 423 | - | aucun |
+| Lots 3a-3d : clôtures de période, archives, FEC, vérification et interface (`ipad-standalone-3{a,b,c,d}-progress.md`) | fait | 766 | 554 | 52/53 (1 échec isolé, passe seul) | aucun |
 
-Reste : FEC et export par partage, écrans d'annulation de reçu et de restauration, duplicata imprimés (sous-projet 4), attestation NF525.
+Reste : écrans d'annulation de reçu et de restauration (sous-projet 5), impression des clôtures et duplicata (sous-projet 4), attestation NF525.
 Le rejeu compare X, Z, TVA par taux, règlements, nombre de reçus et grand total perpétuel, poste par poste (chaque poste du scénario est rejoué sur sa propre base `T01`).

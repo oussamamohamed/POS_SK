@@ -149,17 +149,18 @@ Aucun ticket n'est jamais supprimé physiquement :
 
 ### 5.1 Vérification de l'Intégrité des Chaînes
 Accessible depuis l'écran Fiscal Web et iPad :
-1. Clic sur **« Vérifier les chaînes »** (`POST /api/fiscal/verify-chains`).
+1. Clic sur **« Vérifier les chaînes »** (`POST /api/fiscal/verify`).
 2. Le service `FiscalChainVerificationService` recharge l'intégralité des enregistrements et recalcule pas à pas chaque signature :
    - Chaîne des reçus par terminal (`receipts`).
    - Chaîne des clôtures journalières par terminal (`z_closures`).
-   - Chaîne du journal technique JET (`jet`).
+   - Chaîne du journal technique JET (`journal`).
    - Chaîne des clôtures de période (`period_closures`).
    - Chaîne des archives (`archives`).
 3. En cas d'anomalie, l'audit identifie précisément le document altéré, la séquence et la nature du problème :
    - `sequence_gap` : numéro de séquence manquant.
    - `previous_hash_mismatch` : liaison rompue avec le document précédent.
    - `signature_mismatch` : données du document altérées.
+   Une rupture est journalisée (`CHAIN_BREAK_DETECTED`, première chaîne rompue). Le mode autonome de l'iPad fait la même vérification sur sa base (`LocalFiscalRepository.verifyAllChains`, mêmes chaînes, codes et références).
 
 ### 5.2 Vérification Externe d'une Archive ZIP
 En cas de contrôle fiscal ou d'audit indépendant :
