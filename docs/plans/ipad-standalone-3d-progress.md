@@ -14,5 +14,5 @@ Base : .NET 766 (Domain 69, Infrastructure 440, Api 257) · PosKit 521 (73 suite
 | 6 FEC : filtre SQL, ordre des séquences | fait | - | 539 (74 suites) | - | - |
 | 7 FEC : SIREN, société, charge utile du JET | fait | - | 544 (74 suites) | - | - |
 | 8 `FiscalStore` : partage, verdict, plafond, noms sûrs | fait | - | 553 (76 suites) | - | - |
-| 9 Écran Fiscal autonome + XCUITest | à faire | - | - | - | - |
+| 9 Écran Fiscal autonome + XCUITest | fait | - | 553 (76 suites) | 3 lancés, réussis | - |
 | 10 Documentation et vérification finale | à faire | - | - | - | - |

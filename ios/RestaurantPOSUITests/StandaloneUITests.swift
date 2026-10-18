@@ -177,4 +177,41 @@ final class StandaloneUITests: PosUITestCase {
         tap("backup.passphrase.save")
         assertExists("backup.passphrase.field")
     }
+
+    /// Mois précédent dans le fuseau du simulateur, comme la clé proposée par l'écran Fiscal.
+    /// ponytail: lancé à minuit pile un 1er du mois, l'app et le test pourraient voir deux mois différents ; relancer suffit.
+    private func previousMonthKey() -> String {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = .current
+        let previous = calendar.date(byAdding: .month, value: -1, to: Date())!
+        return String(format: "%04d-%02d", calendar.component(.year, from: previous), calendar.component(.month, from: previous))
+    }
+
+    /// Mode autonome (base de démonstration, horloge réelle) : le mois précédent n'a ni reçu ni Z, sa clôture est donc permise.
+    func testStandaloneClosureArchiveFecAndGreenVerification() {
+        launchStandalone()
+        tap("nav.fiscal")
+        let key = previousMonthKey()
+
+        tap("fiscal.executePeriodClosure")
+        waitToast(containing: "Clôture de période scellée")
+        tap("fiscal.executePeriodClosure")
+        waitToast(containing: "déjà clôturée") // refus métier lisible
+
+        tap("fiscal.archivePeriodClosure_\(key)")
+        waitToast(containing: "Archive générée")
+        assertExists("fiscal.archived_\(key)")
+        tap("fiscal.shareArchive_\(key)")
+        assertExists("fiscal.archiveShare")
+
+        tap("fec.generate")
+        waitLabel("fec.status", contains: "généré")
+        assertExists("fec.share")
+
+        tap("fiscal.verifyChains")
+        waitLabel("fiscal.verificationStatus", contains: "intègres")
+        assertExists("fiscal.chain.period_closures")
+        assertExists("fiscal.chain.archives")
+        screenshot("Fiscal autonome")
+    }
 }
