@@ -122,7 +122,7 @@ public sealed class FecExportService : IFecExportService
                     salesLibelle,
                     pieceRef,
                     ecritureDateStr,
-                    $"Vente {pieceRef} (HT {item.TaxRatePercent:0.#}%)",
+                    $"Vente {pieceRef} (HT {FormatRateForLabel(item.TaxRatePercent)}%)",
                     htDebit,
                     htCredit,
                     validDateStr
@@ -146,7 +146,7 @@ public sealed class FecExportService : IFecExportService
                         vatLibelle,
                         pieceRef,
                         ecritureDateStr,
-                        $"TVA Collectee {item.TaxRatePercent:0.#}% {pieceRef}",
+                        $"TVA Collectee {FormatRateForLabel(item.TaxRatePercent)}% {pieceRef}",
                         vatDebit,
                         vatCredit,
                         validDateStr
@@ -310,6 +310,10 @@ public sealed class FecExportService : IFecExportService
             _ => ("445700", "TVA Collectee")
         };
     }
+
+    // Libellés en français quelle que soit la culture du serveur : « 5,5 », « 10 ».
+    private static string FormatRateForLabel(decimal rate) =>
+        rate.ToString("0.#", CultureInfo.InvariantCulture).Replace('.', ',');
 
     private static (string AccountNum, string AccountLib) GetPaymentAccount(PaymentMethod method)
     {
