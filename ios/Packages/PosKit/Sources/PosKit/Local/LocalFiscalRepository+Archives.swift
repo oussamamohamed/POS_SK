@@ -74,7 +74,9 @@ extension LocalFiscalRepository {
 
     /// `VerifyArchiveAsync` : retrouve l'archive par l'identifiant du manifeste, puis la clôture du manifeste, puis le SHA-256 du fichier,
     /// puis le nom de fichier ; contrôle l'empreinte, recalcule la signature et le lien avec l'archive précédente (ou la genèse).
-    func verifyArchive(data: Data, fileName: String?) throws -> ArchiveVerificationResult {
+    func verifyArchive(
+        data: Data, fileName: String?, previousArchive: ((Int) throws -> FiscalArchive?)? = nil
+    ) throws -> ArchiveVerificationResult {
         guard !data.isEmpty else { return ArchiveVerificationResult(isValid: false, archiveId: nil, reason: "unknown_archive") }
         let sha = FiscalHashing.sha256Hex(data)
         var manifestArchiveId: UUID?
@@ -104,7 +106,13 @@ extension LocalFiscalRepository {
         guard archive.signatureHash.lowercased() == computed else { return chainBreak }
         if archive.archiveSequence > 1 {
             // Archive précédente illisible : le lien ne peut pas être prouvé, c'est une rupture (verdict, pas une erreur).
-            let previous = try? firstArchive(where: "ArchiveSequence = ?", .integer(archive.archiveSequence - 1))
+            let previous: FiscalArchive?
+            do {
+                previous = try previousArchive?(archive.archiveSequence - 1)
+                    ?? firstArchive(where: "ArchiveSequence = ?", .integer(archive.archiveSequence - 1))
+            } catch FiscalArchiveError.corruptChain {
+                previous = nil
+            }
             guard previous?.signatureHash.lowercased() == archive.previousSignatureHash.lowercased() else { return chainBreak }
         } else if archive.previousSignatureHash.lowercased() != FiscalHashing.genesisHash.lowercased() {
             return chainBreak

@@ -162,4 +162,14 @@ struct LocalFiscalArchiveRepositoryTests {
         #expect(try f.repo.verifyArchive(data: februaryZip, fileName: nil)
             == ArchiveVerificationResult(isValid: false, archiveId: february.id, reason: "chain_break"))
     }
+
+    @Test func aNonCorruptionFailureOnThePreviousArchiveIsNotAChainBreak() throws {
+        struct Locked: Error, Equatable {}
+        let f = try Self.makeFixture()
+        try Self.archive(f, f.january, at: "2025-02-02T10:00:00.000Z")
+        let (_, februaryZip) = try Self.archive(f, f.february, at: "2025-03-02T10:00:00.000Z")
+        #expect(throws: Locked()) {
+            try f.repo.verifyArchive(data: februaryZip, fileName: nil, previousArchive: { _ in throw Locked() })
+        }
+    }
 }

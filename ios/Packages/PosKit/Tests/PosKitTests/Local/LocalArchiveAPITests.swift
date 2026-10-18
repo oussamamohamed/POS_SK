@@ -215,7 +215,6 @@ struct LocalArchiveAPITests {
         #expect(a != b)
     }
 
-
     @Test func anUnreadableArchiveRowGivesAReadableErrorEverywhere() async throws {
         let c = try await makeContext()
         let archive = try await c.api.createArchive(periodClosureId: try await closeSeptember(c).id)
