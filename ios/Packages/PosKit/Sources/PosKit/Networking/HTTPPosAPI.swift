@@ -36,7 +36,10 @@ public actor HTTPPosAPI: PosAPI {
         var components = URLComponents(url: baseURL.appendingPathComponent("api").appendingPathComponent(path), resolvingAgainstBaseURL: false)!
         // `appendingPathComponent` encode déjà les segments ; on force l'encodage des espaces/accents.
         if !query.isEmpty {
-            components.queryItems = query.sorted { $0.key < $1.key }.map { URLQueryItem(name: $0.key, value: $0.value) }
+            // Encodage strict (non réservés seulement) : `URLQueryItem` laisse `+`, que ASP.NET lit comme une espace, et `&`/`=` passent.
+            let unreserved = CharacterSet(charactersIn: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~")
+            func encode(_ text: String) -> String { text.addingPercentEncoding(withAllowedCharacters: unreserved) ?? "" }
+            components.percentEncodedQuery = query.sorted { $0.key < $1.key }.map { "\(encode($0.key))=\(encode($0.value))" }.joined(separator: "&")
         }
         guard let url = components.url else { throw APIError.transport(L10n.string("errors.invalid_url")) }
         var request = URLRequest(url: url)

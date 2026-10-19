@@ -166,4 +166,30 @@ struct LocalBackupTests {
             #expect(throws: LocalBackupFailure.encryptionFailed) { try LocalBackupCrypto.seal(Data("x".utf8), passphrase: "p", iterations: n) }
         }
     }
+
+    /// Base d'avant V8/V9 : pas de `PeriodClosures` ni de `FiscalArchives`.
+    private func makeV7DB() throws -> SQLiteDatabase {
+        let db = try SQLiteDatabase(path: ":memory:")
+        for script in LocalMigrator.steps.prefix(7) { try db.exec(script) }
+        try db.exec("PRAGMA user_version = 7")
+        try db.run("INSERT INTO LocalCounters (Name, Day, LastSequence) VALUES ('marker', '', 7)")
+        return db
+    }
+
+    @Test func chainVerificationTreatsAbsentPeriodAndArchiveTablesAsEmptyChains() throws {
+        let repo = LocalFiscalRepository(db: try makeV7DB())
+        #expect(try repo.verifyChains().isEmpty)
+        let result = try repo.verifyAllChains(now: at)
+        #expect(result.chains.filter { $0.chain == "period_closures" || $0.chain == "archives" }.allSatisfy { $0.isValid })
+    }
+
+    @Test func aBackupMadeBeforeV8AndV9CanBeRestored() throws {
+        let folder = try makeFolder()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let file = try LocalBackupService.write(db: try makeV7DB(), to: folder, passphrase: "phrase de test", now: at, iterations: Self.fast)
+        let destination = folder.appendingPathComponent("restored-v7.sqlite")
+        try LocalBackupService.restore(from: file, passphrase: "phrase de test", to: destination)
+        let restored = try SQLiteDatabase(path: destination.path)
+        #expect(try restored.query("SELECT LastSequence FROM LocalCounters WHERE Name = 'marker'").first?.int("LastSequence") == 7)
+    }
 }

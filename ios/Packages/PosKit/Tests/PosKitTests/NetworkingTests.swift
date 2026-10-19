@@ -192,6 +192,12 @@ struct HTTPPosAPITests {
         #expect(last.url?.query?.contains("siren=123456789") == true)
     }
 
+    @Test func queryValuesAreStrictlyPercentEncoded() async throws {
+        let api = makeAPI { _ in .init(status: 200, body: "x", headers: ["Content-Disposition": "attachment; filename=x.txt"]) }
+        _ = try await api.exportFec(from: Date(timeIntervalSince1970: 0), to: Date(), siren: "", company: "A+B & C=D é")
+        #expect(last.url?.query?.contains("company=A%2BB%20%26%20C%3DD%20%C3%A9") == true)
+    }
+
     @Test func fecExportSendsTheCompanyOnlyWhenGiven() async throws {
         let api = makeAPI { _ in .init(status: 200, body: "x", headers: ["Content-Disposition": "attachment; filename=123456789FEC20260924.txt"]) }
         let named = try await api.exportFec(from: Date(timeIntervalSince1970: 0), to: Date(), siren: "123456789", company: "Chez Marie")

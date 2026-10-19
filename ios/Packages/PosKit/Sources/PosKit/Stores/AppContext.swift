@@ -69,7 +69,7 @@ public final class TerminalSettings {
     public init(defaults: UserDefaults = .standard, credentialStore: DeviceCredentialStore = InMemoryCredentialStore()) {
         self.defaults = defaults
         serverURL = defaults.string(forKey: Keys.server) ?? "http://localhost:5080"
-        siren = defaults.string(forKey: Keys.siren) ?? "123456789"
+        siren = defaults.string(forKey: Keys.siren) ?? ""
         mealVoucherPolicy = MealVoucherPolicy(rawValue: defaults.integer(forKey: Keys.voucher)) ?? .capAtBalance
         self.credentialStore = credentialStore
         credentials = credentialStore.load()

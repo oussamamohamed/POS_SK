@@ -4,8 +4,14 @@ import Foundation
 /// (`FiscalChainVerificationService.cs`). Les lignes sont lues brutes (sans `periodClosureRecord` / `archiveRecord`, qui complètent
 /// les valeurs manquantes) : une colonne vide doit casser la chaîne, pas être remplacée.
 extension LocalFiscalRepository {
+    func tableExists(_ name: String) throws -> Bool {
+        try !db.query("SELECT 1 AS x FROM sqlite_master WHERE type = 'table' AND name = ?", [.text(name)]).isEmpty
+    }
+
     /// Une ligne par poste ; aucun poste : une ligne vide valide sans poste, comme le .NET.
     func periodClosureChainStatuses() throws -> [FiscalChainStatus] {
+        // Base antérieure à V8 (ex. sauvegarde ancienne restaurée avant migration) : table absente = chaîne vide, valide.
+        guard try tableExists("PeriodClosures") else { return [FiscalChainStatus(chain: "period_closures", terminalId: nil, checkedCount: 0, isValid: true)] }
         let terminals = try db.query("SELECT DISTINCT TerminalId FROM PeriodClosures ORDER BY TerminalId").compactMap { $0.string("TerminalId") }
         guard !terminals.isEmpty else { return [FiscalChainStatus(chain: "period_closures", terminalId: nil, checkedCount: 0, isValid: true)] }
         return try terminals.map { try periodClosureChainStatus(terminal: $0) }
@@ -46,6 +52,7 @@ extension LocalFiscalRepository {
 
     /// Chaîne globale des archives (tous postes), par `ArchiveSequence`.
     func archiveChainStatus() throws -> FiscalChainStatus {
+        guard try tableExists("FiscalArchives") else { return FiscalChainStatus(chain: "archives", terminalId: nil, checkedCount: 0, isValid: true) } // avant V9
         let rows = try db.query("SELECT * FROM FiscalArchives ORDER BY ArchiveSequence")
         var previous = FiscalHashing.genesisHash
         var expected = 1

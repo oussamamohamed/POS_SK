@@ -48,7 +48,7 @@ struct LocalFiscalStoreTests {
         #expect(model.fiscal.archiveVerification?.isValid == true)
 
         await model.fiscal.exportFec(from: Date(timeIntervalSince1970: 0), to: Date(timeIntervalSince1970: 1_791_000_000), company: "Chez Marie")
-        #expect(model.fiscal.exportedFile?.lastPathComponent.hasPrefix("123456789FEC") == true)
+        #expect(model.fiscal.exportedFile?.lastPathComponent.hasPrefix("000000000FEC") == true)
         #expect(await model.fiscal.verify())
         #expect(model.fiscal.verificationResult?.chains.map(\.chain) == ["receipts", "z_closures", "period_closures", "journal", "archives"])
     }
