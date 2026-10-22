@@ -43,22 +43,15 @@ import Testing
         #expect(ink(arabicStart, columns: 288..<576) > ink(arabicStart, columns: 0..<288))
     }
 
-    @Test func columnsPutValueAtTheOppositeEdgeInRtl() {
-        let ltr = TicketRasterRenderer.render(doc([.columns(label: "Total", value: "12.50")]), widthDots: 576)[0]
-        #expect(ink(ltr, columns: 400..<576) > 0); #expect(ink(ltr, columns: 0..<100) > 0)
-        let rtl = TicketRasterRenderer.render(doc([.columns(label: "المجموع", value: "12.50")], rtl: true), widthDots: 576)[0]
-        #expect(ink(rtl, columns: 0..<176) > 0); #expect(ink(rtl, columns: 400..<576) > 0)
-    }
-
     /// Une colonne vide à la fois : chaque élément est du bon côté, et le miroir RTL l'inverse.
     @Test func columnsMirrorLabelAndValueSidesInRtl() {
         let half = 0..<288, otherHalf = 288..<576
         for rtl in [false, true] {
             let valueOnly = TicketRasterRenderer.render(doc([.columns(label: " ", value: "12.50")], rtl: rtl), widthDots: 576)[0]
-            #expect(ink(valueOnly, columns: rtl ? half : otherHalf) > 0, "valeur, rtl=\(rtl)")
+            #expect(ink(valueOnly, columns: rtl ? half : otherHalf) > 50, "valeur, rtl=\(rtl)")
             #expect(ink(valueOnly, columns: rtl ? otherHalf : half) == 0, "valeur, rtl=\(rtl)")
             let labelOnly = TicketRasterRenderer.render(doc([.columns(label: rtl ? "المجموع" : "Total", value: " ")], rtl: rtl), widthDots: 576)[0]
-            #expect(ink(labelOnly, columns: rtl ? otherHalf : half) > 0, "étiquette, rtl=\(rtl)")
+            #expect(ink(labelOnly, columns: rtl ? otherHalf : half) > 50, "étiquette, rtl=\(rtl)")
             #expect(ink(labelOnly, columns: rtl ? half : otherHalf) == 0, "étiquette, rtl=\(rtl)")
         }
     }
