@@ -15,6 +15,7 @@ enum TicketRasterRenderer {
     static var fontsAvailable: Bool { EmbeddedFonts.shared.complete }
 
     static func render(_ doc: TicketDocument, widthDots: Int) -> [MonoImage] {
+        precondition(widthDots > 16 && widthDots % 8 == 0, "Largeur de rendu invalide : \(widthDots) points (multiple de 8 supérieur à 16 requis)")
         var segments: [[TicketLine]] = [[]]
         for line in doc.lines {
             if case .separator(cut: true) = line { segments.append([]) } else { segments[segments.count - 1].append(line) }
@@ -33,7 +34,8 @@ enum TicketRasterRenderer {
     private static func renderSegment(_ lines: [TicketLine], rtl: Bool, width: Int) -> MonoImage {
         let content = CGFloat(width) - 2 * margin
         let blocks = lines.map { layout($0, rtl: rtl, content: content) }
-        let height = Int(blocks.reduce(0) { $0 + $1.height }.rounded(.up)) + 2 * Int(margin)
+        let total: CGFloat = blocks.reduce(0) { $0 + $1.height }
+        let height = Int(total.rounded(.up)) + 2 * Int(margin)
         guard let context = CGContext(data: nil, width: width, height: height, bitsPerComponent: 8, bytesPerRow: width,
                                       space: CGColorSpaceCreateDeviceGray(), bitmapInfo: CGImageAlphaInfo.none.rawValue)
         else { return MonoImage(width: width, height: height, bits: [UInt8](repeating: 0, count: width / 8 * height)) }
@@ -105,8 +107,10 @@ enum TicketRasterRenderer {
                                                                     CGSize(width: maxWidth, height: .greatestFiniteMagnitude), nil)
             height = size.height
             // Largeur de la ligne la plus longue, indépendante de l'alignement (MeasuredWidth de RichTextKit).
-            let lines = CTFrameGetLines(Self.frame(framesetter, CGRect(x: 0, y: 0, width: maxWidth, height: height.rounded(.up) + 1))) as? [CTLine] ?? []
-            measuredWidth = min(maxWidth, lines.map { CGFloat(CTLineGetTypographicBounds($0, nil, nil, nil)) - CGFloat(CTLineGetTrailingWhitespaceWidth($0)) }.max() ?? 0)
+            let frame = Self.frame(framesetter, CGRect(x: 0, y: 0, width: maxWidth, height: height.rounded(.up) + 1))
+            let ctLines: [CTLine] = (CTFrameGetLines(frame) as? [CTLine]) ?? []
+            let lineWidths: [CGFloat] = ctLines.map { CGFloat(CTLineGetTypographicBounds($0, nil, nil, nil)) - CGFloat(CTLineGetTrailingWhitespaceWidth($0)) }
+            measuredWidth = min(maxWidth, lineWidths.max() ?? 0)
         }
 
         func draw(_ context: CGContext, x: CGFloat, y: CGFloat, imageHeight: CGFloat) {

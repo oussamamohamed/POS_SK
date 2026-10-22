@@ -24,3 +24,10 @@ Rendu à 576 points des scénarios `receipt_fr_full` et `receipt_ar` (PNG jetabl
 - `xcodebuild -project RestaurantPOS.xcodeproj -scheme RestaurantPOS -destination 'generic/platform=iOS Simulator' build` : BUILD SUCCEEDED ; `PosKit_PosKit.bundle` dans l'app contient les 4 TTF Noto et `OFL.txt`.
 - Suite XCUITest non relancée (aucune interface modifiée).
 - Reste pour le lot 4b : calcul de `ReportPrintData`, transport et file d'impression, essai papier du raster.
+
+## Fix wave final (revue de branche)
+
+- Rendu : plus de plafond de hauteur de `MonoImage` (bandes de 256 lignes), garde-fou de largeur dans `TicketRasterRenderer.render`, expressions lourdes scindées, comparaison `DUPLICATA` littérale, commentaire `TicketDocumentJSON` corrigé (même forme, pas les mêmes octets : le lot 4b ne compare pas les JSON stockés octet pour octet).
+- `TicketJSON` déplacé dans la cible de tests (`TestHex.swift`, avec `hex` et un `bytes(fromHex:)` strict) ; ligne de copyright Noto Arabic ajoutée aux deux `OFL.txt`.
+- Tests : sections de fixture non vides, ensembles de langues et de kinds exacts, un octet par caractère Pc858, wrap comparé en `[UInt16]`, test d'image de 70 000 lignes.
+- .NET : fait `Fixture_is_generated_in_paris_time` supprimé. Comptes : .NET 767 (69 + 441 + 257), PosKit 598.

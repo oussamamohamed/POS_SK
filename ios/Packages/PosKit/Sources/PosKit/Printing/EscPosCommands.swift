@@ -7,10 +7,10 @@ struct MonoImage: Equatable, Sendable {
     let bits: [UInt8]
     var bytesPerRow: Int { width / 8 }
 
-    /// Les dimensions doivent tenir dans l'en-tête GS v 0 (deux octets chacune) et `bits` couvrir exactement l'image.
+    /// Les octets par ligne doivent tenir dans l'en-tête GS v 0 (deux octets) ; la hauteur est libre (bandes de 256 lignes) ; `bits` couvre exactement l'image.
     init(width: Int, height: Int, bits: [UInt8]) {
         precondition(width > 0 && width % 8 == 0, "Largeur non multiple de 8 : \(width)")
-        precondition(width / 8 <= 65535 && height >= 0 && height <= 65535, "Dimensions hors limites : \(width)×\(height)")
+        precondition(width / 8 <= 65535 && height >= 0, "Dimensions hors limites : \(width)×\(height)")
         precondition(bits.count == width / 8 * height, "Taille de bits incohérente : \(bits.count)")
         self.width = width
         self.height = height

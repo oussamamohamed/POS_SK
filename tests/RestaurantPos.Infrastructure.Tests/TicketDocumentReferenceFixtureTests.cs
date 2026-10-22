@@ -43,12 +43,6 @@ public class TicketDocumentReferenceFixtureTests
     private const string Signature = "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90";
 
     [Fact]
-    public void Fixture_is_generated_in_paris_time()
-    {
-        TimeZoneInfo.Local.Id.Should().BeOneOf("Europe/Paris", "Romance Standard Time");
-    }
-
-    [Fact]
     public void Fixture_matches_dotnet()
     {
         var previousTz = Environment.GetEnvironmentVariable("TZ");

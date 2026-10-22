@@ -5,8 +5,9 @@ import Testing
 @Suite struct TicketTextsTests {
     @Test func everyKeyMatchesDotNetInEveryLanguage() throws {
         let f = try TicketReferenceFixture.load()
-        #expect(!f.texts.isEmpty)
+        #expect(Set(f.texts.keys) == ["en", "fr", "ar"])
         for (lang, table) in f.texts {
+            #expect(!table.isEmpty, "\(lang)")
             for (key, value) in table { #expect(TicketTexts.get(lang, key) == value, "\(lang) \(key)") }
         }
     }

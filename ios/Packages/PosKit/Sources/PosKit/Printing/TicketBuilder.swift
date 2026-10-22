@@ -171,7 +171,7 @@ enum TicketBuilder {
     static func withDuplicateNotice(_ doc: TicketDocument, duplicateNumber: Int) -> TicketDocument {
         var lines = doc.lines.filter {
             guard case let .text(text, _, _, _) = $0 else { return true }
-            return text.range(of: "DUPLICATA", options: .caseInsensitive) == nil
+            return text.range(of: "DUPLICATA", options: [.caseInsensitive, .literal]) == nil
         }
         lines.insert(duplicateNotice(duplicateNumber), at: 0)
         return TicketDocument(language: doc.language, rightToLeft: doc.rightToLeft, lines: lines)

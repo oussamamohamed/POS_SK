@@ -48,7 +48,9 @@ extension TicketLine: Codable {
 
 extension TicketDocument: Codable {}
 
-/// Même JSON que `TicketDocumentJson` du .NET (System.Text.Json « Web »).
+/// Même forme que `TicketDocumentJson` du .NET (clés, discriminant `type`, `align` numérique), mais PAS les mêmes octets :
+/// `JSONEncoder` échappe `/` et laisse l'unicode brut, alors que le .NET « Web » échappe le non-ASCII en \uXXXX.
+/// Le lot 4b ne doit donc pas comparer les JSON stockés octet pour octet.
 enum TicketDocumentJSON {
     static func serialize(_ document: TicketDocument) throws -> String {
         String(decoding: try JSONEncoder().encode(document), as: UTF8.self)

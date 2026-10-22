@@ -155,20 +155,3 @@ struct ReportPrintData: Codable, Equatable, Sendable {
     var hasGlobalDiscount: Bool
     static let empty = ReportPrintData(categories: [], tips: [], totalTipsCents: 0, hasGlobalDiscount: false)
 }
-
-/// Décodage JSON des entrées : dates ISO 8601 UTC avec millisecondes (`2025-07-15T10:30:45.000Z`).
-enum TicketJSON {
-    static func decoder() -> JSONDecoder {
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .custom { decoder in
-            let text = try decoder.singleValueContainer().decode(String.self)
-            let parser = ISO8601DateFormatter()
-            parser.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-            guard let date = parser.date(from: text) else {
-                throw DecodingError.dataCorrupted(.init(codingPath: decoder.codingPath, debugDescription: "Date invalide : \(text)"))
-            }
-            return date
-        }
-        return decoder
-    }
-}

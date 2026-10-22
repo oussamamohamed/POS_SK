@@ -2,9 +2,6 @@ import Foundation
 import Testing
 @testable import PosKit
 
-/// Octets en hexadécimal minuscule, comme la fixture.
-func hex(_ bytes: [UInt8]) -> String { bytes.map { String(format: "%02x", $0) }.joined() }
-
 @Suite struct Pc858Tests {
     @Test func tableMatchesDotNetForEveryByte() throws {
         let f = try TicketReferenceFixture.load()
@@ -14,12 +11,15 @@ func hex(_ bytes: [UInt8]) -> String { bytes.map { String(format: "%02x", $0) }.
             let scalar = try #require(UnicodeScalar(UInt32(f.pc858[byte])))
             let encoded = Pc858.encode(Array(String(scalar).utf16))
             // Si deux octets décodent vers le même caractère, l'inverse prend le premier.
+            #expect(encoded.count == 1, "octet \(byte)")
             #expect(encoded.first == UInt8(f.pc858.firstIndex(of: f.pc858[byte])!))
         }
     }
 
     @Test func encodeSamplesMatchDotNet() throws {
-        for sample in try TicketReferenceFixture.load().encode {
+        let samples = try TicketReferenceFixture.load().encode
+        #expect(!samples.isEmpty)
+        for sample in samples {
             #expect(hex(Pc858.encode(Array(sample.text.utf16))) == sample.hex, "« \(sample.text) »")
         }
     }

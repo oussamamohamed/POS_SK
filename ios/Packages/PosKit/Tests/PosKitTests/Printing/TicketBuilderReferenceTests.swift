@@ -7,6 +7,8 @@ import Testing
         let f = try TicketReferenceFixture.load()
         let context = TicketContext(timeZone: try #require(TimeZone(identifier: f.timeZone)), softwareVersion: f.softwareVersion)
         #expect(f.documents.count >= 30)
+        #expect(Set(f.documents.map(\.kind)) == ["receipt", "receiptFallback", "fiscalReceipt", "pickupCoupon", "kitchenTicket",
+                                                  "xReport", "zClosure", "periodClosure", "testPage", "withDuplicateNotice"])
         for entry in f.documents {
             let input = try TicketScenarioInput.decode(entry.inputData)
             let expected = try JSONDecoder().decode(TicketDocument.self, from: entry.expectedData)

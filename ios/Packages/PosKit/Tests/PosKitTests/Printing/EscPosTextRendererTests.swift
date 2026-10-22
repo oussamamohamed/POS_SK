@@ -4,13 +4,17 @@ import Testing
 
 @Suite struct EscPosTextRendererTests {
     @Test func wrapMatchesDotNet() throws {
-        for w in try TicketReferenceFixture.load().wrap {
-            #expect(EscPosTextRenderer.wrap(w.text, width: w.width).map { String(decoding: $0, as: UTF16.self) } == w.lines, "« \(w.text) »")
+        let wraps = try TicketReferenceFixture.load().wrap
+        #expect(!wraps.isEmpty)
+        for w in wraps {
+            #expect(EscPosTextRenderer.wrap(w.text, width: w.width) == w.lines.map { Array($0.utf16) }, "« \(w.text) »")
         }
     }
 
     @Test func renderIsByteIdenticalToDotNet() throws {
-        for r in try TicketReferenceFixture.load().textRender {
+        let renders = try TicketReferenceFixture.load().textRender
+        #expect(!renders.isEmpty)
+        for r in renders {
             let doc = try JSONDecoder().decode(TicketDocument.self, from: r.documentData)
             #expect(hex(EscPosTextRenderer.render(doc, paperWidthMm: r.paperWidthMm, openCashDrawer: r.drawer)) == r.expectedHex, "\(r.name)")
         }
