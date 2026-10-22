@@ -8,6 +8,6 @@ Plan : `docs/superpowers/plans/2026-10-22-ipad-standalone-4a-rendu-tickets.md`
 | 2 Modèle `TicketDocument` et JSON | fait | 768 (inchangé) | 562 | aucun |
 | 3 Rendu texte ESC/POS et commandes | fait | 768 (inchangé, aucun changement .NET) | 569 | aucun |
 | 4 Entrées, formats et textes localisés | fait | 768 (inchangé, aucun changement .NET) | 578 | aucun |
-| 5 `TicketBuilder` | à faire | - | - | - |
+| 5 `TicketBuilder` | fait | 768 (inchangé, aucun changement .NET) | 586 | aucun |
 | 6 Rendu raster CoreText | à faire | - | - | - |
 | 7 Documentation et vérification finale | à faire | - | - | - |
