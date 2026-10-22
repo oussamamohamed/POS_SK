@@ -48,7 +48,7 @@ Entrées que la spec laisse implicites et que les tests de ce lot épinglent :
 
 ---
 
-### Tâche 1 : Fixture .NET (source de vérité)
+### Task 1: Fixture .NET (source de vérité)
 
 **Files:**
 - Create: `tests/RestaurantPos.Infrastructure.Tests/TicketDocumentReferenceFixtureTests.cs`
@@ -130,7 +130,7 @@ git commit -m "test(dotnet): fixture ticket_document_reference.json générée p
 
 ---
 
-### Tâche 2 : Modèle `TicketDocument` et JSON
+### Task 2: Modèle `TicketDocument` et JSON
 
 **Files:**
 - Create: `ios/Packages/PosKit/Sources/PosKit/Printing/TicketDocument.swift`
@@ -269,7 +269,7 @@ git commit -m "feat(ios): modèle TicketDocument et JSON compatible .NET (4a)"
 
 ---
 
-### Tâche 3 : Rendu texte ESC/POS et commandes (octets identiques)
+### Task 3: Rendu texte ESC/POS et commandes (octets identiques)
 
 **Files:**
 - Create: `…/Printing/Pc858.swift`, `EscPosCommands.swift`, `EscPosTextRenderer.swift`
@@ -377,7 +377,7 @@ Le rendu texte travaille sur `[UInt16]` de bout en bout (étiquettes, valeurs, r
 
 ---
 
-### Tâche 4 : Entrées, formats et textes localisés
+### Task 4: Entrées, formats et textes localisés
 
 **Files:**
 - Create: `…/Printing/TicketInputs.swift`, `TicketFormat.swift`, `TicketTexts.swift` (généré)
@@ -480,7 +480,7 @@ Le script `gen_ticket_texts.py` lit `SharedResource.resx`, `.fr.resx`, `.ar.resx
 
 ---
 
-### Tâche 5 : `TicketBuilder` (port de `TicketDocumentBuilder`)
+### Task 5: `TicketBuilder` (port de `TicketDocumentBuilder`)
 
 **Files:**
 - Create: `…/Printing/TicketBuilder.swift`
@@ -550,7 +550,7 @@ Si un scénario diverge, comparer ligne par ligne (le test affiche le nom du sc�
 
 ---
 
-### Tâche 6 : Rendu raster CoreText
+### Task 6: Rendu raster CoreText
 
 **Files:**
 - Create: `…/Printing/TicketRasterRenderer.swift`
@@ -640,7 +640,7 @@ Implémentation : polices lues depuis `Bundle.module` (`url(forResource:withExte
 
 ---
 
-### Tâche 7 : Documentation et vérification finale
+### Task 7: Documentation et vérification finale
 
 **Files:**
 - Modify: `CLAUDE.md` (paragraphe « Parité fiscale .NET/Swift » : ajouter le paragraphe « Impression 4a »)
