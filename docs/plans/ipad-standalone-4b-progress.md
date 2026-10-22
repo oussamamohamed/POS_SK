@@ -12,11 +12,12 @@ Base de référence : .NET 768 (Domain 69 + Infrastructure 442 + Api 257) · Pos
 | 4 Données de rapport (`ReportPrintData`) avec fixture .NET | fait | 767 verts + 1 échec hors périmètre (flake minuit, 01 h 23 Paris) : Domain 69, Infrastructure 440 + 1, Api 258 (+1 : générateur `ReportPrintDataReferenceFixtureTests`) | 657 | voir ci-dessous |
 | 5 Répartiteur `PrintDispatch` (tickets, bons cuisine, rapports, duplicata) | fait | 767 verts + 1 échec hors périmètre (flake minuit, 01 h 37 Paris) : Domain 69, Infrastructure 440 + 1, Api 258 ; aucun changement .NET | 673 | voir ci-dessous |
 | 6 Impression branchée dans les parcours, `printQueued` réel | fait | 767 verts + 1 échec hors périmètre (flake minuit, 01 h 45 Paris) : Domain 69, Infrastructure 440 + 1, Api 258 ; aucun changement .NET | 687 (`./scripts/test.sh unit` : 687) | voir ci-dessous |
+| 7 Démarrage du worker dans l'app, documentation, vérification finale | fait | 767 verts + 1 échec hors périmètre (flake minuit) : Domain 69, Infrastructure 440 + 1, Api 258 | 687 (`swift test` et `./scripts/test.sh unit`) ; build simulateur de l'app OK | aucun |
 
 ## Constats ouverts
 
 - `ReportAccuracyTests.FinancialDashboard_DiscountedOrders_AccuratelyReflectsNetTotals` échoue entre minuit et 02 h (heure de Paris) : le test compare `now.Date` local à des dates UTC. Sans rapport avec le lot 4b ; reproductible en relançant seul le test.
-- `CLAUDE.md` mentionne encore « migrations jusqu'à V9 » : mis à jour à la tâche 7.
+- `CLAUDE.md` mentionne encore « migrations jusqu'à V9 » : corrigé (V10) à la tâche 7.
 - Tâche 3 (corrigé) : bornes de durée des tests `LANPrinterTransportTests` relâchées à 30 s (instables sous la charge de la suite complète).
 - Tâche 3 : écarts au .NET assumés : messages 409 repris des `.resx` FR du .NET (« Seules les impressions en échec peuvent être relancées. », « Cette impression ne peut plus être annulée. ») au lieu de « Impression non relançable » du plan ; `testPrinter` d'une imprimante inconnue en 404 (le .NET lève une exception) ; `printJobs` d'une imprimante inconnue en 404 (le .NET renvoie une liste vide) ; aucun notificateur d'état (pas de SignalR sur l'iPad : le retour de `PrinterStatusTracker.record` est ignoré jusqu'à 4d).
 - Tâche 3 : `nextDuplicateNumber` prend désormais aussi le maximum de `PrintJobs.DuplicateNumber` du document (`DuplicateNumbering.NextAsync`).
