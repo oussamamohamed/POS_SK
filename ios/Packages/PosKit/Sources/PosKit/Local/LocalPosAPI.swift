@@ -11,6 +11,16 @@ public actor LocalPosAPI: PosAPI {
     /// Dossier des fichiers d'archive fiscale (`.zip`) ; injectable pour les tests.
     let archivesDirectory: URL
     var backupIterations = LocalBackupCrypto.defaultIterations
+    /// Envoi des tickets ; `printEnabled == false` fige la file (aucun cycle, aucune boucle).
+    let transport: any PrinterTransport
+    let printEnabled: Bool
+    var printerTracker = PrinterStatusTracker()
+    /// Imprimantes dont un cycle est en cours : un second cycle (réentrance pendant l'envoi) les saute.
+    var printersInFlight: Set<UUID> = []
+    var printWorker: Task<Void, Never>?
+    var printTicker: Task<Void, Never>?
+    var printWake: AsyncStream<Void>.Continuation?
+    var nextPrintPurge = Date.distantPast
 
     private static let tokenPrefix = "local-"
     /// Identique à `SessionStore.pinLength` (isolé au MainActor, donc non réutilisable ici).
@@ -22,7 +32,7 @@ public actor LocalPosAPI: PosAPI {
     /// par défaut `<base>-archives/` à côté du fichier SQLite.
     public init(
         path: String, seed: LocalSeedMode = .demo, clock: @escaping @Sendable () -> Date = { Date() }, calendar: Calendar = .autoupdatingCurrent,
-        archivesDirectory: URL? = nil
+        archivesDirectory: URL? = nil, transport: any PrinterTransport = RoutingPrinterTransport(), printEnabled: Bool = true
     ) throws {
         let db = try SQLiteDatabase(path: path)
         try LocalMigrator.migrate(db)
@@ -31,6 +41,14 @@ public actor LocalPosAPI: PosAPI {
         self.clock = clock
         self.calendar = calendar
         self.archivesDirectory = archivesDirectory ?? Self.defaultArchivesDirectory(databasePath: path)
+        self.transport = transport
+        self.printEnabled = printEnabled
+    }
+
+    deinit {
+        printWorker?.cancel()
+        printTicker?.cancel()
+        printWake?.finish()
     }
 
     /// `<dossier de la base>/<nom de la base>-archives` ; un dossier temporaire unique pour une base en mémoire.
@@ -53,6 +71,7 @@ public actor LocalPosAPI: PosAPI {
     var holdRepository: LocalHoldRepository { LocalHoldRepository(db: db) }
     var hotelRepository: LocalHotelRepository { LocalHotelRepository(db: db) }
     var printerRepository: LocalPrinterRepository { LocalPrinterRepository(db: db) }
+    var printQueue: LocalPrintQueueRepository { LocalPrintQueueRepository(db: db) }
     var happyHourRepository: LocalHappyHourRepository { LocalHappyHourRepository(db: db) }
 
     func unsupported(_ name: String = #function) -> APIError {

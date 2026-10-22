@@ -13,6 +13,18 @@ public enum PrinterTransportError: Error, Equatable, Sendable {
     case connection(String)
 }
 
+/// Message conservé dans `PrintJobs.LastError` et rendu par le test d'impression.
+extension PrinterTransportError: LocalizedError {
+    public var errorDescription: String? {
+        switch self {
+        case let .unsupported(kind): "Transport non pris en charge : \(kind.rawValue)"
+        case .connectTimeout: "Délai de connexion dépassé"
+        case .writeTimeout: "Délai d'écriture dépassé"
+        case let .connection(message): message
+        }
+    }
+}
+
 /// Aiguille sur le transport du type de l'imprimante ; `unsupported` sinon (4c enregistre Star et Epson).
 public struct RoutingPrinterTransport: PrinterTransport {
     private let lan: any PrinterTransport

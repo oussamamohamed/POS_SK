@@ -200,7 +200,8 @@ struct LocalFiscalRepository {
         let count = try db.query(
             "SELECT COUNT(*) AS n FROM JournalEntries WHERE EventType = ? AND PayloadJson LIKE ?", [.text(LocalJournalEvents.duplicatePrinted), .text(needle)]
         ).first?.int("n") ?? 0
-        return count + 1
+        let fromJobs = try db.query("SELECT MAX(DuplicateNumber) AS n FROM PrintJobs WHERE DuplicateOfDocumentId = ?", [.uuid(documentId)]).first?.int("n") ?? 0
+        return max(count, fromJobs) + 1
     }
 
     /// Consigne un duplicata de reçu (sans impression : `printQueued` faux) et renvoie son numéro.
