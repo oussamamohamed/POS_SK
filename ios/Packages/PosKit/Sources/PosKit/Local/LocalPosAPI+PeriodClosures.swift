@@ -4,7 +4,7 @@ extension LocalPosAPI {
     /// Clôtures mensuelles et annuelles du poste autonome (`GET /api/fiscal/period-closures`). Réservé aux responsables ; le poste demandé est ignoré (toujours `T01`).
     public func periodClosures(terminalId: String?, periodType: FiscalPeriodType?) async throws -> [FiscalPeriodClosure] {
         try requireManager()
-        return try fiscalRepository.periodClosures(terminalId: Self.standaloneTerminalId, type: periodType).map(Self.dto)
+        return try fiscalRepository.periodClosures(terminalId: Self.standaloneTerminalId, type: periodType).map { Self.dto($0) }
     }
 
     /// Clôture une période (`POST /api/fiscal/period-closures`). Refus métier en 409 (période en cours, déjà clôturée, Z ou mensuelles manquantes),
@@ -13,28 +13,30 @@ extension LocalPosAPI {
         let manager = try requireManager()
         let fiscal = fiscalRepository, floor = floorRepository
         let now = clock(), calendar = calendar
+        let record: PeriodClosureRecord
         do {
-            return try db.transaction { () throws -> FiscalPeriodClosure in
+            record = try db.transaction { () throws -> PeriodClosureRecord in
                 let settings = try floor.settings()
-                let record = try fiscal.executePeriodClosure(
+                return try fiscal.executePeriodClosure(
                     terminalId: Self.standaloneTerminalId, type: periodType, key: periodKey, managerId: manager.id, managerName: manager.name,
                     fiscalYearStartMonth: settings.fiscalYearStartMonth ?? 1, fiscalYearStartDay: settings.fiscalYearStartDay ?? 1, calendar: calendar, now: now
                 )
-                return Self.dto(record)
             }
         } catch let error as PeriodClosureError {
             throw Self.apiError(error)
         }
+        // Après la validation : l'impression ne défait jamais la clôture.
+        return Self.dto(record, printQueued: queuePeriodClosure(record))
     }
 
-    private static func dto(_ r: PeriodClosureRecord) -> FiscalPeriodClosure {
+    private static func dto(_ r: PeriodClosureRecord, printQueued: Bool = false) -> FiscalPeriodClosure {
         FiscalPeriodClosure(
             id: r.id, terminalId: r.terminalId, periodType: r.periodType, periodKey: r.periodKey, closureSequence: r.sequence,
             periodStartUtc: r.periodStartUtc, periodEndUtc: r.periodEndUtc, totalTtc: Money(cents: r.totalTtcCents), totalHt: Money(cents: r.totalHtCents),
             totalTtcCents: r.totalTtcCents, totalHtCents: r.totalHtCents, taxesSummaryJson: r.taxesSummaryJson, tenderTotalsJson: r.tenderTotalsJson,
             perpetualGrandTotal: Money(cents: r.perpetualGrandTotalCents), perpetualGrandTotalCents: r.perpetualGrandTotalCents,
             dailyClosureCount: r.dailyClosureCount, previousSignatureHash: r.previousSignatureHash, signatureHash: r.signatureHash,
-            sealedByUserId: r.sealedByUserId, sealedByUserName: r.sealedByUserName, createdAtUtc: r.createdAtUtc, printQueued: false
+            sealedByUserId: r.sealedByUserId, sealedByUserName: r.sealedByUserName, createdAtUtc: r.createdAtUtc, printQueued: printQueued
         )
     }
 

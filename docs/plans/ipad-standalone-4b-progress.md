@@ -11,6 +11,7 @@ Base de référence : .NET 768 (Domain 69 + Infrastructure 442 + Api 257) · Pos
 | 3 Moteur de file (cycle, relances, états), API d'administration | fait | 766 verts + 1 échec hors périmètre (flake minuit, 00 h 42 Paris) ; aucun changement .NET | 650 (après correctifs de revue : 2 exécutions complètes vertes) | voir ci-dessous |
 | 4 Données de rapport (`ReportPrintData`) avec fixture .NET | fait | 767 verts + 1 échec hors périmètre (flake minuit, 01 h 23 Paris) : Domain 69, Infrastructure 440 + 1, Api 258 (+1 : générateur `ReportPrintDataReferenceFixtureTests`) | 657 | voir ci-dessous |
 | 5 Répartiteur `PrintDispatch` (tickets, bons cuisine, rapports, duplicata) | fait | 767 verts + 1 échec hors périmètre (flake minuit, 01 h 37 Paris) : Domain 69, Infrastructure 440 + 1, Api 258 ; aucun changement .NET | 673 | voir ci-dessous |
+| 6 Impression branchée dans les parcours, `printQueued` réel | fait | 767 verts + 1 échec hors périmètre (flake minuit, 01 h 45 Paris) : Domain 69, Infrastructure 440 + 1, Api 258 ; aucun changement .NET | 687 (`./scripts/test.sh unit` : 687) | voir ci-dessous |
 
 ## Constats ouverts
 
@@ -31,3 +32,7 @@ Base de référence : .NET 768 (Domain 69 + Infrastructure 442 + Api 257) · Pos
 - Tâche 5 : `FiscalReceiptRecord` porte désormais `createdAtUtc` (date du ticket). Journalisation via le `Logger` existant de la tâche 3 (catégorie « Impression », pas « print »).
 - Tâche 5 : `queueXReport(summary:terminalId:)` prend `LocalFiscalRepository.FiscalSummary` (type renvoyé par `summary(terminalId:now:)`) ; le poste est passé à part car ce type ne le porte pas.
 - Tâche 5 : bons cuisine : commande d'un bon introuvable → arrêt de la boucle (comme le `FirstAsync` du .NET) ; bon introuvable → ignoré.
+- Tâche 6 : toutes les mises en file ont lieu après le `COMMIT` de la transaction métier ; `reprintReceipt` et `reprintLatestClosure` n'ouvrent plus de transaction (recherche puis `queue*Reprint`, seule transaction) et n'appellent plus `recordDuplicate` / `recordClosureDuplicate` (un seul JET par duplicata, vérifié).
+- Tâche 6 : comme le .NET, un échec d'écriture du duplicata rend désormais `ReprintResult(printQueued: false, duplicateNumber: 0)` au lieu d'une erreur.
+- Tâche 6 : la base démo a une imprimante de ticket active (« Imprimante Caisse Comptoir », poste RECEIPT) : une vente comptoir soldée et un duplicata y rendent `printQueued == true` (tests existants mis à jour ; le test « sans imprimante » désactive les imprimantes démo).
+- Tâche 6 (constat, hors périmètre) : les jobs d'une même imprimante créés à la même milliseconde (bons de plusieurs postes d'un même envoi vers une imprimante commune) sont départagés par `Id`, un UUID aléatoire : leur ordre d'impression entre eux n'est pas garanti. Un ordre par `rowid` (ou un UUID v7) le fixerait.

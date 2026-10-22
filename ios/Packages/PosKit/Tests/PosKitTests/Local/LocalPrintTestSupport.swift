@@ -19,6 +19,9 @@ extension LocalPosAPI {
             duplicateOfDocumentId: nil, duplicateNumber: nil, now: clock())
     }
 
+    /// Vide la file : isole un appel direct au répartiteur des jobs déjà posés par le parcours métier (vente, envoi, clôture).
+    func deleteTestJobs() throws { try db.exec("DELETE FROM PrintJobs") }
+
     func testJob(_ id: UUID) throws -> PrintJobRecord? { try LocalPrintQueueRepository(db: db).job(id: id) }
 
     func saveTestJob(_ job: PrintJobRecord) throws { try LocalPrintQueueRepository(db: db).save(job) }

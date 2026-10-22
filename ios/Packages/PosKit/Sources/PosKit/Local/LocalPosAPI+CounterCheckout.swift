@@ -42,7 +42,7 @@ extension LocalPosAPI {
         let cashier = try requireAuth()
         guard request.tipAmount >= .zero else { throw APIError.server(status: 400, message: "Montant de pourboire invalide.") }
         let orders = orderRepository, payments = paymentRepository, holds = holdRepository
-        return try db.transaction { () throws -> CounterCheckoutResult in
+        var result = try db.transaction { () throws -> CounterCheckoutResult in
             guard let order = try orders.order(id: request.orderId), !order.lines.isEmpty,
                   try orders.status(of: request.orderId)?.isModifiable == true
             else { throw APIError.server(status: 400, message: "Commande introuvable ou panier vide.") }
@@ -84,5 +84,11 @@ extension LocalPosAPI {
                 openCashDrawer: request.tenders.contains { $0.method == .cash }, printQueued: false
             )
         }
+        // Après la validation : coupon de retrait (et ticket s'il est demandé) seulement quand la vente est soldée.
+        if result.remainingBalance == .zero, let number = result.receiptNumber {
+            result.printQueued = queueCounterSale(orderId: result.orderId, receiptNumber: number, withFiscalReceipt: request.requestFiscalReceiptPrint,
+                                                  hasCash: request.tenders.contains { $0.method == .cash })
+        }
+        return result
     }
 }

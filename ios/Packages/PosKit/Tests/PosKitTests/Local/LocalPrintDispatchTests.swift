@@ -45,6 +45,7 @@ struct LocalPrintDispatchTests {
             requestFiscalReceiptPrint: false, mealVoucherPolicy: .capAtBalance,
             tenders: [CounterTender(method: method, amount: Money(cents: 1950), tendered: Money(cents: 1950))]
         ))
+        try await api.deleteTestJobs() // la vente a déjà mis son coupon en file : chaque test appelle le répartiteur lui-même
         return (order, try #require(result.receiptNumber), burger)
     }
 
@@ -155,6 +156,7 @@ struct LocalPrintDispatchTests {
         }
         try await seatTable(api, "T2", covers: 3, items: [line("HOT_KITCHEN", ["Saignant"]), line("COLD", ["Froid"]), line("BAR", ["Glace"])])
         try await api.dispatch(table: "T2")
+        try await api.deleteTestJobs()
         let tickets = try await api.testKitchenTickets()
         #expect(tickets.map(\.station) == ["HOT_KITCHEN", "COLD", "BAR"])
 
@@ -315,6 +317,7 @@ struct LocalPrintDispatchTests {
         try await api.addTestPrinter(receiptPrinter())
         _ = try await counterSale(api)
         _ = try await api.zClosure(terminalId: "T01", managerId: UUID(), managerName: "Marie")
+        try await api.deleteTestJobs()
         let closure = try #require(try await api.testLatestClosure())
 
         #expect(await api.queueZClosureReprint(closure, operatorId: nil, now: clock.now) == (true, 1))

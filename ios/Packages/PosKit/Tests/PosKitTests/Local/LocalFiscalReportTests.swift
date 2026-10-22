@@ -111,7 +111,7 @@ struct LocalFiscalReportTests {
 
         let dup1 = try await api.reprintLatestClosure(terminalId: "T01")
         #expect(dup1.duplicateNumber == 1)
-        #expect(!dup1.printQueued)
+        #expect(dup1.printQueued) // imprimante de ticket de la base démo
 
         let dup2 = try await api.reprintLatestClosure(terminalId: "T01")
         #expect(dup2.duplicateNumber == 2)

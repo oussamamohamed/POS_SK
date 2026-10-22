@@ -33,7 +33,8 @@ struct LocalCounterCheckoutTests {
         let result = try await api.counterCheckout(request)
         #expect(result.orderId == order.orderId && result.pickupNumber == "#A-01" && result.receiptNumber == "T01-000001")
         #expect(result.totalPaid == Money(cents: 1950) && result.changeGiven == Money(cents: 50) && result.remainingBalance == .zero)
-        #expect(result.openCashDrawer == true && result.issuedCreditVoucher == nil && result.fiscalSignature?.isEmpty == false && result.printQueued == false)
+        // La base démo a une imprimante de ticket active (poste RECEIPT) : la vente soldée met le coupon de retrait en file.
+        #expect(result.openCashDrawer == true && result.issuedCreditVoucher == nil && result.fiscalSignature?.isEmpty == false && result.printQueued == true)
         #expect(try await api.tables().first { $0.isCounter }?.status == .free)
         #expect(try await api.activeOrder(table: "Comptoir") == nil)
 

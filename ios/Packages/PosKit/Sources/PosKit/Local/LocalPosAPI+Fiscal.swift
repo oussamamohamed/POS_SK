@@ -26,16 +26,14 @@ extension LocalPosAPI {
         }
     }
 
-    /// Duplicata d'un reçu (`POST /api/checkout/receipts/{id}/reprint`). Sans impression (sous-projet 4) : le duplicata est numéroté et
-    /// consigné au JET, `printQueued` reste faux. Réservé aux responsables.
+    /// Duplicata d'un reçu (`POST /api/checkout/receipts/{id}/reprint`) : numéro, JET `DUPLICATE_PRINTED` et job d'impression (s'il y a une
+    /// imprimante de ticket) dans la transaction du répartiteur, hors de toute autre transaction (non réentrante). Comme le .NET, un échec
+    /// d'écriture rend `(false, 0)` sans rien consommer. Réservé aux responsables.
     public func reprintReceipt(receiptIdentifier: String) async throws -> ReprintResult {
         let manager = try requireManager()
-        let fiscal = fiscalRepository
-        let now = clock()
-        return try db.transaction { () throws -> ReprintResult in
-            guard let receipt = try fiscal.receipt(identifier: receiptIdentifier) else { throw APIError.notFound("Reçu introuvable.") }
-            return ReprintResult(printQueued: false, duplicateNumber: try fiscal.recordDuplicate(of: receipt, operatorId: manager.id, now: now))
-        }
+        guard let receipt = try fiscalRepository.receipt(identifier: receiptIdentifier) else { throw APIError.notFound("Reçu introuvable.") }
+        let result = queueReceiptReprint(receipt, operatorId: manager.id, now: clock())
+        return ReprintResult(printQueued: result.printQueued, duplicateNumber: result.duplicateNumber)
     }
 
     // MARK: - Rapport X & Clôture Z (NF525)
@@ -134,6 +132,8 @@ extension LocalPosAPI {
         let closure = try db.transaction { () throws -> DailyFiscalClosureRecord in
             try fiscal.insertClosure(terminalId: term, managerId: manager.id, managerName: manager.name, now: now)
         }
+        // Après la validation : l'impression ne défait jamais la clôture.
+        let printQueued = queueZClosure(closure)
 
         let count = try fiscal.receiptCountForClosure(terminalId: term, sequence: closure.sequence, periodStartUtc: closure.periodStartUtc, periodEndUtc: closure.periodEndUtc)
         var vat: [String: Money] = [:]
@@ -165,27 +165,23 @@ extension LocalPosAPI {
             signatureHash: closure.signatureHash,
             closedAtUtc: closure.createdAtUtc,
             periodEndUtc: closure.periodEndUtc,
-            printQueued: false
+            printQueued: printQueued
         )
     }
 
     public func printXReport(terminalId: String) async throws -> Bool {
         try requireManager()
-        return false
+        let term = terminalId.isEmpty ? Self.standaloneTerminalId : terminalId
+        return queueXReport(summary: try fiscalRepository.summary(terminalId: term, now: clock()), terminalId: term)
     }
 
+    /// Duplicata de la dernière Z : comme `reprintReceipt`, hors de toute transaction.
     public func reprintLatestClosure(terminalId: String) async throws -> ReprintResult {
         let manager = try requireManager()
         let term = terminalId.isEmpty ? Self.standaloneTerminalId : terminalId
-        let fiscal = fiscalRepository
-        let now = clock()
-        return try db.transaction { () throws -> ReprintResult in
-            guard let closure = try fiscal.latestClosure(terminalId: term) else {
-                throw APIError.notFound("Aucune clôture trouvée.")
-            }
-            let duplicateNumber = try fiscal.recordClosureDuplicate(of: closure, operatorId: manager.id, now: now)
-            return ReprintResult(printQueued: false, duplicateNumber: duplicateNumber)
-        }
+        guard let closure = try fiscalRepository.latestClosure(terminalId: term) else { throw APIError.notFound("Aucune clôture trouvée.") }
+        let result = queueZClosureReprint(closure, operatorId: manager.id, now: clock())
+        return ReprintResult(printQueued: result.printQueued, duplicateNumber: result.duplicateNumber)
     }
 
     /// Vérifie toutes les chaînes (`POST /api/fiscal/verify`). Comme le .NET, une rupture est journalisée (`CHAIN_BREAK_DETECTED`, première
