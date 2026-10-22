@@ -41,6 +41,18 @@ struct LocalCounterCheckoutTests {
         #expect(second.pickupNumber == "#A-02" && second.receiptNumber == "T01-000002" && second.openCashDrawer == true)
     }
 
+    /// Comme le .NET (`CounterSaleEndpoints`) : une vente comptoir sans opérateur est attribuée à celui qui encaisse (pourboire du rapport).
+    @Test func theCashierBecomesTheOperatorOfACounterSale() async throws {
+        let (api, db) = try await makeLocalAPIWithDatabase()
+        let cashier = try #require(try await api.login(pin: "1234").operatorId)
+        let order = try await cart(api)
+        _ = try await api.counterCheckout(checkout(order, [cash(2150)], tip: 200))
+        let row = try #require(try db.query("SELECT OperatorId FROM Orders WHERE Id = ?", [.uuid(order.orderId)]).first)
+        #expect(row.uuid("OperatorId") == cashier)
+        let data = try LocalFiscalRepository(db: db).reportPrintData(terminalId: "T01", periodStart: nil, periodEnd: Date().addingTimeInterval(60))
+        #expect(data.tips.count == 1 && data.tips.first?.serverName != nil && data.totalTipsCents == 200)
+    }
+
     @Test func requestedTerminalIsIgnoredAtTheCounter() async throws {
         let api = try await makeLocalAPI()
         let result = try await api.counterCheckout(checkout(try await cart(api), [cash(1950)], terminal: "T02"))

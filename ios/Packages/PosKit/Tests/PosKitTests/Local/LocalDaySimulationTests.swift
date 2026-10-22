@@ -74,6 +74,8 @@ struct LocalDaySimulationTests {
     private struct Replay {
         var xReports: [(op: Int, report: FiscalReport)] = []
         var zClosures: [(op: Int, report: FiscalReport)] = []
+        /// Articles vendus et pourboires de chaque Z, sur la période signée de la clôture (comme `ReportPrintDataReferenceFixtureTests`).
+        var zReportData: [ReportPrintData] = []
         var voidRefusals: [(op: Int, status: Int?)] = []
     }
 
@@ -235,6 +237,9 @@ struct LocalDaySimulationTests {
             case "z_closure":
                 _ = try await api.login(pin: managerPin)
                 replay.zClosures.append((index, try await api.zClosure(terminalId: "T01", managerId: manager, managerName: "Responsable")))
+                let fiscal = LocalFiscalRepository(db: db)
+                let closure = try #require(try fiscal.latestClosure(terminalId: "T01"))
+                replay.zReportData.append(try fiscal.reportPrintData(terminalId: "T01", periodStart: closure.periodStartUtc, periodEnd: closure.periodEndUtc))
 
             default:
                 Issue.record("Opération inconnue : \(op.type)")
@@ -294,6 +299,24 @@ struct LocalDaySimulationTests {
 
         #expect(!replay.voidRefusals.isEmpty, context)
         for attempt in replay.voidRefusals { #expect(attempt.status == 409, context) }
+    }
+
+    @Test(arguments: ["A", "B", "C"])
+    func lesArticlesEtPourboiresDeChaqueZEgalentLeNet(key: String) async throws {
+        let scenario = try Self.scenario()
+        let reference = try LocalReportPrintDataTests.reference().day
+        #expect(reference.seed == scenario.seed, "report_print_data_reference.json et day_scenario.json viennent de la même graine")
+        let expected = try #require(reference.terminals[key])
+        let replay = try await Self.replay(scenario, terminal: key)
+        let context = Comment(rawValue: "graine \(scenario.seed), poste \(key)")
+
+        #expect(replay.zReportData.count == expected.count, context)
+        for (actual, wanted) in zip(replay.zReportData, expected) {
+            #expect(actual.categories.map(\.categoryName) == wanted.categories.map(\.categoryName), context)
+            for (a, w) in zip(actual.categories, wanted.categories) { #expect(a.items == w.items, context) }
+            #expect(actual.tips == wanted.tips, context)
+            #expect(actual == wanted, context)
+        }
     }
 
     @Test func laSommeDesPostesEgaleLeTotalDuNet() async throws {

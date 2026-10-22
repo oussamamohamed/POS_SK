@@ -23,6 +23,11 @@ extension LocalOrderRepository {
         try db.query("SELECT TipAmount FROM Orders WHERE Id = ?", [.uuid(id)]).first?.int("TipAmount") ?? 0
     }
 
+    /// Vente comptoir sans opérateur : attribuée à celui qui encaisse (pourboire du rapport), comme `CounterSaleEndpoints` du .NET.
+    func claimOperatorIfUnknown(orderId: UUID, operatorId: UUID) throws {
+        try db.run("UPDATE Orders SET OperatorId = ? WHERE Id = ? AND OperatorId = ?", [.uuid(operatorId), .uuid(orderId), .uuid(localNoOperator)])
+    }
+
     func setTip(orderId: UUID, cents: Int) throws {
         try db.run("UPDATE Orders SET TipAmount = ? WHERE Id = ?", [.integer(cents), .uuid(orderId)])
     }

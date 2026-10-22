@@ -39,7 +39,7 @@ extension LocalPosAPI {
     /// Encaisse une vente au comptoir ou à emporter. Tous les refus (panier vide, titre-restaurant hors règle) précèdent la première
     /// écriture : un refus ne consomme ni numéro de retrait ni avoir (le .NET attribue d'abord le numéro).
     public func counterCheckout(_ request: CounterCheckoutRequest) async throws -> CounterCheckoutResult {
-        try requireAuth()
+        let cashier = try requireAuth()
         guard request.tipAmount >= .zero else { throw APIError.server(status: 400, message: "Montant de pourboire invalide.") }
         let orders = orderRepository, payments = paymentRepository, holds = holdRepository
         return try db.transaction { () throws -> CounterCheckoutResult in
@@ -64,6 +64,7 @@ extension LocalPosAPI {
 
             let pickup = try payments.nextPickupNumber(terminalId: terminal, now: Date())
             try orders.setPickup(orderId: order.orderId, number: pickup, buzzer: request.pickupBuzzer, destination: request.destination)
+            try orders.claimOperatorIfUnknown(orderId: order.orderId, operatorId: cashier.id)
             if request.tipAmount > .zero { try orders.setTip(orderId: order.orderId, cents: request.tipAmount.cents) }
 
             var issued: CreditVoucher?
