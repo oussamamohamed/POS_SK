@@ -41,6 +41,7 @@ enum EscPosTextRenderer {
 
     /// Coupe aux espaces ; un mot plus long que la ligne est coupé net. Toujours au moins une ligne.
     static func wrap(_ text: String, width: Int) -> [[UInt16]] {
+        precondition(width > 0, "Largeur de ligne nulle")
         var result: [[UInt16]] = []
         var line: [UInt16] = []
         for word in text.utf16.split(separator: space, omittingEmptySubsequences: true) {
