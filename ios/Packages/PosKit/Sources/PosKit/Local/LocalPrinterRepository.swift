@@ -17,11 +17,12 @@ struct LocalPrinterRepository {
         try db.run(
             """
             INSERT INTO PrinterConfigurations (Id, Name, IpAddress, Port, PaperWidthMm, OpenCashDrawerOnReceipt, TextMode, AssignedStationIds,
-                IsActive, CreatedAtUtc, UpdatedAtUtc)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                IsActive, CreatedAtUtc, UpdatedAtUtc, TransportKind, DeviceIdentifier)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             [.uuid(p.id), .text(p.name), .text(p.ipAddress), .integer(p.port), .integer(p.paperWidthMm), .bool(p.openCashDrawerOnReceipt),
-             .bool(p.textMode), .text(Self.encode(stations: p.assignedStationIds)), .bool(p.isActive), .date(now), .date(now)]
+             .bool(p.textMode), .text(Self.encode(stations: p.assignedStationIds)), .bool(p.isActive), .date(now), .date(now),
+             .text(p.transport.rawValue), .string(p.deviceIdentifier)]
         )
     }
 
@@ -30,11 +31,11 @@ struct LocalPrinterRepository {
         try db.run(
             """
             UPDATE PrinterConfigurations SET Name = ?, IpAddress = ?, Port = ?, PaperWidthMm = ?, OpenCashDrawerOnReceipt = ?, TextMode = ?,
-                AssignedStationIds = ?, IsActive = ?, UpdatedAtUtc = ?
+                AssignedStationIds = ?, IsActive = ?, UpdatedAtUtc = ?, TransportKind = ?, DeviceIdentifier = ?
             WHERE Id = ?
             """,
             [.text(p.name), .text(p.ipAddress), .integer(p.port), .integer(p.paperWidthMm), .bool(p.openCashDrawerOnReceipt), .bool(p.textMode),
-             .text(Self.encode(stations: p.assignedStationIds)), .bool(p.isActive), .date(Date()), .uuid(p.id)]
+             .text(Self.encode(stations: p.assignedStationIds)), .bool(p.isActive), .date(Date()), .text(p.transport.rawValue), .string(p.deviceIdentifier), .uuid(p.id)]
         ) > 0
     }
 
@@ -50,7 +51,8 @@ struct LocalPrinterRepository {
         return Printer(
             id: id, name: row.string("Name") ?? "", ipAddress: row.string("IpAddress") ?? "", port: row.int("Port") ?? 9100,
             paperWidthMm: row.int("PaperWidthMm") ?? 80, openCashDrawerOnReceipt: row.bool("OpenCashDrawerOnReceipt"), assignedStationIds: stations,
-            isActive: row.bool("IsActive"), textMode: row.bool("TextMode")
+            isActive: row.bool("IsActive"), textMode: row.bool("TextMode"),
+            transport: row.string("TransportKind").flatMap(PrinterTransportKind.init(rawValue:)) ?? .lan, deviceIdentifier: row.string("DeviceIdentifier")
         )
     }
 }
