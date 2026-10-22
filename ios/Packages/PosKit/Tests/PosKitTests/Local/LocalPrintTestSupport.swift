@@ -53,8 +53,6 @@ func payload(_ bytes: [UInt8], contains marker: String) -> Bool {
     return (0...(bytes.count - needle.count)).contains { Array(bytes[$0..<($0 + needle.count)]) == needle }
 }
 
-let drawerKickBytes: [UInt8] = [0x1B, 0x70, 0x00, 0x19, 0xFA]
-
 /// Porte qui suspend `send` jusqu'à `open()` ; `entered` passe à vrai dès qu'un envoi l'atteint.
 actor SendLatch {
     private(set) var entered = 0

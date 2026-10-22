@@ -282,17 +282,53 @@ struct LocalPrintQueueProcessorTests {
         #expect(!remaining.contains(oldSent) && !remaining.contains(oldCancelled))
     }
 
-    @Test func printingDisabledLeavesTheQueueUntouched() async throws {
+    @Test func aSendFailingPastTheDeadlineFailsTheJobWithoutRescheduling() async throws {
         let clock = LocalTestClock(), fake = FakePrinterTransport()
-        let api = try LocalPosAPI(path: ":memory:", clock: { clock.now }, calendar: localTestCalendar, transport: fake, printEnabled: false)
+        let api = try await makePrintAPI(clock: clock, transport: fake)
         let printer = textPrinter("Caisse")
         try await api.addTestPrinter(printer)
         let job = try await api.enqueueTestJob(printer: printer.id)
+        clock.advance(30 * 60 - 1) // encore dû à la préparation
+        let latch = SendLatch()
+        fake.gate = { await latch.wait() }
+        fake.failNext(1, error: PrinterTransportError.connection("coupée"))
 
+        let cycle = Task { await api.runPrintCycle() }
+        await latch.waitUntilEntered()
+        let before = try #require(try await api.testJob(job.id))
+        clock.advance(1)
+        await latch.open()
+        await cycle.value
+
+        // L'instant retenu est celui d'avant l'envoi (comme le .NET) : on rejoue donc l'échéance au cycle d'après, sans relance.
+        var stored = try #require(try await api.testJob(job.id))
+        #expect(stored.status == .pending && stored.lastError == "coupée" && stored.nextAttemptAtUtc == before.deadlineAtUtc.addingTimeInterval(4))
         await api.runPrintCycle()
+        stored = try #require(try await api.testJob(job.id))
+        #expect(stored.status == .failed && stored.lastError == "coupée" && stored.attempts == 1 && fake.sent.isEmpty)
+    }
 
-        #expect(fake.sent.isEmpty)
-        #expect(try await api.testJob(job.id)?.attempts == 0)
+    @Test func aSendFailingAtTheDeadlineInstantIsFailedImmediately() async throws {
+        let clock = LocalTestClock(), fake = FakePrinterTransport()
+        let api = try await makePrintAPI(clock: clock, transport: fake)
+        let printer = textPrinter("Caisse")
+        try await api.addTestPrinter(printer)
+        let job = try await api.enqueueTestJob(printer: printer.id)
+        // Branche « échéance » de processPrinter : l'échéance est ramenée à l'instant de l'envoi pendant que celui-ci est suspendu.
+        let latch = SendLatch()
+        fake.gate = { await latch.wait() }
+        fake.failNext(1, error: PrinterTransportError.connection("coupée"))
+        let cycle = Task { await api.runPrintCycle() }
+        await latch.waitUntilEntered()
+        var moved = try #require(try await api.testJob(job.id))
+        moved.deadlineAtUtc = clock.now
+        try await api.saveTestJob(moved)
+        await latch.open()
+        await cycle.value
+
+        let stored = try #require(try await api.testJob(job.id))
+        #expect(stored.status == .failed && stored.lastError == "coupée" && stored.attempts == 1)
+        #expect(stored.nextAttemptAtUtc == clock.now) // pas de relance programmée
     }
 
     @Test func notifyWithoutAWorkerIsHarmless() async throws {

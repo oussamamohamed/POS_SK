@@ -11,9 +11,8 @@ public actor LocalPosAPI: PosAPI {
     /// Dossier des fichiers d'archive fiscale (`.zip`) ; injectable pour les tests.
     let archivesDirectory: URL
     var backupIterations = LocalBackupCrypto.defaultIterations
-    /// Envoi des tickets ; `printEnabled == false` fige la file (aucun cycle, aucune boucle).
+    /// Envoi des tickets (LAN par défaut, faux transport en test).
     let transport: any PrinterTransport
-    let printEnabled: Bool
     var printerTracker = PrinterStatusTracker()
     /// Imprimantes dont un cycle est en cours : un second cycle (réentrance pendant l'envoi) les saute.
     var printersInFlight: Set<UUID> = []
@@ -32,7 +31,7 @@ public actor LocalPosAPI: PosAPI {
     /// par défaut `<base>-archives/` à côté du fichier SQLite.
     public init(
         path: String, seed: LocalSeedMode = .demo, clock: @escaping @Sendable () -> Date = { Date() }, calendar: Calendar = .autoupdatingCurrent,
-        archivesDirectory: URL? = nil, transport: any PrinterTransport = RoutingPrinterTransport(), printEnabled: Bool = true
+        archivesDirectory: URL? = nil, transport: any PrinterTransport = RoutingPrinterTransport()
     ) throws {
         let db = try SQLiteDatabase(path: path)
         try LocalMigrator.migrate(db)
@@ -42,7 +41,6 @@ public actor LocalPosAPI: PosAPI {
         self.calendar = calendar
         self.archivesDirectory = archivesDirectory ?? Self.defaultArchivesDirectory(databasePath: path)
         self.transport = transport
-        self.printEnabled = printEnabled
     }
 
     deinit {

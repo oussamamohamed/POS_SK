@@ -23,7 +23,6 @@ extension LocalPosAPI {
 
     /// Un cycle complet : annulations d'imprimantes inactives, échéances, puis envoi des jobs échus de chaque imprimante (en parallèle).
     func runPrintCycle() async {
-        guard printEnabled else { return }
         let due: [UUID]
         do { due = try preparePrintQueue() } catch {
             Self.printLog.error("Préparation de la file d'impression : \(error.localizedDescription, privacy: .public)")
@@ -35,8 +34,8 @@ extension LocalPosAPI {
     }
 
     /// Lance la boucle (idempotent) : un cycle tout de suite (reprise des `Pending`), puis à chaque signal ou toutes les 5 s.
-    func startPrintWorker() {
-        guard printEnabled, printWorker == nil else { return }
+    public func startPrintWorker() {
+        guard printWorker == nil else { return }
         let (stream, wake) = AsyncStream.makeStream(of: Void.self, bufferingPolicy: .bufferingNewest(1))
         printWake = wake
         wake.yield()
@@ -54,7 +53,7 @@ extension LocalPosAPI {
         }
     }
 
-    func stopPrintWorker() {
+    public func stopPrintWorker() {
         printWorker?.cancel()
         printTicker?.cancel()
         printWake?.finish()
