@@ -10,6 +10,7 @@ Base de référence : .NET 768 (Domain 69 + Infrastructure 442 + Api 257) · Pos
 | 2 `PrinterTransport`, transport LAN, faux transport | fait | même état : 1 échec hors périmètre (flake minuit) | 620 | aucun ; tests réseau sur loopback réels (0,6 s), non isolés par tag |
 | 3 Moteur de file (cycle, relances, états), API d'administration | fait | 766 verts + 1 échec hors périmètre (flake minuit, 00 h 42 Paris) ; aucun changement .NET | 650 (après correctifs de revue : 2 exécutions complètes vertes) | voir ci-dessous |
 | 4 Données de rapport (`ReportPrintData`) avec fixture .NET | fait | 767 verts + 1 échec hors périmètre (flake minuit, 01 h 23 Paris) : Domain 69, Infrastructure 440 + 1, Api 258 (+1 : générateur `ReportPrintDataReferenceFixtureTests`) | 657 | voir ci-dessous |
+| 5 Répartiteur `PrintDispatch` (tickets, bons cuisine, rapports, duplicata) | fait | 767 verts + 1 échec hors périmètre (flake minuit, 01 h 37 Paris) : Domain 69, Infrastructure 440 + 1, Api 258 ; aucun changement .NET | 673 | voir ci-dessous |
 
 ## Constats ouverts
 
@@ -23,3 +24,10 @@ Base de référence : .NET 768 (Domain 69 + Infrastructure 442 + Api 257) · Pos
 - Tâche 4 : tri français mesuré sur l'ICU système de macOS (.NET 10 pour Api.Tests, sans `InvariantGlobalization`) ; `FrenchCollation` = Foundation `.caseInsensitive` (locale « fr » figée) + trois écarts du .NET reproduits (pleine chasse triée juste après la lettre ASCII ; ß/ss et ſ/s distincts ; NFKC et casse égaux). Un .NET en mode invariant ou un autre ICU (Linux) peut trier autrement.
 - Tâche 4 (écart corrigé, trouvé par la journée simulée) : l'encaissement comptoir iPad n'attribuait pas la vente à l'opérateur qui encaisse (`OperatorId` restait `Guid.Empty`) ; porté depuis `CounterSaleEndpoints` (`claimOperatorIfUnknown`). Les pourboires comptoir vont désormais au caissier, comme le .NET.
 - Tâche 4 : les égalités de tri (noms identiques à la casse près, serveurs inconnus) suivent l'ordre de création des commandes, puis des lignes ; côté .NET l'ordre est celui de la base (InMemory = insertion). Pas de garantie au-delà.
+- Tâche 5 : les deux duplicata (`queueReceiptReprint`, `queueZClosureReprint`) ne sont pas `throws` (comme le .NET : erreur → `(false, 0)`, transaction annulée) ; le brief les déclarait `throws`.
+- Tâche 5 : le JET `DUPLICATE_PRINTED` est écrit avant le job dans la transaction (il fixe le numéro via `nextDuplicateNumber`) ; le .NET écrit le job puis le JET : même état final, tout est annulé ensemble.
+- Tâche 5 (écart corrigé) : le JET d'un duplicata de Z portait `documentType` « z_closure » ; le .NET écrit « closure ». Aligné sur le .NET.
+- Tâche 5 : `duplicateOfDocumentId` vaut l'identifiant du reçu pour les tickets de caisse d'origine (comptoir avec ticket, table), comme le .NET (`receipt?.Id`) ; le brief ne le citait que pour la Z.
+- Tâche 5 : `FiscalReceiptRecord` porte désormais `createdAtUtc` (date du ticket). Journalisation via le `Logger` existant de la tâche 3 (catégorie « Impression », pas « print »).
+- Tâche 5 : `queueXReport(summary:terminalId:)` prend `LocalFiscalRepository.FiscalSummary` (type renvoyé par `summary(terminalId:now:)`) ; le poste est passé à part car ce type ne le porte pas.
+- Tâche 5 : bons cuisine : commande d'un bon introuvable → arrêt de la boucle (comme le `FirstAsync` du .NET) ; bon introuvable → ignoré.

@@ -18,6 +18,7 @@ struct FiscalReceiptRecord: Equatable {
     let taxBreakdownJson: String
     let htBreakdownJson: String?
     let signature: String
+    let createdAtUtc: Date
 }
 
 struct DailyFiscalClosureRecord: Equatable {
@@ -153,7 +154,8 @@ struct LocalFiscalRepository {
         }
         return FiscalReceiptRecord(
             id: id, orderId: orderId, terminalId: terminalId, receiptNumber: number, sequence: sequence, ttcCents: amounts.ttcCents,
-            htCents: amounts.htCents, taxBreakdownJson: amounts.taxBreakdownJson, htBreakdownJson: amounts.htBreakdownJson, signature: signature
+            htCents: amounts.htCents, taxBreakdownJson: amounts.taxBreakdownJson, htBreakdownJson: amounts.htBreakdownJson, signature: signature,
+            createdAtUtc: timestamp
         )
     }
 
@@ -163,7 +165,7 @@ struct LocalFiscalRepository {
             id: id, orderId: orderId, terminalId: row.string("TerminalId") ?? "", receiptNumber: row.string("ReceiptNumber") ?? "",
             sequence: row.int("SequenceNumber") ?? 0, ttcCents: row.int("TotalTtcAmount") ?? 0, htCents: row.int("TotalHtAmount") ?? 0,
             taxBreakdownJson: row.string("TaxBreakdownJson") ?? "{}", htBreakdownJson: row.string("HtBreakdownJson"),
-            signature: row.string("SignatureHash") ?? ""
+            signature: row.string("SignatureHash") ?? "", createdAtUtc: row.date("CreatedAtUtc") ?? Date(timeIntervalSince1970: 0)
         )
     }
 
@@ -204,9 +206,9 @@ struct LocalFiscalRepository {
         return max(count, fromJobs) + 1
     }
 
-    /// Consigne un duplicata de reçu (sans impression : `printQueued` faux) et renvoie son numéro.
+    /// Consigne un duplicata de reçu et renvoie son numéro. `printQueued` : un job d'impression l'accompagne dans la même transaction.
     @discardableResult
-    func recordDuplicate(of receipt: FiscalReceiptRecord, operatorId: UUID?, now: Date) throws -> Int {
+    func recordDuplicate(of receipt: FiscalReceiptRecord, operatorId: UUID?, now: Date, printQueued: Bool = false) throws -> Int {
         let number = try nextDuplicateNumber(documentId: receipt.id)
         try appendJournal(
             eventType: LocalJournalEvents.duplicatePrinted,
@@ -215,7 +217,7 @@ struct LocalFiscalRepository {
                 ("documentType", FiscalJSON.string("receipt")),
                 ("receiptNumber", FiscalJSON.string(receipt.receiptNumber)),
                 ("duplicateNumber", "\(number)"),
-                ("printQueued", "false"),
+                ("printQueued", printQueued ? "true" : "false"),
                 ("terminalId", FiscalJSON.string(receipt.terminalId)),
             ]),
             terminalId: receipt.terminalId, operatorId: operatorId, now: now
@@ -223,18 +225,18 @@ struct LocalFiscalRepository {
         return number
     }
 
-    /// Consigne un duplicata de clôture Z et renvoie son numéro.
+    /// Consigne un duplicata de clôture Z et renvoie son numéro (`documentType` « closure », comme le .NET).
     @discardableResult
-    func recordClosureDuplicate(of closure: DailyFiscalClosureRecord, operatorId: UUID?, now: Date) throws -> Int {
+    func recordClosureDuplicate(of closure: DailyFiscalClosureRecord, operatorId: UUID?, now: Date, printQueued: Bool = false) throws -> Int {
         let number = try nextDuplicateNumber(documentId: closure.id)
         try appendJournal(
             eventType: LocalJournalEvents.duplicatePrinted,
             payloadJson: FiscalJSON.object([
                 ("documentId", FiscalJSON.guid(closure.id)),
-                ("documentType", FiscalJSON.string("z_closure")),
+                ("documentType", FiscalJSON.string("closure")),
                 ("closureSequence", "\(closure.sequence)"),
                 ("duplicateNumber", "\(number)"),
-                ("printQueued", "false"),
+                ("printQueued", printQueued ? "true" : "false"),
                 ("terminalId", FiscalJSON.string(closure.terminalId)),
             ]),
             terminalId: closure.terminalId, operatorId: operatorId, now: now
