@@ -21,10 +21,23 @@ import Testing
         let f = try TicketReferenceFixture.load()
         for entry in f.documents {
             let expected = try JSONDecoder().decode(TicketDocument.self, from: entry.expectedData)
-            let swiftJSON = try JSONSerialization.jsonObject(with: Data(try TicketDocumentJSON.serialize(expected).utf8))
-            let dotNetJSON = try JSONSerialization.jsonObject(with: entry.expectedData)
-            #expect((swiftJSON as? NSDictionary)?.isEqual(dotNetJSON) == true, "\(entry.name)")
+            let swiftJSON = try Self.canonicalJSON(Data(try TicketDocumentJSON.serialize(expected).utf8))
+            #expect(swiftJSON == (try Self.canonicalJSON(entry.expectedData)), "\(entry.name)")
         }
+    }
+
+    /// La comparaison distingue un booléen d'un entier (`NSNumber(true).isEqual(1)` est vrai, pas ce texte).
+    @Test func canonicalJSONDistinguishesBoolFromInt() throws {
+        let line = #"{"type":"TicketText","text":"A","align":1,"bold":%@,"large":false}"#
+        let asBool = try Self.canonicalJSON(Data(String(format: line, "true").utf8))
+        #expect(asBool == (try Self.canonicalJSON(Data(#"{"large":false,"bold":true,"align":1,"text":"A","type":"TicketText"}"#.utf8))))
+        #expect(asBool != (try Self.canonicalJSON(Data(String(format: line, "1").utf8))))
+    }
+
+    /// Texte JSON à clés triées : indépendant de l'ordre des clés, sensible au type des valeurs.
+    private static func canonicalJSON(_ data: Data) throws -> String {
+        let object = try JSONSerialization.jsonObject(with: data)
+        return String(decoding: try JSONSerialization.data(withJSONObject: object, options: [.sortedKeys]), as: UTF8.self)
     }
 
     private static func diff(_ actual: TicketDocument, _ expected: TicketDocument) -> String {
