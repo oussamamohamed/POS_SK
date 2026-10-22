@@ -7,6 +7,7 @@ Base de référence : .NET 768 (Domain 69 + Infrastructure 442 + Api 257) · Pos
 | Tâche | Statut | .NET | PosKit | Findings de revue ouverts |
 |---|---|---|---|---|
 | 1 Schéma V10, modèle `Printer` étendu, dépôt `PrintJobs` | fait | 767 verts + 1 échec hors périmètre (aucun changement .NET) | 610 | voir ci-dessous |
+| 2 `PrinterTransport`, transport LAN, faux transport | fait | même état : 1 échec hors périmètre (flake minuit) | 620 | aucun ; tests réseau sur loopback réels (0,6 s), non isolés par tag |
 
 ## Constats ouverts
 
