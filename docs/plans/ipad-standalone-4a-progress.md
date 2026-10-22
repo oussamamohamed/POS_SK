@@ -9,7 +9,7 @@ Plan : `docs/superpowers/plans/2026-10-22-ipad-standalone-4a-rendu-tickets.md`
 | 3 Rendu texte ESC/POS et commandes | fait | 768 (inchangé, aucun changement .NET) | 569 | aucun |
 | 4 Entrées, formats et textes localisés | fait | 768 (inchangé, aucun changement .NET) | 578 | aucun |
 | 5 `TicketBuilder` | fait | 768 (inchangé, aucun changement .NET) | 587 | aucun |
-| 6 Rendu raster CoreText | fait | 768 (inchangé, aucun changement .NET) | 597 | aucun |
+| 6 Rendu raster CoreText | fait | 768 (inchangé, aucun changement .NET) | 598 | aucun |
 | 7 Documentation et vérification finale | à faire | - | - | - |
 
 ## Contrôle visuel du raster (tâche 6)

@@ -50,6 +50,19 @@ import Testing
         #expect(ink(rtl, columns: 0..<176) > 0); #expect(ink(rtl, columns: 400..<576) > 0)
     }
 
+    /// Une colonne vide à la fois : chaque élément est du bon côté, et le miroir RTL l'inverse.
+    @Test func columnsMirrorLabelAndValueSidesInRtl() {
+        let half = 0..<288, otherHalf = 288..<576
+        for rtl in [false, true] {
+            let valueOnly = TicketRasterRenderer.render(doc([.columns(label: " ", value: "12.50")], rtl: rtl), widthDots: 576)[0]
+            #expect(ink(valueOnly, columns: rtl ? half : otherHalf) > 0, "valeur, rtl=\(rtl)")
+            #expect(ink(valueOnly, columns: rtl ? otherHalf : half) == 0, "valeur, rtl=\(rtl)")
+            let labelOnly = TicketRasterRenderer.render(doc([.columns(label: rtl ? "المجموع" : "Total", value: " ")], rtl: rtl), widthDots: 576)[0]
+            #expect(ink(labelOnly, columns: rtl ? otherHalf : half) > 0, "étiquette, rtl=\(rtl)")
+            #expect(ink(labelOnly, columns: rtl ? half : otherHalf) == 0, "étiquette, rtl=\(rtl)")
+        }
+    }
+
     /// Orientation : un « L » a sa barre horizontale en bas (image retournée) et à droite du fût (image en miroir).
     @Test func glyphsAreUprightAndNotMirrored() throws {
         let image = TicketRasterRenderer.render(doc([.text("L", large: true)]), widthDots: 384)[0]
