@@ -132,6 +132,20 @@ struct LocalPrintQueueProcessorTests {
         #expect(try await api.testJob(b.id)?.status == .sent)
     }
 
+    @Test func jobsEnqueuedAtTheSameInstantAreSentInInsertionOrder() async throws {
+        let clock = LocalTestClock(), fake = FakePrinterTransport()
+        let api = try await makePrintAPI(clock: clock, transport: fake)
+        let printer = textPrinter("Bar")
+        try await api.addTestPrinter(printer)
+        let markers = (0..<10).map { "TIE-\($0)" }
+        for m in markers { _ = try await api.enqueueTestJob(printer: printer.id, marker: m) }
+
+        await api.runPrintCycle()
+
+        #expect(fake.sent.count == 10)
+        for (i, m) in markers.enumerated() { #expect(payload(fake.sent[i].payload, contains: m)) }
+    }
+
     @Test func aJobWaitingForItsRetryBlocksTheNextOnes() async throws {
         let clock = LocalTestClock(), fake = FakePrinterTransport()
         let api = try await makePrintAPI(clock: clock, transport: fake)

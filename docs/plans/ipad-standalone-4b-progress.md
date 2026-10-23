@@ -13,6 +13,7 @@ Base de référence : .NET 768 (Domain 69 + Infrastructure 442 + Api 257) · Pos
 | 5 Répartiteur `PrintDispatch` (tickets, bons cuisine, rapports, duplicata) | fait | 767 verts + 1 échec hors périmètre (flake minuit, 01 h 37 Paris) : Domain 69, Infrastructure 440 + 1, Api 258 ; aucun changement .NET | 673 | voir ci-dessous |
 | 6 Impression branchée dans les parcours, `printQueued` réel | fait | 767 verts + 1 échec hors périmètre (flake minuit, 01 h 45 Paris) : Domain 69, Infrastructure 440 + 1, Api 258 ; aucun changement .NET | 687 (`./scripts/test.sh unit` : 687) | voir ci-dessous |
 | 7 Démarrage du worker dans l'app, documentation, vérification finale | fait | 767 verts + 1 échec hors périmètre (flake minuit) : Domain 69, Infrastructure 440 + 1, Api 258 | 687 (`swift test` et `./scripts/test.sh unit`) ; build simulateur de l'app OK | aucun |
+| Vague de corrections finales (ordre FIFO `rowid`, documentation) | fait | 768 verts (Domain 69, Infrastructure 441, Api 258) ; aucun changement .NET | 689 (`swift test`) | aucun |
 
 ## Constats ouverts
 
@@ -36,4 +37,4 @@ Base de référence : .NET 768 (Domain 69 + Infrastructure 442 + Api 257) · Pos
 - Tâche 6 : toutes les mises en file ont lieu après le `COMMIT` de la transaction métier ; `reprintReceipt` et `reprintLatestClosure` n'ouvrent plus de transaction (recherche puis `queue*Reprint`, seule transaction) et n'appellent plus `recordDuplicate` / `recordClosureDuplicate` (un seul JET par duplicata, vérifié).
 - Tâche 6 : comme le .NET, un échec d'écriture du duplicata rend désormais `ReprintResult(printQueued: false, duplicateNumber: 0)` au lieu d'une erreur.
 - Tâche 6 : la base démo a une imprimante de ticket active (« Imprimante Caisse Comptoir », poste RECEIPT) : une vente comptoir soldée et un duplicata y rendent `printQueued == true` (tests existants mis à jour ; le test « sans imprimante » désactive les imprimantes démo).
-- Tâche 6 (constat, hors périmètre) : les jobs d'une même imprimante créés à la même milliseconde (bons de plusieurs postes d'un même envoi vers une imprimante commune) sont départagés par `Id`, un UUID aléatoire : leur ordre d'impression entre eux n'est pas garanti. Un ordre par `rowid` (ou un UUID v7) le fixerait.
+- Tâche 6 (constat) : clos par la vague de corrections finales ; les jobs créés à la même milliseconde sont départagés par `rowid` (ordre d'insertion), test à 10 jobs.

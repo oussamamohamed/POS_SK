@@ -27,7 +27,7 @@ extension LocalPosAPI {
     func saveTestJob(_ job: PrintJobRecord) throws { try LocalPrintQueueRepository(db: db).save(job) }
 
     func allTestJobs() throws -> [PrintJobRecord] {
-        try db.query("SELECT Id FROM PrintJobs ORDER BY CreatedAtUtc, Id").compactMap { $0.uuid("Id") }.compactMap { try testJob($0) }
+        try db.query("SELECT Id FROM PrintJobs ORDER BY CreatedAtUtc, rowid").compactMap { $0.uuid("Id") }.compactMap { try testJob($0) }
     }
 
     func journalRows(_ eventType: String) throws -> [(payload: String, terminalId: String?, operatorId: UUID?)] {

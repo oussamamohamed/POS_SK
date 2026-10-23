@@ -41,7 +41,7 @@ struct LocalPrintQueueRepositoryTests {
         #expect(Int64((read.createdAtUtc.timeIntervalSince1970 * 1000).rounded()) == 1_760_000_000_987)
     }
 
-    @Test func pendingJobsAreOrderedByCreationThenId() throws {
+    @Test func pendingJobsAreOrderedByCreationThenInsertion() throws {
         let repo = try makeRepo()
         let late = try add(repo, at: t0.addingTimeInterval(5))
         let a = try add(repo)
@@ -50,8 +50,14 @@ struct LocalPrintQueueRepositoryTests {
         var done = sent
         done.status = .sent
         try repo.save(done)
-        let tied = [a, b].sorted { $0.id.uuidString < $1.id.uuidString }
-        #expect(try repo.pendingJobs().map(\.id) == tied.map(\.id) + [late.id])
+        #expect(try repo.pendingJobs().map(\.id) == [a.id, b.id, late.id])
+    }
+
+    @Test func jobsCreatedAtTheSameInstantKeepInsertionOrder() throws {
+        let repo = try makeRepo()
+        let jobs = try (0..<10).map { _ in try add(repo) }
+        #expect(try repo.pendingJobs().map(\.id) == jobs.map(\.id))
+        #expect(try repo.jobs(printerId: printer, statuses: [.pending], limit: 20).map(\.id) == jobs.reversed().map(\.id))
     }
 
     @Test func jobsFilterByPrinterAndStatusNewestFirst() throws {

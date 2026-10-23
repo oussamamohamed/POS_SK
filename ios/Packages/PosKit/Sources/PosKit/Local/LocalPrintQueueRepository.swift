@@ -34,7 +34,7 @@ struct LocalPrintQueueRepository {
 
     /// Tous les `Pending`, dans l'ordre de création puis `Id`.
     func pendingJobs() throws -> [PrintJobRecord] {
-        try db.query("SELECT * FROM PrintJobs WHERE Status = ? ORDER BY CreatedAtUtc, Id", [.integer(PrintJobStatus.pending.rawValue)])
+        try db.query("SELECT * FROM PrintJobs WHERE Status = ? ORDER BY CreatedAtUtc, rowid", [.integer(PrintJobStatus.pending.rawValue)])
             .compactMap(Self.decode)
     }
 
@@ -43,7 +43,7 @@ struct LocalPrintQueueRepository {
         guard !statuses.isEmpty else { return [] }
         let marks = statuses.map { _ in "?" }.joined(separator: ", ")
         return try db.query(
-            "SELECT * FROM PrintJobs WHERE PrinterId = ? AND Status IN (\(marks)) ORDER BY CreatedAtUtc DESC, Id DESC LIMIT ?",
+            "SELECT * FROM PrintJobs WHERE PrinterId = ? AND Status IN (\(marks)) ORDER BY CreatedAtUtc DESC, rowid DESC LIMIT ?",
             [.uuid(printerId)] + statuses.map { .integer($0.rawValue) } + [.integer(limit)]
         ).compactMap(Self.decode)
     }
