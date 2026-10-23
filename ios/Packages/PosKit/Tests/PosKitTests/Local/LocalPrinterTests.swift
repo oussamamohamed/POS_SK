@@ -58,7 +58,8 @@ struct LocalPrinterTests {
         await #expect(throws: APIError.unauthorized) { try await api.testPrinter(id: UUID()) }
     }
 
-    @Test func statusesJobsAndTestPrintAreInertUntilDirectPrinting() async throws {
+    /// Moteur, relances et test d'impression : `LocalPrintQueueProcessorTests` et `LocalPrinterAdminAPITests`.
+    @Test func statusesAndJobsStartEmpty() async throws {
         let api = try await makeLocalAPI()
         let printer = Printer(name: "Z", ipAddress: "10.0.0.3")
         try await api.savePrinter(printer, isNew: true)
@@ -68,8 +69,6 @@ struct LocalPrinterTests {
         #expect(try await api.printJobs(printerId: printer.id).isEmpty)
         await #expect(throws: Self.notFound) { try await api.printJobs(printerId: UUID()) }
 
-        let test = try await api.testPrinter(id: printer.id)
-        #expect(test.success == false && test.message == "L'impression directe n'est pas encore disponible en mode autonome.")
         await #expect(throws: Self.notFound) { try await api.testPrinter(id: UUID()) }
         await #expect(throws: APIError.notFound("Impression introuvable.")) { try await api.retryPrintJob(id: UUID()) }
         await #expect(throws: APIError.notFound("Impression introuvable.")) { try await api.cancelPrintJob(id: UUID()) }

@@ -127,6 +127,8 @@ struct LocalFiscalPaymentTests {
 
     @Test func reprintingNumbersTheDuplicatesAndJournalsThemWithoutAPrinter() async throws {
         let (api, db) = try await makeLocalAPIWithDatabase()
+        // Sans imprimante : les imprimantes de démonstration (dont celle du poste RECEIPT) sont désactivées.
+        for printer in try await api.printers() { try await api.setTestPrinterActive(printer.id, false) }
         let order = try await seat(api)
         _ = try await api.pay(localPayment(order, table: "T1", tenders: [localTender(.cash, 1950)]))
         let first = try await api.reprintReceipt(receiptIdentifier: "T01-000001")

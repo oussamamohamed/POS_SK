@@ -535,6 +535,9 @@ public struct StaffMember: Codable, Identifiable, Hashable, Sendable {
     }
 }
 
+/// Transport d'une imprimante du mode autonome ; le serveur .NET ne connaît que `lan`.
+public enum PrinterTransportKind: String, Codable, Sendable { case lan, star, epson }
+
 public struct Printer: Codable, Identifiable, Hashable, Sendable {
     public var id: UUID
     public var name: String
@@ -545,8 +548,14 @@ public struct Printer: Codable, Identifiable, Hashable, Sendable {
     public var assignedStationIds: [String]
     public var isActive: Bool
     public var textMode: Bool
+    public var transport: PrinterTransportKind
+    public var deviceIdentifier: String?
 
-    public init(id: UUID = UUID(), name: String, ipAddress: String, port: Int = 9100, paperWidthMm: Int = 80, openCashDrawerOnReceipt: Bool = false, assignedStationIds: [String] = [], isActive: Bool = true, textMode: Bool = false) {
+    enum CodingKeys: String, CodingKey {
+        case id, name, ipAddress, port, paperWidthMm, openCashDrawerOnReceipt, assignedStationIds, isActive, textMode, transport, deviceIdentifier
+    }
+
+    public init(id: UUID = UUID(), name: String, ipAddress: String, port: Int = 9100, paperWidthMm: Int = 80, openCashDrawerOnReceipt: Bool = false, assignedStationIds: [String] = [], isActive: Bool = true, textMode: Bool = false, transport: PrinterTransportKind = .lan, deviceIdentifier: String? = nil) {
         self.id = id
         self.name = name
         self.ipAddress = ipAddress
@@ -556,6 +565,8 @@ public struct Printer: Codable, Identifiable, Hashable, Sendable {
         self.assignedStationIds = assignedStationIds
         self.isActive = isActive
         self.textMode = textMode
+        self.transport = transport
+        self.deviceIdentifier = deviceIdentifier
     }
 
     public init(from decoder: Decoder) throws {
@@ -569,6 +580,24 @@ public struct Printer: Codable, Identifiable, Hashable, Sendable {
         assignedStationIds = try c.decode([String].self, forKey: .assignedStationIds)
         isActive = try c.decode(Bool.self, forKey: .isActive)
         textMode = try c.decodeIfPresent(Bool.self, forKey: .textMode) ?? false
+        transport = try c.decodeIfPresent(PrinterTransportKind.self, forKey: .transport) ?? .lan
+        deviceIdentifier = try c.decodeIfPresent(String.self, forKey: .deviceIdentifier)
+    }
+
+    /// `transport` et `deviceIdentifier` ne sont écrits que s'ils ne sont pas par défaut : le corps envoyé au serveur .NET reste inchangé.
+    public func encode(to encoder: Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        try c.encode(id, forKey: .id)
+        try c.encode(name, forKey: .name)
+        try c.encode(ipAddress, forKey: .ipAddress)
+        try c.encode(port, forKey: .port)
+        try c.encode(paperWidthMm, forKey: .paperWidthMm)
+        try c.encode(openCashDrawerOnReceipt, forKey: .openCashDrawerOnReceipt)
+        try c.encode(assignedStationIds, forKey: .assignedStationIds)
+        try c.encode(isActive, forKey: .isActive)
+        try c.encode(textMode, forKey: .textMode)
+        if transport != .lan { try c.encode(transport, forKey: .transport) }
+        try c.encodeIfPresent(deviceIdentifier, forKey: .deviceIdentifier)
     }
 }
 

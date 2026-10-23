@@ -192,4 +192,21 @@ struct LocalBackupTests {
         let restored = try SQLiteDatabase(path: destination.path)
         #expect(try restored.query("SELECT LastSequence FROM LocalCounters WHERE Name = 'marker'").first?.int("LastSequence") == 7)
     }
+
+    @Test func aV9BackupIsRestoredThenMigratedToV10WithoutLoss() throws {
+        let folder = try makeFolder()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let v9 = try SQLiteDatabase(path: ":memory:")
+        for script in LocalMigrator.steps.prefix(9) { try v9.exec(script) }
+        try v9.exec("PRAGMA user_version = 9")
+        try v9.run("INSERT INTO LocalCounters (Name, Day, LastSequence) VALUES ('marker', '', 9)")
+        let file = try LocalBackupService.write(db: v9, to: folder, passphrase: "phrase de test", now: at, iterations: Self.fast)
+        let destination = folder.appendingPathComponent("restored-v9.sqlite")
+        try LocalBackupService.restore(from: file, passphrase: "phrase de test", to: destination)
+        let restored = try SQLiteDatabase(path: destination.path)
+        try LocalMigrator.migrate(restored)
+        #expect(try restored.userVersion() == LocalMigrator.steps.count)
+        #expect(try restored.query("SELECT LastSequence FROM LocalCounters WHERE Name = 'marker'").first?.int("LastSequence") == 9)
+        #expect(try restored.query("SELECT 1 AS x FROM sqlite_master WHERE name = 'PrintJobs'").count == 1)
+    }
 }

@@ -2,16 +2,17 @@ import Foundation
 
 extension LocalPosAPI {
     /// Envoie en cuisine les lignes pas encore envoyées : un bon par poste de préparation (ligne → article → famille → cuisine chaude),
-    /// puis marque les lignes comme envoyées. Rien à envoyer : succès sans bon. Table ou commande absente : `404`.
+    /// puis marque les lignes comme envoyées et, après la validation, met les bons en file d'impression. Rien à envoyer : succès sans bon.
+    /// Table ou commande absente : `404`.
     public func dispatch(table number: String) async throws {
         try requireAuth()
         let floor = floorRepository, orders = orderRepository, kitchen = kitchenRepository, catalog = catalogRepository
-        try db.transaction {
+        let ticketIds = try db.transaction { () throws -> [UUID] in
             guard let table = try floor.table(number), let orderId = table.activeOrderId, let order = try orders.order(id: orderId) else {
                 throw APIError.notFound(nil)
             }
             let pending = order.lines.filter { !$0.isDispatched }
-            guard !pending.isEmpty else { return }
+            guard !pending.isEmpty else { return [] }
             let fallbacks = try catalog.stationFallbacks()
             // Un groupe par poste, dans l'ordre d'apparition des lignes (bons déterministes).
             var groups: [(station: String, lines: [OrderLine])] = []
@@ -32,6 +33,7 @@ extension LocalPosAPI {
             } else {
                 displayTable = order.tableNumber
             }
+            var ids: [UUID] = []
             for group in groups {
                 let ticket = KitchenTicket(
                     orderId: orderId, tableNumber: displayTable, serverName: table.assignedWaiterName ?? "Serveur", coversCount: table.coversCount,
@@ -42,10 +44,13 @@ extension LocalPosAPI {
                     }
                 )
                 try kitchen.insert(ticket, productIds: group.lines.map(\.productId))
+                ids.append(ticket.id)
             }
             try orders.markDispatched(orderId: orderId)
             try orders.setStatus(orderId: orderId, .sentToKitchen)
+            return ids
         }
+        queueKitchenTickets(ticketIds: ticketIds)
     }
 
     /// Réclame la suite : bon unique (cuisine chaude) avec les lignes « suite » de la commande. Sans ligne « suite », aucun bon
@@ -53,10 +58,10 @@ extension LocalPosAPI {
     public func fireSuite(table number: String) async throws {
         try requireAuth()
         let floor = floorRepository, orders = orderRepository, kitchen = kitchenRepository
-        try db.transaction {
-            guard let table = try floor.table(number), let orderId = table.activeOrderId, let order = try orders.order(id: orderId) else { return }
+        let ticketId = try db.transaction { () throws -> UUID? in
+            guard let table = try floor.table(number), let orderId = table.activeOrderId, let order = try orders.order(id: orderId) else { return nil }
             let suite = order.lines.filter { $0.course == .suite }
-            guard !suite.isEmpty else { return }
+            guard !suite.isEmpty else { return nil }
             let ticket = KitchenTicket(
                 orderId: orderId, tableNumber: number, serverName: "", coversCount: 1, stationId: LocalStations.hotKitchen,
                 items: suite.map {
@@ -65,7 +70,9 @@ extension LocalPosAPI {
                 }
             )
             try kitchen.insert(ticket, productIds: suite.map(\.productId))
+            return ticket.id
         }
+        if let ticketId { queueKitchenTickets(ticketIds: [ticketId]) }
     }
 
     /// Les 50 derniers bons, tous statuts (comme `GET /api/kds/tickets`, accessible sans connexion).

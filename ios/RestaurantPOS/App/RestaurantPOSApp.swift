@@ -153,10 +153,15 @@ final class AppEnvironment {
 
     /// Production : fichier protégé, jamais de données de démonstration. Tests : base en mémoire (démonstration ou vierge).
     private static func openLocal(launch: LaunchConfiguration) throws -> LocalPosAPI {
+        let api: LocalPosAPI
         if launch.isUITest {
-            return try LocalPosAPI(path: ":memory:", seed: launch.usesLocalBackend && !launch.localIsBlank ? .demo : .blank)
+            // Faux transport : aucun accès réseau en test (la base démo a une imprimante de ticket à une vraie adresse IP).
+            api = try LocalPosAPI(path: ":memory:", seed: launch.usesLocalBackend && !launch.localIsBlank ? .demo : .blank, transport: FakePrinterTransport())
+        } else {
+            api = try LocalPosAPI.openStandalone(path: LocalDatabaseLocation.defaultURL().path)
         }
-        return try LocalPosAPI.openStandalone(path: LocalDatabaseLocation.defaultURL().path)
+        Task { await api.startPrintWorker() }
+        return api
     }
 
     private static func describe(_ error: Error) -> String {

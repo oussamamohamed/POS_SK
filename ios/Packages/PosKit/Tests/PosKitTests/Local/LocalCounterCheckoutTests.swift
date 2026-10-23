@@ -33,12 +33,25 @@ struct LocalCounterCheckoutTests {
         let result = try await api.counterCheckout(request)
         #expect(result.orderId == order.orderId && result.pickupNumber == "#A-01" && result.receiptNumber == "T01-000001")
         #expect(result.totalPaid == Money(cents: 1950) && result.changeGiven == Money(cents: 50) && result.remainingBalance == .zero)
-        #expect(result.openCashDrawer == true && result.issuedCreditVoucher == nil && result.fiscalSignature?.isEmpty == false && result.printQueued == false)
+        // La base démo a une imprimante de ticket active (poste RECEIPT) : la vente soldée met le coupon de retrait en file.
+        #expect(result.openCashDrawer == true && result.issuedCreditVoucher == nil && result.fiscalSignature?.isEmpty == false && result.printQueued == true)
         #expect(try await api.tables().first { $0.isCounter }?.status == .free)
         #expect(try await api.activeOrder(table: "Comptoir") == nil)
 
         let second = try await api.counterCheckout(checkout(try await cart(api), [cash(1950)]))
         #expect(second.pickupNumber == "#A-02" && second.receiptNumber == "T01-000002" && second.openCashDrawer == true)
+    }
+
+    /// Comme le .NET (`CounterSaleEndpoints`) : une vente comptoir sans opérateur est attribuée à celui qui encaisse (pourboire du rapport).
+    @Test func theCashierBecomesTheOperatorOfACounterSale() async throws {
+        let (api, db) = try await makeLocalAPIWithDatabase()
+        let cashier = try #require(try await api.login(pin: "1234").operatorId)
+        let order = try await cart(api)
+        _ = try await api.counterCheckout(checkout(order, [cash(2150)], tip: 200))
+        let row = try #require(try db.query("SELECT OperatorId FROM Orders WHERE Id = ?", [.uuid(order.orderId)]).first)
+        #expect(row.uuid("OperatorId") == cashier)
+        let data = try LocalFiscalRepository(db: db).reportPrintData(terminalId: "T01", periodStart: nil, periodEnd: Date().addingTimeInterval(60))
+        #expect(data.tips.count == 1 && data.tips.first?.serverName != nil && data.totalTipsCents == 200)
     }
 
     @Test func requestedTerminalIsIgnoredAtTheCounter() async throws {

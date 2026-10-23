@@ -68,7 +68,7 @@ extension LocalPosAPI {
         try requireAuth()
         guard request.tipAmount >= .zero else { throw APIError.server(status: 400, message: "Montant de pourboire invalide.") }
         let floor = floorRepository, orders = orderRepository, holds = holdRepository
-        return try db.transaction { () throws -> PaymentResult in
+        let (paidOrderId, result) = try db.transaction { () throws -> (UUID, PaymentResult) in
             let notFound = APIError.server(status: 400, message: "Commande introuvable pour ce règlement.")
             // Le repli sur la commande de la table ne vaut que sans `orderId` : un identifiant inconnu n'encaisse jamais une autre commande.
             guard let orderId = try request.orderId ?? floor.table(request.tableNumber)?.activeOrderId,
@@ -86,10 +86,15 @@ extension LocalPosAPI {
                 try orders.setTip(orderId: orderId, cents: tip.cents + request.tipAmount.cents)
             }
             let settlement = try settle(order: order, tenders: tenders, terminalId: request.terminalId)
-            return PaymentResult(
+            return (orderId, PaymentResult(
                 receiptNumber: settlement.receiptNumber, totalPaid: settlement.totalPaid, changeGiven: settlement.changeGiven,
                 remainingBalance: settlement.remaining, fiscalSignature: settlement.fiscalSignature, printQueued: false
-            )
+            ))
         }
+        // Après la validation : ticket seulement s'il est demandé et que la note est soldée.
+        guard request.requestReceiptPrint, result.remainingBalance == .zero, let number = result.receiptNumber else { return result }
+        var printed = result
+        printed.printQueued = queueTableReceipt(orderId: paidOrderId, receiptNumber: number, hasCash: request.tenders.contains { $0.method == .cash })
+        return printed
     }
 }

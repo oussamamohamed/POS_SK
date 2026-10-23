@@ -1,0 +1,35 @@
+import Foundation
+import Testing
+@testable import PosKit
+
+@Suite struct EscPosTextRendererTests {
+    @Test func wrapMatchesDotNet() throws {
+        let wraps = try TicketReferenceFixture.load().wrap
+        #expect(!wraps.isEmpty)
+        for w in wraps {
+            #expect(EscPosTextRenderer.wrap(w.text, width: w.width) == w.lines.map { Array($0.utf16) }, "« \(w.text) »")
+        }
+    }
+
+    @Test func renderIsByteIdenticalToDotNet() throws {
+        let renders = try TicketReferenceFixture.load().textRender
+        #expect(!renders.isEmpty)
+        for r in renders {
+            let doc = try JSONDecoder().decode(TicketDocument.self, from: r.documentData)
+            #expect(hex(EscPosTextRenderer.render(doc, paperWidthMm: r.paperWidthMm, openCashDrawer: r.drawer)) == r.expectedHex, "\(r.name)")
+        }
+    }
+
+    /// Le .NET compte et encode en unités UTF-16 : un emoji vaut deux unités, donc deux `?`.
+    @Test func emojiCountsAsTwoUnitsAndPrintsTwoQuestionMarks() {
+        let doc = TicketDocument(language: "fr", rightToLeft: false, lines: [.columns(label: "😀", value: "1")])
+        let out = EscPosTextRenderer.render(doc, paperWidthMm: 58, openCashDrawer: false)
+        #expect(out.filter { $0 == 0x3F }.count == 2)
+        #expect(!out.contains(0xF0))
+    }
+
+    @Test func columnsForPaperWidth() {
+        #expect(EscPosTextRenderer.columns(forPaperWidthMm: 58) == 32)
+        #expect(EscPosTextRenderer.columns(forPaperWidthMm: 80) == 48)
+    }
+}

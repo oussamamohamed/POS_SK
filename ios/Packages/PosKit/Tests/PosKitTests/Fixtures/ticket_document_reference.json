@@ -1,0 +1,6381 @@
+{
+  "timeZone": "Europe/Paris",
+  "softwareVersion": "1.0.0",
+  "texts": {
+    "en": {
+      "admin.payment_method_cash": "Cash",
+      "admin.payment_method_credit_card": "Card (CB)",
+      "admin.payment_method_gift_card": "Gift Card",
+      "admin.payment_method_meal_voucher": "Meal Vouchers",
+      "admin.payment_method_other": "Other Payment",
+      "admin.payment_method_room_charge": "Room Charge (PMS)",
+      "kitchen_ticket.buzzer": "Buzzer {buzzer}",
+      "kitchen_ticket.comment": "Note: {comment}",
+      "kitchen_ticket.course_dessert": "Dessert",
+      "kitchen_ticket.course_direct": "Now",
+      "kitchen_ticket.course_on_demand": "On demand",
+      "kitchen_ticket.course_suite": "Next course",
+      "kitchen_ticket.covers": "Covers",
+      "kitchen_ticket.pickup": "Pickup #{number}",
+      "kitchen_ticket.server": "Server",
+      "kitchen_ticket.table": "TABLE {table}",
+      "kitchen_ticket.takeaway": "TAKEAWAY",
+      "kitchen_ticket.time": "Time",
+      "receipt.buzzer": "BUZZER",
+      "receipt.date": "Date",
+      "receipt.fiscal_signature": "NF525 FISCAL SIGNATURE",
+      "receipt.items_count": "Items: {count} line(s)",
+      "receipt.keep_until_pickup": "KEEP THIS VOUCHER UNTIL PICKUP",
+      "receipt.mode": "Mode",
+      "receipt.mode_eat_in": "EAT IN",
+      "receipt.mode_takeaway": "TAKEAWAY",
+      "receipt.number": "NUMBER",
+      "receipt.pickup_title": "PICKUP VOUCHER",
+      "receipt.terminal": "Terminal",
+      "receipt.test_address": "Address",
+      "receipt.test_paper": "Paper",
+      "receipt.test_printer": "Printer",
+      "receipt.test_title": "PRINT TEST",
+      "receipt.ticket": "Receipt",
+      "receipt.total_ht": "TOTAL EXCL. VAT",
+      "receipt.total_ttc": "TOTAL INCL. VAT",
+      "receipt.vat_breakdown": "VAT BREAKDOWN (NF525)",
+      "report.closed_at": "Closed",
+      "report.grand_total": "Perpetual grand total",
+      "report.items_before_discount": "Amounts before bill discounts",
+      "report.items_sold": "ITEMS SOLD",
+      "report.manager": "Manager",
+      "report.other_category": "Other",
+      "report.payments": "PAYMENTS",
+      "report.period_end": "To",
+      "report.period_start": "From",
+      "report.printed_at": "Printed",
+      "report.receipt_count": "Receipts",
+      "report.signature": "Signature",
+      "report.subtotal": "Subtotal",
+      "report.tips_by_server": "TIPS BY SERVER",
+      "report.tips_total": "Total tips",
+      "report.unknown_server": "Unknown",
+      "report.x_title": "X REPORT",
+      "report.z_title": "Z CLOSURE #{sequence}"
+    },
+    "fr": {
+      "admin.payment_method_cash": "Espèces",
+      "admin.payment_method_credit_card": "Carte Bancaire (CB)",
+      "admin.payment_method_gift_card": "Carte Cadeau",
+      "admin.payment_method_meal_voucher": "Titres Restaurant",
+      "admin.payment_method_other": "Autre Règlement",
+      "admin.payment_method_room_charge": "Note de Chambre (PMS)",
+      "kitchen_ticket.buzzer": "Bipeur {buzzer}",
+      "kitchen_ticket.comment": "Note : {comment}",
+      "kitchen_ticket.course_dessert": "Dessert",
+      "kitchen_ticket.course_direct": "Direct",
+      "kitchen_ticket.course_on_demand": "À la demande",
+      "kitchen_ticket.course_suite": "Suite",
+      "kitchen_ticket.covers": "Couverts",
+      "kitchen_ticket.pickup": "Retrait n° {number}",
+      "kitchen_ticket.server": "Serveur",
+      "kitchen_ticket.table": "TABLE {table}",
+      "kitchen_ticket.takeaway": "À EMPORTER",
+      "kitchen_ticket.time": "Heure",
+      "receipt.buzzer": "BIPEUR",
+      "receipt.date": "Date",
+      "receipt.fiscal_signature": "SIGNATURE FISCALE NF525",
+      "receipt.items_count": "Articles : {count} ligne(s)",
+      "receipt.keep_until_pickup": "CONSERVEZ CE BON JUSQU'AU RETRAIT",
+      "receipt.mode": "Mode",
+      "receipt.mode_eat_in": "SUR PLACE",
+      "receipt.mode_takeaway": "À EMPORTER",
+      "receipt.number": "NUMÉRO",
+      "receipt.pickup_title": "BON DE RETRAIT COMMANDE",
+      "receipt.terminal": "Caisse",
+      "receipt.test_address": "Adresse",
+      "receipt.test_paper": "Papier",
+      "receipt.test_printer": "Imprimante",
+      "receipt.test_title": "TEST D'IMPRESSION",
+      "receipt.ticket": "Ticket",
+      "receipt.total_ht": "TOTAL HT",
+      "receipt.total_ttc": "TOTAL TTC",
+      "receipt.vat_breakdown": "VENTILATION TVA (NF525)",
+      "report.closed_at": "Clôturé le",
+      "report.grand_total": "Grand total perpétuel",
+      "report.items_before_discount": "Montants avant remises sur note",
+      "report.items_sold": "ARTICLES VENDUS",
+      "report.manager": "Gérant",
+      "report.other_category": "Autres",
+      "report.payments": "RÈGLEMENTS",
+      "report.period_end": "Au",
+      "report.period_start": "Du",
+      "report.printed_at": "Imprimé le",
+      "report.receipt_count": "Tickets",
+      "report.signature": "Signature",
+      "report.subtotal": "Sous-total",
+      "report.tips_by_server": "POURBOIRES PAR SERVEUR",
+      "report.tips_total": "Total pourboires",
+      "report.unknown_server": "Inconnu",
+      "report.x_title": "RAPPORT X",
+      "report.z_title": "CLÔTURE Z n° {sequence}"
+    },
+    "ar": {
+      "admin.payment_method_cash": "نقدًا",
+      "admin.payment_method_credit_card": "بطاقة بنكية (CB)",
+      "admin.payment_method_gift_card": "بطاقة هدايا",
+      "admin.payment_method_meal_voucher": "قسائم مطعم",
+      "admin.payment_method_other": "دفع آخر",
+      "admin.payment_method_room_charge": "التحميل على غرفة الفندق (PMS)",
+      "kitchen_ticket.buzzer": "جهاز النداء {buzzer}",
+      "kitchen_ticket.comment": "ملاحظة: {comment}",
+      "kitchen_ticket.course_dessert": "حلوى",
+      "kitchen_ticket.course_direct": "فوري",
+      "kitchen_ticket.course_on_demand": "عند الطلب",
+      "kitchen_ticket.course_suite": "الطبق التالي",
+      "kitchen_ticket.covers": "عدد الأشخاص",
+      "kitchen_ticket.pickup": "استلام رقم {number}",
+      "kitchen_ticket.server": "النادل",
+      "kitchen_ticket.table": "طاولة {table}",
+      "kitchen_ticket.takeaway": "سفري",
+      "kitchen_ticket.time": "الوقت",
+      "receipt.buzzer": "جهاز النداء",
+      "receipt.date": "التاريخ",
+      "receipt.fiscal_signature": "التوقيع الضريبي NF525",
+      "receipt.items_count": "الأصناف: {count} سطر",
+      "receipt.keep_until_pickup": "احتفظ بهذه القسيمة حتى الاستلام",
+      "receipt.mode": "النوع",
+      "receipt.mode_eat_in": "في المطعم",
+      "receipt.mode_takeaway": "سفري",
+      "receipt.number": "الرقم",
+      "receipt.pickup_title": "قسيمة استلام الطلب",
+      "receipt.terminal": "الصندوق",
+      "receipt.test_address": "العنوان",
+      "receipt.test_paper": "الورق",
+      "receipt.test_printer": "الطابعة",
+      "receipt.test_title": "اختبار الطباعة",
+      "receipt.ticket": "الإيصال",
+      "receipt.total_ht": "المجموع دون الضريبة",
+      "receipt.total_ttc": "المجموع شامل الضريبة",
+      "receipt.vat_breakdown": "تفصيل الضريبة (NF525)",
+      "report.closed_at": "أُغلق في",
+      "report.grand_total": "الإجمالي الدائم",
+      "report.items_before_discount": "المبالغ قبل خصومات الفاتورة",
+      "report.items_sold": "الأصناف المباعة",
+      "report.manager": "المدير",
+      "report.other_category": "أخرى",
+      "report.payments": "المدفوعات",
+      "report.period_end": "إلى",
+      "report.period_start": "من",
+      "report.printed_at": "طُبع في",
+      "report.receipt_count": "عدد الإيصالات",
+      "report.signature": "التوقيع",
+      "report.subtotal": "المجموع الفرعي",
+      "report.tips_by_server": "الإكراميات حسب النادل",
+      "report.tips_total": "مجموع الإكراميات",
+      "report.unknown_server": "غير معروف",
+      "report.x_title": "تقرير X",
+      "report.z_title": "إغلاق Z رقم {sequence}"
+    }
+  },
+  "pc858": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62,
+    63,
+    64,
+    65,
+    66,
+    67,
+    68,
+    69,
+    70,
+    71,
+    72,
+    73,
+    74,
+    75,
+    76,
+    77,
+    78,
+    79,
+    80,
+    81,
+    82,
+    83,
+    84,
+    85,
+    86,
+    87,
+    88,
+    89,
+    90,
+    91,
+    92,
+    93,
+    94,
+    95,
+    96,
+    97,
+    98,
+    99,
+    100,
+    101,
+    102,
+    103,
+    104,
+    105,
+    106,
+    107,
+    108,
+    109,
+    110,
+    111,
+    112,
+    113,
+    114,
+    115,
+    116,
+    117,
+    118,
+    119,
+    120,
+    121,
+    122,
+    123,
+    124,
+    125,
+    126,
+    127,
+    199,
+    252,
+    233,
+    226,
+    228,
+    224,
+    229,
+    231,
+    234,
+    235,
+    232,
+    239,
+    238,
+    236,
+    196,
+    197,
+    201,
+    230,
+    198,
+    244,
+    246,
+    242,
+    251,
+    249,
+    255,
+    214,
+    220,
+    248,
+    163,
+    216,
+    215,
+    402,
+    225,
+    237,
+    243,
+    250,
+    241,
+    209,
+    170,
+    186,
+    191,
+    174,
+    172,
+    189,
+    188,
+    161,
+    171,
+    187,
+    9617,
+    9618,
+    9619,
+    9474,
+    9508,
+    193,
+    194,
+    192,
+    169,
+    9571,
+    9553,
+    9559,
+    9565,
+    162,
+    165,
+    9488,
+    9492,
+    9524,
+    9516,
+    9500,
+    9472,
+    9532,
+    227,
+    195,
+    9562,
+    9556,
+    9577,
+    9574,
+    9568,
+    9552,
+    9580,
+    164,
+    240,
+    208,
+    202,
+    203,
+    200,
+    8364,
+    205,
+    206,
+    207,
+    9496,
+    9484,
+    9608,
+    9604,
+    166,
+    204,
+    9600,
+    211,
+    223,
+    212,
+    210,
+    245,
+    213,
+    181,
+    254,
+    222,
+    218,
+    219,
+    217,
+    253,
+    221,
+    175,
+    180,
+    173,
+    177,
+    8215,
+    190,
+    182,
+    167,
+    247,
+    184,
+    176,
+    168,
+    183,
+    185,
+    179,
+    178,
+    9632,
+    160
+  ],
+  "encode": [
+    {
+      "text": "àâçéèêëîïôùû ÀÉÈ — 0123456789",
+      "hex": "858387828a88898c8b93979620b790d4203f2030313233343536373839"
+    },
+    {
+      "text": "€",
+      "hex": "d5"
+    },
+    {
+      "text": "\uD83D\uDE00",
+      "hex": "3f3f"
+    },
+    {
+      "text": "مرحبا",
+      "hex": "3f3f3f3f3f"
+    },
+    {
+      "text": "ＡＢ",
+      "hex": "3f3f"
+    },
+    {
+      "text": "",
+      "hex": ""
+    },
+    {
+      "text": "a\tb",
+      "hex": "610962"
+    }
+  ],
+  "wrap": [
+    {
+      "text": "",
+      "width": 10,
+      "lines": [
+        ""
+      ]
+    },
+    {
+      "text": "hello",
+      "width": 10,
+      "lines": [
+        "hello"
+      ]
+    },
+    {
+      "text": "aaaaaaaaaaaaaaaaaaaaaaaa",
+      "width": 10,
+      "lines": [
+        "aaaaaaaaaa",
+        "aaaaaaaaaa",
+        "aaaa"
+      ]
+    },
+    {
+      "text": "un deux trois quatre cinq six",
+      "width": 10,
+      "lines": [
+        "un deux",
+        "trois",
+        "quatre",
+        "cinq six"
+      ]
+    },
+    {
+      "text": "  espaces   multiples  ",
+      "width": 10,
+      "lines": [
+        "espaces",
+        "multiples"
+      ]
+    },
+    {
+      "text": "\uD83D\uDE00\uD83D\uDE00\uD83D\uDE00\uD83D\uDE00\uD83D\uDE00\uD83D\uDE00",
+      "width": 4,
+      "lines": [
+        "\uD83D\uDE00\uD83D\uDE00",
+        "\uD83D\uDE00\uD83D\uDE00",
+        "\uD83D\uDE00\uD83D\uDE00"
+      ]
+    }
+  ],
+  "commands": [
+    {
+      "name": "single_8x2_no_drawer",
+      "drawer": false,
+      "segments": [
+        {
+          "width": 8,
+          "height": 2,
+          "bitsHex": "ff00"
+        }
+      ],
+      "expectedHex": "1b401d76300001000200ff001d564200"
+    },
+    {
+      "name": "two_segments_drawer",
+      "drawer": true,
+      "segments": [
+        {
+          "width": 16,
+          "height": 3,
+          "bitsHex": "01264b7095ba"
+        },
+        {
+          "width": 8,
+          "height": 1,
+          "bitsHex": "a5"
+        }
+      ],
+      "expectedHex": "1b401d7630000200030001264b7095ba1d5642001d76300001000100a51b700019fa1d564200"
+    },
+    {
+      "name": "two_bands_8x300",
+      "drawer": false,
+      "segments": [
+        {
+          "width": 8,
+          "height": 300,
+          "bitsHex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9fa0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebfc0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedfe0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fa000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f30"
+        }
+      ],
+      "expectedHex": "1b401d76300001000001000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9fa0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebfc0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedfe0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fa00010203041d76300001002c0005060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f301d564200"
+    },
+    {
+      "name": "empty_list",
+      "drawer": false,
+      "segments": [],
+      "expectedHex": "1b40"
+    }
+  ],
+  "textRender": [
+    {
+      "name": "align_center_right",
+      "paperWidthMm": 80,
+      "drawer": false,
+      "document": {
+        "language": "fr",
+        "rightToLeft": false,
+        "lines": [
+          {
+            "type": "TicketText",
+            "text": "Centre",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Droite",
+            "align": 2,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Gauche",
+            "align": 0,
+            "bold": false,
+            "large": false
+          }
+        ]
+      },
+      "expectedHex": "1b401b74131b610143656e7472650a1b610244726f6974650a1b61004761756368650a1d564200"
+    },
+    {
+      "name": "bold_large",
+      "paperWidthMm": 80,
+      "drawer": false,
+      "document": {
+        "language": "fr",
+        "rightToLeft": false,
+        "lines": [
+          {
+            "type": "TicketText",
+            "text": "Gras",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Large",
+            "align": 0,
+            "bold": false,
+            "large": true
+          },
+          {
+            "type": "TicketText",
+            "text": "un tres long libelle de produit qui depasse la largeur du ticket",
+            "align": 1,
+            "bold": true,
+            "large": true
+          }
+        ]
+      },
+      "expectedHex": "1b401b74131b61001b4501477261730a1b45001b61001d21114c617267650a1d21001b61011b45011d2111756e2074726573206c6f6e67206c6962656c6c652064650a70726f64756974207175692064657061737365206c610a6c617267657572206475207469636b65740a1d21001b45001d564200"
+    },
+    {
+      "name": "columns_short",
+      "paperWidthMm": 80,
+      "drawer": false,
+      "document": {
+        "language": "fr",
+        "rightToLeft": false,
+        "lines": [
+          {
+            "type": "TicketColumns",
+            "label": "Total",
+            "value": "12.50"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "2x Café",
+            "value": "5.00"
+          }
+        ]
+      },
+      "expectedHex": "1b401b74131b6100546f74616c202020202020202020202020202020202020202020202020202020202020202020202020202031322e35300a1b61003278204361668220202020202020202020202020202020202020202020202020202020202020202020202020352e30300a1d564200"
+    },
+    {
+      "name": "columns_overlong_58",
+      "paperWidthMm": 58,
+      "drawer": false,
+      "document": {
+        "language": "fr",
+        "rightToLeft": false,
+        "lines": [
+          {
+            "type": "TicketColumns",
+            "label": "un tres long libelle de produit qui depasse la largeur du ticket",
+            "value": "123456.78 EUR de valeur"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Court",
+            "value": "0.00"
+          }
+        ]
+      },
+      "expectedHex": "1b401b74131b6100756e2074726573206c6f6e67206c6962656c6c652064652070726f647569740a7175692064657061737365206c61206c617267657572206475207469636b65740a2020202020202020203132333435362e3738204555522064652076616c6575720a1b6100436f7572742020202020202020202020202020202020202020202020302e30300a1d564200"
+    },
+    {
+      "name": "separators_cut_middle_and_end",
+      "paperWidthMm": 80,
+      "drawer": false,
+      "document": {
+        "language": "fr",
+        "rightToLeft": false,
+        "lines": [
+          {
+            "type": "TicketText",
+            "text": "Avant",
+            "align": 0,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Milieu",
+            "align": 0,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": true
+          },
+          {
+            "type": "TicketText",
+            "text": "Après",
+            "align": 0,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": true
+          }
+        ]
+      },
+      "expectedHex": "1b401b74131b61004176616e740a1b61002d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d0a1b61004d696c6965750a1d5642001b61004170728a730a1d564200"
+    },
+    {
+      "name": "accents_euro_drawer_58",
+      "paperWidthMm": 58,
+      "drawer": true,
+      "document": {
+        "language": "fr",
+        "rightToLeft": false,
+        "lines": [
+          {
+            "type": "TicketText",
+            "text": "àâçéèêëîïôùû ÀÉÈ — 12,50 €",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Café crème",
+            "value": "2.50 €"
+          }
+        ]
+      },
+      "expectedHex": "1b401b74131b6101858387828a88898c8b93979620b790d4203f2031322c353020d50a1b6100436166822063728a6d6520202020202020202020202020202020322e353020d50a1b700019fa1d564200"
+    },
+    {
+      "name": "emoji_80",
+      "paperWidthMm": 80,
+      "drawer": false,
+      "document": {
+        "language": "fr",
+        "rightToLeft": false,
+        "lines": [
+          {
+            "type": "TicketText",
+            "text": "Merci \uD83D\uDE00 à bientôt",
+            "align": 0,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Dessert \uD83D\uDE00",
+            "value": "4.00"
+          }
+        ]
+      },
+      "expectedHex": "1b401b74131b61004d65726369203f3f2085206269656e7493740a1b610044657373657274203f3f20202020202020202020202020202020202020202020202020202020202020202020342e30300a1d564200"
+    },
+    {
+      "name": "empty_document",
+      "paperWidthMm": 80,
+      "drawer": true,
+      "document": {
+        "language": "fr",
+        "rightToLeft": false,
+        "lines": []
+      },
+      "expectedHex": "1b401b74131b700019fa1d564200"
+    }
+  ],
+  "documents": [
+    {
+      "name": "receipt_fr_full",
+      "kind": "receipt",
+      "language": "fr",
+      "input": {
+        "receipt": {
+          "receiptNumber": "T01-000042",
+          "createdAtUtc": "2025-07-15T10:30:45.123Z",
+          "terminalId": "T01",
+          "totalTtcCents": 4300,
+          "totalHtCents": 3909,
+          "taxBreakdownJson": "{\"10\":391}",
+          "signatureHash": "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90"
+        },
+        "order": {
+          "destination": 1,
+          "tableNumber": "12",
+          "pickupNumber": null,
+          "pickupBuzzer": null,
+          "items": [
+            {
+              "quantity": 2,
+              "productName": "Burger maison",
+              "productId": "11111111-1111-1111-1111-111111111111",
+              "totalTtcCents": 3200,
+              "selectedModifiers": [
+                "Sans oignon",
+                "Cuisson à point"
+              ],
+              "course": 0
+            },
+            {
+              "quantity": 1,
+              "productName": "Salade César",
+              "productId": "22222222-2222-2222-2222-222222222222",
+              "totalTtcCents": 1100,
+              "selectedModifiers": [],
+              "course": 0
+            }
+          ]
+        },
+        "settings": {
+          "companyName": "Chez Léa",
+          "addressLines": "5 Rue des Lilas\n69002 Lyon",
+          "siret": "12345678900011",
+          "vatNumber": "FR98123456789",
+          "certificateNumber": "NF525-2024-0042"
+        },
+        "duplicateNumber": null
+      },
+      "expected": {
+        "language": "fr",
+        "rightToLeft": false,
+        "lines": [
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Chez Léa",
+            "align": 1,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "5 Rue des Lilas",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "69002 Lyon",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "SIRET: 12345678900011",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "TVA: FR98123456789",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Logiciel: RestaurantPOS v1.0.0",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Certificat: NF525-2024-0042",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Ticket",
+            "value": "T01-000042"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Date",
+            "value": "15/07/2025 10:30:45"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Caisse",
+            "value": "T01"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Mode",
+            "value": "SUR PLACE"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "2x Burger maison",
+            "value": "32.00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "1x Salade César",
+            "value": "11.00"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "TOTAL TTC",
+            "value": "43.00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "TOTAL HT",
+            "value": "39.09"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "VENTILATION TVA (NF525)",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "{\"10\":391}",
+            "align": 0,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "SIGNATURE FISCALE NF525",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90",
+            "align": 0,
+            "bold": false,
+            "large": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "receipt_en_default_header",
+      "kind": "receipt",
+      "language": "en",
+      "input": {
+        "receipt": {
+          "receiptNumber": "T02-000007",
+          "createdAtUtc": "2025-01-15T18:05:09.000Z",
+          "terminalId": "T02",
+          "totalTtcCents": 500,
+          "totalHtCents": 454,
+          "taxBreakdownJson": "{\"10\":46}",
+          "signatureHash": "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90"
+        },
+        "order": {
+          "destination": 0,
+          "tableNumber": "Comptoir",
+          "pickupNumber": "A42",
+          "pickupBuzzer": "7",
+          "items": [
+            {
+              "quantity": 2,
+              "productName": "Café",
+              "productId": "44444444-4444-4444-4444-444444444444",
+              "totalTtcCents": 500,
+              "selectedModifiers": [],
+              "course": 0
+            }
+          ]
+        },
+        "settings": null,
+        "duplicateNumber": null
+      },
+      "expected": {
+        "language": "en",
+        "rightToLeft": false,
+        "lines": [
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "RESTAURANT L'ANTIGRAVITE",
+            "align": 1,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "12 Rue de la Gastronomie",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "75001 Paris",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "SIRET: 88877766600012",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "TVA: FR12888777666",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Logiciel: RestaurantPOS v1.0.0",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Receipt",
+            "value": "T02-000007"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Date",
+            "value": "15/01/2025 18:05:09"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Terminal",
+            "value": "T02"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Mode",
+            "value": "TAKEAWAY"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "2x Café",
+            "value": "5.00"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "TOTAL INCL. VAT",
+            "value": "5.00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "TOTAL EXCL. VAT",
+            "value": "4.54"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "VAT BREAKDOWN (NF525)",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "{\"10\":46}",
+            "align": 0,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "NF525 FISCAL SIGNATURE",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90",
+            "align": 0,
+            "bold": false,
+            "large": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "receipt_ar",
+      "kind": "receipt",
+      "language": "ar",
+      "input": {
+        "receipt": {
+          "receiptNumber": "T01-000043",
+          "createdAtUtc": "2025-07-15T11:00:00.000Z",
+          "terminalId": "T01",
+          "totalTtcCents": 1450,
+          "totalHtCents": 1318,
+          "taxBreakdownJson": "{\"10\":132}",
+          "signatureHash": "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90"
+        },
+        "order": {
+          "destination": 1,
+          "tableNumber": "3",
+          "pickupNumber": null,
+          "pickupBuzzer": null,
+          "items": [
+            {
+              "quantity": 1,
+              "productName": "Burger maison",
+              "productId": "11111111-1111-1111-1111-111111111111",
+              "totalTtcCents": 1450,
+              "selectedModifiers": [],
+              "course": 0
+            }
+          ]
+        },
+        "settings": {
+          "companyName": "Chez Léa",
+          "addressLines": "5 Rue des Lilas\n69002 Lyon",
+          "siret": "12345678900011",
+          "vatNumber": "FR98123456789",
+          "certificateNumber": "NF525-2024-0042"
+        },
+        "duplicateNumber": null
+      },
+      "expected": {
+        "language": "ar",
+        "rightToLeft": true,
+        "lines": [
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Chez Léa",
+            "align": 1,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "5 Rue des Lilas",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "69002 Lyon",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "SIRET: 12345678900011",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "TVA: FR98123456789",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Logiciel: RestaurantPOS v1.0.0",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Certificat: NF525-2024-0042",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "الإيصال",
+            "value": "T01-000043"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "التاريخ",
+            "value": "15/07/2025 11:00:00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "الصندوق",
+            "value": "T01"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "النوع",
+            "value": "في المطعم"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "1x Burger maison",
+            "value": "14.50"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "المجموع شامل الضريبة",
+            "value": "14.50"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "المجموع دون الضريبة",
+            "value": "13.18"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "تفصيل الضريبة (NF525)",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "{\"10\":132}",
+            "align": 0,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "التوقيع الضريبي NF525",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90",
+            "align": 0,
+            "bold": false,
+            "large": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "receipt_duplicate_2",
+      "kind": "receipt",
+      "language": "fr",
+      "input": {
+        "receipt": {
+          "receiptNumber": "T01-000042",
+          "createdAtUtc": "2025-07-15T10:30:45.123Z",
+          "terminalId": "T01",
+          "totalTtcCents": 4300,
+          "totalHtCents": 3909,
+          "taxBreakdownJson": "{\"10\":391}",
+          "signatureHash": "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90"
+        },
+        "order": {
+          "destination": 1,
+          "tableNumber": "12",
+          "pickupNumber": null,
+          "pickupBuzzer": null,
+          "items": [
+            {
+              "quantity": 2,
+              "productName": "Burger maison",
+              "productId": "11111111-1111-1111-1111-111111111111",
+              "totalTtcCents": 3200,
+              "selectedModifiers": [
+                "Sans oignon",
+                "Cuisson à point"
+              ],
+              "course": 0
+            },
+            {
+              "quantity": 1,
+              "productName": "Salade César",
+              "productId": "22222222-2222-2222-2222-222222222222",
+              "totalTtcCents": 1100,
+              "selectedModifiers": [],
+              "course": 0
+            }
+          ]
+        },
+        "settings": {
+          "companyName": "Chez Léa",
+          "addressLines": "5 Rue des Lilas\n69002 Lyon",
+          "siret": "12345678900011",
+          "vatNumber": "FR98123456789",
+          "certificateNumber": "NF525-2024-0042"
+        },
+        "duplicateNumber": 2
+      },
+      "expected": {
+        "language": "fr",
+        "rightToLeft": false,
+        "lines": [
+          {
+            "type": "TicketText",
+            "text": "DUPLICATA n°2",
+            "align": 1,
+            "bold": true,
+            "large": true
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Chez Léa",
+            "align": 1,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "5 Rue des Lilas",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "69002 Lyon",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "SIRET: 12345678900011",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "TVA: FR98123456789",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Logiciel: RestaurantPOS v1.0.0",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Certificat: NF525-2024-0042",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Ticket",
+            "value": "T01-000042"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Date",
+            "value": "15/07/2025 10:30:45"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Caisse",
+            "value": "T01"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Mode",
+            "value": "SUR PLACE"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "2x Burger maison",
+            "value": "32.00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "1x Salade César",
+            "value": "11.00"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "TOTAL TTC",
+            "value": "43.00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "TOTAL HT",
+            "value": "39.09"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "VENTILATION TVA (NF525)",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "{\"10\":391}",
+            "align": 0,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "SIGNATURE FISCALE NF525",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90",
+            "align": 0,
+            "bold": false,
+            "large": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "receipt_unknown_language",
+      "kind": "receipt",
+      "language": "de",
+      "input": {
+        "receipt": {
+          "receiptNumber": "T01-000042",
+          "createdAtUtc": "2025-07-15T10:30:45.123Z",
+          "terminalId": "T01",
+          "totalTtcCents": 4300,
+          "totalHtCents": 3909,
+          "taxBreakdownJson": "{\"10\":391}",
+          "signatureHash": "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90"
+        },
+        "order": {
+          "destination": 1,
+          "tableNumber": "12",
+          "pickupNumber": null,
+          "pickupBuzzer": null,
+          "items": [
+            {
+              "quantity": 2,
+              "productName": "Burger maison",
+              "productId": "11111111-1111-1111-1111-111111111111",
+              "totalTtcCents": 3200,
+              "selectedModifiers": [
+                "Sans oignon",
+                "Cuisson à point"
+              ],
+              "course": 0
+            },
+            {
+              "quantity": 1,
+              "productName": "Salade César",
+              "productId": "22222222-2222-2222-2222-222222222222",
+              "totalTtcCents": 1100,
+              "selectedModifiers": [],
+              "course": 0
+            }
+          ]
+        },
+        "settings": null,
+        "duplicateNumber": null
+      },
+      "expected": {
+        "language": "en",
+        "rightToLeft": false,
+        "lines": [
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "RESTAURANT L'ANTIGRAVITE",
+            "align": 1,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "12 Rue de la Gastronomie",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "75001 Paris",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "SIRET: 88877766600012",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "TVA: FR12888777666",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Logiciel: RestaurantPOS v1.0.0",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Receipt",
+            "value": "T01-000042"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Date",
+            "value": "15/07/2025 10:30:45"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Terminal",
+            "value": "T01"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Mode",
+            "value": "EAT IN"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "2x Burger maison",
+            "value": "32.00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "1x Salade César",
+            "value": "11.00"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "TOTAL INCL. VAT",
+            "value": "43.00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "TOTAL EXCL. VAT",
+            "value": "39.09"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "VAT BREAKDOWN (NF525)",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "{\"10\":391}",
+            "align": 0,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "NF525 FISCAL SIGNATURE",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90",
+            "align": 0,
+            "bold": false,
+            "large": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "receipt_empty_settings_strings",
+      "kind": "receipt",
+      "language": "fr",
+      "input": {
+        "receipt": {
+          "receiptNumber": "T01-000042",
+          "createdAtUtc": "2025-07-15T10:30:45.123Z",
+          "terminalId": "T01",
+          "totalTtcCents": 4300,
+          "totalHtCents": 3909,
+          "taxBreakdownJson": "{\"10\":391}",
+          "signatureHash": "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90"
+        },
+        "order": {
+          "destination": 1,
+          "tableNumber": "12",
+          "pickupNumber": null,
+          "pickupBuzzer": null,
+          "items": [
+            {
+              "quantity": 2,
+              "productName": "Burger maison",
+              "productId": "11111111-1111-1111-1111-111111111111",
+              "totalTtcCents": 3200,
+              "selectedModifiers": [
+                "Sans oignon",
+                "Cuisson à point"
+              ],
+              "course": 0
+            },
+            {
+              "quantity": 1,
+              "productName": "Salade César",
+              "productId": "22222222-2222-2222-2222-222222222222",
+              "totalTtcCents": 1100,
+              "selectedModifiers": [],
+              "course": 0
+            }
+          ]
+        },
+        "settings": {
+          "companyName": "   ",
+          "addressLines": "",
+          "siret": " ",
+          "vatNumber": "",
+          "certificateNumber": "  "
+        },
+        "duplicateNumber": null
+      },
+      "expected": {
+        "language": "fr",
+        "rightToLeft": false,
+        "lines": [
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "RESTAURANT L'ANTIGRAVITE",
+            "align": 1,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "12 Rue de la Gastronomie",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "75001 Paris",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "SIRET: 88877766600012",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "TVA: FR12888777666",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Logiciel: RestaurantPOS v1.0.0",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Ticket",
+            "value": "T01-000042"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Date",
+            "value": "15/07/2025 10:30:45"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Caisse",
+            "value": "T01"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Mode",
+            "value": "SUR PLACE"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "2x Burger maison",
+            "value": "32.00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "1x Salade César",
+            "value": "11.00"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "TOTAL TTC",
+            "value": "43.00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "TOTAL HT",
+            "value": "39.09"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "VENTILATION TVA (NF525)",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "{\"10\":391}",
+            "align": 0,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "SIGNATURE FISCALE NF525",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90",
+            "align": 0,
+            "bold": false,
+            "large": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "fallback_fr",
+      "kind": "receiptFallback",
+      "language": "fr",
+      "input": {
+        "receipt": {
+          "receiptNumber": "T01-000042",
+          "createdAtUtc": "2025-07-15T10:30:45.123Z",
+          "terminalId": "T01",
+          "totalTtcCents": 4300,
+          "totalHtCents": 3909,
+          "taxBreakdownJson": "{\"10\":391}",
+          "signatureHash": "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90"
+        },
+        "settings": {
+          "companyName": "Chez Léa",
+          "addressLines": "5 Rue des Lilas\n69002 Lyon",
+          "siret": "12345678900011",
+          "vatNumber": "FR98123456789",
+          "certificateNumber": "NF525-2024-0042"
+        },
+        "duplicateNumber": null
+      },
+      "expected": {
+        "language": "fr",
+        "rightToLeft": false,
+        "lines": [
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Chez Léa",
+            "align": 1,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "5 Rue des Lilas",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "69002 Lyon",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "SIRET: 12345678900011",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "TVA: FR98123456789",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Logiciel: RestaurantPOS v1.0.0",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Certificat: NF525-2024-0042",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Ticket",
+            "value": "T01-000042"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Date",
+            "value": "15/07/2025 10:30:45"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Caisse",
+            "value": "T01"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "TOTAL TTC",
+            "value": "43.00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "TOTAL HT",
+            "value": "39.09"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "VENTILATION TVA (NF525)",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "{\"10\":391}",
+            "align": 0,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "SIGNATURE FISCALE NF525",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90",
+            "align": 0,
+            "bold": false,
+            "large": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "fallback_duplicate",
+      "kind": "receiptFallback",
+      "language": "en",
+      "input": {
+        "receipt": {
+          "receiptNumber": "T01-000042",
+          "createdAtUtc": "2025-07-15T10:30:45.123Z",
+          "terminalId": "T01",
+          "totalTtcCents": 4300,
+          "totalHtCents": 3909,
+          "taxBreakdownJson": "{\"10\":391}",
+          "signatureHash": "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90"
+        },
+        "settings": null,
+        "duplicateNumber": 3
+      },
+      "expected": {
+        "language": "en",
+        "rightToLeft": false,
+        "lines": [
+          {
+            "type": "TicketText",
+            "text": "DUPLICATA n°3",
+            "align": 1,
+            "bold": true,
+            "large": true
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "RESTAURANT L'ANTIGRAVITE",
+            "align": 1,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "12 Rue de la Gastronomie",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "75001 Paris",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "SIRET: 88877766600012",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "TVA: FR12888777666",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Logiciel: RestaurantPOS v1.0.0",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Receipt",
+            "value": "T01-000042"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Date",
+            "value": "15/07/2025 10:30:45"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Terminal",
+            "value": "T01"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "TOTAL INCL. VAT",
+            "value": "43.00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "TOTAL EXCL. VAT",
+            "value": "39.09"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "VAT BREAKDOWN (NF525)",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "{\"10\":391}",
+            "align": 0,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "NF525 FISCAL SIGNATURE",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90",
+            "align": 0,
+            "bold": false,
+            "large": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "fiscal_receipt_buzzer",
+      "kind": "fiscalReceipt",
+      "language": "fr",
+      "input": {
+        "receipt": {
+          "receiptNumber": "T01-000050",
+          "createdAtUtc": "2025-10-26T11:15:30.000Z",
+          "terminalId": "T01",
+          "totalTtcCents": 2750,
+          "totalHtCents": 2500,
+          "taxBreakdownJson": "{\"10\":250}",
+          "signatureHash": "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90"
+        },
+        "order": {
+          "destination": 0,
+          "tableNumber": "Comptoir",
+          "pickupNumber": "B17",
+          "pickupBuzzer": "9",
+          "items": [
+            {
+              "quantity": 1,
+              "productName": "Burger maison",
+              "productId": "11111111-1111-1111-1111-111111111111",
+              "totalTtcCents": 1550,
+              "selectedModifiers": [
+                "Double fromage",
+                "Sans sauce"
+              ],
+              "course": 0
+            },
+            {
+              "quantity": 2,
+              "productName": "Tiramisu",
+              "productId": "33333333-3333-3333-3333-333333333333",
+              "totalTtcCents": 1200,
+              "selectedModifiers": [],
+              "course": 0
+            }
+          ]
+        },
+        "settings": {
+          "companyName": "Chez Léa",
+          "addressLines": "5 Rue des Lilas\n69002 Lyon",
+          "siret": "12345678900011",
+          "vatNumber": "FR98123456789",
+          "certificateNumber": "NF525-2024-0042"
+        },
+        "pickupNumber": "B17",
+        "buzzer": "9",
+        "duplicateNumber": null
+      },
+      "expected": {
+        "language": "fr",
+        "rightToLeft": false,
+        "lines": [
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Chez Léa",
+            "align": 1,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "5 Rue des Lilas",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "69002 Lyon",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "SIRET: 12345678900011",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "TVA: FR98123456789",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Logiciel: RestaurantPOS v1.0.0",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Certificat: NF525-2024-0042",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Ticket",
+            "value": "T01-000050"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Date",
+            "value": "26/10/2025 11:15:30"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Caisse",
+            "value": "T01"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Mode",
+            "value": "À EMPORTER"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "1x Burger maison",
+            "value": "15.50"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "2x Tiramisu",
+            "value": "12.00"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "TOTAL TTC",
+            "value": "27.50"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "TOTAL HT",
+            "value": "25.00"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "VENTILATION TVA (NF525)",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "{\"10\":250}",
+            "align": 0,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "SIGNATURE FISCALE NF525",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90",
+            "align": 0,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": true
+          },
+          {
+            "type": "TicketText",
+            "text": "BON DE RETRAIT COMMANDE",
+            "align": 1,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "NUMÉRO",
+            "value": "B17"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "BIPEUR",
+            "value": "9"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Date",
+            "value": "26/10/2025 11:15:30"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Mode",
+            "value": "À EMPORTER"
+          },
+          {
+            "type": "TicketText",
+            "text": "Articles : 2 ligne(s)",
+            "align": 0,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "1x Burger maison",
+            "align": 0,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "+ Double fromage, Sans sauce",
+            "align": 0,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "2x Tiramisu",
+            "align": 0,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "CONSERVEZ CE BON JUSQU'AU RETRAIT",
+            "align": 1,
+            "bold": false,
+            "large": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "fiscal_receipt_no_buzzer",
+      "kind": "fiscalReceipt",
+      "language": "fr",
+      "input": {
+        "receipt": {
+          "receiptNumber": "T01-000050",
+          "createdAtUtc": "2025-10-26T11:15:30.000Z",
+          "terminalId": "T01",
+          "totalTtcCents": 2750,
+          "totalHtCents": 2500,
+          "taxBreakdownJson": "{\"10\":250}",
+          "signatureHash": "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90"
+        },
+        "order": {
+          "destination": 0,
+          "tableNumber": "Comptoir",
+          "pickupNumber": "B17",
+          "pickupBuzzer": "9",
+          "items": [
+            {
+              "quantity": 1,
+              "productName": "Burger maison",
+              "productId": "11111111-1111-1111-1111-111111111111",
+              "totalTtcCents": 1550,
+              "selectedModifiers": [
+                "Double fromage",
+                "Sans sauce"
+              ],
+              "course": 0
+            },
+            {
+              "quantity": 2,
+              "productName": "Tiramisu",
+              "productId": "33333333-3333-3333-3333-333333333333",
+              "totalTtcCents": 1200,
+              "selectedModifiers": [],
+              "course": 0
+            }
+          ]
+        },
+        "settings": {
+          "companyName": "Chez Léa",
+          "addressLines": "5 Rue des Lilas\n69002 Lyon",
+          "siret": "12345678900011",
+          "vatNumber": "FR98123456789",
+          "certificateNumber": "NF525-2024-0042"
+        },
+        "pickupNumber": "B17",
+        "buzzer": null,
+        "duplicateNumber": null
+      },
+      "expected": {
+        "language": "fr",
+        "rightToLeft": false,
+        "lines": [
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Chez Léa",
+            "align": 1,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "5 Rue des Lilas",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "69002 Lyon",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "SIRET: 12345678900011",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "TVA: FR98123456789",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Logiciel: RestaurantPOS v1.0.0",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Certificat: NF525-2024-0042",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Ticket",
+            "value": "T01-000050"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Date",
+            "value": "26/10/2025 11:15:30"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Caisse",
+            "value": "T01"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Mode",
+            "value": "À EMPORTER"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "1x Burger maison",
+            "value": "15.50"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "2x Tiramisu",
+            "value": "12.00"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "TOTAL TTC",
+            "value": "27.50"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "TOTAL HT",
+            "value": "25.00"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "VENTILATION TVA (NF525)",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "{\"10\":250}",
+            "align": 0,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "SIGNATURE FISCALE NF525",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90",
+            "align": 0,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": true
+          },
+          {
+            "type": "TicketText",
+            "text": "BON DE RETRAIT COMMANDE",
+            "align": 1,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "NUMÉRO",
+            "value": "B17"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Date",
+            "value": "26/10/2025 11:15:30"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Mode",
+            "value": "À EMPORTER"
+          },
+          {
+            "type": "TicketText",
+            "text": "Articles : 2 ligne(s)",
+            "align": 0,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "1x Burger maison",
+            "align": 0,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "+ Double fromage, Sans sauce",
+            "align": 0,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "2x Tiramisu",
+            "align": 0,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "CONSERVEZ CE BON JUSQU'AU RETRAIT",
+            "align": 1,
+            "bold": false,
+            "large": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "pickup_modifiers",
+      "kind": "pickupCoupon",
+      "language": "fr",
+      "input": {
+        "order": {
+          "destination": 0,
+          "tableNumber": "Comptoir",
+          "pickupNumber": "B17",
+          "pickupBuzzer": "9",
+          "items": [
+            {
+              "quantity": 1,
+              "productName": "Burger maison",
+              "productId": "11111111-1111-1111-1111-111111111111",
+              "totalTtcCents": 1550,
+              "selectedModifiers": [
+                "Double fromage",
+                "Sans sauce"
+              ],
+              "course": 0
+            },
+            {
+              "quantity": 2,
+              "productName": "Tiramisu",
+              "productId": "33333333-3333-3333-3333-333333333333",
+              "totalTtcCents": 1200,
+              "selectedModifiers": [],
+              "course": 0
+            }
+          ]
+        },
+        "pickupNumber": "B17",
+        "buzzer": "9",
+        "nowUtc": "2025-07-15T10:30:45.500Z"
+      },
+      "expected": {
+        "language": "fr",
+        "rightToLeft": false,
+        "lines": [
+          {
+            "type": "TicketText",
+            "text": "BON DE RETRAIT COMMANDE",
+            "align": 1,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "NUMÉRO",
+            "value": "B17"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "BIPEUR",
+            "value": "9"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Date",
+            "value": "15/07/2025 10:30:45"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Mode",
+            "value": "À EMPORTER"
+          },
+          {
+            "type": "TicketText",
+            "text": "Articles : 2 ligne(s)",
+            "align": 0,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "1x Burger maison",
+            "align": 0,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "+ Double fromage, Sans sauce",
+            "align": 0,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "2x Tiramisu",
+            "align": 0,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "CONSERVEZ CE BON JUSQU'AU RETRAIT",
+            "align": 1,
+            "bold": false,
+            "large": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "pickup_no_buzzer",
+      "kind": "pickupCoupon",
+      "language": "en",
+      "input": {
+        "order": {
+          "destination": 0,
+          "tableNumber": "Comptoir",
+          "pickupNumber": "B17",
+          "pickupBuzzer": "9",
+          "items": [
+            {
+              "quantity": 1,
+              "productName": "Burger maison",
+              "productId": "11111111-1111-1111-1111-111111111111",
+              "totalTtcCents": 1550,
+              "selectedModifiers": [
+                "Double fromage",
+                "Sans sauce"
+              ],
+              "course": 0
+            },
+            {
+              "quantity": 2,
+              "productName": "Tiramisu",
+              "productId": "33333333-3333-3333-3333-333333333333",
+              "totalTtcCents": 1200,
+              "selectedModifiers": [],
+              "course": 0
+            }
+          ]
+        },
+        "pickupNumber": "B17",
+        "buzzer": null,
+        "nowUtc": "2025-07-15T10:30:45.500Z"
+      },
+      "expected": {
+        "language": "en",
+        "rightToLeft": false,
+        "lines": [
+          {
+            "type": "TicketText",
+            "text": "PICKUP VOUCHER",
+            "align": 1,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "NUMBER",
+            "value": "B17"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Date",
+            "value": "15/07/2025 10:30:45"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Mode",
+            "value": "TAKEAWAY"
+          },
+          {
+            "type": "TicketText",
+            "text": "Items: 2 line(s)",
+            "align": 0,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "1x Burger maison",
+            "align": 0,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "+ Double fromage, Sans sauce",
+            "align": 0,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "2x Tiramisu",
+            "align": 0,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "KEEP THIS VOUCHER UNTIL PICKUP",
+            "align": 1,
+            "bold": false,
+            "large": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "kitchen_takeaway_pickup_buzzer_comment",
+      "kind": "kitchenTicket",
+      "language": "en",
+      "input": {
+        "kitchen": {
+          "serverName": "Marie",
+          "coversCount": 1,
+          "dispatchedAtUtc": "2025-07-15T10:30:45.000Z",
+          "items": [
+            {
+              "quantity": 2,
+              "productName": "Burger maison",
+              "productId": "11111111-1111-1111-1111-111111111111",
+              "modifiersSummary": "Sans oignon, Bien cuit",
+              "kitchenComment": "Allergie arachides"
+            }
+          ]
+        },
+        "order": {
+          "destination": 0,
+          "tableNumber": "Comptoir",
+          "pickupNumber": "C03",
+          "pickupBuzzer": "12",
+          "items": [
+            {
+              "quantity": 2,
+              "productName": "Burger maison",
+              "productId": "11111111-1111-1111-1111-111111111111",
+              "totalTtcCents": 2900,
+              "selectedModifiers": [],
+              "course": 0
+            }
+          ]
+        }
+      },
+      "expected": {
+        "language": "en",
+        "rightToLeft": false,
+        "lines": [
+          {
+            "type": "TicketText",
+            "text": "TAKEAWAY",
+            "align": 1,
+            "bold": false,
+            "large": true
+          },
+          {
+            "type": "TicketText",
+            "text": "Pickup #C03",
+            "align": 1,
+            "bold": false,
+            "large": true
+          },
+          {
+            "type": "TicketText",
+            "text": "Buzzer 12",
+            "align": 1,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Server",
+            "value": "Marie"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Covers",
+            "value": "1"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Time",
+            "value": "12:30"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "2x Burger maison",
+            "align": 0,
+            "bold": false,
+            "large": true
+          },
+          {
+            "type": "TicketText",
+            "text": "+ Sans oignon, Bien cuit",
+            "align": 0,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Note: Allergie arachides",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Now",
+            "align": 0,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "kitchen_table_courses",
+      "kind": "kitchenTicket",
+      "language": "fr",
+      "input": {
+        "kitchen": {
+          "serverName": "Paul",
+          "coversCount": 4,
+          "dispatchedAtUtc": "2025-01-15T19:45:00.000Z",
+          "items": [
+            {
+              "quantity": 1,
+              "productName": "Salade César",
+              "productId": "22222222-2222-2222-2222-222222222222",
+              "modifiersSummary": null,
+              "kitchenComment": null
+            },
+            {
+              "quantity": 1,
+              "productName": "Tiramisu",
+              "productId": "33333333-3333-3333-3333-333333333333",
+              "modifiersSummary": null,
+              "kitchenComment": "Bougie"
+            },
+            {
+              "quantity": 1,
+              "productName": "Café",
+              "productId": "44444444-4444-4444-4444-444444444444",
+              "modifiersSummary": "Serré",
+              "kitchenComment": null
+            },
+            {
+              "quantity": 3,
+              "productName": "Plat disparu",
+              "productId": "99999999-9999-9999-9999-999999999999",
+              "modifiersSummary": null,
+              "kitchenComment": null
+            }
+          ]
+        },
+        "order": {
+          "destination": 1,
+          "tableNumber": "21",
+          "pickupNumber": null,
+          "pickupBuzzer": null,
+          "items": [
+            {
+              "quantity": 1,
+              "productName": "Salade César",
+              "productId": "22222222-2222-2222-2222-222222222222",
+              "totalTtcCents": 1100,
+              "selectedModifiers": [],
+              "course": 1
+            },
+            {
+              "quantity": 1,
+              "productName": "Tiramisu",
+              "productId": "33333333-3333-3333-3333-333333333333",
+              "totalTtcCents": 600,
+              "selectedModifiers": [],
+              "course": 2
+            },
+            {
+              "quantity": 1,
+              "productName": "Café",
+              "productId": "44444444-4444-4444-4444-444444444444",
+              "totalTtcCents": 250,
+              "selectedModifiers": [],
+              "course": 3
+            }
+          ]
+        }
+      },
+      "expected": {
+        "language": "fr",
+        "rightToLeft": false,
+        "lines": [
+          {
+            "type": "TicketText",
+            "text": "TABLE 21",
+            "align": 1,
+            "bold": false,
+            "large": true
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Serveur",
+            "value": "Paul"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Couverts",
+            "value": "4"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Heure",
+            "value": "20:45"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "1x Salade César",
+            "align": 0,
+            "bold": false,
+            "large": true
+          },
+          {
+            "type": "TicketText",
+            "text": "Suite",
+            "align": 0,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "1x Tiramisu",
+            "align": 0,
+            "bold": false,
+            "large": true
+          },
+          {
+            "type": "TicketText",
+            "text": "Note : Bougie",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Dessert",
+            "align": 0,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "1x Café",
+            "align": 0,
+            "bold": false,
+            "large": true
+          },
+          {
+            "type": "TicketText",
+            "text": "+ Serré",
+            "align": 0,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "À la demande",
+            "align": 0,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "3x Plat disparu",
+            "align": 0,
+            "bold": false,
+            "large": true
+          },
+          {
+            "type": "TicketText",
+            "text": "Direct",
+            "align": 0,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "kitchen_ar",
+      "kind": "kitchenTicket",
+      "language": "ar",
+      "input": {
+        "kitchen": {
+          "serverName": "ليلى",
+          "coversCount": 2,
+          "dispatchedAtUtc": "2025-07-15T20:05:00.000Z",
+          "items": [
+            {
+              "quantity": 1,
+              "productName": "Burger maison",
+              "productId": "11111111-1111-1111-1111-111111111111",
+              "modifiersSummary": "بدون بصل",
+              "kitchenComment": null
+            }
+          ]
+        },
+        "order": {
+          "destination": 1,
+          "tableNumber": "5",
+          "pickupNumber": null,
+          "pickupBuzzer": null,
+          "items": [
+            {
+              "quantity": 1,
+              "productName": "Burger maison",
+              "productId": "11111111-1111-1111-1111-111111111111",
+              "totalTtcCents": 1450,
+              "selectedModifiers": [],
+              "course": 0
+            }
+          ]
+        }
+      },
+      "expected": {
+        "language": "ar",
+        "rightToLeft": true,
+        "lines": [
+          {
+            "type": "TicketText",
+            "text": "طاولة 5",
+            "align": 1,
+            "bold": false,
+            "large": true
+          },
+          {
+            "type": "TicketColumns",
+            "label": "النادل",
+            "value": "ليلى"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "عدد الأشخاص",
+            "value": "2"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "الوقت",
+            "value": "22:05"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "1x Burger maison",
+            "align": 0,
+            "bold": false,
+            "large": true
+          },
+          {
+            "type": "TicketText",
+            "text": "+ بدون بصل",
+            "align": 0,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "فوري",
+            "align": 0,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "x_first_report",
+      "kind": "xReport",
+      "language": "fr",
+      "input": {
+        "summary": {
+          "terminalId": "T01",
+          "periodStartUtc": null,
+          "periodEndUtc": "2025-07-15T10:30:00.000Z",
+          "totalSalesTtcCents": 12345,
+          "totalSalesHtCents": 11000,
+          "receiptCount": 17,
+          "vatBreakdownCents": [
+            {
+              "rate": "10",
+              "cents": 1000
+            },
+            {
+              "rate": "5.5",
+              "cents": 345
+            }
+          ],
+          "paymentTotalsCents": [
+            {
+              "method": 1,
+              "cents": 8000
+            },
+            {
+              "method": 0,
+              "cents": 4345
+            }
+          ],
+          "perpetualGrandTotalCents": 987654
+        },
+        "reportData": {
+          "categories": [],
+          "tips": [],
+          "totalTipsCents": 0,
+          "hasGlobalDiscount": false
+        },
+        "nowUtc": "2025-07-15T10:31:00.000Z",
+        "settings": {
+          "companyName": "Chez Léa",
+          "addressLines": "5 Rue des Lilas\n69002 Lyon",
+          "siret": "12345678900011",
+          "vatNumber": "FR98123456789",
+          "certificateNumber": "NF525-2024-0042"
+        }
+      },
+      "expected": {
+        "language": "fr",
+        "rightToLeft": false,
+        "lines": [
+          {
+            "type": "TicketText",
+            "text": "RAPPORT X",
+            "align": 1,
+            "bold": false,
+            "large": true
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Caisse",
+            "value": "T01"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Du",
+            "value": "-"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Au",
+            "value": "15/07/2025 12:30"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Imprimé le",
+            "value": "15/07/2025 12:31"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Tickets",
+            "value": "17"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "TOTAL TTC",
+            "value": "123.45"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "TOTAL HT",
+            "value": "110.00"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "VENTILATION TVA (NF525)",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "5.5 %",
+            "value": "3.45"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "10 %",
+            "value": "10.00"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "RÈGLEMENTS",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Espèces",
+            "value": "43.45"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Carte Bancaire (CB)",
+            "value": "80.00"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Grand total perpétuel",
+            "value": "9876.54"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Logiciel: RestaurantPOS v1.0.0",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Certificat: NF525-2024-0042",
+            "align": 1,
+            "bold": false,
+            "large": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "x_with_details",
+      "kind": "xReport",
+      "language": "fr",
+      "input": {
+        "summary": {
+          "terminalId": "T01",
+          "periodStartUtc": "2025-07-14T06:00:00.000Z",
+          "periodEndUtc": "2025-07-15T10:30:00.000Z",
+          "totalSalesTtcCents": 12346,
+          "totalSalesHtCents": 11000,
+          "receiptCount": 17,
+          "vatBreakdownCents": [
+            {
+              "rate": "10",
+              "cents": 1000
+            },
+            {
+              "rate": "5.5",
+              "cents": 345
+            }
+          ],
+          "paymentTotalsCents": [
+            {
+              "method": 1,
+              "cents": 8000
+            },
+            {
+              "method": 0,
+              "cents": 4345
+            }
+          ],
+          "perpetualGrandTotalCents": 987654
+        },
+        "reportData": {
+          "categories": [
+            {
+              "categoryName": "Boissons",
+              "items": [
+                {
+                  "productName": "Café",
+                  "quantity": 3,
+                  "totalTtcCents": 750
+                },
+                {
+                  "productName": "Eau",
+                  "quantity": 2,
+                  "totalTtcCents": 500
+                }
+              ],
+              "subtotalTtcCents": 1250
+            },
+            {
+              "categoryName": null,
+              "items": [
+                {
+                  "productName": "Divers",
+                  "quantity": 1,
+                  "totalTtcCents": 300
+                }
+              ],
+              "subtotalTtcCents": 300
+            }
+          ],
+          "tips": [
+            {
+              "serverName": "Alice",
+              "tipCents": 500
+            },
+            {
+              "serverName": null,
+              "tipCents": 200
+            }
+          ],
+          "totalTipsCents": 700,
+          "hasGlobalDiscount": true
+        },
+        "nowUtc": "2025-07-15T10:31:00.000Z",
+        "settings": null
+      },
+      "expected": {
+        "language": "fr",
+        "rightToLeft": false,
+        "lines": [
+          {
+            "type": "TicketText",
+            "text": "RAPPORT X",
+            "align": 1,
+            "bold": false,
+            "large": true
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Caisse",
+            "value": "T01"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Du",
+            "value": "14/07/2025 08:00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Au",
+            "value": "15/07/2025 12:30"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Imprimé le",
+            "value": "15/07/2025 12:31"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Tickets",
+            "value": "17"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "TOTAL TTC",
+            "value": "123.46"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "TOTAL HT",
+            "value": "110.00"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "VENTILATION TVA (NF525)",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "5.5 %",
+            "value": "3.45"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "10 %",
+            "value": "10.00"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "RÈGLEMENTS",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Espèces",
+            "value": "43.45"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Carte Bancaire (CB)",
+            "value": "80.00"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Grand total perpétuel",
+            "value": "9876.54"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "ARTICLES VENDUS",
+            "align": 1,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Montants avant remises sur note",
+            "align": 0,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Boissons",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "3x Café",
+            "value": "7.50"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "2x Eau",
+            "value": "5.00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Sous-total",
+            "value": "12.50"
+          },
+          {
+            "type": "TicketText",
+            "text": "Autres",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "1x Divers",
+            "value": "3.00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Sous-total",
+            "value": "3.00"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "POURBOIRES PAR SERVEUR",
+            "align": 1,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Alice",
+            "value": "5.00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Inconnu",
+            "value": "2.00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Total pourboires",
+            "value": "7.00"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Logiciel: RestaurantPOS v1.0.0",
+            "align": 1,
+            "bold": false,
+            "large": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "x_summer_dst",
+      "kind": "xReport",
+      "language": "en",
+      "input": {
+        "summary": {
+          "terminalId": "T01",
+          "periodStartUtc": "2025-03-30T00:30:00.000Z",
+          "periodEndUtc": "2025-03-30T01:30:00.000Z",
+          "totalSalesTtcCents": 12347,
+          "totalSalesHtCents": 11000,
+          "receiptCount": 17,
+          "vatBreakdownCents": [
+            {
+              "rate": "10",
+              "cents": 1000
+            },
+            {
+              "rate": "5.5",
+              "cents": 345
+            }
+          ],
+          "paymentTotalsCents": [
+            {
+              "method": 1,
+              "cents": 8000
+            },
+            {
+              "method": 0,
+              "cents": 4345
+            }
+          ],
+          "perpetualGrandTotalCents": 987654
+        },
+        "reportData": {
+          "categories": [
+            {
+              "categoryName": "Plats",
+              "items": [
+                {
+                  "productName": "Burger",
+                  "quantity": 2,
+                  "totalTtcCents": 2900
+                }
+              ],
+              "subtotalTtcCents": 2900
+            }
+          ],
+          "tips": [],
+          "totalTipsCents": 0,
+          "hasGlobalDiscount": false
+        },
+        "nowUtc": "2025-03-30T01:45:00.000Z",
+        "settings": {
+          "companyName": "Chez Léa",
+          "addressLines": "5 Rue des Lilas\n69002 Lyon",
+          "siret": "12345678900011",
+          "vatNumber": "FR98123456789",
+          "certificateNumber": "NF525-2024-0042"
+        }
+      },
+      "expected": {
+        "language": "en",
+        "rightToLeft": false,
+        "lines": [
+          {
+            "type": "TicketText",
+            "text": "X REPORT",
+            "align": 1,
+            "bold": false,
+            "large": true
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Terminal",
+            "value": "T01"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "From",
+            "value": "30/03/2025 01:30"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "To",
+            "value": "30/03/2025 03:30"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Printed",
+            "value": "30/03/2025 03:45"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Receipts",
+            "value": "17"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "TOTAL INCL. VAT",
+            "value": "123.47"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "TOTAL EXCL. VAT",
+            "value": "110.00"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "VAT BREAKDOWN (NF525)",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "5.5 %",
+            "value": "3.45"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "10 %",
+            "value": "10.00"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "PAYMENTS",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Cash",
+            "value": "43.45"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Card (CB)",
+            "value": "80.00"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Perpetual grand total",
+            "value": "9876.54"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "ITEMS SOLD",
+            "align": 1,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Plats",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "2x Burger",
+            "value": "29.00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Subtotal",
+            "value": "29.00"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Logiciel: RestaurantPOS v1.0.0",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Certificat: NF525-2024-0042",
+            "align": 1,
+            "bold": false,
+            "large": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "x_winter",
+      "kind": "xReport",
+      "language": "ar",
+      "input": {
+        "summary": {
+          "terminalId": "T01",
+          "periodStartUtc": "2025-01-15T06:00:00.000Z",
+          "periodEndUtc": "2025-01-15T22:00:00.000Z",
+          "totalSalesTtcCents": 12348,
+          "totalSalesHtCents": 11000,
+          "receiptCount": 17,
+          "vatBreakdownCents": [
+            {
+              "rate": "10",
+              "cents": 1000
+            },
+            {
+              "rate": "5.5",
+              "cents": 345
+            }
+          ],
+          "paymentTotalsCents": [
+            {
+              "method": 1,
+              "cents": 8000
+            },
+            {
+              "method": 0,
+              "cents": 4345
+            }
+          ],
+          "perpetualGrandTotalCents": 987654
+        },
+        "reportData": {
+          "categories": [
+            {
+              "categoryName": "Plats",
+              "items": [
+                {
+                  "productName": "Burger",
+                  "quantity": 2,
+                  "totalTtcCents": 2900
+                }
+              ],
+              "subtotalTtcCents": 2900
+            }
+          ],
+          "tips": [],
+          "totalTipsCents": 0,
+          "hasGlobalDiscount": false
+        },
+        "nowUtc": "2025-01-15T22:05:00.000Z",
+        "settings": {
+          "companyName": "Chez Léa",
+          "addressLines": "5 Rue des Lilas\n69002 Lyon",
+          "siret": "12345678900011",
+          "vatNumber": "FR98123456789",
+          "certificateNumber": "NF525-2024-0042"
+        }
+      },
+      "expected": {
+        "language": "ar",
+        "rightToLeft": true,
+        "lines": [
+          {
+            "type": "TicketText",
+            "text": "تقرير X",
+            "align": 1,
+            "bold": false,
+            "large": true
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "الصندوق",
+            "value": "T01"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "من",
+            "value": "15/01/2025 07:00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "إلى",
+            "value": "15/01/2025 23:00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "طُبع في",
+            "value": "15/01/2025 23:05"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "عدد الإيصالات",
+            "value": "17"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "المجموع شامل الضريبة",
+            "value": "123.48"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "المجموع دون الضريبة",
+            "value": "110.00"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "تفصيل الضريبة (NF525)",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "5.5 %",
+            "value": "3.45"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "10 %",
+            "value": "10.00"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "المدفوعات",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "نقدًا",
+            "value": "43.45"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "بطاقة بنكية (CB)",
+            "value": "80.00"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "الإجمالي الدائم",
+            "value": "9876.54"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "الأصناف المباعة",
+            "align": 1,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Plats",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "2x Burger",
+            "value": "29.00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "المجموع الفرعي",
+            "value": "29.00"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Logiciel: RestaurantPOS v1.0.0",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Certificat: NF525-2024-0042",
+            "align": 1,
+            "bold": false,
+            "large": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "z_fr",
+      "kind": "zClosure",
+      "language": "fr",
+      "input": {
+        "closure": {
+          "terminalId": "T01",
+          "closureSequence": 7,
+          "totalSalesTtcCents": 15000,
+          "totalSalesHtCents": 13500,
+          "receiptCount": 21,
+          "vatBreakdownCents": [
+            {
+              "rate": "10",
+              "cents": 1000
+            },
+            {
+              "rate": "5.5",
+              "cents": 500
+            }
+          ],
+          "paymentTotalsCents": [
+            {
+              "method": 2,
+              "cents": 3000
+            },
+            {
+              "method": 0,
+              "cents": 12000
+            },
+            {
+              "method": 4,
+              "cents": 0
+            }
+          ],
+          "perpetualGrandTotalCents": 1234567,
+          "signatureHash": "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90",
+          "closedAtUtc": "2025-07-15T21:30:00.000Z",
+          "periodStartUtc": "2025-07-15T07:00:00.000Z",
+          "sealedByUserName": "Jean Dupont"
+        },
+        "reportData": {
+          "categories": [
+            {
+              "categoryName": "Boissons",
+              "items": [
+                {
+                  "productName": "Café",
+                  "quantity": 3,
+                  "totalTtcCents": 750
+                },
+                {
+                  "productName": "Eau",
+                  "quantity": 2,
+                  "totalTtcCents": 500
+                }
+              ],
+              "subtotalTtcCents": 1250
+            },
+            {
+              "categoryName": null,
+              "items": [
+                {
+                  "productName": "Divers",
+                  "quantity": 1,
+                  "totalTtcCents": 300
+                }
+              ],
+              "subtotalTtcCents": 300
+            }
+          ],
+          "tips": [
+            {
+              "serverName": "Alice",
+              "tipCents": 500
+            },
+            {
+              "serverName": null,
+              "tipCents": 200
+            }
+          ],
+          "totalTipsCents": 700,
+          "hasGlobalDiscount": true
+        },
+        "settings": {
+          "companyName": "Chez Léa",
+          "addressLines": "5 Rue des Lilas\n69002 Lyon",
+          "siret": "12345678900011",
+          "vatNumber": "FR98123456789",
+          "certificateNumber": "NF525-2024-0042"
+        },
+        "duplicateNumber": null
+      },
+      "expected": {
+        "language": "fr",
+        "rightToLeft": false,
+        "lines": [
+          {
+            "type": "TicketText",
+            "text": "CLÔTURE Z n° 7",
+            "align": 1,
+            "bold": false,
+            "large": true
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Caisse",
+            "value": "T01"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Du",
+            "value": "15/07/2025 09:00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Clôturé le",
+            "value": "15/07/2025 23:30"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Gérant",
+            "value": "Jean Dupont"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Tickets",
+            "value": "21"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "TOTAL TTC",
+            "value": "150.00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "TOTAL HT",
+            "value": "135.00"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "VENTILATION TVA (NF525)",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "5.5 %",
+            "value": "5.00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "10 %",
+            "value": "10.00"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "RÈGLEMENTS",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Espèces",
+            "value": "120.00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Titres Restaurant",
+            "value": "30.00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Note de Chambre (PMS)",
+            "value": "0.00"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Grand total perpétuel",
+            "value": "12345.67"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "ARTICLES VENDUS",
+            "align": 1,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Montants avant remises sur note",
+            "align": 0,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Boissons",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "3x Café",
+            "value": "7.50"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "2x Eau",
+            "value": "5.00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Sous-total",
+            "value": "12.50"
+          },
+          {
+            "type": "TicketText",
+            "text": "Autres",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "1x Divers",
+            "value": "3.00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Sous-total",
+            "value": "3.00"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "POURBOIRES PAR SERVEUR",
+            "align": 1,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Alice",
+            "value": "5.00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Inconnu",
+            "value": "2.00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Total pourboires",
+            "value": "7.00"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Signature",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90",
+            "align": 0,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Logiciel: RestaurantPOS v1.0.0",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Certificat: NF525-2024-0042",
+            "align": 1,
+            "bold": false,
+            "large": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "z_duplicate_certificate",
+      "kind": "zClosure",
+      "language": "en",
+      "input": {
+        "closure": {
+          "terminalId": "T01",
+          "closureSequence": 7,
+          "totalSalesTtcCents": 15000,
+          "totalSalesHtCents": 13500,
+          "receiptCount": 21,
+          "vatBreakdownCents": [
+            {
+              "rate": "20",
+              "cents": 2500
+            }
+          ],
+          "paymentTotalsCents": [
+            {
+              "method": 2,
+              "cents": 3000
+            },
+            {
+              "method": 0,
+              "cents": 12000
+            },
+            {
+              "method": 4,
+              "cents": 0
+            }
+          ],
+          "perpetualGrandTotalCents": 1234567,
+          "signatureHash": "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90",
+          "closedAtUtc": "2025-07-15T21:30:00.000Z",
+          "periodStartUtc": "2025-07-15T07:00:00.000Z",
+          "sealedByUserName": "Jean Dupont"
+        },
+        "reportData": {
+          "categories": [
+            {
+              "categoryName": "Plats",
+              "items": [
+                {
+                  "productName": "Burger",
+                  "quantity": 2,
+                  "totalTtcCents": 2900
+                }
+              ],
+              "subtotalTtcCents": 2900
+            }
+          ],
+          "tips": [],
+          "totalTipsCents": 0,
+          "hasGlobalDiscount": false
+        },
+        "settings": {
+          "companyName": "Chez Léa",
+          "addressLines": "5 Rue des Lilas\n69002 Lyon",
+          "siret": "12345678900011",
+          "vatNumber": "FR98123456789",
+          "certificateNumber": "NF525-2024-0042"
+        },
+        "duplicateNumber": 2
+      },
+      "expected": {
+        "language": "en",
+        "rightToLeft": false,
+        "lines": [
+          {
+            "type": "TicketText",
+            "text": "DUPLICATA n°2",
+            "align": 1,
+            "bold": true,
+            "large": true
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Z CLOSURE #7",
+            "align": 1,
+            "bold": false,
+            "large": true
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Terminal",
+            "value": "T01"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "From",
+            "value": "15/07/2025 09:00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Closed",
+            "value": "15/07/2025 23:30"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Manager",
+            "value": "Jean Dupont"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Receipts",
+            "value": "21"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "TOTAL INCL. VAT",
+            "value": "150.00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "TOTAL EXCL. VAT",
+            "value": "135.00"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "VAT BREAKDOWN (NF525)",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "20 %",
+            "value": "25.00"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "PAYMENTS",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Cash",
+            "value": "120.00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Meal Vouchers",
+            "value": "30.00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Room Charge (PMS)",
+            "value": "0.00"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Perpetual grand total",
+            "value": "12345.67"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "ITEMS SOLD",
+            "align": 1,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Plats",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "2x Burger",
+            "value": "29.00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Subtotal",
+            "value": "29.00"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Signature",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90",
+            "align": 0,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Logiciel: RestaurantPOS v1.0.0",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Certificat: NF525-2024-0042",
+            "align": 1,
+            "bold": false,
+            "large": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "z_rates",
+      "kind": "zClosure",
+      "language": "fr",
+      "input": {
+        "closure": {
+          "terminalId": "T01",
+          "closureSequence": 7,
+          "totalSalesTtcCents": 15000,
+          "totalSalesHtCents": 13500,
+          "receiptCount": 21,
+          "vatBreakdownCents": [
+            {
+              "rate": "20",
+              "cents": 300
+            },
+            {
+              "rate": "5.5",
+              "cents": 100
+            },
+            {
+              "rate": "0.125",
+              "cents": 5
+            },
+            {
+              "rate": "10",
+              "cents": 200
+            },
+            {
+              "rate": "2.1",
+              "cents": 50
+            }
+          ],
+          "paymentTotalsCents": [
+            {
+              "method": 2,
+              "cents": 3000
+            },
+            {
+              "method": 0,
+              "cents": 12000
+            },
+            {
+              "method": 4,
+              "cents": 0
+            }
+          ],
+          "perpetualGrandTotalCents": 1234567,
+          "signatureHash": "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90",
+          "closedAtUtc": "2025-07-15T21:30:00.000Z",
+          "periodStartUtc": "2025-07-15T07:00:00.000Z",
+          "sealedByUserName": "Jean Dupont"
+        },
+        "reportData": {
+          "categories": [],
+          "tips": [],
+          "totalTipsCents": 0,
+          "hasGlobalDiscount": false
+        },
+        "settings": null,
+        "duplicateNumber": null
+      },
+      "expected": {
+        "language": "fr",
+        "rightToLeft": false,
+        "lines": [
+          {
+            "type": "TicketText",
+            "text": "CLÔTURE Z n° 7",
+            "align": 1,
+            "bold": false,
+            "large": true
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Caisse",
+            "value": "T01"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Du",
+            "value": "15/07/2025 09:00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Clôturé le",
+            "value": "15/07/2025 23:30"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Gérant",
+            "value": "Jean Dupont"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Tickets",
+            "value": "21"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "TOTAL TTC",
+            "value": "150.00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "TOTAL HT",
+            "value": "135.00"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "VENTILATION TVA (NF525)",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "0.13 %",
+            "value": "0.05"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "2.1 %",
+            "value": "0.50"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "5.5 %",
+            "value": "1.00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "10 %",
+            "value": "2.00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "20 %",
+            "value": "3.00"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "RÈGLEMENTS",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Espèces",
+            "value": "120.00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Titres Restaurant",
+            "value": "30.00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Note de Chambre (PMS)",
+            "value": "0.00"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Grand total perpétuel",
+            "value": "12345.67"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Signature",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90",
+            "align": 0,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Logiciel: RestaurantPOS v1.0.0",
+            "align": 1,
+            "bold": false,
+            "large": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "period_monthly",
+      "kind": "periodClosure",
+      "language": "fr",
+      "input": {
+        "periodClosure": {
+          "terminalId": "T01",
+          "isMonthly": true,
+          "periodKey": "2025-06",
+          "closureSequence": 3,
+          "periodStartUtc": "2025-06-01T00:00:00.000Z",
+          "periodEndUtc": "2025-06-30T21:59:59.000Z",
+          "totalTtcCents": 50000,
+          "totalHtCents": 45000,
+          "taxesSummaryJson": "{\"10\":3000,\"5.5\":1500}",
+          "tenderTotalsJson": "{\"Cash\":20000,\"CreditCard\":30000}",
+          "perpetualGrandTotalCents": 9999999,
+          "dailyClosureCount": 28,
+          "signatureHash": "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90",
+          "sealedByUserName": "Jean Dupont"
+        },
+        "reportData": {
+          "categories": [
+            {
+              "categoryName": "Boissons",
+              "items": [
+                {
+                  "productName": "Café",
+                  "quantity": 3,
+                  "totalTtcCents": 750
+                },
+                {
+                  "productName": "Eau",
+                  "quantity": 2,
+                  "totalTtcCents": 500
+                }
+              ],
+              "subtotalTtcCents": 1250
+            },
+            {
+              "categoryName": null,
+              "items": [
+                {
+                  "productName": "Divers",
+                  "quantity": 1,
+                  "totalTtcCents": 300
+                }
+              ],
+              "subtotalTtcCents": 300
+            }
+          ],
+          "tips": [
+            {
+              "serverName": "Alice",
+              "tipCents": 500
+            },
+            {
+              "serverName": null,
+              "tipCents": 200
+            }
+          ],
+          "totalTipsCents": 700,
+          "hasGlobalDiscount": true
+        },
+        "settings": {
+          "companyName": "Chez Léa",
+          "addressLines": "5 Rue des Lilas\n69002 Lyon",
+          "siret": "12345678900011",
+          "vatNumber": "FR98123456789",
+          "certificateNumber": "NF525-2024-0042"
+        }
+      },
+      "expected": {
+        "language": "fr",
+        "rightToLeft": false,
+        "lines": [
+          {
+            "type": "TicketText",
+            "text": "CLOTURE MENSUELLE 2025-06 - n°3",
+            "align": 1,
+            "bold": false,
+            "large": true
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Caisse",
+            "value": "T01"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Du",
+            "value": "01/06/2025 02:00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Clôturé le",
+            "value": "30/06/2025 23:59"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Gérant",
+            "value": "Jean Dupont"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Tickets",
+            "value": "28"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "TOTAL TTC",
+            "value": "500.00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "TOTAL HT",
+            "value": "450.00"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "VENTILATION TVA (NF525)",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "5.5 %",
+            "value": "15.00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "10 %",
+            "value": "30.00"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "RÈGLEMENTS",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Espèces",
+            "value": "200.00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Carte Bancaire (CB)",
+            "value": "300.00"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Grand total perpétuel",
+            "value": "99999.99"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "ARTICLES VENDUS",
+            "align": 1,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Montants avant remises sur note",
+            "align": 0,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Boissons",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "3x Café",
+            "value": "7.50"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "2x Eau",
+            "value": "5.00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Sous-total",
+            "value": "12.50"
+          },
+          {
+            "type": "TicketText",
+            "text": "Autres",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "1x Divers",
+            "value": "3.00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Sous-total",
+            "value": "3.00"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "POURBOIRES PAR SERVEUR",
+            "align": 1,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Alice",
+            "value": "5.00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Inconnu",
+            "value": "2.00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Total pourboires",
+            "value": "7.00"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Signature",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90",
+            "align": 0,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Logiciel: RestaurantPOS v1.0.0",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Certificat: NF525-2024-0042",
+            "align": 1,
+            "bold": false,
+            "large": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "period_annual",
+      "kind": "periodClosure",
+      "language": "fr",
+      "input": {
+        "periodClosure": {
+          "terminalId": "T01",
+          "isMonthly": false,
+          "periodKey": "2025",
+          "closureSequence": 3,
+          "periodStartUtc": "2025-01-01T00:00:00.000Z",
+          "periodEndUtc": "2025-06-30T21:59:59.000Z",
+          "totalTtcCents": 50000,
+          "totalHtCents": 45000,
+          "taxesSummaryJson": "{\"10\":3000,\"5.5\":1500}",
+          "tenderTotalsJson": "{\"CreditCard\":30000}",
+          "perpetualGrandTotalCents": 9999999,
+          "dailyClosureCount": 28,
+          "signatureHash": "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90",
+          "sealedByUserName": "Jean Dupont"
+        },
+        "reportData": {
+          "categories": [
+            {
+              "categoryName": "Plats",
+              "items": [
+                {
+                  "productName": "Burger",
+                  "quantity": 2,
+                  "totalTtcCents": 2900
+                }
+              ],
+              "subtotalTtcCents": 2900
+            }
+          ],
+          "tips": [],
+          "totalTipsCents": 0,
+          "hasGlobalDiscount": false
+        },
+        "settings": null
+      },
+      "expected": {
+        "language": "fr",
+        "rightToLeft": false,
+        "lines": [
+          {
+            "type": "TicketText",
+            "text": "CLOTURE ANNUELLE 2025 - n°3",
+            "align": 1,
+            "bold": false,
+            "large": true
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Caisse",
+            "value": "T01"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Du",
+            "value": "01/01/2025 01:00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Clôturé le",
+            "value": "30/06/2025 23:59"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Gérant",
+            "value": "Jean Dupont"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Tickets",
+            "value": "28"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "TOTAL TTC",
+            "value": "500.00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "TOTAL HT",
+            "value": "450.00"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "VENTILATION TVA (NF525)",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "5.5 %",
+            "value": "15.00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "10 %",
+            "value": "30.00"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "RÈGLEMENTS",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Carte Bancaire (CB)",
+            "value": "300.00"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Grand total perpétuel",
+            "value": "99999.99"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "ARTICLES VENDUS",
+            "align": 1,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Plats",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "2x Burger",
+            "value": "29.00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Sous-total",
+            "value": "29.00"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Signature",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90",
+            "align": 0,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Logiciel: RestaurantPOS v1.0.0",
+            "align": 1,
+            "bold": false,
+            "large": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "period_invalid_json",
+      "kind": "periodClosure",
+      "language": "fr",
+      "input": {
+        "periodClosure": {
+          "terminalId": "T01",
+          "isMonthly": true,
+          "periodKey": "2025-06",
+          "closureSequence": 3,
+          "periodStartUtc": "2025-06-01T00:00:00.000Z",
+          "periodEndUtc": "2025-06-30T21:59:59.000Z",
+          "totalTtcCents": 50000,
+          "totalHtCents": 45000,
+          "taxesSummaryJson": "not json{",
+          "tenderTotalsJson": "",
+          "perpetualGrandTotalCents": 9999999,
+          "dailyClosureCount": 28,
+          "signatureHash": "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90",
+          "sealedByUserName": "Jean Dupont"
+        },
+        "reportData": {
+          "categories": [],
+          "tips": [],
+          "totalTipsCents": 0,
+          "hasGlobalDiscount": false
+        },
+        "settings": null
+      },
+      "expected": {
+        "language": "fr",
+        "rightToLeft": false,
+        "lines": [
+          {
+            "type": "TicketText",
+            "text": "CLOTURE MENSUELLE 2025-06 - n°3",
+            "align": 1,
+            "bold": false,
+            "large": true
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Caisse",
+            "value": "T01"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Du",
+            "value": "01/06/2025 02:00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Clôturé le",
+            "value": "30/06/2025 23:59"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Gérant",
+            "value": "Jean Dupont"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Tickets",
+            "value": "28"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "TOTAL TTC",
+            "value": "500.00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "TOTAL HT",
+            "value": "450.00"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "VENTILATION TVA (NF525)",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "RÈGLEMENTS",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Grand total perpétuel",
+            "value": "99999.99"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Signature",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90",
+            "align": 0,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Logiciel: RestaurantPOS v1.0.0",
+            "align": 1,
+            "bold": false,
+            "large": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "period_tender_keys",
+      "kind": "periodClosure",
+      "language": "fr",
+      "input": {
+        "periodClosure": {
+          "terminalId": "T01",
+          "isMonthly": true,
+          "periodKey": "2025-06",
+          "closureSequence": 3,
+          "periodStartUtc": "2025-06-01T00:00:00.000Z",
+          "periodEndUtc": "2025-06-30T21:59:59.000Z",
+          "totalTtcCents": 50000,
+          "totalHtCents": 45000,
+          "taxesSummaryJson": "{\"10\":3000,\"5.5\":1500}",
+          "tenderTotalsJson": "{\"Cash\":1000,\"1\":2000,\"7\":50,\"Bogus\":300}",
+          "perpetualGrandTotalCents": 9999999,
+          "dailyClosureCount": 28,
+          "signatureHash": "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90",
+          "sealedByUserName": "Jean Dupont"
+        },
+        "reportData": {
+          "categories": [],
+          "tips": [],
+          "totalTipsCents": 0,
+          "hasGlobalDiscount": false
+        },
+        "settings": null
+      },
+      "expected": {
+        "language": "fr",
+        "rightToLeft": false,
+        "lines": [
+          {
+            "type": "TicketText",
+            "text": "CLOTURE MENSUELLE 2025-06 - n°3",
+            "align": 1,
+            "bold": false,
+            "large": true
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Caisse",
+            "value": "T01"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Du",
+            "value": "01/06/2025 02:00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Clôturé le",
+            "value": "30/06/2025 23:59"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Gérant",
+            "value": "Jean Dupont"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Tickets",
+            "value": "28"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "TOTAL TTC",
+            "value": "500.00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "TOTAL HT",
+            "value": "450.00"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "VENTILATION TVA (NF525)",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "5.5 %",
+            "value": "15.00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "10 %",
+            "value": "30.00"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "RÈGLEMENTS",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Espèces",
+            "value": "10.00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Carte Bancaire (CB)",
+            "value": "20.00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Autre Règlement",
+            "value": "0.50"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Grand total perpétuel",
+            "value": "99999.99"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Signature",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90",
+            "align": 0,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Logiciel: RestaurantPOS v1.0.0",
+            "align": 1,
+            "bold": false,
+            "large": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "test_fr_80",
+      "kind": "testPage",
+      "language": "fr",
+      "input": {
+        "printer": {
+          "name": "Cuisine",
+          "ipAddress": "192.168.1.50",
+          "port": 9100,
+          "paperWidthMm": 80
+        },
+        "nowUtc": "2025-07-15T10:30:45.000Z"
+      },
+      "expected": {
+        "language": "fr",
+        "rightToLeft": false,
+        "lines": [
+          {
+            "type": "TicketText",
+            "text": "TEST D'IMPRESSION",
+            "align": 1,
+            "bold": true,
+            "large": true
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Imprimante",
+            "value": "Cuisine"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Adresse",
+            "value": "192.168.1.50:9100"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Papier",
+            "value": "80 mm"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Date",
+            "value": "15/07/2025 10:30:45"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "àâçéèêëîïôùû ÀÉÈ — مرحبا بكم — 0123456789",
+            "align": 1,
+            "bold": false,
+            "large": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "test_ar_58",
+      "kind": "testPage",
+      "language": "ar",
+      "input": {
+        "printer": {
+          "name": "Bar",
+          "ipAddress": "10.0.0.7",
+          "port": 9100,
+          "paperWidthMm": 58
+        },
+        "nowUtc": "2025-07-15T10:30:45.000Z"
+      },
+      "expected": {
+        "language": "ar",
+        "rightToLeft": true,
+        "lines": [
+          {
+            "type": "TicketText",
+            "text": "اختبار الطباعة",
+            "align": 1,
+            "bold": true,
+            "large": true
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "الطابعة",
+            "value": "Bar"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "العنوان",
+            "value": "10.0.0.7:9100"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "الورق",
+            "value": "58 mm"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "التاريخ",
+            "value": "15/07/2025 10:30:45"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "àâçéèêëîïôùû ÀÉÈ — مرحبا بكم — 0123456789",
+            "align": 1,
+            "bold": false,
+            "large": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "duplicate_notice_replaces",
+      "kind": "withDuplicateNotice",
+      "language": "fr",
+      "input": {
+        "document": {
+          "language": "fr",
+          "rightToLeft": false,
+          "lines": [
+            {
+              "type": "TicketText",
+              "text": "DUPLICATA n°1",
+              "align": 1,
+              "bold": true,
+              "large": true
+            },
+            {
+              "type": "TicketSeparator",
+              "cut": false
+            },
+            {
+              "type": "TicketSeparator",
+              "cut": false
+            },
+            {
+              "type": "TicketText",
+              "text": "RESTAURANT L'ANTIGRAVITE",
+              "align": 1,
+              "bold": true,
+              "large": false
+            },
+            {
+              "type": "TicketText",
+              "text": "12 Rue de la Gastronomie",
+              "align": 1,
+              "bold": false,
+              "large": false
+            },
+            {
+              "type": "TicketText",
+              "text": "75001 Paris",
+              "align": 1,
+              "bold": false,
+              "large": false
+            },
+            {
+              "type": "TicketText",
+              "text": "SIRET: 88877766600012",
+              "align": 1,
+              "bold": false,
+              "large": false
+            },
+            {
+              "type": "TicketText",
+              "text": "TVA: FR12888777666",
+              "align": 1,
+              "bold": false,
+              "large": false
+            },
+            {
+              "type": "TicketText",
+              "text": "Logiciel: RestaurantPOS v1.0.0",
+              "align": 1,
+              "bold": false,
+              "large": false
+            },
+            {
+              "type": "TicketSeparator",
+              "cut": false
+            },
+            {
+              "type": "TicketColumns",
+              "label": "Ticket",
+              "value": "T01-000001"
+            },
+            {
+              "type": "TicketColumns",
+              "label": "Date",
+              "value": "15/07/2025 10:30:45"
+            },
+            {
+              "type": "TicketColumns",
+              "label": "Caisse",
+              "value": "T01"
+            },
+            {
+              "type": "TicketSeparator",
+              "cut": false
+            },
+            {
+              "type": "TicketColumns",
+              "label": "TOTAL TTC",
+              "value": "2.50"
+            },
+            {
+              "type": "TicketColumns",
+              "label": "TOTAL HT",
+              "value": "2.27"
+            },
+            {
+              "type": "TicketSeparator",
+              "cut": false
+            },
+            {
+              "type": "TicketText",
+              "text": "VENTILATION TVA (NF525)",
+              "align": 0,
+              "bold": true,
+              "large": false
+            },
+            {
+              "type": "TicketText",
+              "text": "{\"10\":23}",
+              "align": 0,
+              "bold": false,
+              "large": false
+            },
+            {
+              "type": "TicketText",
+              "text": "SIGNATURE FISCALE NF525",
+              "align": 0,
+              "bold": true,
+              "large": false
+            },
+            {
+              "type": "TicketText",
+              "text": "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90",
+              "align": 0,
+              "bold": false,
+              "large": false
+            }
+          ]
+        },
+        "duplicateNumber": 3
+      },
+      "expected": {
+        "language": "fr",
+        "rightToLeft": false,
+        "lines": [
+          {
+            "type": "TicketText",
+            "text": "DUPLICATA n°3",
+            "align": 1,
+            "bold": true,
+            "large": true
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "RESTAURANT L'ANTIGRAVITE",
+            "align": 1,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "12 Rue de la Gastronomie",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "75001 Paris",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "SIRET: 88877766600012",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "TVA: FR12888777666",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Logiciel: RestaurantPOS v1.0.0",
+            "align": 1,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Ticket",
+            "value": "T01-000001"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Date",
+            "value": "15/07/2025 10:30:45"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Caisse",
+            "value": "T01"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "TOTAL TTC",
+            "value": "2.50"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "TOTAL HT",
+            "value": "2.27"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "VENTILATION TVA (NF525)",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "{\"10\":23}",
+            "align": 0,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "SIGNATURE FISCALE NF525",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90",
+            "align": 0,
+            "bold": false,
+            "large": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "duplicate_notice_inserts",
+      "kind": "withDuplicateNotice",
+      "language": "fr",
+      "input": {
+        "document": {
+          "language": "fr",
+          "rightToLeft": false,
+          "lines": [
+            {
+              "type": "TicketText",
+              "text": "BON DE RETRAIT COMMANDE",
+              "align": 1,
+              "bold": true,
+              "large": false
+            },
+            {
+              "type": "TicketColumns",
+              "label": "NUMÉRO",
+              "value": "A1"
+            },
+            {
+              "type": "TicketSeparator",
+              "cut": false
+            },
+            {
+              "type": "TicketColumns",
+              "label": "Date",
+              "value": "15/07/2025 10:30:45"
+            },
+            {
+              "type": "TicketColumns",
+              "label": "Mode",
+              "value": "À EMPORTER"
+            },
+            {
+              "type": "TicketText",
+              "text": "Articles : 1 ligne(s)",
+              "align": 0,
+              "bold": false,
+              "large": false
+            },
+            {
+              "type": "TicketSeparator",
+              "cut": false
+            },
+            {
+              "type": "TicketText",
+              "text": "1x Café",
+              "align": 0,
+              "bold": false,
+              "large": false
+            },
+            {
+              "type": "TicketSeparator",
+              "cut": false
+            },
+            {
+              "type": "TicketText",
+              "text": "CONSERVEZ CE BON JUSQU'AU RETRAIT",
+              "align": 1,
+              "bold": false,
+              "large": false
+            }
+          ]
+        },
+        "duplicateNumber": 2
+      },
+      "expected": {
+        "language": "fr",
+        "rightToLeft": false,
+        "lines": [
+          {
+            "type": "TicketText",
+            "text": "DUPLICATA n°2",
+            "align": 1,
+            "bold": true,
+            "large": true
+          },
+          {
+            "type": "TicketText",
+            "text": "BON DE RETRAIT COMMANDE",
+            "align": 1,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "NUMÉRO",
+            "value": "A1"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Date",
+            "value": "15/07/2025 10:30:45"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Mode",
+            "value": "À EMPORTER"
+          },
+          {
+            "type": "TicketText",
+            "text": "Articles : 1 ligne(s)",
+            "align": 0,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "1x Café",
+            "align": 0,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "CONSERVEZ CE BON JUSQU'AU RETRAIT",
+            "align": 1,
+            "bold": false,
+            "large": false
+          }
+        ]
+      }
+    }
+  ]
+}
