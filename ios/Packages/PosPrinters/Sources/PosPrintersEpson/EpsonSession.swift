@@ -27,42 +27,27 @@ actor EpsonSession: PrinterSession {
 
     func send(_ payload: [UInt8], timeout: TimeInterval) async throws {
         _ = printer.clearCommandBuffer()
-        receiver.reset()
+        receiver.gate.reset()
         if let failure = EpsonCodes.failure(returnCode: printer.addCommand(Data(payload))) { throw failure }
         if let failure = EpsonCodes.failure(returnCode: printer.sendData(Int(timeout * 1000))) { throw failure }
         // Le résultat d'impression arrive ensuite au délégué de réception.
-        if let failure = EpsonCodes.failure(callbackCode: await receiver.result()) { throw failure }
+        if let failure = EpsonCodes.failure(callbackCode: await receiver.gate.result(onCancel: EpsonCodes.codeErrTimeout)) { throw failure }
     }
 
     func close() async {
+        // Reprend un envoi encore en attente (délai du transport) pour ne pas laisser de continuation suspendue.
+        receiver.gate.finish(EpsonCodes.codeErrTimeout)
         _ = printer.clearCommandBuffer()
-        _ = printer.disconnect()
+        // Après un délai, disconnect() rend ERR_PROCESSING tant que l'impression court : réessai borné (2 s).
+        await EpsonCodes.retryWhileProcessing { printer.disconnect() }
         printer.setReceiveEventDelegate(nil)
     }
 
-    /// Délégué du SDK converti en reprise unique de continuation ; `lock` protège l'état (d'où `@unchecked Sendable`).
+    /// Délégué du SDK : transmet le code à la porte à reprise unique.
     private final class Receiver: NSObject, Epos2PtrReceiveDelegate, @unchecked Sendable {
-        private let lock = NSLock()
-        private var code: Int32?
-        private var continuation: CheckedContinuation<Int32, Never>?
-
-        func reset() { lock.lock(); code = nil; lock.unlock() }
-
-        /// Valable si le callback arrive avant ou après l'attente.
-        func result() async -> Int32 {
-            await withCheckedContinuation { c in
-                lock.lock()
-                if let code { lock.unlock(); c.resume(returning: code) } else { continuation = c; lock.unlock() }
-            }
-        }
-
+        let gate = EpsonCallbackGate()
         func onPtrReceive(_ printerObj: Epos2Printer!, code: Int32, status: Epos2PrinterStatusInfo!, printJobId: String!) {
-            lock.lock()
-            self.code = code
-            let c = continuation
-            continuation = nil
-            lock.unlock()
-            c?.resume(returning: code)
+            gate.finish(code)
         }
     }
 }

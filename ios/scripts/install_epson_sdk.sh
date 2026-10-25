@@ -41,3 +41,6 @@ rm -rf "$VENDOR/libepos2.xcframework"
 cp -R "$XCF" "$VENDOR/libepos2.xcframework"
 echo "SDK Epson ePOS $VERSION installé dans $VENDOR/libepos2.xcframework ($SLICES tranches)."
 echo "Ne commitez jamais ce SDK (Vendor/ est dans .gitignore)."
+# SwiftPM met en cache l'évaluation de Package.swift sans voir Vendor/ : sans cette purge, le manifeste garde l'état d'avant
+# (après avoir ajouté ou retiré le SDK à la main, lancer `swift package purge-cache`).
+if [ -z "${EPSON_VENDOR_DIR:-}" ]; then swift package purge-cache >/dev/null 2>&1 || true; fi

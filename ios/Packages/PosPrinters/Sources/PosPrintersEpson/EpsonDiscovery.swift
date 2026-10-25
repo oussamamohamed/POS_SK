@@ -21,10 +21,7 @@ struct EpsonDiscovery: PrinterDiscovery {
 
     /// `Epos2Discovery.stop()` renvoie « en cours » tant que la recherche démarre : on réessaie brièvement.
     private static func stop() async {
-        for _ in 0..<20 {
-            if Epos2Discovery.stop() != Int32(EPOS2_ERR_PROCESSING.rawValue) { return }
-            try? await Task.sleep(for: .milliseconds(100))
-        }
+        await EpsonCodes.retryWhileProcessing { Epos2Discovery.stop() }
     }
 
     private final class Delegate: NSObject, Epos2DiscoveryDelegate, @unchecked Sendable {

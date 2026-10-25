@@ -43,3 +43,53 @@ import Testing
         #expect(EpsonCodes.seriesValue("???") == 12) // inconnu → TM_T88
     }
 }
+
+@Suite struct EpsonCallbackGateTests {
+    @Test func finishBeforeAndAfterWait() async {
+        let early = EpsonCallbackGate()
+        early.finish(7); early.finish(9) // idempotent : le premier gagne
+        #expect(await early.result(onCancel: 1) == 7)
+        let late = EpsonCallbackGate()
+        async let value = late.result(onCancel: 1)
+        try? await Task.sleep(for: .milliseconds(50))
+        late.finish(5)
+        #expect(await value == 5)
+    }
+
+    @Test func cancellationResumesWithTimeoutCode() async {
+        let gate = EpsonCallbackGate()
+        let task = Task { await gate.result(onCancel: 1) }
+        try? await Task.sleep(for: .milliseconds(50))
+        task.cancel()
+        #expect(await task.value == 1)
+    }
+
+    @Test func closeStyleFinishResumesPendingWait() async {
+        let gate = EpsonCallbackGate()
+        async let value = gate.result(onCancel: 1)
+        try? await Task.sleep(for: .milliseconds(50))
+        gate.finish(1)
+        gate.finish(1)
+        #expect(await value == 1)
+    }
+
+    @Test func retryIsBoundedAndStopsOnSuccess() async {
+        nonisolated(unsafe) var calls = 0
+        let code = await EpsonCodes.retryWhileProcessing(attempts: 3, pause: .milliseconds(1)) { calls += 1; return 6 }
+        #expect(code == 6 && calls == 3)
+        calls = 0
+        let ok = await EpsonCodes.retryWhileProcessing(attempts: 5, pause: .milliseconds(1)) { calls += 1; return calls < 3 ? 6 : 0 }
+        #expect(ok == 0 && calls == 3)
+    }
+
+    @Test func retryKeepsPauseWhenCancelled() async {
+        let task = Task {
+            nonisolated(unsafe) var calls = 0
+            let start = ContinuousClock.now
+            await EpsonCodes.retryWhileProcessing(attempts: 4, pause: .milliseconds(30)) { calls += 1; return 6 }
+            return ContinuousClock.now - start
+        }
+        task.cancel()
+        #expect(await task.value >= .milliseconds(80)) // 3 pauses de 30 ms malgré l'annulation
+    }
+}

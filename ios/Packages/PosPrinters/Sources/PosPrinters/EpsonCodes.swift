@@ -5,8 +5,10 @@ import Foundation
 public enum EpsonCodes {
     // Epos2ErrorStatus (retour de connect / sendData)
     static let errConnect: Int32 = 2, errTimeout: Int32 = 3, errNotFound: Int32 = 7, errInUse: Int32 = 8, errDeviceBusy: Int32 = 16
+    static let errProcessing: Int32 = 6
     // Epos2CallbackCode (délégué de réception)
-    static let codeErrTimeout: Int32 = 1, codeErrNotFound: Int32 = 2, codeErrCoverOpen: Int32 = 4, codeErrEmpty: Int32 = 7
+    public static let codeErrTimeout: Int32 = 1
+    static let codeErrNotFound: Int32 = 2, codeErrCoverOpen: Int32 = 4, codeErrEmpty: Int32 = 7
     static let codeErrDeviceBusy: Int32 = 33, codeErrInUse: Int32 = 35, codeErrConnect: Int32 = 36
     /// Epos2PrinterSeries (SDK 2.37.1), par nom court tel que stocké dans `PrinterAddress.epson`.
     static let seriesValues: [String: Int32] = [
@@ -50,4 +52,20 @@ public enum EpsonCodes {
 
     /// Valeur `Epos2PrinterSeries` ; série inconnue → TM_T88.
     public static func seriesValue(_ series: String) -> Int32 { seriesValues[series] ?? seriesValues[defaultSeries]! }
+
+    /// Rejoue `operation` tant qu'elle rend « en cours » (ERR_PROCESSING), au plus `attempts` fois, avec `pause` entre deux essais.
+    /// La pause n'est pas annulable : sous annulation (délai du transport), les essais ne sont pas brûlés d'un coup.
+    @discardableResult
+    public static func retryWhileProcessing(attempts: Int = 20, pause: Duration = .milliseconds(100),
+                                            isolation: isolated (any Actor)? = #isolation,
+                                            _ operation: () -> Int32) async -> Int32 {
+        var code = operation()
+        var left = attempts - 1
+        while code == errProcessing, left > 0 {
+            left -= 1
+            await Task { try? await Task.sleep(for: pause) }.value
+            code = operation()
+        }
+        return code
+    }
 }

@@ -11,6 +11,7 @@ import libepos2
         #expect(EpsonCodes.errNotFound == Int32(EPOS2_ERR_NOT_FOUND.rawValue))
         #expect(EpsonCodes.errInUse == Int32(EPOS2_ERR_IN_USE.rawValue))
         #expect(EpsonCodes.errDeviceBusy == Int32(EPOS2_ERR_DEVICE_BUSY.rawValue))
+        #expect(EpsonCodes.errProcessing == Int32(EPOS2_ERR_PROCESSING.rawValue))
         #expect(EpsonCodes.codeErrTimeout == Int32(EPOS2_CODE_ERR_TIMEOUT.rawValue))
         #expect(EpsonCodes.codeErrNotFound == Int32(EPOS2_CODE_ERR_NOT_FOUND.rawValue))
         #expect(EpsonCodes.codeErrCoverOpen == Int32(EPOS2_CODE_ERR_COVER_OPEN.rawValue))
