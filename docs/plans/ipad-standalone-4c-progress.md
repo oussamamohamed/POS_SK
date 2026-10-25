@@ -10,6 +10,13 @@ Base de référence : PosKit 689
 | 2 Adaptateur Star (StarIO10) et recherche | fait | 689 | 22 | aucun |
 | 3 Adaptateur Epson (ePOS2), installation du SDK, recherche | fait | 689 | 26 (+ `test_install_epson_sdk.sh`, + 1 test de constantes sur simulateur avec SDK) | aucun |
 | 4 Branchement dans l'app | fait | 689 | 31 (`./scripts/test.sh unit`) ; UI : `StandaloneUITests/testModeChoiceThenFirstRunThenUnlock` passé (Fake transport) | aucun |
+| 5 Guide d'essai papier, documentation, vérification finale | fait | 689 | 31 | aucun |
+
+## Vérification finale (lot 4c)
+
+- `dotnet test RestaurantPos.slnx` : Domain 69, Infrastructure 441, Api 258, 0 échec (exécuté le 2026-10-25 vers 20 h 45 CET, hors plage minuit-2 h où `ReportAccuracyTests.FinancialDashboard_DiscountedOrders_AccuratelyReflectsNetTotals` est instable).
+- PosKit `swift test` 689, PosPrinters `swift test` 31, `./scripts/test.sh unit` vert (689 + 31 + `test_install_epson_sdk.sh`), build simulateur de l'app (`xcodebuild -project RestaurantPOS.xcodeproj -scheme RestaurantPOS -destination 'generic/platform=iOS Simulator' -derivedDataPath build/DerivedData build`) réussi.
+- SDK Epson : **installé** (Vendor/libepos2.xcframework, 2.37.1) pendant ces vérifications. Adaptateurs Star et Epson non testés sur matériel : voir `docs/impression-essai-papier.md`.
 
 ## Constats
 
