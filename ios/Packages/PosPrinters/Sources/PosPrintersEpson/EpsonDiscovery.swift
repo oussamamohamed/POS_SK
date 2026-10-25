@@ -1,6 +1,7 @@
 #if os(iOS) && canImport(libepos2)
 import Foundation
 import libepos2
+import os
 import PosKit
 import PosPrinters
 
@@ -15,12 +16,18 @@ struct EpsonDiscovery: PrinterDiscovery {
         if let failure = EpsonCodes.failure(returnCode: code) { throw failure }
         // Annulation : on sort du sleep, puis on arrête et on rend les résultats partiels.
         try? await Task.sleep(for: .seconds(timeout))
-        await Self.stop()
-        return delegate.printers
+        // Le SDK ne retient pas son délégué : `delegate` reste référencé jusqu'à l'arrêt réussi ou aux 20 essais épuisés.
+        let stopCode = await Self.stop()
+        if let failure = EpsonCodes.failure(returnCode: stopCode) {
+            Self.log.error("Arrêt de la recherche Epson en échec (code \(stopCode)) : \(String(describing: failure))")
+        }
+        return withExtendedLifetime(delegate) { delegate.printers }
     }
 
+    private static let log = Logger(subsystem: "PosPrinters", category: "epson-discovery")
+
     /// `Epos2Discovery.stop()` renvoie « en cours » tant que la recherche démarre : on réessaie brièvement.
-    private static func stop() async {
+    private static func stop() async -> Int32 {
         await EpsonCodes.retryWhileProcessing { Epos2Discovery.stop() }
     }
 
