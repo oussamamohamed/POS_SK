@@ -11,6 +11,7 @@
 "admin.grid_reset" = "Grid reset";
 "admin.grid_size_applied" = "%d × %d layout applied";
 "admin.ip_invalid" = "Invalid IP address";
+"admin.device_identifier_invalid" = "Invalid printer identifier";
 "admin.name_required" = "Name is required";
 "admin.page_added" = "Page %d added";
 "admin.pin_length" = "PIN must be %d digits";

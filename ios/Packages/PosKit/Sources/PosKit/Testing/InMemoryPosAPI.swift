@@ -769,6 +769,7 @@ public actor InMemoryPosAPI: PosAPI {
 
     public func savePrinter(_ printer: Printer, isNew: Bool) async throws {
         try await step("savePrinter"); try requireManager()
+        if PrinterStore.validate(printer) != nil { throw APIError.server(status: 400, message: "Imprimante invalide : \(printer.name)") }
         if isNew {
             printersStore.append(printer)
         } else if let i = printersStore.firstIndex(where: { $0.id == printer.id }) {
@@ -816,7 +817,7 @@ public actor InMemoryPosAPI: PosAPI {
     public func testPrinter(id: UUID) async throws -> TestPrintResult {
         try await step("testPrinter")
         guard let p = printersStore.first(where: { $0.id == id }) else { throw APIError.notFound(nil) }
-        return TestPrintResult(success: true, message: "Ticket de test envoyé à \(p.name) (\(p.ipAddress):\(p.port))")
+        return TestPrintResult(success: true, message: "Ticket de test envoyé à \(p.name) (\(p.testTarget))")
     }
 
     // MARK: Happy Hour

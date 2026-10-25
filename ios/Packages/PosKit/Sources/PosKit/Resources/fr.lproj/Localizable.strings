@@ -11,6 +11,7 @@
 "admin.grid_reset" = "Grille réinitialisée";
 "admin.grid_size_applied" = "Format %d × %d appliqué";
 "admin.ip_invalid" = "Adresse IP invalide";
+"admin.device_identifier_invalid" = "Identifiant d'imprimante invalide";
 "admin.name_required" = "Le nom est requis";
 "admin.page_added" = "Page %d ajoutée";
 "admin.pin_length" = "Le PIN doit comporter %d chiffres";
