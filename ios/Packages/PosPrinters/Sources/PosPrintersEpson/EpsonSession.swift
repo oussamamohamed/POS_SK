@@ -1,6 +1,7 @@
 #if os(iOS) && canImport(libepos2)
 import Foundation
 import libepos2
+import PosKit
 import PosPrinters
 
 /// Session Epson : `Epos2Printer` n'est pas thread-safe, d'où l'acteur (un seul appelant à la fois, déjà garanti par le moteur 4b).
@@ -13,7 +14,7 @@ actor EpsonSession: PrinterSession {
     init(series: String, target: String) throws {
         // Langue ANK : le moteur 4b envoie des octets ESC/POS bruts, la langue n'agit pas sur eux.
         guard let printer = Epos2Printer(printerSeries: EpsonCodes.seriesValue(series), lang: Int32(EPOS2_MODEL_ANK.rawValue)) else {
-            throw PrinterSessionFailure.failed("Imprimante Epson indisponible (série \(series))")
+            throw PrinterTransportError.connection("Imprimante Epson indisponible (série \(series))")
         }
         self.printer = printer
         self.target = target

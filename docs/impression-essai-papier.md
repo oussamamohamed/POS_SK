@@ -45,15 +45,23 @@ Créer l'imprimante comme ci-dessus (IP, port 9100), puis poser les deux colonne
   ```bash
   DB="$(xcrun simctl get_app_container booted com.restaurantpos.ipad data)/Library/Application Support/RestaurantPOS/pos-local.sqlite"
   xcrun simctl terminate booted com.restaurantpos.ipad
+  sqlite3 "$DB" "SELECT Id, Name, TransportKind FROM PrinterConfigurations;"
+  # Adapter le nom dans WHERE au nom réel de l'imprimante affiché ci-dessus.
   sqlite3 "$DB" "UPDATE PrinterConfigurations SET TransportKind='epson', DeviceIdentifier='TM_T88;TCP:192.168.1.60' WHERE Name='Ticket';"
   ```
-- **iPad réel** : le conteneur de l'app n'est pas accessible sans outil. Voies possibles, aucune n'a été essayée ici : Xcode → Window → Devices and Simulators → l'app → « Download Container… » puis modifier le fichier du paquet, puis le remettre avec « Replace Container… » (l'app doit être fermée) ; ou attendre le lot 4d. Si aucune ne convient, **cet essai ePOS2 attend le lot 4d**.
+- **iPad réel** : le conteneur de l'app n'est pas accessible sans outil.
+
+  > **ATTENTION : « Replace Container… » remplace TOUT le conteneur de données de l'app, base fiscale et `<base>-archives/` comprises.** Toute vente faite entre le téléchargement et le remplacement est **perdue silencieusement** (les reçus fiscaux signés disparaissent : non-conformité NF525). À faire uniquement sur un iPad **sans vente réelle**, ou après un export `.posbak` et sans aucune vente jusqu'au remplacement. Exige un build signé en développement (pas TestFlight ni App Store). Même précaution avant toute modification de la base sur un iPad réel.
+
+  Voies possibles, aucune n'a été essayée ici : Xcode → Window → Devices and Simulators → l'app → « Download Container… » puis modifier le fichier du paquet, puis le remettre avec « Replace Container… » (l'app doit être fermée) ; ou attendre le lot 4d. Si aucune ne convient, **cet essai ePOS2 attend le lot 4d**.
 
 Valeurs valides de `TransportKind` : `lan`, `star`, `epson`. L'IP du `deviceIdentifier` doit être celle de l'imprimante. Formats complets :
 
 - Epson : `<série>;<cible>`, cible `TCP:<ip>`, `BT:<adresse>` ou `USB:<id>` ; vide = `TM_T88;TCP:<ipAddress>`. Une valeur sans `;` est lue comme la cible seule avec la série `TM_T88`.
 - Star : `<interface>:<identifiant>`, interface `lan`, `bluetooth`, `bluetoothLE` ou `usb` (ex. `bluetooth:00:11:62:AA:BB:CC`) ; vide = `lan:<ipAddress>`.
 - Format invalide : l'impression échoue avec « Identifiant d'imprimante invalide : … ».
+
+Avant tout `UPDATE`, lister les imprimantes : `SELECT Id, Name, TransportKind FROM PrinterConfigurations;`. Le nom dans `WHERE Name='Ticket'` est un exemple : l'adapter au nom réel de l'imprimante.
 
 Revenir en LAN brut : `UPDATE PrinterConfigurations SET TransportKind='lan', DeviceIdentifier=NULL WHERE Name='Ticket';`
 
@@ -82,6 +90,7 @@ Cas communs (résultat attendu) :
 ### TM-T88VI, ePOS2 en TCP (`epson`, `TM_T88;TCP:<ip>`)
 
 - [ ] Réglage posé (section 2) et SDK installé dans le build
+- [ ] L'app se lance sur l'iPad avec le SDK Epson embarqué (build ePOS2) ; la signature du framework sur appareil n'est pas vérifiée
 - [ ] Page de test
 - [ ] Vente comptoir espèces + tiroir
 - [ ] Ticket en arabe (raster, RTL)

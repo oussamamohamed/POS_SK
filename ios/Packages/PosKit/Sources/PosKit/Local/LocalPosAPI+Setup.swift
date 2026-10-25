@@ -22,8 +22,9 @@ public struct LocalSetup: Sendable {
 extension LocalPosAPI {
     /// Ouvre le fichier d'une installation réelle : jamais de comptes ni de données de démonstration (`seed: .blank`).
     /// C'est le seul point d'entrée de la production ; le défaut `.demo` de l'initialiseur est réservé aux tests.
-    public static func openStandalone(path: String) throws -> LocalPosAPI {
-        try LocalPosAPI(path: path, seed: .blank)
+    /// `transport` : envoi des tickets (défaut du moteur : LAN) ; l'app y passe les transports Star et Epson.
+    public static func openStandalone(path: String, transport: any PrinterTransport = RoutingPrinterTransport()) throws -> LocalPosAPI {
+        try LocalPosAPI(path: path, seed: .blank, transport: transport)
     }
 
     /// `true` tant qu'aucun compte n'existe (base vierge) : l'application doit alors proposer la configuration initiale.

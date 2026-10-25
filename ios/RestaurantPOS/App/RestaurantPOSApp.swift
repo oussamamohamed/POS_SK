@@ -164,9 +164,9 @@ final class AppEnvironment {
             // Faux transport : aucun accès réseau en test (la base démo a une imprimante de ticket à une vraie adresse IP).
             api = try LocalPosAPI(path: ":memory:", seed: launch.usesLocalBackend && !launch.localIsBlank ? .demo : .blank, transport: FakePrinterTransport())
         } else {
-            // Même ouverture que `openStandalone` (base vierge), avec les transports Star et Epson (nil sans SDK Epson).
+            // Transports Star et Epson (nil sans SDK Epson).
             let transport = RoutingPrinterTransport(lan: LANPrinterTransport(), star: StarPrinters.transport(), epson: EpsonPrinters.transport())
-            api = try LocalPosAPI(path: LocalDatabaseLocation.defaultURL().path, seed: .blank, transport: transport)
+            api = try LocalPosAPI.openStandalone(path: LocalDatabaseLocation.defaultURL().path, transport: transport)
         }
         Task { await api.startPrintWorker() }
         return api

@@ -7,13 +7,15 @@ private actor FakeSession: PrinterSession {
     enum Behavior: Sendable { case ok, hang, fail(any Error) }
     private(set) var events: [String] = []
     private(set) var sent: [UInt8] = []
-    let openBehavior: Behavior, sendBehavior: Behavior
+    let openBehavior: Behavior, sendBehavior: Behavior, closeBehavior: Behavior
 
-    init(open: Behavior = .ok, send: Behavior = .ok) { openBehavior = open; sendBehavior = send }
+    init(open: Behavior = .ok, send: Behavior = .ok, close: Behavior = .ok) {
+        openBehavior = open; sendBehavior = send; closeBehavior = close
+    }
 
     func open(timeout: TimeInterval) async throws { events.append("open"); try await run(openBehavior) }
     func send(_ payload: [UInt8], timeout: TimeInterval) async throws { events.append("send"); sent = payload; try await run(sendBehavior) }
-    func close() async { events.append("close") }
+    func close() async { events.append("close"); try? await run(closeBehavior) }
 
     private func run(_ b: Behavior) async throws {
         switch b {
@@ -48,6 +50,19 @@ private struct Boom: Error, LocalizedError { var errorDescription: String? { "bo
         try await transport(s).send([0x1B, 0x40, 0x0A], to: printer)
         #expect(await s.events == ["open", "send", "close"])
         #expect(await s.sent == [0x1B, 0x40, 0x0A])
+    }
+
+    @Test func hungCloseDoesNotBlockSuccess() async throws {
+        let s = FakeSession(close: .hang)
+        let started = Date()
+        try await transport(s).send([1], to: printer)
+        #expect(Date().timeIntervalSince(started) < 2)
+        #expect(await s.events == ["open", "send", "close"])
+    }
+
+    @Test func hungCloseKeepsTheSameFailure() async {
+        let s = FakeSession(send: .fail(PrinterSessionFailure.failed("papier")), close: .hang)
+        #expect(await failure(s) == .connection("papier"))
     }
 
     @Test func openFailureStillCloses() async {

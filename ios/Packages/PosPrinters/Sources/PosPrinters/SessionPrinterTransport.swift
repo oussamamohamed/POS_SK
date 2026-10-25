@@ -20,10 +20,15 @@ public struct SessionPrinterTransport: PrinterTransport {
             try await Self.race(connectTimeout, onTimeout: .connectTimeout) { try await session.open(timeout: connectTimeout) }
             try await Self.race(writeTimeout, onTimeout: .writeTimeout) { try await session.send(payload, timeout: writeTimeout) }
         } catch {
-            await session.close()
+            await closeBounded(session)
             throw error
         }
-        await session.close()
+        await closeBounded(session)
+    }
+
+    /// Fermeture bornée : un `close()` muet du SDK ne doit ni bloquer la file de l'imprimante ni changer le résultat de l'envoi.
+    private func closeBounded(_ session: any PrinterSession) async {
+        try? await Self.race(connectTimeout, onTimeout: .connectTimeout) { await session.close() }
     }
 
     /// Course entre l'appel de session et un délai. Le premier qui finit gagne ; l'autre est annulé mais

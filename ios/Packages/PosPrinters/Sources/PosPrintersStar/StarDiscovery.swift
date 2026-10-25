@@ -50,16 +50,21 @@ struct StarDiscovery: PrinterDiscovery {
         private var found: [DiscoveredPrinter] = []
         private var continuation: CheckedContinuation<[DiscoveredPrinter], Error>?
         private nonisolated(unsafe) var running: (any StarDeviceDiscoveryManager)?
+        private var cancelled = false
 
         func start(_ manager: any StarDeviceDiscoveryManager, _ c: CheckedContinuation<[DiscoveredPrinter], Error>) {
-            lock.lock(); continuation = c; running = manager; lock.unlock()
+            lock.lock(); continuation = c; running = manager; let skip = cancelled; lock.unlock()
+            // Annulée avant le départ : on rend tout de suite ce qu'on a, sans lancer la recherche.
+            if skip { finish(.success([])); return }
             do { try manager.startDiscovery() } catch { finish(.failure(error)) }
         }
 
-        /// Annulation : le SDK appelle alors `managerDidFinishDiscovery`, qui rend les résultats partiels.
+        /// Annulation : on ne suppose pas que `stopDiscovery` déclenche `managerDidFinishDiscovery` ; `finish` est idempotent
+        /// et rend les résultats partiels.
         func stop() {
-            lock.lock(); let m = running; lock.unlock()
+            lock.lock(); cancelled = true; let m = running; let all = found; lock.unlock()
             m?.stopDiscovery()
+            finish(.success(all))
         }
 
         func manager(_ manager: any StarDeviceDiscoveryManager, didFind printer: StarPrinter) {

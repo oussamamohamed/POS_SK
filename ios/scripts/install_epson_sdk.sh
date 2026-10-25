@@ -37,10 +37,14 @@ done
 [ "$SLICES" -gt 0 ] || die "aucune tranche libepos2.framework dans $XCF (SDK statique ?)"
 
 mkdir -p "$VENDOR"
+# Copie dans un nom temporaire puis échange : un échec de copie ne laisse pas Vendor/ sans SDK.
+rm -rf "$VENDOR/libepos2.xcframework.tmp"
+cp -R "$XCF" "$VENDOR/libepos2.xcframework.tmp"
 rm -rf "$VENDOR/libepos2.xcframework"
-cp -R "$XCF" "$VENDOR/libepos2.xcframework"
+mv "$VENDOR/libepos2.xcframework.tmp" "$VENDOR/libepos2.xcframework"
 echo "SDK Epson ePOS $VERSION installé dans $VENDOR/libepos2.xcframework ($SLICES tranches)."
 echo "Ne commitez jamais ce SDK (Vendor/ est dans .gitignore)."
 # SwiftPM met en cache l'évaluation de Package.swift sans voir Vendor/ : la purge est laissée à l'utilisateur
 # (elle vide les caches SwiftPM de tout le poste, donc ce script ne la lance jamais).
-echo "Si SwiftPM ou Xcode ignore le SDK (« does not contain a binary artifact » ou SDK non vu), lancez \`swift package purge-cache\` puis re-résolvez le paquet."
+echo "Si SwiftPM ou Xcode ignore le SDK (« does not contain a binary artifact » ou SDK non vu), relancez le build avec une variable d'environnement neuve (ex. \`env POS_X=\$RANDOM xcodebuild …\`) : la clé du cache de manifestes change."
+echo "Dernier recours, à lancer à la main : \`swift package purge-cache\` (vide les caches SwiftPM de tous vos projets)."
