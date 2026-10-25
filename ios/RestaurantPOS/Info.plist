@@ -35,6 +35,8 @@
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>La caisse utilise le Bluetooth pour communiquer avec les imprimantes de tickets.</string>
 	<key>NSBonjourServices</key>
 	<array>
 		<string>_restaurantpos._tcp</string>
@@ -55,6 +57,11 @@
 	</dict>
 	<key>UIRequiresFullScreen</key>
 	<true/>
+	<key>UISupportedExternalAccessoryProtocols</key>
+	<array>
+		<string>jp.star-m.starpro</string>
+		<string>com.epson.escpos</string>
+	</array>
 	<key>UISupportedInterfaceOrientations~ipad</key>
 	<array>
 		<string>UIInterfaceOrientationLandscapeLeft</string>

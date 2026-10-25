@@ -1,5 +1,8 @@
 import SwiftUI
 import PosKit
+import PosPrinters
+import PosPrintersStar
+import PosPrintersEpson
 
 @main
 struct RestaurantPOSApp: App {
@@ -89,6 +92,9 @@ final class AppEnvironment {
     @ObservationIgnored private let defaults: UserDefaults
     /// **Une seule instance** de l'acteur pour tout le processus : la recréer ouvrirait une seconde connexion sur le même fichier.
     @ObservationIgnored private var localAPI: LocalPosAPI?
+    /// Recherche d'imprimantes Star + Epson, prête pour l'écran du lot 4d (aucune interface ici). Jamais utilisée en test UI.
+    @ObservationIgnored let printerDiscovery: any PrinterDiscovery = CombinedPrinterDiscovery(
+        [StarPrinters.discovery()] + [EpsonPrinters.discovery()].compactMap { $0 })
 
     var isStandalone: Bool { mode == .standalone }
 
@@ -158,7 +164,9 @@ final class AppEnvironment {
             // Faux transport : aucun accès réseau en test (la base démo a une imprimante de ticket à une vraie adresse IP).
             api = try LocalPosAPI(path: ":memory:", seed: launch.usesLocalBackend && !launch.localIsBlank ? .demo : .blank, transport: FakePrinterTransport())
         } else {
-            api = try LocalPosAPI.openStandalone(path: LocalDatabaseLocation.defaultURL().path)
+            // Même ouverture que `openStandalone` (base vierge), avec les transports Star et Epson (nil sans SDK Epson).
+            let transport = RoutingPrinterTransport(lan: LANPrinterTransport(), star: StarPrinters.transport(), epson: EpsonPrinters.transport())
+            api = try LocalPosAPI(path: LocalDatabaseLocation.defaultURL().path, seed: .blank, transport: transport)
         }
         Task { await api.startPrintWorker() }
         return api
