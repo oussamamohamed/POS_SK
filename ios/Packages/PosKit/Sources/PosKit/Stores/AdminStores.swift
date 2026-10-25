@@ -140,6 +140,11 @@ public final class PrinterStore {
         do { statuses = try await api.printerStatuses() } catch { notifier.error(error) }
     }
 
+    /// Rafraîchissement périodique : jamais de toast, anciens statuts conservés en cas d'échec ou d'annulation.
+    public func refreshStatuses() async {
+        if let fresh = try? await api.printerStatuses() { statuses = fresh }
+    }
+
     public func loadJobs(printerId: UUID) async {
         do { jobs[printerId] = try await api.printJobs(printerId: printerId) } catch { notifier.error(error) }
     }

@@ -592,6 +592,19 @@ struct AdminTests {
         #expect(!PrinterStore.isValidIPv4("300.1.1.1"))
     }
 
+    @Test func silentStatusRefreshNeverNotifiesAndKeepsStatuses() async {
+        let (model, api) = await makeModel()
+        await model.printers.loadStatuses()
+        let before = model.printers.statuses
+        #expect(!before.isEmpty)
+        await api.setFailure(.transport("hors ligne"))
+        await model.printers.refreshStatuses()
+        #expect(model.printers.statuses == before)
+        #expect(model.notifier.toasts.isEmpty)
+        await model.printers.loadStatuses()
+        #expect(model.notifier.toasts.count == 1)
+    }
+
     @Test func gridEditorAssignSwapAndResize() async {
         let (model, _) = await makeModel()
         await model.gridEditor.select(category: "CAT_DRINKS")

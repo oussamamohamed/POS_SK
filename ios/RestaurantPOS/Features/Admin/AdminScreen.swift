@@ -509,10 +509,11 @@ struct PrintersAdminView: View {
         }
         .task {
             await store.load()
+            await store.loadStatuses()
             // Une requête à la fois, annulée avec la vue (pas de rafraîchissement en arrière-plan).
             while !Task.isCancelled {
-                await store.loadStatuses()
                 try? await Task.sleep(for: Self.statusRefresh)
+                await store.refreshStatuses()
             }
         }
         .sheet(item: $editing) { editor in
