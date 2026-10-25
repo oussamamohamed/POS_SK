@@ -18,6 +18,8 @@ packages/
 *.aab
 *.ipa
 .build/
+# SDK Epson (licence : ne pas redistribuer), installé par ios/scripts/install_epson_sdk.sh
+ios/Packages/PosPrinters/Vendor/
 DerivedData/
 
 # Logs & Temporary Files

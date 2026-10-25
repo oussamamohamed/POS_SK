@@ -22,6 +22,8 @@ run_unit() {
   (cd Packages/PosKit && swift test)
   echo "▶︎ Tests unitaires PosPrinters (adresse, transport par session)"
   (cd Packages/PosPrinters && swift test)
+  echo "▶︎ Test du script d'installation du SDK Epson (faux xcframework)"
+  ./scripts/test_install_epson_sdk.sh
 }
 
 run_contract() {
