@@ -92,9 +92,8 @@ final class AppEnvironment {
     @ObservationIgnored private let defaults: UserDefaults
     /// **Une seule instance** de l'acteur pour tout le processus : la recréer ouvrirait une seconde connexion sur le même fichier.
     @ObservationIgnored private var localAPI: LocalPosAPI?
-    /// Recherche d'imprimantes Star + Epson, prête pour l'écran du lot 4d (aucune interface ici). Jamais utilisée en test UI.
-    @ObservationIgnored let printerDiscovery: any PrinterDiscovery = CombinedPrinterDiscovery(
-        [StarPrinters.discovery()] + [EpsonPrinters.discovery()].compactMap { $0 })
+    /// Recherche d'imprimantes de l'écran Imprimantes : Star + Epson, ou simulée en test UI (jamais le SDK).
+    @ObservationIgnored let printerDiscovery: any PrinterDiscovery
 
     var isStandalone: Bool { mode == .standalone }
 
@@ -131,6 +130,11 @@ final class AppEnvironment {
             do { api = try Self.openLocal(launch: launch) } catch { startupError = Self.describe(error) }
         }
 
+        self.printerDiscovery = launch.isUITest
+            ? FakePrinterDiscovery([
+                DiscoveredPrinter(transport: .epson, name: "TM-T88VI", deviceIdentifier: "TM_T88;TCP:192.168.1.60", ipAddress: "192.168.1.60"),
+                DiscoveredPrinter(transport: .star, name: "TSP143IV", deviceIdentifier: "bluetooth:00:11:62:AA:BB:CC", ipAddress: nil)])
+            : CombinedPrinterDiscovery([StarPrinters.discovery()] + [EpsonPrinters.discovery()].compactMap { $0 })
         self.defaults = defaults
         self.mode = mode
         self.settings = settings
