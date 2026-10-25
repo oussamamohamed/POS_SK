@@ -31,8 +31,10 @@ public final class PrinterDiscoveryStore {
         let discovery = discovery, timeout = timeout
         let current = Task { (try? await discovery.discover(timeout: timeout)) ?? [] }
         task = current
-        let found = await current.value
+        // Appelant annulé (vue disparue) : on annule la recherche et on traite comme `cancel()`.
+        let found = await withTaskCancellationHandler { await current.value } onCancel: { current.cancel() }
         guard mine == generation else { return }
+        if Task.isCancelled { cancel(); return }
         results = found
         phase = .done
     }

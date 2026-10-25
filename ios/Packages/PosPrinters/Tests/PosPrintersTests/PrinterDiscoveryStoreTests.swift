@@ -33,7 +33,7 @@ private func found(_ id: String, _ kind: PrinterTransportKind = .star, ip: Strin
     }
 
     @Test func seuleLaDerniereRechercheCompte() async {
-        let slow = SwitchingDiscovery([([found("lent")], 0.2), ([found("rapide")], 0)])
+        let slow = SwitchingDiscovery([([found("lent")], 0.3), ([found("rapide")], 0)])
         let store = PrinterDiscoveryStore(discovery: slow)
         let first = Task { await store.search() }
         try? await Task.sleep(for: .milliseconds(30))
@@ -41,6 +41,19 @@ private func found(_ id: String, _ kind: PrinterTransportKind = .star, ip: Strin
         await first.value
         #expect(store.phase == .done)
         #expect(store.results.map(\.deviceIdentifier) == ["rapide"])
+    }
+
+    @Test func appelantAnnuleRevientAIdleSansPublication() async {
+        let store = PrinterDiscoveryStore(discovery: StubbornDiscovery([found("a")], delay: 0.3))
+        let task = Task { await store.search() }
+        try? await Task.sleep(for: .milliseconds(30))
+        #expect(store.phase == .searching)
+        task.cancel()
+        await task.value
+        #expect(store.phase == .idle)
+        try? await Task.sleep(for: .milliseconds(400))
+        #expect(store.phase == .idle)
+        #expect(store.results.isEmpty)
     }
 
     @Test func annulerRevientAIdleSansMiseAJourTardive() async {
@@ -81,7 +94,18 @@ private final class SwitchingDiscovery: PrinterDiscovery, @unchecked Sendable {
     init(_ steps: [([DiscoveredPrinter], TimeInterval)]) { self.steps = steps }
     func discover(timeout: TimeInterval) async throws -> [DiscoveredPrinter] {
         let step = lock.withLock { steps.removeFirst() }
-        try await Task.sleep(for: .seconds(step.1))
+        await Task { try? await Task.sleep(for: .seconds(step.1)) }.value // ignore l'annulation
         return step.0
+    }
+}
+
+/// Ne coopère pas à l'annulation : rend ses résultats après `delay` quoi qu'il arrive.
+private struct StubbornDiscovery: PrinterDiscovery {
+    let found: [DiscoveredPrinter]
+    let delay: TimeInterval
+    init(_ found: [DiscoveredPrinter], delay: TimeInterval) { self.found = found; self.delay = delay }
+    func discover(timeout: TimeInterval) async throws -> [DiscoveredPrinter] {
+        await Task { try? await Task.sleep(for: .seconds(delay)) }.value
+        return found
     }
 }
