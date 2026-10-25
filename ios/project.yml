@@ -22,6 +22,8 @@ settings:
 packages:
   PosKit:
     path: Packages/PosKit
+  PosPrinters:
+    path: Packages/PosPrinters
 
 targets:
   RestaurantPOS:
@@ -31,6 +33,12 @@ targets:
       - path: RestaurantPOS
     dependencies:
       - package: PosKit
+      - package: PosPrinters
+        product: PosPrinters
+      - package: PosPrinters
+        product: PosPrintersStar
+      - package: PosPrinters
+        product: PosPrintersEpson
     info:
       path: RestaurantPOS/Info.plist
       properties:
@@ -54,6 +62,11 @@ targets:
         NSAppTransportSecurity:
           NSAllowsLocalNetworking: true
           NSAllowsArbitraryLoads: true
+        NSBluetoothAlwaysUsageDescription: La caisse utilise le Bluetooth pour communiquer avec les imprimantes de tickets.
+        # Bluetooth classique et USB/Lightning : l'enregistrement MFi (Star, Epson) est exigé avant l'App Store.
+        UISupportedExternalAccessoryProtocols:
+          - jp.star-m.starpro
+          - com.epson.escpos
         ITSAppUsesNonExemptEncryption: false
     settings:
       base:

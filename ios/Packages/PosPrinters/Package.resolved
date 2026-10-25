@@ -1,0 +1,15 @@
+{
+  "originHash" : "5f416e60f69e53cf72bd390b86a30e14e5201f0290b6106c5735008d9f00c50c",
+  "pins" : [
+    {
+      "identity" : "starxpand-sdk-ios",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/star-micronics/StarXpand-SDK-iOS",
+      "state" : {
+        "revision" : "cc1378533bbea55640dbb29481512dadd40bb4f5",
+        "version" : "2.14.1"
+      }
+    }
+  ],
+  "version" : 3
+}
