@@ -11,6 +11,7 @@
 "admin.grid_reset" = "تمت إعادة تعيين الشبكة";
 "admin.grid_size_applied" = "تم تطبيق التنسيق %d × %d";
 "admin.ip_invalid" = "عنوان IP غير صالح";
+"admin.device_identifier_invalid" = "معرّف الطابعة غير صالح";
 "admin.name_required" = "الاسم مطلوب";
 "admin.page_added" = "تمت إضافة الصفحة %d";
 "admin.pin_length" = "يجب أن يتكون رمز PIN من %d أرقام";

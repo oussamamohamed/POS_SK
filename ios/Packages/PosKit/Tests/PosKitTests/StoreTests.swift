@@ -592,6 +592,19 @@ struct AdminTests {
         #expect(!PrinterStore.isValidIPv4("300.1.1.1"))
     }
 
+    @Test func silentStatusRefreshNeverNotifiesAndKeepsStatuses() async {
+        let (model, api) = await makeModel()
+        await model.printers.loadStatuses()
+        let before = model.printers.statuses
+        #expect(!before.isEmpty)
+        await api.setFailure(.transport("hors ligne"))
+        await model.printers.refreshStatuses()
+        #expect(model.printers.statuses == before)
+        #expect(model.notifier.toasts.isEmpty)
+        await model.printers.loadStatuses()
+        #expect(model.notifier.toasts.count == 1)
+    }
+
     @Test func gridEditorAssignSwapAndResize() async {
         let (model, _) = await makeModel()
         await model.gridEditor.select(category: "CAT_DRINKS")
@@ -815,5 +828,49 @@ struct SafeFileNameTests {
         let long = SafeFileName.sanitized(String(repeating: "a", count: 300) + ".zip", fallback: "f")
         #expect(long.count == SafeFileName.maxLength && long.hasSuffix(".zip"))
         for unsafe in ["", "..", ".", "a/..", "/"] { #expect(SafeFileName.sanitized(unsafe, fallback: "f") == "f", Comment(rawValue: unsafe)) }
+    }
+}
+
+/// Validation des imprimantes selon le transport (lot 4d). Mêmes cas que `PrinterAddressTests` de PosPrinters.
+@MainActor @Suite struct PrinterTransportValidationTests {
+    private func p(_ kind: PrinterTransportKind, _ id: String?, ip: String = "", name: String = "P") -> Printer {
+        Printer(name: name, ipAddress: ip, transport: kind, deviceIdentifier: id)
+    }
+
+    @Test(arguments: ["bluetooth:00:11:62:AA:BB:CC", "bluetoothLE:ABC-123", "usb:SN42", "lan:192.168.1.50"])
+    func starValid(id: String) { #expect(PrinterStore.isValidDeviceIdentifier(id, transport: .star)) }
+
+    @Test(arguments: ["serial:123", "nocolon", "usb:", ""])
+    func starInvalid(id: String) { #expect(!PrinterStore.isValidDeviceIdentifier(id, transport: .star)) }
+
+    @Test(arguments: ["TM_M30;TCP:192.168.1.60", "TM_T20;BT:00:11:22", "USB:ABC", "TCP:1.2.3.4"])
+    func epsonValid(id: String) { #expect(PrinterStore.isValidDeviceIdentifier(id, transport: .epson)) }
+
+    @Test(arguments: ["192.168.1.60", "TM_M30;192.168.1.60", ";TCP:1.2.3.4", "TCP:", "XYZ:1", ""])
+    func epsonInvalid(id: String) { #expect(!PrinterStore.isValidDeviceIdentifier(id, transport: .epson)) }
+
+    @Test func validateKeys() {
+        #expect(PrinterStore.validate(p(.lan, nil, ip: "10.0.0.1")) == nil)
+        #expect(PrinterStore.validate(p(.lan, nil, ip: "")) == "admin.ip_invalid")
+        #expect(PrinterStore.validate(p(.lan, nil, ip: "10.0.0.1", name: " ")) == "admin.name_required")
+        #expect(PrinterStore.validate(p(.star, "bluetooth:AA")) == nil)
+        #expect(PrinterStore.validate(p(.star, "bluetooth:")) == "admin.device_identifier_invalid")
+        #expect(PrinterStore.validate(p(.epson, "TM_T88;TCP:1.2.3.4")) == nil)
+        #expect(PrinterStore.validate(p(.epson, "XYZ:1")) == "admin.device_identifier_invalid")
+        #expect(PrinterStore.validate(p(.star, nil, ip: "10.0.0.1")) == nil)
+        #expect(PrinterStore.validate(p(.star, nil, ip: "")) == "admin.ip_invalid")
+        #expect(PrinterStore.validate(p(.star, "bluetooth:AA", name: "")) == "admin.name_required")
+    }
+
+    @Test func inMemoryApiAppliesSameRules() async throws {
+        let api = InMemoryPosAPI()
+        _ = try await api.login(pin: "1234")
+        let ok = p(.star, "bluetooth:00:11:62:AA:BB:CC")
+        try await api.savePrinter(ok, isNew: true)
+        #expect(try await api.printers().contains { $0.id == ok.id })
+        await #expect(throws: APIError.self) { try await api.savePrinter(p(.epson, "XYZ:1"), isNew: true) }
+        await #expect(throws: APIError.self) { try await api.savePrinter(p(.lan, nil, ip: ""), isNew: true) }
+        let msg = try await api.testPrinter(id: ok.id).message
+        #expect(msg.contains("bluetooth:00:11:62:AA:BB:CC") && !msg.contains(":9100"))
     }
 }

@@ -1,4 +1,4 @@
-# Essai papier des imprimantes (iPad autonome, lot 4c)
+# Essai papier des imprimantes (iPad autonome, lots 4c et 4d)
 
 Guide pour valider sur le matériel réel l'impression de l'iPad en mode autonome. Les adaptateurs Star et Epson (paquet `ios/Packages/PosPrinters`) n'ont **jamais été testés sur du matériel** : seul le cœur (adresses, délais, session) l'est, par des tests automatiques. Cet essai est donc obligatoire avant tout usage réel. Le rendu raster (arabe) l'est aussi (voir `CLAUDE.md`, lot 4a).
 
@@ -25,45 +25,25 @@ Le TM-T88III n'est pas dans la liste des modèles du SDK Epson ePOS2 : il ne peu
 
 ## 2. Configurer une imprimante
 
-### Ce que l'app permet aujourd'hui (constaté dans le code)
+### Saisie dans l'écran (lot 4d)
 
-- Écran **Gestion → Imprimantes** (`PrintersAdminView` / `PrinterEditorSheet`) : nom, adresse IP (IPv4 obligatoire, même pour `epson`), port, largeur de papier (58/80 mm), tiroir à l'encaissement, mode texte, stations. Boutons **Test** (page de test) et **Impressions** (jobs en attente ou en échec, avec l'erreur, **Relancer** / **Annuler**).
-- **Aucun champ `transport` ni `deviceIdentifier`** dans cet écran : il arrive avec le lot 4d (écran de configuration et recherche réseau, `AppEnvironment.printerDiscovery` est prêt mais inutilisé). `LocalPosAPI.savePrinter` accepte bien ces deux champs (struct `Printer`), mais rien dans l'UI ne les pose. Sans action de votre part, toute imprimante créée est en `lan` (réseau brut, IP:port).
-- Éditer une imprimante dans l'écran existant **conserve** `transport` et `deviceIdentifier` déjà posés.
+Gestion → **Imprimantes** → **+** (`PrintersAdminView` / `PrinterEditorSheet`). En mode autonome, le champ **Transport** propose `Réseau (LAN)`, `Star` et `Epson` ; en mode serveur il n'existe pas (IP et port seulement).
 
-### TM-T88VI et TM-T88III en LAN brut (aucun contournement)
+- **TM-T88VI / TM-T88III en LAN brut** : transport LAN, nom, IP de l'imprimante, port 9100, papier 80 mm.
+- **TM-T88VI en ePOS2** : transport **Epson**, puis soit **Rechercher** (feuille de résultats, toucher « TM-T88VI » remplit identifiant `TM_T88;TCP:<ip>`, IP et nom), soit saisir l'identifiant (`TM_T88;TCP:192.168.1.60`) ou seulement l'IP (identifiant vide = `TM_T88;TCP:<ip>`).
+- **Star** : transport **Star**, Rechercher ou identifiant `<interface>:<identifiant>` (ex. `bluetooth:00:11:62:AA:BB:CC`) ; l'IP est facultative (Bluetooth, USB).
+- Stations : cocher `RECEIPT` pour les tickets de vente (première imprimante `RECEIPT` active par nom) et la station cuisine voulue. « Tiroir à l'encaissement » pour le test du tiroir.
+- Un identifiant invalide est refusé à l'enregistrement (avertissement « Identifiant d'imprimante invalide », la feuille reste ouverte). Éditer une imprimante conserve ses valeurs.
+- La recherche **réseau** peut ne rien trouver : l'entitlement `com.apple.developer.networking.multicast` n'est pas demandé à Apple. **La saisie manuelle de l'IP / de l'identifiant est le chemin garanti** ; la recherche Bluetooth / USB n'en a pas besoin.
+- Chaque ligne de la liste a un bouton **Test** (page de test envoyée directement, sans job, comme `SendTestPrintAsync` du .NET) et l'état en ligne / hors ligne (rafraîchi toutes les 5 s).
 
-1. Gestion → Imprimantes → nouvelle imprimante : nom, IP de l'imprimante, port 9100, papier 80 mm.
-2. Station : cocher `RECEIPT` pour les tickets de vente (l'imprimante de ticket est la première imprimante `RECEIPT` active par nom). Cocher aussi la station cuisine voulue pour le bon cuisine (`HOT_KITCHEN` par défaut dans le formulaire).
-3. « Tiroir à l'encaissement » activé pour le test du tiroir.
-
-### TM-T88VI en ePOS2 (contournement, en attendant le lot 4d)
-
-Créer l'imprimante comme ci-dessus (IP, port 9100), puis poser les deux colonnes directement dans la base SQLite de l'app. Le fichier est `Application Support/RestaurantPOS/pos-local.sqlite` dans le conteneur de l'app (bundle id `com.restaurantpos.ipad`).
-
-- **Simulateur** (utile pour préparer la requête, sans imprimante) :
-  ```bash
-  DB="$(xcrun simctl get_app_container booted com.restaurantpos.ipad data)/Library/Application Support/RestaurantPOS/pos-local.sqlite"
-  xcrun simctl terminate booted com.restaurantpos.ipad
-  sqlite3 "$DB" "SELECT Id, Name, TransportKind FROM PrinterConfigurations;"
-  # Adapter le nom dans WHERE au nom réel de l'imprimante affiché ci-dessus.
-  sqlite3 "$DB" "UPDATE PrinterConfigurations SET TransportKind='epson', DeviceIdentifier='TM_T88;TCP:192.168.1.60' WHERE Name='Ticket';"
-  ```
-- **iPad réel** : le conteneur de l'app n'est pas accessible sans outil.
-
-  > **ATTENTION : « Replace Container… » remplace TOUT le conteneur de données de l'app, base fiscale et `<base>-archives/` comprises.** Toute vente faite entre le téléchargement et le remplacement est **perdue silencieusement** (les reçus fiscaux signés disparaissent : non-conformité NF525). À faire uniquement sur un iPad **sans vente réelle**, ou après un export `.posbak` et sans aucune vente jusqu'au remplacement. Exige un build signé en développement (pas TestFlight ni App Store). Même précaution avant toute modification de la base sur un iPad réel.
-
-  Voies possibles, aucune n'a été essayée ici : Xcode → Window → Devices and Simulators → l'app → « Download Container… » puis modifier le fichier du paquet, puis le remettre avec « Replace Container… » (l'app doit être fermée) ; ou attendre le lot 4d. Si aucune ne convient, **cet essai ePOS2 attend le lot 4d**.
-
-Valeurs valides de `TransportKind` : `lan`, `star`, `epson`. L'IP du `deviceIdentifier` doit être celle de l'imprimante. Formats complets :
+Formats de l'identifiant :
 
 - Epson : `<série>;<cible>`, cible `TCP:<ip>`, `BT:<adresse>` ou `USB:<id>` ; vide = `TM_T88;TCP:<ipAddress>`. Une valeur sans `;` est lue comme la cible seule avec la série `TM_T88`.
-- Star : `<interface>:<identifiant>`, interface `lan`, `bluetooth`, `bluetoothLE` ou `usb` (ex. `bluetooth:00:11:62:AA:BB:CC`) ; vide = `lan:<ipAddress>`.
-- Format invalide : l'impression échoue avec « Identifiant d'imprimante invalide : … ».
+- Star : `<interface>:<identifiant>`, interface `lan`, `bluetooth`, `bluetoothLE` ou `usb` ; vide = `lan:<ipAddress>`.
+- Revenir en LAN brut : repasser le transport sur `Réseau (LAN)`.
 
-Avant tout `UPDATE`, lister les imprimantes : `SELECT Id, Name, TransportKind FROM PrinterConfigurations;`. Le nom dans `WHERE Name='Ticket'` est un exemple : l'adapter au nom réel de l'imprimante.
-
-Revenir en LAN brut : `UPDATE PrinterConfigurations SET TransportKind='lan', DeviceIdentifier=NULL WHERE Name='Ticket';`
+**Vérifié** : par le XCUITest `PrinterAdminUITests` (simulateur, mode autonome, recherche et transport factices) : ajout Epson via Rechercher, ligne affichée, bouton Test (toast de réussite), Star Bluetooth sans IP, identifiant invalide, parcours en anglais et en arabe, absence du champ Transport en mode serveur ; et par lecture du code : formats d'identifiant, repli sur l'IP, champs Star/Epson. **Non vérifié** : recherche réseau et Bluetooth réelle (le test utilise `FakePrinterDiscovery`), ouverture ePOS2 sur appareil, état vide / « Relancer » de la feuille de recherche, boucle de statuts de 5 s, rendu sur papier.
 
 ### Où lire une erreur
 
@@ -140,3 +120,9 @@ Si une impression dure plus de ~2 s après un délai (3 s de connexion ou 10 s d
 ## 5. Avant une publication App Store
 
 Enregistrer l'app auprès de **Star et Epson** (programme MFi / accessoires externes). `Info.plist` contient déjà `NSBluetoothAlwaysUsageDescription` et `UISupportedExternalAccessoryProtocols`.
+
+## Annexe : ancienne méthode (UPDATE SQL, échange de conteneur)
+
+Obsolète depuis le lot 4d (l'écran pose `transport` et `deviceIdentifier`). Gardée pour mémoire : sur simulateur, `sqlite3 "$DB" "UPDATE PrinterConfigurations SET TransportKind='epson', DeviceIdentifier='TM_T88;TCP:<ip>' WHERE Name='<nom>';"` (base : `Application Support/RestaurantPOS/pos-local.sqlite` dans le conteneur `com.restaurantpos.ipad`, app fermée).
+
+> **ATTENTION : sur iPad réel, « Download Container… » puis « Replace Container… » (Xcode → Devices and Simulators) remplace TOUT le conteneur de données, base fiscale et `<base>-archives/` comprises.** Toute vente faite entre le téléchargement et le remplacement est **perdue silencieusement** (reçus fiscaux signés disparus : non-conformité NF525). Faire un export `.posbak` d'abord, ne vendre rien entre-temps, et seulement avec un build signé en développement (ni TestFlight ni App Store). À ne jamais faire sur un iPad avec des ventes réelles.

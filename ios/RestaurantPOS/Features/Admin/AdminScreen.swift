@@ -456,6 +456,8 @@ struct StaffEditorSheet: View {
 struct PrintersAdminView: View {
     @Environment(AppModel.self) private var model
     @State private var editing: PrinterEditor?
+    /// Cadence du rafraîchissement des statuts tant que l'écran est visible.
+    private static let statusRefresh = Duration.seconds(5)
 
     struct PrinterEditor: Identifiable { let id = UUID(); var printer: Printer; var isNew: Bool }
 
@@ -467,7 +469,7 @@ struct PrintersAdminView: View {
                     Image(systemName: "printer.fill").font(.title2).foregroundStyle(printer.isActive ? Theme.primary : .secondary)
                     VStack(alignment: .leading, spacing: 2) {
                         Text(printer.name).font(.headline)
-                        Text("\(printer.ipAddress):\(printer.port) · \(printer.paperWidthMm) mm · \(printer.assignedStationIds.joined(separator: ", "))")
+                        Text(Self.subtitle(printer))
                             .font(.caption).foregroundStyle(Theme.inkMuted)
                         let status = store.statuses.first { $0.printerId == printer.id }
                         Text(Self.statusText(status))
@@ -505,7 +507,15 @@ struct PrintersAdminView: View {
             .padding(24)
             .accessibilityIdentifier("printer.add")
         }
-        .task { await store.load(); await store.loadStatuses() }
+        .task {
+            await store.load()
+            await store.loadStatuses()
+            // Une requête à la fois, annulée avec la vue (pas de rafraîchissement en arrière-plan).
+            while !Task.isCancelled {
+                try? await Task.sleep(for: Self.statusRefresh)
+                await store.refreshStatuses()
+            }
+        }
         .sheet(item: $editing) { editor in
             PrinterEditorSheet(printer: editor.printer, isNew: editor.isNew)
         }
@@ -513,6 +523,13 @@ struct PrintersAdminView: View {
 }
 
 extension PrintersAdminView {
+    /// `ip:port · papier · postes` en LAN, sinon `transport · identifiant · papier · postes`.
+    static func subtitle(_ printer: Printer) -> String {
+        let tail = "\(printer.paperWidthMm) mm · \(printer.assignedStationIds.joined(separator: ", "))"
+        if printer.transport == .lan { return "\(printer.ipAddress):\(printer.port) · \(tail)" }
+        return "\(PrinterEditorSheet.label(printer.transport)) · \(printer.deviceIdentifier ?? printer.ipAddress) · \(tail)"
+    }
+
     /// « En ligne » / « Hors ligne depuis HH:mm » / « État inconnu », suivi du nombre de bons en attente.
     static func statusText(_ status: PrinterStatus?) -> String {
         var text: String
@@ -577,27 +594,31 @@ struct PrinterJobsList: View {
 
 struct PrinterEditorSheet: View {
     @Environment(AppModel.self) private var model
+    @Environment(AppEnvironment.self) private var environment
     @Environment(\.dismiss) private var dismiss
     @State var printer: Printer
     let isNew: Bool
+    @State private var showsSearch = false
 
     static let stations = ProductDraft.stations + ["RECEIPT"]
+
+    static func label(_ transport: PrinterTransportKind) -> String {
+        switch transport {
+        case .lan: String(localized: "admin.printer_transport_lan")
+        case .star: String(localized: "admin.printer_transport_star")
+        case .epson: String(localized: "admin.printer_transport_epson")
+        }
+    }
+
+    /// Exemple de saisie de l'identifiant selon le transport.
+    private var deviceIdExample: String {
+        printer.transport == .epson ? "TM_T88;TCP:192.168.1.60" : "bluetooth:00:11:62:AA:BB:CC"
+    }
 
     var body: some View {
         NavigationStack {
             Form {
-                Section("admin.printer_section") {
-                    TextField("common.field_name", text: $printer.name).accessibilityIdentifier("printer.name")
-                    TextField("admin.ip_address_placeholder", text: $printer.ipAddress).keyboardType(.decimalPad).accessibilityIdentifier("printer.ip")
-                    Stepper("admin.port_stepper \(printer.port)", value: $printer.port, in: 1...65535)
-                    Picker("admin.paper_width_label", selection: $printer.paperWidthMm) {
-                        Text(verbatim: "58 mm").tag(58)
-                        Text(verbatim: "80 mm").tag(80)
-                    }
-                    .pickerStyle(.segmented)
-                    Toggle("admin.open_cash_drawer_toggle", isOn: $printer.openCashDrawerOnReceipt)
-                    Toggle("admin.printer_text_mode", isOn: $printer.textMode).accessibilityIdentifier("printer.textMode")
-                }
+                connectionSection
                 Section("admin.served_stations_section") {
                     ForEach(Self.stations, id: \.self) { station in
                         Toggle(station.replacingOccurrences(of: "_", with: " "), isOn: Binding(
@@ -618,6 +639,62 @@ struct PrinterEditorSheet: View {
                         .accessibilityIdentifier("printer.save")
                 }
             }
+            .sheet(isPresented: $showsSearch) {
+                PrinterSearchSheet(discovery: environment.printerDiscovery) { adopt($0) }
+            }
+        }
+    }
+
+    private var connectionSection: some View {
+        Section("admin.printer_section") {
+            TextField("common.field_name", text: $printer.name).accessibilityIdentifier("printer.name")
+            if environment.isStandalone {
+                Picker("admin.printer_transport_label", selection: $printer.transport) {
+                    ForEach([PrinterTransportKind.lan, .star, .epson], id: \.self) { Text(Self.label($0)).tag($0) }
+                }
+                .accessibilityIdentifier("printer.transport")
+            }
+            if environment.isStandalone, printer.transport != .lan {
+                deviceFields
+            } else {
+                TextField("admin.ip_address_placeholder", text: $printer.ipAddress).keyboardType(.decimalPad).accessibilityIdentifier("printer.ip")
+                Stepper("admin.port_stepper \(printer.port)", value: $printer.port, in: 1...65535)
+            }
+            Picker("admin.paper_width_label", selection: $printer.paperWidthMm) {
+                Text(verbatim: "58 mm").tag(58)
+                Text(verbatim: "80 mm").tag(80)
+            }
+            .pickerStyle(.segmented)
+            Toggle("admin.open_cash_drawer_toggle", isOn: $printer.openCashDrawerOnReceipt)
+            Toggle("admin.printer_text_mode", isOn: $printer.textMode).accessibilityIdentifier("printer.textMode")
+        }
+    }
+
+    /// Star / Epson : identifiant du périphérique, IP facultative (repli réseau) et recherche.
+    @ViewBuilder private var deviceFields: some View {
+        TextField(
+            "admin.printer_device_id_label",
+            text: Binding(get: { printer.deviceIdentifier ?? "" }, set: { printer.deviceIdentifier = $0 }),
+            prompt: Text(verbatim: deviceIdExample)
+        )
+        .keyboardType(.asciiCapable)
+        .textInputAutocapitalization(.never)
+        .autocorrectionDisabled()
+        .accessibilityIdentifier("printer.deviceId")
+        TextField("admin.printer_ip_optional", text: $printer.ipAddress).keyboardType(.decimalPad).accessibilityIdentifier("printer.ip")
+        Button("admin.printer_search_button", systemImage: "magnifyingglass") { showsSearch = true }
+            .accessibilityIdentifier("printer.search")
+    }
+
+    /// Résultat de recherche → brouillon (`draft(from:)`) ; le nom saisi n'est jamais écrasé.
+    private func adopt(_ found: Printer) {
+        printer.transport = found.transport
+        printer.deviceIdentifier = found.deviceIdentifier
+        if !found.ipAddress.isEmpty { printer.ipAddress = found.ipAddress }
+        if printer.name.trimmingCharacters(in: .whitespaces).isEmpty { printer.name = found.name }
+        if isNew {
+            printer.paperWidthMm = found.paperWidthMm
+            printer.assignedStationIds = found.assignedStationIds
         }
     }
 }

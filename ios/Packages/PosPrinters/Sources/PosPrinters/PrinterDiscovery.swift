@@ -21,7 +21,8 @@ public struct DiscoveredPrinter: Equatable, Sendable {
 }
 
 public protocol PrinterDiscovery: Sendable {
-    /// Recherche pendant `timeout` ; résultats sans doublon (même `deviceIdentifier`), dans l'ordre d'arrivée.
+    /// Recherche pendant `timeout` ; rend les résultats dans l'ordre d'arrivée. Le dédoublonnage (même `deviceIdentifier`)
+    /// est fait par `CombinedPrinterDiscovery`, pas par chaque source.
     func discover(timeout: TimeInterval) async throws -> [DiscoveredPrinter]
 }
 

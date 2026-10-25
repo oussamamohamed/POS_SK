@@ -140,6 +140,11 @@ public final class PrinterStore {
         do { statuses = try await api.printerStatuses() } catch { notifier.error(error) }
     }
 
+    /// Rafraîchissement périodique : jamais de toast, anciens statuts conservés en cas d'échec ou d'annulation.
+    public func refreshStatuses() async {
+        if let fresh = try? await api.printerStatuses() { statuses = fresh }
+    }
+
     public func loadJobs(printerId: UUID) async {
         do { jobs[printerId] = try await api.printJobs(printerId: printerId) } catch { notifier.error(error) }
     }
@@ -158,14 +163,39 @@ public final class PrinterStore {
         await loadStatuses()
     }
 
-    public static func isValidIPv4(_ ip: String) -> Bool {
+    public nonisolated static func isValidIPv4(_ ip: String) -> Bool {
         let parts = ip.split(separator: ".")
         return parts.count == 4 && parts.allSatisfy { UInt8($0) != nil }
     }
 
+    /// Grammaire de `deviceIdentifier` (miroir de `PrinterAddress.parse` de PosPrinters, que PosKit n'importe pas).
+    /// Star : `<lan|bluetooth|bluetoothLE|usb>:<non vide>`. Epson : `[<série>;]` puis `TCP:`, `BT:` ou `USB:` + texte non vide. `lan` : ignoré.
+    public nonisolated static func isValidDeviceIdentifier(_ id: String?, transport: PrinterTransportKind) -> Bool {
+        let raw = id ?? ""
+        switch transport {
+        case .lan: return true
+        case .star:
+            guard let colon = raw.firstIndex(of: ":") else { return false }
+            return ["lan", "bluetooth", "bluetoothLE", "usb"].contains(String(raw[..<colon])) && raw.index(after: colon) < raw.endIndex
+        case .epson:
+            let parts = raw.split(separator: ";", maxSplits: 1, omittingEmptySubsequences: false)
+            let target = parts.count == 2 ? parts[1] : parts.first ?? ""
+            if parts.count == 2, parts[0].isEmpty { return false }
+            return ["TCP:", "BT:", "USB:"].contains { target.hasPrefix($0) && target.count > $0.count }
+        }
+    }
+
+    /// Clé `L10n` du refus, `nil` si valide. `lan` : IPv4 obligatoire ; Star/Epson : identifiant valide, ou à défaut IPv4 (repli réseau).
+    public nonisolated static func validate(_ printer: Printer) -> String? {
+        if printer.name.trimmingCharacters(in: .whitespaces).isEmpty { return "admin.name_required" }
+        if printer.transport != .lan, !(printer.deviceIdentifier ?? "").isEmpty {
+            return isValidDeviceIdentifier(printer.deviceIdentifier, transport: printer.transport) ? nil : "admin.device_identifier_invalid"
+        }
+        return isValidIPv4(printer.ipAddress) ? nil : "admin.ip_invalid"
+    }
+
     public func save(_ printer: Printer, isNew: Bool) async -> Bool {
-        guard !printer.name.trimmingCharacters(in: .whitespaces).isEmpty else { notifier.warning(L10n.string("admin.name_required")); return false }
-        guard Self.isValidIPv4(printer.ipAddress) else { notifier.warning(L10n.string("admin.ip_invalid")); return false }
+        if let key = Self.validate(printer) { notifier.warning(L10n.string(key)); return false }
         do {
             try await api.savePrinter(printer, isNew: isNew)
             notifier.success(String(format: L10n.string("admin.printer_saved"), printer.name))

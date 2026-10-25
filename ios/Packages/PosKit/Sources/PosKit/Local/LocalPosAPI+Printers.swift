@@ -12,12 +12,18 @@ extension LocalPosAPI {
         try requireManager()
         let name = printer.name.trimmingCharacters(in: .whitespacesAndNewlines)
         let address = printer.ipAddress.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !name.isEmpty, !address.isEmpty else {
+        // L'IP n'est obligatoire que pour `lan`, ou pour Star/Epson sans identifiant (repli réseau).
+        let identifier = (printer.deviceIdentifier ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !name.isEmpty, !(address.isEmpty && (printer.transport == .lan || identifier.isEmpty)) else {
             throw APIError.server(status: 400, message: "Le nom et l'adresse IP de l'imprimante sont requis.")
+        }
+        guard printer.transport == .lan || identifier.isEmpty || PrinterStore.isValidDeviceIdentifier(identifier, transport: printer.transport) else {
+            throw APIError.server(status: 400, message: "Identifiant d'imprimante invalide : \(identifier)")
         }
         var clean = printer
         clean.name = name
         clean.ipAddress = address
+        clean.deviceIdentifier = printer.transport == .lan || identifier.isEmpty ? printer.deviceIdentifier : identifier
         clean.port = printer.port > 0 ? printer.port : 9100
         clean.paperWidthMm = [58, 80].contains(printer.paperWidthMm) ? printer.paperWidthMm : 80
         if isNew {
@@ -41,9 +47,9 @@ extension LocalPosAPI {
         let page = TicketBuilder.testPage(printer: printer, language: try floorRepository.settings().receiptLanguage, now: clock())
         do {
             try await transport.send(TicketPayload.build(printer: printer, document: page, openCashDrawer: printer.openCashDrawerOnReceipt), to: printer)
-            return TestPrintResult(success: true, message: "Test d'impression réussi (\(printer.name) @ \(printer.ipAddress):\(printer.port))")
+            return TestPrintResult(success: true, message: "Test d'impression réussi (\(printer.name) @ \(printer.testTarget))")
         } catch {
-            return TestPrintResult(success: false, message: "Échec de connexion imprimante (\(printer.ipAddress):\(printer.port)) : \(error.localizedDescription)")
+            return TestPrintResult(success: false, message: "Échec de connexion imprimante (\(printer.transport == .lan ? "" : printer.name + ", ")\(printer.testTarget)) : \(error.localizedDescription)")
         }
     }
 
@@ -119,5 +125,13 @@ extension LocalPosAPI {
         PrintJobInfo(id: job.id, printerId: job.printerId, kind: job.kind.apiName, status: job.status.apiName, attempts: job.attempts,
                      createdAtUtc: job.createdAtUtc, sentAtUtc: job.sentAtUtc, lastError: job.lastError,
                      duplicateNumber: job.duplicateNumber, duplicateOfDocumentId: job.duplicateOfDocumentId)
+    }
+}
+
+extension Printer {
+    /// Cible citée par les messages de test : `ip:port` en réseau, sinon l'identifiant du périphérique (IP en repli).
+    var testTarget: String {
+        if transport != .lan, let id = deviceIdentifier, !id.isEmpty { return id }
+        return "\(ipAddress):\(port)"
     }
 }

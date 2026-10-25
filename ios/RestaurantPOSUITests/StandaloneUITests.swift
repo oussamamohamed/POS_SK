@@ -214,4 +214,23 @@ final class StandaloneUITests: PosUITestCase {
         assertExists("fiscal.chain.archives")
         screenshot("Fiscal autonome")
     }
+
+    /// Éditeur d'imprimante autonome : transport Epson, recherche simulée, résultat → identifiant et IP remplis.
+    func testPrinterSearchFillsEditor() {
+        launchStandalone()
+        tap("nav.admin")
+        tap("admin.printers")
+        tap("printer.add")
+        assertExists("printer.transport")
+        element("printer.transport").tap()
+        app.buttons["Epson"].firstMatch.tap()
+        assertExists("printer.deviceId")
+        tap("printer.search")
+        assertExists("printer.search.result.0", timeout: 10)
+        assertExists("printer.search.result.1")
+        element("printer.search.result.0").tap()
+        let id = element("printer.deviceId")
+        XCTAssertTrue((id.value as? String)?.contains("TM_T88;TCP:192.168.1.60") == true, "identifiant : \(String(describing: id.value))")
+        XCTAssertEqual(element("printer.name").value as? String, "TM-T88VI")
+    }
 }

@@ -78,11 +78,13 @@ struct StarDiscovery: PrinterDiscovery {
             case .unknown: return
             @unknown default: return
             }
+            // IP lue par le SDK (`information.detail.lan.ipAddress`) ; repli sur l'identifiant (l'IP pour le LAN) si absente.
+            let lanIP = interface == .lan ? (printer.information?.detail.lan.ipAddress ?? settings.identifier) : nil
             let item = DiscoveredPrinter(
                 transport: .star,
                 name: printer.information?.model.description ?? "Star",
                 deviceIdentifier: PrinterAddress.star(interface: interface, identifier: settings.identifier).deviceIdentifier,
-                ipAddress: interface == .lan ? settings.identifier : nil)
+                ipAddress: lanIP)
             lock.lock(); found.append(item); lock.unlock()
         }
 
