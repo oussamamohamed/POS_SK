@@ -2,7 +2,7 @@
 # Lance toute la chaîne de tests de l'app iPad native.
 #
 #   ./scripts/test.sh              # tests unitaires + tests UI (simulateur)
-#   ./scripts/test.sh unit         # tests unitaires PosKit seulement (quelques secondes)
+#   ./scripts/test.sh unit         # tests unitaires PosKit et PosPrinters seulement (quelques secondes)
 #   ./scripts/test.sh ui           # tests UI XCUITest seulement
 #   POS_API_URL=http://localhost:5080 ./scripts/test.sh contract   # contrat contre la vraie API .NET
 #
@@ -20,6 +20,8 @@ command -v xcodegen >/dev/null || { echo "xcodegen requis : brew install xcodege
 run_unit() {
   echo "▶︎ Tests unitaires PosKit (logique métier, contrats JSON, stores, HTTP, SignalR)"
   (cd Packages/PosKit && swift test)
+  echo "▶︎ Tests unitaires PosPrinters (adresse, transport par session)"
+  (cd Packages/PosPrinters && swift test)
 }
 
 run_contract() {
