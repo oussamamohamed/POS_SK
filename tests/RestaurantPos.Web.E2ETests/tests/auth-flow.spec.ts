@@ -102,4 +102,17 @@ test.describe('Authentification Tactile & Verrouillage Caisse (PIN)', () => {
     await page.evaluate(() => fetch('http://example.invalid/api/health').catch(() => null));
     expect(auth).toBeUndefined();
   });
+
+  test('PIN at startup opens the counter order once and loads protected data', async ({ page }) => {
+    const counterOpens: string[] = [];
+    page.on('request', r => { if (r.url().includes('/api/orders/counter/direct')) counterOpens.push(r.postData() ?? ''); });
+    await page.evaluate(() => localStorage.removeItem('pos_jwt_token'));
+    await page.reload();
+    for (const d of ['1', '2', '3', '4']) await page.click(`.pin-keypad button[data-val="${d}"]`);
+    await expect(page.locator('#pinLockModal')).not.toHaveClass(/active/);
+    // plan de salle (GET /api/tables protégé) rempli sans rechargement
+    await expect(page.locator('#floorTablesGrid > *').first()).toBeAttached();
+    await page.waitForTimeout(1500);
+    expect(counterOpens).toHaveLength(1);
+  });
 });

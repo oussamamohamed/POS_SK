@@ -411,12 +411,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         startPosHub();
 
         await loadCatalogData();
-        // Le terminal démarre sur le comptoir : on charge sa commande en cours (articles, destination).
-        if (state.token) await openDirectCounterOrder(state.destination);
-        await loadFloorPlanData();
-        await loadKdsData();
-        await loadAdminData();
-        await loadNetworkSyncData();
+        // Sans jeton, ces chargements (protégés) sont faits par validatePin() après le PIN.
+        if (state.token) await loadSessionData();
 
         setupTakeawayListeners();
         setupHappyHourControls();
@@ -978,6 +974,24 @@ document.addEventListener('DOMContentLoaded', async () => {
         elements.pinLockModal.classList.add('active');
         state.pinInput = '';
         updatePinDots();
+    }
+
+    // Données protégées d'une session : appelée au démarrage (jeton existant) et après un PIN ; une seule exécution à la fois.
+    let sessionLoad = null;
+    function loadSessionData() {
+        return sessionLoad ??= (async () => {
+            try {
+                // Le terminal démarre sur le comptoir : on charge sa commande en cours (articles, destination).
+                if (state.activeTable === 'Comptoir') await openDirectCounterOrder(state.destination || 'Takeaway');
+                else if (state.activeTable) await loadActiveTableOrder(state.activeTable);
+                await loadFloorPlanData();
+                await loadKdsData();
+                await loadAdminData();
+                await loadNetworkSyncData();
+            } finally {
+                sessionLoad = null;
+            }
+        })();
     }
 
     // Plus de connexion implicite : seul le PIN saisi par l'opérateur ouvre une session.
@@ -4942,12 +4956,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 updatePinDots();
                 showToast(t('common.session_unlocked_toast', { name: data.operatorName }), 'success');
 
-                // Reload active table with newly issued token
-                if (state.activeTable === 'Comptoir') {
-                    await openDirectCounterOrder(state.destination || 'Takeaway');
-                } else if (state.activeTable) {
-                    await loadActiveTableOrder(state.activeTable);
-                }
+                // Recharge commande, plan de salle, KDS et admin avec le jeton tout juste obtenu
+                await loadSessionData();
             } else {
                 showToast(t('common.pin_invalid_toast'), 'error');
                 state.pinInput = '';
