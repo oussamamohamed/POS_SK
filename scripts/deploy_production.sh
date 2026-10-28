@@ -38,10 +38,15 @@ echo "  Compilation Release API..."
 dotnet build src/RestaurantPos.Api/RestaurantPos.Api.csproj -c Release --nologo
 
 echo "  RAPPEL : renseignez Bootstrap__AdminPin (6 chiffres) AVANT ce premier demarrage (export dans l'environnement)."
-echo "  Sans cette variable, l'API genere un PIN administrateur et l'ecrit une seule fois dans /tmp/pos_api_prod.log"
+echo "  Sans cette variable, l'API genere un PIN administrateur ecrit dans /tmp/pos_api_prod.log (permissions 600) : lisez-le puis changez-le."
 echo "  Demarrage de l'API en environnement Production..."
+OLD_UMASK=$(umask)
+umask 077
+: > /tmp/pos_api_prod.log
+chmod 600 /tmp/pos_api_prod.log
 ASPNETCORE_ENVIRONMENT=Production ASPNETCORE_URLS="http://0.0.0.0:5080" dotnet run --project src/RestaurantPos.Api/RestaurantPos.Api.csproj -c Release --no-build > /tmp/pos_api_prod.log 2>&1 &
 API_PID=$!
+umask "$OLD_UMASK"
 echo "  API lancee en arriere-plan (PID: $API_PID)"
 
 # Attente disponibilite API
@@ -87,7 +92,7 @@ echo ""
 echo "========================================================"
 echo " [TERMINE] Deploiement Production Reussi !"
 echo " - Environnement API : Production (Release)"
-echo " - Base SQLite       : restaurantpos.db avec donnees reelles inserees"
+echo " - Base SQLite       : restaurantpos.db creee avec un seul compte Admin (PIN de Bootstrap__AdminPin ou genere), sans donnee de test"
 echo " - Client iPad natif : Installe et execute en Release"
 echo " - Capture d'ecran   : $SCREENSHOT_PATH"
 echo "========================================================"

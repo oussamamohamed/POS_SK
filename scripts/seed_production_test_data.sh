@@ -24,8 +24,8 @@ if curl -s -f "$API_URL/api/health" > /dev/null 2>&1; then
             exit 1
         fi
     else
-        echo "Authentification echouee, execution directe CLI .NET..."
-        dotnet run --project src/RestaurantPos.Api/RestaurantPos.Api.csproj -c Release --no-launch-profile -- --seed-prod-data
+        echo "ECHEC : authentification Admin refusee. Le seed de test n'est utilisable qu'en Development : ne l'utilisez pas en production (il recreerait des comptes aux PIN connus)." >&2
+        exit 1
     fi
 else
     echo "[1/2] Serveur API non detecte sur le port 5000 -> Execution directe CLI .NET..."
