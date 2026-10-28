@@ -110,7 +110,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return res;
             }
         }
-        if (res.status === 401 && !resource.toString().includes('/api/auth/login')) {
+        // Un 401 d'une requête partie avec un autre jeton (ou sans) ne doit pas effacer le jeton posé depuis.
+        const currentToken = state.token || localStorage.getItem('pos_jwt_token');
+        if (res.status === 401 && !resource.toString().includes('/api/auth/login') && (currentToken || null) === (token || null)) {
             console.warn('Requête API 401: session non authentifiée ou expirée. Verrouillage du terminal.');
             state.token = null;
             localStorage.removeItem('pos_jwt_token');
@@ -412,14 +414,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         await loadCatalogData();
         // Sans jeton, ces chargements (protégés) sont faits par validatePin() après le PIN.
-        if (state.token) await loadSessionData();
+        if (state.token && !sessionLoaded) await loadSessionData();
 
         setupTakeawayListeners();
         setupHappyHourControls();
 
         // Check Happy Hour status on startup
         await checkHappyHourStatus();
-        await updateHeldQueueCount();
     }
 
     // ==================== NAVIGATION ====================
@@ -965,6 +966,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     function lockTerminal() {
         state.token = null;
         state.operator = null;
+        sessionLoad = null;
+        sessionLoaded = false;
         try { localStorage.removeItem('pos_jwt_token'); } catch { /* stockage indisponible */ }
         fetch('/api/auth/logout', { method: 'POST' }).catch(() => { }); // efface le cookie HttpOnly
         if (posConnection) {
@@ -978,6 +981,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Données protégées d'une session : appelée au démarrage (jeton existant) et après un PIN ; une seule exécution à la fois.
     let sessionLoad = null;
+    let sessionLoaded = false; // vrai une fois la session chargée (PIN validé pendant init() : init() ne recharge pas)
     function loadSessionData() {
         return sessionLoad ??= (async () => {
             try {
@@ -988,6 +992,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 await loadKdsData();
                 await loadAdminData();
                 await loadNetworkSyncData();
+                await updateHeldQueueCount();
+                sessionLoaded = true;
             } finally {
                 sessionLoad = null;
             }

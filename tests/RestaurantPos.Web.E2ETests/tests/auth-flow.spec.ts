@@ -106,13 +106,35 @@ test.describe('Authentification Tactile & Verrouillage Caisse (PIN)', () => {
   test('PIN at startup opens the counter order once and loads protected data', async ({ page }) => {
     const counterOpens: string[] = [];
     page.on('request', r => { if (r.url().includes('/api/orders/counter/direct')) counterOpens.push(r.postData() ?? ''); });
+    // Catalogue retardé : init() est encore en vol quand le PIN est validé.
+    await page.route('**/api/catalog/products', async route => {
+      await new Promise(r => setTimeout(r, 1500));
+      await route.continue();
+    });
     await page.evaluate(() => localStorage.removeItem('pos_jwt_token'));
     await page.reload();
     for (const d of ['1', '2', '3', '4']) await page.click(`.pin-keypad button[data-val="${d}"]`);
     await expect(page.locator('#pinLockModal')).not.toHaveClass(/active/);
     // plan de salle (GET /api/tables protégé) rempli sans rechargement
     await expect(page.locator('#floorTablesGrid > *').first()).toBeAttached();
-    await page.waitForTimeout(1500);
+    await page.waitForTimeout(2500);
     expect(counterOpens).toHaveLength(1);
+    expect(JSON.parse(counterOpens[0]).destination).toBe(0); // À emporter (Takeaway = 0), destination conservée
+    await expect(page.locator('#btnDestTakeaway')).toHaveClass(/active/);
+  });
+
+  test('a late 401 from a request sent without token keeps the new token', async ({ page }) => {
+    await page.route('**/api/orders/counter/held', async route => {
+      await new Promise(r => setTimeout(r, 1500));
+      await route.fulfill({ status: 401, body: '' });
+    });
+    await page.evaluate(() => localStorage.removeItem('pos_jwt_token'));
+    await page.reload();
+    // PIN validé pendant que la requête sans jeton est en vol, puis 401 tardif
+    for (const d of ['1', '2', '3', '4']) await page.click(`.pin-keypad button[data-val="${d}"]`);
+    await expect(page.locator('#pinLockModal')).not.toHaveClass(/active/);
+    await page.waitForTimeout(2500);
+    expect(await page.evaluate(() => localStorage.getItem('pos_jwt_token'))).not.toBeNull();
+    await expect(page.locator('#pinLockModal')).not.toHaveClass(/active/);
   });
 });
