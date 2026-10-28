@@ -1,11 +1,13 @@
 using System;
 using System.Linq;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using RestaurantPos.Application.Common.Interfaces;
 using RestaurantPos.Application.DTOs;
 using RestaurantPos.Domain.Entities;
+using RestaurantPos.Infrastructure.Localization;
 
 namespace RestaurantPos.Api.Endpoints;
 
@@ -43,21 +45,35 @@ public static class StaffEndpoints
             }));
         }).RequireAuthorization("RequireManagerOrAdmin");
 
-        group.MapPost("/", async (CreateStaffRequest req, IStaffManagementService staff) =>
+        group.MapPost("/", async (CreateStaffRequest req, ClaimsPrincipal caller, IStaffManagementService staff) =>
         {
-            if (!Enum.TryParse<UserRole>(req.Role, true, out var role))
+            if (!TryParseRole(req.Role, out var role))
             {
-                role = UserRole.Waiter;
+                return Results.BadRequest(new { Message = Texts.T("errors.invalid_role") });
+            }
+            // Seul un Admin crée un Admin.
+            if (role == UserRole.Admin && !caller.IsInRole("Admin"))
+            {
+                return Results.Json(new { Message = Texts.T("errors.admin_role_requires_admin") }, statusCode: StatusCodes.Status403Forbidden);
             }
             var user = await staff.CreateStaffMemberAsync(req.Name, role, req.Pin);
             return Results.Ok(new { user.Id, user.Name, Role = user.Role.ToString(), user.IsActive });
         }).RequireAuthorization("RequireManagerOrAdmin");
 
-        group.MapPut("/{id:guid}", async (Guid id, UpdateStaffRequest req, IStaffManagementService staff) =>
+        group.MapPut("/{id:guid}", async (Guid id, UpdateStaffRequest req, ClaimsPrincipal caller, IStaffManagementService staff) =>
         {
-            if (!Enum.TryParse<UserRole>(req.Role, true, out var role))
+            if (!TryParseRole(req.Role, out var role))
             {
-                role = UserRole.Waiter;
+                return Results.BadRequest(new { Message = Texts.T("errors.invalid_role") });
+            }
+            // Seul un Admin attribue le rôle Admin ou modifie (dont rétrograde) un Admin.
+            if (!caller.IsInRole("Admin"))
+            {
+                var existing = await staff.GetStaffByIdAsync(id);
+                if (role == UserRole.Admin || existing?.Role == UserRole.Admin)
+                {
+                    return Results.Json(new { Message = Texts.T("errors.admin_role_requires_admin") }, statusCode: StatusCodes.Status403Forbidden);
+                }
             }
             var user = await staff.UpdateStaffMemberAsync(id, req.Name, role, req.IsActive ?? true);
             if (!string.IsNullOrWhiteSpace(req.Pin))
@@ -85,4 +101,8 @@ public static class StaffEndpoints
             return ok ? Results.Ok(new { Success = true }) : Results.NotFound();
         }).RequireAuthorization("RequireManagerOrAdmin");
     }
+
+    // IsDefined écarte les valeurs numériques hors énumération ("99").
+    private static bool TryParseRole(string? value, out UserRole role) =>
+        Enum.TryParse(value, true, out role) && Enum.IsDefined(role);
 }

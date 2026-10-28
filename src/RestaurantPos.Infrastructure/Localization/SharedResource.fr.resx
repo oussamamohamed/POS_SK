@@ -322,6 +322,12 @@
   <data name="admin.payment_method_other" xml:space="preserve">
     <value>Autre Règlement</value>
   </data>
+  <data name="errors.invalid_role" xml:space="preserve">
+    <value>Rôle invalide.</value>
+  </data>
+  <data name="errors.admin_role_requires_admin" xml:space="preserve">
+    <value>Seul un administrateur peut attribuer ou modifier le rôle Admin.</value>
+  </data>
   <data name="errors.preparation_station_invalid" xml:space="preserve">
     <value>Poste de préparation inconnu.</value>
   </data>

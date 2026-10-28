@@ -171,6 +171,9 @@ public partial class Program
             options.AddPolicy("RequireAuthenticatedOperator", policy =>
                 policy.RequireAuthenticatedUser());
 
+            options.AddPolicy("RequireAdmin", policy =>
+                policy.RequireRole("Admin"));
+
             options.AddPolicy("RequireManagerOrAdmin", policy =>
                 policy.RequireRole("FloorManager", "Admin"));
 
@@ -464,16 +467,19 @@ public partial class Program
         app.MapGet("/api/health", () => Results.Ok(new { Status = "Healthy", Version = "1.0.0", Timestamp = DateTimeOffset.UtcNow }));
 
         // Admin Seed Endpoint for Production Verification
-        app.MapPost("/api/admin/seed-test-data", async (
-            AppDbContext db,
-            IStaffManagementService staffService,
-            IBackOfficeCatalogService catalogService,
-            IPrinterConfigurationService printerService,
-            ITerminalLayoutService layoutService) =>
+        if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Testing"))
         {
-            await SeedDatabase(db, staffService, catalogService, printerService, layoutService, force: true);
-            return Results.Ok(new { Success = true, Message = Texts.T("messages.test_data_seeded") });
-        }).RequireAuthorization("RequireManagerOrAdmin");
+            app.MapPost("/api/admin/seed-test-data", async (
+                AppDbContext db,
+                IStaffManagementService staffService,
+                IBackOfficeCatalogService catalogService,
+                IPrinterConfigurationService printerService,
+                ITerminalLayoutService layoutService) =>
+            {
+                await SeedDatabase(db, staffService, catalogService, printerService, layoutService, force: true);
+                return Results.Ok(new { Success = true, Message = Texts.T("messages.test_data_seeded") });
+            }).RequireAuthorization("RequireAdmin");
+        }
 
         // 2. Auth PIN Login
         app.MapAuthEndpoints();
