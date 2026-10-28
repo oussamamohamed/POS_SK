@@ -1,0 +1,89 @@
+using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using RestaurantPos.Domain.Entities;
+using RestaurantPos.Infrastructure.Persistence;
+using RestaurantPos.Infrastructure.Security;
+using RestaurantPos.Infrastructure.Services;
+
+namespace RestaurantPos.Api.Tests;
+
+public class BootstrapAdminTests
+{
+    private static AppDbContext NewDb() =>
+        new(new DbContextOptionsBuilder<AppDbContext>().UseInMemoryDatabase("Bootstrap_" + Guid.NewGuid()).Options);
+
+    private static IConfiguration Config(string? pin) =>
+        new ConfigurationBuilder().AddInMemoryCollection(pin is null
+            ? []
+            : new Dictionary<string, string?> { ["Bootstrap:AdminPin"] = pin }).Build();
+
+    private sealed class CaptureLogger : ILogger
+    {
+        public List<(LogLevel Level, string Message)> Entries { get; } = [];
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+        public bool IsEnabled(LogLevel logLevel) => true;
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter) =>
+            Entries.Add((logLevel, formatter(state, exception)));
+    }
+
+    [Fact]
+    public async Task Empty_db_creates_single_admin_with_configured_pin()
+    {
+        await using var db = NewDb();
+        await Program.BootstrapAdminAsync(db, new StaffManagementService(db), Config("482915"), new CaptureLogger());
+
+        var auth = new OperatorAuthenticationService(db);
+        (await auth.AuthenticatePinAsync("482915")).IsSuccess.Should().BeTrue();
+        foreach (var known in new[] { "1234", "2468", "9999" })
+        {
+            (await auth.AuthenticatePinAsync(known)).IsSuccess.Should().BeFalse();
+        }
+
+        var users = await db.Users.ToListAsync();
+        users.Should().ContainSingle().Which.Role.Should().Be(UserRole.Admin);
+    }
+
+    // Écart assumé : 6 chiffres (et non 8), car StaffManagementService n'accepte que ^[0-9]{4,6}$.
+    [Fact]
+    public async Task Missing_pin_generates_one()
+    {
+        await using var db = NewDb();
+        var log = new CaptureLogger();
+        await Program.BootstrapAdminAsync(db, new StaffManagementService(db), Config(null), log);
+
+        var warnings = log.Entries.Where(e => e.Level == LogLevel.Warning).ToList();
+        warnings.Should().ContainSingle();
+        var match = System.Text.RegularExpressions.Regex.Match(warnings[0].Message, @"\b\d{6}\b");
+        match.Success.Should().BeTrue();
+        (await new OperatorAuthenticationService(db).AuthenticatePinAsync(match.Value)).IsSuccess.Should().BeTrue();
+        (await db.Users.CountAsync()).Should().Be(1);
+    }
+
+    [Theory]
+    [InlineData("1234")]
+    [InlineData("12ab56")]
+    public async Task Invalid_configured_pin_fails_startup(string pin)
+    {
+        await using var db = NewDb();
+        var act = () => Program.BootstrapAdminAsync(db, new StaffManagementService(db), Config(pin), new CaptureLogger());
+
+        await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("*Bootstrap:AdminPin*");
+        (await db.Users.AnyAsync()).Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task Non_empty_db_is_untouched()
+    {
+        await using var db = NewDb();
+        var staff = new StaffManagementService(db);
+        await staff.CreateStaffMemberAsync("Existant", UserRole.Admin, "1357");
+        var log = new CaptureLogger();
+
+        await Program.BootstrapAdminAsync(db, staff, Config("482915"), log);
+
+        (await db.Users.CountAsync()).Should().Be(1);
+        log.Entries.Should().BeEmpty();
+    }
+}

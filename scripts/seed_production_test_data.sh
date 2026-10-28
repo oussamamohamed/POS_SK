@@ -16,8 +16,13 @@ if curl -s -f "$API_URL/api/health" > /dev/null 2>&1; then
     echo "[1/2] Serveur API en ligne ($API_URL) -> Authentification Admin et appel endpoint de seed..."
     TOKEN=$(curl -s -X POST "$API_URL/api/auth/login" -H "Content-Type: application/json" -d '{"pin":"9999"}' | grep -o '"token":"[^"]*' | cut -d'"' -f4)
     if [ -n "$TOKEN" ]; then
-        RESPONSE=$(curl -s -X POST "$API_URL/api/admin/seed-test-data" -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json")
-        echo "Reponse API: $RESPONSE"
+        RESPONSE=$(curl -s -w '\n%{http_code}' -X POST "$API_URL/api/admin/seed-test-data" -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json")
+        HTTP_CODE=${RESPONSE##*$'\n'}
+        echo "Reponse API: ${RESPONSE%$'\n'*}"
+        if [ "$HTTP_CODE" != "200" ]; then
+            echo "ECHEC : seed-test-data a repondu HTTP $HTTP_CODE (route montee en Development/Testing uniquement)." >&2
+            exit 1
+        fi
     else
         echo "Authentification echouee, execution directe CLI .NET..."
         dotnet run --project src/RestaurantPos.Api/RestaurantPos.Api.csproj -c Release --no-launch-profile -- --seed-prod-data

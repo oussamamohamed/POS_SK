@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using RestaurantPos.Api.Endpoints;
 using RestaurantPos.Api.Hubs;
@@ -433,17 +434,14 @@ public partial class Program
             SeedDatabase(db, staffService, catalogService, printerService, layoutService).GetAwaiter().GetResult();
         }
 #else
-        // In Production / Release mode, ensure minimal default administrator without mock test data
+        // En Production / Release : un seul administrateur, sans PIN connu, sans données de test
         using (var scope = app.Services.CreateScope())
         {
-            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            var staffService = scope.ServiceProvider.GetRequiredService<IStaffManagementService>();
-            if (!db.Users.Any())
-            {
-                staffService.CreateStaffMemberAsync("Admin Système", UserRole.Admin, "9999").GetAwaiter().GetResult();
-                staffService.CreateStaffMemberAsync("Alexandre Dupont (Manager)", UserRole.FloorManager, "1234").GetAwaiter().GetResult();
-                staffService.CreateStaffMemberAsync("Sophie Martin (Serveuse)", UserRole.Waiter, "2468").GetAwaiter().GetResult();
-            }
+            BootstrapAdminAsync(
+                scope.ServiceProvider.GetRequiredService<AppDbContext>(),
+                scope.ServiceProvider.GetRequiredService<IStaffManagementService>(),
+                app.Configuration,
+                app.Logger).GetAwaiter().GetResult();
         }
 #endif
 
@@ -556,6 +554,29 @@ public partial class Program
         });
 
         app.Run();
+    }
+
+    // Base vide : crée l'unique administrateur. PIN de Bootstrap:AdminPin, sinon généré et journalisé une fois.
+    internal static async Task BootstrapAdminAsync(AppDbContext db, IStaffManagementService staff, IConfiguration cfg, ILogger log)
+    {
+        if (await db.Users.AnyAsync().ConfigureAwait(false))
+        {
+            return;
+        }
+
+        var pin = cfg["Bootstrap:AdminPin"];
+        if (string.IsNullOrEmpty(pin))
+        {
+            // 6 chiffres : StaffManagementService n'accepte que 4 à 6 chiffres.
+            pin = System.Security.Cryptography.RandomNumberGenerator.GetInt32(0, 1_000_000).ToString("D6", CultureInfo.InvariantCulture);
+            BootstrapLogMessages.GeneratedAdminPin(log, pin);
+        }
+        else if (pin.Length != 6 || !pin.All(char.IsAsciiDigit))
+        {
+            throw new InvalidOperationException("Bootstrap:AdminPin doit comporter exactement 6 chiffres.");
+        }
+
+        await staff.CreateStaffMemberAsync("Admin Système", UserRole.Admin, pin).ConfigureAwait(false);
     }
 
     public static async Task SeedDatabase(
@@ -822,3 +843,9 @@ public record SyncBatchRequest(List<SyncMessageItemDto> Messages);
 public record SyncMessageItemDto(Guid Id, string? TerminalId, string? EventType, string? IdempotencyKey, string PayloadJson, DateTimeOffset CreatedAtUtc);
 
 
+
+internal static partial class BootstrapLogMessages
+{
+    [LoggerMessage(EventId = 1101, Level = LogLevel.Warning, Message = "Aucun Bootstrap:AdminPin défini : PIN de l'administrateur généré {Pin}. Il n'est affiché qu'une fois, changez-le après la première connexion.")]
+    public static partial void GeneratedAdminPin(ILogger logger, string pin);
+}
