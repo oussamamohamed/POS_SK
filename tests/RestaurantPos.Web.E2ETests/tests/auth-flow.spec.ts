@@ -69,4 +69,37 @@ test.describe('Authentification Tactile & Verrouillage Caisse (PIN)', () => {
     await page.click('.pin-keypad button[data-val="4"]');
     await expect(pinModal).not.toHaveClass(/active/);
   });
+
+  test('no implicit login at startup', async ({ page }) => {
+    const logins: string[] = [];
+    page.on('request', r => { if (r.method() === 'POST' && r.url().includes('/api/auth/login')) logins.push(r.url()); });
+    await page.evaluate(() => localStorage.removeItem('pos_jwt_token'));
+    await page.reload();
+    await expect(page.locator('#pinLockModal')).toHaveClass(/active/);
+    await page.waitForTimeout(1000);
+    expect(logins).toEqual([]);
+  });
+
+  test('lock clears the session', async ({ page }) => {
+    const pinModal = page.locator('#pinLockModal');
+    await expect(pinModal).toHaveClass(/active/);
+    for (const d of ['1', '2', '3', '4']) await page.click(`.pin-keypad button[data-val="${d}"]`);
+    await expect(pinModal).not.toHaveClass(/active/);
+    await page.click('#btnLockTerminal');
+    await expect(pinModal).toHaveClass(/active/);
+    expect(await page.evaluate(() => localStorage.getItem('pos_jwt_token'))).toBeNull();
+    // Le cookie HttpOnly est effacé par le serveur : la requête de déconnexion est asynchrone.
+    await expect.poll(() => page.evaluate(async () => (await fetch('/api/auth/me')).status)).toBe(401);
+  });
+
+  test('jwt never leaves the origin', async ({ page }) => {
+    await page.evaluate(() => localStorage.setItem('pos_jwt_token', 'fake.jwt.token'));
+    let auth: string | undefined = 'unset';
+    await page.route('http://example.invalid/**', route => {
+      auth = route.request().headers()['authorization'];
+      return route.fulfill({ status: 200, body: '{}', headers: { 'access-control-allow-origin': '*', 'access-control-allow-headers': '*' } });
+    });
+    await page.evaluate(() => fetch('http://example.invalid/api/health').catch(() => null));
+    expect(auth).toBeUndefined();
+  });
 });

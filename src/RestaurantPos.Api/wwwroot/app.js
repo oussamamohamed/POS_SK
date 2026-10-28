@@ -73,8 +73,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     const originalFetch = window.fetch;
     window.fetch = async (...args) => {
         let [resource, config] = args;
+        const target = new URL(resource instanceof Request ? resource.url : String(resource), location.href);
         const token = state.token || localStorage.getItem('pos_jwt_token');
-        if (token) {
+        // Le JWT ne part que vers l'origine de ce serveur.
+        if (token && target.origin === location.origin) {
             config = config || {};
             config.headers = config.headers || {};
             if (config.headers instanceof Headers) {
@@ -92,7 +94,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }
         // Le jeton du poste et la langue ne partent que vers l'API de ce serveur, jamais vers un autre domaine.
-        const target = new URL(resource instanceof Request ? resource.url : String(resource), location.href);
         if (target.origin === location.origin && target.pathname.startsWith('/api/')) {
             config = config || {};
             config.headers = config.headers || {};
@@ -402,7 +403,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         setupSignalR();
 
         // Ensure active authentication session
-        await ensureAuthToken();
+        if (!(await ensureAuthToken())) {
+            elements.pinLockModal.classList.add('active');
+            state.pinInput = '';
+            updatePinDots();
+        }
         startPosHub();
 
         await loadCatalogData();
@@ -430,11 +435,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         });
 
-        elements.btnLockTerminal.addEventListener('click', () => {
-            elements.pinLockModal.classList.add('active');
-            state.pinInput = '';
-            updatePinDots();
-        });
+        elements.btnLockTerminal.addEventListener('click', lockTerminal);
 
         if (elements.operatorPill) {
             elements.operatorPill.addEventListener('click', () => {
@@ -964,26 +965,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // ==================== AUTO-SAVE & TABLE RECALL ====================
-    async function ensureAuthToken() {
-        if (state.token) return state.token;
-        try {
-            const res = await fetch('/api/auth/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ pin: '1234' })
-            });
-            if (res.ok) {
-                const data = await res.json();
-                state.token = data.token;
-                localStorage.setItem('pos_jwt_token', data.token);
-                startPosHub();
-                state.operator = { name: data.operatorName, role: data.role, id: data.operatorId };
-                return data.token;
-            }
-        } catch (e) {
-            console.warn('ensureAuthToken failed:', e);
+    // Verrou réel : la session (jeton, opérateur, hub SignalR) est détruite, le PIN est redemandé.
+    function lockTerminal() {
+        state.token = null;
+        state.operator = null;
+        try { localStorage.removeItem('pos_jwt_token'); } catch { /* stockage indisponible */ }
+        fetch('/api/auth/logout', { method: 'POST' }).catch(() => { }); // efface le cookie HttpOnly
+        if (posConnection) {
+            posConnection.stop().catch(() => { });
+            posConnectionStarted = false;
         }
-        return null;
+        elements.pinLockModal.classList.add('active');
+        state.pinInput = '';
+        updatePinDots();
+    }
+
+    // Plus de connexion implicite : seul le PIN saisi par l'opérateur ouvre une session.
+    async function ensureAuthToken() {
+        return state.token || null;
     }
 
     /**

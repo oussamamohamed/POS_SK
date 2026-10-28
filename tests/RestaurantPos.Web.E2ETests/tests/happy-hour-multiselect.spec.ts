@@ -49,7 +49,7 @@ test.describe('Happy Hour Multi-Select Configuration (Articles & Familles)', () 
     await page.click('#btnApplyBatchFamilies');
 
     // 5. Vérifier le toast de confirmation
-    const toast = page.locator('.toast.success');
+    const toast = page.locator('.toast.success').last();
     await expect(toast).toBeVisible();
 
     // 6. Basculer sur le sous-onglet Règles Actives
@@ -86,7 +86,7 @@ test.describe('Happy Hour Multi-Select Configuration (Articles & Familles)', () 
     await page.click('#btnApplyBatchArticles');
 
     // Vérifier notification succès
-    const toast = page.locator('.toast.success');
+    const toast = page.locator('.toast.success').last();
     await expect(toast).toBeVisible();
 
     // 6. Vérifier dans Règles actives

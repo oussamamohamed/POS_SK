@@ -1,4 +1,10 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
+
+// Plus de connexion implicite : le PIN est saisi au clavier du modal.
+async function unlock(page: Page) {
+  for (const d of '1234') await page.click(`.pin-keypad button[data-val="${d}"]`);
+  await expect(page.locator('#pinLockModal')).not.toHaveClass(/active/);
+}
 
 test.describe('Langue de l\'interface', () => {
   test('anglais par défaut quand le navigateur est en allemand', async ({ browser, baseURL }) => {
@@ -16,16 +22,14 @@ test.describe('Langue de l\'interface', () => {
   });
 
   test('arabe : RTL, libellé arabe, pavé PIN gauche-droite', async ({ page }) => {
-    // Le sélecteur de langue vit dans le modal PIN : on verrouille pour le rendre visible
-    // (le terminal s'authentifie automatiquement au démarrage en environnement de démo).
+    // Le sélecteur de langue vit dans le modal PIN, ouvert au démarrage (plus de connexion implicite).
     await page.goto('/');
-    await page.click('#btnLockTerminal');
+    await expect(page.locator('#pinLockModal')).toHaveClass(/active/);
     // setLanguage() recharge la page : attendre CE rechargement (waitForLoadState rend la main tout de suite).
     const reloaded = page.waitForEvent('load');
     await page.locator('#languageSelect').selectOption('ar');
     await reloaded;
     await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
-    await page.click('#btnLockTerminal');
     await expect(page.locator('#pinLockModal h3')).toHaveText('الصندوق مقفل');
     const keypad = page.locator('.pin-keypad');
     await expect(keypad).toHaveAttribute('dir', 'ltr');
@@ -35,14 +39,11 @@ test.describe('Langue de l\'interface', () => {
   });
 
   test('arabe : montants gauche-droite, icônes de pagination inversées, en-tête miroir', async ({ page }) => {
-    // Note : contrairement au brouillon de la brief, la démo se connecte automatiquement
-    // (PIN 1234) au chargement (cf. Task 5) : le modal PIN n'apparaît pas tant qu'on ne
-    // verrouille pas explicitement. On teste donc directement l'UI principale déjà connectée.
     await page.goto('/');
     await page.evaluate(() => localStorage.setItem('pos_lang', 'ar'));
     await page.reload();
     await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
-    await expect(page.locator('#pinLockModal')).not.toHaveClass(/active/);
+    await unlock(page);
 
     // Montants : toujours gauche-droite malgré la page RTL.
     const amounts = page.locator('.cart-item-price, .total-amount, .table-total, #roomChargeTotalAmount, .product-price, #summaryHt, #summaryVat');
@@ -68,6 +69,7 @@ test.describe('Langue de l\'interface', () => {
     await page.goto('/');
     await page.evaluate(() => localStorage.setItem('pos_lang', 'ar'));
     await page.reload();
+    await unlock(page);
     await page.click('#btnNavPos');
     await page.locator('.product-card').filter({ hasText: 'Bière Artisanale' }).first().click();
     await expect(page.locator('#summaryTtc')).not.toHaveText('0.00 €');
@@ -84,7 +86,7 @@ test.describe('Langue de l\'interface', () => {
 
   test('le choix est mémorisé et envoyé au serveur', async ({ page }) => {
     await page.goto('/');
-    await page.click('#btnLockTerminal');
+    await expect(page.locator('#pinLockModal')).toHaveClass(/active/);
     // setLanguage() recharge la page : attendre CE rechargement (waitForLoadState rend la main tout de suite).
     const reloaded = page.waitForEvent('load');
     await page.locator('#languageSelect').selectOption('en');

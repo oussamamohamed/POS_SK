@@ -93,6 +93,13 @@ public static class AuthEndpoints
             });
         }).AllowAnonymous();
 
+        // Le cookie JWT est HttpOnly : seul le serveur peut l'effacer (verrou du terminal).
+        group.MapPost("/logout", (HttpContext context) =>
+        {
+            context.Response.Cookies.Delete("pos_jwt_token");
+            return Results.NoContent();
+        }).AllowAnonymous();
+
         group.MapGet("/me", (ClaimsPrincipal user) =>
         {
             if (!user.Identity?.IsAuthenticated ?? true)
