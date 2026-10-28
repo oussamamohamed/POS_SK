@@ -7,7 +7,7 @@ DB=/tmp/nf525-check.db
 ASPNETCORE_ENVIRONMENT=Development ASPNETCORE_URLS=http://0.0.0.0:5080 \
 ConnectionStrings__DefaultConnection="Data Source=$DB" \
 Jwt__Secret="SuperSecretKeyForRestaurantPosSystemThatIsAtLeast32BytesLong!" \
-dotnet run --project src/RestaurantPos.Api -- --seed-test-data
+ASPNETCORE_ENVIRONMENT=Development dotnet run --project src/RestaurantPos.Api -- --seed-test-data
 ```
 
 Connexion gérant : PIN `1234`. Appairer l'appareil depuis Gestion → Appareils avant d'encaisser.

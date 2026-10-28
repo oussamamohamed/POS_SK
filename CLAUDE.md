@@ -31,7 +31,7 @@ dotnet run --project src/RestaurantPos.Api
 
 `Directory.Build.props` sets `TreatWarningsAsErrors` + `EnforceCodeStyleInBuild` + `AnalysisLevel=latest-recommended`, so any analyzer or `.editorconfig` style violation fails the build. Run `dotnet format RestaurantPos.slnx` before building if unsure. It currently also reformats ~5 unrelated files (pre-existing drift): revert those.
 
-Demo PINs (seeded): `1234` manager, `2468` waiter, `5678` kitchen, `9999` admin. `dotnet run --project src/RestaurantPos.Api -- --seed-test-data` seeds richer data (see also `scripts/seed_production_test_data.sh`).
+Demo PINs (seeded): `1234` manager, `2468` waiter, `5678` kitchen, `9999` admin. `ASPNETCORE_ENVIRONMENT=Development dotnet run --project src/RestaurantPos.Api -- --seed-test-data` seeds richer data (see also `scripts/seed_production_test_data.sh`).
 
 ### iOS
 
