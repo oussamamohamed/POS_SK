@@ -28,7 +28,10 @@ test.describe('Happy Hour Pricing & Schedule Management', () => {
     await ensureLoggedIn(page);
 
     // 1. Activer une dérogation Happy Hour via l'API superviseur (Alexandre Dupont PIN 1234 ou 9999)
+    const login = await request.post('/api/auth/login', { data: { pin: '9999' } });
+    const { token } = await login.json();
     const overrideRes = await request.post('/api/happy-hour/override/activate', {
+      headers: { Authorization: `Bearer ${token}` },
       data: {
         terminalId: 'POS_A',
         supervisorPin: '9999',

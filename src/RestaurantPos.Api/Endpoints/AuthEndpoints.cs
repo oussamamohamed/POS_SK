@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
+using RestaurantPos.Api.Security;
 using RestaurantPos.Application.Common.Interfaces;
 using RestaurantPos.Application.DTOs;
 using RestaurantPos.Domain.Entities;
@@ -128,38 +129,20 @@ public static class AuthEndpoints
             ILoggerFactory loggerFactory) =>
         {
             var logger = loggerFactory.CreateLogger("RestaurantPos.Api.Endpoints.AuthEndpoints");
-            var clientKey = $"override:{context.Connection.RemoteIpAddress?.ToString() ?? "unknown"}";
-
-            if (rateLimiter.IsLocked(clientKey))
+            var guard = await SupervisorPinGuard.CheckAsync(req.SupervisorPin, context, authService, rateLimiter, context.RequestAborted);
+            if (!guard.Allowed)
             {
-                var remaining = rateLimiter.GetRemainingLockout(clientKey);
-                return Results.Json(new { Authorized = false, Message = Texts.T("errors.supervisor_rate_limited", ("seconds", Math.Ceiling(remaining.TotalSeconds))) }, statusCode: StatusCodes.Status429TooManyRequests);
+                return guard.Rejection!;
             }
 
-            var result = await authService.AuthenticatePinAsync(req.SupervisorPin);
-            if (!result.IsSuccess)
-            {
-                rateLimiter.RecordFailedAttempt(clientKey);
-                AuthLogMessages.SupervisorOverrideInvalidPin(logger);
-                return Results.Json(new { Authorized = false, Message = Texts.T("errors.supervisor_pin_invalid") }, statusCode: StatusCodes.Status403Forbidden);
-            }
-
-            var role = result.Role.GetValueOrDefault();
-            if (role != UserRole.FloorManager && role != UserRole.Admin)
-            {
-                rateLimiter.RecordFailedAttempt(clientKey);
-                AuthLogMessages.SupervisorOverrideInsufficientRole(logger, result.OperatorName ?? "Inconnu", role);
-                return Results.Json(new { Authorized = false, Message = Texts.T("errors.supervisor_privileges_insufficient") }, statusCode: StatusCodes.Status403Forbidden);
-            }
-
-            rateLimiter.ResetAttempts(clientKey);
-            AuthLogMessages.SupervisorOverrideGranted(logger, result.OperatorName ?? "Inconnu", role, req.Action);
+            var role = guard.Role!.Value;
+            AuthLogMessages.SupervisorOverrideGranted(logger, guard.OperatorName ?? "Inconnu", role, req.Action);
 
             return Results.Ok(new
             {
                 Authorized = true,
-                SupervisorId = result.OperatorId,
-                SupervisorName = result.OperatorName,
+                SupervisorId = guard.OperatorId,
+                SupervisorName = guard.OperatorName,
                 Role = role.ToString(),
                 Action = req.Action
             });
@@ -177,12 +160,6 @@ internal static partial class AuthLogMessages
 
     [LoggerMessage(EventId = 1003, Level = LogLevel.Information, Message = "Successful operator login: {OperatorName} (Role: {Role}) from {ClientKey}")]
     public static partial void LoginSucceeded(ILogger logger, string operatorName, UserRole role, string clientKey);
-
-    [LoggerMessage(EventId = 1004, Level = LogLevel.Warning, Message = "Supervisor override rejected: invalid PIN.")]
-    public static partial void SupervisorOverrideInvalidPin(ILogger logger);
-
-    [LoggerMessage(EventId = 1005, Level = LogLevel.Warning, Message = "Supervisor override rejected: Operator {Name} has role {Role}, required FloorManager or Admin.")]
-    public static partial void SupervisorOverrideInsufficientRole(ILogger logger, string name, UserRole role);
 
     [LoggerMessage(EventId = 1006, Level = LogLevel.Information, Message = "Supervisor override granted by {Name} (Role: {Role}) for action: {Action}")]
     public static partial void SupervisorOverrideGranted(ILogger logger, string name, UserRole role, string action);
