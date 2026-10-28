@@ -28,8 +28,12 @@ if curl -s -f "$API_URL/api/health" > /dev/null 2>&1; then
         exit 1
     fi
 else
-    echo "[1/2] Serveur API non detecte sur le port 5000 -> Execution directe CLI .NET..."
-    dotnet run --project src/RestaurantPos.Api/RestaurantPos.Api.csproj -c Release --no-launch-profile -- --seed-prod-data
+    if [ "${POS_ALLOW_DEMO_SEED:-}" != "1" ]; then
+        echo "ECHEC : serveur API non detecte sur $API_URL. Le seed CLI recree les PIN de demonstration (1234/2468/5678/9999) : jamais en production. Developpement uniquement : POS_ALLOW_DEMO_SEED=1." >&2
+        exit 1
+    fi
+    echo "ATTENTION : seed CLI en Development, recree les PIN de demonstration sur la base locale par defaut." >&2
+    ASPNETCORE_ENVIRONMENT=Development dotnet run --project src/RestaurantPos.Api/RestaurantPos.Api.csproj -c Release --no-launch-profile -- --seed-prod-data
 fi
 
 echo ""

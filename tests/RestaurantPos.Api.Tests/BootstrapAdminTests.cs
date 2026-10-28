@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using RestaurantPos.Domain.Entities;
 using RestaurantPos.Infrastructure.Persistence;
@@ -85,5 +86,16 @@ public class BootstrapAdminTests
 
         (await db.Users.CountAsync()).Should().Be(1);
         log.Entries.Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData("Development", true)]
+    [InlineData("Production", false)]
+    [InlineData("Staging", false)]
+    [InlineData("Testing", false)]
+    public void Seed_cli_is_allowed_only_in_development(string env, bool expected)
+    {
+        var host = new Microsoft.Extensions.Hosting.Internal.HostingEnvironment { EnvironmentName = env };
+        Program.IsSeedCliAllowed(host).Should().Be(expected);
     }
 }

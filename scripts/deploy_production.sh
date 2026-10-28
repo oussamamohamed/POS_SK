@@ -38,13 +38,12 @@ echo "  Compilation Release API..."
 dotnet build src/RestaurantPos.Api/RestaurantPos.Api.csproj -c Release --nologo
 
 echo "  RAPPEL : renseignez Bootstrap__AdminPin (6 chiffres) AVANT ce premier demarrage (export dans l'environnement)."
-echo "  Sans cette variable, l'API genere un PIN administrateur ecrit dans /tmp/pos_api_prod.log (permissions 600) : lisez-le puis changez-le."
-echo "  Demarrage de l'API en environnement Production..."
+echo "  Sans cette variable, l'API genere un PIN administrateur ecrit dans le journal de l'API (chemin affiche ci-dessous, permissions 600) : lisez-le puis changez-le."
 OLD_UMASK=$(umask)
 umask 077
-: > /tmp/pos_api_prod.log
-chmod 600 /tmp/pos_api_prod.log
-ASPNETCORE_ENVIRONMENT=Production ASPNETCORE_URLS="http://0.0.0.0:5080" dotnet run --project src/RestaurantPos.Api/RestaurantPos.Api.csproj -c Release --no-build > /tmp/pos_api_prod.log 2>&1 &
+LOG=$(mktemp "${TMPDIR:-/tmp}/pos_api_prod.XXXXXX")
+echo "  Demarrage de l'API en environnement Production (journal : $LOG, permissions 600)..."
+ASPNETCORE_ENVIRONMENT=Production ASPNETCORE_URLS="http://0.0.0.0:5080" dotnet run --project src/RestaurantPos.Api/RestaurantPos.Api.csproj -c Release --no-build > "$LOG" 2>&1 &
 API_PID=$!
 umask "$OLD_UMASK"
 echo "  API lancee en arriere-plan (PID: $API_PID)"

@@ -447,6 +447,13 @@ public partial class Program
 
         if (args.Contains("--seed-prod-data") || args.Contains("--seed-test-data"))
         {
+            if (!IsSeedCliAllowed(app.Environment))
+            {
+                Console.Error.WriteLine("ERREUR : le seed de test est réservé à l'environnement Development.");
+                Environment.Exit(1);
+                return;
+            }
+
             using var scope = app.Services.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             var staffService = scope.ServiceProvider.GetRequiredService<IStaffManagementService>();
@@ -555,6 +562,8 @@ public partial class Program
 
         app.Run();
     }
+
+    internal static bool IsSeedCliAllowed(IHostEnvironment env) => env.IsDevelopment();
 
     // Base vide : crée l'unique administrateur. PIN de Bootstrap:AdminPin, sinon généré et journalisé une fois.
     internal static async Task BootstrapAdminAsync(AppDbContext db, IStaffManagementService staff, IConfiguration cfg, ILogger log)
