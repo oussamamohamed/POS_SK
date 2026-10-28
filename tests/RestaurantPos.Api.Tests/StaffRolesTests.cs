@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using RestaurantPos.Application.DTOs;
@@ -26,7 +27,10 @@ public class StaffRolesTests : IClassFixture<PosApiApplicationFactory>
         return client;
     }
 
-    private static string NewPin() => "63" + Random.Shared.Next(10, 99);
+    // PIN à 6 chiffres, distincts : jamais ceux semés (4 chiffres) ni ceux des autres classes.
+    private static int _pinCounter = 900000;
+
+    private static string NewPin() => Interlocked.Increment(ref _pinCounter).ToString(System.Globalization.CultureInfo.InvariantCulture);
 
     private static async Task<Guid> CreateAsync(HttpClient client, string role)
     {
@@ -75,17 +79,81 @@ public class StaffRolesTests : IClassFixture<PosApiApplicationFactory>
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
-    [Fact]
-    public async Task Unknown_role_is_rejected()
+    [Theory]
+    [InlineData("Root")]
+    [InlineData("99")]
+    [InlineData("")]
+    public async Task Unknown_role_is_rejected(string badRole)
     {
         var client = ClientWithRole("FloorManager");
 
-        var create = await client.PostAsJsonAsync("/api/staff", new CreateStaffRequest("Root", "Root", NewPin()));
+        var create = await client.PostAsJsonAsync("/api/staff", new CreateStaffRequest("Root", badRole, NewPin()));
         create.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
         var id = await CreateAsync(client, "Waiter");
-        var update = await client.PutAsJsonAsync($"/api/staff/{id}", new UpdateStaffRequest("Root", "Root", null, true));
+        var update = await client.PutAsJsonAsync($"/api/staff/{id}", new UpdateStaffRequest("Root", badRole, null, true));
         update.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task Manager_cannot_create_admin_with_lowercase_role()
+    {
+        var response = await ClientWithRole("FloorManager")
+            .PostAsJsonAsync("/api/staff", new CreateStaffRequest("Pirate", "admin", NewPin()));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    private static Task<HttpResponseMessage> Deactivate(HttpClient client, int route, Guid id) => route switch
+    {
+        0 => client.DeleteAsync($"/api/staff/{id}"),
+        1 => client.DeleteAsync($"/api/staff/operators/{id}"),
+        _ => client.PostAsync($"/api/staff/{id}/deactivate", null),
+    };
+
+    private static async Task<bool> IsActiveAsync(HttpClient client, Guid id)
+    {
+        var list = await client.GetFromJsonAsync<JsonElement>("/api/staff");
+        foreach (var u in list.EnumerateArray())
+        {
+            if (u.GetProperty("id").GetGuid() == id)
+            {
+                return u.GetProperty("isActive").GetBoolean();
+            }
+        }
+        throw new InvalidOperationException("Membre introuvable.");
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(2)]
+    public async Task Manager_cannot_deactivate_admin(int route)
+    {
+        var id = await CreateAsync(ClientWithRole("Admin"), "Admin");
+        var manager = ClientWithRole("FloorManager");
+
+        (await Deactivate(manager, route, id)).StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        (await IsActiveAsync(manager, id)).Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task Admin_can_deactivate_admin()
+    {
+        var admin = ClientWithRole("Admin");
+        var id = await CreateAsync(admin, "Admin");
+
+        (await Deactivate(admin, 2, id)).StatusCode.Should().Be(HttpStatusCode.OK);
+        (await IsActiveAsync(admin, id)).Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task Manager_can_deactivate_waiter()
+    {
+        var manager = ClientWithRole("FloorManager");
+        var id = await CreateAsync(manager, "Waiter");
+
+        (await Deactivate(manager, 0, id)).StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
     [Fact]

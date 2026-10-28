@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Security.Claims;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -54,7 +55,7 @@ public static class StaffEndpoints
             // Seul un Admin crée un Admin.
             if (role == UserRole.Admin && !caller.IsInRole("Admin"))
             {
-                return Results.Json(new { Message = Texts.T("errors.admin_role_requires_admin") }, statusCode: StatusCodes.Status403Forbidden);
+                return Forbidden();
             }
             var user = await staff.CreateStaffMemberAsync(req.Name, role, req.Pin);
             return Results.Ok(new { user.Id, user.Name, Role = user.Role.ToString(), user.IsActive });
@@ -67,13 +68,9 @@ public static class StaffEndpoints
                 return Results.BadRequest(new { Message = Texts.T("errors.invalid_role") });
             }
             // Seul un Admin attribue le rôle Admin ou modifie (dont rétrograde) un Admin.
-            if (!caller.IsInRole("Admin"))
+            if (role == UserRole.Admin || await TargetsAdminAsync(staff, id, caller))
             {
-                var existing = await staff.GetStaffByIdAsync(id);
-                if (role == UserRole.Admin || existing?.Role == UserRole.Admin)
-                {
-                    return Results.Json(new { Message = Texts.T("errors.admin_role_requires_admin") }, statusCode: StatusCodes.Status403Forbidden);
-                }
+                return Forbidden();
             }
             var user = await staff.UpdateStaffMemberAsync(id, req.Name, role, req.IsActive ?? true);
             if (!string.IsNullOrWhiteSpace(req.Pin))
@@ -83,24 +80,43 @@ public static class StaffEndpoints
             return Results.Ok(new { user.Id, user.Name, Role = user.Role.ToString(), user.IsActive });
         }).RequireAuthorization("RequireManagerOrAdmin");
 
-        group.MapDelete("/{id:guid}", async (Guid id, IStaffManagementService staff) =>
+        group.MapDelete("/{id:guid}", async (Guid id, ClaimsPrincipal caller, IStaffManagementService staff) =>
         {
+            if (await TargetsAdminAsync(staff, id, caller))
+            {
+                return Forbidden();
+            }
             var ok = await staff.DeactivateStaffMemberAsync(id);
             return ok ? Results.Ok(new { Success = true }) : Results.NotFound();
         }).RequireAuthorization("RequireManagerOrAdmin");
 
-        group.MapDelete("/operators/{id:guid}", async (Guid id, IStaffManagementService staff) =>
+        group.MapDelete("/operators/{id:guid}", async (Guid id, ClaimsPrincipal caller, IStaffManagementService staff) =>
         {
+            if (await TargetsAdminAsync(staff, id, caller))
+            {
+                return Forbidden();
+            }
             var ok = await staff.DeactivateStaffMemberAsync(id);
             return ok ? Results.Ok(new { Success = true }) : Results.NotFound();
         }).RequireAuthorization("RequireManagerOrAdmin");
 
-        group.MapPost("/{id:guid}/deactivate", async (Guid id, IStaffManagementService staff) =>
+        group.MapPost("/{id:guid}/deactivate", async (Guid id, ClaimsPrincipal caller, IStaffManagementService staff) =>
         {
+            if (await TargetsAdminAsync(staff, id, caller))
+            {
+                return Forbidden();
+            }
             var ok = await staff.DeactivateStaffMemberAsync(id);
             return ok ? Results.Ok(new { Success = true }) : Results.NotFound();
         }).RequireAuthorization("RequireManagerOrAdmin");
     }
+
+    private static IResult Forbidden() =>
+        Results.Json(new { Message = Texts.T("errors.admin_role_requires_admin") }, statusCode: StatusCodes.Status403Forbidden);
+
+    // Vrai si la cible est un Admin et que l'appelant ne l'est pas ; cible inexistante : faux.
+    private static async Task<bool> TargetsAdminAsync(IStaffManagementService staff, Guid id, ClaimsPrincipal caller) =>
+        !caller.IsInRole("Admin") && (await staff.GetStaffByIdAsync(id))?.Role == UserRole.Admin;
 
     // IsDefined écarte les valeurs numériques hors énumération ("99").
     private static bool TryParseRole(string? value, out UserRole role) =>
