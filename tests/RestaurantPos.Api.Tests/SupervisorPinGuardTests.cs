@@ -1,6 +1,7 @@
 using System;
 using System.Net;
 using System.Net.Http;
+using System.Linq;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -108,6 +109,17 @@ public class SupervisorPinGuardTests : IClassFixture<PosApiApplicationFactory>
         }
 
         limiter.IsLocked(LimiterKey).Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task Concurrent_wrong_pins_are_capped()
+    {
+        var client = Client();
+
+        var responses = await Task.WhenAll(Enumerable.Range(0, 20).Select(_ => HeldVoid(client, "0000")));
+
+        responses.Count(r => r.StatusCode == HttpStatusCode.Forbidden).Should().Be(5);
+        responses.Count(r => r.StatusCode == HttpStatusCode.TooManyRequests).Should().Be(15);
     }
 
     [Fact]
