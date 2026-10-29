@@ -484,7 +484,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // All items button
         const allBtn = document.createElement('button');
         allBtn.className = `btn-cat-tab ${state.activeCategory === 'ALL' ? 'active' : ''}`;
-        allBtn.style.borderInlineStartColor = '#3b82f6';
+        allBtn.style.borderInlineStartColor = 'var(--primary)';
         allBtn.style.borderInlineStartWidth = '6px';
         allBtn.innerHTML = `<span>🍽️</span> <span>${t('order.all_menu_tab')}</span>`;
         allBtn.addEventListener('click', () => {
@@ -748,7 +748,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         card.innerHTML = `
             <div class="product-card-top">
                 <span class="product-badge-station">${escapeHtml(prod.preparationStationId || 'HOT')}</span>
-                ${hasOptions ? `<span style="font-size:0.68rem; background:rgba(14, 165, 233, 0.9); color:white; padding:2px 6px; border-radius:4px; font-weight:700; box-shadow:0 2px 4px rgba(0,0,0,0.3);">⚙️ Options</span>` : ''}
+                ${hasOptions ? `<span style="font-size:0.68rem; background:rgba(95,102,112, 0.9); color:white; padding:2px 6px; border-radius:4px; font-weight:700; box-shadow:0 2px 4px rgba(0,0,0,0.3);">⚙️ Options</span>` : ''}
             </div>
             <div class="product-name">${escapeHtml(displayName)}</div>
             ${priceHtml}
@@ -789,13 +789,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         prod.modifierGroups.forEach(group => {
             const groupCard = document.createElement('div');
             groupCard.className = 'modifier-group-card';
-            groupCard.style.cssText = 'background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:14px;';
+            groupCard.style.cssText = 'background:rgba(30,27,23,0.03); border:1px solid rgba(30,27,23,0.08); border-radius:8px; padding:14px;';
 
             const header = document.createElement('div');
             header.style.cssText = 'display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;';
             header.innerHTML = `
-                <div style="font-weight:700; color:#f1f5f9; font-size:0.95rem;">${escapeHtml(group.groupName)}</div>
-                <span style="font-size:0.75rem; font-weight:600; padding:2px 8px; border-radius:4px; ${group.isMandatory ? 'background:rgba(245, 158, 11, 0.15); color:#fbbf24; border:1px solid rgba(245, 158, 11, 0.3);' : 'background:rgba(148, 163, 184, 0.1); color:#94a3b8;'}">
+                <div style="font-weight:700; color:var(--text-main); font-size:0.95rem;">${escapeHtml(group.groupName)}</div>
+                <span style="font-size:0.75rem; font-weight:600; padding:2px 8px; border-radius:4px; ${group.isMandatory ? 'background:rgba(185,119,14, 0.15); color:var(--accent); border:1px solid rgba(185,119,14, 0.3);' : 'background:rgba(30,27,23, 0.1); color:var(--text-muted);'}">
                     ${group.isSingleChoice ? (group.isMandatory ? t('order.modifier_choice_required') : t('order.modifier_choice_max')) : (group.minSelections > 0 ? t('order.modifier_min_selections', { min: group.minSelections }) : t('order.modifier_optional'))}
                 </span>
             `;
@@ -823,14 +823,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 optBtn.style.cssText = `
                     display:flex; flex-direction:column; align-items:flex-start; justify-content:center;
                     padding:10px 12px; border-radius:8px; cursor:pointer; text-align:start; transition:all 0.15s ease;
-                    border: 1px solid ${isPreSelected ? '#38bdf8' : 'rgba(255,255,255,0.1)'};
-                    background: ${isPreSelected ? 'rgba(56, 189, 248, 0.15)' : 'rgba(15, 23, 42, 0.6)'};
-                    color: ${isPreSelected ? '#38bdf8' : '#e2e8f0'};
+                    border: 1px solid ${isPreSelected ? 'var(--primary)' : 'rgba(30,27,23,0.1)'};
+                    background: ${isPreSelected ? 'rgba(30,27,23, 0.15)' : 'rgba(251,249,246, 0.6)'};
+                    color: ${isPreSelected ? 'var(--primary)' : 'var(--text-main)'};
                 `;
 
                 optBtn.innerHTML = `
                     <span style="font-weight:600; font-size:0.85rem; line-height:1.2;">${escapeHtml(opt.name)}</span>
-                    ${Number(opt.extraPrice) > 0 ? `<span style="font-size:0.75rem; color:#10b981; font-weight:700; margin-top:4px;">+${Number(opt.extraPrice).toFixed(2)} €</span>` : `<span style="font-size:0.7rem; color:#64748b; margin-top:4px;">${t('order.modifier_included')}</span>`}
+                    ${Number(opt.extraPrice) > 0 ? `<span style="font-size:0.75rem; color:var(--success); font-weight:700; margin-top:4px;">+${Number(opt.extraPrice).toFixed(2)} €</span>` : `<span style="font-size:0.7rem; color:var(--text-dim); margin-top:4px;">${t('order.modifier_included')}</span>`}
                 `;
 
                 optBtn.addEventListener('click', () => {
@@ -866,9 +866,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                     optionsGrid.querySelectorAll('.btn-modifier-option').forEach(b => {
                         const bOptId = b.getAttribute('data-option-id');
                         const sel = currentSelectedModifiers.some(m => m.optionId === bOptId);
-                        b.style.border = `1px solid ${sel ? '#38bdf8' : 'rgba(255,255,255,0.1)'}`;
-                        b.style.background = sel ? 'rgba(56, 189, 248, 0.15)' : 'rgba(15, 23, 42, 0.6)';
-                        b.style.color = sel ? '#38bdf8' : '#e2e8f0';
+                        b.style.border = `1px solid ${sel ? 'var(--primary)' : 'rgba(30,27,23,0.1)'}`;
+                        b.style.background = sel ? 'rgba(30,27,23, 0.15)' : 'rgba(251,249,246, 0.6)';
+                        b.style.color = sel ? 'var(--primary)' : 'var(--text-main)';
                     });
 
                     updateModifiersModalTotals();
@@ -1200,7 +1200,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         let totalVat = 0;
         if (state.cart.length === 0) {
             elements.cartItemsList.innerHTML = `
-                <div style="text-align:center;color:#64748b;padding:40px 10px;">
+                <div style="text-align:center;color:var(--text-dim);padding:40px 10px;">
                     <div style="font-size:2.5rem;margin-bottom:8px;">🍽️</div>
                     <strong>${t('order.cart_empty_title', { table: escapeHtml(state.activeTable) })}</strong>
                     <div style="font-size:0.8rem;margin-top:4px;">${t('order.cart_empty_hint')}</div>
@@ -1244,15 +1244,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 ? `<span class="badge-pending" title="${t('order.pending_saved_title')}">${t('order.pending_saved_badge')}</span>`
                                 : `<span class="badge-pending" title="${t('order.pending_new_title')}">${t('order.pending_new_badge')}</span>`}
                     </div>
-                    <span class="cart-item-meta">${unitPrice.toFixed(2)} € × ${item.quantity} ${item.originalUnitPrice ? `<span style="text-decoration:line-through; color:#94a3b8; margin-inline-start:4px;">(${Number(item.originalUnitPrice).toFixed(2)} €)</span>` : ''} ${item.modifiersPriceExtra ? `<span style="color:#10b981; font-weight:600;">${t('order.modifiers_extra_note', { amount: Number(item.modifiersPriceExtra).toFixed(2) })}</span>` : ''} ${t('order.cart_item_vat_suffix', { vat: effectiveVatPercent })}</span>
-                    ${item.modifiers && item.modifiers.length > 0 ? `<div style="font-size:0.75rem;color:#f59e0b;margin-top:2px;">↳ ${escapeHtml(item.modifiers.join(', '))}</div>` : ''}
-                    ${item.kitchenComment ? `<div style="font-size:0.72rem;color:#94a3b8;font-style:italic;margin-top:1px;">💬 ${escapeHtml(item.kitchenComment)}</div>` : ''}
+                    <span class="cart-item-meta">${unitPrice.toFixed(2)} € × ${item.quantity} ${item.originalUnitPrice ? `<span style="text-decoration:line-through; color:var(--text-muted); margin-inline-start:4px;">(${Number(item.originalUnitPrice).toFixed(2)} €)</span>` : ''} ${item.modifiersPriceExtra ? `<span style="color:var(--success); font-weight:600;">${t('order.modifiers_extra_note', { amount: Number(item.modifiersPriceExtra).toFixed(2) })}</span>` : ''} ${t('order.cart_item_vat_suffix', { vat: effectiveVatPercent })}</span>
+                    ${item.modifiers && item.modifiers.length > 0 ? `<div style="font-size:0.75rem;color:var(--accent);margin-top:2px;">↳ ${escapeHtml(item.modifiers.join(', '))}</div>` : ''}
+                    ${item.kitchenComment ? `<div style="font-size:0.72rem;color:var(--text-muted);font-style:italic;margin-top:1px;">💬 ${escapeHtml(item.kitchenComment)}</div>` : ''}
                 </div>
                 <div class="cart-item-controls">
                     <button class="btn-qty" data-action="minus" data-idx="${index}">-</button>
                     <span style="font-weight:700;">${item.quantity}</span>
                     <button class="btn-qty" data-action="plus" data-idx="${index}">+</button>
-                    <span class="cart-item-price" style="${item.isComp ? 'text-decoration:line-through;color:#94a3b8;' : ''}">${lineTtc.toFixed(2)} €</span>
+                    <span class="cart-item-price" style="${item.isComp ? 'text-decoration:line-through;color:var(--text-muted);' : ''}">${lineTtc.toFixed(2)} €</span>
                 </div>
             `;
             elements.cartItemsList.appendChild(row);
@@ -1826,7 +1826,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const ctx = canvas.getContext('2d');
         let isDrawing = false;
 
-        ctx.strokeStyle = '#38bdf8';
+        ctx.strokeStyle = '#1e1b17';
         ctx.lineWidth = 2.5;
         ctx.lineCap = 'round';
 
@@ -2241,7 +2241,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
             card.innerHTML = `
                 <div>
-                    <div style="font-weight:700; font-size:1rem; color:#f8fafc;">${h.customerLabel ? escapeHtml(h.customerLabel) : t('order.held_card_default_name')}</div>
+                    <div style="font-weight:700; font-size:1rem; color:var(--text-main);">${h.customerLabel ? escapeHtml(h.customerLabel) : t('order.held_card_default_name')}</div>
                     <div style="font-size:0.8rem; color:var(--text-muted); margin-top:2px;">
                         ${t('order.held_card_meta', { count: h.itemCount, amount: totalAmount.toFixed(2), time: heldTime })}
                     </div>
@@ -2250,7 +2250,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <button type="button" class="btn-action btn-pay btn-recall-held" data-id="${escapeHtml(holdId)}" style="padding:8px 14px; font-size:0.85rem;">
                         ${t('order.held_recall_btn')}
                     </button>
-                    <button type="button" class="btn-secondary btn-void-held" data-id="${escapeHtml(holdId)}" style="padding:8px 12px; font-size:0.85rem; color:#ef4444; border-color:rgba(239,68,68,0.3);">
+                    <button type="button" class="btn-secondary btn-void-held" data-id="${escapeHtml(holdId)}" style="padding:8px 12px; font-size:0.85rem; color:var(--danger); border-color:rgba(212,70,42,0.3);">
                         ${t('order.held_void_btn')}
                     </button>
                 </div>
@@ -2527,7 +2527,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <div class="table-sub">${t('floor.table_capacity', { capacity: table.capacity })}</div>
                 <div class="table-sub">${t('floor.table_status_label', { status: getTableStatusLabel(table.status) })}</div>
                 <div class="table-sub">${t('floor.table_waiter', { name: escapeHtml(table.assignedWaiterName || '—') })}</div>
-                ${table.coversCount > 0 ? `<div style="font-size:0.75rem;color:#10b981;font-weight:700;margin-top:4px;">${t('floor.table_covers_active', { count: table.coversCount })}</div>` : ''}
+                ${table.coversCount > 0 ? `<div style="font-size:0.75rem;color:var(--success);font-weight:700;margin-top:4px;">${t('floor.table_covers_active', { count: table.coversCount })}</div>` : ''}
                 ${totalHtml}
             `;
 
@@ -2718,12 +2718,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 elServices.innerHTML = `<p class="text-muted">${t('admin.dash_no_services')}</p>`;
             } else {
                 elServices.innerHTML = data.services.map(s => `
-                    <div style="background:rgba(255,255,255,0.03); padding:12px; border-radius:8px; border:1px solid rgba(255,255,255,0.06);">
+                    <div style="background:rgba(30,27,23,0.03); padding:12px; border-radius:8px; border:1px solid rgba(30,27,23,0.06);">
                         <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
                             <strong>${escapeHtml(s.serviceName)}</strong>
-                            <strong style="color:#10b981; direction:ltr; unicode-bidi:isolate;">${s.salesTtc.toFixed(2)} €</strong>
+                            <strong style="color:var(--success); direction:ltr; unicode-bidi:isolate;">${s.salesTtc.toFixed(2)} €</strong>
                         </div>
-                        <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:#94a3b8;">
+                        <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:var(--text-muted);">
                             <span>${t('admin.dash_service_summary', { orders: s.ordersCount, covers: s.coversCount })}</span>
                             <span>${t('admin.dash_avg_per_cover', { amount: s.averageCoverTtc.toFixed(2) })}</span>
                         </div>
@@ -2739,13 +2739,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 elPayments.innerHTML = `<p class="text-muted">${t('admin.dash_no_payments')}</p>`;
             } else {
                 elPayments.innerHTML = data.paymentMethods.map(p => `
-                    <div style="background:rgba(255,255,255,0.03); padding:10px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.06);">
+                    <div style="background:rgba(30,27,23,0.03); padding:10px 12px; border-radius:8px; border:1px solid rgba(30,27,23,0.06);">
                         <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:0.88rem;">
-                            <span>${escapeHtml(p.methodName)} <span style="color:#94a3b8; font-size:0.78rem;">(${p.transactionsCount} tx)</span></span>
-                            <strong style="direction:ltr; unicode-bidi:isolate;">${p.totalAmount.toFixed(2)} € <span style="color:#38bdf8; font-size:0.8rem;">(${p.percentageOfTotal}%)</span></strong>
+                            <span>${escapeHtml(p.methodName)} <span style="color:var(--text-muted); font-size:0.78rem;">(${p.transactionsCount} tx)</span></span>
+                            <strong style="direction:ltr; unicode-bidi:isolate;">${p.totalAmount.toFixed(2)} € <span style="color:var(--primary); font-size:0.8rem;">(${p.percentageOfTotal}%)</span></strong>
                         </div>
-                        <div style="background:rgba(255,255,255,0.08); height:6px; border-radius:3px; overflow:hidden;">
-                            <div style="background:#38bdf8; height:100%; width:${Math.min(100, Math.max(0, p.percentageOfTotal))}%;"></div>
+                        <div style="background:rgba(30,27,23,0.08); height:6px; border-radius:3px; overflow:hidden;">
+                            <div style="background:var(--primary); height:100%; width:${Math.min(100, Math.max(0, p.percentageOfTotal))}%;"></div>
                         </div>
                     </div>
                 `).join('');
@@ -2759,13 +2759,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 elTopProds.innerHTML = `<p class="text-muted">${t('admin.dash_no_sales')}</p>`;
             } else {
                 elTopProds.innerHTML = data.topProducts.map((prod, idx) => `
-                    <div style="background:rgba(255,255,255,0.03); padding:10px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.06);">
+                    <div style="background:rgba(30,27,23,0.03); padding:10px 12px; border-radius:8px; border:1px solid rgba(30,27,23,0.06);">
                         <div style="display:flex; justify-content:space-between; margin-bottom:4px; font-size:0.88rem;">
-                            <span><strong style="color:#fbbf24; margin-inline-end:6px;">#${idx + 1}</strong> ${escapeHtml(prod.productName)} <span style="color:#94a3b8; font-size:0.8rem;">(x${prod.quantitySold})</span></span>
-                            <strong style="color:#10b981; direction:ltr; unicode-bidi:isolate;">${prod.totalSalesTtc.toFixed(2)} € <span style="color:#94a3b8; font-size:0.75rem;">(${prod.percentageOfTotal}%)</span></strong>
+                            <span><strong style="color:var(--accent); margin-inline-end:6px;">#${idx + 1}</strong> ${escapeHtml(prod.productName)} <span style="color:var(--text-muted); font-size:0.8rem;">(x${prod.quantitySold})</span></span>
+                            <strong style="color:var(--success); direction:ltr; unicode-bidi:isolate;">${prod.totalSalesTtc.toFixed(2)} € <span style="color:var(--text-muted); font-size:0.75rem;">(${prod.percentageOfTotal}%)</span></strong>
                         </div>
-                        <div style="background:rgba(255,255,255,0.08); height:6px; border-radius:3px; overflow:hidden;">
-                            <div style="background:#10b981; height:100%; width:${Math.min(100, Math.max(0, prod.percentageOfTotal))}%;"></div>
+                        <div style="background:rgba(30,27,23,0.08); height:6px; border-radius:3px; overflow:hidden;">
+                            <div style="background:var(--success); height:100%; width:${Math.min(100, Math.max(0, prod.percentageOfTotal))}%;"></div>
                         </div>
                     </div>
                 `).join('');
@@ -2779,13 +2779,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 elStaff.innerHTML = `<p class="text-muted">${t('admin.dash_no_staff_activity')}</p>`;
             } else {
                 elStaff.innerHTML = data.staffPerformance.map(s => `
-                    <div style="background:rgba(255,255,255,0.03); padding:10px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.06); display:flex; justify-content:space-between; align-items:center;">
+                    <div style="background:rgba(30,27,23,0.03); padding:10px 12px; border-radius:8px; border:1px solid rgba(30,27,23,0.06); display:flex; justify-content:space-between; align-items:center;">
                         <div>
                             <strong>👤 ${escapeHtml(s.serverName)}</strong>
-                            <div style="font-size:0.78rem; color:#94a3b8; margin-top:2px;">${t('admin.dash_staff_summary', { tables: s.tablesServedCount, amount: s.averageTableTtc.toFixed(2) })}</div>
+                            <div style="font-size:0.78rem; color:var(--text-muted); margin-top:2px;">${t('admin.dash_staff_summary', { tables: s.tablesServedCount, amount: s.averageTableTtc.toFixed(2) })}</div>
                         </div>
                         <div style="text-align:end;">
-                            <strong style="color:#c084fc; font-size:1.05rem; direction:ltr; unicode-bidi:isolate;">${s.totalSalesTtc.toFixed(2)} €</strong>
+                            <strong style="color:var(--text-main); font-size:1.05rem; direction:ltr; unicode-bidi:isolate;">${s.totalSalesTtc.toFixed(2)} €</strong>
                         </div>
                     </div>
                 `).join('');
@@ -2805,10 +2805,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             row.innerHTML = `
                 <div>
                     <strong>${escapeHtml(p.name)}</strong> ${t('admin.catalog_row_price_vat', { price: p.price.toFixed(2), rate: p.taxRatePercent })}
-                    <small style="display:block;color:#94a3b8;">${t('admin.catalog_row_station', { station: escapeHtml(p.preparationStationId || 'HOT') })}${p.isQuickKey ? ' | ' + t('admin.catalog_row_quick_key') : ''}</small>
+                    <small style="display:block;color:var(--text-muted);">${t('admin.catalog_row_station', { station: escapeHtml(p.preparationStationId || 'HOT') })}${p.isQuickKey ? ' | ' + t('admin.catalog_row_quick_key') : ''}</small>
                 </div>
                 <div style="display:flex; gap:6px;">
-                    <button class="btn-archive btn-edit-product" data-id="${escapeHtml(p.id)}" style="background:rgba(59,130,246,0.2); border-color:rgba(59,130,246,0.4); color:#60a5fa;">${t('admin.btn_edit_row')}</button>
+                    <button class="btn-archive btn-edit-product" data-id="${escapeHtml(p.id)}" style="background:rgba(30,27,23,0.2); border-color:rgba(30,27,23,0.4); color:var(--primary);">${t('admin.btn_edit_row')}</button>
                     <button class="btn-archive btn-del-product" data-id="${escapeHtml(p.id)}">${t('admin.btn_deactivate')}</button>
                 </div>
             `;
@@ -2872,10 +2872,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 row.innerHTML = `
                     <div>
                         <strong>${escapeHtml(s.name)}</strong>
-                        <small style="display:block;color:#94a3b8;">${t('admin.staff_row_role', { role: escapeHtml(operatorRoleLabel(s.role)) })}</small>
+                        <small style="display:block;color:var(--text-muted);">${t('admin.staff_row_role', { role: escapeHtml(operatorRoleLabel(s.role)) })}</small>
                     </div>
                     <div style="display:flex; gap:6px;">
-                        <button class="btn-archive btn-edit-staff" data-id="${escapeHtml(s.id)}" style="background:rgba(59,130,246,0.2); border-color:rgba(59,130,246,0.4); color:#60a5fa;">${t('admin.btn_edit_row')}</button>
+                        <button class="btn-archive btn-edit-staff" data-id="${escapeHtml(s.id)}" style="background:rgba(30,27,23,0.2); border-color:rgba(30,27,23,0.4); color:var(--primary);">${t('admin.btn_edit_row')}</button>
                         <button class="btn-archive btn-del-staff" data-id="${escapeHtml(s.id)}">${t('admin.btn_deactivate')}</button>
                     </div>
                 `;
@@ -2938,9 +2938,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         const el = document.getElementById('fiscalCertBadge');
         if (!el) return;
         if (certNumber && certNumber.trim()) {
-            el.innerHTML = `<span style="display:inline-block; padding:4px 10px; border-radius:999px; background:rgba(16,185,129,0.2); color:#10b981; font-weight:600; font-size:0.82rem;">✅ ${t('fiscal.cert_label')}: ${escapeHtml(certNumber.trim())}</span>`;
+            el.innerHTML = `<span style="display:inline-block; padding:4px 10px; border-radius:999px; background:rgba(47,125,79,0.2); color:var(--success); font-weight:600; font-size:0.82rem;">✅ ${t('fiscal.cert_label')}: ${escapeHtml(certNumber.trim())}</span>`;
         } else {
-            el.innerHTML = `<span style="display:inline-block; padding:4px 10px; border-radius:999px; background:rgba(234,179,8,0.2); color:#eab308; font-weight:600; font-size:0.82rem;">⏳ ${t('fiscal.cert_pending')}</span>`;
+            el.innerHTML = `<span style="display:inline-block; padding:4px 10px; border-radius:999px; background:rgba(185,119,14,0.2); color:var(--accent); font-weight:600; font-size:0.82rem;">⏳ ${t('fiscal.cert_pending')}</span>`;
         }
     }
 
@@ -3009,7 +3009,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             <div class="item-list-row" data-job-id="${escapeHtml(j.id)}">
                 <div>
                     ${kinds[String(j.kind).toLowerCase()] || escapeHtml(j.kind)} · ${new Date(j.createdAtUtc).toLocaleTimeString(window.i18n.locale, { hour: '2-digit', minute: '2-digit' })}
-                    ${j.lastError ? `<small style="display:block;color:#f87171;">${escapeHtml(j.lastError)}</small>` : ''}
+                    ${j.lastError ? `<small style="display:block;color:var(--danger);">${escapeHtml(j.lastError)}</small>` : ''}
                 </div>
                 <button type="button" class="btn-archive btn-print-job-action" data-action="${j.status === 'Failed' ? 'retry' : 'cancel'}">${j.status === 'Failed' ? t('admin.print_job_retry') : t('admin.print_job_cancel')}</button>
             </div>`).join('');
@@ -3043,13 +3043,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 row.className = 'item-list-row';
                 row.innerHTML = `
                     <div>
-                        <strong>${escapeHtml(pr.name)}</strong> (${escapeHtml(pr.ipAddress)}:${escapeHtml(pr.port)})${pr.textMode ? ` · ${t('admin.printer_text_mode_badge')}` : ''}${pr.isActive === false ? ` <span style="color:#f87171;">${t('admin.printer_row_inactive_suffix')}</span>` : ''}
+                        <strong>${escapeHtml(pr.name)}</strong> (${escapeHtml(pr.ipAddress)}:${escapeHtml(pr.port)})${pr.textMode ? ` · ${t('admin.printer_text_mode_badge')}` : ''}${pr.isActive === false ? ` <span style="color:var(--danger);">${t('admin.printer_row_inactive_suffix')}</span>` : ''}
                         <span class="printer-status">${status}${pending}</span>
-                        <small style="display:block;color:#94a3b8;">${t('admin.printer_row_meta', { stations: escapeHtml((pr.assignedStationIds || []).join(', ') || '—'), drawer: pr.openCashDrawerOnReceipt ? t('common.yes') : t('common.no') })}</small>
+                        <small style="display:block;color:var(--text-muted);">${t('admin.printer_row_meta', { stations: escapeHtml((pr.assignedStationIds || []).join(', ') || '—'), drawer: pr.openCashDrawerOnReceipt ? t('common.yes') : t('common.no') })}</small>
                     </div>
                     <div style="display:flex; gap:6px;">
                         ${hasJobs ? `<button class="btn-archive btn-printer-jobs" data-id="${escapeHtml(pr.id)}">${t('admin.printer_jobs_btn')}</button>` : ''}
-                        <button class="btn-archive btn-edit-printer" data-id="${escapeHtml(pr.id)}" style="background:rgba(59,130,246,0.2); border-color:rgba(59,130,246,0.4); color:#60a5fa;">${t('admin.btn_edit_row')}</button>
+                        <button class="btn-archive btn-edit-printer" data-id="${escapeHtml(pr.id)}" style="background:rgba(30,27,23,0.2); border-color:rgba(30,27,23,0.4); color:var(--primary);">${t('admin.btn_edit_row')}</button>
                         <button class="btn-archive btn-del-printer" data-id="${escapeHtml(pr.id)}">${pr.isActive === false ? t('admin.btn_reactivate') : t('admin.btn_deactivate')}</button>
                     </div>
                 `;
@@ -3276,10 +3276,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <input type="checkbox" class="cb-active-rule" data-rule-id="${escapeHtml(r.id)}" ${hhAdminState.selectedActiveRuleIds.has(r.id) ? 'checked' : ''}>
                         <div>
                             <strong>🏷️ ${r.targetName ? escapeHtml(r.targetName) : t('admin.hh_category_fallback_name')}</strong>
-                            <span style="color:#f59e0b; margin-inline-start:6px; font-weight:bold;">-${r.discountPercent}%</span>
+                            <span style="color:var(--accent); margin-inline-start:6px; font-weight:bold;">-${r.discountPercent}%</span>
                         </div>
                     </div>
-                    <button type="button" class="btn-archive btn-del-single-rule" data-rule-id="${escapeHtml(r.id)}" style="color:#f87171; border-color:rgba(239,68,68,0.3); padding:4px 8px; font-size:0.8rem;">🗑️</button>
+                    <button type="button" class="btn-archive btn-del-single-rule" data-rule-id="${escapeHtml(r.id)}" style="color:var(--danger); border-color:rgba(212,70,42,0.3); padding:4px 8px; font-size:0.8rem;">🗑️</button>
                 </div>
             `).join('');
         }
@@ -3293,10 +3293,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <input type="checkbox" class="cb-active-rule" data-rule-id="${escapeHtml(r.id)}" ${hhAdminState.selectedActiveRuleIds.has(r.id) ? 'checked' : ''}>
                         <div>
                             <strong>🍺 ${r.targetName ? escapeHtml(r.targetName) : t('admin.hh_product_fallback_name')}</strong>
-                            <span style="color:#38bdf8; margin-inline-start:6px; font-weight:bold;">${r.fixedPrice ? r.fixedPrice.toFixed(2) + ' €' : '-' + r.discountPercent + '%'}</span>
+                            <span style="color:var(--primary); margin-inline-start:6px; font-weight:bold;">${r.fixedPrice ? r.fixedPrice.toFixed(2) + ' €' : '-' + r.discountPercent + '%'}</span>
                         </div>
                     </div>
-                    <button type="button" class="btn-archive btn-del-single-rule" data-rule-id="${escapeHtml(r.id)}" style="color:#f87171; border-color:rgba(239,68,68,0.3); padding:4px 8px; font-size:0.8rem;">🗑️</button>
+                    <button type="button" class="btn-archive btn-del-single-rule" data-rule-id="${escapeHtml(r.id)}" style="color:var(--danger); border-color:rgba(212,70,42,0.3); padding:4px 8px; font-size:0.8rem;">🗑️</button>
                 </div>
             `).join('');
         }
@@ -3335,17 +3335,17 @@ document.addEventListener('DOMContentLoaded', async () => {
             const isSelected = s.id === hhAdminState.selectedScheduleId;
 
             return `
-                <div style="background:rgba(255,255,255,0.03); padding:12px; border-radius:8px; border:1px solid ${isSelected ? 'var(--primary)' : 'rgba(255,255,255,0.06)'}; display:flex; justify-content:space-between; align-items:center;">
+                <div style="background:rgba(30,27,23,0.03); padding:12px; border-radius:8px; border:1px solid ${isSelected ? 'var(--primary)' : 'rgba(30,27,23,0.06)'}; display:flex; justify-content:space-between; align-items:center;">
                     <div>
                         <strong>🍻 ${escapeHtml(s.name)}</strong>
-                        <span style="font-size:0.75rem; color:#f59e0b; margin-inline-start:6px;">${escapeHtml(s.startTime)} - ${escapeHtml(s.endTime)}</span>
-                        <span style="font-size:0.72rem; background:rgba(59,130,246,0.2); color:#60a5fa; border:1px solid rgba(59,130,246,0.3); padding:2px 6px; border-radius:10px; margin-inline-start:6px;">${t('admin.hh_priority_value', { value: s.priority || 1 })}</span>
-                        <div style="font-size:0.8rem; color:#94a3b8; margin-top:2px;">${t('admin.hh_days_value', { days: escapeHtml(dayLabels) })} ${s.appliesToTakeaway ? t('admin.hh_takeaway_included') : t('admin.hh_dine_in_only')}</div>
-                        <div style="font-size:0.78rem; color:#38bdf8; margin-top:2px;">${t('admin.hh_rules_configured_count', { count: rulesCount })}</div>
+                        <span style="font-size:0.75rem; color:var(--accent); margin-inline-start:6px;">${escapeHtml(s.startTime)} - ${escapeHtml(s.endTime)}</span>
+                        <span style="font-size:0.72rem; background:rgba(30,27,23,0.2); color:var(--primary); border:1px solid rgba(30,27,23,0.3); padding:2px 6px; border-radius:10px; margin-inline-start:6px;">${t('admin.hh_priority_value', { value: s.priority || 1 })}</span>
+                        <div style="font-size:0.8rem; color:var(--text-muted); margin-top:2px;">${t('admin.hh_days_value', { days: escapeHtml(dayLabels) })} ${s.appliesToTakeaway ? t('admin.hh_takeaway_included') : t('admin.hh_dine_in_only')}</div>
+                        <div style="font-size:0.78rem; color:var(--primary); margin-top:2px;">${t('admin.hh_rules_configured_count', { count: rulesCount })}</div>
                     </div>
                     <div style="display:flex; gap:8px;">
                         <button class="btn-primary btn-select-hh-sched" data-id="${escapeHtml(s.id)}" style="padding:6px 12px; font-size:0.8rem;">${t('admin.hh_manage_pricing')}</button>
-                        <button class="btn-archive btn-del-hh-sched" data-id="${escapeHtml(s.id)}" style="color:#f87171; border-color:rgba(239,68,68,0.3); padding:6px 10px; font-size:0.8rem;">🗑️</button>
+                        <button class="btn-archive btn-del-hh-sched" data-id="${escapeHtml(s.id)}" style="color:var(--danger); border-color:rgba(212,70,42,0.3); padding:6px 10px; font-size:0.8rem;">🗑️</button>
                     </div>
                 </div>
             `;
@@ -3732,7 +3732,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     isQuickKey: isQuick,
                     displayOrder: state.products.length + 1,
                     description: '',
-                    colorHex: '#3b82f6'
+                    colorHex: 'var(--primary)'
                 })
             });
 
@@ -3939,7 +3939,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 if (elements.fecStatusMessage) {
                     elements.fecStatusMessage.textContent = t('fiscal.fec_generating_status');
-                    elements.fecStatusMessage.style.color = '#38bdf8';
+                    elements.fecStatusMessage.style.color = 'var(--primary)';
                 }
 
                 try {
@@ -3972,19 +3972,19 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                         if (elements.fecStatusMessage) {
                             elements.fecStatusMessage.textContent = t('fiscal.fec_generated_status', { filename });
-                            elements.fecStatusMessage.style.color = '#10b981';
+                            elements.fecStatusMessage.style.color = 'var(--success)';
                         }
                         showToast(t('fiscal.fec_downloaded_toast', { filename }), 'success');
                     } else if (res.status === 401 || res.status === 403) {
                         if (elements.fecStatusMessage) {
                             elements.fecStatusMessage.textContent = t('fiscal.fec_insufficient_privileges_status');
-                            elements.fecStatusMessage.style.color = '#ef4444';
+                            elements.fecStatusMessage.style.color = 'var(--danger)';
                         }
                         showToast(t('fiscal.fec_export_denied_toast'), 'error');
                     } else {
                         if (elements.fecStatusMessage) {
                             elements.fecStatusMessage.textContent = t('fiscal.fec_generation_error_status', { status: res.status });
-                            elements.fecStatusMessage.style.color = '#ef4444';
+                            elements.fecStatusMessage.style.color = 'var(--danger)';
                         }
                         showToast(t('fiscal.fec_generation_error_toast'), 'error');
                     }
@@ -3992,7 +3992,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     console.error('Erreur export FEC:', err);
                     if (elements.fecStatusMessage) {
                         elements.fecStatusMessage.textContent = t('fiscal.fec_communication_error_status');
-                        elements.fecStatusMessage.style.color = '#ef4444';
+                        elements.fecStatusMessage.style.color = 'var(--danger)';
                     }
                     showToast(t('fiscal.fec_download_error_toast'), 'error');
                 }
@@ -4058,9 +4058,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 showToast(err, 'error');
                 if (elements.reprintReceiptResult) {
                     elements.reprintReceiptResult.style.display = 'block';
-                    elements.reprintReceiptResult.style.background = 'rgba(239,68,68,0.15)';
-                    elements.reprintReceiptResult.style.border = '1px solid #ef4444';
-                    elements.reprintReceiptResult.style.color = '#ef4444';
+                    elements.reprintReceiptResult.style.background = 'rgba(212,70,42,0.15)';
+                    elements.reprintReceiptResult.style.border = '1px solid var(--danger)';
+                    elements.reprintReceiptResult.style.color = 'var(--danger)';
                     elements.reprintReceiptResult.textContent = err;
                 }
                 return null;
@@ -4070,9 +4070,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             showToast(msg, 'success');
             if (elements.reprintReceiptResult) {
                 elements.reprintReceiptResult.style.display = 'block';
-                elements.reprintReceiptResult.style.background = 'rgba(16,185,129,0.15)';
-                elements.reprintReceiptResult.style.border = '1px solid #10b981';
-                elements.reprintReceiptResult.style.color = '#10b981';
+                elements.reprintReceiptResult.style.background = 'rgba(47,125,79,0.15)';
+                elements.reprintReceiptResult.style.border = '1px solid var(--success)';
+                elements.reprintReceiptResult.style.color = 'var(--success)';
                 elements.reprintReceiptResult.textContent = msg;
             }
             return data;
@@ -4142,14 +4142,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             elements.slipTag.textContent = isZClosure
                 ? t('fiscal.slip_chain_sealed')
                 : t('fiscal.slip_live_data_unsealed');
-            elements.slipTag.style.color = isZClosure ? '#10b981' : '#38bdf8';
+            elements.slipTag.style.color = isZClosure ? 'var(--success)' : 'var(--primary)';
         }
 
         // Dynamic VAT rows
         if (elements.slipVatBreakdown) {
             if (data.vatBreakdown && Object.keys(data.vatBreakdown).length > 0) {
                 elements.slipVatBreakdown.innerHTML = Object.entries(data.vatBreakdown).map(([rate, amount]) => `
-                    <div class="slip-row" style="font-size:0.85rem; color:#94a3b8;">
+                    <div class="slip-row" style="font-size:0.85rem; color:var(--text-muted);">
                         <span>${t('fiscal.slip_vat_row_label', { rate: escapeHtml(rate) })}</span>
                         <span>${Number(amount).toFixed(2)} €</span>
                     </div>
@@ -4163,7 +4163,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (elements.slipPaymentBreakdown) {
             if (data.paymentTotals && Object.keys(data.paymentTotals).length > 0) {
                 elements.slipPaymentBreakdown.innerHTML = Object.entries(data.paymentTotals).map(([method, amount]) => `
-                    <div class="slip-row" style="font-size:0.85rem; color:#94a3b8;">
+                    <div class="slip-row" style="font-size:0.85rem; color:var(--text-muted);">
                         <span>${t('fiscal.slip_payment_row_label', { method: escapeHtml(method) })}</span>
                         <span>${Number(amount).toFixed(2)} €</span>
                     </div>
@@ -4180,14 +4180,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (elements.fiscalVerificationSummary) {
             if (data.isValid) {
-                elements.fiscalVerificationSummary.style.background = 'rgba(16, 185, 129, 0.15)';
-                elements.fiscalVerificationSummary.style.color = '#10b981';
-                elements.fiscalVerificationSummary.style.border = '1px solid rgba(16, 185, 129, 0.3)';
+                elements.fiscalVerificationSummary.style.background = 'rgba(47,125,79, 0.15)';
+                elements.fiscalVerificationSummary.style.color = 'var(--success)';
+                elements.fiscalVerificationSummary.style.border = '1px solid rgba(47,125,79, 0.3)';
                 elements.fiscalVerificationSummary.innerHTML = '✓ ' + t('fiscal.verification_success') + ' (' + new Date(data.checkedAtUtc).toLocaleString() + ')';
             } else {
-                elements.fiscalVerificationSummary.style.background = 'rgba(239, 68, 68, 0.15)';
-                elements.fiscalVerificationSummary.style.color = '#ef4444';
-                elements.fiscalVerificationSummary.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+                elements.fiscalVerificationSummary.style.background = 'rgba(212,70,42, 0.15)';
+                elements.fiscalVerificationSummary.style.color = 'var(--danger)';
+                elements.fiscalVerificationSummary.style.border = '1px solid rgba(212,70,42, 0.3)';
                 elements.fiscalVerificationSummary.innerHTML = '⚠️ ' + t('fiscal.verification_failed') + ' (' + new Date(data.checkedAtUtc).toLocaleString() + ')';
             }
         }
@@ -4196,7 +4196,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             elements.fiscalChainsTableBody.innerHTML = '';
             (data.chains || []).forEach(chain => {
                 const tr = document.createElement('tr');
-                tr.style.borderBottom = '1px solid rgba(255,255,255,0.05)';
+                tr.style.borderBottom = '1px solid rgba(30,27,23,0.05)';
 
                 const tdChain = document.createElement('td');
                 tdChain.style.padding = '8px';
@@ -4216,14 +4216,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const tdStatus = document.createElement('td');
                 tdStatus.style.padding = '8px';
                 tdStatus.innerHTML = chain.isValid
-                    ? '<span style="color:#10b981; font-weight:600;">' + t('fiscal.status_valid') + '</span>'
-                    : '<span style="color:#ef4444; font-weight:600;">' + t('fiscal.status_broken') + '</span>';
+                    ? '<span style="color:var(--success); font-weight:600;">' + t('fiscal.status_valid') + '</span>'
+                    : '<span style="color:var(--danger); font-weight:600;">' + t('fiscal.status_broken') + '</span>';
                 tr.appendChild(tdStatus);
 
                 const tdDetails = document.createElement('td');
                 tdDetails.style.padding = '8px';
                 if (chain.break) {
-                    tdDetails.innerHTML = `<span style="color:#ef4444;">${escapeHtml(chain.break.kind)} (seq #${escapeHtml(chain.break.sequenceNumber)}${chain.break.reference ? ' - ' + escapeHtml(chain.break.reference) : ''})</span>`;
+                    tdDetails.innerHTML = `<span style="color:var(--danger);">${escapeHtml(chain.break.kind)} (seq #${escapeHtml(chain.break.sequenceNumber)}${chain.break.reference ? ' - ' + escapeHtml(chain.break.reference) : ''})</span>`;
                 } else {
                     tdDetails.textContent = '—';
                 }
@@ -4284,14 +4284,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         elements.archivesTableBody.innerHTML = '';
         if (!archives || archives.length === 0) {
             const tr = document.createElement('tr');
-            tr.innerHTML = `<td colspan="7" style="padding:16px; text-align:center; color:#94a3b8;">—</td>`;
+            tr.innerHTML = `<td colspan="7" style="padding:16px; text-align:center; color:var(--text-muted);">—</td>`;
             elements.archivesTableBody.appendChild(tr);
             return;
         }
 
         archives.forEach(a => {
             const tr = document.createElement('tr');
-            tr.style.borderBottom = '1px solid rgba(255,255,255,0.05)';
+            tr.style.borderBottom = '1px solid rgba(30,27,23,0.05)';
             const dateStr = a.createdAtUtc ? new Date(a.createdAtUtc).toLocaleString() : '—';
             const sigTrunc = a.signatureHash ? a.signatureHash.substring(0, 16) + '...' : '—';
             const sizeKb = (a.fileSizeBytes / 1024).toFixed(1) + ' KB';
@@ -4299,12 +4299,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             tr.innerHTML = `
                 <td style="padding:8px; font-family:monospace;">#${a.archiveSequence}</td>
                 <td style="padding:8px; font-weight:600; font-family:monospace; font-size:0.85rem;">${escapeHtml(a.fileName)}</td>
-                <td style="padding:8px;"><span style="display:inline-block; padding:2px 8px; border-radius:4px; font-size:0.78rem; font-weight:600; background:rgba(59,130,246,0.15); color:#60a5fa;">${escapeHtml(a.periodKey)}</span></td>
-                <td style="padding:8px; font-size:0.85rem; color:#94a3b8;">${sizeKb}</td>
-                <td style="padding:8px; font-size:0.82rem; color:#94a3b8;">${dateStr}</td>
-                <td style="padding:8px; font-family:monospace; font-size:0.75rem; color:#a78bfa;" title="${escapeHtml(a.signatureHash || '')}">${escapeHtml(sigTrunc)}</td>
+                <td style="padding:8px;"><span style="display:inline-block; padding:2px 8px; border-radius:4px; font-size:0.78rem; font-weight:600; background:rgba(30,27,23,0.15); color:var(--primary);">${escapeHtml(a.periodKey)}</span></td>
+                <td style="padding:8px; font-size:0.85rem; color:var(--text-muted);">${sizeKb}</td>
+                <td style="padding:8px; font-size:0.82rem; color:var(--text-muted);">${dateStr}</td>
+                <td style="padding:8px; font-family:monospace; font-size:0.75rem; color:var(--text-muted);" title="${escapeHtml(a.signatureHash || '')}">${escapeHtml(sigTrunc)}</td>
                 <td style="padding:8px;">
-                    <a href="/api/fiscal/archives/${escapeHtml(a.id)}/file" download="${escapeHtml(a.fileName)}" class="btn-fiscal" style="padding:4px 10px; font-size:0.78rem; background:#3b82f6; color:#fff; text-decoration:none; display:inline-block; border-radius:4px;">${t('fiscal.action_download')}</a>
+                    <a href="/api/fiscal/archives/${escapeHtml(a.id)}/file" download="${escapeHtml(a.fileName)}" class="btn-fiscal" style="padding:4px 10px; font-size:0.78rem; background:var(--primary); color:#fff; text-decoration:none; display:inline-block; border-radius:4px;">${t('fiscal.action_download')}</a>
                 </td>
             `;
             elements.archivesTableBody.appendChild(tr);
@@ -4316,14 +4316,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         elements.periodClosuresTableBody.innerHTML = '';
         if (!closures || closures.length === 0) {
             const tr = document.createElement('tr');
-            tr.innerHTML = `<td colspan="8" style="padding:16px; text-align:center; color:#94a3b8;">—</td>`;
+            tr.innerHTML = `<td colspan="8" style="padding:16px; text-align:center; color:var(--text-muted);">—</td>`;
             elements.periodClosuresTableBody.appendChild(tr);
             return;
         }
 
         closures.forEach(c => {
             const tr = document.createElement('tr');
-            tr.style.borderBottom = '1px solid rgba(255,255,255,0.05)';
+            tr.style.borderBottom = '1px solid rgba(30,27,23,0.05)';
             const typeLabel = c.periodType === 'monthly' ? t('fiscal.period_monthly') : t('fiscal.period_annual');
             const totalTtcFormatted = (c.totalTtcCents != null ? (c.totalTtcCents / 100).toFixed(2) : (c.totalTtc || 0).toFixed(2)) + ' €';
             const grandTotalFormatted = (c.perpetualGrandTotalCents != null ? (c.perpetualGrandTotalCents / 100).toFixed(2) : (c.perpetualGrandTotal || 0).toFixed(2)) + ' €';
@@ -4333,19 +4333,19 @@ document.addEventListener('DOMContentLoaded', async () => {
             const existingArchive = (state.archives || []).find(a => a.periodClosureId === c.id);
             let actionHtml = '';
             if (existingArchive) {
-                actionHtml = `<a href="/api/fiscal/archives/${escapeHtml(existingArchive.id)}/file" download="${escapeHtml(existingArchive.fileName)}" class="btn-fiscal" style="padding:4px 8px; font-size:0.75rem; background:#3b82f6; color:#fff; text-decoration:none; display:inline-block; border-radius:4px;">${t('fiscal.action_download')}</a>`;
+                actionHtml = `<a href="/api/fiscal/archives/${escapeHtml(existingArchive.id)}/file" download="${escapeHtml(existingArchive.fileName)}" class="btn-fiscal" style="padding:4px 8px; font-size:0.75rem; background:var(--primary); color:#fff; text-decoration:none; display:inline-block; border-radius:4px;">${t('fiscal.action_download')}</a>`;
             } else {
-                actionHtml = `<button class="btn-create-archive" data-closure-id="${escapeHtml(c.id)}" style="padding:4px 8px; font-size:0.75rem; background:#8b5cf6; color:#fff; border:none; border-radius:4px; cursor:pointer;">${t('fiscal.action_archive')}</button>`;
+                actionHtml = `<button class="btn-create-archive" data-closure-id="${escapeHtml(c.id)}" style="padding:4px 8px; font-size:0.75rem; background:#5f6670; color:#fff; border:none; border-radius:4px; cursor:pointer;">${t('fiscal.action_archive')}</button>`;
             }
 
             tr.innerHTML = `
-                <td style="padding:8px;"><span style="display:inline-block; padding:2px 8px; border-radius:4px; font-size:0.78rem; font-weight:600; background:rgba(59,130,246,0.15); color:#60a5fa;">${escapeHtml(typeLabel)}</span></td>
+                <td style="padding:8px;"><span style="display:inline-block; padding:2px 8px; border-radius:4px; font-size:0.78rem; font-weight:600; background:rgba(30,27,23,0.15); color:var(--primary);">${escapeHtml(typeLabel)}</span></td>
                 <td style="padding:8px; font-weight:600;">${escapeHtml(c.periodKey)}</td>
                 <td style="padding:8px; font-family:monospace;">#${c.closureSequence}</td>
                 <td style="padding:8px; font-weight:600;">${totalTtcFormatted}</td>
-                <td style="padding:8px; font-family:monospace; color:#34d399;">${grandTotalFormatted}</td>
-                <td style="padding:8px; font-size:0.82rem; color:#94a3b8;">${dateStr}</td>
-                <td style="padding:8px; font-family:monospace; font-size:0.75rem; color:#a78bfa;" title="${escapeHtml(c.signatureHash || '')}">${escapeHtml(sigTrunc)}</td>
+                <td style="padding:8px; font-family:monospace; color:var(--success);">${grandTotalFormatted}</td>
+                <td style="padding:8px; font-size:0.82rem; color:var(--text-muted);">${dateStr}</td>
+                <td style="padding:8px; font-family:monospace; font-size:0.75rem; color:var(--text-muted);" title="${escapeHtml(c.signatureHash || '')}">${escapeHtml(sigTrunc)}</td>
                 <td style="padding:8px;">${actionHtml}</td>
             `;
             elements.periodClosuresTableBody.appendChild(tr);
@@ -4406,14 +4406,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (elements.archiveVerifyAlert) {
                     elements.archiveVerifyAlert.style.display = 'block';
                     if (result.isValid) {
-                        elements.archiveVerifyAlert.style.background = 'rgba(16,185,129,0.15)';
-                        elements.archiveVerifyAlert.style.color = '#10b981';
-                        elements.archiveVerifyAlert.style.border = '1px solid rgba(16,185,129,0.3)';
+                        elements.archiveVerifyAlert.style.background = 'rgba(47,125,79,0.15)';
+                        elements.archiveVerifyAlert.style.color = 'var(--success)';
+                        elements.archiveVerifyAlert.style.border = '1px solid rgba(47,125,79,0.3)';
                         elements.archiveVerifyAlert.textContent = t('fiscal.archive_valid');
                     } else {
-                        elements.archiveVerifyAlert.style.background = 'rgba(239,68,68,0.15)';
-                        elements.archiveVerifyAlert.style.color = '#ef4444';
-                        elements.archiveVerifyAlert.style.border = '1px solid rgba(239,68,68,0.3)';
+                        elements.archiveVerifyAlert.style.background = 'rgba(212,70,42,0.15)';
+                        elements.archiveVerifyAlert.style.color = 'var(--danger)';
+                        elements.archiveVerifyAlert.style.border = '1px solid rgba(212,70,42,0.3)';
                         if (result.reason === 'hash_mismatch') {
                             elements.archiveVerifyAlert.textContent = t('fiscal.archive_hash_mismatch');
                         } else if (result.reason === 'unknown_archive') {
@@ -4428,9 +4428,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             } else {
                 if (elements.archiveVerifyAlert) {
                     elements.archiveVerifyAlert.style.display = 'block';
-                    elements.archiveVerifyAlert.style.background = 'rgba(239,68,68,0.15)';
-                    elements.archiveVerifyAlert.style.color = '#ef4444';
-                    elements.archiveVerifyAlert.style.border = '1px solid rgba(239,68,68,0.3)';
+                    elements.archiveVerifyAlert.style.background = 'rgba(212,70,42,0.15)';
+                    elements.archiveVerifyAlert.style.color = 'var(--danger)';
+                    elements.archiveVerifyAlert.style.border = '1px solid rgba(212,70,42,0.3)';
                     elements.archiveVerifyAlert.textContent = t('common.error_occurred');
                 }
             }
@@ -4472,9 +4472,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (res.ok) {
                 if (elements.periodClosureAlert) {
                     elements.periodClosureAlert.style.display = 'block';
-                    elements.periodClosureAlert.style.background = 'rgba(16,185,129,0.15)';
-                    elements.periodClosureAlert.style.color = '#10b981';
-                    elements.periodClosureAlert.style.border = '1px solid rgba(16,185,129,0.3)';
+                    elements.periodClosureAlert.style.background = 'rgba(47,125,79,0.15)';
+                    elements.periodClosureAlert.style.color = 'var(--success)';
+                    elements.periodClosureAlert.style.border = '1px solid rgba(47,125,79,0.3)';
                     elements.periodClosureAlert.textContent = t('fiscal.period_closure_success');
                 }
                 showToast(t('fiscal.period_closure_success'), 'success');
@@ -4498,9 +4498,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 if (elements.periodClosureAlert) {
                     elements.periodClosureAlert.style.display = 'block';
-                    elements.periodClosureAlert.style.background = 'rgba(239,68,68,0.15)';
-                    elements.periodClosureAlert.style.color = '#ef4444';
-                    elements.periodClosureAlert.style.border = '1px solid rgba(239,68,68,0.3)';
+                    elements.periodClosureAlert.style.background = 'rgba(212,70,42,0.15)';
+                    elements.periodClosureAlert.style.color = 'var(--danger)';
+                    elements.periodClosureAlert.style.border = '1px solid rgba(212,70,42,0.3)';
                     elements.periodClosureAlert.textContent = msg;
                 }
                 showToast(msg, 'error');
@@ -4509,9 +4509,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const msg = err.message || t('common.error_occurred');
                 if (elements.periodClosureAlert) {
                     elements.periodClosureAlert.style.display = 'block';
-                    elements.periodClosureAlert.style.background = 'rgba(239,68,68,0.15)';
-                    elements.periodClosureAlert.style.color = '#ef4444';
-                    elements.periodClosureAlert.style.border = '1px solid rgba(239,68,68,0.3)';
+                    elements.periodClosureAlert.style.background = 'rgba(212,70,42,0.15)';
+                    elements.periodClosureAlert.style.color = 'var(--danger)';
+                    elements.periodClosureAlert.style.border = '1px solid rgba(212,70,42,0.3)';
                     elements.periodClosureAlert.textContent = msg;
                 }
                 showToast(msg, 'error');
@@ -4551,7 +4551,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const badge = document.getElementById('connectionBadge');
             if (badge) {
                 badge.className = 'status-badge offline';
-                badge.innerHTML = `<span class="pulse-dot" style="background:#ef4444;"></span><span class="status-text">${t('admin.sync_offline_mode')}</span>`;
+                badge.innerHTML = `<span class="pulse-dot" style="background:var(--danger);"></span><span class="status-text">${t('admin.sync_offline_mode')}</span>`;
             }
         }
     }
@@ -4616,7 +4616,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <div>
                         <strong>${escapeHtml(d.name)}</strong>
                         <span style="color:var(--text-muted);">${escapeHtml(d.terminalId)} · ${escapeHtml(deviceRoleLabel(d.role))}</span>
-                        <div style="font-size:0.8rem; color:#94a3b8;">${d.isRevoked ? t('admin.device_revoked') : (d.lastSeenUtc ? t('admin.device_last_seen', { date: new Date(d.lastSeenUtc).toLocaleString(window.i18n.locale) }) : t('admin.device_never_used'))}</div>
+                        <div style="font-size:0.8rem; color:var(--text-muted);">${d.isRevoked ? t('admin.device_revoked') : (d.lastSeenUtc ? t('admin.device_last_seen', { date: new Date(d.lastSeenUtc).toLocaleString(window.i18n.locale) }) : t('admin.device_never_used'))}</div>
                     </div>
                     ${d.isRevoked ? '' : `<select class="device-receipt-printer" data-device-id="${escapeHtml(d.id)}" aria-label="${t('admin.device_receipt_printer_label')}">
                         <option value="">${t('admin.device_receipt_printer_default')}</option>
@@ -4802,7 +4802,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     price: parseFloat(document.getElementById('editProdPrice').value),
                     taxRatePercent: parseFloat(document.getElementById('editProdTax').value),
                     description: current.description || '',
-                    colorHex: current.colorHex || '#3b82f6',
+                    colorHex: current.colorHex || 'var(--primary)',
                     displayOrder: current.displayOrder || 0,
                     isAvailable: true,
                     isActive: true,
@@ -5336,7 +5336,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
 
         elements.inputSlotCustomLabel.value = (slot && slot.customLabel) || '';
-        elements.inputSlotCustomColor.value = (slot && slot.customColorHex) || '#3b82f6';
+        elements.inputSlotCustomColor.value = (slot && slot.customColorHex) || 'var(--primary)';
 
         elements.editSlotModal.classList.add('active');
     }
