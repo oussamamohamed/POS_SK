@@ -89,7 +89,7 @@ struct TicketPanel: View {
         return VStack(alignment: .leading, spacing: 10) {
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(ticket.title).font(.system(size: 22, weight: .bold)).foregroundStyle(Theme.ink).accessibilityIdentifier("ticket.title")
+                    Text(ticket.title).font(Font.pos(22, .bold)).foregroundStyle(Theme.ink).accessibilityIdentifier("ticket.title")
                     if !ticket.isCounter {
                         Text(ticket.covers > 0 ? "order.covers_count \(ticket.covers)" : "order.dine_in_label").font(.posLabel).foregroundStyle(Theme.inkMuted)
                     }
@@ -123,7 +123,7 @@ struct TicketPanel: View {
                     router.section = .floor
                 } label: {
                     Image(systemName: "square.grid.3x3.topleft.filled")
-                        .font(.system(size: 17, weight: .semibold))
+                        .font(Font.pos(17, .semibold))
                         .frame(width: Theme.touchMin, height: Theme.touchMin)
                 }
                 .buttonStyle(ActionButtonStyle(kind: .neutral))
@@ -182,7 +182,7 @@ struct TicketPanel: View {
         HStack {
             Text(label).lineLimit(1).font(.posLabel)
             Spacer()
-            Text(value).font(.system(size: 13, weight: .medium, design: .monospaced)).environment(\.layoutDirection, .leftToRight)
+            Text(value).font(Font.posMono(13, .medium)).environment(\.layoutDirection, .leftToRight)
         }
         .foregroundStyle(color)
     }
@@ -243,7 +243,7 @@ struct TicketPanel: View {
         Button(action: { Haptics.tap(); action() }) {
             VStack(spacing: 2) {
                 Image(systemName: icon).font(.system(size: 17, weight: .semibold))
-                Text(title).font(.system(size: 12, weight: .semibold)).lineLimit(1).minimumScaleFactor(0.8)
+                Text(title).font(Font.pos(12, .semibold)).lineLimit(1).minimumScaleFactor(0.8)
             }
             .frame(maxWidth: .infinity, minHeight: Theme.touchTarget)
         }
@@ -276,7 +276,7 @@ struct FastCashBar: View {
                         }
                     }
                 }
-                .font(.system(size: 13, weight: .bold, design: .monospaced))
+                .font(Font.posMono(13, .bold))
                 .buttonStyle(.bordered)
                 .tint(Theme.success)
                 .environment(\.layoutDirection, .leftToRight)
@@ -301,7 +301,7 @@ struct TicketLineRow: View {
                 .disabled(!line.isDraft)
                 .accessibilityIdentifier("line.minus.\(line.name)")
                 Text("\(line.quantity)")
-                    .font(.system(size: 15, weight: .semibold, design: .monospaced))
+                    .font(Font.posMono(15, .semibold))
                     .frame(minWidth: 22)
                     .accessibilityIdentifier("line.qty.\(line.name)")
                 Button { ticket.increment(line.id) } label: {
@@ -309,18 +309,18 @@ struct TicketLineRow: View {
                 }
                 .accessibilityIdentifier("line.plus.\(line.name)")
             }
-            .font(.system(size: 15, weight: .bold))
+            .font(Font.pos(15, .bold))
             .foregroundStyle(Theme.ink)
             .buttonStyle(.borderless)
             .background(RoundedRectangle(cornerRadius: Theme.Radius.sm, style: .continuous).fill(Theme.raised))
 
             VStack(alignment: .leading, spacing: 3) {
-                Text(line.name).font(.system(size: 15, weight: .semibold)).foregroundStyle(Theme.ink).strikethrough(line.isComp)
+                Text(line.name).font(Font.pos(15, .semibold)).foregroundStyle(Theme.ink).strikethrough(line.isComp)
                 if !line.modifiers.isEmpty {
-                    Text(line.modifiers.joined(separator: " · ")).font(.system(size: 13, weight: .medium)).foregroundStyle(Theme.inkMuted)
+                    Text(line.modifiers.joined(separator: " · ")).font(Font.pos(13, .medium)).foregroundStyle(Theme.inkMuted)
                 }
                 if let comment = line.kitchenComment {
-                    Label(comment, systemImage: "text.bubble").font(.system(size: 13, weight: .medium)).foregroundStyle(Theme.inkMuted)
+                    Label(comment, systemImage: "text.bubble").font(Font.pos(13, .medium)).foregroundStyle(Theme.inkMuted)
                 }
                 HStack(spacing: Theme.Space.xs) {
                     Button {
@@ -335,17 +335,17 @@ struct TicketLineRow: View {
                     if line.isHappyHourApplied { Badge(text: "HH", color: Theme.happyInk, systemImage: "wineglass") }
                     if line.isComp { Badge(text: String(localized: "order.comp_badge"), color: Theme.success, systemImage: "gift") }
                     if line.isDispatched {
-                        Label("order.in_kitchen_label", systemImage: "checkmark").font(.system(size: 12, weight: .semibold)).foregroundStyle(Theme.inkSubtle)
+                        Label("order.in_kitchen_label", systemImage: "checkmark").font(Font.pos(12, .semibold)).foregroundStyle(Theme.inkSubtle)
                     } else {
                         HStack(spacing: 4) {
                             Circle().fill(Theme.warning).frame(width: 6, height: 6)
                             Text("order.not_sent_label")
                         }
-                        .font(.system(size: 12, weight: .semibold))
+                        .font(Font.pos(12, .semibold))
                         .foregroundStyle(Theme.warning)
                     }
                 }
-                Text(unitDescription).font(.system(size: 12, weight: .medium)).foregroundStyle(Theme.inkSubtle)
+                Text(unitDescription).font(Font.pos(12, .medium)).foregroundStyle(Theme.inkSubtle)
             }
             Spacer(minLength: 4)
             Text(OrderMath.lineTotal(line).formatted)

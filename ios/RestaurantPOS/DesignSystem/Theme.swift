@@ -1,66 +1,66 @@
 import SwiftUI
 import PosKit
 
-/// Jetons du design system AGY POS (thème « Service » sombre / « Jour » clair).
-/// Référence : design system « AGY POS » (tokens.json) — garder les noms alignés.
+/// Jetons du design system AGY POS, habillage Handi : papier / encre / tomate (clair) et son pendant chaud (sombre).
+/// Les noms restent ceux de « AGY POS » (tokens.json) ; les valeurs suivent le web (`styles.css`, `:root`).
 enum Theme {
     // MARK: Surfaces
 
     /// Fond de l'app derrière les panneaux.
-    static let canvas = dynamic(dark: 0x0B1120, light: 0xF3F5F9)
+    static let canvas = dynamic(dark: 0x161411, light: 0xF1ECE1)
     /// Panneaux et cartes : ticket, table, tuile, feuilles.
-    static let surface = dynamic(dark: 0x111A2E, light: 0xFFFFFF)
+    static let surface = dynamic(dark: 0x1F1C18, light: 0xFBF9F6)
     /// Éléments posés sur une surface : touches, champs, bouton neutre.
-    static let raised = dynamic(dark: 0x1A2540, light: 0xEEF2F7)
+    static let raised = dynamic(dark: 0x2A2621, light: 0xF3EFE6)
     /// Rail de navigation, barre d'actions du ticket, colonnes KDS.
-    static let sunken = dynamic(dark: 0x070B16, light: 0xE6EBF2)
+    static let sunken = dynamic(dark: 0x100E0C, light: 0xE7E1D4)
     /// Filets décoratifs.
-    static let line = dynamic(dark: 0x1F2B44, light: 0xE2E8F0)
+    static let line = dynamic(dark: 0x332E28, light: 0xDDD6C8)
     /// Bords de contrôles et cellules vides (≥ 3:1).
-    static let lineStrong = dynamic(dark: 0x5B6B86, light: 0x8391A7)
+    static let lineStrong = dynamic(dark: 0x7D8289, light: 0x80868E)
 
     // MARK: Texte
 
-    static let ink = dynamic(dark: 0xF1F5F9, light: 0x0F172A)
-    static let inkMuted = dynamic(dark: 0x9AA8BD, light: 0x475569)
-    static let inkSubtle = dynamic(dark: 0x8190A8, light: 0x5B6B82)
+    static let ink = dynamic(dark: 0xF1ECE1, light: 0x1E1B17)
+    static let inkMuted = dynamic(dark: 0xB7B0A3, light: 0x57534D)
+    static let inkSubtle = dynamic(dark: 0x9C968B, light: 0x67635C)
 
     // MARK: Marque et action
 
-    /// Aplat de l'action principale ; texte `onPrimary` dessus.
-    static let primary = dynamic(dark: 0x2563EB, light: 0x2563EB)
-    static let onPrimary = Color.white
-    /// Bleu utilisé comme texte ou icône sur une surface.
-    static let primaryInk = dynamic(dark: 0x7CB0FF, light: 0x1D4ED8)
+    /// Aplat de l'action principale (l'encre en clair, le papier en sombre) ; texte `onPrimary` dessus.
+    static let primary = dynamic(dark: 0xF1ECE1, light: 0x1E1B17)
+    static let onPrimary = dynamic(dark: 0x1E1B17, light: 0xF1ECE1)
+    /// Accent utilisé comme texte ou icône sur une surface.
+    static let primaryInk = dynamic(dark: 0xF1ECE1, light: 0x1E1B17)
     /// Fond du bouton tonal et de l'onglet actif.
-    static let primarySoft = dynamic(dark: 0x3B82F6, light: 0x2563EB, darkAlpha: 0.18, lightAlpha: 0.10)
-    static let brandCyan = dynamic(dark: 0x22D3EE, light: 0x0891B2)
-    static let brandViolet = dynamic(dark: 0x8B5CF6, light: 0x7C3AED)
-    static let focus = brandCyan
+    static let primarySoft = dynamic(dark: 0xF1ECE1, light: 0x1E1B17, darkAlpha: 0.14, lightAlpha: 0.08)
+    static let brandCyan = dynamic(dark: 0x7FB3B8, light: 0x2F6F77)
+    static let brandViolet = dynamic(dark: 0xB79BD6, light: 0x6B4E8F)
+    static let focus = dynamic(dark: 0xF0735A, light: 0xD4462A)
 
     // MARK: Sémantique
 
-    static let success = dynamic(dark: 0x34D399, light: 0x047857)
-    static let warning = dynamic(dark: 0xFBBF24, light: 0xA14A08)
-    static let danger = dynamic(dark: 0xF87171, light: 0xC81E1E)
-    static let dangerSoft = dynamic(dark: 0xF87171, light: 0xC81E1E, darkAlpha: 0.16, lightAlpha: 0.08)
+    static let success = dynamic(dark: 0x58C08A, light: 0x2F7D4F)
+    static let warning = dynamic(dark: 0xE0A33A, light: 0x9A5B0A)
+    static let danger = dynamic(dark: 0xF0735A, light: 0xC03A1F)
+    static let dangerSoft = dynamic(dark: 0xF0735A, light: 0xC03A1F, darkAlpha: 0.16, lightAlpha: 0.08)
 
-    static let statusFree = dynamic(dark: 0x10B981, light: 0x059669)
-    static let statusOccupied = dynamic(dark: 0xF97316, light: 0xEA580C)
-    static let statusBill = dynamic(dark: 0xA78BFA, light: 0x7C3AED)
-    static let statusPaid = dynamic(dark: 0x38BDF8, light: 0x0284C7)
+    static let statusFree = dynamic(dark: 0x58C08A, light: 0x2F7D4F)
+    static let statusOccupied = dynamic(dark: 0xF0735A, light: 0xD4462A)
+    static let statusBill = dynamic(dark: 0xE0A33A, light: 0xB9770E)
+    static let statusPaid = dynamic(dark: 0xA9B0B8, light: 0x5F6670)
 
     /// Aplat Happy Hour ; texte `onHappy` dessus, jamais du blanc.
-    static let happyHour = dynamic(dark: 0xFBBF24, light: 0xFBBF24)
+    static let happyHour = dynamic(dark: 0xE0A33A, light: 0xE9B04A)
     static let onHappy = dynamic(dark: 0x1C1300, light: 0x1C1300)
     /// Prix Happy Hour en texte sur une surface.
-    static let happyInk = dynamic(dark: 0xFBBF24, light: 0xA14A08)
+    static let happyInk = dynamic(dark: 0xE0A33A, light: 0x9A5B0A)
 
     static let courseSuite = dynamic(dark: 0xA78BFA, light: 0x6D28D9)
     static let courseDessert = dynamic(dark: 0xF472B6, light: 0xBE185D)
     static let courseOnDemand = dynamic(dark: 0x2DD4BF, light: 0x0F766E)
 
-    static let scrim = dynamic(dark: 0x020610, light: 0x0F172A, darkAlpha: 0.64, lightAlpha: 0.32)
+    static let scrim = dynamic(dark: 0x0A0908, light: 0x1E1B17, darkAlpha: 0.64, lightAlpha: 0.36)
 
     // MARK: Métriques
 
@@ -173,20 +173,38 @@ extension UIColor {
     }
 }
 
-/// Typographie AGY POS : texte en SF Pro, montants et chronomètres en chiffres à chasse fixe.
+/// Typographie AGY POS : texte en Bricolage Grotesque, montants et chronomètres en DM Mono (polices OFL embarquées,
+/// `Resources/Fonts`). Hors des glyphes de ces polices (arabe), le système prend le relais.
 extension Font {
-    static let posDisplay = Font.system(size: 40, weight: .heavy)
-    static let posTitle = Font.system(size: 26, weight: .bold)
-    static let posHeadline = Font.system(size: 17, weight: .bold)
-    static let posBody = Font.system(size: 15, weight: .medium)
-    static let posLabel = Font.system(size: 13, weight: .semibold)
-    static let posCaption = Font.system(size: 12, weight: .bold)
-    static let posAmountXL = Font.system(size: 44, weight: .semibold, design: .monospaced)
-    static let posAmount = Font.system(size: 20, weight: .semibold, design: .monospaced)
-    static let posAmountSmall = Font.system(size: 15, weight: .medium, design: .monospaced)
+    /// Texte courant ; `weight` retombe sur le gras le plus proche embarqué.
+    static func pos(_ size: CGFloat, _ weight: Font.Weight = .medium) -> Font {
+        let face: String
+        switch weight {
+        case .heavy, .black: face = "ExtraBold"
+        case .bold: face = "Bold"
+        case .semibold: face = "SemiBold"
+        default: face = "Medium"
+        }
+        return .custom("BricolageGrotesque-\(face)", size: size)
+    }
+
+    /// Montants, chronomètres, numéros : chiffres à chasse fixe.
+    static func posMono(_ size: CGFloat, _ weight: Font.Weight = .medium) -> Font {
+        .custom(weight == .semibold || weight == .bold || weight == .heavy ? "DMMono-Medium" : "DMMono-Regular", size: size)
+    }
+
+    static let posDisplay = Font.pos(40, .heavy)
+    static let posTitle = Font.pos(26, .bold)
+    static let posHeadline = Font.pos(17, .bold)
+    static let posBody = Font.pos(15, .medium)
+    static let posLabel = Font.pos(13, .semibold)
+    static let posCaption = Font.pos(12, .bold)
+    static let posAmountXL = Font.posMono(44, .semibold)
+    static let posAmount = Font.posMono(20, .semibold)
+    static let posAmountSmall = Font.posMono(15, .medium)
 }
 
-/// Apparence choisie dans Gestion (sombre par défaut, pour le service en salle).
+/// Apparence choisie dans Gestion (clair par défaut, comme le web ; le sombre reste disponible pour la salle).
 enum AppearancePreference: String, CaseIterable, Identifiable {
     case dark, light, system
     static let storageKey = "appearance"

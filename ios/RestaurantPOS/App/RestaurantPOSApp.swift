@@ -7,7 +7,7 @@ import PosPrintersEpson
 @main
 struct RestaurantPOSApp: App {
     @State private var environment = AppEnvironment()
-    @AppStorage(AppearancePreference.storageKey) private var appearance = AppearancePreference.dark.rawValue
+    @AppStorage(AppearancePreference.storageKey) private var appearance = AppearancePreference.light.rawValue
 
     var body: some Scene {
         WindowGroup {
@@ -22,7 +22,7 @@ struct RestaurantPOSApp: App {
                 .environment(\.locale, Money.latinDigitsLocale(.current))
                 .id(environment.generation)
                 .tint(Theme.primary)
-                .preferredColorScheme((AppearancePreference(rawValue: appearance) ?? .dark).colorScheme)
+                .preferredColorScheme((AppearancePreference(rawValue: appearance) ?? .light).colorScheme)
         }
     }
 }

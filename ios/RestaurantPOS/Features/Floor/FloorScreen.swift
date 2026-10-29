@@ -21,7 +21,7 @@ struct FloorScreen: View {
                 Spacer()
                 Button { Task { await floor.load() } } label: {
                     Image(systemName: "arrow.clockwise")
-                        .font(.system(size: 17, weight: .semibold))
+                        .font(Font.pos(17, .semibold))
                         .frame(width: Theme.touchTarget, height: Theme.touchTarget)
                 }
                 .buttonStyle(ActionButtonStyle(kind: .neutral))
@@ -172,7 +172,7 @@ struct OpenTableSheet: View {
                 ForEach(1...12, id: \.self) { count in
                     Button { covers = count } label: {
                         Text("\(count)")
-                            .font(.system(size: 22, weight: .semibold, design: .monospaced))
+                            .font(Font.posMono(22, .semibold))
                             .frame(maxWidth: .infinity, minHeight: 60)
                             .background(RoundedRectangle(cornerRadius: Theme.smallRadius, style: .continuous).fill(covers == count ? Theme.primary : Theme.raised))
                             .foregroundStyle(covers == count ? Theme.onPrimary : Theme.ink)

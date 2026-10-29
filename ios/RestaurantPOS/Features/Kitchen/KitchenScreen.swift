@@ -22,7 +22,7 @@ struct KitchenScreen: View {
                 }
                 Button { Task { await kitchen.load() } } label: {
                     Image(systemName: "arrow.clockwise")
-                        .font(.system(size: 17, weight: .semibold))
+                        .font(Font.pos(17, .semibold))
                         .frame(width: Theme.touchMin, height: Theme.touchMin)
                 }
                 .buttonStyle(ActionButtonStyle(kind: .neutral))
@@ -62,7 +62,7 @@ struct KitchenScreen: View {
                 Circle().fill(Theme.color(for: status)).frame(width: 10, height: 10)
                 Text(status.label).font(.posHeadline).foregroundStyle(Theme.ink)
                 Spacer()
-                Text("\(tickets.count)").font(.system(size: 15, weight: .semibold, design: .monospaced)).foregroundStyle(Theme.inkMuted)
+                Text("\(tickets.count)").font(Font.posMono(15, .semibold)).foregroundStyle(Theme.inkMuted)
                     .accessibilityIdentifier("kds.count.\(status)")
             }
             ScrollView {
@@ -93,26 +93,26 @@ struct KitchenTicketCard: View {
             let minutes = ticket.dispatchedAtUtc.map { Int(context.date.timeIntervalSince($0) / 60) } ?? 0
             VStack(alignment: .leading, spacing: Theme.Space.s) {
                 HStack(spacing: Theme.Space.s) {
-                    Text(ticket.tableNumber).font(.system(size: 22, weight: .heavy)).foregroundStyle(Theme.ink)
+                    Text(ticket.tableNumber).font(Font.pos(22, .heavy)).foregroundStyle(Theme.ink)
                     Spacer()
                     Label("\(minutes) min", systemImage: "timer")
-                        .font(.system(size: 15, weight: .semibold, design: .monospaced))
+                        .font(Font.posMono(15, .semibold))
                         .foregroundStyle(minutes >= 20 ? Theme.danger : minutes >= 10 ? Theme.warning : Theme.inkMuted)
                 }
                 ForEach(ticket.items) { item in
                     VStack(alignment: .leading, spacing: 2) {
                         HStack(alignment: .firstTextBaseline, spacing: Theme.Space.s) {
                             Text("\(item.quantity)×")
-                                .font(.system(size: 15, weight: .semibold, design: .monospaced))
+                                .font(Font.posMono(15, .semibold))
                                 .frame(minWidth: 28, alignment: .leading)
-                            Text(item.productName).font(.system(size: 15, weight: .semibold))
+                            Text(item.productName).font(Font.pos(15, .semibold))
                         }
                         .foregroundStyle(Theme.ink)
                         if let mods = item.modifiersSummary, !mods.isEmpty {
-                            Text(mods).font(.system(size: 13, weight: .medium)).foregroundStyle(Theme.warning).padding(.leading, 36)
+                            Text(mods).font(Font.pos(13, .medium)).foregroundStyle(Theme.warning).padding(.leading, 36)
                         }
                         if let comment = item.kitchenComment, !comment.isEmpty {
-                            Text("kitchen.quoted_comment \(comment)").font(.system(size: 13, weight: .medium)).italic().foregroundStyle(Theme.inkMuted).padding(.leading, 36)
+                            Text("kitchen.quoted_comment \(comment)").font(Font.pos(13, .medium)).italic().foregroundStyle(Theme.inkMuted).padding(.leading, 36)
                         }
                     }
                 }

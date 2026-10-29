@@ -77,7 +77,7 @@ struct SidebarRail: View {
             } label: {
                 VStack(spacing: 4) {
                     Image(systemName: "lock.fill").font(.system(size: 20, weight: .semibold))
-                    Text("common.nav_lock").font(.system(size: 12, weight: .semibold))
+                    Text("common.nav_lock").font(Font.pos(12, .semibold))
                 }
                 .frame(width: 72, height: 64)
                 .foregroundStyle(Theme.inkMuted)
@@ -102,9 +102,9 @@ private struct RailButton: View {
         Button(action: { Haptics.tap(); action() }) {
             VStack(spacing: 4) {
                 Image(systemName: section.systemImage)
-                    .font(.system(size: 20, weight: .semibold))
+                    .font(Font.pos(20, .semibold))
                     .symbolVariant(isSelected ? .fill : .none)
-                Text(section.title).font(.system(size: 12, weight: .semibold))
+                Text(section.title).font(Font.pos(12, .semibold))
             }
             .frame(width: 72, height: 64)
             .foregroundStyle(isSelected ? Theme.primaryInk : Theme.inkMuted)
@@ -126,20 +126,20 @@ struct HeaderBar: View {
         HStack(spacing: Theme.Space.l) {
             Text(router.section.title).font(.posTitle).foregroundStyle(Theme.ink)
             if let context {
-                Text(context).font(.system(size: 15, weight: .semibold)).foregroundStyle(Theme.inkMuted).lineLimit(1)
+                Text(context).font(Font.pos(15, .semibold)).foregroundStyle(Theme.inkMuted).lineLimit(1)
             }
             Spacer()
             ConnectionBadge(isOnline: model.network.isOnline || environment.launch.isUITest, isRealtime: model.isRealtimeConnected, terminal: model.settings.terminalId)
             if let op = model.session.currentOperator {
                 HStack(spacing: 10) {
                     Text(initials(of: op.name))
-                        .font(.system(size: 15, weight: .bold))
+                        .font(Font.pos(15, .bold))
                         .foregroundStyle(Theme.primaryInk)
                         .frame(width: 40, height: 40)
                         .background(Circle().fill(Theme.primarySoft))
                     VStack(alignment: .leading, spacing: 0) {
-                        Text(op.name).font(.system(size: 15, weight: .bold)).foregroundStyle(Theme.ink).lineLimit(1)
-                        Text(op.role.label).font(.system(size: 12, weight: .semibold)).foregroundStyle(Theme.inkMuted)
+                        Text(op.name).font(Font.pos(15, .bold)).foregroundStyle(Theme.ink).lineLimit(1)
+                        Text(op.role.label).font(Font.pos(12, .semibold)).foregroundStyle(Theme.inkMuted)
                     }
                 }
                 .accessibilityElement(children: .combine)
@@ -194,18 +194,18 @@ struct HappyHourBanner: View {
         HStack(spacing: Theme.Space.l) {
             Image(systemName: model.happyHour.status.isOverride ? "bolt.fill" : "wineglass.fill").font(.title3)
             VStack(alignment: .leading, spacing: 0) {
-                Text(model.happyHour.bannerTitle).font(.system(size: 15, weight: .bold))
+                Text(model.happyHour.bannerTitle).font(Font.pos(15, .bold))
                     .accessibilityIdentifier("happyhour.banner")
                 Text(model.happyHour.status.isOverride ? "common.happy_hour_override_subtitle" : "common.happy_hour_active_subtitle")
-                    .font(.system(size: 12, weight: .semibold))
+                    .font(Font.pos(12, .semibold))
             }
             Spacer()
             Text(model.happyHour.countdownText)
-                .font(.system(size: 22, weight: .semibold, design: .monospaced))
+                .font(Font.posMono(22, .semibold))
                 .accessibilityIdentifier("happyhour.countdown")
             Button { showsOverride = true } label: {
                 Text("common.happy_hour_override_button")
-                    .font(.system(size: 15, weight: .bold))
+                    .font(Font.pos(15, .bold))
                     .padding(.horizontal, Theme.Space.l)
                     .frame(minHeight: Theme.touchMin)
                     .background(RoundedRectangle(cornerRadius: Theme.Radius.md, style: .continuous).fill(Theme.onHappy.opacity(0.12)))

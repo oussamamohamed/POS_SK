@@ -705,7 +705,7 @@ struct NetworkSettingsView: View {
     @Environment(AppModel.self) private var model
     @Environment(AppEnvironment.self) private var environment
     @State private var showsServer = false
-    @AppStorage(AppearancePreference.storageKey) private var appearance = AppearancePreference.dark.rawValue
+    @AppStorage(AppearancePreference.storageKey) private var appearance = AppearancePreference.light.rawValue
 
     var body: some View {
         let network = model.network

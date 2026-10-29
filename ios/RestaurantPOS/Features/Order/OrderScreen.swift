@@ -169,14 +169,14 @@ struct ProductTile: View {
             HStack(spacing: 6) {
                 Circle().fill(tint).frame(width: 10, height: 10)
                 Text((product.station ?? "").replacingOccurrences(of: "_", with: " ").uppercased())
-                    .font(.system(size: 11, weight: .bold))
+                    .font(Font.pos(11, .bold))
                     .tracking(0.4)
                     .foregroundStyle(Theme.inkMuted)
                     .lineLimit(1)
                 Spacer(minLength: 0)
                 if quantity > 0 {
                     Text("×\(quantity)")
-                        .font(.system(size: 14, weight: .semibold, design: .monospaced))
+                        .font(Font.posMono(14, .semibold))
                         .foregroundStyle(Theme.onPrimary)
                         .padding(.horizontal, 8)
                         .frame(minWidth: 28, minHeight: 28)
@@ -194,8 +194,8 @@ struct ProductTile: View {
                 .multilineTextAlignment(.leading)
             if let hh {
                 HStack(spacing: 6) {
-                    Text(hh.standardPrice.formatted).strikethrough().font(.system(size: 13, design: .monospaced)).foregroundStyle(Theme.inkSubtle).environment(\.layoutDirection, .leftToRight)
-                    Text(hh.happyHourPrice.formatted).font(.system(size: 15, weight: .semibold, design: .monospaced)).foregroundStyle(Theme.happyInk).environment(\.layoutDirection, .leftToRight)
+                    Text(hh.standardPrice.formatted).strikethrough().font(Font.posMono(13)).foregroundStyle(Theme.inkSubtle).environment(\.layoutDirection, .leftToRight)
+                    Text(hh.happyHourPrice.formatted).font(Font.posMono(15, .semibold)).foregroundStyle(Theme.happyInk).environment(\.layoutDirection, .leftToRight)
                 }
             } else {
                 Text(product.price.formatted).font(.posAmountSmall).foregroundStyle(Theme.inkMuted).environment(\.layoutDirection, .leftToRight)

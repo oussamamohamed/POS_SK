@@ -48,6 +48,14 @@ targets:
         UILaunchScreen:
           UIColorName: ""
         UIRequiresFullScreen: true
+        # Polices du thème Handi (OFL, Resources/Fonts) ; l'arabe retombe sur la police système.
+        UIAppFonts:
+          - BricolageGrotesque-Medium.ttf
+          - BricolageGrotesque-SemiBold.ttf
+          - BricolageGrotesque-Bold.ttf
+          - BricolageGrotesque-ExtraBold.ttf
+          - DMMono-Regular.ttf
+          - DMMono-Medium.ttf
         UISupportedInterfaceOrientations~ipad:
           - UIInterfaceOrientationLandscapeLeft
           - UIInterfaceOrientationLandscapeRight

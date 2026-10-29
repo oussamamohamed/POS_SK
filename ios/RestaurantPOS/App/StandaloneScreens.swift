@@ -88,7 +88,7 @@ struct BackupBanner: View {
     var body: some View {
         HStack(spacing: Theme.Space.s) {
             Image(systemName: "exclamationmark.triangle.fill")
-            Text(controller.neverBackedUp ? "backup.banner_never" : "backup.banner_overdue").font(.system(size: 13, weight: .semibold))
+            Text(controller.neverBackedUp ? "backup.banner_never" : "backup.banner_overdue").font(Font.pos(13, .semibold))
             Spacer()
         }
         .foregroundStyle(Theme.warning)

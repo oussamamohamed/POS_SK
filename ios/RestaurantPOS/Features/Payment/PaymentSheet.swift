@@ -55,7 +55,7 @@ struct PaymentSheet: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(plan.partLabel ?? String(localized: "payment.to_collect_label")).font(.headline).foregroundStyle(Theme.inkMuted)
                     Text(plan.amountToCollect.formatted)
-                        .font(.system(size: 56, weight: .bold, design: .rounded))
+                        .font(Font.posMono(56, .bold))
                         .monospacedDigit()
                         .contentTransition(.numericText())
                         .environment(\.layoutDirection, .leftToRight)
@@ -296,7 +296,7 @@ struct PaymentSheet: View {
             Text(outcome.isComplete ? "payment.result_paid" : "payment.result_partial").font(.largeTitle.weight(.bold))
             if outcome.change.cents > 0 {
                 Text("payment.change_due_title").font(.title3).foregroundStyle(Theme.inkMuted)
-                Text(outcome.change.formatted).font(.system(size: 64, weight: .bold, design: .rounded)).foregroundStyle(Theme.success)
+                Text(outcome.change.formatted).font(Font.posMono(64, .bold)).foregroundStyle(Theme.success)
                     .environment(\.layoutDirection, .leftToRight)
                     .accessibilityIdentifier("result.change")
             }
@@ -331,20 +331,20 @@ struct ChangeOverlay: View {
             Spacer()
             Text("payment.change_to_give").font(.title2).foregroundStyle(Theme.inkMuted)
             Text(outcome.change.formatted)
-                .font(.system(size: 96, weight: .heavy, design: .rounded))
+                .font(Font.posMono(96, .heavy))
                 .foregroundStyle(Theme.success)
                 .environment(\.layoutDirection, .leftToRight)
                 .accessibilityIdentifier("change.amount")
             HStack(spacing: 40) {
                 VStack {
                     Text("payment.pickup_number_label").font(.headline).foregroundStyle(Theme.inkMuted)
-                    Text(outcome.pickupNumber ?? "—").font(.system(size: 48, weight: .bold, design: .rounded))
+                    Text(outcome.pickupNumber ?? "—").font(Font.posMono(48, .bold))
                         .accessibilityIdentifier("change.pickup")
                 }
                 if let buzzer = outcome.buzzer {
                     VStack {
                         Text("payment.buzzer_label").font(.headline).foregroundStyle(Theme.inkMuted)
-                        Text(buzzer).font(.system(size: 48, weight: .bold, design: .rounded))
+                        Text(buzzer).font(Font.posMono(48, .bold))
                     }
                 }
             }

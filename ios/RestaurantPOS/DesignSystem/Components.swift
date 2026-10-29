@@ -36,7 +36,7 @@ struct ActionButton: View {
                 }
                 Text(title).lineLimit(1).minimumScaleFactor(0.7)
             }
-            .font(height >= Theme.touchLarge ? Font.system(size: 19, weight: .bold) : Font.posHeadline)
+            .font(height >= Theme.touchLarge ? Font.pos(19, .bold) : Font.posHeadline)
             .padding(.horizontal, Theme.Space.l)
             .frame(maxWidth: .infinity, minHeight: height)
         }
@@ -99,7 +99,7 @@ struct ChipButton: View {
                 if let systemImage { Image(systemName: systemImage) }
                 Text(title).lineLimit(1)
                 if let count {
-                    Text("\(count)").font(.system(size: 13, weight: .semibold, design: .monospaced))
+                    Text("\(count)").font(Font.posMono(13, .semibold))
                         .foregroundStyle(isSelected ? Theme.onPrimary : Theme.inkMuted)
                 }
             }
@@ -148,7 +148,7 @@ struct CourseTag: View {
     var body: some View {
         let color = Theme.color(for: course)
         Text(course.label.uppercased())
-            .font(.system(size: 11, weight: .bold))
+            .font(Font.pos(11, .bold))
             .tracking(0.4)
             .foregroundStyle(color)
             .padding(.horizontal, 8)
@@ -202,7 +202,7 @@ struct KPIView: View {
             VStack(alignment: .leading, spacing: Theme.Space.xs) {
                 Label(title, systemImage: systemImage).font(.posLabel).foregroundStyle(Theme.inkMuted)
                 Text(value)
-                    .font(.system(size: 28, weight: .semibold, design: .monospaced))
+                    .font(Font.posMono(28, .semibold))
                     .foregroundStyle(Theme.ink)
                     .lineLimit(1).minimumScaleFactor(0.6)
                     .contentTransition(.numericText())
@@ -242,7 +242,7 @@ struct NumericKeypad: View {
                                     Text(key)
                                 }
                             }
-                            .font(isFunctionKey(key) ? .posHeadline : .system(size: keySize * 0.38, weight: .semibold, design: .monospaced))
+                            .font(isFunctionKey(key) ? .posHeadline : Font.posMono(keySize * 0.38, .semibold))
                             .frame(width: keySize, height: keySize)
                             .background(
                                 RoundedRectangle(cornerRadius: Theme.Radius.md, style: .continuous)
@@ -401,7 +401,7 @@ struct SheetHeader: View {
             Spacer()
             Button(action: onClose) {
                 Image(systemName: "xmark")
-                    .font(.system(size: 16, weight: .bold))
+                    .font(Font.pos(16, .bold))
                     .foregroundStyle(Theme.inkMuted)
                     .frame(width: Theme.touchMin, height: Theme.touchMin)
                     .background(Circle().fill(Theme.raised))

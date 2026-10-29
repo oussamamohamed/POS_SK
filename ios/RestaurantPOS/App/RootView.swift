@@ -70,9 +70,9 @@ struct LockScreen: View {
                         .frame(width: 88, height: 88)
                         .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.lg, style: .continuous))
                         .accessibilityHidden(true)
-                    Text(verbatim: "AGY POS").font(.system(size: 34, weight: .heavy)).foregroundStyle(Theme.ink)
-                    Text("login.locked_title").font(.system(size: 17, weight: .semibold)).foregroundStyle(Theme.ink)
-                    Text("login.enter_pin_subtitle").font(.system(size: 15, weight: .medium)).foregroundStyle(Theme.inkMuted)
+                    Text(verbatim: "AGY POS").font(Font.pos(34, .heavy)).foregroundStyle(Theme.ink)
+                    Text("login.locked_title").font(Font.pos(17, .semibold)).foregroundStyle(Theme.ink)
+                    Text("login.enter_pin_subtitle").font(Font.pos(15, .medium)).foregroundStyle(Theme.inkMuted)
                 }
 
                 PinDots(count: SessionStore.pinLength, filled: session.pinEntry.count, isError: session.pinError != nil)
