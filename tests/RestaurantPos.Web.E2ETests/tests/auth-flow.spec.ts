@@ -69,4 +69,100 @@ test.describe('Authentification Tactile & Verrouillage Caisse (PIN)', () => {
     await page.click('.pin-keypad button[data-val="4"]');
     await expect(pinModal).not.toHaveClass(/active/);
   });
+
+  test('no implicit login at startup', async ({ page }) => {
+    const logins: string[] = [];
+    page.on('request', r => { if (r.method() === 'POST' && r.url().includes('/api/auth/login')) logins.push(r.url()); });
+    await page.evaluate(() => localStorage.removeItem('pos_jwt_token'));
+    await page.reload();
+    await expect(page.locator('#pinLockModal')).toHaveClass(/active/);
+    await page.waitForTimeout(1000);
+    expect(logins).toEqual([]);
+  });
+
+  test('lock clears the session', async ({ page }) => {
+    const pinModal = page.locator('#pinLockModal');
+    await expect(pinModal).toHaveClass(/active/);
+    for (const d of ['1', '2', '3', '4']) await page.click(`.pin-keypad button[data-val="${d}"]`);
+    await expect(pinModal).not.toHaveClass(/active/);
+    await page.click('#btnLockTerminal');
+    await expect(pinModal).toHaveClass(/active/);
+    expect(await page.evaluate(() => localStorage.getItem('pos_jwt_token'))).toBeNull();
+    // Le cookie HttpOnly est effacé par le serveur : la requête de déconnexion est asynchrone.
+    await expect.poll(() => page.evaluate(async () => (await fetch('/api/auth/me')).status)).toBe(401);
+  });
+
+  test('jwt never leaves the origin', async ({ page }) => {
+    await page.evaluate(() => localStorage.setItem('pos_jwt_token', 'fake.jwt.token'));
+    let auth: string | undefined = 'unset';
+    await page.route('http://example.invalid/**', route => {
+      auth = route.request().headers()['authorization'];
+      return route.fulfill({ status: 200, body: '{}', headers: { 'access-control-allow-origin': '*', 'access-control-allow-headers': '*' } });
+    });
+    await page.evaluate(() => fetch('http://example.invalid/api/health').catch(() => null));
+    expect(auth).toBeUndefined();
+  });
+
+  test('PIN at startup opens the counter order once and loads protected data', async ({ page }) => {
+    const counterOpens: string[] = [];
+    page.on('request', r => { if (r.url().includes('/api/orders/counter/direct')) counterOpens.push(r.postData() ?? ''); });
+    // Catalogue retardé : init() est encore en vol quand le PIN est validé.
+    await page.route('**/api/catalog/products', async route => {
+      await new Promise(r => setTimeout(r, 1500));
+      await route.continue();
+    });
+    await page.evaluate(() => localStorage.removeItem('pos_jwt_token'));
+    await page.reload();
+    for (const d of ['1', '2', '3', '4']) await page.click(`.pin-keypad button[data-val="${d}"]`);
+    await expect(page.locator('#pinLockModal')).not.toHaveClass(/active/);
+    // plan de salle (GET /api/tables protégé) rempli sans rechargement
+    await expect(page.locator('#floorTablesGrid > *').first()).toBeAttached();
+    await page.waitForTimeout(2500);
+    expect(counterOpens).toHaveLength(1);
+    expect(JSON.parse(counterOpens[0]).destination).toBe(0); // À emporter (Takeaway = 0), destination conservée
+    await expect(page.locator('#btnDestTakeaway')).toHaveClass(/active/);
+  });
+
+  test('a late 401 from a request sent without token keeps the token set since', async ({ page }) => {
+    // checkHappyHourStatus part sans jeton à la fin d'init() ; son 401 n'arrive qu'après le PIN.
+    let intercepted!: () => void;
+    const started = new Promise<void>(r => { intercepted = r; });
+    await page.route('**/api/happy-hour/status*', async route => {
+      intercepted();
+      await new Promise(r => setTimeout(r, 2000));
+      await route.fulfill({ status: 401, body: '' }).catch(() => { });
+    });
+    await page.evaluate(() => localStorage.removeItem('pos_jwt_token'));
+    await page.reload();
+    await started; // la requête sans jeton est en vol avant le PIN
+    for (const d of ['1', '2', '3', '4']) await page.click(`.pin-keypad button[data-val="${d}"]`);
+    await expect(page.locator('#pinLockModal')).not.toHaveClass(/active/);
+    await page.waitForTimeout(2800); // le 401 tardif est arrivé
+    expect(await page.evaluate(() => localStorage.getItem('pos_jwt_token'))).not.toBeNull();
+    await expect(page.locator('#pinLockModal')).not.toHaveClass(/active/);
+  });
+
+  test('operator pill locks the session: reload asks for the PIN', async ({ page }) => {
+    const pinModal = page.locator('#pinLockModal');
+    await expect(pinModal).toHaveClass(/active/);
+    for (const d of ['1', '2', '3', '4']) await page.click(`.pin-keypad button[data-val="${d}"]`);
+    await expect(pinModal).not.toHaveClass(/active/);
+    await page.click('#operatorPill');
+    await expect(pinModal).toHaveClass(/active/);
+    expect(await page.evaluate(() => localStorage.getItem('pos_jwt_token'))).toBeNull();
+    await page.reload();
+    await expect(pinModal).toHaveClass(/active/);
+    expect(await page.evaluate(() => localStorage.getItem('pos_jwt_token'))).toBeNull();
+  });
+
+  test('429 shows the server message, not "PIN invalide"', async ({ page }) => {
+    const message = 'Trop de tentatives, réessayez dans 30 s (test).';
+    await page.route('**/api/auth/login', route => route.fulfill({
+      status: 429, contentType: 'application/json',
+      body: JSON.stringify({ success: false, errorMessage: message })
+    }));
+    await expect(page.locator('#pinLockModal')).toHaveClass(/active/);
+    for (const d of ['1', '2', '3', '4']) await page.click(`.pin-keypad button[data-val="${d}"]`);
+    await expect(page.getByText(message)).toBeVisible();
+  });
 });

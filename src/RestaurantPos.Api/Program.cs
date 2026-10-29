@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using RestaurantPos.Api.Endpoints;
 using RestaurantPos.Api.Hubs;
@@ -170,6 +171,9 @@ public partial class Program
         {
             options.AddPolicy("RequireAuthenticatedOperator", policy =>
                 policy.RequireAuthenticatedUser());
+
+            options.AddPolicy("RequireAdmin", policy =>
+                policy.RequireRole("Admin"));
 
             options.AddPolicy("RequireManagerOrAdmin", policy =>
                 policy.RequireRole("FloorManager", "Admin"));
@@ -430,22 +434,26 @@ public partial class Program
             SeedDatabase(db, staffService, catalogService, printerService, layoutService).GetAwaiter().GetResult();
         }
 #else
-        // In Production / Release mode, ensure minimal default administrator without mock test data
+        // En Production / Release : un seul administrateur, sans PIN connu, sans données de test
         using (var scope = app.Services.CreateScope())
         {
-            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            var staffService = scope.ServiceProvider.GetRequiredService<IStaffManagementService>();
-            if (!db.Users.Any())
-            {
-                staffService.CreateStaffMemberAsync("Admin Système", UserRole.Admin, "9999").GetAwaiter().GetResult();
-                staffService.CreateStaffMemberAsync("Alexandre Dupont (Manager)", UserRole.FloorManager, "1234").GetAwaiter().GetResult();
-                staffService.CreateStaffMemberAsync("Sophie Martin (Serveuse)", UserRole.Waiter, "2468").GetAwaiter().GetResult();
-            }
+            BootstrapAdminAsync(
+                scope.ServiceProvider.GetRequiredService<AppDbContext>(),
+                scope.ServiceProvider.GetRequiredService<IStaffManagementService>(),
+                app.Configuration,
+                app.Logger).GetAwaiter().GetResult();
         }
 #endif
 
         if (args.Contains("--seed-prod-data") || args.Contains("--seed-test-data"))
         {
+            if (!IsSeedCliAllowed(app.Environment))
+            {
+                Console.Error.WriteLine("ERREUR : le seed de test est réservé à l'environnement Development.");
+                Environment.Exit(1);
+                return;
+            }
+
             using var scope = app.Services.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             var staffService = scope.ServiceProvider.GetRequiredService<IStaffManagementService>();
@@ -464,16 +472,19 @@ public partial class Program
         app.MapGet("/api/health", () => Results.Ok(new { Status = "Healthy", Version = "1.0.0", Timestamp = DateTimeOffset.UtcNow }));
 
         // Admin Seed Endpoint for Production Verification
-        app.MapPost("/api/admin/seed-test-data", async (
-            AppDbContext db,
-            IStaffManagementService staffService,
-            IBackOfficeCatalogService catalogService,
-            IPrinterConfigurationService printerService,
-            ITerminalLayoutService layoutService) =>
+        if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Testing"))
         {
-            await SeedDatabase(db, staffService, catalogService, printerService, layoutService, force: true);
-            return Results.Ok(new { Success = true, Message = Texts.T("messages.test_data_seeded") });
-        }).RequireAuthorization("RequireManagerOrAdmin");
+            app.MapPost("/api/admin/seed-test-data", async (
+                AppDbContext db,
+                IStaffManagementService staffService,
+                IBackOfficeCatalogService catalogService,
+                IPrinterConfigurationService printerService,
+                ITerminalLayoutService layoutService) =>
+            {
+                await SeedDatabase(db, staffService, catalogService, printerService, layoutService, force: true);
+                return Results.Ok(new { Success = true, Message = Texts.T("messages.test_data_seeded") });
+            }).RequireAuthorization("RequireAdmin");
+        }
 
         // 2. Auth PIN Login
         app.MapAuthEndpoints();
@@ -550,6 +561,35 @@ public partial class Program
         });
 
         app.Run();
+    }
+
+    internal static bool IsSeedCliAllowed(IHostEnvironment env) => env.IsDevelopment();
+
+    // Base vide : crée l'unique administrateur. PIN de 4 chiffres (celui des claviers web et iPad) : Bootstrap:AdminPin, sinon généré et journalisé une fois.
+    internal static async Task BootstrapAdminAsync(AppDbContext db, IStaffManagementService staff, IConfiguration cfg, ILogger log)
+    {
+        if (await db.Users.AnyAsync().ConfigureAwait(false))
+        {
+            return;
+        }
+
+        var pin = cfg["Bootstrap:AdminPin"];
+        if (string.IsNullOrEmpty(pin))
+        {
+            // 4 chiffres : les claviers web et iPad envoient le PIN au 4e chiffre. Jamais un PIN de démonstration.
+            do
+            {
+                pin = System.Security.Cryptography.RandomNumberGenerator.GetInt32(0, 10_000).ToString("D4", CultureInfo.InvariantCulture);
+            }
+            while (pin is "0000" or "1234" or "2468" or "5678" or "9999");
+            BootstrapLogMessages.GeneratedAdminPin(log, pin);
+        }
+        else if (pin.Length != 4 || !pin.All(char.IsAsciiDigit))
+        {
+            throw new InvalidOperationException("Bootstrap:AdminPin doit comporter exactement 4 chiffres.");
+        }
+
+        await staff.CreateStaffMemberAsync("Admin Système", UserRole.Admin, pin).ConfigureAwait(false);
     }
 
     public static async Task SeedDatabase(
@@ -816,3 +856,9 @@ public record SyncBatchRequest(List<SyncMessageItemDto> Messages);
 public record SyncMessageItemDto(Guid Id, string? TerminalId, string? EventType, string? IdempotencyKey, string PayloadJson, DateTimeOffset CreatedAtUtc);
 
 
+
+internal static partial class BootstrapLogMessages
+{
+    [LoggerMessage(EventId = 1101, Level = LogLevel.Warning, Message = "Aucun Bootstrap:AdminPin défini : PIN de l'administrateur généré {Pin}. Il n'est affiché qu'une fois, changez-le après la première connexion.")]
+    public static partial void GeneratedAdminPin(ILogger logger, string pin);
+}

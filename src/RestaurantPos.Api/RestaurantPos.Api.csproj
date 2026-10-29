@@ -20,6 +20,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="RestaurantPos.Api.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\RestaurantPos.Domain\RestaurantPos.Domain.csproj" />
     <ProjectReference Include="..\RestaurantPos.Application\RestaurantPos.Application.csproj" />
     <ProjectReference Include="..\RestaurantPos.Infrastructure\RestaurantPos.Infrastructure.csproj" />

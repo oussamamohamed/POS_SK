@@ -73,8 +73,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     const originalFetch = window.fetch;
     window.fetch = async (...args) => {
         let [resource, config] = args;
+        const target = new URL(resource instanceof Request ? resource.url : String(resource), location.href);
         const token = state.token || localStorage.getItem('pos_jwt_token');
-        if (token) {
+        // Le JWT ne part que vers l'origine de ce serveur.
+        if (token && target.origin === location.origin) {
             config = config || {};
             config.headers = config.headers || {};
             if (config.headers instanceof Headers) {
@@ -92,7 +94,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }
         // Le jeton du poste et la langue ne partent que vers l'API de ce serveur, jamais vers un autre domaine.
-        const target = new URL(resource instanceof Request ? resource.url : String(resource), location.href);
         if (target.origin === location.origin && target.pathname.startsWith('/api/')) {
             config = config || {};
             config.headers = config.headers || {};
@@ -109,7 +110,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return res;
             }
         }
-        if (res.status === 401 && !resource.toString().includes('/api/auth/login')) {
+        // Un 401 d'une requête partie avec un autre jeton (ou sans) ne doit pas effacer le jeton posé depuis.
+        const currentToken = state.token || localStorage.getItem('pos_jwt_token');
+        if (res.status === 401 && !resource.toString().includes('/api/auth/login') && (currentToken || null) === (token || null)) {
             console.warn('Requête API 401: session non authentifiée ou expirée. Verrouillage du terminal.');
             state.token = null;
             localStorage.removeItem('pos_jwt_token');
@@ -402,23 +405,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         setupSignalR();
 
         // Ensure active authentication session
-        await ensureAuthToken();
+        if (!(await ensureAuthToken())) {
+            elements.pinLockModal.classList.add('active');
+            state.pinInput = '';
+            updatePinDots();
+        }
         startPosHub();
 
         await loadCatalogData();
-        // Le terminal démarre sur le comptoir : on charge sa commande en cours (articles, destination).
-        if (state.token) await openDirectCounterOrder(state.destination);
-        await loadFloorPlanData();
-        await loadKdsData();
-        await loadAdminData();
-        await loadNetworkSyncData();
+        // Sans jeton, ces chargements (protégés) sont faits par validatePin() après le PIN.
+        if (state.token && !sessionLoaded) await loadSessionData();
 
         setupTakeawayListeners();
         setupHappyHourControls();
 
         // Check Happy Hour status on startup
         await checkHappyHourStatus();
-        await updateHeldQueueCount();
     }
 
     // ==================== NAVIGATION ====================
@@ -430,18 +432,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         });
 
-        elements.btnLockTerminal.addEventListener('click', () => {
-            elements.pinLockModal.classList.add('active');
-            state.pinInput = '';
-            updatePinDots();
-        });
+        elements.btnLockTerminal.addEventListener('click', lockTerminal);
 
         if (elements.operatorPill) {
-            elements.operatorPill.addEventListener('click', () => {
-                elements.pinLockModal.classList.add('active');
-                state.pinInput = '';
-                updatePinDots();
-            });
+            elements.operatorPill.addEventListener('click', lockTerminal);
         }
     }
 
@@ -508,8 +502,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             tabBtn.style.borderInlineStartWidth = '6px';
             tabBtn.innerHTML = `
                 <span>${getCategoryIcon(cat.iconName || cat.name.toLowerCase())}</span>
-                <span>${cat.name}</span>
-                <span class="btn-edit-cat-trigger" data-cat-id="${cat.id}" title="${t('common.edit')}" style="margin-inline-start:auto; font-size:0.75rem; opacity:0.6; padding:2px 4px;">✏️</span>
+                <span>${escapeHtml(cat.name)}</span>
+                <span class="btn-edit-cat-trigger" data-cat-id="${escapeHtml(cat.id)}" title="${t('common.edit')}" style="margin-inline-start:auto; font-size:0.75rem; opacity:0.6; padding:2px 4px;">✏️</span>
             `;
 
             tabBtn.addEventListener('click', (e) => {
@@ -537,7 +531,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         quickItems.forEach(prod => {
             const btn = document.createElement('button');
             btn.className = 'btn-quick-key';
-            btn.innerHTML = `<span>⚡</span> <span>${prod.name} (${Number(prod.price).toFixed(2)} €)</span>`;
+            btn.innerHTML = `<span>⚡</span> <span>${escapeHtml(prod.name)} (${Number(prod.price).toFixed(2)} €)</span>`;
             btn.addEventListener('click', () => handleProductClick(prod));
             elements.quickKeysBar.appendChild(btn);
         });
@@ -753,10 +747,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         card.innerHTML = `
             <div class="product-card-top">
-                <span class="product-badge-station">${prod.preparationStationId || 'HOT'}</span>
+                <span class="product-badge-station">${escapeHtml(prod.preparationStationId || 'HOT')}</span>
                 ${hasOptions ? `<span style="font-size:0.68rem; background:rgba(14, 165, 233, 0.9); color:white; padding:2px 6px; border-radius:4px; font-weight:700; box-shadow:0 2px 4px rgba(0,0,0,0.3);">⚙️ Options</span>` : ''}
             </div>
-            <div class="product-name">${displayName}</div>
+            <div class="product-name">${escapeHtml(displayName)}</div>
             ${priceHtml}
         `;
         card.addEventListener('pointerdown', () => {
@@ -800,7 +794,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const header = document.createElement('div');
             header.style.cssText = 'display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;';
             header.innerHTML = `
-                <div style="font-weight:700; color:#f1f5f9; font-size:0.95rem;">${group.groupName}</div>
+                <div style="font-weight:700; color:#f1f5f9; font-size:0.95rem;">${escapeHtml(group.groupName)}</div>
                 <span style="font-size:0.75rem; font-weight:600; padding:2px 8px; border-radius:4px; ${group.isMandatory ? 'background:rgba(245, 158, 11, 0.15); color:#fbbf24; border:1px solid rgba(245, 158, 11, 0.3);' : 'background:rgba(148, 163, 184, 0.1); color:#94a3b8;'}">
                     ${group.isSingleChoice ? (group.isMandatory ? t('order.modifier_choice_required') : t('order.modifier_choice_max')) : (group.minSelections > 0 ? t('order.modifier_min_selections', { min: group.minSelections }) : t('order.modifier_optional'))}
                 </span>
@@ -835,7 +829,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 `;
 
                 optBtn.innerHTML = `
-                    <span style="font-weight:600; font-size:0.85rem; line-height:1.2;">${opt.name}</span>
+                    <span style="font-weight:600; font-size:0.85rem; line-height:1.2;">${escapeHtml(opt.name)}</span>
                     ${Number(opt.extraPrice) > 0 ? `<span style="font-size:0.75rem; color:#10b981; font-weight:700; margin-top:4px;">+${Number(opt.extraPrice).toFixed(2)} €</span>` : `<span style="font-size:0.7rem; color:#64748b; margin-top:4px;">${t('order.modifier_included')}</span>`}
                 `;
 
@@ -964,26 +958,47 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // ==================== AUTO-SAVE & TABLE RECALL ====================
-    async function ensureAuthToken() {
-        if (state.token) return state.token;
-        try {
-            const res = await fetch('/api/auth/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ pin: '1234' })
-            });
-            if (res.ok) {
-                const data = await res.json();
-                state.token = data.token;
-                localStorage.setItem('pos_jwt_token', data.token);
-                startPosHub();
-                state.operator = { name: data.operatorName, role: data.role, id: data.operatorId };
-                return data.token;
-            }
-        } catch (e) {
-            console.warn('ensureAuthToken failed:', e);
+    // Verrou réel : la session (jeton, opérateur, hub SignalR) est détruite, le PIN est redemandé.
+    function lockTerminal() {
+        state.token = null;
+        state.operator = null;
+        sessionLoad = null;
+        sessionLoaded = false;
+        try { localStorage.removeItem('pos_jwt_token'); } catch { /* stockage indisponible */ }
+        fetch('/api/auth/logout', { method: 'POST' }).catch(() => { }); // efface le cookie HttpOnly
+        if (posConnection) {
+            posConnection.stop().catch(() => { });
+            posConnectionStarted = false;
         }
-        return null;
+        elements.pinLockModal.classList.add('active');
+        state.pinInput = '';
+        updatePinDots();
+    }
+
+    // Données protégées d'une session : appelée au démarrage (jeton existant) et après un PIN ; une seule exécution à la fois.
+    let sessionLoad = null;
+    let sessionLoaded = false; // vrai une fois la session chargée (PIN validé pendant init() : init() ne recharge pas)
+    function loadSessionData() {
+        return sessionLoad ??= (async () => {
+            try {
+                // Le terminal démarre sur le comptoir : on charge sa commande en cours (articles, destination).
+                if (state.activeTable === 'Comptoir') await openDirectCounterOrder(state.destination || 'Takeaway');
+                else if (state.activeTable) await loadActiveTableOrder(state.activeTable);
+                await loadFloorPlanData();
+                await loadKdsData();
+                await loadAdminData();
+                await loadNetworkSyncData();
+                await updateHeldQueueCount();
+                sessionLoaded = true;
+            } finally {
+                sessionLoad = null;
+            }
+        })();
+    }
+
+    // Plus de connexion implicite : seul le PIN saisi par l'opérateur ouvre une session.
+    async function ensureAuthToken() {
+        return state.token || null;
     }
 
     /**
@@ -1187,7 +1202,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             elements.cartItemsList.innerHTML = `
                 <div style="text-align:center;color:#64748b;padding:40px 10px;">
                     <div style="font-size:2.5rem;margin-bottom:8px;">🍽️</div>
-                    <strong>${t('order.cart_empty_title', { table: state.activeTable })}</strong>
+                    <strong>${t('order.cart_empty_title', { table: escapeHtml(state.activeTable) })}</strong>
                     <div style="font-size:0.8rem;margin-top:4px;">${t('order.cart_empty_hint')}</div>
                 </div>
             `;
@@ -1219,9 +1234,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             row.innerHTML = `
                 <div class="cart-item-info">
                     <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-                        <span class="cart-item-title">${item.product.name}</span>
+                        <span class="cart-item-title">${escapeHtml(item.product.name)}</span>
                         ${item.isHappyHourApplied ? `<span class="cart-item-badge-hh" title="${t('order.hh_badge_title')}">🍻 [HH]</span>` : ''}
-                        <span class="course-badge ${courseClass}" data-idx="${index}" title="${t('order.course_badge_title')}">${courseLabel(item.course || 'Direct')}</span>
+                        <span class="course-badge ${escapeHtml(courseClass)}" data-idx="${index}" title="${t('order.course_badge_title')}">${courseLabel(item.course || 'Direct')}</span>
                         ${item.isComp ? `<span class="comp-badge">${t('order.comp_badge')}</span>` : ''}
                         ${item.isDispatched
                             ? `<span class="badge-dispatched" title="${t('order.dispatched_badge_title')}">${t('order.dispatched_badge')}</span>`
@@ -1230,8 +1245,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 : `<span class="badge-pending" title="${t('order.pending_new_title')}">${t('order.pending_new_badge')}</span>`}
                     </div>
                     <span class="cart-item-meta">${unitPrice.toFixed(2)} € × ${item.quantity} ${item.originalUnitPrice ? `<span style="text-decoration:line-through; color:#94a3b8; margin-inline-start:4px;">(${Number(item.originalUnitPrice).toFixed(2)} €)</span>` : ''} ${item.modifiersPriceExtra ? `<span style="color:#10b981; font-weight:600;">${t('order.modifiers_extra_note', { amount: Number(item.modifiersPriceExtra).toFixed(2) })}</span>` : ''} ${t('order.cart_item_vat_suffix', { vat: effectiveVatPercent })}</span>
-                    ${item.modifiers && item.modifiers.length > 0 ? `<div style="font-size:0.75rem;color:#f59e0b;margin-top:2px;">↳ ${item.modifiers.join(', ')}</div>` : ''}
-                    ${item.kitchenComment ? `<div style="font-size:0.72rem;color:#94a3b8;font-style:italic;margin-top:1px;">💬 ${item.kitchenComment}</div>` : ''}
+                    ${item.modifiers && item.modifiers.length > 0 ? `<div style="font-size:0.75rem;color:#f59e0b;margin-top:2px;">↳ ${escapeHtml(item.modifiers.join(', '))}</div>` : ''}
+                    ${item.kitchenComment ? `<div style="font-size:0.72rem;color:#94a3b8;font-style:italic;margin-top:1px;">💬 ${escapeHtml(item.kitchenComment)}</div>` : ''}
                 </div>
                 <div class="cart-item-controls">
                     <button class="btn-qty" data-action="minus" data-idx="${index}">-</button>
@@ -2226,16 +2241,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
             card.innerHTML = `
                 <div>
-                    <div style="font-weight:700; font-size:1rem; color:#f8fafc;">${h.customerLabel || t('order.held_card_default_name')}</div>
+                    <div style="font-weight:700; font-size:1rem; color:#f8fafc;">${h.customerLabel ? escapeHtml(h.customerLabel) : t('order.held_card_default_name')}</div>
                     <div style="font-size:0.8rem; color:var(--text-muted); margin-top:2px;">
                         ${t('order.held_card_meta', { count: h.itemCount, amount: totalAmount.toFixed(2), time: heldTime })}
                     </div>
                 </div>
                 <div class="held-card-actions">
-                    <button type="button" class="btn-action btn-pay btn-recall-held" data-id="${holdId}" style="padding:8px 14px; font-size:0.85rem;">
+                    <button type="button" class="btn-action btn-pay btn-recall-held" data-id="${escapeHtml(holdId)}" style="padding:8px 14px; font-size:0.85rem;">
                         ${t('order.held_recall_btn')}
                     </button>
-                    <button type="button" class="btn-secondary btn-void-held" data-id="${holdId}" style="padding:8px 12px; font-size:0.85rem; color:#ef4444; border-color:rgba(239,68,68,0.3);">
+                    <button type="button" class="btn-secondary btn-void-held" data-id="${escapeHtml(holdId)}" style="padding:8px 12px; font-size:0.85rem; color:#ef4444; border-color:rgba(239,68,68,0.3);">
                         ${t('order.held_void_btn')}
                     </button>
                 </div>
@@ -2508,10 +2523,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 : (table.status !== 0 ? `<div class="table-sub" style="font-weight:700;color:var(--text-muted);margin-top:4px;">${t('floor.table_total_zero')}</div>` : '');
 
             card.innerHTML = `
-                <div class="table-num">${table.tableNumber}</div>
+                <div class="table-num">${escapeHtml(table.tableNumber)}</div>
                 <div class="table-sub">${t('floor.table_capacity', { capacity: table.capacity })}</div>
                 <div class="table-sub">${t('floor.table_status_label', { status: getTableStatusLabel(table.status) })}</div>
-                <div class="table-sub">${t('floor.table_waiter', { name: table.assignedWaiterName || '—' })}</div>
+                <div class="table-sub">${t('floor.table_waiter', { name: escapeHtml(table.assignedWaiterName || '—') })}</div>
                 ${table.coversCount > 0 ? `<div style="font-size:0.75rem;color:#10b981;font-weight:700;margin-top:4px;">${t('floor.table_covers_active', { count: table.coversCount })}</div>` : ''}
                 ${totalHtml}
             `;
@@ -2550,11 +2565,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             card.className = 'kds-ticket-card';
             card.innerHTML = `
                 <div class="ticket-header">
-                    <span>${ticket.tableNumber}</span>
-                    <small>${ticket.stationId || 'HOT'}</small>
+                    <span>${escapeHtml(ticket.tableNumber)}</span>
+                    <small>${escapeHtml(ticket.stationId || 'HOT')}</small>
                 </div>
                 <div class="ticket-items">
-                    ${ticket.items ? ticket.items.map(i => `<div>• ${i.quantity}x ${i.productName}</div>`).join('') : t('kitchen.default_dish')}
+                    ${ticket.items ? ticket.items.map(i => `<div>• ${i.quantity}x ${escapeHtml(i.productName)}</div>`).join('') : t('kitchen.default_dish')}
                 </div>
             `;
 
@@ -2705,7 +2720,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 elServices.innerHTML = data.services.map(s => `
                     <div style="background:rgba(255,255,255,0.03); padding:12px; border-radius:8px; border:1px solid rgba(255,255,255,0.06);">
                         <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
-                            <strong>${s.serviceName}</strong>
+                            <strong>${escapeHtml(s.serviceName)}</strong>
                             <strong style="color:#10b981; direction:ltr; unicode-bidi:isolate;">${s.salesTtc.toFixed(2)} €</strong>
                         </div>
                         <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:#94a3b8;">
@@ -2726,7 +2741,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 elPayments.innerHTML = data.paymentMethods.map(p => `
                     <div style="background:rgba(255,255,255,0.03); padding:10px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.06);">
                         <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:0.88rem;">
-                            <span>${p.methodName} <span style="color:#94a3b8; font-size:0.78rem;">(${p.transactionsCount} tx)</span></span>
+                            <span>${escapeHtml(p.methodName)} <span style="color:#94a3b8; font-size:0.78rem;">(${p.transactionsCount} tx)</span></span>
                             <strong style="direction:ltr; unicode-bidi:isolate;">${p.totalAmount.toFixed(2)} € <span style="color:#38bdf8; font-size:0.8rem;">(${p.percentageOfTotal}%)</span></strong>
                         </div>
                         <div style="background:rgba(255,255,255,0.08); height:6px; border-radius:3px; overflow:hidden;">
@@ -2746,7 +2761,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 elTopProds.innerHTML = data.topProducts.map((prod, idx) => `
                     <div style="background:rgba(255,255,255,0.03); padding:10px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.06);">
                         <div style="display:flex; justify-content:space-between; margin-bottom:4px; font-size:0.88rem;">
-                            <span><strong style="color:#fbbf24; margin-inline-end:6px;">#${idx + 1}</strong> ${prod.productName} <span style="color:#94a3b8; font-size:0.8rem;">(x${prod.quantitySold})</span></span>
+                            <span><strong style="color:#fbbf24; margin-inline-end:6px;">#${idx + 1}</strong> ${escapeHtml(prod.productName)} <span style="color:#94a3b8; font-size:0.8rem;">(x${prod.quantitySold})</span></span>
                             <strong style="color:#10b981; direction:ltr; unicode-bidi:isolate;">${prod.totalSalesTtc.toFixed(2)} € <span style="color:#94a3b8; font-size:0.75rem;">(${prod.percentageOfTotal}%)</span></strong>
                         </div>
                         <div style="background:rgba(255,255,255,0.08); height:6px; border-radius:3px; overflow:hidden;">
@@ -2766,7 +2781,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 elStaff.innerHTML = data.staffPerformance.map(s => `
                     <div style="background:rgba(255,255,255,0.03); padding:10px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.06); display:flex; justify-content:space-between; align-items:center;">
                         <div>
-                            <strong>👤 ${s.serverName}</strong>
+                            <strong>👤 ${escapeHtml(s.serverName)}</strong>
                             <div style="font-size:0.78rem; color:#94a3b8; margin-top:2px;">${t('admin.dash_staff_summary', { tables: s.tablesServedCount, amount: s.averageTableTtc.toFixed(2) })}</div>
                         </div>
                         <div style="text-align:end;">
@@ -2789,19 +2804,19 @@ document.addEventListener('DOMContentLoaded', async () => {
             row.className = 'item-list-row';
             row.innerHTML = `
                 <div>
-                    <strong>${p.name}</strong> ${t('admin.catalog_row_price_vat', { price: p.price.toFixed(2), rate: p.taxRatePercent })}
-                    <small style="display:block;color:#94a3b8;">${t('admin.catalog_row_station', { station: p.preparationStationId || 'HOT' })}${p.isQuickKey ? ' | ' + t('admin.catalog_row_quick_key') : ''}</small>
+                    <strong>${escapeHtml(p.name)}</strong> ${t('admin.catalog_row_price_vat', { price: p.price.toFixed(2), rate: p.taxRatePercent })}
+                    <small style="display:block;color:#94a3b8;">${t('admin.catalog_row_station', { station: escapeHtml(p.preparationStationId || 'HOT') })}${p.isQuickKey ? ' | ' + t('admin.catalog_row_quick_key') : ''}</small>
                 </div>
                 <div style="display:flex; gap:6px;">
-                    <button class="btn-archive btn-edit-product" data-id="${p.id}" style="background:rgba(59,130,246,0.2); border-color:rgba(59,130,246,0.4); color:#60a5fa;">${t('admin.btn_edit_row')}</button>
-                    <button class="btn-archive btn-del-product" data-id="${p.id}">${t('admin.btn_deactivate')}</button>
+                    <button class="btn-archive btn-edit-product" data-id="${escapeHtml(p.id)}" style="background:rgba(59,130,246,0.2); border-color:rgba(59,130,246,0.4); color:#60a5fa;">${t('admin.btn_edit_row')}</button>
+                    <button class="btn-archive btn-del-product" data-id="${escapeHtml(p.id)}">${t('admin.btn_deactivate')}</button>
                 </div>
             `;
             row.querySelector('.btn-edit-product').addEventListener('click', () => {
                 document.getElementById('editProdId').value = p.id;
                 document.getElementById('editProdName').value = p.name;
                 const catSelect = document.getElementById('editProdCat');
-                catSelect.innerHTML = state.categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+                catSelect.innerHTML = state.categories.map(c => `<option value="${escapeHtml(c.id)}">${escapeHtml(c.name)}</option>`).join('');
                 catSelect.value = p.categoryId;
                 document.getElementById('editProdPrice').value = p.price;
                 setSelectValue('editProdTax', String(Number(p.taxRatePercent)));
@@ -2856,12 +2871,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 row.className = 'item-list-row';
                 row.innerHTML = `
                     <div>
-                        <strong>${s.name}</strong>
-                        <small style="display:block;color:#94a3b8;">${t('admin.staff_row_role', { role: operatorRoleLabel(s.role) })}</small>
+                        <strong>${escapeHtml(s.name)}</strong>
+                        <small style="display:block;color:#94a3b8;">${t('admin.staff_row_role', { role: escapeHtml(operatorRoleLabel(s.role)) })}</small>
                     </div>
                     <div style="display:flex; gap:6px;">
-                        <button class="btn-archive btn-edit-staff" data-id="${s.id}" style="background:rgba(59,130,246,0.2); border-color:rgba(59,130,246,0.4); color:#60a5fa;">${t('admin.btn_edit_row')}</button>
-                        <button class="btn-archive btn-del-staff" data-id="${s.id}">${t('admin.btn_deactivate')}</button>
+                        <button class="btn-archive btn-edit-staff" data-id="${escapeHtml(s.id)}" style="background:rgba(59,130,246,0.2); border-color:rgba(59,130,246,0.4); color:#60a5fa;">${t('admin.btn_edit_row')}</button>
+                        <button class="btn-archive btn-del-staff" data-id="${escapeHtml(s.id)}">${t('admin.btn_deactivate')}</button>
                     </div>
                 `;
                 row.querySelector('.btn-edit-staff').addEventListener('click', () => {
@@ -2871,7 +2886,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                     elements.editStaffModal.classList.add('active');
                 });
                 row.querySelector('.btn-del-staff').addEventListener('click', async () => {
-                    await fetch(`/api/staff/operators/${s.id}`, { method: 'DELETE' });
+                    const res = await fetch(`/api/staff/operators/${s.id}`, { method: 'DELETE' });
+                    if (!res.ok) {
+                        showToast(await readApiError(res, String(res.status)), 'error');
+                        return;
+                    }
                     showToast(t('admin.staff_deactivated_toast', { name: s.name }), 'info');
                     await loadAdminStaff();
                 });
@@ -2987,7 +3006,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const box = document.createElement('div');
         box.className = 'printer-jobs';
         box.innerHTML = jobs.map(j => `
-            <div class="item-list-row" data-job-id="${j.id}">
+            <div class="item-list-row" data-job-id="${escapeHtml(j.id)}">
                 <div>
                     ${kinds[String(j.kind).toLowerCase()] || escapeHtml(j.kind)} · ${new Date(j.createdAtUtc).toLocaleTimeString(window.i18n.locale, { hour: '2-digit', minute: '2-digit' })}
                     ${j.lastError ? `<small style="display:block;color:#f87171;">${escapeHtml(j.lastError)}</small>` : ''}
@@ -3024,14 +3043,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 row.className = 'item-list-row';
                 row.innerHTML = `
                     <div>
-                        <strong>${escapeHtml(pr.name)}</strong> (${escapeHtml(pr.ipAddress)}:${pr.port})${pr.textMode ? ` · ${t('admin.printer_text_mode_badge')}` : ''}${pr.isActive === false ? ` <span style="color:#f87171;">${t('admin.printer_row_inactive_suffix')}</span>` : ''}
+                        <strong>${escapeHtml(pr.name)}</strong> (${escapeHtml(pr.ipAddress)}:${escapeHtml(pr.port)})${pr.textMode ? ` · ${t('admin.printer_text_mode_badge')}` : ''}${pr.isActive === false ? ` <span style="color:#f87171;">${t('admin.printer_row_inactive_suffix')}</span>` : ''}
                         <span class="printer-status">${status}${pending}</span>
-                        <small style="display:block;color:#94a3b8;">${t('admin.printer_row_meta', { stations: (pr.assignedStationIds || []).join(', ') || '—', drawer: pr.openCashDrawerOnReceipt ? t('common.yes') : t('common.no') })}</small>
+                        <small style="display:block;color:#94a3b8;">${t('admin.printer_row_meta', { stations: escapeHtml((pr.assignedStationIds || []).join(', ') || '—'), drawer: pr.openCashDrawerOnReceipt ? t('common.yes') : t('common.no') })}</small>
                     </div>
                     <div style="display:flex; gap:6px;">
-                        ${hasJobs ? `<button class="btn-archive btn-printer-jobs" data-id="${pr.id}">${t('admin.printer_jobs_btn')}</button>` : ''}
-                        <button class="btn-archive btn-edit-printer" data-id="${pr.id}" style="background:rgba(59,130,246,0.2); border-color:rgba(59,130,246,0.4); color:#60a5fa;">${t('admin.btn_edit_row')}</button>
-                        <button class="btn-archive btn-del-printer" data-id="${pr.id}">${pr.isActive === false ? t('admin.btn_reactivate') : t('admin.btn_deactivate')}</button>
+                        ${hasJobs ? `<button class="btn-archive btn-printer-jobs" data-id="${escapeHtml(pr.id)}">${t('admin.printer_jobs_btn')}</button>` : ''}
+                        <button class="btn-archive btn-edit-printer" data-id="${escapeHtml(pr.id)}" style="background:rgba(59,130,246,0.2); border-color:rgba(59,130,246,0.4); color:#60a5fa;">${t('admin.btn_edit_row')}</button>
+                        <button class="btn-archive btn-del-printer" data-id="${escapeHtml(pr.id)}">${pr.isActive === false ? t('admin.btn_reactivate') : t('admin.btn_deactivate')}</button>
                     </div>
                 `;
                 row.querySelector('.btn-printer-jobs')?.addEventListener('click', () => togglePrinterJobs(row, pr));
@@ -3090,7 +3109,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         hhAdminState.selectedScheduleId = null;
                     } else {
                         selectSched.innerHTML = hhAdminState.schedules.map(s => 
-                            `<option value="${s.id}" ${s.id === hhAdminState.selectedScheduleId ? 'selected' : ''}>${s.name} (${s.startTime} - ${s.endTime})</option>`
+                            `<option value="${escapeHtml(s.id)}" ${s.id === hhAdminState.selectedScheduleId ? 'selected' : ''}>${escapeHtml(s.name)} (${escapeHtml(s.startTime)} - ${escapeHtml(s.endTime)})</option>`
                         ).join('');
                         if (!hhAdminState.selectedScheduleId || !hhAdminState.schedules.some(s => s.id === hhAdminState.selectedScheduleId)) {
                             hhAdminState.selectedScheduleId = hhAdminState.schedules[0].id;
@@ -3117,7 +3136,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         let html = `<button type="button" class="hh-pill-filter ${hhAdminState.articleFilterCatId === null ? 'active' : ''}" data-cat-id="all">${t('admin.hh_all_categories')}</button>`;
         if (state.categories) {
             html += state.categories.map(c => 
-                `<button type="button" class="hh-pill-filter ${hhAdminState.articleFilterCatId === c.id ? 'active' : ''}" data-cat-id="${c.id}">${c.name}</button>`
+                `<button type="button" class="hh-pill-filter ${hhAdminState.articleFilterCatId === c.id ? 'active' : ''}" data-cat-id="${escapeHtml(c.id)}">${escapeHtml(c.name)}</button>`
             ).join('');
         }
         container.innerHTML = html;
@@ -3158,10 +3177,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         grid.innerHTML = filtered.map(p => {
             const isChecked = hhAdminState.selectedArticleIds.has(p.id);
             return `
-                <div class="hh-select-card ${isChecked ? 'selected' : ''}" data-prod-id="${p.id}">
-                    <input type="checkbox" ${isChecked ? 'checked' : ''} data-prod-id="${p.id}">
+                <div class="hh-select-card ${isChecked ? 'selected' : ''}" data-prod-id="${escapeHtml(p.id)}">
+                    <input type="checkbox" ${isChecked ? 'checked' : ''} data-prod-id="${escapeHtml(p.id)}">
                     <div class="hh-select-card-info">
-                        <div class="hh-select-card-title">${p.name}</div>
+                        <div class="hh-select-card-title">${escapeHtml(p.name)}</div>
                         <div class="hh-select-card-sub">${t('admin.hh_std_price', { price: p.price.toFixed(2) })}</div>
                     </div>
                 </div>
@@ -3206,10 +3225,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             const isChecked = hhAdminState.selectedFamilyIds.has(c.id);
             const prodsInCat = (state.products || []).filter(p => p.categoryId === c.id);
             return `
-                <div class="hh-select-card ${isChecked ? 'selected' : ''}" data-cat-id="${c.id}">
-                    <input type="checkbox" ${isChecked ? 'checked' : ''} data-cat-id="${c.id}">
+                <div class="hh-select-card ${isChecked ? 'selected' : ''}" data-cat-id="${escapeHtml(c.id)}">
+                    <input type="checkbox" ${isChecked ? 'checked' : ''} data-cat-id="${escapeHtml(c.id)}">
                     <div class="hh-select-card-info">
-                        <div class="hh-select-card-title">${c.name}</div>
+                        <div class="hh-select-card-title">${escapeHtml(c.name)}</div>
                         <div class="hh-select-card-sub">${t('admin.hh_products_included_count', { count: prodsInCat.length })}</div>
                     </div>
                 </div>
@@ -3254,13 +3273,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             catList.innerHTML = catRules.map(r => `
                 <div class="hh-active-rule-item">
                     <div style="display:flex; align-items:center; gap:10px;">
-                        <input type="checkbox" class="cb-active-rule" data-rule-id="${r.id}" ${hhAdminState.selectedActiveRuleIds.has(r.id) ? 'checked' : ''}>
+                        <input type="checkbox" class="cb-active-rule" data-rule-id="${escapeHtml(r.id)}" ${hhAdminState.selectedActiveRuleIds.has(r.id) ? 'checked' : ''}>
                         <div>
-                            <strong>🏷️ ${r.targetName || t('admin.hh_category_fallback_name')}</strong>
+                            <strong>🏷️ ${r.targetName ? escapeHtml(r.targetName) : t('admin.hh_category_fallback_name')}</strong>
                             <span style="color:#f59e0b; margin-inline-start:6px; font-weight:bold;">-${r.discountPercent}%</span>
                         </div>
                     </div>
-                    <button type="button" class="btn-archive btn-del-single-rule" data-rule-id="${r.id}" style="color:#f87171; border-color:rgba(239,68,68,0.3); padding:4px 8px; font-size:0.8rem;">🗑️</button>
+                    <button type="button" class="btn-archive btn-del-single-rule" data-rule-id="${escapeHtml(r.id)}" style="color:#f87171; border-color:rgba(239,68,68,0.3); padding:4px 8px; font-size:0.8rem;">🗑️</button>
                 </div>
             `).join('');
         }
@@ -3271,13 +3290,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             prodList.innerHTML = prodRules.map(r => `
                 <div class="hh-active-rule-item">
                     <div style="display:flex; align-items:center; gap:10px;">
-                        <input type="checkbox" class="cb-active-rule" data-rule-id="${r.id}" ${hhAdminState.selectedActiveRuleIds.has(r.id) ? 'checked' : ''}>
+                        <input type="checkbox" class="cb-active-rule" data-rule-id="${escapeHtml(r.id)}" ${hhAdminState.selectedActiveRuleIds.has(r.id) ? 'checked' : ''}>
                         <div>
-                            <strong>🍺 ${r.targetName || t('admin.hh_product_fallback_name')}</strong>
+                            <strong>🍺 ${r.targetName ? escapeHtml(r.targetName) : t('admin.hh_product_fallback_name')}</strong>
                             <span style="color:#38bdf8; margin-inline-start:6px; font-weight:bold;">${r.fixedPrice ? r.fixedPrice.toFixed(2) + ' €' : '-' + r.discountPercent + '%'}</span>
                         </div>
                     </div>
-                    <button type="button" class="btn-archive btn-del-single-rule" data-rule-id="${r.id}" style="color:#f87171; border-color:rgba(239,68,68,0.3); padding:4px 8px; font-size:0.8rem;">🗑️</button>
+                    <button type="button" class="btn-archive btn-del-single-rule" data-rule-id="${escapeHtml(r.id)}" style="color:#f87171; border-color:rgba(239,68,68,0.3); padding:4px 8px; font-size:0.8rem;">🗑️</button>
                 </div>
             `).join('');
         }
@@ -3318,15 +3337,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             return `
                 <div style="background:rgba(255,255,255,0.03); padding:12px; border-radius:8px; border:1px solid ${isSelected ? 'var(--primary)' : 'rgba(255,255,255,0.06)'}; display:flex; justify-content:space-between; align-items:center;">
                     <div>
-                        <strong>🍻 ${s.name}</strong>
-                        <span style="font-size:0.75rem; color:#f59e0b; margin-inline-start:6px;">${s.startTime} - ${s.endTime}</span>
+                        <strong>🍻 ${escapeHtml(s.name)}</strong>
+                        <span style="font-size:0.75rem; color:#f59e0b; margin-inline-start:6px;">${escapeHtml(s.startTime)} - ${escapeHtml(s.endTime)}</span>
                         <span style="font-size:0.72rem; background:rgba(59,130,246,0.2); color:#60a5fa; border:1px solid rgba(59,130,246,0.3); padding:2px 6px; border-radius:10px; margin-inline-start:6px;">${t('admin.hh_priority_value', { value: s.priority || 1 })}</span>
-                        <div style="font-size:0.8rem; color:#94a3b8; margin-top:2px;">${t('admin.hh_days_value', { days: dayLabels })} ${s.appliesToTakeaway ? t('admin.hh_takeaway_included') : t('admin.hh_dine_in_only')}</div>
+                        <div style="font-size:0.8rem; color:#94a3b8; margin-top:2px;">${t('admin.hh_days_value', { days: escapeHtml(dayLabels) })} ${s.appliesToTakeaway ? t('admin.hh_takeaway_included') : t('admin.hh_dine_in_only')}</div>
                         <div style="font-size:0.78rem; color:#38bdf8; margin-top:2px;">${t('admin.hh_rules_configured_count', { count: rulesCount })}</div>
                     </div>
                     <div style="display:flex; gap:8px;">
-                        <button class="btn-primary btn-select-hh-sched" data-id="${s.id}" style="padding:6px 12px; font-size:0.8rem;">${t('admin.hh_manage_pricing')}</button>
-                        <button class="btn-archive btn-del-hh-sched" data-id="${s.id}" style="color:#f87171; border-color:rgba(239,68,68,0.3); padding:6px 10px; font-size:0.8rem;">🗑️</button>
+                        <button class="btn-primary btn-select-hh-sched" data-id="${escapeHtml(s.id)}" style="padding:6px 12px; font-size:0.8rem;">${t('admin.hh_manage_pricing')}</button>
+                        <button class="btn-archive btn-del-hh-sched" data-id="${escapeHtml(s.id)}" style="color:#f87171; border-color:rgba(239,68,68,0.3); padding:6px 10px; font-size:0.8rem;">🗑️</button>
                     </div>
                 </div>
             `;
@@ -4131,7 +4150,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (data.vatBreakdown && Object.keys(data.vatBreakdown).length > 0) {
                 elements.slipVatBreakdown.innerHTML = Object.entries(data.vatBreakdown).map(([rate, amount]) => `
                     <div class="slip-row" style="font-size:0.85rem; color:#94a3b8;">
-                        <span>${t('fiscal.slip_vat_row_label', { rate })}</span>
+                        <span>${t('fiscal.slip_vat_row_label', { rate: escapeHtml(rate) })}</span>
                         <span>${Number(amount).toFixed(2)} €</span>
                     </div>
                 `).join('');
@@ -4145,7 +4164,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (data.paymentTotals && Object.keys(data.paymentTotals).length > 0) {
                 elements.slipPaymentBreakdown.innerHTML = Object.entries(data.paymentTotals).map(([method, amount]) => `
                     <div class="slip-row" style="font-size:0.85rem; color:#94a3b8;">
-                        <span>${t('fiscal.slip_payment_row_label', { method })}</span>
+                        <span>${t('fiscal.slip_payment_row_label', { method: escapeHtml(method) })}</span>
                         <span>${Number(amount).toFixed(2)} €</span>
                     </div>
                 `).join('');
@@ -4285,7 +4304,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <td style="padding:8px; font-size:0.82rem; color:#94a3b8;">${dateStr}</td>
                 <td style="padding:8px; font-family:monospace; font-size:0.75rem; color:#a78bfa;" title="${escapeHtml(a.signatureHash || '')}">${escapeHtml(sigTrunc)}</td>
                 <td style="padding:8px;">
-                    <a href="/api/fiscal/archives/${a.id}/file" download="${escapeHtml(a.fileName)}" class="btn-fiscal" style="padding:4px 10px; font-size:0.78rem; background:#3b82f6; color:#fff; text-decoration:none; display:inline-block; border-radius:4px;">${t('fiscal.action_download')}</a>
+                    <a href="/api/fiscal/archives/${escapeHtml(a.id)}/file" download="${escapeHtml(a.fileName)}" class="btn-fiscal" style="padding:4px 10px; font-size:0.78rem; background:#3b82f6; color:#fff; text-decoration:none; display:inline-block; border-radius:4px;">${t('fiscal.action_download')}</a>
                 </td>
             `;
             elements.archivesTableBody.appendChild(tr);
@@ -4314,9 +4333,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             const existingArchive = (state.archives || []).find(a => a.periodClosureId === c.id);
             let actionHtml = '';
             if (existingArchive) {
-                actionHtml = `<a href="/api/fiscal/archives/${existingArchive.id}/file" download="${escapeHtml(existingArchive.fileName)}" class="btn-fiscal" style="padding:4px 8px; font-size:0.75rem; background:#3b82f6; color:#fff; text-decoration:none; display:inline-block; border-radius:4px;">${t('fiscal.action_download')}</a>`;
+                actionHtml = `<a href="/api/fiscal/archives/${escapeHtml(existingArchive.id)}/file" download="${escapeHtml(existingArchive.fileName)}" class="btn-fiscal" style="padding:4px 8px; font-size:0.75rem; background:#3b82f6; color:#fff; text-decoration:none; display:inline-block; border-radius:4px;">${t('fiscal.action_download')}</a>`;
             } else {
-                actionHtml = `<button class="btn-create-archive" data-closure-id="${c.id}" style="padding:4px 8px; font-size:0.75rem; background:#8b5cf6; color:#fff; border:none; border-radius:4px; cursor:pointer;">${t('fiscal.action_archive')}</button>`;
+                actionHtml = `<button class="btn-create-archive" data-closure-id="${escapeHtml(c.id)}" style="padding:4px 8px; font-size:0.75rem; background:#8b5cf6; color:#fff; border:none; border-radius:4px; cursor:pointer;">${t('fiscal.action_archive')}</button>`;
             }
 
             tr.innerHTML = `
@@ -4515,7 +4534,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const netInfo = await netRes.json();
                 const badge = document.getElementById('connectionBadge');
                 if (badge) {
-                    badge.innerHTML = `<span class="pulse-dot"></span><span class="status-text">${netInfo.serverName} (${netInfo.primaryIp}:${netInfo.port})</span>`;
+                    badge.innerHTML = `<span class="pulse-dot"></span><span class="status-text">${escapeHtml(netInfo.serverName)} (${escapeHtml(netInfo.primaryIp)}:${escapeHtml(netInfo.port)})</span>`;
                 }
             }
             if (syncRes.ok) {
@@ -4593,17 +4612,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         list.innerHTML = devices.length === 0
             ? `<div style="color:var(--text-muted);">${t('admin.devices_none_paired')}</div>`
             : devices.map(d => `
-                <div class="item-list-row" data-device-id="${d.id}">
+                <div class="item-list-row" data-device-id="${escapeHtml(d.id)}">
                     <div>
                         <strong>${escapeHtml(d.name)}</strong>
                         <span style="color:var(--text-muted);">${escapeHtml(d.terminalId)} · ${escapeHtml(deviceRoleLabel(d.role))}</span>
                         <div style="font-size:0.8rem; color:#94a3b8;">${d.isRevoked ? t('admin.device_revoked') : (d.lastSeenUtc ? t('admin.device_last_seen', { date: new Date(d.lastSeenUtc).toLocaleString(window.i18n.locale) }) : t('admin.device_never_used'))}</div>
                     </div>
-                    ${d.isRevoked ? '' : `<select class="device-receipt-printer" data-device-id="${d.id}" aria-label="${t('admin.device_receipt_printer_label')}">
+                    ${d.isRevoked ? '' : `<select class="device-receipt-printer" data-device-id="${escapeHtml(d.id)}" aria-label="${t('admin.device_receipt_printer_label')}">
                         <option value="">${t('admin.device_receipt_printer_default')}</option>
-                        ${(state.printers || []).filter(p => p.isActive !== false).map(p => `<option value="${p.id}" ${p.id === d.receiptPrinterId ? 'selected' : ''}>${escapeHtml(p.name)}</option>`).join('')}
+                        ${(state.printers || []).filter(p => p.isActive !== false).map(p => `<option value="${escapeHtml(p.id)}" ${p.id === d.receiptPrinterId ? 'selected' : ''}>${escapeHtml(p.name)}</option>`).join('')}
                     </select>
-                    <button type="button" class="btn-archive btn-revoke-device" data-device-id="${d.id}">${t('admin.device_revoke_btn')}</button>`}
+                    <button type="button" class="btn-archive btn-revoke-device" data-device-id="${escapeHtml(d.id)}">${t('admin.device_revoke_btn')}</button>`}
                 </div>`).join('');
         list.querySelectorAll('.device-receipt-printer').forEach(sel => sel.addEventListener('change', async () => {
             const r = await fetch(`/api/devices/${sel.dataset.deviceId}/receipt-printer`, {
@@ -4943,14 +4962,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 updatePinDots();
                 showToast(t('common.session_unlocked_toast', { name: data.operatorName }), 'success');
 
-                // Reload active table with newly issued token
-                if (state.activeTable === 'Comptoir') {
-                    await openDirectCounterOrder(state.destination || 'Takeaway');
-                } else if (state.activeTable) {
-                    await loadActiveTableOrder(state.activeTable);
-                }
+                // Recharge commande, plan de salle, KDS et admin avec le jeton tout juste obtenu
+                await loadSessionData();
             } else {
-                showToast(t('common.pin_invalid_toast'), 'error');
+                // 429 : message du serveur (localisé, avec le délai) ; autre échec : PIN invalide.
+                showToast(res.status === 429 && data.errorMessage ? data.errorMessage : t('common.pin_invalid_toast'), 'error');
                 state.pinInput = '';
                 updatePinDots();
             }
@@ -5171,9 +5187,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 slotEl.innerHTML = `
                     <div class="admin-slot-header">
                         <span class="admin-slot-coord">[P${pageIndex + 1}:${row + 1},${col + 1}]</span>
-                        <span class="product-badge-station" style="font-size:0.6rem;">${prod.preparationStationId || 'HOT'}</span>
+                        <span class="product-badge-station" style="font-size:0.6rem;">${escapeHtml(prod.preparationStationId || 'HOT')}</span>
                     </div>
-                    <div class="admin-slot-title">${displayName}</div>
+                    <div class="admin-slot-title">${escapeHtml(displayName)}</div>
                     <div class="admin-slot-actions">
                         <button type="button" class="btn-slot-icon btn-edit-slot-trigger" title="${t('admin.grid_slot_customize_title')}">✏️</button>
                         <button type="button" class="btn-slot-icon delete btn-del-slot-trigger" title="${t('admin.grid_slot_release_title')}">✕</button>
@@ -5281,8 +5297,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             itemEl.draggable = true;
             itemEl.innerHTML = `
                 <div>
-                    <div style="font-weight:700;">${prod.name}</div>
-                    <div style="font-size:0.75rem; color:var(--text-muted);">${Number(prod.price).toFixed(2)} € • ${prod.preparationStationId || 'HOT'}</div>
+                    <div style="font-weight:700;">${escapeHtml(prod.name)}</div>
+                    <div style="font-size:0.75rem; color:var(--text-muted);">${Number(prod.price).toFixed(2)} € • ${escapeHtml(prod.preparationStationId || 'HOT')}</div>
                 </div>
                 <span>${isPlaced ? t('admin.grid_catalog_placed_label') : '⠿'}</span>
             `;

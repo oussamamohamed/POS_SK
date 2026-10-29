@@ -1,7 +1,10 @@
+using System.Linq;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
+using RestaurantPos.Application.Common.Interfaces;
 using RestaurantPos.Application.DTOs;
 
 namespace RestaurantPos.Api.Tests;
@@ -149,6 +152,21 @@ public class AuthEndpointsTests : IClassFixture<PosApiApplicationFactory>
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task Login_concurrent_wrong_pins_are_capped()
+    {
+        var limiter = _factory.Services.GetRequiredService<IPinRateLimiterService>();
+        limiter.ResetAttempts("unknown-client");
+        var client = _factory.CreateClient();
+
+        var responses = await Task.WhenAll(Enumerable.Range(0, 20)
+            .Select(_ => client.PostAsJsonAsync("/api/auth/login", new PinLoginRequest("0000"))));
+        limiter.ResetAttempts("unknown-client");
+
+        responses.Count(r => r.StatusCode == HttpStatusCode.BadRequest).Should().Be(5);
+        responses.Count(r => r.StatusCode == HttpStatusCode.TooManyRequests).Should().Be(15);
     }
 }
 

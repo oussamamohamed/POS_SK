@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
+using RestaurantPos.Api.Security;
 using RestaurantPos.Application.Common.Interfaces;
 using RestaurantPos.Application.DTOs;
 using RestaurantPos.Domain.Common;
@@ -185,20 +186,15 @@ public static class CounterSaleEndpoints
         });
 
         // 6. Void Held Order (Supervisor PIN Protected)
-        group.MapPost("/held/{holdId:guid}/void", async (Guid holdId, VoidHeldOrderRequest req, AppDbContext db, IHeldOrderStorageService heldStorage, IOperatorAuthenticationService authService, IFiscalJournal fiscalJournal) =>
+        group.MapPost("/held/{holdId:guid}/void", async (Guid holdId, VoidHeldOrderRequest req, AppDbContext db, IHeldOrderStorageService heldStorage, IOperatorAuthenticationService authService, IPinRateLimiterService rateLimiter, HttpContext http, IFiscalJournal fiscalJournal) =>
         {
-            if (string.IsNullOrWhiteSpace(req.SupervisorPin))
+            var guard = await SupervisorPinGuard.CheckAsync(req.SupervisorPin, http, authService, rateLimiter, http.RequestAborted);
+            if (!guard.Allowed)
             {
-                return Results.BadRequest(new { Message = Texts.T("errors.supervisor_pin_required") });
+                return guard.Rejection!;
             }
 
-            var auth = await authService.AuthenticatePinAsync(req.SupervisorPin);
-            if (!auth.IsSuccess || (auth.Role != UserRole.FloorManager && auth.Role != UserRole.Admin))
-            {
-                return Results.Json(new { Message = Texts.T("errors.authorization_insufficient") }, statusCode: StatusCodes.Status403Forbidden);
-            }
-
-            var success = await heldStorage.VoidHeldOrderAsync(holdId, auth.OperatorId!.Value, req.VoidReason);
+            var success = await heldStorage.VoidHeldOrderAsync(holdId, guard.OperatorId!.Value, req.VoidReason);
             if (!success)
             {
                 return Results.NotFound(new { Message = Texts.T("errors.held_order_not_found") });
@@ -207,9 +203,9 @@ public static class CounterSaleEndpoints
             // Log JET audit event
             await fiscalJournal.AppendAsync(
                 JournalEventTypes.EventHeldOrderVoided,
-                new { HoldId = holdId, VoidedBy = auth.OperatorName, Reason = req.VoidReason },
+                new { HoldId = holdId, VoidedBy = guard.OperatorName, Reason = req.VoidReason },
                 terminalId: !string.IsNullOrWhiteSpace(req.TerminalId) ? req.TerminalId : "POS_MAIN_TERM",
-                operatorId: auth.OperatorId);
+                operatorId: guard.OperatorId);
 
             return Results.Ok(new { Message = Texts.T("messages.held_order_cancelled") });
         });

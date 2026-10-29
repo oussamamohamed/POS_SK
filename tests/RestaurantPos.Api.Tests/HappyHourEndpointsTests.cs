@@ -143,6 +143,7 @@ public class HappyHourEndpointsTests : IClassFixture<PosApiApplicationFactory>
     public async Task Override_ActivateAndStop_WithValidAndInvalidPins()
     {
         var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.Add("X-Test-Role", "FloorManager");
 
         // 1. Invalid PIN -> 403
         var invalidReq = new ActivateOverrideRequest("T01", "0000", 60, "Raison test");

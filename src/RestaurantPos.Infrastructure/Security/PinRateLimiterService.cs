@@ -6,11 +6,25 @@ namespace RestaurantPos.Infrastructure.Security;
 
 public sealed class PinRateLimiterService : IPinRateLimiterService
 {
-    private const int MaxFailedAttempts = 5;
-    private static readonly TimeSpan WindowDuration = TimeSpan.FromMinutes(1);
-    private static readonly TimeSpan LockoutDuration = TimeSpan.FromSeconds(30);
+    private static readonly TimeSpan WindowDuration = TimeSpan.FromHours(1);
 
+    // Escalade : 5 échecs -> 30 s, 10 -> 5 min, 20 -> 30 min (fenêtre d'une heure).
+    private static readonly (int Failures, TimeSpan Lockout)[] Tiers =
+    [
+        (20, TimeSpan.FromMinutes(30)),
+        (10, TimeSpan.FromMinutes(5)),
+        (5, TimeSpan.FromSeconds(30)),
+    ];
+
+    private readonly TimeProvider _clock;
+
+    // shortcut: compteurs perdus au redémarrage, persister si le serveur est exposé hors LAN
     private readonly ConcurrentDictionary<string, ClientAttemptTracker> _trackers = new();
+
+    public PinRateLimiterService(TimeProvider? clock = null)
+    {
+        _clock = clock ?? TimeProvider.System;
+    }
 
     public bool IsLocked(string clientIdentifier)
     {
@@ -21,7 +35,7 @@ public sealed class PinRateLimiterService : IPinRateLimiterService
 
         if (_trackers.TryGetValue(clientIdentifier, out var tracker))
         {
-            var now = DateTimeOffset.UtcNow;
+            var now = _clock.GetUtcNow();
             if (tracker.LockedUntilUtc.HasValue && tracker.LockedUntilUtc.Value > now)
             {
                 return true;
@@ -38,29 +52,26 @@ public sealed class PinRateLimiterService : IPinRateLimiterService
             return;
         }
 
-        var now = DateTimeOffset.UtcNow;
+        var now = _clock.GetUtcNow();
         _trackers.AddOrUpdate(
             clientIdentifier,
             key => new ClientAttemptTracker { FailedAttempts = 1, FirstAttemptUtc = now },
             (key, existing) =>
             {
-                if (existing.LockedUntilUtc.HasValue && existing.LockedUntilUtc.Value <= now)
-                {
-                    // Lockout expired, reset
-                    return new ClientAttemptTracker { FailedAttempts = 1, FirstAttemptUtc = now };
-                }
-
                 if (now - existing.FirstAttemptUtc > WindowDuration)
                 {
-                    // Window expired, reset
                     return new ClientAttemptTracker { FailedAttempts = 1, FirstAttemptUtc = now };
                 }
 
                 var newCount = existing.FailedAttempts + 1;
                 DateTimeOffset? lockedUntil = null;
-                if (newCount >= MaxFailedAttempts)
+                foreach (var (failures, lockout) in Tiers)
                 {
-                    lockedUntil = now.Add(LockoutDuration);
+                    if (newCount >= failures)
+                    {
+                        lockedUntil = now.Add(lockout);
+                        break;
+                    }
                 }
 
                 return new ClientAttemptTracker
@@ -84,7 +95,7 @@ public sealed class PinRateLimiterService : IPinRateLimiterService
     {
         if (!string.IsNullOrWhiteSpace(clientIdentifier) && _trackers.TryGetValue(clientIdentifier, out var tracker))
         {
-            var now = DateTimeOffset.UtcNow;
+            var now = _clock.GetUtcNow();
             if (tracker.LockedUntilUtc.HasValue && tracker.LockedUntilUtc.Value > now)
             {
                 return tracker.LockedUntilUtc.Value - now;

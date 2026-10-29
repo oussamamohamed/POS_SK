@@ -322,6 +322,12 @@
   <data name="admin.payment_method_other" xml:space="preserve">
     <value>دفع آخر</value>
   </data>
+  <data name="errors.invalid_role" xml:space="preserve">
+    <value>دور غير صالح.</value>
+  </data>
+  <data name="errors.admin_role_requires_admin" xml:space="preserve">
+    <value>يمكن للمسؤول فقط تعيين دور المسؤول أو تعديله.</value>
+  </data>
   <data name="errors.preparation_station_invalid" xml:space="preserve">
     <value>محطة التحضير غير معروفة.</value>
   </data>

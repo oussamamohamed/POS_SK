@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
+using RestaurantPos.Api.Security;
 using RestaurantPos.Application.Common.Interfaces;
 using RestaurantPos.Application.DTOs;
 using RestaurantPos.Domain.Entities;
@@ -39,59 +40,57 @@ public static class HappyHourEndpoints
         }).AllowAnonymous();
 
         // 3. Supervisor Override: Activate / Extend
+        // Le garde valide le PIN en amont (limité en débit) ; le service le revalide : deux PBKDF2, accepté.
         group.MapPost("/override/activate", async (
             ActivateOverrideRequest req,
             IHappyHourPricingService hhService,
+            IOperatorAuthenticationService authService,
             IPinRateLimiterService rateLimiter,
             HttpContext context,
             Microsoft.AspNetCore.SignalR.IHubContext<RestaurantPos.Api.Hubs.PosHub, RestaurantPos.Api.Hubs.IPosHubClient> hub) =>
         {
-            var clientKey = context.Connection.RemoteIpAddress?.ToString() ?? "unknown-client";
-            if (rateLimiter.IsLocked(clientKey))
+            var guard = await SupervisorPinGuard.CheckAsync(req.SupervisorPin, context, authService, rateLimiter, context.RequestAborted);
+            if (!guard.Allowed)
             {
-                var remaining = rateLimiter.GetRemainingLockout(clientKey);
-                return Results.Json(new { Message = Texts.T("errors.login_rate_limited", ("seconds", Math.Ceiling(remaining.TotalSeconds))) }, statusCode: StatusCodes.Status429TooManyRequests);
+                return guard.Rejection!;
             }
 
             var res = await hhService.ActivateOverrideAsync(req);
             if (!res.Success)
             {
-                rateLimiter.RecordFailedAttempt(clientKey);
                 return Results.Json(new { Message = res.Message }, statusCode: StatusCodes.Status403Forbidden);
             }
 
-            rateLimiter.ResetAttempts(clientKey);
             var status = await hhService.GetCurrentStatusAsync(req.TerminalId);
             await hub.Clients.All.OnHappyHourStatusChanged(status);
             return Results.Ok(res);
-        }).AllowAnonymous();
+        });
 
         group.MapPost("/override/stop", async (
             StopOverrideRequest req,
             IHappyHourPricingService hhService,
+            IOperatorAuthenticationService authService,
             IPinRateLimiterService rateLimiter,
             HttpContext context,
             Microsoft.AspNetCore.SignalR.IHubContext<RestaurantPos.Api.Hubs.PosHub, RestaurantPos.Api.Hubs.IPosHubClient> hub) =>
         {
-            var clientKey = context.Connection.RemoteIpAddress?.ToString() ?? "unknown-client";
-            if (rateLimiter.IsLocked(clientKey))
+            var guard = await SupervisorPinGuard.CheckAsync(req.SupervisorPin, context, authService, rateLimiter, context.RequestAborted);
+            if (!guard.Allowed)
             {
-                var remaining = rateLimiter.GetRemainingLockout(clientKey);
-                return Results.Json(new { Message = Texts.T("errors.login_rate_limited", ("seconds", Math.Ceiling(remaining.TotalSeconds))) }, statusCode: StatusCodes.Status429TooManyRequests);
+                return guard.Rejection!;
             }
 
             var res = await hhService.StopOverrideAsync(req);
             if (!res.Success)
             {
-                rateLimiter.RecordFailedAttempt(clientKey);
                 return Results.Json(new { Message = res.Message }, statusCode: StatusCodes.Status403Forbidden);
             }
 
-            rateLimiter.ResetAttempts(clientKey);
             var status = await hhService.GetCurrentStatusAsync(req.TerminalId);
             await hub.Clients.All.OnHappyHourStatusChanged(status);
             return Results.Ok(res);
-        }).AllowAnonymous();
+        });
+
         group.MapGet("/schedules", async (AppDbContext db) =>
         {
             var schedules = await db.HappyHourSchedules
