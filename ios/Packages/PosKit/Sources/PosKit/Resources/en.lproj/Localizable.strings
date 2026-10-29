@@ -180,3 +180,6 @@
 "fiscal.archive_error_empty_file" = "No file received.";
 "fiscal.archive_too_large" = "File too large to verify on this device (over 64 MB).";
 "fiscal.archive_unreadable_file" = "Unable to read the selected file.";
+"bookings.load_error" = "Could not load bookings";
+"bookings.saved_toast" = "Booking saved";
+"bookings.seated_toast" = "Guest seated at table %@";

@@ -15,6 +15,30 @@ struct ContractDecodingTests {
         try PosJSON.makeDecoder().decode(T.self, from: Self.fixture(name))
     }
 
+    @Test func decodesReservationsAndHidesThePhoneFromWaiters() throws {
+        let manager = try decode([Reservation].self, "reservations_manager")
+        let waiter = try decode([Reservation].self, "reservations_waiter")
+        #expect(manager.count == waiter.count && !manager.isEmpty)
+        #expect(manager.contains { $0.phone != nil && $0.hasPhone })
+        #expect(waiter.allSatisfy { $0.phone == nil })
+        #expect(waiter.contains { $0.hasPhone })
+        #expect(manager.contains { $0.isWaitlist } && manager.contains { $0.status == .booked })
+    }
+
+    @Test func decodesMenuAnalysis() throws {
+        let report = try decode(MenuAnalysisReport.self, "menu_analysis")
+        #expect(!report.items.isEmpty)
+        #expect(report.missingCostCount == report.items.filter(\.missingCost).count)
+        #expect(report.items.contains { $0.class != nil } && report.items.contains { $0.missingCost && $0.class == nil })
+        let classified = try #require(report.items.first { $0.class != nil })
+        #expect(classified.unitCost != nil && classified.unitMarginHt != nil && classified.profitable != nil)
+    }
+
+    @Test func decodesProductCostForManagers() throws {
+        let products = try decode([Product].self, "products_with_cost")
+        #expect(products.contains { $0.cost != nil })
+    }
+
     @Test func decodesPrinterTextMode() throws {
         let printers = try decode([Printer].self, "printers")
         #expect(printers.contains { $0.textMode })

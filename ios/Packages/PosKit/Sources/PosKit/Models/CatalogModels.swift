@@ -89,8 +89,10 @@ public struct Product: Codable, Identifiable, Hashable, Sendable {
     public var isAvailable: Bool?
     public var isActive: Bool?
     public var modifierGroups: [ModifierGroup]
+    /// Coût de revient HT unitaire ; absent si inconnu ou si l'appelant n'est pas responsable (le serveur ne l'envoie qu'à eux).
+    public var cost: Money?
 
-    public init(id: UUID = UUID(), name: String, categoryId: String, description: String? = nil, price: Money, taxRatePercent: Decimal = 10, taxRateTakeawayPercent: Decimal? = nil, colorHex: String? = nil, displayOrder: Int? = nil, isQuickKey: Bool = false, preparationStationId: String? = "HOT_KITCHEN", isAvailable: Bool? = true, isActive: Bool? = true, modifierGroups: [ModifierGroup] = []) {
+    public init(id: UUID = UUID(), name: String, categoryId: String, description: String? = nil, price: Money, taxRatePercent: Decimal = 10, taxRateTakeawayPercent: Decimal? = nil, colorHex: String? = nil, displayOrder: Int? = nil, isQuickKey: Bool = false, preparationStationId: String? = "HOT_KITCHEN", isAvailable: Bool? = true, isActive: Bool? = true, modifierGroups: [ModifierGroup] = [], cost: Money? = nil) {
         self.id = id
         self.name = name
         self.categoryId = categoryId
@@ -105,11 +107,12 @@ public struct Product: Codable, Identifiable, Hashable, Sendable {
         self.isAvailable = isAvailable
         self.isActive = isActive
         self.modifierGroups = modifierGroups
+        self.cost = cost
     }
 
     enum CodingKeys: String, CodingKey {
         case id, name, categoryId, description, price, taxRatePercent, taxRateTakeawayPercent, colorHex, displayOrder
-        case isQuickKey, preparationStationId, isAvailable, isActive, modifierGroups
+        case isQuickKey, preparationStationId, isAvailable, isActive, modifierGroups, cost
     }
 
     public init(from decoder: Decoder) throws {
@@ -128,6 +131,7 @@ public struct Product: Codable, Identifiable, Hashable, Sendable {
         isAvailable = try c.decodeIfPresent(Bool.self, forKey: .isAvailable)
         isActive = try c.decodeIfPresent(Bool.self, forKey: .isActive)
         modifierGroups = try c.decodeIfPresent([ModifierGroup].self, forKey: .modifierGroups) ?? []
+        cost = try c.decodeIfPresent(Money.self, forKey: .cost)
     }
 
     public var hasModifiers: Bool { !modifierGroups.isEmpty }

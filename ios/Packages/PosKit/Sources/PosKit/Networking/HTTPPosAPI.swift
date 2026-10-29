@@ -177,11 +177,13 @@ public actor HTTPPosAPI: PosAPI {
     struct ProductBody: Encodable {
         let name: String, categoryId: String, price: Money, taxRatePercent: Decimal, description: String, colorHex: String
         let displayOrder: Int, isQuickKey: Bool, stationId: String?, isAvailable: Bool?, isActive: Bool?
+        let cost: Money?, clearCost: Bool?
         init(_ d: ProductDraft, update: Bool) {
             name = d.name; categoryId = d.categoryId; price = d.price; taxRatePercent = d.taxRatePercent
             description = d.description; colorHex = d.colorHex; displayOrder = d.displayOrder
             isQuickKey = d.isQuickKey; stationId = d.stationId
             isAvailable = update ? true : nil; isActive = update ? true : nil
+            cost = d.cost; clearCost = update && d.hadCost && d.cost == nil ? true : nil
         }
     }
 
@@ -195,6 +197,45 @@ public actor HTTPPosAPI: PosAPI {
 
     public func archiveProduct(id: UUID) async throws {
         try await perform("DELETE", "catalog/products/\(id.uuidString.lowercased())")
+    }
+
+    // MARK: - Analyse du menu et réservations
+
+    public func menuAnalysis(from: Date, to: Date) async throws -> MenuAnalysisReport {
+        try await call("GET", "menu-analysis", query: ["from": Self.iso(from), "to": Self.iso(to)])
+    }
+
+    public func reservations(from: Date, to: Date) async throws -> [Reservation] {
+        try await call("GET", "reservations", query: ["from": Self.iso(from), "to": Self.iso(to)])
+    }
+
+    struct ReservationBody: Encodable {
+        let guestName: String, covers: Int, startsAtUtc: Date, durationMinutes: Int
+        let tableNumber: String?, note: String?, phone: String?, isWaitlist: Bool
+        init(_ d: ReservationDraft) {
+            guestName = d.guestName; covers = d.covers; startsAtUtc = d.startsAt; durationMinutes = d.durationMinutes
+            tableNumber = d.tableNumber; note = d.note; phone = d.phone; isWaitlist = d.isWaitlist
+        }
+    }
+
+    public func createReservation(_ draft: ReservationDraft) async throws -> Reservation {
+        try await call("POST", "reservations", body: ReservationBody(draft))
+    }
+
+    public func updateReservation(id: UUID, _ draft: ReservationDraft) async throws -> Reservation {
+        try await call("PUT", "reservations/\(id.uuidString.lowercased())", body: ReservationBody(draft))
+    }
+
+    struct SeatBody: Encodable { let tableNumber: String?; let operatorId: UUID?; let waiterName: String? }
+
+    public func seatReservation(id: UUID, tableNumber: String?, operatorId: UUID?, waiterName: String?) async throws -> Reservation {
+        try await call("POST", "reservations/\(id.uuidString.lowercased())/seat", body: SeatBody(tableNumber: tableNumber, operatorId: operatorId, waiterName: waiterName))
+    }
+
+    struct StatusBody: Encodable { let status: Int }
+
+    public func setReservationStatus(id: UUID, status: ReservationStatus) async throws -> Reservation {
+        try await call("POST", "reservations/\(id.uuidString.lowercased())/status", body: StatusBody(status: status.rawValue))
     }
 
     // MARK: - Grille

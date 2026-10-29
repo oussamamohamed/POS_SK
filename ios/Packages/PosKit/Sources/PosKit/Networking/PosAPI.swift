@@ -104,6 +104,15 @@ public protocol PosAPI: Sendable {
     /// Fichier ZIP d'une archive, copié dans un dossier local, pour le partage (`GET /api/fiscal/archives/{id}/file`).
     func archiveFile(id: UUID) async throws -> URL
 
+    // Analyse du menu (responsable) et réservations
+    func menuAnalysis(from: Date, to: Date) async throws -> MenuAnalysisReport
+    func reservations(from: Date, to: Date) async throws -> [Reservation]
+    func createReservation(_ draft: ReservationDraft) async throws -> Reservation
+    func updateReservation(id: UUID, _ draft: ReservationDraft) async throws -> Reservation
+    /// Installe le client : ouvre la table (`tableNumber` nil = celle de la réservation) et passe en `seated`.
+    func seatReservation(id: UUID, tableNumber: String?, operatorId: UUID?, waiterName: String?) async throws -> Reservation
+    func setReservationStatus(id: UUID, status: ReservationStatus) async throws -> Reservation
+
     // Personnel & imprimantes
     func staff() async throws -> [StaffMember]
     func createStaff(name: String, role: UserRole, pin: String) async throws
@@ -150,8 +159,11 @@ public struct ProductDraft: Hashable, Sendable {
     public var colorHex: String
     public var displayOrder: Int
     public var description: String
+    /// Coût de revient HT facultatif ; `nil` avec `hadCost` = effacer le coût, `nil` sans `hadCost` = inchangé.
+    public var cost: Money?
+    public var hadCost: Bool
 
-    public init(name: String = "", categoryId: String = "", price: Money = .zero, taxRatePercent: Decimal = 10, stationId: String? = nil, isQuickKey: Bool = false, colorHex: String = "#3B82F6", displayOrder: Int = 0, description: String = "") {
+    public init(name: String = "", categoryId: String = "", price: Money = .zero, taxRatePercent: Decimal = 10, stationId: String? = nil, isQuickKey: Bool = false, colorHex: String = "#3B82F6", displayOrder: Int = 0, description: String = "", cost: Money? = nil, hadCost: Bool = false) {
         self.name = name
         self.categoryId = categoryId
         self.price = price
@@ -161,6 +173,8 @@ public struct ProductDraft: Hashable, Sendable {
         self.colorHex = colorHex
         self.displayOrder = displayOrder
         self.description = description
+        self.cost = cost
+        self.hadCost = hadCost
     }
 
     public init(product: Product) {
@@ -168,7 +182,7 @@ public struct ProductDraft: Hashable, Sendable {
             name: product.name, categoryId: product.categoryId, price: product.price,
             taxRatePercent: product.taxRatePercent, stationId: product.station, isQuickKey: product.isQuickKey,
             colorHex: product.colorHex ?? "#3B82F6", displayOrder: product.displayOrder ?? 0,
-            description: product.description ?? ""
+            description: product.description ?? "", cost: product.cost, hadCost: product.cost != nil
         )
     }
 

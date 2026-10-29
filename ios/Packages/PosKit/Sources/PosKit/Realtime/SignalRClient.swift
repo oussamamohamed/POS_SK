@@ -83,6 +83,7 @@ public enum RealtimeEvent: Equatable, Sendable {
     case gridLayoutUpdated(TouchGridLayout?)
     case happyHourChanged(HappyHourStatus?)
     case tablesChanged
+    case reservationsChanged
     case printerStatusChanged(printerId: UUID?, name: String, isOnline: Bool, pendingCount: Int)
     case connectionChanged(isConnected: Bool)
 
@@ -96,6 +97,8 @@ public enum RealtimeEvent: Equatable, Sendable {
             return .happyHourChanged(arguments.first?.decode(HappyHourStatus.self))
         case "OnTableStatusChanged":
             return .tablesChanged
+        case "OnReservationsChanged":
+            return .reservationsChanged
         case "OnPrinterStatusChanged":
             guard arguments.count >= 4 else { return nil }
             return .printerStatusChanged(

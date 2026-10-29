@@ -180,3 +180,6 @@
 "fiscal.archive_error_empty_file" = "Aucun fichier reçu.";
 "fiscal.archive_too_large" = "Fichier trop volumineux pour être vérifié sur cet appareil (plus de 64 Mo).";
 "fiscal.archive_unreadable_file" = "Impossible de lire le fichier choisi.";
+"bookings.load_error" = "Erreur de chargement des réservations";
+"bookings.saved_toast" = "Réservation enregistrée";
+"bookings.seated_toast" = "Client installé en table %@";

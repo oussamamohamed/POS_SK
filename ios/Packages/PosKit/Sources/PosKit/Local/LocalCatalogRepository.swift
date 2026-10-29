@@ -40,7 +40,8 @@ struct LocalCatalogRepository {
                 price: Money(cents: $0.int("Price") ?? 0), taxRatePercent: $0.decimal("TaxRatePercent") ?? 10,
                 taxRateTakeawayPercent: $0.decimal("TaxRateTakeawayPercent"), colorHex: $0.string("ColorHex"), displayOrder: $0.int("DisplayOrder"),
                 isQuickKey: $0.bool("IsQuickKey"), preparationStationId: $0.string("PreparationStationId"),
-                isAvailable: $0.bool("IsAvailable"), isActive: $0.bool("IsActive"), modifierGroups: groups[$0.uuid("Id")!] ?? []
+                isAvailable: $0.bool("IsAvailable"), isActive: $0.bool("IsActive"), modifierGroups: groups[$0.uuid("Id")!] ?? [],
+                cost: $0.int("Cost").map { Money(cents: $0) }
             )
         }
     }
@@ -50,12 +51,12 @@ struct LocalCatalogRepository {
         try db.run(
             """
             INSERT INTO Products (Id, Name, CategoryId, Description, Price, TaxRatePercent, TaxRateTakeawayPercent, IsFoodVoucherEligible, ColorHex,
-                DisplayOrder, IsAvailable, IsActive, IsQuickKey, PreparationStationId, CreatedAtUtc, UpdatedAtUtc)
-            VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?, ?, ?, ?)
+                DisplayOrder, IsAvailable, IsActive, IsQuickKey, PreparationStationId, CreatedAtUtc, UpdatedAtUtc, Cost)
+            VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             [.uuid(p.id), .text(p.name), .text(p.categoryId), .string(p.description), .integer(p.price.cents), .decimal(p.taxRatePercent),
              .decimal(p.taxRateTakeawayPercent), .string(p.colorHex), .integer(p.displayOrder ?? 0), .bool(p.isAvailable ?? true),
-             .bool(p.isActive ?? true), .bool(p.isQuickKey), .string(p.preparationStationId), .date(now), .date(now)]
+             .bool(p.isActive ?? true), .bool(p.isQuickKey), .string(p.preparationStationId), .date(now), .date(now), .integer(p.cost?.cents)]
         )
         // Un groupe appartient à un seul article (`ModifierGroups.ProductId`) : les lignes reçoivent de nouveaux identifiants,
         // car un même `ModifierGroup` du modèle peut être partagé par plusieurs articles (ex. « Cuisson »).
@@ -78,12 +79,14 @@ struct LocalCatalogRepository {
     func update(productId: UUID, _ d: ProductDraft) throws -> Bool {
         try db.run(
             """
-            UPDATE Products SET Name = ?, CategoryId = ?, Description = ?, Price = ?, TaxRatePercent = ?, ColorHex = ?, DisplayOrder = ?,
-                IsQuickKey = ?, PreparationStationId = ?, UpdatedAtUtc = ?
-            WHERE Id = ?
+            UPDATE Products SET Name = ?1, CategoryId = ?2, Description = ?3, Price = ?4, TaxRatePercent = ?5, ColorHex = ?6, DisplayOrder = ?7,
+                IsQuickKey = ?8, PreparationStationId = ?9, UpdatedAtUtc = ?10,
+                Cost = CASE WHEN ?12 THEN NULL WHEN ?13 IS NULL THEN Cost ELSE ?13 END
+            WHERE Id = ?11
             """,
             [.text(d.name), .text(d.categoryId), .string(d.description.isEmpty ? nil : d.description), .integer(d.price.cents), .decimal(d.taxRatePercent),
-             .string(d.colorHex), .integer(d.displayOrder), .bool(d.isQuickKey), .string(d.stationId), .date(Date()), .uuid(productId)]
+             .string(d.colorHex), .integer(d.displayOrder), .bool(d.isQuickKey), .string(d.stationId), .date(Date()), .uuid(productId),
+             .bool(d.hadCost && d.cost == nil), .integer(d.cost?.cents)]
         ) > 0
     }
 

@@ -22,6 +22,8 @@ public final class AppModel {
     public let dashboard: DashboardStore
     public let network: NetworkStore
     public let settingsStore: SettingsStore
+    public let bookings: BookingsStore
+    public let menuAnalysis: MenuAnalysisStore
 
     public private(set) var isRealtimeConnected = false
     /// Alerte imprimante (hors ligne / rétablie) ; l'UI l'affiche puis la remet à nil.
@@ -57,6 +59,8 @@ public final class AppModel {
         dashboard = DashboardStore(api: api, notifier: notifier)
         network = NetworkStore(api: api, notifier: notifier)
         settingsStore = SettingsStore(api: api, notifier: notifier)
+        bookings = BookingsStore(api: api, notifier: notifier, session: session)
+        menuAnalysis = MenuAnalysisStore(api: api, notifier: notifier)
     }
 
     /// Chargement initial après le premier déverrouillage.
@@ -65,7 +69,8 @@ public final class AppModel {
         async let hh: Void = happyHour.refresh()
         async let tables: Void = floor.load()
         async let net: Void = network.refresh()
-        _ = await (catalogLoad, hh, tables, net)
+        async let attention: Void = bookings.refreshAttention()
+        _ = await (catalogLoad, hh, tables, net, attention)
         if ticket.orderId == nil && ticket.lines.isEmpty {
             await ticket.openCounter(destination: .takeaway)
         }
@@ -117,6 +122,10 @@ public final class AppModel {
             if let status { happyHour.apply(status) }
             await happyHour.refresh()
         case .tablesChanged:
+            await floor.load()
+        case .reservationsChanged:
+            await bookings.refreshAttention()
+            await bookings.load()
             await floor.load()
         case let .printerStatusChanged(_, name, isOnline, pending):
             printerAlert = isOnline

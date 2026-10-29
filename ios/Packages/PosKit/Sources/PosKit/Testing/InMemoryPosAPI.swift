@@ -36,6 +36,8 @@ public actor InMemoryPosAPI: PosAPI {
     private var token: String?
     private var failedLogins = 0
     private var settingsStore = RestaurantSettings(receiptLanguage: "fr")
+    /// Réservations avec leur téléphone en clair (masqué à la lecture pour un non-responsable).
+    private var reservationsStore: [Reservation] = []
 
     /// Journal des appels (utile pour vérifier dans les tests qu'un endpoint a bien été sollicité).
     public private(set) var calls: [String] = []
@@ -115,7 +117,15 @@ public actor InMemoryPosAPI: PosAPI {
     // MARK: Catalogue
 
     public func categories() async throws -> [MenuCategory] { try await step("categories"); return categoriesStore.filter { $0.isActive != false } }
-    public func products() async throws -> [Product] { try await step("products"); return productsStore.filter { $0.isActive != false } }
+    public func products() async throws -> [Product] {
+        try await step("products")
+        let isManager = currentRole()?.isManager == true
+        return productsStore.filter { $0.isActive != false }.map { product in
+            var p = product
+            if !isManager { p.cost = nil }
+            return p
+        }
+    }
 
     public func createCategory(name: String, colorHex: String, displayOrder: Int) async throws {
         try await step("createCategory"); try requireManager()
@@ -132,7 +142,8 @@ public actor InMemoryPosAPI: PosAPI {
 
     public func createProduct(_ d: ProductDraft) async throws {
         try await step("createProduct"); try requireManager()
-        productsStore.append(Product(name: d.name, categoryId: d.categoryId, description: d.description, price: d.price, taxRatePercent: d.taxRatePercent, colorHex: d.colorHex, displayOrder: d.displayOrder, isQuickKey: d.isQuickKey, preparationStationId: d.stationId))
+        guard d.cost.map({ $0 >= .zero }) ?? true else { throw APIError.server(status: 400, message: "Le coût de revient d'un article ne peut pas être négatif.") }
+        productsStore.append(Product(name: d.name, categoryId: d.categoryId, description: d.description, price: d.price, taxRatePercent: d.taxRatePercent, colorHex: d.colorHex, displayOrder: d.displayOrder, isQuickKey: d.isQuickKey, preparationStationId: d.stationId, cost: d.cost))
     }
 
     public func updateProduct(id: UUID, _ d: ProductDraft) async throws {
@@ -145,12 +156,112 @@ public actor InMemoryPosAPI: PosAPI {
         productsStore[i].isQuickKey = d.isQuickKey
         productsStore[i].preparationStationId = d.stationId
         productsStore[i].colorHex = d.colorHex
+        guard d.cost.map({ $0 >= .zero }) ?? true else { throw APIError.server(status: 400, message: "Le coût de revient d'un article ne peut pas être négatif.") }
+        if let cost = d.cost { productsStore[i].cost = cost } else if d.hadCost { productsStore[i].cost = nil }
     }
 
     public func archiveProduct(id: UUID) async throws {
         try await step("archiveProduct"); try requireManager()
         guard let i = productsStore.firstIndex(where: { $0.id == id }) else { throw APIError.notFound(nil) }
         productsStore[i].isActive = false
+    }
+
+    // MARK: Analyse du menu et réservations
+
+    /// Données de démonstration déterministes : les premiers articles avec des quantités décroissantes (pas de lignes de commande fines en mémoire).
+    public func menuAnalysis(from: Date, to: Date) async throws -> MenuAnalysisReport {
+        try await step("menuAnalysis"); try requireManager()
+        let quantities = [24, 18, 9, 4, 2, 1]
+        let sales = zip(productsStore.filter { $0.isActive != false }, quantities).map { product, quantity -> MenuSale in
+            let htCents = Decimal(product.price.cents) / (1 + product.taxRatePercent / 100) * Decimal(quantity)
+            return MenuSale(productId: product.id, name: product.name, categoryName: categoriesStore.first { $0.id == product.categoryId }?.name,
+                            quantity: quantity, revenueHtCents: htCents, unitCostCents: product.cost?.cents)
+        }
+        return MenuAnalysisCalculator.report(from: from, to: to, sales: sales)
+    }
+
+    private func visible(_ r: Reservation, now: Date = Date()) -> Reservation {
+        var copy = r
+        if currentRole()?.isManager != true { copy.phone = nil }
+        copy.isLate = ReservationRules.isLate(status: r.status, isWaitlist: r.isWaitlist, startsAt: r.startsAtUtc, now: now)
+        return copy
+    }
+
+    private func reservationIndex(_ id: UUID) throws -> Int {
+        guard let i = reservationsStore.firstIndex(where: { $0.id == id }) else { throw ReservationError.notFound.apiError }
+        return i
+    }
+
+    private func checkTable(_ d: ReservationDraft, ignoring id: UUID?) throws {
+        guard let number = d.tableNumber else { return }
+        guard let table = tablesStore.first(where: { $0.tableNumber == number }) else { throw ReservationError.unknownTable.apiError }
+        guard d.covers <= table.capacity else { throw ReservationError.tableCapacity.apiError }
+        let clash = reservationsStore.contains {
+            $0.tableNumber == number && !$0.isWaitlist && $0.id != id && ($0.status == .booked || $0.status == .seated)
+                && ReservationRules.overlaps(start: d.startsAt, minutes: d.durationMinutes, otherStart: $0.startsAtUtc, otherMinutes: $0.durationMinutes)
+        }
+        if clash { throw ReservationError.tableConflict.apiError }
+    }
+
+    public func reservations(from: Date, to: Date) async throws -> [Reservation] {
+        try await step("reservations"); try requireAuth()
+        return reservationsStore.filter { $0.startsAtUtc >= from && $0.startsAtUtc <= to }
+            .sorted { ($0.startsAtUtc, $0.createdAtUtc) < ($1.startsAtUtc, $1.createdAtUtc) }
+            .map { visible($0) }
+    }
+
+    public func createReservation(_ draft: ReservationDraft) async throws -> Reservation {
+        try await step("createReservation"); try requireAuth()
+        let d: ReservationDraft
+        do { d = try ReservationRules.validate(draft); try checkTable(d, ignoring: nil) } catch let e as ReservationError { throw e.apiError }
+        let r = Reservation(guestName: d.guestName, covers: d.covers, startsAtUtc: d.startsAt, durationMinutes: d.durationMinutes, tableNumber: d.tableNumber, note: d.note, phone: d.phone, isWaitlist: d.isWaitlist)
+        reservationsStore.append(r)
+        return visible(r)
+    }
+
+    public func updateReservation(id: UUID, _ draft: ReservationDraft) async throws -> Reservation {
+        try await step("updateReservation"); try requireAuth()
+        let i = try reservationIndex(id)
+        guard reservationsStore[i].status == .booked else { throw ReservationError.invalidState.apiError }
+        let d: ReservationDraft
+        do { d = try ReservationRules.validate(draft); try checkTable(d, ignoring: id) } catch let e as ReservationError { throw e.apiError }
+        let keepPhone = currentRole()?.isManager != true
+        reservationsStore[i].guestName = d.guestName
+        reservationsStore[i].covers = d.covers
+        reservationsStore[i].startsAtUtc = d.startsAt
+        reservationsStore[i].durationMinutes = d.durationMinutes
+        reservationsStore[i].tableNumber = d.tableNumber
+        reservationsStore[i].note = d.note
+        if !keepPhone { reservationsStore[i].phone = d.phone; reservationsStore[i].hasPhone = d.phone != nil }
+        reservationsStore[i].isWaitlist = d.isWaitlist
+        return visible(reservationsStore[i])
+    }
+
+    public func seatReservation(id: UUID, tableNumber: String?, operatorId: UUID?, waiterName: String?) async throws -> Reservation {
+        try await step("seatReservation"); try requireAuth()
+        let i = try reservationIndex(id)
+        let r = reservationsStore[i]
+        guard r.status == .booked else { throw ReservationError.invalidState.apiError }
+        let requested = tableNumber?.trimmingCharacters(in: .whitespaces)
+        guard let target = (requested?.isEmpty == false ? requested : r.tableNumber) else { throw ReservationError.tableRequired.apiError }
+        guard let t = tableIndex(target) else { throw ReservationError.unknownTable.apiError }
+        guard r.covers <= tablesStore[t].capacity else { throw ReservationError.tableCapacity.apiError }
+        guard tablesStore[t].status == .free, tablesStore[t].activeOrderId == nil else { throw ReservationError.tableOccupied.apiError }
+        tablesStore[t].coversCount = r.covers
+        tablesStore[t].assignedWaiterName = waiterName
+        tablesStore[t].status = .occupied
+        tablesStore[t].openedAtUtc = Date()
+        reservationsStore[i].tableNumber = target
+        reservationsStore[i].status = .seated
+        return visible(reservationsStore[i])
+    }
+
+    public func setReservationStatus(id: UUID, status: ReservationStatus) async throws -> Reservation {
+        try await step("setReservationStatus"); try requireAuth()
+        let i = try reservationIndex(id)
+        guard ReservationRules.transitionAllowed(from: reservationsStore[i].status, to: status) else { throw ReservationError.invalidState.apiError }
+        reservationsStore[i].status = status
+        return visible(reservationsStore[i])
     }
 
     // MARK: Grille

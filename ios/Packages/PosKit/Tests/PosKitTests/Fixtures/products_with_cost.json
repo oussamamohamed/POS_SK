@@ -1,0 +1,299 @@
+[
+  {
+    "id": "01a18862-0f2d-748c-919e-6ec1b9d261da",
+    "name": "Bière Artisanale IPA 33cl",
+    "categoryId": "CAT_56B40ABF",
+    "description": "Brasserie locale du terroir",
+    "price": 6,
+    "cost": 1.2,
+    "taxRatePercent": 20.0,
+    "colorHex": "#2980B9",
+    "displayOrder": 1,
+    "isQuickKey": true,
+    "preparationStationId": "BAR",
+    "isAvailable": true,
+    "isActive": true,
+    "hasModifiers": false,
+    "modifierGroups": []
+  },
+  {
+    "id": "01a18862-0f2c-764a-afd3-5a062da28c9a",
+    "name": "Burger Gourmet Rossini",
+    "categoryId": "CAT_76280074",
+    "description": "Bœuf charolais, foie gras poêlé",
+    "price": 19.5,
+    "cost": 9.5,
+    "taxRatePercent": 10.0,
+    "colorHex": "#C0392B",
+    "displayOrder": 1,
+    "isQuickKey": true,
+    "preparationStationId": "HOT_KITCHEN",
+    "isAvailable": true,
+    "isActive": true,
+    "hasModifiers": true,
+    "modifierGroups": [
+      {
+        "id": "01a18862-0f31-7de4-9858-a2aa2abca04b",
+        "groupName": "Cuisson de la Viande",
+        "minSelections": 1,
+        "maxSelections": 1,
+        "isMandatory": true,
+        "isSingleChoice": true,
+        "options": [
+          {
+            "id": "01a18862-0f32-7e57-9a0b-e10965418fd7",
+            "name": "Bleu",
+            "extraPrice": 0,
+            "isDefault": false
+          },
+          {
+            "id": "01a18862-0f32-7f76-8f0a-fc111968e8bd",
+            "name": "Saignant",
+            "extraPrice": 0,
+            "isDefault": false
+          },
+          {
+            "id": "01a18862-0f32-71e9-989b-e16860494ee9",
+            "name": "À Point",
+            "extraPrice": 0,
+            "isDefault": true
+          },
+          {
+            "id": "01a18862-0f32-7d07-94d7-4280ae8720bd",
+            "name": "Bien Cuit",
+            "extraPrice": 0,
+            "isDefault": false
+          }
+        ]
+      },
+      {
+        "id": "01a18862-0f32-7dbc-95bd-8a495baafada",
+        "groupName": "Suppléments Gourmands",
+        "minSelections": 0,
+        "maxSelections": 5,
+        "isMandatory": false,
+        "isSingleChoice": false,
+        "options": [
+          {
+            "id": "01a18862-0f32-79ea-94dc-527ec808782b",
+            "name": "Double Cheddar Fondu",
+            "extraPrice": 2,
+            "isDefault": false
+          },
+          {
+            "id": "01a18862-0f32-7606-961e-f3b7c2598d18",
+            "name": "Bacon Fumé Croustillant",
+            "extraPrice": 1.5,
+            "isDefault": false
+          },
+          {
+            "id": "01a18862-0f32-7563-86d9-78bf1395a3f6",
+            "name": "Foie Gras Poêlé Extra",
+            "extraPrice": 4.5,
+            "isDefault": false
+          },
+          {
+            "id": "01a18862-0f32-7ea2-ba22-8c62a1d3964d",
+            "name": "Sauce Poivre Vert Maison",
+            "extraPrice": 1,
+            "isDefault": false
+          },
+          {
+            "id": "01a18862-0f32-782f-9c2b-25da23f0df9d",
+            "name": "Frites Rustiques Maison",
+            "extraPrice": 2.5,
+            "isDefault": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "01a18862-0f2c-7802-be23-eaae5e0de5f2",
+    "name": "Pizza Margherita AOP",
+    "categoryId": "CAT_AAAA3477",
+    "description": "Tomates San Marzano, mozzarella fior di latte",
+    "price": 12.5,
+    "cost": 2,
+    "taxRatePercent": 10.0,
+    "colorHex": "#D35400",
+    "displayOrder": 1,
+    "isQuickKey": true,
+    "preparationStationId": "HOT_KITCHEN",
+    "isAvailable": true,
+    "isActive": true,
+    "hasModifiers": true,
+    "modifierGroups": [
+      {
+        "id": "01a18862-0f3c-7ff6-a001-b3f6b7c48b36",
+        "groupName": "Suppléments Pizza",
+        "minSelections": 0,
+        "maxSelections": 4,
+        "isMandatory": false,
+        "isSingleChoice": false,
+        "options": [
+          {
+            "id": "01a18862-0f3c-77d1-a325-40792608a740",
+            "name": "Double Mozzarella di Bufala",
+            "extraPrice": 2.5,
+            "isDefault": false
+          },
+          {
+            "id": "01a18862-0f3c-74f0-9dd5-56e93ad94090",
+            "name": "Jambon de Parme AOP",
+            "extraPrice": 3,
+            "isDefault": false
+          },
+          {
+            "id": "01a18862-0f3c-74af-8ff4-3c034868d1cf",
+            "name": "Roquette & Huile de Truffe",
+            "extraPrice": 2,
+            "isDefault": false
+          },
+          {
+            "id": "01a18862-0f3c-7fa0-966e-19e85994067e",
+            "name": "Piment Frais Émincé",
+            "extraPrice": 0.5,
+            "isDefault": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "01a18862-0f1c-7613-9721-7840bab99504",
+    "name": "Salade César Poulet",
+    "categoryId": "CAT_F63E0D45",
+    "description": "Poulet mariné, parmesan, croûtons",
+    "price": 9.5,
+    "cost": null,
+    "taxRatePercent": 10.0,
+    "colorHex": "#27AE60",
+    "displayOrder": 1,
+    "isQuickKey": true,
+    "preparationStationId": "COLD",
+    "isAvailable": true,
+    "isActive": true,
+    "hasModifiers": false,
+    "modifierGroups": []
+  },
+  {
+    "id": "01a18862-0f2d-72a7-bf38-ba0f39b32866",
+    "name": "Tiramisu Spéculos Maison",
+    "categoryId": "CAT_0E64A84B",
+    "description": "Mascarpone onctueux, café pur arabica",
+    "price": 7.5,
+    "cost": null,
+    "taxRatePercent": 10.0,
+    "colorHex": "#8E44AD",
+    "displayOrder": 1,
+    "isQuickKey": true,
+    "preparationStationId": "DESSERT",
+    "isAvailable": true,
+    "isActive": true,
+    "hasModifiers": false,
+    "modifierGroups": []
+  },
+  {
+    "id": "01a18862-0f2c-795e-ba40-e44dddec683d",
+    "name": "Entrecôte Grillée 300g",
+    "categoryId": "CAT_76280074",
+    "description": "Frites maison et sauce béarnaise",
+    "price": 24,
+    "cost": null,
+    "taxRatePercent": 10.0,
+    "colorHex": "#E74C3C",
+    "displayOrder": 2,
+    "isQuickKey": true,
+    "preparationStationId": "HOT_KITCHEN",
+    "isAvailable": true,
+    "isActive": true,
+    "hasModifiers": false,
+    "modifierGroups": []
+  },
+  {
+    "id": "01a18862-0f2d-7354-8621-44f4b054383c",
+    "name": "Fondant Chocolat Valrhona",
+    "categoryId": "CAT_0E64A84B",
+    "description": "Cœur coulant, glace vanille Bourbon",
+    "price": 8,
+    "cost": null,
+    "taxRatePercent": 10.0,
+    "colorHex": "#9B59B6",
+    "displayOrder": 2,
+    "isQuickKey": false,
+    "preparationStationId": "DESSERT",
+    "isAvailable": true,
+    "isActive": true,
+    "hasModifiers": false,
+    "modifierGroups": []
+  },
+  {
+    "id": "01a18862-0f2c-76b7-b73f-34799f9ba721",
+    "name": "Pizza Reine Royale",
+    "categoryId": "CAT_AAAA3477",
+    "description": "Jambon blanc supérieur, champignons frais",
+    "price": 14.5,
+    "cost": null,
+    "taxRatePercent": 10.0,
+    "colorHex": "#E67E22",
+    "displayOrder": 2,
+    "isQuickKey": false,
+    "preparationStationId": "HOT_KITCHEN",
+    "isAvailable": true,
+    "isActive": true,
+    "hasModifiers": false,
+    "modifierGroups": []
+  },
+  {
+    "id": "01a18862-0f2b-7681-b84c-e08bced647f7",
+    "name": "Tartare de Saumon Frais",
+    "categoryId": "CAT_F63E0D45",
+    "description": "Saumon d'Islande, aneth, agrumes",
+    "price": 12,
+    "cost": null,
+    "taxRatePercent": 10.0,
+    "colorHex": "#2ECC71",
+    "displayOrder": 2,
+    "isQuickKey": false,
+    "preparationStationId": "COLD",
+    "isAvailable": true,
+    "isActive": true,
+    "hasModifiers": false,
+    "modifierGroups": []
+  },
+  {
+    "id": "01a18862-0f2d-73fb-a793-3994f9b95620",
+    "name": "Verre Bordeaux AOP 12cl",
+    "categoryId": "CAT_56B40ABF",
+    "description": "Grand Cru Saint-Émilion",
+    "price": 5.5,
+    "cost": null,
+    "taxRatePercent": 20.0,
+    "colorHex": "#3498DB",
+    "displayOrder": 2,
+    "isQuickKey": false,
+    "preparationStationId": "BAR",
+    "isAvailable": true,
+    "isActive": true,
+    "hasModifiers": false,
+    "modifierGroups": []
+  },
+  {
+    "id": "01a18862-0f2e-7a5a-ba40-4ce5c9373f15",
+    "name": "Expresso Pur Arabica",
+    "categoryId": "CAT_56B40ABF",
+    "description": "Café torréfaction artisanale",
+    "price": 2.5,
+    "cost": 0.3,
+    "taxRatePercent": 10.0,
+    "colorHex": "#1F618D",
+    "displayOrder": 3,
+    "isQuickKey": true,
+    "preparationStationId": "BAR",
+    "isAvailable": true,
+    "isActive": true,
+    "hasModifiers": false,
+    "modifierGroups": []
+  }
+]
