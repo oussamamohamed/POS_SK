@@ -37,7 +37,7 @@ rm -f src/RestaurantPos.Api/restaurantpos.db* restaurantpos.db* 2>/dev/null || t
 echo "  Compilation Release API..."
 dotnet build src/RestaurantPos.Api/RestaurantPos.Api.csproj -c Release --nologo
 
-echo "  RAPPEL : renseignez Bootstrap__AdminPin (6 chiffres) AVANT ce premier demarrage (export dans l'environnement)."
+echo "  RAPPEL : renseignez Bootstrap__AdminPin (4 chiffres exactement) AVANT ce premier demarrage (export dans l'environnement). Le PIN d'amorcage doit etre change apres la premiere connexion."
 echo "  Sans cette variable, l'API genere un PIN administrateur ecrit dans le journal de l'API (chemin affiche ci-dessous, permissions 600) : lisez-le puis changez-le."
 OLD_UMASK=$(umask)
 umask 077

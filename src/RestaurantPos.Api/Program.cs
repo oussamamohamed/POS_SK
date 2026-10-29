@@ -565,7 +565,7 @@ public partial class Program
 
     internal static bool IsSeedCliAllowed(IHostEnvironment env) => env.IsDevelopment();
 
-    // Base vide : crée l'unique administrateur. PIN de Bootstrap:AdminPin, sinon généré et journalisé une fois.
+    // Base vide : crée l'unique administrateur. PIN de 4 chiffres (celui des claviers web et iPad) : Bootstrap:AdminPin, sinon généré et journalisé une fois.
     internal static async Task BootstrapAdminAsync(AppDbContext db, IStaffManagementService staff, IConfiguration cfg, ILogger log)
     {
         if (await db.Users.AnyAsync().ConfigureAwait(false))
@@ -576,13 +576,17 @@ public partial class Program
         var pin = cfg["Bootstrap:AdminPin"];
         if (string.IsNullOrEmpty(pin))
         {
-            // 6 chiffres : StaffManagementService n'accepte que 4 à 6 chiffres.
-            pin = System.Security.Cryptography.RandomNumberGenerator.GetInt32(0, 1_000_000).ToString("D6", CultureInfo.InvariantCulture);
+            // 4 chiffres : les claviers web et iPad envoient le PIN au 4e chiffre. Jamais un PIN de démonstration.
+            do
+            {
+                pin = System.Security.Cryptography.RandomNumberGenerator.GetInt32(0, 10_000).ToString("D4", CultureInfo.InvariantCulture);
+            }
+            while (pin is "0000" or "1234" or "2468" or "5678" or "9999");
             BootstrapLogMessages.GeneratedAdminPin(log, pin);
         }
-        else if (pin.Length != 6 || !pin.All(char.IsAsciiDigit))
+        else if (pin.Length != 4 || !pin.All(char.IsAsciiDigit))
         {
-            throw new InvalidOperationException("Bootstrap:AdminPin doit comporter exactement 6 chiffres.");
+            throw new InvalidOperationException("Bootstrap:AdminPin doit comporter exactement 4 chiffres.");
         }
 
         await staff.CreateStaffMemberAsync("Admin Système", UserRole.Admin, pin).ConfigureAwait(false);

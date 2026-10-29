@@ -68,7 +68,7 @@ public static class StaffEndpoints
                 return Results.BadRequest(new { Message = Texts.T("errors.invalid_role") });
             }
             // Seul un Admin attribue le rôle Admin ou modifie (dont rétrograde) un Admin.
-            if (role == UserRole.Admin || await TargetsAdminAsync(staff, id, caller))
+            if (!caller.IsInRole("Admin") && (role == UserRole.Admin || await TargetsAdminAsync(staff, id, caller)))
             {
                 return Forbidden();
             }

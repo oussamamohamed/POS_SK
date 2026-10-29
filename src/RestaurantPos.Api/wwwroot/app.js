@@ -435,11 +435,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         elements.btnLockTerminal.addEventListener('click', lockTerminal);
 
         if (elements.operatorPill) {
-            elements.operatorPill.addEventListener('click', () => {
-                elements.pinLockModal.classList.add('active');
-                state.pinInput = '';
-                updatePinDots();
-            });
+            elements.operatorPill.addEventListener('click', lockTerminal);
         }
     }
 
@@ -2890,7 +2886,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                     elements.editStaffModal.classList.add('active');
                 });
                 row.querySelector('.btn-del-staff').addEventListener('click', async () => {
-                    await fetch(`/api/staff/operators/${s.id}`, { method: 'DELETE' });
+                    const res = await fetch(`/api/staff/operators/${s.id}`, { method: 'DELETE' });
+                    if (!res.ok) {
+                        showToast(await readApiError(res, String(res.status)), 'error');
+                        return;
+                    }
                     showToast(t('admin.staff_deactivated_toast', { name: s.name }), 'info');
                     await loadAdminStaff();
                 });
@@ -4965,7 +4965,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Recharge commande, plan de salle, KDS et admin avec le jeton tout juste obtenu
                 await loadSessionData();
             } else {
-                showToast(t('common.pin_invalid_toast'), 'error');
+                // 429 : message du serveur (localisé, avec le délai) ; autre échec : PIN invalide.
+                showToast(res.status === 429 && data.errorMessage ? data.errorMessage : t('common.pin_invalid_toast'), 'error');
                 state.pinInput = '';
                 updatePinDots();
             }

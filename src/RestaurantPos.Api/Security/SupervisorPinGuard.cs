@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -16,9 +15,6 @@ public sealed record SupervisorPinResult(bool Allowed, IResult? Rejection, Guid?
 /// <summary>Seul point de validation d'un PIN superviseur (FloorManager ou Admin), limité en débit par IP.</summary>
 public static partial class SupervisorPinGuard
 {
-    // shortcut: un sémaphore par IP, jamais purgé (acceptable en LAN), purger si le serveur est exposé hors LAN.
-    private static readonly ConcurrentDictionary<string, SemaphoreSlim> Gates = new();
-
     [LoggerMessage(EventId = 1010, Level = LogLevel.Warning, Message = "Supervisor PIN rejected for {ClientKey}: {Reason}.")]
     private static partial void Rejected(ILogger logger, string clientKey, string reason);
 
@@ -39,9 +35,7 @@ public static partial class SupervisorPinGuard
 
         // Sérialise verrou -> PBKDF2 -> échec/reset par clé : sinon une rafale parallèle dépasse la limite.
         // Borne aussi le coût CPU PBKDF2 d'une même IP.
-        var gate = Gates.GetOrAdd(key, _ => new SemaphoreSlim(1, 1));
-        await gate.WaitAsync(ct);
-        try
+        return await KeyedGate.RunAsync(key, async () =>
         {
             if (limiter.IsLocked(key))
             {
@@ -64,11 +58,7 @@ public static partial class SupervisorPinGuard
 
             limiter.ResetAttempts(key);
             return new SupervisorPinResult(true, null, result.OperatorId, result.OperatorName, result.Role);
-        }
-        finally
-        {
-            gate.Release();
-        }
+        }, ct);
     }
 
     private static SupervisorPinResult Reject(IResult rejection) => new(false, rejection, null, null, null);

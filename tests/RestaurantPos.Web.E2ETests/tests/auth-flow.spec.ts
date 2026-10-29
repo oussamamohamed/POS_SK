@@ -141,4 +141,28 @@ test.describe('Authentification Tactile & Verrouillage Caisse (PIN)', () => {
     expect(await page.evaluate(() => localStorage.getItem('pos_jwt_token'))).not.toBeNull();
     await expect(page.locator('#pinLockModal')).not.toHaveClass(/active/);
   });
+
+  test('operator pill locks the session: reload asks for the PIN', async ({ page }) => {
+    const pinModal = page.locator('#pinLockModal');
+    await expect(pinModal).toHaveClass(/active/);
+    for (const d of ['1', '2', '3', '4']) await page.click(`.pin-keypad button[data-val="${d}"]`);
+    await expect(pinModal).not.toHaveClass(/active/);
+    await page.click('#operatorPill');
+    await expect(pinModal).toHaveClass(/active/);
+    expect(await page.evaluate(() => localStorage.getItem('pos_jwt_token'))).toBeNull();
+    await page.reload();
+    await expect(pinModal).toHaveClass(/active/);
+    expect(await page.evaluate(() => localStorage.getItem('pos_jwt_token'))).toBeNull();
+  });
+
+  test('429 shows the server message, not "PIN invalide"', async ({ page }) => {
+    const message = 'Trop de tentatives, réessayez dans 30 s (test).';
+    await page.route('**/api/auth/login', route => route.fulfill({
+      status: 429, contentType: 'application/json',
+      body: JSON.stringify({ success: false, errorMessage: message })
+    }));
+    await expect(page.locator('#pinLockModal')).toHaveClass(/active/);
+    for (const d of ['1', '2', '3', '4']) await page.click(`.pin-keypad button[data-val="${d}"]`);
+    await expect(page.getByText(message)).toBeVisible();
+  });
 });

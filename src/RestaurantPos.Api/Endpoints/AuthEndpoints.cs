@@ -30,35 +30,45 @@ public static class AuthEndpoints
             var logger = loggerFactory.CreateLogger("RestaurantPos.Api.Endpoints.AuthEndpoints");
             var clientKey = context.Connection.RemoteIpAddress?.ToString() ?? "unknown-client";
 
-            if (rateLimiter.IsLocked(clientKey))
+            // Sérialise verrou -> PBKDF2 -> échec/reset par IP : sinon une rafale parallèle dépasse la limite.
+            var (reply, result) = await KeyedGate.RunAsync<(IResult? Reply, OperatorAuthenticationResult? Result)>(clientKey, async () =>
             {
-                var remaining = rateLimiter.GetRemainingLockout(clientKey);
-                AuthLogMessages.LoginRateLimited(logger, clientKey, Math.Ceiling(remaining.TotalSeconds));
-                return Results.Json(new { Success = false, ErrorMessage = Texts.T("errors.login_rate_limited", ("seconds", Math.Ceiling(remaining.TotalSeconds))) }, statusCode: StatusCodes.Status429TooManyRequests);
+                if (rateLimiter.IsLocked(clientKey))
+                {
+                    var remaining = rateLimiter.GetRemainingLockout(clientKey);
+                    AuthLogMessages.LoginRateLimited(logger, clientKey, Math.Ceiling(remaining.TotalSeconds));
+                    return (Results.Json(new { Success = false, ErrorMessage = Texts.T("errors.login_rate_limited", ("seconds", Math.Ceiling(remaining.TotalSeconds))) }, statusCode: StatusCodes.Status429TooManyRequests), null);
+                }
+
+                var result = await authService.AuthenticatePinAsync(req.Pin);
+                if (!result.IsSuccess)
+                {
+                    rateLimiter.RecordFailedAttempt(clientKey);
+                    AuthLogMessages.LoginFailed(logger, clientKey);
+                    try
+                    {
+                        await fiscalJournal.AppendAsync(
+                            JournalEventTypes.LoginFailed,
+                            new { ClientIp = clientKey, Error = result.ErrorMessage },
+                            terminalId: null,
+                            operatorId: null);
+                    }
+                    catch (Exception ex)
+                    {
+                        AuthLogMessages.FiscalJournalError(logger, ex, "LOGIN_FAILED");
+                    }
+                    return (Results.BadRequest(new { Success = false, result.ErrorMessage }), null);
+                }
+
+                rateLimiter.ResetAttempts(clientKey);
+                return (null, result);
+            }, context.RequestAborted);
+            if (reply is not null)
+            {
+                return reply;
             }
 
-            var result = await authService.AuthenticatePinAsync(req.Pin);
-            if (!result.IsSuccess)
-            {
-                rateLimiter.RecordFailedAttempt(clientKey);
-                AuthLogMessages.LoginFailed(logger, clientKey);
-                try
-                {
-                    await fiscalJournal.AppendAsync(
-                        JournalEventTypes.LoginFailed,
-                        new { ClientIp = clientKey, Error = result.ErrorMessage },
-                        terminalId: null,
-                        operatorId: null);
-                }
-                catch (Exception ex)
-                {
-                    AuthLogMessages.FiscalJournalError(logger, ex, "LOGIN_FAILED");
-                }
-                return Results.BadRequest(new { Success = false, result.ErrorMessage });
-            }
-
-            rateLimiter.ResetAttempts(clientKey);
-            var role = result.Role.GetValueOrDefault();
+            var role = result!.Role.GetValueOrDefault();
             var token = tokenGen.GenerateToken(result.OperatorId.GetValueOrDefault(), result.OperatorName ?? "Opérateur", role);
 
             AuthLogMessages.LoginSucceeded(logger, result.OperatorName ?? "Opérateur", role, clientKey);

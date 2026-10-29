@@ -12,6 +12,8 @@ namespace RestaurantPos.Api.Tests;
 
 public class BootstrapAdminTests
 {
+    private static readonly string[] DemoPins = ["0000", "1234", "2468", "5678", "9999"];
+
     private static AppDbContext NewDb() =>
         new(new DbContextOptionsBuilder<AppDbContext>().UseInMemoryDatabase("Bootstrap_" + Guid.NewGuid()).Options);
 
@@ -33,10 +35,10 @@ public class BootstrapAdminTests
     public async Task Empty_db_creates_single_admin_with_configured_pin()
     {
         await using var db = NewDb();
-        await Program.BootstrapAdminAsync(db, new StaffManagementService(db), Config("482915"), new CaptureLogger());
+        await Program.BootstrapAdminAsync(db, new StaffManagementService(db), Config("4829"), new CaptureLogger());
 
         var auth = new OperatorAuthenticationService(db);
-        (await auth.AuthenticatePinAsync("482915")).IsSuccess.Should().BeTrue();
+        (await auth.AuthenticatePinAsync("4829")).IsSuccess.Should().BeTrue();
         foreach (var known in new[] { "1234", "2468", "9999" })
         {
             (await auth.AuthenticatePinAsync(known)).IsSuccess.Should().BeFalse();
@@ -46,7 +48,7 @@ public class BootstrapAdminTests
         users.Should().ContainSingle().Which.Role.Should().Be(UserRole.Admin);
     }
 
-    // Écart assumé : 6 chiffres (et non 8), car StaffManagementService n'accepte que ^[0-9]{4,6}$.
+    // 4 chiffres : les claviers web et iPad envoient le PIN au 4e chiffre.
     [Fact]
     public async Task Missing_pin_generates_one()
     {
@@ -56,15 +58,17 @@ public class BootstrapAdminTests
 
         var warnings = log.Entries.Where(e => e.Level == LogLevel.Warning).ToList();
         warnings.Should().ContainSingle();
-        var match = System.Text.RegularExpressions.Regex.Match(warnings[0].Message, @"\b\d{6}\b");
+        var match = System.Text.RegularExpressions.Regex.Match(warnings[0].Message, @"\b\d{4}\b");
         match.Success.Should().BeTrue();
+        DemoPins.Should().NotContain(match.Value);
         (await new OperatorAuthenticationService(db).AuthenticatePinAsync(match.Value)).IsSuccess.Should().BeTrue();
         (await db.Users.CountAsync()).Should().Be(1);
     }
 
     [Theory]
-    [InlineData("1234")]
-    [InlineData("12ab56")]
+    [InlineData("482915")]
+    [InlineData("123")]
+    [InlineData("12ab")]
     public async Task Invalid_configured_pin_fails_startup(string pin)
     {
         await using var db = NewDb();
@@ -82,7 +86,7 @@ public class BootstrapAdminTests
         await staff.CreateStaffMemberAsync("Existant", UserRole.Admin, "1357");
         var log = new CaptureLogger();
 
-        await Program.BootstrapAdminAsync(db, staff, Config("482915"), log);
+        await Program.BootstrapAdminAsync(db, staff, Config("4829"), log);
 
         (await db.Users.CountAsync()).Should().Be(1);
         log.Entries.Should().BeEmpty();

@@ -79,6 +79,39 @@ public class StaffRolesTests : IClassFixture<PosApiApplicationFactory>
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
+    [Fact]
+    public async Task Admin_can_edit_admin()
+    {
+        var admin = ClientWithRole("Admin");
+        var id = await CreateAsync(admin, "Admin");
+
+        var response = await admin.PutAsJsonAsync($"/api/staff/{id}", new UpdateStaffRequest("Renommé", "Admin", null, true));
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
+    [Fact]
+    public async Task Admin_can_promote_to_admin()
+    {
+        var admin = ClientWithRole("Admin");
+        var id = await CreateAsync(admin, "Waiter");
+
+        var response = await admin.PutAsJsonAsync($"/api/staff/{id}", new UpdateStaffRequest("Promu", "Admin", null, true));
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
+    [Fact]
+    public async Task Admin_can_reset_admin_pin()
+    {
+        var admin = ClientWithRole("Admin");
+        var id = await CreateAsync(admin, "Admin");
+
+        var response = await admin.PutAsJsonAsync($"/api/staff/{id}", new UpdateStaffRequest("Admin", "Admin", NewPin(), true));
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
     [Theory]
     [InlineData("Root")]
     [InlineData("99")]
