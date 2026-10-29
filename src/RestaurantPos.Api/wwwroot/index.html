@@ -7,7 +7,7 @@
     <title data-i18n="common.app_title">Restaurant POS — Système Tactile & Local-First</title>
     <link rel="preload" href="fonts/bricolage-latin.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="icon" type="image/jpeg" href="agy_pos_logo.jpg">
-    <link rel="stylesheet" href="styles.css?v=20261030_1">
+    <link rel="stylesheet" href="styles.css?v=20261030_3">
 </head>
 
 <body class="pos-dark">
@@ -27,6 +27,10 @@
             <button class="nav-btn" data-view="floorPlanView" id="btnNavFloor">
                 <svg class="nav-svg" viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="2"/><circle cx="17.5" cy="6.5" r="3.5"/><rect x="3" y="14" width="18" height="7" rx="2"/></g></svg>
                 <span data-i18n="common.nav_floor">Plan de Salle</span>
+            </button>
+            <button class="nav-btn" data-view="bookingsView" id="btnNavBookings">
+                <svg class="nav-svg" viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></g></svg>
+                <span data-i18n="common.nav_bookings">Réservations</span>
             </button>
             <button class="nav-btn" data-view="kdsView" id="btnNavKds">
                 <svg class="nav-svg" viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19h16"/><path d="M5 15.5a7 7 0 0 1 14 0z"/><path d="M12 6.5v2"/><circle cx="12" cy="5" r="1.2"/></g></svg>
@@ -945,6 +949,24 @@
             </div>
         </section>
 
+        <!-- ==================== VIEW : RÉSERVATIONS ==================== -->
+        <section class="view-panel" id="bookingsView">
+            <div class="bk-page">
+                <div class="bk-head">
+                    <h2 data-i18n="bookings.title">Réservations</h2>
+                    <div class="bk-day">
+                        <button type="button" id="bkPrevDay" data-i18n-aria-label="bookings.prev_day" aria-label="Jour précédent">‹</button>
+                        <input type="date" id="bkDate" data-i18n-aria-label="bookings.date_label" aria-label="Date">
+                        <button type="button" id="bkNextDay" data-i18n-aria-label="bookings.next_day" aria-label="Jour suivant">›</button>
+                        <button type="button" id="bkToday" data-i18n="bookings.today">Aujourd'hui</button>
+                    </div>
+                    <button type="button" class="btn-primary bk-new" id="bkNew" data-i18n="bookings.new">+ Réservation</button>
+                </div>
+                <div class="bk-stats" id="bkStats"></div>
+                <div id="bkBody" aria-live="polite"></div>
+            </div>
+        </section>
+
         <!-- ==================== VIEW : ANALYSE DU MENU ==================== -->
         <section class="view-panel" id="menuView">
             <div class="menu-page">
@@ -1601,6 +1623,63 @@
         </div>
     </div>
 
+    <!-- Réservation (création / modification / actions) -->
+    <div class="modal-overlay" id="bookingModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 id="bkModalTitle" data-i18n="bookings.form_new_title">Nouvelle réservation</h3>
+                <button type="button" class="btn-close-modal" id="bkClose" data-i18n-aria-label="bookings.close" aria-label="Fermer">✕</button>
+            </div>
+            <form id="bkForm" class="admin-form bk-form" novalidate>
+                <input type="hidden" id="bkId">
+                <div class="form-group" style="grid-column:1 / -1;">
+                    <label for="bkName" data-i18n="bookings.field_name">Nom</label>
+                    <input type="text" id="bkName" maxlength="100" autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label for="bkCovers" data-i18n="bookings.field_covers">Couverts</label>
+                    <input type="number" id="bkCovers" min="1" max="30" value="2">
+                </div>
+                <div class="form-group">
+                    <label for="bkFormDuration" data-i18n="bookings.field_duration">Durée</label>
+                    <select id="bkFormDuration">
+                        <option value="60">1 h</option><option value="90" selected>1 h 30</option><option value="120">2 h</option><option value="150">2 h 30</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="bkFormDate" data-i18n="bookings.field_date">Date</label>
+                    <input type="date" id="bkFormDate">
+                </div>
+                <div class="form-group">
+                    <label for="bkFormTime" data-i18n="bookings.field_time">Heure</label>
+                    <input type="time" id="bkFormTime" step="300">
+                </div>
+                <div class="form-group">
+                    <label for="bkFormTable" data-i18n="bookings.field_table">Table</label>
+                    <select id="bkFormTable"></select>
+                </div>
+                <div class="form-group">
+                    <label for="bkFormPhone" data-i18n="bookings.field_phone">Téléphone (facultatif)</label>
+                    <input type="tel" id="bkFormPhone" maxlength="20" autocomplete="off">
+                    <small class="text-muted" id="bkPhoneHint" data-i18n="bookings.field_phone_hint">Visible des responsables seulement, effacé 2 jours après la réservation.</small>
+                </div>
+                <div class="form-group" style="grid-column:1 / -1;">
+                    <label for="bkFormNote" data-i18n="bookings.field_note">Note</label>
+                    <input type="text" id="bkFormNote" maxlength="500" autocomplete="off">
+                </div>
+                <label class="bk-check" style="grid-column:1 / -1;"><input type="checkbox" id="bkFormWaitlist"> <span data-i18n="bookings.field_waitlist">Liste d'attente (client sur place, sans table)</span></label>
+                <p class="bk-error" id="bkError" role="alert" hidden style="grid-column:1 / -1;"></p>
+                <div class="bk-actions" id="bkActions" style="grid-column:1 / -1;">
+                    <button type="submit" class="btn-primary" id="bkSave" data-i18n="bookings.save">Enregistrer</button>
+                    <button type="button" class="bk-act" id="bkSeat" data-act="seat" data-i18n="bookings.btn_seat">Installer</button>
+                    <button type="button" class="bk-act" id="bkDone" data-act="done" data-i18n="bookings.btn_done">Terminer</button>
+                    <button type="button" class="bk-act" id="bkNoShow" data-act="noshow" data-i18n="bookings.btn_noshow">Absent</button>
+                    <button type="button" class="bk-act bk-danger" id="bkCancel" data-act="cancel" data-i18n="bookings.btn_cancel">Annuler la réservation</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Edit Product Modal -->
     <div class="modal-overlay" id="editProductModal">
         <div class="modal-card">
@@ -1853,7 +1932,7 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
     <script src="i18n.js?v=20260927_1"></script>
-    <script src="app.js?v=20261030_1"></script>
+    <script src="app.js?v=20261030_4"></script>
 </body>
 </html>
 

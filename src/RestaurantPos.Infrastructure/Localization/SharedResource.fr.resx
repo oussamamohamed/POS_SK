@@ -169,6 +169,39 @@
   <data name="errors.product_cost_negative" xml:space="preserve">
     <value>Le coût de revient d'un article ne peut pas être négatif.</value>
   </data>
+  <data name="errors.reservation_notfound" xml:space="preserve">
+    <value>Réservation introuvable.</value>
+  </data>
+  <data name="errors.reservation_invalidname" xml:space="preserve">
+    <value>Le nom du client est obligatoire (100 caractères au plus).</value>
+  </data>
+  <data name="errors.reservation_invalidcovers" xml:space="preserve">
+    <value>Le nombre de couverts doit être compris entre 1 et 30.</value>
+  </data>
+  <data name="errors.reservation_invalidduration" xml:space="preserve">
+    <value>La durée doit être comprise entre 30 et 240 minutes.</value>
+  </data>
+  <data name="errors.reservation_invalidphone" xml:space="preserve">
+    <value>Numéro de téléphone invalide.</value>
+  </data>
+  <data name="errors.reservation_unknowntable" xml:space="preserve">
+    <value>Table inconnue.</value>
+  </data>
+  <data name="errors.reservation_tablerequired" xml:space="preserve">
+    <value>Choisissez une table pour installer ce client.</value>
+  </data>
+  <data name="errors.reservation_tablecapacity" xml:space="preserve">
+    <value>Cette table n'a pas assez de places pour ce nombre de couverts.</value>
+  </data>
+  <data name="errors.reservation_tableconflict" xml:space="preserve">
+    <value>Cette table est déjà réservée sur ce créneau.</value>
+  </data>
+  <data name="errors.reservation_tableoccupied" xml:space="preserve">
+    <value>Cette table est occupée.</value>
+  </data>
+  <data name="errors.reservation_invalidstate" xml:space="preserve">
+    <value>Cette réservation ne peut plus être modifiée de cette façon.</value>
+  </data>
   <data name="errors.tip_invalid" xml:space="preserve">
     <value>Montant de pourboire invalide.</value>
   </data>

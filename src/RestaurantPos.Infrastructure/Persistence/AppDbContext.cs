@@ -8,6 +8,7 @@ public class AppDbContext : DbContext
 {
     public DbSet<User> Users => Set<User>();
     public DbSet<Product> Products => Set<Product>();
+    public DbSet<Reservation> Reservations => Set<Reservation>();
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<TaxRate> TaxRates => Set<TaxRate>();
     public DbSet<DiningTable> DiningTables => Set<DiningTable>();
@@ -111,6 +112,16 @@ public class AppDbContext : DbContext
                       m => m.HasValue ? (long?)m.Value.AmountInCents : null,
                       cents => cents.HasValue ? new Money(cents.Value, "EUR") : null
                   );
+        });
+
+        modelBuilder.Entity<Reservation>(entity =>
+        {
+            entity.HasKey(r => r.Id);
+            entity.Property(r => r.GuestName).HasMaxLength(100).IsRequired();
+            entity.Property(r => r.TableNumber).HasMaxLength(16);
+            entity.Property(r => r.Note).HasMaxLength(500);
+            entity.Property(r => r.Phone).HasMaxLength(20);
+            entity.HasIndex(r => r.StartsAtUtc);
         });
 
         modelBuilder.Entity<TaxRate>(entity =>

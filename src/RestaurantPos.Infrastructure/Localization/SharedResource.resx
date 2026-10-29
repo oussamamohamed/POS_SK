@@ -169,6 +169,39 @@
   <data name="errors.product_cost_negative" xml:space="preserve">
     <value>Product cost must not be negative.</value>
   </data>
+  <data name="errors.reservation_notfound" xml:space="preserve">
+    <value>Reservation not found.</value>
+  </data>
+  <data name="errors.reservation_invalidname" xml:space="preserve">
+    <value>The guest name is required (100 characters max).</value>
+  </data>
+  <data name="errors.reservation_invalidcovers" xml:space="preserve">
+    <value>Covers must be between 1 and 30.</value>
+  </data>
+  <data name="errors.reservation_invalidduration" xml:space="preserve">
+    <value>Duration must be between 30 and 240 minutes.</value>
+  </data>
+  <data name="errors.reservation_invalidphone" xml:space="preserve">
+    <value>Invalid phone number.</value>
+  </data>
+  <data name="errors.reservation_unknowntable" xml:space="preserve">
+    <value>Unknown table.</value>
+  </data>
+  <data name="errors.reservation_tablerequired" xml:space="preserve">
+    <value>Pick a table to seat this guest.</value>
+  </data>
+  <data name="errors.reservation_tablecapacity" xml:space="preserve">
+    <value>This table is too small for that many covers.</value>
+  </data>
+  <data name="errors.reservation_tableconflict" xml:space="preserve">
+    <value>This table is already booked for that slot.</value>
+  </data>
+  <data name="errors.reservation_tableoccupied" xml:space="preserve">
+    <value>This table is occupied.</value>
+  </data>
+  <data name="errors.reservation_invalidstate" xml:space="preserve">
+    <value>This reservation can no longer be changed that way.</value>
+  </data>
   <data name="errors.tip_invalid" xml:space="preserve">
     <value>Invalid tip amount.</value>
   </data>

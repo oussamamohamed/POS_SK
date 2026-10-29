@@ -12,6 +12,7 @@ public interface IPosHubClient : IKitchenHubClient
     Task OnTableStatusChanged(string tableNumber, TableStatus newStatus);
     Task OnHappyHourStatusChanged(object status);
     Task OnPrinterStatusChanged(Guid printerId, string printerName, bool isOnline, int pendingCount);
+    Task OnReservationsChanged();
 }
 
 [Authorize]

@@ -169,6 +169,39 @@
   <data name="errors.product_cost_negative" xml:space="preserve">
     <value>لا يمكن أن تكون تكلفة المنتج سالبة.</value>
   </data>
+  <data name="errors.reservation_notfound" xml:space="preserve">
+    <value>الحجز غير موجود.</value>
+  </data>
+  <data name="errors.reservation_invalidname" xml:space="preserve">
+    <value>اسم الضيف مطلوب (100 حرف كحد أقصى).</value>
+  </data>
+  <data name="errors.reservation_invalidcovers" xml:space="preserve">
+    <value>يجب أن يكون عدد الأشخاص بين 1 و30.</value>
+  </data>
+  <data name="errors.reservation_invalidduration" xml:space="preserve">
+    <value>يجب أن تكون المدة بين 30 و240 دقيقة.</value>
+  </data>
+  <data name="errors.reservation_invalidphone" xml:space="preserve">
+    <value>رقم الهاتف غير صالح.</value>
+  </data>
+  <data name="errors.reservation_unknowntable" xml:space="preserve">
+    <value>الطاولة غير معروفة.</value>
+  </data>
+  <data name="errors.reservation_tablerequired" xml:space="preserve">
+    <value>اختر طاولة لإجلاس هذا الضيف.</value>
+  </data>
+  <data name="errors.reservation_tablecapacity" xml:space="preserve">
+    <value>هذه الطاولة صغيرة لهذا العدد من الأشخاص.</value>
+  </data>
+  <data name="errors.reservation_tableconflict" xml:space="preserve">
+    <value>هذه الطاولة محجوزة في هذا الوقت.</value>
+  </data>
+  <data name="errors.reservation_tableoccupied" xml:space="preserve">
+    <value>هذه الطاولة مشغولة.</value>
+  </data>
+  <data name="errors.reservation_invalidstate" xml:space="preserve">
+    <value>لا يمكن تعديل هذا الحجز بهذه الطريقة بعد الآن.</value>
+  </data>
   <data name="errors.tip_invalid" xml:space="preserve">
     <value>مبلغ الإكرامية غير صالح.</value>
   </data>

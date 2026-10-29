@@ -98,6 +98,7 @@ public partial class Program
         builder.Services.AddScoped<IFecExportService, FecExportService>();
         builder.Services.AddScoped<IFinancialDashboardService, FinancialDashboardService>();
         builder.Services.AddScoped<IMenuAnalysisService, MenuAnalysisService>();
+        builder.Services.AddScoped<IReservationService, ReservationService>();
         builder.Services.AddScoped<IOrderDiscountService, OrderDiscountService>();
         builder.Services.AddScoped<IRoomBillingService, RoomBillingService>();
         builder.Services.AddScoped<IGridManagementService, GridManagementService>();
@@ -116,6 +117,7 @@ public partial class Program
         {
             builder.Services.AddHostedService<BonjourAdvertiserService>();
             builder.Services.AddHostedService<PrintWorker>();
+            builder.Services.AddHostedService<ReservationPurgeService>();
         }
 
         // JWT Authentication Configuration
@@ -207,6 +209,21 @@ public partial class Program
             try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE Products ADD COLUMN IsFoodVoucherEligible INTEGER NOT NULL DEFAULT 1;"); } catch { }
             try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE Products ADD COLUMN TaxRateTakeawayPercent TEXT NULL;"); } catch { }
             try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE Products ADD COLUMN Cost INTEGER NULL;"); } catch { }
+            try { dbContext.Database.ExecuteSqlRaw(@"CREATE TABLE IF NOT EXISTS Reservations (
+                Id TEXT PRIMARY KEY,
+                GuestName TEXT NOT NULL,
+                Covers INTEGER NOT NULL,
+                StartsAtUtc TEXT NOT NULL,
+                DurationMinutes INTEGER NOT NULL,
+                TableNumber TEXT NULL,
+                Note TEXT NULL,
+                Phone TEXT NULL,
+                Status INTEGER NOT NULL DEFAULT 0,
+                IsWaitlist INTEGER NOT NULL DEFAULT 0,
+                CreatedAtUtc TEXT NOT NULL,
+                UpdatedAtUtc TEXT NOT NULL
+            );"); } catch { }
+            try { dbContext.Database.ExecuteSqlRaw("CREATE INDEX IF NOT EXISTS IX_Reservations_StartsAtUtc ON Reservations (StartsAtUtc);"); } catch { }
             try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE OrderItems ADD COLUMN IsFoodVoucherEligible INTEGER NOT NULL DEFAULT 1;"); } catch { }
             try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE OrderItems ADD COLUMN TaxRateTakeawayPercent TEXT NULL;"); } catch { }
             try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE Orders ADD COLUMN Destination INTEGER NOT NULL DEFAULT 0;"); } catch { }
@@ -513,6 +530,7 @@ public partial class Program
         app.MapFiscalEndpoints();
         app.MapDashboardEndpoints();
         app.MapMenuAnalysisEndpoints();
+        app.MapReservationEndpoints();
         app.MapCounterSaleEndpoints();
         app.MapHappyHourEndpoints();
 
@@ -841,6 +859,9 @@ public record CreateCategoryRequest(string Name, string? ColorHex, int DisplayOr
 public record UpdateCategoryRequest(string Name, string? ColorHex, int DisplayOrder, string? IconName, bool? IsActive, string? PreparationStationId = null);
 public record CreateProductRequest(string Name, string CategoryId, decimal Price, decimal TaxRatePercent, string? Description, string? ColorHex, int DisplayOrder, bool IsQuickKey, string? StationId, decimal? Cost = null);
 public record UpdateProductRequest(string Name, string CategoryId, decimal Price, decimal TaxRatePercent, string? Description, string? ColorHex, int DisplayOrder, bool? IsAvailable, bool? IsActive, bool IsQuickKey, string? StationId, decimal? Cost = null, bool ClearCost = false);
+public record ReservationRequest(string GuestName, int Covers, DateTimeOffset StartsAtUtc, int DurationMinutes = 90, string? TableNumber = null, string? Note = null, string? Phone = null, bool IsWaitlist = false);
+public record SeatReservationRequest(string? TableNumber, Guid? OperatorId, string? WaiterName);
+public record ReservationStatusRequest(ReservationStatus Status);
 public record CreateStaffRequest(string Name, string Role, string Pin);
 public record UpdateStaffRequest(string Name, string Role, string? Pin, bool? IsActive);
 public record CreateTableRequest(string TableNumber, int Capacity, double? PositionX, double? PositionY);

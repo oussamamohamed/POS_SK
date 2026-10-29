@@ -450,9 +450,232 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (viewId === 'floorPlanView') loadFloorPlanData();
         if (viewId === 'kdsView') loadKdsData();
         if (viewId === 'menuView') loadMenuAnalysis();
+        if (viewId === 'bookingsView') loadBookings();
         if (viewId === 'adminView') loadAdminData();
         if (viewId === 'fiscalView') loadFiscalViewData();
         if (viewId === 'posView') loadActiveTableOrder(state.activeTable || 'Comptoir');
+    }
+
+    // ==================== RÉSERVATIONS ====================
+    const bkState = { day: null, list: [], tables: [], bound: false, editing: null };
+    const bkPad = (n) => String(n).padStart(2, '0');
+    const bkDayString = (d) => `${d.getFullYear()}-${bkPad(d.getMonth() + 1)}-${bkPad(d.getDate())}`;
+    const bkTime = (iso) => { const d = new Date(iso); return `${bkPad(d.getHours())}:${bkPad(d.getMinutes())}`; };
+    const bkDayBounds = (day) => {
+        const from = new Date(`${day}T00:00:00`);
+        const to = new Date(from); to.setDate(to.getDate() + 1);
+        return [from, to];
+    };
+
+    async function bkFetchList(day) {
+        const [from, to] = bkDayBounds(day);
+        const res = await fetch(`/api/reservations?from=${encodeURIComponent(from.toISOString())}&to=${encodeURIComponent(to.toISOString())}`);
+        if (!res.ok) throw new Error(String(res.status));
+        return res.json();
+    }
+
+    async function loadBookings() {
+        const body = document.getElementById('bkBody');
+        if (!body) return;
+        bkBindOnce();
+        bkState.day = bkState.day || bkDayString(new Date());
+        document.getElementById('bkDate').value = bkState.day;
+        try {
+            await ensureAuthToken();
+            const [list, tablesRes] = await Promise.all([bkFetchList(bkState.day), fetch('/api/tables')]);
+            bkState.list = list;
+            bkState.tables = (await tablesRes.json()).filter(tb => tb.tableNumber !== 'Comptoir').sort((a, b) => String(a.tableNumber).localeCompare(String(b.tableNumber), undefined, { numeric: true }));
+            renderBookings();
+        } catch (err) {
+            console.error('Erreur chargement réservations:', err);
+            body.innerHTML = `<p class="bk-empty">${escapeHtml(t('bookings.load_error'))}</p>`;
+        }
+    }
+
+    function bkBindOnce() {
+        if (bkState.bound) return;
+        bkState.bound = true;
+        const shiftDay = (n) => {
+            const d = new Date(`${bkState.day}T00:00:00`); d.setDate(d.getDate() + n);
+            bkState.day = bkDayString(d); loadBookings();
+        };
+        document.getElementById('bkPrevDay').addEventListener('click', () => shiftDay(-1));
+        document.getElementById('bkNextDay').addEventListener('click', () => shiftDay(1));
+        document.getElementById('bkToday').addEventListener('click', () => { bkState.day = bkDayString(new Date()); loadBookings(); });
+        document.getElementById('bkDate').addEventListener('change', (e) => { if (e.target.value) { bkState.day = e.target.value; loadBookings(); } });
+        document.getElementById('bkNew').addEventListener('click', () => openBookingModal(null));
+        document.getElementById('bkClose').addEventListener('click', () => document.getElementById('bookingModal').classList.remove('active'));
+        document.getElementById('bkBody').addEventListener('click', (e) => {
+            const el = e.target.closest('[data-bk-id]');
+            if (el) openBookingModal(bkState.list.find(r => r.id === el.dataset.bkId));
+        });
+        document.getElementById('bkForm').addEventListener('submit', (e) => { e.preventDefault(); saveBooking(); });
+        document.getElementById('bkActions').addEventListener('click', (e) => {
+            const btn = e.target.closest('[data-act]');
+            if (btn) bookingAction(btn.dataset.act);
+        });
+        document.getElementById('bkFormWaitlist').addEventListener('change', (e) => {
+            document.getElementById('bkFormTable').disabled = e.target.checked;
+        });
+    }
+
+    // Pastille de la navigation : réservations en retard + clients en liste d'attente (à traiter maintenant).
+    async function refreshBookingsBadge() {
+        const btn = document.getElementById('btnNavBookings');
+        if (!btn) return;
+        if (!(state.token || localStorage.getItem('pos_jwt_token'))) { btn.removeAttribute('data-badge'); return; }
+        try {
+            const n = (await bkFetchList(bkDayString(new Date()))).filter(r => r.isLate || (r.isWaitlist && r.status === 0)).length;
+            if (n) btn.setAttribute('data-badge', String(n)); else btn.removeAttribute('data-badge');
+        } catch {
+            // Indisponible : la pastille garde sa dernière valeur.
+        }
+    }
+    setInterval(refreshBookingsBadge, 60000);
+
+    function renderBookings() {
+        const body = document.getElementById('bkBody');
+        const nowMs = Date.now();
+        const active = bkState.list.filter(r => !r.isWaitlist && (r.status === 0 || r.status === 1));
+        const waiting = bkState.list.filter(r => r.isWaitlist && r.status === 0);
+        const late = bkState.list.filter(r => r.isLate).length;
+        document.getElementById('bkStats').innerHTML = [
+            [active.length, 'bookings.stat_bookings', ''],
+            [active.reduce((s, r) => s + r.covers, 0), 'bookings.stat_covers', ''],
+            [late, 'bookings.stat_late', late ? ' warn' : ''],
+            [waiting.length, 'bookings.stat_waitlist', '']
+        ].map(([n, key, cls]) => `<div class="bk-stat${cls}"><b>${n}</b><span>${escapeHtml(t(key))}</span></div>`).join('');
+
+        const timed = bkState.list.filter(r => !r.isWaitlist && r.tableNumber);
+        const unplaced = bkState.list.filter(r => !r.isWaitlist && !r.tableNumber && (r.status === 0));
+        const startH = Math.min(11, ...timed.map(r => new Date(r.startsAtUtc).getHours()));
+        const endH = Math.min(26, Math.max(23, ...timed.map(r => Math.ceil((new Date(r.startsAtUtc).getTime() + r.durationMinutes * 60000 - new Date(`${bkState.day}T00:00:00`).getTime()) / 3600000))));
+        const dayStart = new Date(`${bkState.day}T00:00:00`).getTime() + startH * 3600000;
+        const spanMs = (endH - startH) * 3600000;
+        const hourW = 100 / (endH - startH);
+        const pos = (ms) => Math.max(0, Math.min(100, ((ms - dayStart) / spanMs) * 100));
+
+        const hours = Array.from({ length: endH - startH + 1 }, (_, i) => `<span class="bk-tl-hour" style="left:${(i * hourW).toFixed(2)}%">${bkPad((startH + i) % 24)}h</span>`).join('');
+        const rows = bkState.tables.map(tb => {
+            const blocks = timed.filter(r => r.tableNumber === tb.tableNumber).map(r => {
+                const s = new Date(r.startsAtUtc).getTime();
+                const left = pos(s), width = Math.max(2, pos(s + r.durationMinutes * 60000) - left);
+                const label = `${r.guestName} · ${r.covers}`;
+                return `<button type="button" class="bk-block bk-st-${r.status}${r.isLate ? ' late' : ''}" style="left:${left.toFixed(2)}%;width:${width.toFixed(2)}%" data-bk-id="${escapeHtml(r.id)}" title="${escapeHtml(`${bkTime(r.startsAtUtc)} ${label} — ${t('bookings.status_' + r.status)}`)}">${escapeHtml(bkTime(r.startsAtUtc))} ${escapeHtml(label)}</button>`;
+            }).join('');
+            return `<div class="bk-tl-row"><div class="bk-tl-name">${escapeHtml(tb.tableNumber)}</div><div class="bk-tl-track" style="--hour-w:${hourW}%">${blocks}</div></div>`;
+        }).join('');
+        const nowLine = bkState.day === bkDayString(new Date()) && nowMs >= dayStart && nowMs <= dayStart + spanMs
+            ? `<div class="bk-now" style="left:calc(64px + (100% - 64px) * ${(pos(nowMs) / 100).toFixed(4)})"></div>` : '';
+
+        const item = (r, extra) => `<li><button type="button" class="bk-item${r.isLate ? ' late' : ''}" data-bk-id="${escapeHtml(r.id)}"><span><strong>${escapeHtml(r.guestName)}</strong> · ${r.covers}<small>${escapeHtml(extra)}</small></span>${r.isLate ? `<span class="bk-late">${escapeHtml(t('bookings.late'))}</span>` : ''}</button></li>`;
+        const waitItems = waiting.map(r => item(r, t('bookings.waited', { minutes: Math.max(0, Math.round((nowMs - new Date(r.startsAtUtc).getTime()) / 60000)) }))).join('');
+        const unplacedItems = unplaced.map(r => item(r, bkTime(r.startsAtUtc))).join('');
+        const empty = !bkState.list.length ? `<p class="bk-empty">${escapeHtml(t('bookings.empty'))}</p>` : '';
+
+        body.innerHTML = `${empty}<div class="bk-grid">
+            <div class="bk-card"><h3>${escapeHtml(t('bookings.timeline_title'))}</h3>
+                <div class="bk-tl"><div class="bk-tl-inner" style="min-width:${64 + (endH - startH) * 48}px">
+                    <div class="bk-tl-hours"><div></div><div class="bk-tl-track">${hours}</div></div>${rows}${nowLine}
+                </div></div></div>
+            <div>
+                <div class="bk-card"><h3>${escapeHtml(t('bookings.waitlist_title'))}</h3>${waitItems ? `<ul class="bk-list">${waitItems}</ul>` : `<p class="bk-empty">${escapeHtml(t('bookings.waitlist_empty'))}</p>`}</div>
+                <div class="bk-card" style="margin-top:16px;"><h3>${escapeHtml(t('bookings.unplaced_title'))}</h3>${unplacedItems ? `<ul class="bk-list">${unplacedItems}</ul>` : `<p class="bk-empty">${escapeHtml(t('bookings.none_unplaced'))}</p>`}</div>
+            </div></div>`;
+    }
+
+    function openBookingModal(r) {
+        bkState.editing = r || null;
+        const $ = (id) => document.getElementById(id);
+        $('bkModalTitle').textContent = t(r ? 'bookings.form_edit_title' : 'bookings.form_new_title');
+        $('bkId').value = r ? r.id : '';
+        $('bkName').value = r ? r.guestName : '';
+        $('bkCovers').value = r ? r.covers : 2;
+        const start = r ? new Date(r.startsAtUtc) : new Date(Date.now() + 3600000);
+        $('bkFormDate').value = r ? bkDayString(start) : bkState.day;
+        $('bkFormTime').value = r ? bkTime(r.startsAtUtc) : `${bkPad(start.getHours())}:${bkPad(Math.ceil(start.getMinutes() / 5) * 5 % 60)}`;
+        $('bkFormDuration').value = r ? String(r.durationMinutes) : '90';
+        const tableSel = $('bkFormTable');
+        tableSel.innerHTML = `<option value="">${escapeHtml(t('bookings.field_table_none'))}</option>` + bkState.tables.map(tb => `<option value="${escapeHtml(tb.tableNumber)}">${escapeHtml(tb.tableNumber)} (${tb.capacity})</option>`).join('');
+        tableSel.value = r?.tableNumber || '';
+        $('bkFormWaitlist').checked = !!r?.isWaitlist;
+        tableSel.disabled = !!r?.isWaitlist;
+        $('bkFormPhone').value = r?.phone || '';
+        $('bkFormPhone').placeholder = r && r.hasPhone && !r.phone ? t('bookings.field_phone_hidden') : '';
+        $('bkFormNote').value = r?.note || '';
+        $('bkError').hidden = true;
+        const booked = !r || r.status === 0;
+        $('bkSave').hidden = !booked;
+        $('bkSeat').hidden = !(r && r.status === 0);
+        $('bkDone').hidden = !(r && r.status === 1);
+        $('bkNoShow').hidden = !(r && r.status === 0);
+        $('bkCancel').hidden = !(r && r.status === 0);
+        $('bookingModal').classList.add('active');
+    }
+
+    function bkShowError(message) {
+        const el = document.getElementById('bkError');
+        el.textContent = message;
+        el.hidden = false;
+    }
+
+    function bkReadForm() {
+        const $ = (id) => document.getElementById(id);
+        const name = $('bkName').value.trim();
+        const covers = parseInt($('bkCovers').value, 10);
+        if (!name) return { error: t('bookings.err_name') };
+        if (!(covers >= 1 && covers <= 30)) return { error: t('bookings.err_covers') };
+        if (!$('bkFormDate').value || !$('bkFormTime').value) return { error: t('bookings.err_datetime') };
+        const phone = $('bkFormPhone').value.trim();
+        if (phone && !/^[+0-9 ().-]{6,20}$/.test(phone)) return { error: t('bookings.err_phone') };
+        const waitlist = $('bkFormWaitlist').checked;
+        return { body: {
+            guestName: name,
+            covers,
+            startsAtUtc: new Date(`${$('bkFormDate').value}T${$('bkFormTime').value}`).toISOString(),
+            durationMinutes: parseInt($('bkFormDuration').value, 10),
+            tableNumber: waitlist ? null : ($('bkFormTable').value || null),
+            note: $('bkFormNote').value.trim() || null,
+            phone: phone || null,
+            isWaitlist: waitlist
+        } };
+    }
+
+    async function bkSend(url, method, payload) {
+        const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        if (!res.ok) {
+            bkShowError(await readApiError(res, t('bookings.save_error')));
+            return null;
+        }
+        return res.json();
+    }
+
+    async function saveBooking() {
+        const form = bkReadForm();
+        if (form.error) { bkShowError(form.error); return; }
+        const id = document.getElementById('bkId').value;
+        const saved = await bkSend(id ? `/api/reservations/${id}` : '/api/reservations', id ? 'PUT' : 'POST', form.body);
+        if (!saved) return;
+        document.getElementById('bookingModal').classList.remove('active');
+        showToast(t('bookings.saved_toast'), 'success');
+        loadBookings();
+    }
+
+    async function bookingAction(act) {
+        const r = bkState.editing;
+        if (!r) return;
+        let saved;
+        if (act === 'seat') {
+            const table = document.getElementById('bkFormTable').value || r.tableNumber || null;
+            saved = await bkSend(`/api/reservations/${r.id}/seat`, 'POST', { tableNumber: table, operatorId: state.operator?.id || null, waiterName: state.operator?.name || null });
+            if (saved) showToast(t('bookings.seated_toast', { table: saved.tableNumber }), 'success');
+        } else {
+            const status = { done: 2, noshow: 3, cancel: 4 }[act];
+            saved = await bkSend(`/api/reservations/${r.id}/status`, 'POST', { status });
+        }
+        if (!saved) return;
+        document.getElementById('bookingModal').classList.remove('active');
+        loadBookings();
     }
 
     // ==================== ANALYSE DU MENU ====================
@@ -2623,9 +2846,25 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             const res = await fetch('/api/tables');
             state.tables = await res.json();
+            await loadHeldTables();
             renderFloorPlan();
         } catch (err) {
             console.error('Erreur chargement plan de salle:', err);
+        }
+    }
+
+    // Prochaine réservation attendue de chaque table (aujourd'hui), pour le repère « Réservée hh:mm » du plan de salle.
+    async function loadHeldTables() {
+        state.heldByTable = {};
+        try {
+            const day = bkDayString(new Date());
+            const nowMs = Date.now();
+            (await bkFetchList(day))
+                .filter(r => !r.isWaitlist && r.status === 0 && r.tableNumber && new Date(r.startsAtUtc).getTime() + r.durationMinutes * 60000 > nowMs)
+                .sort((a, b) => new Date(a.startsAtUtc) - new Date(b.startsAtUtc))
+                .forEach(r => { state.heldByTable[r.tableNumber] ??= bkTime(r.startsAtUtc); });
+        } catch {
+            // Réservations indisponibles (session expirée…) : le plan de salle s'affiche sans repère.
         }
     }
 
@@ -2647,6 +2886,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <div class="table-sub">${t('floor.table_waiter', { name: escapeHtml(table.assignedWaiterName || '—') })}</div>
                 ${table.coversCount > 0 ? `<div style="font-size:0.75rem;color:var(--success);font-weight:700;margin-top:4px;">${t('floor.table_covers_active', { count: table.coversCount })}</div>` : ''}
                 ${totalHtml}
+                ${state.heldByTable?.[table.tableNumber] ? `<div class="table-held">${escapeHtml(t('bookings.held', { time: state.heldByTable[table.tableNumber] }))}</div>` : ''}
             `;
 
             card.addEventListener('click', async () => {
@@ -5635,6 +5875,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 .withUrl('/hubs/pos', { accessTokenFactory: () => state.token || localStorage.getItem('pos_jwt_token') || '' })
                 .withAutomaticReconnect()
                 .build();
+            posConnection.on('OnReservationsChanged', () => {
+                refreshBookingsBadge();
+                if (document.getElementById('bookingsView')?.classList.contains('active')) loadBookings();
+                if (document.getElementById('floorPlanView')?.classList.contains('active')) loadFloorPlanData();
+            });
             posConnection.on('OnPrinterStatusChanged', (printerId, printerName, isOnline, pendingCount) => {
                 showToast(isOnline
                     ? t('messages.printer_back_online', { name: printerName })
@@ -5643,6 +5888,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         }
         posConnectionStarted = true;
+        refreshBookingsBadge();
         posConnection.start().catch(err => {
             posConnectionStarted = false; // sera retenté à la prochaine authentification
             console.log('SignalR hub /hubs/pos non connecté:', err);
