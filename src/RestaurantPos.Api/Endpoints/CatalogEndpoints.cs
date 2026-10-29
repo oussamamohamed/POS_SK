@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -43,8 +44,11 @@ public static class CatalogEndpoints
         }).RequireAuthorization("RequireManagerOrAdmin");
 
         // Products
-        group.MapGet("/products", async (string? categoryId, IBackOfficeCatalogService catalog, RestaurantPos.Infrastructure.Persistence.AppDbContext db) =>
+        group.MapGet("/products", async (string? categoryId, HttpContext http, IAuthorizationService authz, IBackOfficeCatalogService catalog, RestaurantPos.Infrastructure.Persistence.AppDbContext db) =>
         {
+            // Le coût de revient est une donnée de gestion : jamais servi aux appareils de caisse anonymes.
+            var canSeeCost = (await authz.AuthorizeAsync(http.User, "RequireManagerOrAdmin")).Succeeded;
+
             var products = string.IsNullOrWhiteSpace(categoryId)
                 ? await catalog.GetProductsByCategoryAsync(string.Empty)
                 : await catalog.GetProductsByCategoryAsync(categoryId);
@@ -82,6 +86,7 @@ public static class CatalogEndpoints
                     p.CategoryId,
                     p.Description,
                     Price = p.Price.ToDecimal(),
+                    Cost = canSeeCost ? p.Cost?.ToDecimal() : null,
                     p.TaxRatePercent,
                     p.ColorHex,
                     p.DisplayOrder,
@@ -130,6 +135,10 @@ public static class CatalogEndpoints
             {
                 return Results.BadRequest(new { Message = Texts.T("errors.product_price_negative") });
             }
+            if (req.Cost < 0)
+            {
+                return Results.BadRequest(new { Message = Texts.T("errors.product_cost_negative") });
+            }
 
             var created = await catalog.CreateProductAsync(
                 req.Name,
@@ -140,7 +149,8 @@ public static class CatalogEndpoints
                 req.ColorHex,
                 req.DisplayOrder,
                 req.IsQuickKey,
-                req.StationId
+                req.StationId,
+                req.Cost
             );
             return Results.Ok(new
             {
@@ -159,6 +169,10 @@ public static class CatalogEndpoints
             {
                 return Results.BadRequest(new { Message = Texts.T("errors.product_price_negative") });
             }
+            if (req.Cost < 0)
+            {
+                return Results.BadRequest(new { Message = Texts.T("errors.product_cost_negative") });
+            }
 
             var updated = await catalog.UpdateProductAsync(
                 id,
@@ -172,7 +186,9 @@ public static class CatalogEndpoints
                 req.IsAvailable ?? true,
                 req.IsActive ?? true,
                 req.IsQuickKey,
-                req.StationId
+                req.StationId,
+                req.Cost,
+                req.ClearCost
             );
             return Results.Ok(new
             {

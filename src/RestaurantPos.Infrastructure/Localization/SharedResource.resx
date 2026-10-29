@@ -166,6 +166,9 @@
   <data name="errors.product_price_negative" xml:space="preserve">
     <value>Product price must not be negative.</value>
   </data>
+  <data name="errors.product_cost_negative" xml:space="preserve">
+    <value>Product cost must not be negative.</value>
+  </data>
   <data name="errors.tip_invalid" xml:space="preserve">
     <value>Invalid tip amount.</value>
   </data>

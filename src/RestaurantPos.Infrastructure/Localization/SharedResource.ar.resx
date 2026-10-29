@@ -166,6 +166,9 @@
   <data name="errors.product_price_negative" xml:space="preserve">
     <value>لا يمكن أن يكون سعر المنتج سالباً.</value>
   </data>
+  <data name="errors.product_cost_negative" xml:space="preserve">
+    <value>لا يمكن أن تكون تكلفة المنتج سالبة.</value>
+  </data>
   <data name="errors.tip_invalid" xml:space="preserve">
     <value>مبلغ الإكرامية غير صالح.</value>
   </data>

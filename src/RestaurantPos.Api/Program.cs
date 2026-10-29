@@ -97,6 +97,7 @@ public partial class Program
         builder.Services.AddScoped<IFiscalJournal, FiscalJournalService>();
         builder.Services.AddScoped<IFecExportService, FecExportService>();
         builder.Services.AddScoped<IFinancialDashboardService, FinancialDashboardService>();
+        builder.Services.AddScoped<IMenuAnalysisService, MenuAnalysisService>();
         builder.Services.AddScoped<IOrderDiscountService, OrderDiscountService>();
         builder.Services.AddScoped<IRoomBillingService, RoomBillingService>();
         builder.Services.AddScoped<IGridManagementService, GridManagementService>();
@@ -205,6 +206,7 @@ public partial class Program
             dbContext.Database.EnsureCreated();
             try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE Products ADD COLUMN IsFoodVoucherEligible INTEGER NOT NULL DEFAULT 1;"); } catch { }
             try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE Products ADD COLUMN TaxRateTakeawayPercent TEXT NULL;"); } catch { }
+            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE Products ADD COLUMN Cost INTEGER NULL;"); } catch { }
             try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE OrderItems ADD COLUMN IsFoodVoucherEligible INTEGER NOT NULL DEFAULT 1;"); } catch { }
             try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE OrderItems ADD COLUMN TaxRateTakeawayPercent TEXT NULL;"); } catch { }
             try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE Orders ADD COLUMN Destination INTEGER NOT NULL DEFAULT 0;"); } catch { }
@@ -510,6 +512,7 @@ public partial class Program
         app.MapCheckoutEndpoints();
         app.MapFiscalEndpoints();
         app.MapDashboardEndpoints();
+        app.MapMenuAnalysisEndpoints();
         app.MapCounterSaleEndpoints();
         app.MapHappyHourEndpoints();
 
@@ -836,8 +839,8 @@ public partial class Program
 }
 public record CreateCategoryRequest(string Name, string? ColorHex, int DisplayOrder, string? IconName, string? PreparationStationId = null);
 public record UpdateCategoryRequest(string Name, string? ColorHex, int DisplayOrder, string? IconName, bool? IsActive, string? PreparationStationId = null);
-public record CreateProductRequest(string Name, string CategoryId, decimal Price, decimal TaxRatePercent, string? Description, string? ColorHex, int DisplayOrder, bool IsQuickKey, string? StationId);
-public record UpdateProductRequest(string Name, string CategoryId, decimal Price, decimal TaxRatePercent, string? Description, string? ColorHex, int DisplayOrder, bool? IsAvailable, bool? IsActive, bool IsQuickKey, string? StationId);
+public record CreateProductRequest(string Name, string CategoryId, decimal Price, decimal TaxRatePercent, string? Description, string? ColorHex, int DisplayOrder, bool IsQuickKey, string? StationId, decimal? Cost = null);
+public record UpdateProductRequest(string Name, string CategoryId, decimal Price, decimal TaxRatePercent, string? Description, string? ColorHex, int DisplayOrder, bool? IsAvailable, bool? IsActive, bool IsQuickKey, string? StationId, decimal? Cost = null, bool ClearCost = false);
 public record CreateStaffRequest(string Name, string Role, string Pin);
 public record UpdateStaffRequest(string Name, string Role, string? Pin, bool? IsActive);
 public record CreateTableRequest(string TableNumber, int Capacity, double? PositionX, double? PositionY);

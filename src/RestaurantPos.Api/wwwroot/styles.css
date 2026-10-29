@@ -2229,4 +2229,40 @@ body.pos-dark {
 [dir="rtl"] .icon-directional {
     transform: scaleX(-1);
 }
-
+
+/* ==================== ANALYSE DU MENU ==================== */
+.menu-page { max-width: 1100px; margin: 0 auto; padding: 8px 4px 32px; --cls-Puzzle:#3f6f9f; }
+.menu-head { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }
+.menu-head h2 { margin:0; }
+.menu-range { display:inline-flex; border:1px solid var(--border-color); border-radius: var(--radius-sm); overflow:hidden; background: var(--bg-panel); }
+.menu-range button { border:0; background:transparent; color: var(--text-main); padding:10px 16px; font: inherit; cursor:pointer; min-height:44px; }
+.menu-range button + button { border-inline-start:1px solid var(--border-color); }
+.menu-range button.active { background: var(--ink); color: var(--paper); }
+.menu-empty { padding:32px; text-align:center; color: var(--text-muted); background: var(--bg-panel); border:1px dashed var(--border-color); border-radius: var(--radius-md); }
+.menu-warn { margin:12px 0; padding:10px 14px; border-radius: var(--radius-sm); background: color-mix(in srgb, var(--warning) 14%, var(--sheet)); border:1px solid color-mix(in srgb, var(--warning) 40%, var(--sheet)); }
+.menu-cards { display:grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap:12px; margin:12px 0; }
+.menu-card { text-align:start; display:flex; flex-direction:column; gap:2px; padding:14px; min-height:44px; border-radius: var(--radius-md); border:1px solid var(--border-color); background: var(--bg-panel); color: var(--text-main); font: inherit; cursor:pointer; border-top:4px solid var(--cls); }
+.menu-card.active { outline:2px solid var(--cls); background: color-mix(in srgb, var(--cls) 8%, var(--sheet)); }
+.menu-card-n { font-family: var(--font-mono); font-size:1.9rem; font-weight:500; line-height:1; }
+.menu-card-t { font-weight:700; }
+.menu-card-h { font-size:0.82rem; color: var(--text-muted); }
+.menu-cls-Star { --cls: var(--success); }
+.menu-cls-Plowhorse { --cls: var(--warning); }
+.menu-cls-Puzzle { --cls: var(--cls-Puzzle); }
+.menu-cls-Dog { --cls: var(--danger); }
+.menu-chart-wrap { background: var(--bg-panel); border:1px solid var(--border-color); border-radius: var(--radius-md); padding:10px; margin-bottom:12px; }
+.menu-chart { width:100%; height:auto; display:block; }
+.menu-plot { fill: var(--bg-card); stroke: var(--border-color); }
+.menu-ref { stroke: var(--steel); stroke-dasharray:4 4; }
+.menu-dot { fill: var(--cls); stroke: var(--sheet); stroke-width:2; }
+.menu-dot:focus-visible { outline:2px solid var(--ink); }
+.menu-axis { fill: var(--text-muted); font-size:12px; }
+.menu-table-wrap { overflow-x:auto; background: var(--bg-panel); border:1px solid var(--border-color); border-radius: var(--radius-md); }
+.menu-table { width:100%; border-collapse:collapse; }
+.menu-table th, .menu-table td { padding:10px 12px; text-align:start; border-bottom:1px solid var(--border-color); }
+.menu-table th { font-size:0.8rem; text-transform:uppercase; letter-spacing:.04em; color: var(--text-muted); }
+.menu-table td small { display:block; color: var(--text-muted); }
+.menu-table .num { text-align:end; font-family: var(--font-mono); }
+.menu-badge { display:inline-block; padding:3px 10px; border-radius:999px; font-size:0.8rem; font-weight:600; color:#fff; background: var(--cls); }
+.menu-badge-missing { background: var(--steel); }
+@media (max-width: 800px) { .menu-cards { grid-template-columns: repeat(2, minmax(0,1fr)); } }

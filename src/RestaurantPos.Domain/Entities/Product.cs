@@ -12,6 +12,8 @@ public class Product
     public required string CategoryId { get; set; }
     public string? Description { get; set; }
     public Money Price { get; set; }
+    /// <summary>Coût de revient HT unitaire ; absent = marge inconnue (analyse du menu).</summary>
+    public Money? Cost { get; set; }
     public decimal TaxRatePercent { get; set; } = 10.0m;
     public decimal? TaxRateTakeawayPercent { get; set; }
     public bool IsFoodVoucherEligible { get; set; } = true;

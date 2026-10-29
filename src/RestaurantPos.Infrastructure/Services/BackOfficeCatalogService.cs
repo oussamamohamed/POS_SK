@@ -129,10 +129,11 @@ public class BackOfficeCatalogService : IBackOfficeCatalogService
         }) ?? [];
     }
 
-    public async Task<Product> CreateProductAsync(string name, string categoryId, decimal price, decimal taxRatePercent, string? description, string? colorHex, int displayOrder, bool isQuickKey, string? stationId, CancellationToken ct = default)
+    public async Task<Product> CreateProductAsync(string name, string categoryId, decimal price, decimal taxRatePercent, string? description, string? colorHex, int displayOrder, bool isQuickKey, string? stationId, decimal? cost = null, CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         ArgumentOutOfRangeException.ThrowIfNegative(price);
+        if (cost.HasValue) ArgumentOutOfRangeException.ThrowIfNegative(cost.Value);
 
         var product = new Product
         {
@@ -140,6 +141,7 @@ public class BackOfficeCatalogService : IBackOfficeCatalogService
             Name = name.Trim(),
             CategoryId = categoryId,
             Price = Money.FromDecimal(price, "EUR"),
+            Cost = cost.HasValue ? Money.FromDecimal(cost.Value, "EUR") : null,
             TaxRatePercent = taxRatePercent,
             Description = description,
             ColorHex = colorHex,
@@ -158,9 +160,10 @@ public class BackOfficeCatalogService : IBackOfficeCatalogService
         return product;
     }
 
-    public async Task<Product> UpdateProductAsync(Guid productId, string name, string categoryId, decimal price, decimal taxRatePercent, string? description, string? colorHex, int displayOrder, bool isAvailable, bool isActive, bool isQuickKey, string? stationId, CancellationToken ct = default)
+    public async Task<Product> UpdateProductAsync(Guid productId, string name, string categoryId, decimal price, decimal taxRatePercent, string? description, string? colorHex, int displayOrder, bool isAvailable, bool isActive, bool isQuickKey, string? stationId, decimal? cost = null, bool clearCost = false, CancellationToken ct = default)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(price);
+        if (cost.HasValue) ArgumentOutOfRangeException.ThrowIfNegative(cost.Value);
         var product = await _dbContext.Products.FindAsync([productId], ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException($"Article introuvable: {productId}");
 
@@ -169,6 +172,8 @@ public class BackOfficeCatalogService : IBackOfficeCatalogService
         product.Name = name.Trim();
         product.CategoryId = categoryId;
         product.Price = Money.FromDecimal(price, "EUR");
+        if (clearCost) product.Cost = null;
+        else if (cost.HasValue) product.Cost = Money.FromDecimal(cost.Value, "EUR");
         product.TaxRatePercent = taxRatePercent;
         product.Description = description;
         product.ColorHex = colorHex;

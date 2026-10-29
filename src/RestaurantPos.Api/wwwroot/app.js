@@ -449,9 +449,127 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (viewId === 'floorPlanView') loadFloorPlanData();
         if (viewId === 'kdsView') loadKdsData();
+        if (viewId === 'menuView') loadMenuAnalysis();
         if (viewId === 'adminView') loadAdminData();
         if (viewId === 'fiscalView') loadFiscalViewData();
         if (viewId === 'posView') loadActiveTableOrder(state.activeTable || 'Comptoir');
+    }
+
+    // ==================== ANALYSE DU MENU ====================
+    const menuState = { days: 7, filter: null, report: null, bound: false };
+    const MENU_CLASS_ORDER = ['Star', 'Plowhorse', 'Puzzle', 'Dog'];
+    const MENU_EUR = (n) => `<bdi dir="ltr">${Number(n).toFixed(2)} €</bdi>`;
+
+    async function loadMenuAnalysis() {
+        const root = document.getElementById('menuView');
+        const body = document.getElementById('menuAnalysisBody');
+        if (!root || !body) return;
+        if (!menuState.bound) {
+            menuState.bound = true;
+            root.querySelector('.menu-range').addEventListener('click', (e) => {
+                const btn = e.target.closest('button[data-days]');
+                if (!btn) return;
+                menuState.days = Number(btn.dataset.days);
+                loadMenuAnalysis();
+            });
+            body.addEventListener('click', (e) => {
+                const card = e.target.closest('[data-menu-class]');
+                if (!card) return;
+                menuState.filter = menuState.filter === card.dataset.menuClass ? null : card.dataset.menuClass;
+                renderMenuAnalysis();
+            });
+        }
+        root.querySelectorAll('.menu-range button').forEach(b => b.classList.toggle('active', Number(b.dataset.days) === menuState.days));
+        try {
+            await ensureAuthToken();
+            const to = new Date();
+            const from = new Date(to);
+            if (menuState.days === 1) from.setHours(0, 0, 0, 0);
+            else from.setDate(from.getDate() - menuState.days);
+            const res = await fetch(`/api/menu-analysis?from=${encodeURIComponent(from.toISOString())}&to=${encodeURIComponent(to.toISOString())}`);
+            if (res.status === 403) {
+                body.innerHTML = `<p class="menu-empty">${escapeHtml(t('menu.forbidden'))}</p>`;
+                return;
+            }
+            if (!res.ok) throw new Error(String(res.status));
+            menuState.report = await res.json();
+            // L'énumération MenuClass est sérialisée en nombre (Star = 0 … Dog = 3), comme les autres énumérations de l'API.
+            menuState.report.items.forEach(i => { i.cls = i.class == null ? null : MENU_CLASS_ORDER[i.class]; });
+            renderMenuAnalysis();
+        } catch (err) {
+            console.error('Erreur analyse du menu:', err);
+            body.innerHTML = `<p class="menu-empty">${escapeHtml(t('menu.load_error'))}</p>`;
+        }
+    }
+
+    function renderMenuAnalysis() {
+        const body = document.getElementById('menuAnalysisBody');
+        const report = menuState.report;
+        if (!body || !report) return;
+        if (!report.items.length) {
+            body.innerHTML = `<p class="menu-empty">${escapeHtml(t('menu.no_sales'))}</p>`;
+            return;
+        }
+        const counts = Object.fromEntries(MENU_CLASS_ORDER.map(c => [c, report.items.filter(i => i.cls === c).length]));
+        const cards = MENU_CLASS_ORDER.map(c => `
+            <button type="button" class="menu-card menu-cls-${c}${menuState.filter === c ? ' active' : ''}" data-menu-class="${c}" aria-pressed="${menuState.filter === c}">
+                <span class="menu-card-n">${counts[c]}</span>
+                <span class="menu-card-t">${escapeHtml(t('menu.class_' + c))}</span>
+                <span class="menu-card-h">${escapeHtml(t('menu.hint_' + c))}</span>
+            </button>`).join('');
+        const missing = report.missingCostCount > 0
+            ? `<p class="menu-warn">${escapeHtml(t('menu.missing_cost_banner', { count: report.missingCostCount }))}</p>` : '';
+        const shown = report.items.filter(i => !menuState.filter || i.cls === menuState.filter);
+        const rows = shown.map(i => {
+            const cls = i.cls
+                ? `<span class="menu-badge menu-cls-${i.cls}">${escapeHtml(t('menu.class_' + i.cls))}</span>`
+                : `<span class="menu-badge menu-badge-missing">${escapeHtml(t('menu.missing_cost'))}</span>`;
+            return `<tr>
+                <td><strong>${escapeHtml(i.name)}</strong>${i.categoryName ? `<small>${escapeHtml(i.categoryName)}</small>` : ''}</td>
+                <td class="num">${i.quantity}</td>
+                <td class="num"><bdi dir="ltr">${(i.share * 100).toFixed(1)} %</bdi></td>
+                <td class="num">${MENU_EUR(i.revenueHt)}</td>
+                <td class="num">${i.unitCost == null ? '—' : MENU_EUR(i.unitCost)}</td>
+                <td class="num">${i.unitMarginHt == null ? '—' : MENU_EUR(i.unitMarginHt)}</td>
+                <td>${cls}</td>
+            </tr>`;
+        }).join('');
+        body.innerHTML = `
+            ${missing}
+            <div class="menu-cards">${cards}</div>
+            <div class="menu-chart-wrap">${renderMenuScatter(report)}</div>
+            <div class="menu-table-wrap"><table class="menu-table">
+                <thead><tr>
+                    <th>${escapeHtml(t('menu.col_dish'))}</th><th class="num">${escapeHtml(t('menu.col_qty'))}</th>
+                    <th class="num">${escapeHtml(t('menu.col_share'))}</th><th class="num">${escapeHtml(t('menu.col_revenue'))}</th>
+                    <th class="num">${escapeHtml(t('menu.col_cost'))}</th><th class="num">${escapeHtml(t('menu.col_margin'))}</th>
+                    <th>${escapeHtml(t('menu.col_class'))}</th>
+                </tr></thead>
+                <tbody>${rows}</tbody>
+            </table></div>`;
+    }
+
+    // Nuage popularité (x) × marge unitaire HT (y) ; les plats sans coût n'ont pas d'ordonnée et n'y figurent pas.
+    function renderMenuScatter(report) {
+        const pts = report.items.filter(i => i.unitMarginHt != null);
+        if (!pts.length || report.averageUnitMarginHt == null) return '';
+        const W = 640, H = 300, L = 52, R = 16, T = 16, B = 40;
+        const maxShare = Math.max(report.popularityThreshold * 1.6, ...pts.map(p => p.share)) * 1.08;
+        const ys = pts.map(p => p.unitMarginHt).concat(report.averageUnitMarginHt, 0);
+        const minY = Math.min(...ys), maxY = Math.max(...ys);
+        const spanY = (maxY - minY) || 1;
+        const x = (s) => L + (s / maxShare) * (W - L - R);
+        const y = (m) => T + (1 - (m - minY) / spanY) * (H - T - B);
+        const dots = pts.map(p => `<circle class="menu-dot menu-cls-${p.cls}" cx="${x(p.share).toFixed(1)}" cy="${y(p.unitMarginHt).toFixed(1)}" r="7" tabindex="0"><title>${escapeHtml(p.name)} — ${escapeHtml(t('menu.class_' + p.cls))}</title></circle>`).join('');
+        const vx = x(report.popularityThreshold).toFixed(1), hy = y(report.averageUnitMarginHt).toFixed(1);
+        return `<svg viewBox="0 0 ${W} ${H}" class="menu-chart" role="img" aria-label="${escapeHtml(t('menu.chart_label'))}">
+            <rect x="${L}" y="${T}" width="${W - L - R}" height="${H - T - B}" class="menu-plot"/>
+            <line x1="${vx}" y1="${T}" x2="${vx}" y2="${H - B}" class="menu-ref"/>
+            <line x1="${L}" y1="${hy}" x2="${W - R}" y2="${hy}" class="menu-ref"/>
+            ${dots}
+            <text x="${(L + W - R) / 2}" y="${H - 8}" text-anchor="middle" class="menu-axis">${escapeHtml(t('menu.axis_popularity'))}</text>
+            <text x="14" y="${(T + H - B) / 2}" text-anchor="middle" transform="rotate(-90 14 ${(T + H - B) / 2})" class="menu-axis">${escapeHtml(t('menu.axis_margin'))}</text>
+        </svg>`;
     }
 
     // ==================== CATALOG & QUICK-KEYS ====================
@@ -2819,6 +2937,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 catSelect.innerHTML = state.categories.map(c => `<option value="${escapeHtml(c.id)}">${escapeHtml(c.name)}</option>`).join('');
                 catSelect.value = p.categoryId;
                 document.getElementById('editProdPrice').value = p.price;
+                document.getElementById('editProdCost').value = p.cost ?? '';
                 setSelectValue('editProdTax', String(Number(p.taxRatePercent)));
                 setSelectValue('editProdStation', p.preparationStationId || '');
                 document.getElementById('editProdQuickKey').checked = !!p.isQuickKey;
@@ -3713,6 +3832,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const name = document.getElementById('inputProdName').value;
             const categoryId = elements.selectProductCat.value;
             const price = parseFloat(document.getElementById('inputProdPrice').value);
+            const costRaw = document.getElementById('inputProdCost').value;
             const taxEl = document.getElementById('selectProdVat');
             const tax = taxEl ? parseFloat(taxEl.value) : 10.0;
             const stationEl = document.getElementById('selectProdStation');
@@ -3727,6 +3847,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     name,
                     categoryId,
                     price,
+                    cost: costRaw === '' ? null : parseFloat(costRaw),
                     taxRatePercent: tax,
                     stationId: station,
                     isQuickKey: isQuick,
@@ -3740,6 +3861,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 showToast(t('admin.product_created_toast', { name }), 'success');
                 document.getElementById('inputProdName').value = '';
                 document.getElementById('inputProdPrice').value = '';
+                document.getElementById('inputProdCost').value = '';
                 await loadCatalogData();
                 await loadAdminCatalog();
             }
@@ -4793,6 +4915,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             e.preventDefault();
             const id = document.getElementById('editProdId').value;
             const current = state.products.find(p => p.id === id) || {};
+            const costRaw = document.getElementById('editProdCost').value;
             const res = await fetch(`/api/catalog/products/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
@@ -4800,6 +4923,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     name: document.getElementById('editProdName').value.trim(),
                     categoryId: document.getElementById('editProdCat').value || current.categoryId,
                     price: parseFloat(document.getElementById('editProdPrice').value),
+                    cost: costRaw === '' ? null : parseFloat(costRaw),
+                    clearCost: costRaw === '' && current.cost != null,
                     taxRatePercent: parseFloat(document.getElementById('editProdTax').value),
                     description: current.description || '',
                     colorHex: current.colorHex || 'var(--primary)',

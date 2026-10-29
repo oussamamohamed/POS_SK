@@ -14,7 +14,7 @@ public interface IBackOfficeCatalogService
     Task<bool> ArchiveCategoryAsync(string categoryId, CancellationToken ct = default);
 
     Task<IReadOnlyList<Product>> GetProductsByCategoryAsync(string categoryId, bool includeArchived = false, CancellationToken ct = default);
-    Task<Product> CreateProductAsync(string name, string categoryId, decimal price, decimal taxRatePercent, string? description, string? colorHex, int displayOrder, bool isQuickKey, string? stationId, CancellationToken ct = default);
-    Task<Product> UpdateProductAsync(Guid productId, string name, string categoryId, decimal price, decimal taxRatePercent, string? description, string? colorHex, int displayOrder, bool isAvailable, bool isActive, bool isQuickKey, string? stationId, CancellationToken ct = default);
+    Task<Product> CreateProductAsync(string name, string categoryId, decimal price, decimal taxRatePercent, string? description, string? colorHex, int displayOrder, bool isQuickKey, string? stationId, decimal? cost = null, CancellationToken ct = default);
+    Task<Product> UpdateProductAsync(Guid productId, string name, string categoryId, decimal price, decimal taxRatePercent, string? description, string? colorHex, int displayOrder, bool isAvailable, bool isActive, bool isQuickKey, string? stationId, decimal? cost = null, bool clearCost = false, CancellationToken ct = default);
     Task<bool> ArchiveProductAsync(Guid productId, CancellationToken ct = default);
 }

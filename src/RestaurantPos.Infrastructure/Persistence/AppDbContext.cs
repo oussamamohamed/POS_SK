@@ -105,6 +105,12 @@ public class AppDbContext : DbContext
                       m => m.AmountInCents,
                       cents => new Money(cents, "EUR")
                   );
+
+            entity.Property(p => p.Cost)
+                  .HasConversion(
+                      m => m.HasValue ? (long?)m.Value.AmountInCents : null,
+                      cents => cents.HasValue ? new Money(cents.Value, "EUR") : null
+                  );
         });
 
         modelBuilder.Entity<TaxRate>(entity =>

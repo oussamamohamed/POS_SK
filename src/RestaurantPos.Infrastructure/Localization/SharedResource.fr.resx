@@ -166,6 +166,9 @@
   <data name="errors.product_price_negative" xml:space="preserve">
     <value>Le prix d'un article ne peut pas être négatif.</value>
   </data>
+  <data name="errors.product_cost_negative" xml:space="preserve">
+    <value>Le coût de revient d'un article ne peut pas être négatif.</value>
+  </data>
   <data name="errors.tip_invalid" xml:space="preserve">
     <value>Montant de pourboire invalide.</value>
   </data>
