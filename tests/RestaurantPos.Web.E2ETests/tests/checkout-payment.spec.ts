@@ -10,13 +10,14 @@
 
 import { test, expect, type Page } from '@playwright/test';
 import { execSync } from 'child_process';
+import path from 'path';
 import { pairTill } from './helpers/pairing';
 
-const DB_PATH = '/Users/oussama/Library/CloudStorage/OneDrive-Personnel/Documents/Visual Studio 2022/POS_SK_Antigavity/src/RestaurantPos.Api/restaurantpos.db';
+const DB_PATH = path.resolve(__dirname, '../../../src/RestaurantPos.Api/restaurantpos.db');
 
 function resetComptoirDb() {
   try {
-    execSync(`sqlite3 "${DB_PATH}" "UPDATE DiningTables SET ActiveOrderId = NULL, Status = 0 WHERE TableNumber = 'Comptoir';"`, { stdio: 'ignore' });
+    execSync(`sqlite3 "${DB_PATH}" "UPDATE DiningTables SET ActiveOrderId = NULL, Status = 0 WHERE TableNumber = 'Comptoir';"`, { stdio: 'ignore', timeout: 5000 });
   } catch {}
 }
 
