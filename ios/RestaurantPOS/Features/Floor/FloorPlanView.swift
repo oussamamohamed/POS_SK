@@ -73,7 +73,8 @@ struct FloorPlanView: View {
             VStack(spacing: 2) {
                 Text(table.tableNumber).font(Font.pos(17, .bold)).foregroundStyle(Theme.ink)
                 Text(held.map { String(localized: "bookings.held \($0.formatted(date: .omitted, time: .shortened))") } ?? state.label)
-                    .font(Font.pos(11, .semibold)).foregroundStyle(Theme.inkMuted).lineLimit(1).minimumScaleFactor(0.6)
+                    .font(Font.pos(11, .semibold)).foregroundStyle(Theme.inkMuted).lineLimit(2).multilineTextAlignment(.center).minimumScaleFactor(0.6)
+                    .frame(width: box.width - 12)
             }
             .frame(width: box.width, height: box.height)
             .background(shape.fill(state == .free ? Theme.surface : state.color.opacity(0.14)))
@@ -155,7 +156,7 @@ struct FloorPane: View {
                 Button(action: onClose) { Image(systemName: "xmark").frame(width: Theme.touchMin, height: Theme.touchMin) }
                     .buttonStyle(.plain).accessibilityLabel("common.close_label").accessibilityIdentifier("floor.pane.close")
             }
-            Text("floor.table_capacity \(table.capacity)").font(.posBody).foregroundStyle(Theme.inkMuted)
+            Text("floor.capacity_only \(table.capacity)").font(.posBody).foregroundStyle(Theme.inkMuted)
             if table.status != .free {
                 Text("\(table.coversCount) · \(table.assignedWaiterName ?? "—")").font(.posBody).foregroundStyle(Theme.inkMuted)
                 if table.activeOrderTotalTtc.cents > 0 { Text(table.activeOrderTotalTtc.formatted).font(.posAmount).foregroundStyle(Theme.ink) }

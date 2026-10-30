@@ -14250,13 +14250,36 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@% vs last week by now"
+            "value": "%@%% vs last week by now"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ % vs semaine passée à cette heure"
+            "value": "%@ %% vs semaine passée à cette heure"
+          }
+        }
+      }
+    },
+    "floor.capacity_only %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld مقاعد"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld seats"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld places"
           }
         }
       }
