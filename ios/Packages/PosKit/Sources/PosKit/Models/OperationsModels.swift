@@ -79,9 +79,11 @@ public struct KitchenTicket: Codable, Identifiable, Hashable, Sendable {
     public var stationId: String
     public var status: TicketStatus
     public var dispatchedAtUtc: Date?
+    /// Heure à laquelle le bon a été servi (nil tant qu'il est en cours).
+    public var completedAtUtc: Date?
     public var items: [KitchenTicketItem]
 
-    public init(id: UUID = UUID(), orderId: UUID? = nil, tableNumber: String, serverName: String? = nil, coversCount: Int? = nil, stationId: String, status: TicketStatus = .pending, dispatchedAtUtc: Date? = Date(), items: [KitchenTicketItem]) {
+    public init(id: UUID = UUID(), orderId: UUID? = nil, tableNumber: String, serverName: String? = nil, coversCount: Int? = nil, stationId: String, status: TicketStatus = .pending, dispatchedAtUtc: Date? = Date(), completedAtUtc: Date? = nil, items: [KitchenTicketItem]) {
         self.id = id
         self.orderId = orderId
         self.tableNumber = tableNumber
@@ -90,10 +92,11 @@ public struct KitchenTicket: Codable, Identifiable, Hashable, Sendable {
         self.stationId = stationId
         self.status = status
         self.dispatchedAtUtc = dispatchedAtUtc
+        self.completedAtUtc = completedAtUtc
         self.items = items
     }
 
-    enum CodingKeys: String, CodingKey { case id, ticketId, orderId, tableNumber, serverName, coversCount, stationId, status, dispatchedAtUtc, items }
+    enum CodingKeys: String, CodingKey { case id, ticketId, orderId, tableNumber, serverName, coversCount, stationId, status, dispatchedAtUtc, completedAtUtc, items }
 
     public init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
@@ -105,6 +108,7 @@ public struct KitchenTicket: Codable, Identifiable, Hashable, Sendable {
         stationId = try c.decodeIfPresent(String.self, forKey: .stationId) ?? "HOT_KITCHEN"
         status = try c.decodeIfPresent(TicketStatus.self, forKey: .status) ?? .pending
         dispatchedAtUtc = try c.decodeIfPresent(Date.self, forKey: .dispatchedAtUtc)
+        completedAtUtc = try c.decodeIfPresent(Date.self, forKey: .completedAtUtc)
         items = try c.decodeIfPresent([KitchenTicketItem].self, forKey: .items) ?? []
     }
 
@@ -118,6 +122,7 @@ public struct KitchenTicket: Codable, Identifiable, Hashable, Sendable {
         try c.encode(stationId, forKey: .stationId)
         try c.encode(status, forKey: .status)
         try c.encodeIfPresent(dispatchedAtUtc, forKey: .dispatchedAtUtc)
+        try c.encodeIfPresent(completedAtUtc, forKey: .completedAtUtc)
         try c.encode(items, forKey: .items)
     }
 }
@@ -487,6 +492,54 @@ public struct FinancialDashboard: Codable, Hashable, Sendable {
         self.topProducts = topProducts
         self.staffPerformance = staffPerformance
         self.paymentMethods = paymentMethods
+    }
+}
+
+public struct HourlyTaking: Codable, Hashable, Sendable, Identifiable {
+    public var hour: Int
+    public var today: Money
+    public var lastWeek: Money
+    public var id: Int { hour }
+
+    public init(hour: Int, today: Money, lastWeek: Money) {
+        self.hour = hour
+        self.today = today
+        self.lastWeek = lastWeek
+    }
+}
+
+/// Miroir de `TakingsReportDto` : encaissements d'une journée de service comparés au même jour de la semaine précédente.
+public struct TakingsReport: Codable, Hashable, Sendable {
+    public var fromUtc: Date
+    public var toUtc: Date
+    public var totalTtc: Money
+    public var lastWeekTotalTtc: Money
+    /// Semaine précédente cumulée jusqu'à la même heure.
+    public var lastWeekByNowTtc: Money
+    public var covers: Int
+    public var tablesTurned: Int
+    public var spendPerCover: Money
+    public var hours: [HourlyTaking]
+    public var paymentMethods: [FinancialDashboard.PaymentShare]
+    public var staffPerformance: [FinancialDashboard.StaffPerformance]
+
+    public init(fromUtc: Date, toUtc: Date, totalTtc: Money, lastWeekTotalTtc: Money, lastWeekByNowTtc: Money, covers: Int, tablesTurned: Int, spendPerCover: Money, hours: [HourlyTaking], paymentMethods: [FinancialDashboard.PaymentShare] = [], staffPerformance: [FinancialDashboard.StaffPerformance] = []) {
+        self.fromUtc = fromUtc
+        self.toUtc = toUtc
+        self.totalTtc = totalTtc
+        self.lastWeekTotalTtc = lastWeekTotalTtc
+        self.lastWeekByNowTtc = lastWeekByNowTtc
+        self.covers = covers
+        self.tablesTurned = tablesTurned
+        self.spendPerCover = spendPerCover
+        self.hours = hours
+        self.paymentMethods = paymentMethods
+        self.staffPerformance = staffPerformance
+    }
+
+    /// Écart en % avec la semaine passée à la même heure ; nil sans comparaison possible.
+    public var deltaPercent: Int? {
+        lastWeekByNowTtc.cents > 0 ? Int(((Double(totalTtc.cents) / Double(lastWeekByNowTtc.cents) - 1) * 100).rounded()) : nil
     }
 }
 

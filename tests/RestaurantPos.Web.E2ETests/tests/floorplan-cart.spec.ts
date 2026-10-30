@@ -3,6 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Plan de Salle & Rappel de Table Tactile', () => {
 
   async function ensureLoggedIn(page: any) {
+    await page.addInitScript(() => localStorage.setItem('pos_floor_mode', 'cards')); // ces tests pilotent la grille de cartes, pas le plan dessiné
     await page.goto('/?nocache=' + Date.now());
     await page.waitForLoadState('domcontentloaded');
 

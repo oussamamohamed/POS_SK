@@ -86,9 +86,27 @@ final class BookingsUITests: PosUITestCase {
         assertExists("menu.pick")
     }
 
+    func testTakingsScreenShowsTilesChartAndOpensFiscal() {
+        launch(section: "takings")
+        assertExists("takings.tiles")
+        assertExists("takings.hourly")
+        tap("takings.toggle")
+        tap("takings.toggle")
+        tap("takings.openFiscal")
+        assertExists("nav.fiscal")
+    }
+
+    /// Mode autonome : les encaissements viennent des reçus fiscaux de la base locale.
+    func testStandaloneTakingsScreenLoads() {
+        launchStandalone()
+        tap("nav.takings")
+        assertExists("takings.tiles")
+    }
+
     func testWaiterDoesNotSeeTheMenuAnalysisTab() {
         launch(pin: "2468")
         assertNotExists("nav.menu", timeout: 2)
+        assertNotExists("nav.takings", timeout: 2)
         assertExists("nav.bookings")
     }
 }

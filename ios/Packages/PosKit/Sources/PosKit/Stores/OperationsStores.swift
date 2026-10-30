@@ -5,6 +5,8 @@ import Observation
 @MainActor @Observable
 public final class FloorStore {
     public private(set) var tables: [DiningTable] = []
+    /// Bons de cuisine, pour dériver l'état de service des tables (cuisson, retard, mange).
+    public private(set) var tickets: [KitchenTicket] = []
     public private(set) var isLoading = false
 
     private let api: PosAPI
@@ -22,6 +24,17 @@ public final class FloorStore {
         tables.filter { !$0.isCounter }.sorted { $0.tableNumber.localizedStandardCompare($1.tableNumber) == .orderedAscending }
     }
 
+    public func serviceState(of table: DiningTable, now: Date = Date()) -> TableServiceState {
+        TableServiceState.of(table, tickets: tickets, now: now)
+    }
+
+    /// Clients présents (couverts des tables occupées).
+    public var guestsCount: Int { diningTables.filter { $0.status != .free }.reduce(0) { $0 + $1.coversCount } }
+
+    public func foodWaitingCount(now: Date = Date()) -> Int {
+        diningTables.filter { [.cooking, .late].contains(serviceState(of: $0, now: now)) }.count
+    }
+
     public var occupiedCount: Int { diningTables.filter { $0.status != .free }.count }
     public var openTotal: Money { diningTables.reduce(.zero) { $0 + $1.activeOrderTotalTtc } }
 
@@ -29,6 +42,8 @@ public final class FloorStore {
         isLoading = true
         defer { isLoading = false }
         do { tables = try await api.tables() } catch { notifier.error(L10n.string("floor.load_error")) }
+        // Sans droit sur la cuisine : l'écran retombe sur les états de base de la table.
+        tickets = (try? await api.kitchenTickets()) ?? []
     }
 
     public func addTable(number: String, capacity: Int) async -> Bool {

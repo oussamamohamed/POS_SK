@@ -34,6 +34,14 @@ struct ContractDecodingTests {
         #expect(classified.unitCost != nil && classified.unitMarginHt != nil && classified.profitable != nil)
     }
 
+    @Test func decodesTakings() throws {
+        let report = try decode(TakingsReport.self, "takings")
+        #expect(report.hours.count == 24)
+        #expect(report.hours.contains { $0.today.cents > 0 })
+        #expect(!report.paymentMethods.isEmpty && !report.staffPerformance.isEmpty)
+        #expect(report.totalTtc.cents == report.hours.reduce(0) { $0 + $1.today.cents })
+    }
+
     @Test func decodesProductCostForManagers() throws {
         let products = try decode([Product].self, "products_with_cost")
         #expect(products.contains { $0.cost != nil })

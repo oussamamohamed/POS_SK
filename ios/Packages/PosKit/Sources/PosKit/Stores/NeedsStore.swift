@@ -16,9 +16,6 @@ public struct NeedItem: Identifiable, Hashable, Sendable {
 /// Additions demandées, plats en retard, clients attendus en retard et attentes dépassées ; miroir de `refreshNeeds` du client web.
 @MainActor @Observable
 public final class NeedsStore {
-    /// shortcut: temps cible de cuisine fixé à 12 min (comme le web) ; à passer en réglage de l'établissement si besoin.
-    public static let kitchenTargetMinutes = 12
-
     public private(set) var items: [NeedItem] = []
 
     private let api: PosAPI
@@ -53,7 +50,7 @@ public final class NeedsStore {
                 subtitle: String(format: L10n.string("needs.bill_sub"), table.coversCount, table.assignedWaiterName ?? "—"),
                 since: current, target: table.tableNumber))
         }
-        let limit = TimeInterval(Self.kitchenTargetMinutes * 60)
+        let limit = TimeInterval(KitchenTarget.minutes * 60)
         for ticket in await tickets ?? [] where (ticket.status == .pending || ticket.status == .inPreparation) {
             guard let sent = ticket.dispatchedAtUtc, current.timeIntervalSince(sent) > limit else { continue }
             found.append(NeedItem(

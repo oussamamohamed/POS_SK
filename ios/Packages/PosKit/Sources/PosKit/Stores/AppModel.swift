@@ -25,6 +25,7 @@ public final class AppModel {
     public let bookings: BookingsStore
     public let menuAnalysis: MenuAnalysisStore
     public let needs: NeedsStore
+    public let takings: TakingsStore
 
     public private(set) var isRealtimeConnected = false
     /// Alerte imprimante (hors ligne / rétablie) ; l'UI l'affiche puis la remet à nil.
@@ -63,6 +64,7 @@ public final class AppModel {
         bookings = BookingsStore(api: api, notifier: notifier, session: session)
         menuAnalysis = MenuAnalysisStore(api: api, notifier: notifier)
         needs = NeedsStore(api: api)
+        takings = TakingsStore(api: api, notifier: notifier)
     }
 
     /// Chargement initial après le premier déverrouillage.

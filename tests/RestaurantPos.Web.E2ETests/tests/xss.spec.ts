@@ -117,6 +117,11 @@ test.describe('XSS stockée : données affichées via innerHTML', () => {
 
     // Salle, KDS.
     await page.click('#btnNavFloor');
+    // Plan dessiné (défaut) : plan et volet ; puis la grille de cartes.
+    await assertSafeAndShown(page, '#floorPlanIn');
+    await page.click('#floorPlanIn .floor-tbl');
+    await assertSafeAndShown(page, '#floorPane');
+    await page.click('[data-floor-mode="cards"]');
     await assertSafeAndShown(page, '#floorTablesGrid');
     await page.click('#btnNavKds');
     await assertSafeAndShown(page, '#kdsPendingCards');

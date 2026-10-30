@@ -6,6 +6,7 @@ test.describe('Impression des rapports', () => {
 
   async function login(page: Page, pin = '1234') {
     await pairTill(page);
+    await page.addInitScript(() => localStorage.setItem('pos_floor_mode', 'cards')); // ces tests pilotent la grille de cartes, pas le plan dessiné
     await page.goto('/?nocache=' + Date.now());
     await page.waitForLoadState('domcontentloaded');
     const pinModal = page.locator('#pinLockModal');

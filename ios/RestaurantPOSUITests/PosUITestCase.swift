@@ -26,9 +26,10 @@ class PosUITestCase: XCTestCase {
     ///   - paired: démarre avec un poste déjà appairé (sinon écran d'appairage).
     ///   - language: langue de l'app (`-AppleLanguages`/`-AppleLocale`). Les tests existants restent en français.
     @discardableResult
-    func launch(pin: String? = "1234", section: String? = nil, happyHour: Bool = false, failedPrintJob: Bool = false, paired: Bool = true, language: String = "fr") -> XCUIApplication {
+    func launch(pin: String? = "1234", section: String? = nil, happyHour: Bool = false, failedPrintJob: Bool = false, paired: Bool = true, language: String = "fr", floorMode: String = "cards") -> XCUIApplication {
         app = XCUIApplication()
-        app.launchArguments = ["-UITestMode"]
+        // Les tests existants pilotent la grille de cartes ; le plan dessiné est le défaut hors test (`-floorMode plan` pour l'exercer).
+        app.launchArguments = ["-UITestMode", "-floorMode", floorMode]
         if paired { app.launchArguments.append("-UITestPaired") }
         if let pin { app.launchArguments += ["-UITestPin", pin] }
         if let section { app.launchArguments += ["-UITestSection", section] }
@@ -48,9 +49,9 @@ class PosUITestCase: XCTestCase {
     ///   - modeChoice: aucun mode mémorisé, l'écran « Serveur / Autonome » s'affiche.
     ///   - pin: déverrouillage automatique (données de démonstration uniquement ; nil = rester sur l'écran PIN).
     @discardableResult
-    func launchStandalone(blank: Bool = false, modeChoice: Bool = false, pin: String? = "1234", language: String = "fr", backupFolder: String? = nil) -> XCUIApplication {
+    func launchStandalone(blank: Bool = false, modeChoice: Bool = false, pin: String? = "1234", language: String = "fr", backupFolder: String? = nil, floorMode: String = "cards") -> XCUIApplication {
         app = XCUIApplication()
-        app.launchArguments = ["-UITestMode"]
+        app.launchArguments = ["-UITestMode", "-floorMode", floorMode]
         if modeChoice {
             app.launchArguments.append("-UITestModeChoice")
         } else {

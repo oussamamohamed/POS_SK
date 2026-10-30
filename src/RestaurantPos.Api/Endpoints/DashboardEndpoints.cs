@@ -27,5 +27,13 @@ public static class DashboardEndpoints
             var result = await dashboardService.GetFinancialDashboardAsync(filter, ct);
             return Results.Ok(result);
         });
+
+        group.MapGet("/takings", async (
+            DateTimeOffset from,
+            DateTimeOffset to,
+            int? tzOffsetMinutes,
+            IFinancialDashboardService dashboardService,
+            CancellationToken ct) =>
+            Results.Ok(await dashboardService.GetTakingsAsync(from, to, Math.Clamp(tzOffsetMinutes ?? 0, -14 * 60, 14 * 60), null, ct)));
     }
 }

@@ -17,6 +17,40 @@ namespace RestaurantPos.Infrastructure.Tests;
 public sealed class FinancialDashboardServiceTests
 {
     [Fact]
+    public async Task GetTakingsAsync_BucketsByLocalHourAndComparesWithSameDayLastWeek()
+    {
+        var options = new DbContextOptionsBuilder<AppDbContext>().UseInMemoryDatabase("TakingsDb_" + Guid.NewGuid().ToString("N")).Options;
+        using var db = new AppDbContext(options);
+        var dayStart = new DateTimeOffset(2026, 10, 12, 0, 0, 0, TimeSpan.Zero);
+        var now = dayStart.AddHours(19);
+
+        void Receipt(DateTimeOffset at, int cents, string number)
+        {
+            var order = new Order { TableNumber = "T1", Status = OrderStatus.Paid, CreatedAtUtc = at };
+            order.Items.Add(new OrderItem { ProductName = "Plat", Quantity = 1, UnitPrice = Money.FromCents(cents), TaxRatePercent = 10m });
+            db.Orders.Add(order);
+            db.FiscalReceipts.Add(new FiscalReceipt { TerminalId = "T01", ReceiptNumber = number, OrderId = order.Id, SequenceNumber = db.FiscalReceipts.Local.Count + 1, TotalTtcAmount = Money.FromCents(cents), TotalHtAmount = Money.FromCents(cents), CreatedAtUtc = at });
+        }
+        Receipt(dayStart.AddHours(11).AddMinutes(30), 2000, "A");   // 12 h 30 locale (UTC+1)
+        Receipt(dayStart.AddHours(18).AddMinutes(10), 3000, "B");   // 19 h 10 locale
+        Receipt(dayStart.AddDays(-7).AddHours(18), 1000, "C");      // semaine passée, avant l'heure courante
+        Receipt(dayStart.AddDays(-7).AddHours(21), 4000, "D");      // semaine passée, après l'heure courante
+        await db.SaveChangesAsync();
+
+        var report = await new FinancialDashboardService(db).GetTakingsAsync(dayStart, dayStart.AddDays(1), tzOffsetMinutes: 60, nowUtc: now);
+
+        report.TotalTtc.Should().Be(50.00m);
+        report.Hours.Should().HaveCount(24);
+        report.Hours[12].Today.Should().Be(20.00m);
+        report.Hours[19].Today.Should().Be(30.00m);
+        report.Hours[19].LastWeek.Should().Be(10.00m);
+        report.Hours[22].LastWeek.Should().Be(40.00m);
+        report.LastWeekTotalTtc.Should().Be(50.00m);
+        report.LastWeekByNowTtc.Should().Be(10.00m);
+        report.TablesTurned.Should().Be(2);
+    }
+
+    [Fact]
     public async Task GetFinancialDashboardAsync_CalculatesAccurateKpisAndAverages()
     {
         // Arrange

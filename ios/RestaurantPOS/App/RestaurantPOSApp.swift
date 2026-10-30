@@ -263,7 +263,7 @@ final class AppEnvironment {
 @MainActor @Observable
 final class Router {
     enum Section: String, CaseIterable, Identifiable {
-        case order, floor, bookings, kitchen, menu, fiscal, admin
+        case order, floor, bookings, kitchen, menu, takings, fiscal, admin
         var id: String { rawValue }
 
         var title: String {
@@ -273,6 +273,7 @@ final class Router {
             case .bookings: String(localized: "common.nav_bookings")
             case .kitchen: String(localized: "common.nav_kitchen")
             case .menu: String(localized: "common.nav_menu")
+            case .takings: String(localized: "common.nav_takings")
             case .fiscal: String(localized: "common.nav_fiscal")
             case .admin: String(localized: "common.nav_admin")
             }
@@ -285,12 +286,13 @@ final class Router {
             case .bookings: "calendar"
             case .kitchen: "flame"
             case .menu: "chart.bar.xaxis"
+            case .takings: "chart.line.uptrend.xyaxis"
             case .fiscal: "doc.text.magnifyingglass"
             case .admin: "gearshape.2"
             }
         }
 
-        var requiresManager: Bool { self == .menu || self == .fiscal || self == .admin }
+        var requiresManager: Bool { self == .menu || self == .takings || self == .fiscal || self == .admin }
     }
 
     var section: Section = .order

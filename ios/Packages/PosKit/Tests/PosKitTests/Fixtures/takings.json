@@ -1,0 +1,178 @@
+{
+  "fromUtc": "2026-10-29T23:00:00+00:00",
+  "toUtc": "2026-10-30T23:00:00+00:00",
+  "totalTtc": 1018,
+  "lastWeekTotalTtc": 0,
+  "lastWeekByNowTtc": 0,
+  "covers": 150,
+  "tablesTurned": 162,
+  "spendPerCover": 6.79,
+  "hours": [
+    {
+      "hour": 0,
+      "today": 621.5,
+      "lastWeek": 0
+    },
+    {
+      "hour": 1,
+      "today": 0,
+      "lastWeek": 0
+    },
+    {
+      "hour": 2,
+      "today": 0,
+      "lastWeek": 0
+    },
+    {
+      "hour": 3,
+      "today": 0,
+      "lastWeek": 0
+    },
+    {
+      "hour": 4,
+      "today": 0,
+      "lastWeek": 0
+    },
+    {
+      "hour": 5,
+      "today": 0,
+      "lastWeek": 0
+    },
+    {
+      "hour": 6,
+      "today": 0,
+      "lastWeek": 0
+    },
+    {
+      "hour": 7,
+      "today": 0,
+      "lastWeek": 0
+    },
+    {
+      "hour": 8,
+      "today": 108.0,
+      "lastWeek": 0
+    },
+    {
+      "hour": 9,
+      "today": 288.5,
+      "lastWeek": 0
+    },
+    {
+      "hour": 10,
+      "today": 0,
+      "lastWeek": 0
+    },
+    {
+      "hour": 11,
+      "today": 0,
+      "lastWeek": 0
+    },
+    {
+      "hour": 12,
+      "today": 0,
+      "lastWeek": 0
+    },
+    {
+      "hour": 13,
+      "today": 0,
+      "lastWeek": 0
+    },
+    {
+      "hour": 14,
+      "today": 0,
+      "lastWeek": 0
+    },
+    {
+      "hour": 15,
+      "today": 0,
+      "lastWeek": 0
+    },
+    {
+      "hour": 16,
+      "today": 0,
+      "lastWeek": 0
+    },
+    {
+      "hour": 17,
+      "today": 0,
+      "lastWeek": 0
+    },
+    {
+      "hour": 18,
+      "today": 0,
+      "lastWeek": 0
+    },
+    {
+      "hour": 19,
+      "today": 0,
+      "lastWeek": 0
+    },
+    {
+      "hour": 20,
+      "today": 0,
+      "lastWeek": 0
+    },
+    {
+      "hour": 21,
+      "today": 0,
+      "lastWeek": 0
+    },
+    {
+      "hour": 22,
+      "today": 0,
+      "lastWeek": 0
+    },
+    {
+      "hour": 23,
+      "today": 0,
+      "lastWeek": 0
+    }
+  ],
+  "paymentMethods": [
+    {
+      "method": 1,
+      "methodName": "Card (CB)",
+      "totalAmount": 730.6,
+      "transactionsCount": 86,
+      "percentageOfTotal": 70.5
+    },
+    {
+      "method": 0,
+      "methodName": "Cash",
+      "totalAmount": 194,
+      "transactionsCount": 54,
+      "percentageOfTotal": 18.7
+    },
+    {
+      "method": 4,
+      "methodName": "Room Charge (PMS)",
+      "totalAmount": 71,
+      "transactionsCount": 6,
+      "percentageOfTotal": 6.9
+    },
+    {
+      "method": 2,
+      "methodName": "Meal Vouchers",
+      "totalAmount": 40,
+      "transactionsCount": 16,
+      "percentageOfTotal": 3.9
+    }
+  ],
+  "staffPerformance": [
+    {
+      "serverId": "01a18862-0e8d-7248-a014-89bcb67c21c5",
+      "serverName": "Alexandre Dupont (Manager)",
+      "tablesServedCount": 1,
+      "totalSalesTtc": 746,
+      "averageTableTtc": 746
+    },
+    {
+      "serverId": null,
+      "serverName": "Serveur Inconnu",
+      "tablesServedCount": 25,
+      "totalSalesTtc": 290,
+      "averageTableTtc": 11.6
+    }
+  ]
+}

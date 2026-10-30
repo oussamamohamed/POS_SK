@@ -754,6 +754,20 @@ public actor InMemoryPosAPI: PosAPI {
         return FinancialDashboard(kpis: .init(totalSalesTtc: Money(cents: ttc), totalSalesHt: Money(cents: ht), averageOrderTtc: Money(cents: ttc / count), averageCoverTtc: Money(cents: ttc / count), totalOrdersCount: receipts.count, totalCoversCount: receipts.count))
     }
 
+    /// Journée de démonstration déterministe : une courbe horaire, la semaine passée un peu plus basse jusqu'à maintenant.
+    public func takings(from: Date, to: Date, tzOffsetMinutes: Int) async throws -> TakingsReport {
+        try await step("takings"); try requireManager()
+        let today = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6400, 14200, 12800, 5200, 3900, 4800, 9600, 15800, 0, 0, 0, 0, 0]
+        let lastWeek = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5900, 11400, 13900, 6100, 4200, 5600, 10400, 16800, 21600, 19800, 12100, 0, 0]
+        let hours = (0..<24).map { HourlyTaking(hour: $0, today: Money(cents: today[$0]), lastWeek: Money(cents: lastWeek[$0])) }
+        let total = today.reduce(0, +)
+        return TakingsReport(
+            fromUtc: from, toUtc: to, totalTtc: Money(cents: total), lastWeekTotalTtc: Money(cents: lastWeek.reduce(0, +)),
+            lastWeekByNowTtc: Money(cents: lastWeek[0...18].reduce(0, +)), covers: 40, tablesTurned: 12, spendPerCover: Money(cents: total / 40), hours: hours,
+            paymentMethods: [.init(methodName: "Carte", totalAmount: Money(cents: total * 6 / 10), transactionsCount: 8, percentageOfTotal: 60), .init(methodName: "Espèces", totalAmount: Money(cents: total * 4 / 10), transactionsCount: 4, percentageOfTotal: 40)],
+            staffPerformance: [.init(serverName: "Sophie", tablesServedCount: 7, totalSalesTtc: Money(cents: total * 6 / 10), averageTableTtc: Money(cents: total * 6 / 70)), .init(serverName: "Marc", tablesServedCount: 5, totalSalesTtc: Money(cents: total * 4 / 10), averageTableTtc: Money(cents: total * 4 / 50))])
+    }
+
     public var mockVerificationResult: FiscalVerificationResult?
 
     public func verifyChains() async throws -> FiscalVerificationResult {

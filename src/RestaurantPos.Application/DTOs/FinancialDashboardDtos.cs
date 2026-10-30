@@ -45,6 +45,22 @@ public sealed record PaymentMethodSummaryDto(
     int TransactionsCount,
     decimal PercentageOfTotal);
 
+public sealed record HourlyTakingDto(int Hour, decimal Today, decimal LastWeek);
+
+/// <summary>Encaissements d'une journée de service comparés au même jour de la semaine précédente.</summary>
+public sealed record TakingsReportDto(
+    DateTimeOffset FromUtc,
+    DateTimeOffset ToUtc,
+    decimal TotalTtc,
+    decimal LastWeekTotalTtc,
+    decimal LastWeekByNowTtc,
+    int Covers,
+    int TablesTurned,
+    decimal SpendPerCover,
+    List<HourlyTakingDto> Hours,
+    List<PaymentMethodSummaryDto> PaymentMethods,
+    List<ServerProductivityDto> StaffPerformance);
+
 public sealed record FinancialDashboardReportDto(
     FinancialKpisDto Kpis,
     List<ServiceBreakdownDto> Services,

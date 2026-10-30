@@ -41,6 +41,7 @@ struct MainShell: View {
         case .bookings: BookingsScreen()
         case .kitchen: KitchenScreen()
         case .menu: MenuAnalysisScreen()
+        case .takings: TakingsScreen()
         case .fiscal: FiscalScreen()
         case .admin: AdminScreen()
         }

@@ -460,6 +460,34 @@ public final class DashboardStore {
     }
 }
 
+/// Encaissements du jour comparés à la semaine passée (page « Encaissements »).
+@MainActor @Observable
+public final class TakingsStore {
+    public private(set) var report: TakingsReport?
+    public private(set) var isLoading = false
+    public var asTable = false
+    private let api: PosAPI
+    private let notifier: Notifier
+    private let calendar: Calendar
+    private let now: () -> Date
+
+    public init(api: PosAPI, notifier: Notifier, calendar: Calendar = .autoupdatingCurrent, now: @escaping () -> Date = { Date() }) {
+        self.api = api
+        self.notifier = notifier
+        self.calendar = calendar
+        self.now = now
+    }
+
+    public func load() async {
+        isLoading = true
+        defer { isLoading = false }
+        let current = now()
+        let start = calendar.startOfDay(for: current)
+        let end = calendar.date(byAdding: .day, value: 1, to: start) ?? start.addingTimeInterval(86_400)
+        do { report = try await api.takings(from: start, to: end, tzOffsetMinutes: calendar.timeZone.secondsFromGMT(for: current) / 60) } catch { notifier.error(error) }
+    }
+}
+
 /// Réglages réseau : serveur maître, test de connexion, file de synchronisation.
 @MainActor @Observable
 public final class NetworkStore {

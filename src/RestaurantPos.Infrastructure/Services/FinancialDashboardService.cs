@@ -21,6 +21,47 @@ public sealed class FinancialDashboardService : IFinancialDashboardService
         _dbContext = dbContext;
     }
 
+    public async Task<TakingsReportDto> GetTakingsAsync(
+        DateTimeOffset fromUtc,
+        DateTimeOffset toUtc,
+        int tzOffsetMinutes = 0,
+        DateTimeOffset? nowUtc = null,
+        CancellationToken cancellationToken = default)
+    {
+        var now = nowUtc ?? DateTimeOffset.UtcNow;
+        var week = TimeSpan.FromDays(7);
+        var today = await GetFinancialDashboardAsync(new FinancialDashboardFilterDto(fromUtc, toUtc), cancellationToken).ConfigureAwait(false);
+        var offset = TimeSpan.FromMinutes(tzOffsetMinutes);
+
+        // Reçus non annulés par heure locale, aujourd'hui puis le même jour la semaine précédente.
+        var receipts = await _dbContext.FiscalReceipts.ToListAsync(cancellationToken).ConfigureAwait(false);
+        var voided = receipts.Where(r => r.VoidedReceiptId != null).Select(r => r.VoidedReceiptId!.Value).ToHashSet();
+        var valid = receipts.Where(r => r.VoidedReceiptId == null && !voided.Contains(r.Id)).ToList();
+        decimal[] ByHour(DateTimeOffset from, DateTimeOffset to)
+        {
+            var hours = new decimal[24];
+            foreach (var r in valid.Where(r => r.CreatedAtUtc >= from && r.CreatedAtUtc < to))
+            {
+                hours[(r.CreatedAtUtc + offset).Hour] += r.TotalTtcAmount.AmountInCents / 100.0m;
+            }
+            return hours;
+        }
+
+        var todayHours = ByHour(fromUtc, toUtc);
+        var lastWeekHours = ByHour(fromUtc - week, toUtc - week);
+        decimal lastWeekByNow = valid
+            .Where(r => r.CreatedAtUtc >= fromUtc - week && r.CreatedAtUtc < toUtc - week && r.CreatedAtUtc <= now - week)
+            .Sum(r => r.TotalTtcAmount.AmountInCents) / 100.0m;
+
+        decimal total = today.Kpis.TotalSalesTtc;
+        int covers = today.Kpis.TotalCoversCount;
+        return new TakingsReportDto(
+            fromUtc, toUtc, total, lastWeekHours.Sum(), lastWeekByNow, covers, today.Kpis.TotalOrdersCount,
+            covers > 0 ? Math.Round(total / covers, 2, MidpointRounding.AwayFromZero) : 0,
+            Enumerable.Range(0, 24).Select(h => new HourlyTakingDto(h, todayHours[h], lastWeekHours[h])).ToList(),
+            today.PaymentMethods, today.StaffPerformance);
+    }
+
     public async Task<FinancialDashboardReportDto> GetFinancialDashboardAsync(
         FinancialDashboardFilterDto filter,
         CancellationToken cancellationToken = default)

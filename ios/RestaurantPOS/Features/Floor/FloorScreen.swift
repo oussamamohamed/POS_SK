@@ -9,6 +9,9 @@ struct FloorScreen: View {
     @State private var showsAddTable = false
     /// Filtre par statut (`nil` : toutes les tables).
     @State private var statusFilter: TableStatus?
+    /// Affichage : plan dessiné (défaut) ou grille de cartes ; `-floorMode cards` force la grille (tests UI).
+    @AppStorage("floorMode") private var mode = "plan"
+    @State private var selectedTable: String?
 
     var body: some View {
         let floor = model.floor
@@ -18,7 +21,18 @@ struct FloorScreen: View {
                     .frame(maxWidth: 240)
                 KPIView(title: String(localized: "floor.kpi_open_total"), value: floor.openTotal.formatted, systemImage: "eurosign.circle")
                     .frame(maxWidth: 260)
+                KPIView(title: String(localized: "floor.stat_guests"), value: "\(floor.guestsCount)", systemImage: "person.3")
+                    .frame(maxWidth: 200)
+                KPIView(title: String(localized: "floor.stat_food"), value: "\(floor.foodWaitingCount())", systemImage: "flame", tint: Theme.warning)
+                    .frame(maxWidth: 200)
                 Spacer()
+                Picker("floor.mode_label", selection: $mode) {
+                    Text("floor.mode_plan").tag("plan")
+                    Text("floor.mode_cards").tag("cards")
+                }
+                .pickerStyle(.segmented)
+                .frame(width: 220)
+                .accessibilityIdentifier("floor.mode")
                 Button { Task { await floor.load() } } label: {
                     Image(systemName: "arrow.clockwise")
                         .font(Font.pos(17, .semibold))
@@ -38,6 +52,18 @@ struct FloorScreen: View {
             }
             .fixedSize(horizontal: false, vertical: true)
 
+            if mode == "plan" {
+                ScrollView {
+                    HStack(alignment: .top, spacing: Theme.Space.l) {
+                        FloorPlanView(tables: floor.diningTables, selected: $selectedTable)
+                            .frame(maxWidth: .infinity)
+                        FloorPane(selected: floor.diningTables.first { $0.tableNumber == selectedTable }, onOpen: { select($0) }, onClose: { selectedTable = nil })
+                            .frame(width: 320)
+                    }
+                    .padding(.bottom, Theme.Space.xl)
+                }
+                .refreshable { await floor.load() }
+            } else {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: Theme.Space.s) {
                     filterChip(String(localized: "floor.filter_all"), nil, id: "all")
@@ -58,6 +84,7 @@ struct FloorScreen: View {
                 .padding(.bottom, Theme.Space.xl)
             }
             .refreshable { await floor.load() }
+            }
         }
         .padding([.horizontal, .top], Theme.Space.xl)
         .task {

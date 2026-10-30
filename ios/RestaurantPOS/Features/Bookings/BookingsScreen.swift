@@ -135,6 +135,7 @@ private struct BookingsList: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier(identifier)
     }
 }
@@ -196,6 +197,7 @@ struct BookingsTimeline: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("bookings.timeline")
     }
 

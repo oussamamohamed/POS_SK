@@ -2349,3 +2349,63 @@ body.pos-dark {
 .menu-pick dt { font-size:.75rem; color: var(--text-muted); }
 .menu-pick dd { margin:0; font-family: var(--font-mono); }
 .menu-pick p { margin:0; color: var(--text-muted); }
+
+/* ==================== PLAN DE SALLE DESSINÉ, TUILES, RAIL CUISINE ==================== */
+.floor-stats, .kds-stats { display:flex; flex-wrap:wrap; gap:12px; margin:12px 0; }
+.floor-stat { background: var(--bg-panel); border:1px solid var(--border-color); border-radius: var(--radius-md); padding:10px 16px; min-width:140px; display:flex; flex-direction:column; }
+.floor-stat b { font-family: var(--font-mono); font-size:1.5rem; font-weight:500; }
+.floor-stat span { font-size:.85rem; font-weight:600; }
+.floor-stat small { font-size:.75rem; color: var(--text-muted); }
+.floor-stat.warn b { color: var(--danger); }
+.floor-mode { display:inline-flex; border:1px solid var(--border-color); border-radius: var(--radius-sm); overflow:hidden; margin-bottom:12px; }
+.floor-mode button { min-height:44px; padding:0 16px; border:0; background: var(--bg-panel); color: var(--text-main); font: inherit; cursor:pointer; }
+.floor-mode button + button { border-inline-start:1px solid var(--border-color); }
+.floor-mode button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+.floor-split { display:grid; grid-template-columns: minmax(0, 2.4fr) minmax(260px, 1fr); gap:16px; align-items:start; }
+.floor-split[hidden], .tables-grid[hidden] { display:none; }
+.floor-plan-wrap { background: var(--bg-panel); border:1px solid var(--border-color); border-radius: var(--radius-md); padding:8px; overflow:hidden; }
+.floor-plan { position:relative; width:100%; }
+.floor-plan-in { position:absolute; left:0; top:0; width:960px; transform-origin:0 0; background: var(--bg-card); border-radius:12px; }
+.floor-chair { position:absolute; background: var(--border-color); border-radius:4px; }
+.floor-chair.on { background: var(--ink); }
+.floor-tbl { position:absolute; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; border:2px solid var(--success); background: var(--sheet); color: var(--text-main); font: inherit; cursor:pointer; padding:0; overflow:hidden; }
+.floor-tbl.round { border-radius:50%; } .floor-tbl.square { border-radius:14px; } .floor-tbl.rect, .floor-tbl.long { border-radius:14px; } .floor-tbl.bar { border-radius:10px; flex-direction:row; gap:10px; }
+.floor-tbl b { font-size:1.05rem; } .floor-tbl span { font-size:.72rem; }
+.floor-tbl.sel { outline:3px solid var(--ink); outline-offset:2px; }
+.floor-tbl.s-ordering { border-color: var(--ink); } .floor-tbl.s-cooking { border-color: var(--warning); background: color-mix(in srgb, var(--warning) 12%, var(--sheet)); }
+.floor-tbl.s-eating { border-color: var(--steel); background: color-mix(in srgb, var(--steel) 14%, var(--sheet)); }
+.floor-tbl.s-late, .floor-tbl.s-bill { border-color: var(--danger); background: color-mix(in srgb, var(--danger) 12%, var(--sheet)); }
+.floor-tbl.s-bill { border-style:dashed; }
+.floor-pane { background: var(--bg-panel); border:1px solid var(--border-color); border-radius: var(--radius-md); padding:12px 16px; }
+.floor-pane h3 { margin:12px 0 6px; font-size:1rem; }
+.floor-pane-h { display:flex; align-items:center; gap:10px; }
+.floor-pane-h b { font-size:1.6rem; }
+.floor-pane-h button { margin-inline-start:auto; min-width:44px; min-height:44px; border:0; background:transparent; font-size:1.1rem; cursor:pointer; color: var(--text-main); }
+.floor-tag { padding:3px 10px; border-radius:999px; font-size:.8rem; font-weight:600; background: var(--bg-card); }
+.floor-tag.s-late, .floor-tag.s-bill { color: var(--danger); } .floor-tag.s-cooking { color: var(--warning); }
+.floor-acts { display:flex; flex-direction:column; gap:8px; margin-top:12px; }
+.floor-act { min-height:48px; padding:0 14px; border:1px solid var(--border-color); border-radius: var(--radius-sm); background: var(--bg-card); color: var(--text-main); font: inherit; cursor:pointer; }
+.floor-act.primary { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.kds-ticket-card.late { border-color: var(--danger); }
+.ticket-bar { height:4px; border-radius:2px; background: var(--border-color); margin:6px 0; overflow:hidden; }
+.ticket-bar i { display:block; height:100%; background: var(--success); }
+.kds-ticket-card.late .ticket-bar i { background: var(--danger); }
+.ticket-late { display:inline-block; margin-top:6px; padding:2px 8px; border-radius:999px; background: var(--danger); color:#fff; font-size:.72rem; font-weight:700; }
+.kds-bottom { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:16px; }
+.kds-ad { display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--border-color); }
+@media (max-width: 900px) { .floor-split, .kds-bottom { grid-template-columns:1fr; } }
+.floor-plan-container > * { flex-shrink:0; }
+.floor-mode { align-self:flex-start; margin-bottom:0; }
+
+/* ==================== ENCAISSEMENTS ==================== */
+.takings-h { display:flex; justify-content:space-between; align-items:center; gap:8px; }
+.tk-bar { fill: var(--ink); }
+.tk-line { fill:none; stroke: var(--tomato); stroke-width:2.5; stroke-linejoin:round; }
+.tk-key { display:flex; gap:16px; font-size:.8rem; color: var(--text-muted); margin-top:4px; }
+.tk-key i { display:inline-block; width:14px; height:8px; margin-inline-end:6px; border-radius:2px; background: var(--ink); }
+.tk-key i.ln { height:3px; background: var(--tomato); }
+.tk-pay { margin:8px 0; }
+.tk-pay-l { display:flex; justify-content:space-between; font-size:.9rem; }
+.tk-pay-l small { color: var(--text-muted); }
+.tk-pay-t { height:8px; border-radius:4px; background: var(--border-color); overflow:hidden; margin-top:4px; }
+.tk-pay-t i { display:block; height:100%; background: var(--ink); }

@@ -9,6 +9,7 @@ test.describe('Corrections du client web', () => {
 
   async function login(page: Page) {
     await pairTill(page);
+    await page.addInitScript(() => localStorage.setItem('pos_floor_mode', 'cards')); // ces tests pilotent la grille de cartes, pas le plan dessiné
     await page.goto('/?nocache=' + Date.now());
     await page.waitForLoadState('domcontentloaded');
     const pinModal = page.locator('#pinLockModal');

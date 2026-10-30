@@ -450,6 +450,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (viewId === 'floorPlanView') loadFloorPlanData();
         if (viewId === 'kdsView') loadKdsData();
         if (viewId === 'menuView') loadMenuAnalysis();
+        if (viewId === 'takingsView') loadTakings();
         if (viewId === 'bookingsView') loadBookings();
         if (viewId === 'adminView') loadAdminData();
         if (viewId === 'fiscalView') loadFiscalViewData();
@@ -768,6 +769,104 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!saved) return;
         document.getElementById('bookingModal').classList.remove('active');
         loadBookings();
+    }
+
+    // ==================== ENCAISSEMENTS ====================
+    const takingsState = { report: null, asTable: false, bound: false };
+
+    async function loadTakings() {
+        const body = document.getElementById('takingsBody');
+        if (!body) return;
+        if (!takingsState.bound) {
+            takingsState.bound = true;
+            document.getElementById('takingsRefresh').addEventListener('click', loadTakings);
+            body.addEventListener('click', (e) => {
+                if (e.target.closest('[data-takings-table]')) { takingsState.asTable = !takingsState.asTable; renderTakings(); }
+                if (e.target.closest('[data-go-z]')) switchView('fiscalView');
+            });
+        }
+        try {
+            await ensureAuthToken();
+            const from = new Date(); from.setHours(0, 0, 0, 0);
+            const to = new Date(from); to.setDate(to.getDate() + 1);
+            const res = await fetch(`/api/dashboard/takings?from=${encodeURIComponent(from.toISOString())}&to=${encodeURIComponent(to.toISOString())}&tzOffsetMinutes=${-new Date().getTimezoneOffset()}`);
+            if (res.status === 403) { body.innerHTML = `<p class="menu-empty">${escapeHtml(t('menu.forbidden'))}</p>`; return; }
+            if (!res.ok) throw new Error(String(res.status));
+            takingsState.report = await res.json();
+            renderTakings();
+        } catch (err) {
+            console.error('Erreur encaissements:', err);
+            body.innerHTML = `<p class="menu-empty">${escapeHtml(t('takings.load_error'))}</p>`;
+        }
+    }
+
+    function renderTakings() {
+        const r = takingsState.report;
+        const body = document.getElementById('takingsBody');
+        if (!r || !body) return;
+        const eur = (v) => `<bdi dir="ltr">${Number(v).toFixed(2)} €</bdi>`;
+        const pct = r.lastWeekByNowTtc > 0 ? Math.round((r.totalTtc / r.lastWeekByNowTtc - 1) * 100) : null;
+        const delta = pct == null ? t('takings.no_comparison') : t('takings.vs_last_week', { pct: `${pct >= 0 ? '+' : '−'}${Math.abs(pct)}` });
+        const tile = (label, value, sub, cls = '') => `<div class="floor-stat${cls}"><b>${value}</b><span>${escapeHtml(label)}</span><small>${sub}</small></div>`;
+        const tiles = tile(t('takings.tile_total'), eur(r.totalTtc), escapeHtml(delta), pct != null && pct < 0 ? ' warn' : '') +
+            tile(t('takings.tile_covers'), r.covers, '') + tile(t('takings.tile_spend'), eur(r.spendPerCover), escapeHtml(t('takings.before_tips'))) +
+            tile(t('takings.tile_tables'), r.tablesTurned, '');
+
+        const pays = r.paymentMethods || [];
+        const maxPay = Math.max(1, ...pays.map(p => p.totalAmount));
+        const payHtml = pays.length ? pays.map(p => `<div class="tk-pay"><div class="tk-pay-l"><span>${escapeHtml(p.methodName)}</span><span>${eur(p.totalAmount)} <small>${Math.round(p.percentageOfTotal)} %</small></span></div><div class="tk-pay-t"><i style="width:${(p.totalAmount / maxPay * 100).toFixed(0)}%"></i></div></div>`).join('')
+            : `<p class="needs-empty">${escapeHtml(t('takings.none'))}</p>`;
+        const staff = (r.staffPerformance || []).length
+            ? `<table class="menu-table"><thead><tr><th>${escapeHtml(t('takings.col_server'))}</th><th class="num">${escapeHtml(t('takings.col_tables'))}</th><th class="num">${escapeHtml(t('takings.col_takings'))}</th><th class="num">${escapeHtml(t('takings.col_avg'))}</th></tr></thead><tbody>${r.staffPerformance.map(s => `<tr><td><strong>${escapeHtml(s.serverName)}</strong></td><td class="num">${s.tablesServedCount}</td><td class="num">${eur(s.totalSalesTtc)}</td><td class="num">${eur(s.averageTableTtc)}</td></tr>`).join('')}</tbody></table>`
+            : `<p class="needs-empty">${escapeHtml(t('takings.none'))}</p>`;
+
+        body.innerHTML = `<div class="floor-stats">${tiles}</div>
+            <div class="bk-grid">
+                <div class="bk-card"><div class="takings-h"><h3>${escapeHtml(t('takings.hourly_title'))}</h3><button type="button" class="bk-act" data-takings-table>${escapeHtml(t(takingsState.asTable ? 'takings.as_chart' : 'takings.as_table'))}</button></div>${renderTakingsHourly(r, eur)}</div>
+                <div><div class="bk-card"><h3>${escapeHtml(t('takings.pay_title'))}</h3>${payHtml}</div>
+                <div class="bk-card" style="margin-top:16px;"><h3>${escapeHtml(t('takings.z_title'))}</h3><p class="needs-empty">${escapeHtml(t('takings.z_hint'))}</p><button type="button" class="bk-act" data-go-z>${escapeHtml(t('takings.z_open'))}</button></div></div>
+            </div>
+            <div class="bk-card" style="margin-top:16px;"><h3>${escapeHtml(t('takings.servers_title'))}</h3>${staff}</div>`;
+        bindTakingsChart();
+    }
+
+    function renderTakingsHourly(r, eur) {
+        const nonzero = r.hours.filter(h => h.today > 0 || h.lastWeek > 0).map(h => h.hour);
+        const startH = Math.min(11, ...(nonzero.length ? nonzero : [11])), endH = Math.max(22, ...(nonzero.length ? nonzero : [22]));
+        const hours = r.hours.filter(h => h.hour >= startH && h.hour <= endH);
+        if (takingsState.asTable) {
+            return `<table class="menu-table"><thead><tr><th>${escapeHtml(t('takings.col_hour'))}</th><th class="num">${escapeHtml(t('takings.today'))}</th><th class="num">${escapeHtml(t('takings.last_week'))}</th></tr></thead><tbody>${hours.map(h => `<tr><td>${String(h.hour).padStart(2, '0')}h</td><td class="num">${eur(h.today)}</td><td class="num">${eur(h.lastWeek)}</td></tr>`).join('')}</tbody></table>`;
+        }
+        const W = 640, H = 290, m = { l: 48, r: 12, t: 14, b: 30 };
+        const max = Math.max(1, ...hours.map(h => Math.max(h.today, h.lastWeek))) * 1.08, step = niceStep(max / 4), yMax = Math.ceil(max / step) * step;
+        const band = (W - m.l - m.r) / hours.length, bw = Math.min(26, band * .55);
+        const cx = i => m.l + band * (i + .5), Y = v => H - m.b - v / yMax * (H - m.t - m.b);
+        let grid = '';
+        for (let v = 0; v <= yMax + 1e-9; v += step) grid += `<line x1="${m.l}" x2="${W - m.r}" y1="${Y(v).toFixed(1)}" y2="${Y(v).toFixed(1)}" class="menu-grid"/><text x="${m.l - 6}" y="${(Y(v) + 4).toFixed(1)}" text-anchor="end" class="menu-axis">${Math.round(v)}</text>`;
+        const labels = hours.map((h, i) => `<text x="${cx(i).toFixed(1)}" y="${H - 8}" text-anchor="middle" class="menu-axis">${h.hour}</text>`).join('');
+        const bars = hours.map((h, i) => h.today > 0 ? `<rect class="tk-bar" x="${(cx(i) - bw / 2).toFixed(1)}" y="${Y(h.today).toFixed(1)}" width="${bw}" height="${(H - m.b - Y(h.today)).toFixed(1)}" rx="3"/>` : '').join('');
+        const line = `<path class="tk-line" d="M${hours.map((h, i) => `${cx(i).toFixed(1)},${Y(h.lastWeek).toFixed(1)}`).join('L')}"/>`;
+        return `<svg viewBox="0 0 ${W} ${H}" class="menu-chart" role="img" aria-label="${escapeHtml(t('takings.chart_label'))}" data-hours='${escapeHtml(JSON.stringify(hours))}' data-geo="${m.l},${band.toFixed(2)}">${grid}${labels}${bars}${line}<rect x="${m.l}" y="${m.t}" width="${W - m.l - m.r}" height="${H - m.t - m.b}" fill="transparent" data-hit/></svg>
+            <div class="tk-key"><span><i class="bar"></i>${escapeHtml(t('takings.today'))}</span><span><i class="ln"></i>${escapeHtml(t('takings.last_week'))}</span></div>`;
+    }
+
+    function bindTakingsChart() {
+        const svg = document.querySelector('#takingsBody svg[data-hours]');
+        if (!svg) return;
+        const hours = JSON.parse(svg.dataset.hours), [left, band] = svg.dataset.geo.split(',').map(Number);
+        const tip = document.getElementById('takingsTip');
+        const show = (e) => {
+            const box = svg.getBoundingClientRect(), scale = box.width / 640;
+            const i = Math.min(hours.length - 1, Math.max(0, Math.floor(((e.clientX - box.left) / scale - left) / band)));
+            const h = hours[i];
+            tip.innerHTML = `<b>${String(h.hour).padStart(2, '0')}:00–${String(h.hour + 1).padStart(2, '0')}:00</b><span>${escapeHtml(t('takings.today'))} ${Number(h.today).toFixed(2)} €</span><span>${escapeHtml(t('takings.last_week'))} ${Number(h.lastWeek).toFixed(2)} €</span>`;
+            tip.hidden = false;
+            tip.style.left = `${Math.min(e.clientX + 16, innerWidth - tip.offsetWidth - 8)}px`;
+            tip.style.top = `${Math.max(8, e.clientY - tip.offsetHeight - 12)}px`;
+        };
+        svg.addEventListener('pointermove', show);
+        svg.addEventListener('pointerdown', show);
+        svg.addEventListener('pointerleave', () => { tip.hidden = true; });
     }
 
     // ==================== ANALYSE DU MENU ====================
@@ -3009,33 +3108,200 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // ==================== FLOOR PLAN ====================
+    // ==================== PLAN DE SALLE : ÉTATS, PLAN DESSINÉ, VOLET ====================
+    // États de service dérivés de la table et des bons de cuisine : libre, commande, cuisson, mange, retard, addition.
+    const floorState = { tickets: [], reservations: [], mode: 'plan', sel: null };
+    try { floorState.mode = localStorage.getItem('pos_floor_mode') === 'cards' ? 'cards' : 'plan'; } catch { /* stockage indisponible */ }
+
+    function tableServiceState(table, tickets, now = Date.now()) {
+        if (table.status === 0) return 'free';
+        if (table.status === 2) return 'bill';
+        if (table.status === 3) return 'paid';
+        const open = tickets.filter(k => k.tableNumber === table.tableNumber && (k.status === 0 || k.status === 1));
+        if (open.length) {
+            const oldest = Math.min(...open.map(k => new Date(k.dispatchedAtUtc).getTime()));
+            return now - oldest > KITCHEN_TARGET_MINUTES * 60000 ? 'late' : 'cooking';
+        }
+        return tickets.some(k => k.orderId && k.orderId === table.activeOrderId) ? 'eating' : 'ordering';
+    }
+
+    /** Forme et taille d'une table d'après sa capacité (le serveur ne stocke pas de dessin de salle). */
+    function floorShape(table) {
+        const seats = table.capacity || 2;
+        if (String(table.tableNumber).toLowerCase() === 'bar') return { shape: 'bar', w: 270, h: 40, seats };
+        if (seats <= 2) return { shape: 'round', w: 76, h: 76, seats };
+        if (seats <= 4) return { shape: 'square', w: 96, h: 96, seats };
+        if (seats <= 6) return { shape: 'rect', w: 170, h: 92, seats };
+        return { shape: 'long', w: 230, h: 90, seats };
+    }
+
+    /** Disposition automatique en rangées sur un plan de 960 px de large. */
+    function floorLayout(tables) {
+        const out = {};
+        let x = 70, y = 60, rowH = 0;
+        tables.forEach(tb => {
+            const s = floorShape(tb);
+            if (x + s.w > 900) { x = 70; y += rowH + 70; rowH = 0; }
+            out[tb.tableNumber] = { ...s, x, y };
+            x += s.w + 64;
+            rowH = Math.max(rowH, s.h);
+        });
+        return { boxes: out, height: y + rowH + 60 };
+    }
+
+    function floorChairs(b) {
+        const out = [], g = 7, L = 26, T = 11;
+        const top = n => { for (let i = 0; i < n; i++) out.push({ x: b.x + b.w * (i + .5) / n - L / 2, y: b.y - g - T, w: L, h: T }); };
+        const bottom = n => { for (let i = 0; i < n; i++) out.push({ x: b.x + b.w * (i + .5) / n - L / 2, y: b.y + b.h + g, w: L, h: T }); };
+        const left = n => { for (let i = 0; i < n; i++) out.push({ x: b.x - g - T, y: b.y + b.h * (i + .5) / n - L / 2, w: T, h: L }); };
+        const right = n => { for (let i = 0; i < n; i++) out.push({ x: b.x + b.w + g, y: b.y + b.h * (i + .5) / n - L / 2, w: T, h: L }); };
+        if (b.shape === 'bar') { for (let i = 0; i < b.seats; i++) out.push({ x: b.x + b.w * (i + .5) / b.seats - 11, y: b.y - 32, w: 22, h: 22 }); return out; }
+        if (b.seats <= 2) { left(1); right(1); return out; }
+        if (b.seats <= 4) { top(1); bottom(1); left(1); right(1); return out; }
+        const side = Math.floor((b.seats - 2) / 2);
+        top(side); bottom(b.seats - 2 - side); left(1); right(1);
+        return out;
+    }
+
     async function loadFloorPlanData() {
         try {
-            const res = await fetch('/api/tables');
-            state.tables = await res.json();
-            await loadHeldTables();
+            const dayFrom = new Date(); dayFrom.setHours(0, 0, 0, 0);
+            const dayTo = new Date(dayFrom); dayTo.setDate(dayTo.getDate() + 1);
+            const [tables, tickets, reservations, takings] = await Promise.all([
+                fetch('/api/tables').then(r => r.json()),
+                fetchJsonOrEmpty('/api/kds/tickets'),
+                fetchJsonOrEmpty(bkRangeUrl(bkDayString(new Date()))),
+                // Réservé aux responsables : vide (tableau) pour les autres, la tuile n'apparaît alors pas.
+                fetchJsonOrEmpty(`/api/dashboard/takings?from=${encodeURIComponent(dayFrom.toISOString())}&to=${encodeURIComponent(dayTo.toISOString())}&tzOffsetMinutes=${-new Date().getTimezoneOffset()}`)
+            ]);
+            floorState.takings = Array.isArray(takings) ? null : takings;
+            state.tables = tables;
+            floorState.tickets = tickets;
+            floorState.reservations = reservations;
+            state.heldByTable = {};
+            const nowMs = Date.now();
+            reservations
+                .filter(r => !r.isWaitlist && r.status === 0 && r.tableNumber && new Date(r.startsAtUtc).getTime() + r.durationMinutes * 60000 > nowMs)
+                .sort((a, b) => new Date(a.startsAtUtc) - new Date(b.startsAtUtc))
+                .forEach(r => { state.heldByTable[r.tableNumber] ??= bkTime(r.startsAtUtc); });
             renderFloorPlan();
         } catch (err) {
             console.error('Erreur chargement plan de salle:', err);
         }
     }
 
-    // Prochaine réservation attendue de chaque table (aujourd'hui), pour le repère « Réservée hh:mm » du plan de salle.
-    async function loadHeldTables() {
-        state.heldByTable = {};
-        try {
-            const day = bkDayString(new Date());
-            const nowMs = Date.now();
-            (await bkFetchList(day))
-                .filter(r => !r.isWaitlist && r.status === 0 && r.tableNumber && new Date(r.startsAtUtc).getTime() + r.durationMinutes * 60000 > nowMs)
-                .sort((a, b) => new Date(a.startsAtUtc) - new Date(b.startsAtUtc))
-                .forEach(r => { state.heldByTable[r.tableNumber] ??= bkTime(r.startsAtUtc); });
-        } catch {
-            // Réservations indisponibles (session expirée…) : le plan de salle s'affiche sans repère.
-        }
+    function floorStateLabel(s) { return t('floor.state_' + s); }
+
+    function renderFloorStats() {
+        const dining = state.tables.filter(tb => tb.tableNumber !== 'Comptoir');
+        const states = dining.map(tb => tableServiceState(tb, floorState.tickets));
+        const occupied = states.filter(s => s !== 'free').length;
+        const guests = dining.reduce((s, tb) => s + (tb.status !== 0 ? (tb.coversCount || 0) : 0), 0);
+        const waiting = states.filter(s => s === 'cooking' || s === 'late').length;
+        const needs = needsState.items.length;
+        const tile = (n, key, extra = '') => `<div class="floor-stat${extra}"><b>${n}</b><span>${escapeHtml(t(key))}</span></div>`;
+        const tk = floorState.takings;
+        const pct = tk && tk.lastWeekByNowTtc > 0 ? Math.round((tk.totalTtc / tk.lastWeekByNowTtc - 1) * 100) : null;
+        const takingsTile = tk ? `<div class="floor-stat${pct != null && pct < 0 ? ' warn' : ''}"><b>${Number(tk.totalTtc).toFixed(2)} €</b><span>${escapeHtml(t('takings.tile_total'))}</span><small>${pct == null ? '' : escapeHtml(t('takings.vs_last_week', { pct: `${pct >= 0 ? '+' : '−'}${Math.abs(pct)}` }))}</small></div>` : '';
+        document.getElementById('floorStats').innerHTML = takingsTile +
+            tile(`${occupied}/${dining.length}`, 'floor.stat_tables') + tile(guests, 'floor.stat_guests') +
+            tile(waiting, 'floor.stat_food', states.includes('late') ? ' warn' : '') + tile(needs, 'floor.stat_needs', needs ? ' warn' : '');
     }
 
     function renderFloorPlan() {
+        document.querySelectorAll('[data-floor-mode]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.floorMode === floorState.mode)));
+        document.getElementById('floorSplit').hidden = floorState.mode !== 'plan';
+        document.getElementById('floorTablesGrid').hidden = floorState.mode !== 'cards';
+        renderFloorStats();
+        if (floorState.mode === 'plan') { renderFloorDrawing(); renderFloorPane(); } else { renderFloorCards(); }
+    }
+
+    function renderFloorDrawing() {
+        const dining = state.tables.filter(tb => tb.tableNumber !== 'Comptoir');
+        const { boxes, height } = floorLayout(dining);
+        const css = (b) => `left:${b.x}px;top:${b.y}px;width:${b.w}px;height:${b.h}px`;
+        let html = '';
+        dining.forEach(tb => {
+            const b = boxes[tb.tableNumber];
+            const s = tableServiceState(tb, floorState.tickets);
+            floorChairs(b).forEach((c, i) => { html += `<i class="floor-chair${i < (tb.status !== 0 ? tb.coversCount || 0 : 0) ? ' on' : ''}" style="${css(c)}"></i>`; });
+            const held = s === 'free' ? state.heldByTable?.[tb.tableNumber] : null;
+            const label = held ? t('bookings.held', { time: held }) : floorStateLabel(s);
+            html += `<button type="button" class="floor-tbl ${b.shape} s-${s}${floorState.sel === tb.tableNumber ? ' sel' : ''}" data-table="${escapeHtml(tb.tableNumber)}" style="${css(b)}" aria-label="${escapeHtml(tb.tableNumber + ', ' + label)}"><b>${escapeHtml(tb.tableNumber)}</b><span>${escapeHtml(label)}</span></button>`;
+        });
+        const plan = document.getElementById('floorPlanDraw'), inner = document.getElementById('floorPlanIn');
+        inner.style.height = `${height}px`;
+        inner.innerHTML = html;
+        const fit = () => {
+            const scale = plan.clientWidth / 960;
+            inner.style.transform = `scale(${scale})`;
+            plan.style.height = `${height * scale}px`;
+        };
+        fit();
+        if (!floorState.observer) {
+            floorState.observer = new ResizeObserver(() => { if (document.getElementById('floorSplit').offsetParent) { const p = document.getElementById('floorPlanDraw'), i = document.getElementById('floorPlanIn'); const sc = p.clientWidth / 960; i.style.transform = `scale(${sc})`; p.style.height = `${parseFloat(i.style.height) * sc}px`; } });
+            floorState.observer.observe(plan);
+            document.getElementById('floorPlanIn').addEventListener('click', (e) => {
+                const b = e.target.closest('.floor-tbl');
+                if (!b) return;
+                floorState.sel = floorState.sel === b.dataset.table ? null : b.dataset.table;
+                renderFloorDrawing();
+                renderFloorPane();
+            });
+            document.getElementById('floorPane').addEventListener('click', onFloorPaneClick);
+        }
+    }
+
+    function renderFloorPane() {
+        const pane = document.getElementById('floorPane');
+        const table = state.tables.find(tb => tb.tableNumber === floorState.sel);
+        const btn = (act, label, extra = '', cls = '') => `<button type="button" class="floor-act ${cls}" data-act="${act}" ${extra}>${escapeHtml(label)}</button>`;
+        if (!table) {
+            const up = floorState.reservations.filter(r => !r.isWaitlist && r.status === 0).sort((a, b) => new Date(a.startsAtUtc) - new Date(b.startsAtUtc)).slice(0, 3);
+            const wl = floorState.reservations.filter(r => r.isWaitlist && r.status === 0);
+            const li = (items, sub) => items.length ? `<ul class="needs-list">${items.map(r => `<li><button type="button" data-go-booking="${escapeHtml(r.id)}"><b>${escapeHtml(r.guestName)} · ${r.covers}</b><span>${escapeHtml(sub(r))}</span></button></li>`).join('')}</ul>` : '';
+            pane.innerHTML = `<h3>${escapeHtml(t('needs.title'))}</h3>${needsState.items.length ? `<ul class="needs-list">${needsState.items.slice(0, 6).map(i => `<li><button type="button" disabled><b>${escapeHtml(i.title)}</b><span>${escapeHtml(i.sub)}</span></button></li>`).join('')}</ul>` : `<p class="needs-empty">${escapeHtml(t('needs.empty'))}</p>`}
+                <h3>${escapeHtml(t('floor.coming_up'))}</h3>${li(up, r => `${bkTime(r.startsAtUtc)} · ${r.tableNumber || '—'}`) || `<p class="needs-empty">${escapeHtml(t('bookings.empty'))}</p>`}
+                <h3>${escapeHtml(t('bookings.waitlist_title'))}</h3>${li(wl, r => t('bookings.waited', { minutes: Math.max(0, Math.round((Date.now() - new Date(r.startsAtUtc).getTime()) / 60000)) })) || `<p class="needs-empty">${escapeHtml(t('bookings.waitlist_empty'))}</p>`}`;
+            return;
+        }
+        const s = tableServiceState(table, floorState.tickets);
+        const held = state.heldByTable?.[table.tableNumber];
+        const fits = s === 'free' ? floorState.reservations.find(r => r.isWaitlist && r.status === 0 && r.covers <= table.capacity) : null;
+        pane.innerHTML = `<div class="floor-pane-h"><b>${escapeHtml(table.tableNumber)}</b><span class="floor-tag s-${s}">${escapeHtml(floorStateLabel(s))}</span><button type="button" data-act="close" aria-label="${escapeHtml(t('bookings.close'))}">✕</button></div>
+            <p class="needs-empty">${escapeHtml(t('floor.table_capacity', { capacity: table.capacity }))}${table.coversCount > 0 && s !== 'free' ? ' · ' + escapeHtml(t('floor.table_covers_active', { count: table.coversCount })) : ''}${table.assignedWaiterName && s !== 'free' ? ' · ' + escapeHtml(table.assignedWaiterName) : ''}</p>
+            ${Number(table.activeOrderTotalTtc) > 0 ? `<p><b>${Number(table.activeOrderTotalTtc).toFixed(2)} €</b></p>` : ''}
+            ${held ? `<p class="needs-empty">${escapeHtml(t('bookings.held', { time: held }))}</p>` : ''}
+            <div class="floor-acts">${btn('open', s === 'free' ? t('floor.act_open') : t('floor.act_recall'), '', 'primary')}${fits ? btn('seatw', t('floor.act_seat_waiting', { name: fits.guestName }), `data-w="${escapeHtml(fits.id)}"`) : ''}${s === 'cooking' || s === 'late' ? btn('kds', t('floor.act_see_ticket')) : ''}</div>`;
+    }
+
+    async function onFloorPaneClick(e) {
+        const go = e.target.closest('[data-go-booking]');
+        if (go) { switchView('bookingsView'); return; }
+        const b = e.target.closest('[data-act]');
+        if (!b) return;
+        const table = floorState.sel;
+        if (b.dataset.act === 'close') { floorState.sel = null; renderFloorDrawing(); renderFloorPane(); return; }
+        if (b.dataset.act === 'open') {
+            await loadActiveTableOrder(table);
+            switchView('posView');
+            showToast(t('floor.table_recalled_toast', { number: table }), 'info');
+        } else if (b.dataset.act === 'kds') {
+            switchView('kdsView');
+        } else if (b.dataset.act === 'seatw') {
+            const res = await fetch(`/api/reservations/${b.dataset.w}/seat`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tableNumber: table, operatorId: state.operator?.id || null, waiterName: state.operator?.name || null }) });
+            if (res.ok) { showToast(t('bookings.seated_toast', { table }), 'success'); loadFloorPlanData(); } else { showToast(await readApiError(res, t('bookings.save_error')), 'error'); }
+        }
+    }
+
+    document.querySelectorAll('[data-floor-mode]').forEach(b => b.addEventListener('click', () => {
+        floorState.mode = b.dataset.floorMode;
+        try { localStorage.setItem('pos_floor_mode', floorState.mode); } catch { /* stockage indisponible */ }
+        renderFloorPlan();
+    }));
+    setInterval(() => { if (document.getElementById('floorPlanView')?.classList.contains('active')) renderFloorPlan(); }, 15000);
+
+    function renderFloorCards() {
         elements.floorTablesGrid.innerHTML = '';
         state.tables.forEach(table => {
             const card = document.createElement('div');
@@ -3067,44 +3333,50 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // ==================== KITCHEN KDS ====================
+    const kdsState = { station: 'ALL', tickets: [] };
+
     async function loadKdsData() {
         try {
             const res = await fetch('/api/kds/tickets');
-            const tickets = await res.json();
-            renderKdsBoard(tickets);
+            renderKdsBoard(await res.json());
         } catch (err) {
             console.error('Erreur KDS:', err);
         }
     }
 
+    const ticketAgeMs = (k, now) => now - new Date(k.dispatchedAtUtc).getTime();
+    const mmss = (ms) => { const s = Math.max(0, Math.floor(ms / 1000)); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };
+
     function renderKdsBoard(tickets) {
+        kdsState.tickets = tickets;
+        const now = Date.now(), target = KITCHEN_TARGET_MINUTES * 60000;
+        const mine = tickets.filter(k => kdsState.station === 'ALL' || k.stationId === kdsState.station);
         elements.kdsPendingCards.innerHTML = '';
         elements.kdsInPrepCards.innerHTML = '';
         elements.kdsReadyCards.innerHTML = '';
+        let pendingCount = 0, inPrepCount = 0, readyCount = 0;
 
-        let pendingCount = 0;
-        let inPrepCount = 0;
-        let readyCount = 0;
-
-        tickets.forEach(ticket => {
+        mine.forEach(ticket => {
+            const open = ticket.status === 0 || ticket.status === 1;
+            const age = ticketAgeMs(ticket, now), late = open && age > target;
             const card = document.createElement('div');
-            card.className = 'kds-ticket-card';
+            card.className = `kds-ticket-card${late ? ' late' : ''}`;
             card.innerHTML = `
                 <div class="ticket-header">
                     <span>${escapeHtml(ticket.tableNumber)}</span>
-                    <small>${escapeHtml(ticket.stationId || 'HOT')}</small>
+                    <small>${escapeHtml(ticket.stationId || 'HOT')}${open ? ` · <time>${mmss(age)}</time>` : ''}</small>
                 </div>
+                ${open ? `<div class="ticket-bar" aria-hidden="true"><i style="width:${Math.min(100, age / target * 100).toFixed(0)}%"></i></div>` : ''}
                 <div class="ticket-items">
                     ${ticket.items ? ticket.items.map(i => `<div>• ${i.quantity}x ${escapeHtml(i.productName)}</div>`).join('') : t('kitchen.default_dish')}
                 </div>
+                ${late ? `<span class="ticket-late">${escapeHtml(t('kitchen.late_tag'))}</span>` : ''}
             `;
-
             card.addEventListener('click', async () => {
                 await fetch(`/api/kds/tickets/${ticket.id}/bump`, { method: 'POST' });
                 showToast(t('kitchen.ticket_bumped_toast', { table: ticket.tableNumber }), 'success');
                 loadKdsData();
             });
-
             if (ticket.status === 0 || ticket.status === 'Pending') {
                 elements.kdsPendingCards.appendChild(card);
                 pendingCount++;
@@ -3120,7 +3392,51 @@ document.addEventListener('DOMContentLoaded', async () => {
         elements.countPending.textContent = pendingCount;
         elements.countInPrep.textContent = inPrepCount;
         elements.countReady.textContent = readyCount;
+        renderKdsExtras(tickets, mine, now, target);
     }
+
+    /** Tuiles, compteurs par poste, « à cuire » et « récemment sortis » (calculés sur les 50 derniers bons du serveur). */
+    function renderKdsExtras(all, mine, now, target) {
+        const open = mine.filter(k => k.status === 0 || k.status === 1);
+        const late = open.filter(k => ticketAgeMs(k, now) > target);
+        const startOfDay = new Date(); startOfDay.setHours(0, 0, 0, 0);
+        const served = all.filter(k => k.completedAtUtc && new Date(k.completedAtUtc) >= startOfDay);
+        const durations = served.map(k => new Date(k.completedAtUtc) - new Date(k.dispatchedAtUtc)).filter(d => d >= 0);
+        const avg = durations.length ? durations.reduce((s, d) => s + d, 0) / durations.length : null;
+        const lastHour = served.filter(k => now - new Date(k.completedAtUtc).getTime() <= 3600000).length;
+        const tile = (n, key, sub, extra = '') => `<div class="floor-stat${extra}"><b>${n}</b><span>${escapeHtml(t(key))}</span><small>${escapeHtml(sub)}</small></div>`;
+        document.getElementById('kdsStats').innerHTML =
+            tile(open.length, 'kitchen.stat_open', open.length ? t('kitchen.oldest', { time: bkTime(open.reduce((a, b) => new Date(a.dispatchedAtUtc) < new Date(b.dispatchedAtUtc) ? a : b).dispatchedAtUtc) }) : t('kitchen.rail_clear')) +
+            tile(late.length, 'kitchen.stat_late', t('kitchen.over_target', { minutes: KITCHEN_TARGET_MINUTES }), late.length ? ' warn' : '') +
+            tile(avg == null ? '—' : mmss(avg), 'kitchen.stat_avg', t('kitchen.target', { minutes: KITCHEN_TARGET_MINUTES })) +
+            tile(lastHour, 'kitchen.stat_out', t('kitchen.tickets_served'));
+
+        const counts = { ALL: all.filter(k => k.status === 0 || k.status === 1).length };
+        all.filter(k => k.status === 0 || k.status === 1).forEach(k => { counts[k.stationId] = (counts[k.stationId] || 0) + 1; });
+        elements.kdsFilterBtns.forEach(b => {
+            let small = b.querySelector('small');
+            if (!small) { small = document.createElement('small'); b.append(' ', small); }
+            small.textContent = counts[b.dataset.station] || 0;
+            b.classList.toggle('active', b.dataset.station === kdsState.station);
+        });
+
+        const agg = {};
+        open.forEach(k => (k.items || []).forEach(i => { agg[i.productName] = (agg[i.productName] || 0) + i.quantity; }));
+        const rows = Object.entries(agg).sort((a, b) => b[1] - a[1]);
+        document.getElementById('kdsAllDay').innerHTML = rows.length
+            ? rows.map(([name, q]) => `<div class="kds-ad"><span>${escapeHtml(name)}</span><b>×${q}</b></div>`).join('')
+            : `<p class="needs-empty">${escapeHtml(t('kitchen.allday_empty'))}</p>`;
+        const bumped = all.filter(k => k.completedAtUtc).sort((a, b) => new Date(b.completedAtUtc) - new Date(a.completedAtUtc)).slice(0, 5);
+        document.getElementById('kdsBumped').innerHTML = bumped.length
+            ? bumped.map(k => `<li class="bk-item"><span><strong>${escapeHtml(k.tableNumber)}</strong> · ${(k.items || []).reduce((s, i) => s + i.quantity, 0)}<small>${escapeHtml(t('kitchen.out_in', { time: mmss(new Date(k.completedAtUtc) - new Date(k.dispatchedAtUtc)) }))}</small></span></li>`).join('')
+            : `<li class="needs-empty">${escapeHtml(t('kitchen.bumped_empty'))}</li>`;
+    }
+
+    elements.kdsFilterBtns.forEach(b => b.addEventListener('click', () => {
+        kdsState.station = b.dataset.station;
+        renderKdsBoard(kdsState.tickets);
+    }));
+    setInterval(() => { if (document.getElementById('kdsView')?.classList.contains('active')) renderKdsBoard(kdsState.tickets); }, 15000);
 
     // ==================== ADMIN FORMS & TABS ====================
     function setupAdminTabs() {

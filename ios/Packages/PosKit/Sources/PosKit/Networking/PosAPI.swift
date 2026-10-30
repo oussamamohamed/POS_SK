@@ -95,6 +95,8 @@ public protocol PosAPI: Sendable {
     /// Export FEC ; `company` (facultatif) n'est que journalisé (`FEC_EXPORTED`), comme le paramètre `company` du .NET.
     func exportFec(from: Date, to: Date, siren: String, company: String?) async throws -> (fileName: String, data: Data)
     func dashboard(from: Date, to: Date) async throws -> FinancialDashboard
+    /// Encaissements de la journée [from, to) comparés à la semaine passée ; `tzOffsetMinutes` : décalage local du restaurant (courbe par heure locale).
+    func takings(from: Date, to: Date, tzOffsetMinutes: Int) async throws -> TakingsReport
     func verifyChains() async throws -> FiscalVerificationResult
     func periodClosures(terminalId: String?, periodType: FiscalPeriodType?) async throws -> [FiscalPeriodClosure]
     func executePeriodClosure(terminalId: String, periodType: FiscalPeriodType, periodKey: String) async throws -> FiscalPeriodClosure

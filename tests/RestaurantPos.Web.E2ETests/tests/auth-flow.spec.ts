@@ -116,7 +116,7 @@ test.describe('Authentification Tactile & Verrouillage Caisse (PIN)', () => {
     for (const d of ['1', '2', '3', '4']) await page.click(`.pin-keypad button[data-val="${d}"]`);
     await expect(page.locator('#pinLockModal')).not.toHaveClass(/active/);
     // plan de salle (GET /api/tables protégé) rempli sans rechargement
-    await expect(page.locator('#floorTablesGrid > *').first()).toBeAttached();
+    await expect(page.locator('#floorPlanIn > *, #floorTablesGrid > *').first()).toBeAttached();
     await page.waitForTimeout(2500);
     expect(counterOpens).toHaveLength(1);
     expect(JSON.parse(counterOpens[0]).destination).toBe(0); // À emporter (Takeaway = 0), destination conservée

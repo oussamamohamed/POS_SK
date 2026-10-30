@@ -10,6 +10,9 @@ public final class BookingsStore {
     public private(set) var day: Date
     /// Heure de la prochaine réservation attendue de chaque table, aujourd'hui : repère « Réservée hh:mm » du plan de salle.
     public private(set) var heldByTable: [String: Date] = [:]
+    /// Liste d'attente et prochaines réservations d'aujourd'hui, pour le volet du plan de salle.
+    public private(set) var todayWaitlist: [Reservation] = []
+    public private(set) var todayUpcoming: [Reservation] = []
 
     private let api: PosAPI
     private let notifier: Notifier
@@ -64,6 +67,8 @@ public final class BookingsStore {
 
     private func apply(today: [Reservation]) {
         let current = now()
+        todayWaitlist = today.filter { $0.isWaitlist && $0.status == .booked }
+        todayUpcoming = today.filter { !$0.isWaitlist && $0.status == .booked }.sorted { $0.startsAtUtc < $1.startsAtUtc }
         var held: [String: Date] = [:]
         for r in today.sorted(by: { $0.startsAtUtc < $1.startsAtUtc }) where !r.isWaitlist && r.status == .booked && r.endsAtUtc > current {
             if let table = r.tableNumber, held[table] == nil { held[table] = r.startsAtUtc }

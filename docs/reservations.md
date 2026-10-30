@@ -27,3 +27,9 @@ Chaque mutation diffuse `OnReservationsChanged()` sur `/hubs/pos` (web et iPad r
 - Jamais journalisé.
 
 À faire valider (RGPD) : durées de conservation, et information du client sur l'enregistrement de son numéro.
+
+## Compléments
+
+- `QuoteMinutes` (1 à 240) : attente annoncée à un client en liste d'attente, ignorée hors liste d'attente ; une fois dépassée, l'entrée remonte dans « à traiter ».
+- Une table soldée (`POST /api/checkout/pay` avec solde nul) ou libérée manuellement passe sa réservation `Seated` en `Done` ; l'événement `OnReservationsChanged` est diffusé après un paiement soldé.
+
