@@ -263,14 +263,16 @@ final class AppEnvironment {
 @MainActor @Observable
 final class Router {
     enum Section: String, CaseIterable, Identifiable {
-        case order, floor, kitchen, fiscal, admin
+        case order, floor, bookings, kitchen, menu, fiscal, admin
         var id: String { rawValue }
 
         var title: String {
             switch self {
             case .order: String(localized: "common.nav_order")
             case .floor: String(localized: "common.nav_floor")
+            case .bookings: String(localized: "common.nav_bookings")
             case .kitchen: String(localized: "common.nav_kitchen")
+            case .menu: String(localized: "common.nav_menu")
             case .fiscal: String(localized: "common.nav_fiscal")
             case .admin: String(localized: "common.nav_admin")
             }
@@ -280,13 +282,15 @@ final class Router {
             switch self {
             case .order: "cart"
             case .floor: "square.grid.3x3.topleft.filled"
+            case .bookings: "calendar"
             case .kitchen: "flame"
+            case .menu: "chart.bar.xaxis"
             case .fiscal: "doc.text.magnifyingglass"
             case .admin: "gearshape.2"
             }
         }
 
-        var requiresManager: Bool { self == .fiscal || self == .admin }
+        var requiresManager: Bool { self == .menu || self == .fiscal || self == .admin }
     }
 
     var section: Section = .order

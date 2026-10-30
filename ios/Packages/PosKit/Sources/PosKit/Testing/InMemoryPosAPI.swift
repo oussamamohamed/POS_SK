@@ -60,7 +60,25 @@ public actor InMemoryPosAPI: PosAPI {
         if !seed {
             productsStore = []
             categoriesStore = []
+        } else {
+            reservationsStore = Self.demoReservations(now: Date())
+            // Coûts de revient de démonstration (les autres articles restent « coût manquant »).
+            for (index, ratio) in [0.25, 0.55, 0.30, 0.80].enumerated() where index < productsStore.count {
+                productsStore[index].cost = Money(cents: Int(Double(productsStore[index].price.cents) / 1.1 * ratio))
+            }
         }
+    }
+
+    /// Réservations de démonstration (tests UI, aperçus) autour de l'heure courante : une attendue avec téléphone,
+    /// une en retard, une sans table et un client en liste d'attente.
+    private static func demoReservations(now: Date) -> [Reservation] {
+        func at(_ minutes: Double) -> Date { now.addingTimeInterval(minutes * 60) }
+        return [
+            Reservation(guestName: "Martin", covers: 2, startsAtUtc: at(60), tableNumber: "T1", note: "Anniversaire", phone: "+33 6 12 34 56 78"),
+            Reservation(guestName: "Petit", covers: 4, startsAtUtc: at(-30), tableNumber: "T2", isLate: true),
+            Reservation(guestName: "Durand", covers: 3, startsAtUtc: at(120)),
+            Reservation(guestName: "Leroy", covers: 2, startsAtUtc: at(-5), isWaitlist: true)
+        ]
     }
 
     public func setFailure(_ error: APIError?) { failure = error }

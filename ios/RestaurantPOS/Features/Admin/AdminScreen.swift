@@ -264,6 +264,7 @@ struct ProductEditorSheet: View {
     let productId: UUID?
     @State var draft: ProductDraft
     @State private var priceText = ""
+    @State private var costText = ""
     @State private var color: Color = .blue
 
     var body: some View {
@@ -277,6 +278,9 @@ struct ProductEditorSheet: View {
                     TextField("admin.price_ttc_placeholder", text: $priceText)
                         .keyboardType(.decimalPad)
                         .accessibilityIdentifier("product.price")
+                    TextField("admin.cost_ht_placeholder", text: $costText)
+                        .keyboardType(.decimalPad)
+                        .accessibilityIdentifier("product.cost")
                     Picker("admin.vat_label", selection: $draft.taxRatePercent) {
                         ForEach(ProductDraft.vatRates, id: \.self) { Text("\($0.formatted()) %").tag($0) }
                     }
@@ -300,6 +304,8 @@ struct ProductEditorSheet: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("common.save") {
                         draft.price = Money.parse(priceText) ?? .zero
+                        // Vide = pas de coût (effacé s'il y en avait un) ; saisie invalide = coût inchangé.
+                        draft.cost = costText.isEmpty ? nil : (Money.parse(costText) ?? draft.cost)
                         draft.colorHex = color.hexString
                         Task { if await model.catalogAdmin.saveProduct(id: productId, draft: draft) { dismiss() } }
                     }
@@ -308,6 +314,7 @@ struct ProductEditorSheet: View {
             }
             .onAppear {
                 priceText = draft.price.cents > 0 ? draft.price.plain : ""
+                costText = draft.cost?.plain ?? ""
                 color = Color(hex: draft.colorHex) ?? .blue
             }
         }

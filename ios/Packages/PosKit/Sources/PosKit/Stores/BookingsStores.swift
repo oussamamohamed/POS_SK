@@ -10,6 +10,8 @@ public final class BookingsStore {
     public private(set) var day: Date
     /// Réservations en retard + clients en liste d'attente aujourd'hui : pastille de la navigation.
     public private(set) var attentionCount = 0
+    /// Heure de la prochaine réservation attendue de chaque table, aujourd'hui : repère « Réservée hh:mm » du plan de salle.
+    public private(set) var heldByTable: [String: Date] = [:]
 
     private let api: PosAPI
     private let notifier: Notifier
@@ -49,7 +51,7 @@ public final class BookingsStore {
         let (from, to) = bounds(of: day)
         do {
             reservations = try await api.reservations(from: from, to: to)
-            if isToday { attentionCount = reservations.filter { $0.isLate || ($0.isWaitlist && $0.status == .booked) }.count }
+            if isToday { apply(today: reservations) }
         } catch {
             notifier.error(L10n.string("bookings.load_error"))
         }
@@ -59,7 +61,17 @@ public final class BookingsStore {
     public func refreshAttention() async {
         let (from, to) = bounds(of: now())
         guard let today = try? await api.reservations(from: from, to: to) else { return }
+        apply(today: today)
+    }
+
+    private func apply(today: [Reservation]) {
         attentionCount = today.filter { $0.isLate || ($0.isWaitlist && $0.status == .booked) }.count
+        let current = now()
+        var held: [String: Date] = [:]
+        for r in today.sorted(by: { $0.startsAtUtc < $1.startsAtUtc }) where !r.isWaitlist && r.status == .booked && r.endsAtUtc > current {
+            if let table = r.tableNumber, held[table] == nil { held[table] = r.startsAtUtc }
+        }
+        heldByTable = held
     }
 
     public func shiftDay(by days: Int) async {

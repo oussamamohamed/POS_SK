@@ -35,7 +35,9 @@ struct MainShell: View {
         switch router.section {
         case .order: OrderScreen()
         case .floor: FloorScreen()
+        case .bookings: BookingsScreen()
         case .kitchen: KitchenScreen()
+        case .menu: MenuAnalysisScreen()
         case .fiscal: FiscalScreen()
         case .admin: AdminScreen()
         }
@@ -64,7 +66,7 @@ struct SidebarRail: View {
 
             ForEach(Router.Section.allCases) { section in
                 if isVisible(section) {
-                    RailButton(section: section, isSelected: router.section == section) {
+                    RailButton(section: section, isSelected: router.section == section, badge: section == .bookings ? model.bookings.attentionCount : 0) {
                         router.section = section
                     }
                 }
@@ -96,6 +98,7 @@ struct SidebarRail: View {
 private struct RailButton: View {
     let section: Router.Section
     let isSelected: Bool
+    var badge = 0
     let action: () -> Void
 
     var body: some View {
@@ -104,12 +107,20 @@ private struct RailButton: View {
                 Image(systemName: section.systemImage)
                     .font(Font.pos(20, .semibold))
                     .symbolVariant(isSelected ? .fill : .none)
-                Text(section.title).font(Font.pos(12, .semibold))
+                Text(section.title).font(Font.pos(12, .semibold)).lineLimit(1).minimumScaleFactor(0.7)
             }
             .frame(width: 72, height: 64)
             .foregroundStyle(isSelected ? Theme.primaryInk : Theme.inkMuted)
             .background(RoundedRectangle(cornerRadius: Theme.Radius.md, style: .continuous).fill(isSelected ? Theme.primarySoft : .clear))
             .contentShape(RoundedRectangle(cornerRadius: Theme.Radius.md, style: .continuous))
+            .overlay(alignment: .topTrailing) {
+                if badge > 0 {
+                    Text("\(badge)").font(Font.posMono(11, .semibold)).foregroundStyle(.white)
+                        .padding(.horizontal, 5).frame(minWidth: 18, minHeight: 18)
+                        .background(Capsule().fill(Theme.danger))
+                        .accessibilityIdentifier("nav.bookings.badge")
+                }
+            }
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier("nav.\(section.rawValue)")

@@ -50,7 +50,7 @@ struct FloorScreen: View {
             ScrollView {
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 200), spacing: Theme.Space.l)], spacing: Theme.Space.l) {
                     ForEach(visibleTables) { table in
-                        TableCard(table: table)
+                        TableCard(table: table, heldAt: model.bookings.heldByTable[table.tableNumber])
                             .onTapGesture { select(table) }
                             .accessibilityIdentifier("table.\(table.tableNumber)")
                     }
@@ -60,7 +60,10 @@ struct FloorScreen: View {
             .refreshable { await floor.load() }
         }
         .padding([.horizontal, .top], Theme.Space.xl)
-        .task { await floor.load() }
+        .task {
+            await floor.load()
+            await model.bookings.refreshAttention()
+        }
         .sheet(item: $opening) { table in
             OpenTableSheet(table: table) { covers in
                 Task {
@@ -104,6 +107,8 @@ struct FloorScreen: View {
 /// Carte de table : les tables libres s'effacent (pointillés), les tables actives sont pleines.
 struct TableCard: View {
     let table: DiningTable
+    /// Heure de la prochaine réservation attendue sur cette table (repère « Réservée hh:mm »).
+    var heldAt: Date?
 
     private var capacityLabel: String {
         let coversPrefix = table.coversCount > 0 ? "\(table.coversCount)/" : ""
@@ -130,6 +135,10 @@ struct TableCard: View {
                     .font(.posLabel)
                     .foregroundStyle(Theme.inkMuted)
                     .lineLimit(1)
+                if let heldAt {
+                    Label(String(localized: "bookings.held \(heldAt.formatted(date: .omitted, time: .shortened))"), systemImage: "calendar")
+                        .font(.posCaption).foregroundStyle(Theme.warning).lineLimit(1)
+                }
                 Spacer(minLength: 0)
                 HStack(alignment: .firstTextBaseline, spacing: Theme.Space.s) {
                     if isFree {
