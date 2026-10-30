@@ -590,6 +590,8 @@
   "login.locked_title": "الصندوق مقفل",
   "menu.axis_margin": "هامش الوحدة دون ضريبة ←",
   "menu.axis_popularity": "الشعبية (حصة المبيعات) ←",
+  "menu.cat_all": "كل الفئات",
+  "menu.cat_label": "الفئة",
   "menu.chart_label": "شعبية وهامش كل طبق",
   "menu.class_Dog": "الأعباء",
   "menu.class_Plowhorse": "الأحصنة العاملة",

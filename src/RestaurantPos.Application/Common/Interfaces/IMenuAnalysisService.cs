@@ -10,5 +10,6 @@ public interface IMenuAnalysisService
     Task<MenuAnalysisReportDto> GetMenuAnalysisAsync(
         DateTimeOffset? fromUtc,
         DateTimeOffset? toUtc,
+        string? categoryId = null,
         CancellationToken cancellationToken = default);
 }

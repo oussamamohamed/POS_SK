@@ -771,7 +771,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // ==================== ANALYSE DU MENU ====================
-    const menuState = { days: 7, filter: null, report: null, bound: false };
+    const menuState = { days: 7, filter: null, category: '', report: null, bound: false, sortKey: 'quantity', sortDir: -1, pick: null, hot: null };
     const MENU_CLASS_ORDER = ['Star', 'Plowhorse', 'Puzzle', 'Dog'];
     const MENU_EUR = (n) => `<bdi dir="ltr">${Number(n).toFixed(2)} €</bdi>`;
 
@@ -789,9 +789,36 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
             body.addEventListener('click', (e) => {
                 const card = e.target.closest('[data-menu-class]');
-                if (!card) return;
-                menuState.filter = menuState.filter === card.dataset.menuClass ? null : card.dataset.menuClass;
-                renderMenuAnalysis();
+                if (card) {
+                    menuState.filter = menuState.filter === card.dataset.menuClass ? null : card.dataset.menuClass;
+                    renderMenuAnalysis();
+                    return;
+                }
+                const th = e.target.closest('th[data-sort]');
+                if (th) {
+                    const key = th.dataset.sort;
+                    menuState.sortDir = menuState.sortKey === key ? -menuState.sortDir : (key === 'name' ? 1 : -1);
+                    menuState.sortKey = key;
+                    renderMenuAnalysis();
+                    return;
+                }
+                const dish = e.target.closest('[data-dish]');
+                if (dish) {
+                    menuState.pick = menuState.pick === dish.dataset.dish ? null : dish.dataset.dish;
+                    renderMenuAnalysis();
+                }
+            });
+            body.addEventListener('pointerover', (e) => {
+                const dish = e.target.closest('[data-dish]');
+                menuFocus(dish ? dish.dataset.dish : null, e.clientX, e.clientY);
+            });
+            body.addEventListener('pointerleave', () => menuFocus(null));
+            document.getElementById('menuCats').addEventListener('click', (e) => {
+                const chip = e.target.closest('button[data-cat]');
+                if (!chip) return;
+                menuState.category = chip.dataset.cat;
+                menuState.pick = null;
+                loadMenuAnalysis();
             });
         }
         root.querySelectorAll('.menu-range button').forEach(b => b.classList.toggle('active', Number(b.dataset.days) === menuState.days));
@@ -801,7 +828,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             const from = new Date(to);
             if (menuState.days === 1) from.setHours(0, 0, 0, 0);
             else from.setDate(from.getDate() - menuState.days);
-            const res = await fetch(`/api/menu-analysis?from=${encodeURIComponent(from.toISOString())}&to=${encodeURIComponent(to.toISOString())}`);
+            renderMenuCategories();
+            const cat = menuState.category ? `&categoryId=${encodeURIComponent(menuState.category)}` : '';
+            const res = await fetch(`/api/menu-analysis?from=${encodeURIComponent(from.toISOString())}&to=${encodeURIComponent(to.toISOString())}${cat}`);
             if (res.status === 403) {
                 body.innerHTML = `<p class="menu-empty">${escapeHtml(t('menu.forbidden'))}</p>`;
                 return;
@@ -815,6 +844,28 @@ document.addEventListener('DOMContentLoaded', async () => {
             console.error('Erreur analyse du menu:', err);
             body.innerHTML = `<p class="menu-empty">${escapeHtml(t('menu.load_error'))}</p>`;
         }
+    }
+
+    function renderMenuCategories() {
+        const box = document.getElementById('menuCats');
+        const chips = [['', t('menu.cat_all')]].concat((state.categories || []).map(c => [c.id, c.name]));
+        box.innerHTML = chips.map(([id, name]) => `<button type="button" data-cat="${escapeHtml(id)}" aria-pressed="${menuState.category === id}">${escapeHtml(name)}</button>`).join('');
+    }
+
+    /** Survol d'un point ou d'une ligne : surligne l'autre et affiche l'infobulle. */
+    function menuFocus(id, x, y) {
+        menuState.hot = id;
+        const body = document.getElementById('menuAnalysisBody');
+        const show = id || menuState.pick;
+        body.classList.toggle('menu-focus', !!show);
+        body.querySelectorAll('[data-dish]').forEach(el => el.classList.toggle('on', el.dataset.dish === show));
+        const tip = document.getElementById('menuTip');
+        const item = id && menuState.report?.items.find(i => i.productId === id);
+        if (!item) { tip.hidden = true; return; }
+        tip.innerHTML = `<b>${escapeHtml(item.name)}</b><span>${escapeHtml(t('menu.col_qty'))} ${item.quantity}</span><span>${escapeHtml(t('menu.col_margin'))} ${item.unitMarginHt == null ? '—' : item.unitMarginHt.toFixed(2) + ' €'}</span><span>${escapeHtml(item.cls ? t('menu.class_' + item.cls) : t('menu.missing_cost'))}</span>`;
+        tip.hidden = false;
+        tip.style.left = `${Math.min(x + 16, innerWidth - tip.offsetWidth - 8)}px`;
+        tip.style.top = `${Math.max(8, y - tip.offsetHeight - 12)}px`;
     }
 
     function renderMenuAnalysis() {
@@ -834,12 +885,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             </button>`).join('');
         const missing = report.missingCostCount > 0
             ? `<p class="menu-warn">${escapeHtml(t('menu.missing_cost_banner', { count: report.missingCostCount }))}</p>` : '';
-        const shown = report.items.filter(i => !menuState.filter || i.cls === menuState.filter);
+        const sortValue = (i) => ({ name: i.name, quantity: i.quantity, share: i.share, revenueHt: i.revenueHt, unitCost: i.unitCost ?? -1, unitMarginHt: i.unitMarginHt ?? -Infinity, cls: i.class ?? 9 }[menuState.sortKey]);
+        const shown = report.items.filter(i => !menuState.filter || i.cls === menuState.filter).sort((a, b) => {
+            const x = sortValue(a), y = sortValue(b);
+            return (typeof x === 'string' ? x.localeCompare(y) : x - y) * menuState.sortDir;
+        });
         const rows = shown.map(i => {
             const cls = i.cls
                 ? `<span class="menu-badge menu-cls-${i.cls}">${escapeHtml(t('menu.class_' + i.cls))}</span>`
                 : `<span class="menu-badge menu-badge-missing">${escapeHtml(t('menu.missing_cost'))}</span>`;
-            return `<tr>
+            return `<tr data-dish="${escapeHtml(i.productId)}" class="${menuState.pick === i.productId ? 'picked' : ''}">
                 <td><strong>${escapeHtml(i.name)}</strong>${i.categoryName ? `<small>${escapeHtml(i.categoryName)}</small>` : ''}</td>
                 <td class="num">${i.quantity}</td>
                 <td class="num"><bdi dir="ltr">${(i.share * 100).toFixed(1)} %</bdi></td>
@@ -853,15 +908,30 @@ document.addEventListener('DOMContentLoaded', async () => {
             ${missing}
             <div class="menu-cards">${cards}</div>
             <div class="menu-chart-wrap">${renderMenuScatter(report)}</div>
+            ${renderMenuPick(report)}
             <div class="menu-table-wrap"><table class="menu-table">
-                <thead><tr>
-                    <th>${escapeHtml(t('menu.col_dish'))}</th><th class="num">${escapeHtml(t('menu.col_qty'))}</th>
-                    <th class="num">${escapeHtml(t('menu.col_share'))}</th><th class="num">${escapeHtml(t('menu.col_revenue'))}</th>
-                    <th class="num">${escapeHtml(t('menu.col_cost'))}</th><th class="num">${escapeHtml(t('menu.col_margin'))}</th>
-                    <th>${escapeHtml(t('menu.col_class'))}</th>
-                </tr></thead>
+                <thead><tr>${[['name', 'menu.col_dish', ''], ['quantity', 'menu.col_qty', 'num'], ['share', 'menu.col_share', 'num'], ['revenueHt', 'menu.col_revenue', 'num'], ['unitCost', 'menu.col_cost', 'num'], ['unitMarginHt', 'menu.col_margin', 'num'], ['cls', 'menu.col_class', '']]
+                    .map(([key, label, cls]) => `<th data-sort="${key}" class="${cls}" aria-sort="${menuState.sortKey === key ? (menuState.sortDir > 0 ? 'ascending' : 'descending') : 'none'}" tabindex="0">${escapeHtml(t(label))}</th>`).join('')}</tr></thead>
                 <tbody>${rows}</tbody>
             </table></div>`;
+    }
+
+    /** Fiche du plat choisi (point ou ligne touchés). */
+    function renderMenuPick(report) {
+        const i = report.items.find(x => x.productId === menuState.pick);
+        if (!i) return '';
+        const euros = (v) => v == null ? '—' : `<bdi dir="ltr">${Number(v).toFixed(2)} €</bdi>`;
+        const klass = i.cls ? `<span class="menu-badge menu-cls-${i.cls}">${escapeHtml(t('menu.class_' + i.cls))}</span> ${escapeHtml(t('menu.hint_' + i.cls))}` : escapeHtml(t('menu.missing_cost'));
+        return `<div class="menu-pick"><b>${escapeHtml(i.name)}</b><dl>
+            <div><dt>${escapeHtml(t('menu.col_qty'))}</dt><dd>${i.quantity}</dd></div>
+            <div><dt>${escapeHtml(t('menu.col_revenue'))}</dt><dd>${euros(i.revenueHt)}</dd></div>
+            <div><dt>${escapeHtml(t('menu.col_cost'))}</dt><dd>${euros(i.unitCost)}</dd></div>
+            <div><dt>${escapeHtml(t('menu.col_margin'))}</dt><dd>${euros(i.unitMarginHt)}</dd></div></dl><p>${klass}</p></div>`;
+    }
+
+    function niceStep(raw) {
+        const p = Math.pow(10, Math.floor(Math.log10(raw || 1))), f = raw / p;
+        return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10) * p;
     }
 
     // Nuage popularité (x) × marge unitaire HT (y) ; les plats sans coût n'ont pas d'ordonnée et n'y figurent pas.
@@ -875,10 +945,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         const spanY = (maxY - minY) || 1;
         const x = (s) => L + (s / maxShare) * (W - L - R);
         const y = (m) => T + (1 - (m - minY) / spanY) * (H - T - B);
-        const dots = pts.map(p => `<circle class="menu-dot menu-cls-${p.cls}" cx="${x(p.share).toFixed(1)}" cy="${y(p.unitMarginHt).toFixed(1)}" r="7" tabindex="0"><title>${escapeHtml(p.name)} — ${escapeHtml(t('menu.class_' + p.cls))}</title></circle>`).join('');
+        const dots = pts.map(p => `<circle class="menu-dot menu-cls-${p.cls}" data-dish="${escapeHtml(p.productId)}" cx="${x(p.share).toFixed(1)}" cy="${y(p.unitMarginHt).toFixed(1)}" r="7" tabindex="0" role="button" aria-label="${escapeHtml(p.name + ' — ' + t('menu.class_' + p.cls))}"></circle>`).join('');
+        const ticks = (max, min = 0) => { const step = niceStep((max - min) / 4); const out = []; for (let v = Math.ceil(min / step) * step; v <= max + 1e-9; v += step) out.push(v); return out; };
+        const yTicks = ticks(maxY, minY).map(v => `<line x1="${L}" x2="${W - R}" y1="${y(v).toFixed(1)}" y2="${y(v).toFixed(1)}" class="menu-grid"/><text x="${L - 6}" y="${(y(v) + 4).toFixed(1)}" text-anchor="end" class="menu-axis">${Number(v.toFixed(2))}</text>`).join('');
+        const xTicks = ticks(maxShare).map(v => `<text x="${x(v).toFixed(1)}" y="${H - B + 16}" text-anchor="middle" class="menu-axis">${Math.round(v * 100)} %</text>`).join('');
+        const quad = `<text x="${W - R - 6}" y="${T + 14}" text-anchor="end" class="menu-quad">${escapeHtml(t('menu.class_Star'))}</text><text x="${L + 6}" y="${T + 14}" class="menu-quad">${escapeHtml(t('menu.class_Puzzle'))}</text><text x="${W - R - 6}" y="${H - B - 6}" text-anchor="end" class="menu-quad">${escapeHtml(t('menu.class_Plowhorse'))}</text><text x="${L + 6}" y="${H - B - 6}" class="menu-quad">${escapeHtml(t('menu.class_Dog'))}</text>`;
         const vx = x(report.popularityThreshold).toFixed(1), hy = y(report.averageUnitMarginHt).toFixed(1);
         return `<svg viewBox="0 0 ${W} ${H}" class="menu-chart" role="img" aria-label="${escapeHtml(t('menu.chart_label'))}">
             <rect x="${L}" y="${T}" width="${W - L - R}" height="${H - T - B}" class="menu-plot"/>
+            ${yTicks}${xTicks}${quad}
             <line x1="${vx}" y1="${T}" x2="${vx}" y2="${H - B}" class="menu-ref"/>
             <line x1="${L}" y1="${hy}" x2="${W - R}" y2="${hy}" class="menu-ref"/>
             ${dots}

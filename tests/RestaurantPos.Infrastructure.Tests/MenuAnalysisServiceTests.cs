@@ -92,6 +92,31 @@ public sealed class MenuAnalysisServiceTests
     }
 
     [Fact]
+    public async Task Category_filter_recomputes_the_classes_on_the_selection()
+    {
+        using var db = NewDb();
+        db.Categories.Add(new Category { Id = "PLATS", Name = "Plats" });
+        db.Categories.Add(new Category { Id = "DESSERTS", Name = "Desserts" });
+        var a = AddProduct(db, "PlatA", 3m);
+        var b = AddProduct(db, "PlatB", 9m);
+        var dessert = AddProduct(db, "Dessert", 1m);
+        dessert.CategoryId = "DESSERTS";
+        AddPaidOrder(db, (a, 8, false), (b, 8, false), (dessert, 40, false));
+        await db.SaveChangesAsync();
+
+        var all = await new MenuAnalysisService(db).GetMenuAnalysisAsync(Now.AddDays(-1), Now.AddDays(1));
+        var plats = await new MenuAnalysisService(db).GetMenuAnalysisAsync(Now.AddDays(-1), Now.AddDays(1), "PLATS");
+
+        all.Items.Should().HaveCount(3);
+        plats.Items.Select(i => i.Name).Should().BeEquivalentTo("PlatA", "PlatB");
+        // Sur les seuls plats, chacun pèse 50 % : tous deux populaires ; PlatA (marge 7,00) dépasse la moyenne (4,00) et PlatB (1,00) non.
+        plats.Items.Single(i => i.Name == "PlatA").Class.Should().Be(MenuClass.Star);
+        plats.Items.Single(i => i.Name == "PlatB").Class.Should().Be(MenuClass.Plowhorse);
+        // Avec les desserts, PlatA et PlatB ne pèsent plus que 8/56 chacun, sous 70 % de la part moyenne (0,7/3 = 23 %).
+        all.Items.Single(i => i.Name == "PlatA").Popular.Should().BeFalse();
+    }
+
+    [Fact]
     public async Task Ignores_orders_outside_the_period_and_returns_empty_report_without_sales()
     {
         using var db = NewDb();

@@ -201,8 +201,10 @@ public actor HTTPPosAPI: PosAPI {
 
     // MARK: - Analyse du menu et réservations
 
-    public func menuAnalysis(from: Date, to: Date) async throws -> MenuAnalysisReport {
-        try await call("GET", "menu-analysis", query: ["from": Self.iso(from), "to": Self.iso(to)])
+    public func menuAnalysis(from: Date, to: Date, categoryId: String?) async throws -> MenuAnalysisReport {
+        var query = ["from": Self.iso(from), "to": Self.iso(to)]
+        if let categoryId { query["categoryId"] = categoryId }
+        return try await call("GET", "menu-analysis", query: query)
     }
 
     public func reservations(from: Date, to: Date) async throws -> [Reservation] {

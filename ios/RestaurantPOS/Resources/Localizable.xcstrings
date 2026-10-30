@@ -13133,6 +13133,29 @@
           }
         }
       }
+    },
+    "menu.cat_all": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "كل الفئات"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All categories"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toutes les familles"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

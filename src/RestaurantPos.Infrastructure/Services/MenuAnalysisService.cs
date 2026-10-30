@@ -27,6 +27,7 @@ public sealed class MenuAnalysisService : IMenuAnalysisService
     public async Task<MenuAnalysisReportDto> GetMenuAnalysisAsync(
         DateTimeOffset? fromUtc,
         DateTimeOffset? toUtc,
+        string? categoryId = null,
         CancellationToken cancellationToken = default)
     {
         var now = DateTimeOffset.UtcNow;
@@ -74,6 +75,15 @@ public sealed class MenuAnalysisService : IMenuAnalysisService
             .ToDictionary(p => p.Id);
         var categories = (await _dbContext.Categories.AsNoTracking().ToListAsync(cancellationToken).ConfigureAwait(false))
             .ToDictionary(c => c.Id, c => c.Name);
+
+        // Filtre de famille : les classes se recalculent sur la sélection (seuils relatifs aux plats restants).
+        if (!string.IsNullOrWhiteSpace(categoryId))
+        {
+            foreach (var id in sold.Keys.Where(id => !products.TryGetValue(id, out var p) || p.CategoryId != categoryId).ToList())
+            {
+                sold.Remove(id);
+            }
+        }
 
         int totalQuantity = sold.Values.Sum(s => s.Quantity);
         decimal threshold = sold.Count > 0 ? PopularityFactor / sold.Count : 0m;

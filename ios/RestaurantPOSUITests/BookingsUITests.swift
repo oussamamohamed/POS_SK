@@ -75,6 +75,17 @@ final class BookingsUITests: PosUITestCase {
         assertExists("nav.bookings.badge")
     }
 
+    func testMenuAnalysisFamilyChipSortAndPick() {
+        launch(section: "menu")
+        assertExists("menu.chart")
+        tap("menu.sort.name")
+        tap("menu.cat.all")
+        let row = app.descendants(matching: .any).matching(NSPredicate(format: "identifier BEGINSWITH 'menu.row.'")).firstMatch
+        XCTAssertTrue(row.waitForExistence(timeout: 5))
+        row.tap()
+        assertExists("menu.pick")
+    }
+
     func testWaiterDoesNotSeeTheMenuAnalysisTab() {
         launch(pin: "2468")
         assertNotExists("nav.menu", timeout: 2)

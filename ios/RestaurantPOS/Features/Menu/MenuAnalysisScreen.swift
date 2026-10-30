@@ -51,6 +51,7 @@ struct MenuAnalysisScreen: View {
                     .frame(width: 360)
                     .accessibilityIdentifier("menu.range")
                 }
+                categoryChips(store)
                 if store.isForbidden {
                     EmptyStateView(title: String(localized: "menu.forbidden"), systemImage: "lock")
                 } else if let report = store.report, !report.items.isEmpty {
@@ -63,7 +64,8 @@ struct MenuAnalysisScreen: View {
                             .accessibilityIdentifier("menu.missingCost")
                     }
                     cards(store)
-                    MenuScatter(report: report)
+                    MenuScatter(report: report, picked: store.pick) { store.togglePick($0) }
+                    if let picked = store.pickedItem { pickCard(picked) }
                     list(store)
                 } else if !store.isLoading {
                     EmptyStateView(title: String(localized: "menu.no_sales"), systemImage: "chart.bar")
@@ -73,6 +75,65 @@ struct MenuAnalysisScreen: View {
         }
         .task { await store.load() }
         .onChange(of: store.range) { Task { await store.load() } }
+    }
+
+    private func categoryChips(_ store: MenuAnalysisStore) -> some View {
+        @Bindable var store = store
+        return ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: Theme.Space.s) {
+                ChipButton(title: String(localized: "menu.cat_all"), isSelected: store.categoryId == nil) {
+                    store.categoryId = nil; store.pick = nil; Task { await store.load() }
+                }
+                .accessibilityIdentifier("menu.cat.all")
+                ForEach(model.catalog.categories) { category in
+                    ChipButton(title: category.name, isSelected: store.categoryId == category.id) {
+                        store.categoryId = category.id; store.pick = nil; Task { await store.load() }
+                    }
+                    .accessibilityIdentifier("menu.cat.\(category.id)")
+                }
+            }
+        }
+    }
+
+    private func pickCard(_ item: MenuAnalysisItem) -> some View {
+        Card {
+            VStack(alignment: .leading, spacing: Theme.Space.s) {
+                Text(item.name).font(.posHeadline).foregroundStyle(Theme.ink)
+                HStack(spacing: Theme.Space.xl) {
+                    stat("menu.col_qty", "\(item.quantity)")
+                    stat("menu.col_revenue", item.revenueHt.formatted)
+                    stat("menu.col_cost", item.unitCost?.formatted ?? "—")
+                    stat("menu.col_margin", item.unitMarginHt?.formatted ?? "—")
+                }
+                if let menuClass = item.class {
+                    Label(menuClass.hint, systemImage: "lightbulb").font(.posBody).foregroundStyle(Theme.inkMuted)
+                } else {
+                    Label(String(localized: "menu.missing_cost"), systemImage: "exclamationmark.triangle").font(.posBody).foregroundStyle(Theme.inkMuted)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .accessibilityIdentifier("menu.pick")
+    }
+
+    private func stat(_ key: LocalizedStringKey, _ value: String) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Text(key).font(.posCaption).foregroundStyle(Theme.inkMuted)
+            Text(value).font(Font.posMono(16, .semibold)).foregroundStyle(Theme.ink).environment(\.layoutDirection, .leftToRight)
+        }
+    }
+
+    private func headerCell(_ key: LocalizedStringKey, _ sort: MenuSortKey, _ store: MenuAnalysisStore) -> some View {
+        Button { store.sort(by: sort) } label: {
+            HStack(spacing: 2) {
+                Text(key)
+                if store.sortKey == sort { Image(systemName: store.sortAscending ? "chevron.up" : "chevron.down").font(.system(size: 9, weight: .bold)) }
+            }
+            .frame(minHeight: Theme.touchMin)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("menu.sort.\(String(describing: sort))")
     }
 
     private func cards(_ store: MenuAnalysisStore) -> some View {
@@ -102,13 +163,13 @@ struct MenuAnalysisScreen: View {
         Card {
             VStack(alignment: .leading, spacing: 0) {
                 HStack {
-                    Text("menu.col_dish").frame(maxWidth: .infinity, alignment: .leading)
-                    Text("menu.col_qty").frame(width: 60, alignment: .trailing)
-                    Text("menu.col_share").frame(width: 80, alignment: .trailing)
-                    Text("menu.col_revenue").frame(width: 110, alignment: .trailing)
-                    Text("menu.col_cost").frame(width: 90, alignment: .trailing)
-                    Text("menu.col_margin").frame(width: 110, alignment: .trailing)
-                    Text("menu.col_class").frame(width: 140, alignment: .leading).padding(.leading, Theme.Space.m)
+                    headerCell("menu.col_dish", .name, store).frame(maxWidth: .infinity, alignment: .leading)
+                    headerCell("menu.col_qty", .quantity, store).frame(width: 60, alignment: .trailing)
+                    headerCell("menu.col_share", .share, store).frame(width: 80, alignment: .trailing)
+                    headerCell("menu.col_revenue", .revenue, store).frame(width: 110, alignment: .trailing)
+                    headerCell("menu.col_cost", .cost, store).frame(width: 90, alignment: .trailing)
+                    headerCell("menu.col_margin", .margin, store).frame(width: 110, alignment: .trailing)
+                    headerCell("menu.col_class", .kind, store).frame(width: 140, alignment: .leading).padding(.leading, Theme.Space.m)
                 }
                 .font(.posCaption).foregroundStyle(Theme.inkMuted)
                 .padding(.vertical, Theme.Space.s)
@@ -137,7 +198,11 @@ struct MenuAnalysisScreen: View {
                     .font(Font.posMono(14)).foregroundStyle(Theme.ink)
                     .environment(\.layoutDirection, .leftToRight)
                     .frame(minHeight: Theme.touchTarget)
+                    .background(store.pick == item.productId ? Theme.raised : .clear)
+                    .contentShape(Rectangle())
+                    .onTapGesture { store.togglePick(item.productId) }
                     .accessibilityElement(children: .combine)
+                    .accessibilityAddTraits(.isButton)
                     .accessibilityIdentifier("menu.row.\(item.productId.uuidString.prefix(8))")
                     Divider()
                 }
@@ -149,6 +214,8 @@ struct MenuAnalysisScreen: View {
 /// Nuage popularité (x) × marge unitaire HT (y) ; les plats sans coût n'y figurent pas (pas d'ordonnée).
 private struct MenuScatter: View {
     let report: MenuAnalysisReport
+    var picked: UUID?
+    var onPick: (UUID) -> Void = { _ in }
 
     private struct Point: Identifiable {
         let id: UUID
@@ -172,13 +239,32 @@ private struct MenuScatter: View {
                     ForEach(points) { p in
                         PointMark(x: .value(String(localized: "menu.axis_popularity"), p.share), y: .value(String(localized: "menu.axis_margin"), p.margin))
                             .foregroundStyle(p.menuClass.color)
-                            .symbolSize(140)
+                            .symbolSize(picked == p.id ? 360 : 140)
+                            .opacity(picked == nil || picked == p.id ? 1 : 0.4)
                             .accessibilityLabel(p.name)
                     }
                     RuleMark(x: .value("threshold", (report.popularityThreshold as NSDecimalNumber).doubleValue))
                         .foregroundStyle(Theme.lineStrong).lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 4]))
                     RuleMark(y: .value("average", Double(average.cents) / 100))
                         .foregroundStyle(Theme.lineStrong).lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 4]))
+                }
+                .chartOverlay { proxy in
+                    GeometryReader { geo in
+                        Rectangle().fill(.clear).contentShape(Rectangle())
+                            .onTapGesture { location in
+                                guard let plot = proxy.plotFrame else { return }
+                                let origin = geo[plot].origin
+                                let point = CGPoint(x: location.x - origin.x, y: location.y - origin.y)
+                                let nearest = points.min { a, b in
+                                    func d(_ p: Point) -> CGFloat {
+                                        guard let x = proxy.position(forX: p.share), let y = proxy.position(forY: p.margin) else { return .infinity }
+                                        return hypot(x - point.x, y - point.y)
+                                    }
+                                    return d(a) < d(b)
+                                }
+                                if let nearest { onPick(nearest.id) }
+                            }
+                    }
                 }
                 .chartXAxisLabel(String(localized: "menu.axis_popularity"))
                 .chartYAxisLabel(String(localized: "menu.axis_margin"))

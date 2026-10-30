@@ -83,7 +83,7 @@ extension LocalPosAPI {
 
     // MARK: Analyse du menu
 
-    public func menuAnalysis(from: Date, to: Date) async throws -> MenuAnalysisReport {
+    public func menuAnalysis(from: Date, to: Date, categoryId: String?) async throws -> MenuAnalysisReport {
         try requireManager()
         let (start, end) = from <= to ? (from, to) : (to, from)
         let voidedReceiptIds = Set(try db.query("SELECT VoidedReceiptId FROM FiscalReceipts WHERE VoidedReceiptId IS NOT NULL").compactMap { $0.uuid("VoidedReceiptId") })
@@ -112,7 +112,7 @@ extension LocalPosAPI {
             row.uuid("Id").map { ($0, (name: row.string("Name") ?? "", categoryId: row.string("CategoryId"), cost: row.int("Cost"))) }
         })
         let categories = Dictionary(uniqueKeysWithValues: try db.query("SELECT Id, Name FROM Categories").map { ($0.string("Id") ?? "", $0.string("Name") ?? "") })
-        let sales = sold.map { id, s in
+        let sales = sold.filter { id, _ in categoryId == nil || products[id]?.categoryId == categoryId }.map { id, s in
             MenuSale(productId: id, name: products[id]?.name ?? s.name, categoryName: products[id]?.categoryId.flatMap { categories[$0] },
                      quantity: s.quantity, revenueHtCents: s.revenueHtCents, unitCostCents: products[id]?.cost)
         }

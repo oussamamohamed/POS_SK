@@ -590,6 +590,8 @@
   "login.locked_title": "Caisse verrouillée",
   "menu.axis_margin": "Marge unitaire HT →",
   "menu.axis_popularity": "Popularité (part des ventes) →",
+  "menu.cat_all": "Toutes les familles",
+  "menu.cat_label": "Famille",
   "menu.chart_label": "Popularité et marge unitaire de chaque plat",
   "menu.class_Dog": "Poids morts",
   "menu.class_Plowhorse": "Vaches à lait",

@@ -57,6 +57,23 @@ struct LocalMenuAnalysisTests {
         #expect(outside.items.isEmpty)
     }
 
+    @Test func categoryFilterKeepsOnlyThatFamily() async throws {
+        let api = try await makeLocalAPI()
+        let now = Date()
+        let burger = try await localProduct(api, "Burger Gourmet Rossini")
+        let pizza = try await localProduct(api, "Pizza Margherita AOP")
+        try await seatTable(api, "T1", items: [localInput(burger, quantity: 2), localInput(pizza)])
+        let order = try #require(try await api.activeOrder(table: "T1"))
+        _ = try await api.pay(localPayment(order, table: "T1", tenders: [localTender(.cash, order.totalTtcAmount?.cents ?? 0)]))
+
+        let range = (now.addingTimeInterval(-3600), now.addingTimeInterval(3600))
+        let all = try await api.menuAnalysis(from: range.0, to: range.1)
+        let onlyBurgerFamily = try await api.menuAnalysis(from: range.0, to: range.1, categoryId: burger.categoryId)
+
+        #expect(all.items.count == 2)
+        #expect(onlyBurgerFamily.items.map(\.productId) == [burger.id])
+    }
+
     @Test func costIsHiddenFromWaitersAndKeptOrClearedOnUpdate() async throws {
         let api = try await makeLocalAPI()
         let burger = try await localProduct(api, "Burger Gourmet Rossini")

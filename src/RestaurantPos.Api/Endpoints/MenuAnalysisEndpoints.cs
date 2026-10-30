@@ -18,7 +18,8 @@ public static class MenuAnalysisEndpoints
         group.MapGet("/", async (
             DateTimeOffset? from,
             DateTimeOffset? to,
+            string? categoryId,
             IMenuAnalysisService service,
-            CancellationToken ct) => Results.Ok(await service.GetMenuAnalysisAsync(from, to, ct)));
+            CancellationToken ct) => Results.Ok(await service.GetMenuAnalysisAsync(from, to, categoryId, ct)));
     }
 }

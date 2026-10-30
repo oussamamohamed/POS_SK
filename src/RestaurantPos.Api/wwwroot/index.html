@@ -7,7 +7,7 @@
     <title data-i18n="common.app_title">Restaurant POS — Système Tactile & Local-First</title>
     <link rel="preload" href="fonts/bricolage-latin.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="icon" type="image/jpeg" href="agy_pos_logo.jpg">
-    <link rel="stylesheet" href="styles.css?v=20261030_4">
+    <link rel="stylesheet" href="styles.css?v=20261030_5">
 </head>
 
 <body class="pos-dark">
@@ -984,7 +984,9 @@
                     </div>
                 </div>
                 <p class="text-muted" data-i18n="menu.subtitle">Popularité (part des ventes) face à la marge unitaire HT : quels plats pousser, retravailler ou retirer.</p>
+                <div class="menu-cats" id="menuCats" role="group" data-i18n-aria-label="menu.cat_label" aria-label="Famille"></div>
                 <div id="menuAnalysisBody" aria-live="polite"></div>
+                <div class="menu-tip" id="menuTip" role="tooltip" hidden></div>
             </div>
         </section>
 
@@ -1941,7 +1943,7 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
     <script src="i18n.js?v=20260927_1"></script>
-    <script src="app.js?v=20261030_5"></script>
+    <script src="app.js?v=20261030_6"></script>
 </body>
 </html>
 

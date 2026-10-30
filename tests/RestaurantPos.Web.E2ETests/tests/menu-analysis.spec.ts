@@ -31,6 +31,28 @@ test.describe('Analyse du menu', () => {
     await expect(body.locator('.menu-card, .menu-empty')).not.toHaveCount(0);
   });
 
+  test('filtre par famille, tri des colonnes et fiche du plat', async ({ page }) => {
+    await ensureLoggedIn(page);
+    await page.click('#btnNavMenu');
+    await page.click('.menu-range button[data-days="30"]');
+    const chips = page.locator('#menuCats button');
+    await expect(chips).not.toHaveCount(1);
+    await expect(chips.first()).toHaveAttribute('aria-pressed', 'true');
+
+    await chips.nth(1).click();
+    await expect(chips.nth(1)).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.locator('#menuAnalysisBody .menu-card, #menuAnalysisBody .menu-empty').first()).toBeVisible();
+
+    await chips.first().click();
+    const header = page.locator('.menu-table th[data-sort="name"]');
+    if (await header.count()) {
+      await header.click();
+      await expect(header).toHaveAttribute('aria-sort', 'ascending');
+      await page.locator('.menu-table tbody tr').first().click();
+      await expect(page.locator('.menu-pick')).toBeVisible();
+    }
+  });
+
   test('le champ coût de revient existe dans le formulaire de création d\'article', async ({ page }) => {
     await ensureLoggedIn(page);
     await expect(page.locator('#inputProdCost')).toHaveCount(1);

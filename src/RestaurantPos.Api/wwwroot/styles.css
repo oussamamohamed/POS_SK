@@ -2329,3 +2329,23 @@ body.pos-dark {
 @keyframes bk-flash { 0%, 100% { box-shadow:0 0 0 0 transparent; } 30% { box-shadow:0 0 0 4px var(--danger); } }
 .flash { animation: bk-flash 1.4s ease-out 1; }
 @media (prefers-reduced-motion: reduce) { .flash { animation:none; outline:3px solid var(--danger); } }
+
+/* Analyse du menu : famille, tri, survol, fiche du plat */
+.menu-cats { display:flex; flex-wrap:wrap; gap:8px; margin:12px 0 0; }
+.menu-cats button { min-height:44px; padding:0 16px; border:1px solid var(--border-color); border-radius:999px; background: var(--bg-panel); color: var(--text-main); font: inherit; cursor:pointer; }
+.menu-cats button[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.menu-grid { stroke: var(--border-color); }
+.menu-quad { fill: var(--text-dim); font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; }
+.menu-table th[data-sort] { cursor:pointer; user-select:none; }
+.menu-table th[aria-sort="ascending"]::after { content:" ▲"; font-size:.7em; }
+.menu-table th[aria-sort="descending"]::after { content:" ▼"; font-size:.7em; }
+.menu-table tbody tr { cursor:pointer; }
+.menu-table tbody tr.on, .menu-table tbody tr.picked { background: var(--bg-card-hover); }
+.menu-focus .menu-dot:not(.on) { opacity:.35; }
+.menu-dot.on { stroke: var(--ink); stroke-width:3; }
+.menu-tip { position:fixed; z-index:80; display:flex; flex-direction:column; gap:2px; padding:8px 12px; border-radius: var(--radius-sm); background: var(--ink); color: var(--paper); font-size:.85rem; pointer-events:none; }
+.menu-pick { margin-bottom:12px; padding:12px 16px; border:1px solid var(--border-color); border-radius: var(--radius-md); background: var(--bg-panel); }
+.menu-pick dl { display:flex; flex-wrap:wrap; gap:24px; margin:8px 0; }
+.menu-pick dt { font-size:.75rem; color: var(--text-muted); }
+.menu-pick dd { margin:0; font-family: var(--font-mono); }
+.menu-pick p { margin:0; color: var(--text-muted); }

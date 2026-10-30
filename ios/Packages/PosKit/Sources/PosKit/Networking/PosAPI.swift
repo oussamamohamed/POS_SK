@@ -105,7 +105,8 @@ public protocol PosAPI: Sendable {
     func archiveFile(id: UUID) async throws -> URL
 
     // Analyse du menu (responsable) et réservations
-    func menuAnalysis(from: Date, to: Date) async throws -> MenuAnalysisReport
+    /// `categoryId` : classes recalculées sur les seuls plats de cette famille (nil = toutes).
+    func menuAnalysis(from: Date, to: Date, categoryId: String?) async throws -> MenuAnalysisReport
     func reservations(from: Date, to: Date) async throws -> [Reservation]
     func createReservation(_ draft: ReservationDraft) async throws -> Reservation
     func updateReservation(id: UUID, _ draft: ReservationDraft) async throws -> Reservation
@@ -193,6 +194,10 @@ public struct ProductDraft: Hashable, Sendable {
 }
 
 public extension PosAPI {
+    func menuAnalysis(from: Date, to: Date) async throws -> MenuAnalysisReport {
+        try await menuAnalysis(from: from, to: to, categoryId: nil)
+    }
+
     /// Export FEC sans société.
     func exportFec(from: Date, to: Date, siren: String) async throws -> (fileName: String, data: Data) {
         try await exportFec(from: from, to: to, siren: siren, company: nil)

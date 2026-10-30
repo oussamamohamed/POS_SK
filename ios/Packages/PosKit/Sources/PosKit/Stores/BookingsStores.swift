@@ -138,11 +138,19 @@ public enum MenuRange: Int, CaseIterable, Identifiable, Sendable {
     public var id: Int { rawValue }
 }
 
+public enum MenuSortKey: Sendable { case name, quantity, share, revenue, cost, margin, kind }
+
 /// Analyse du menu (popularité × marge) sur la période choisie ; réservée aux responsables.
 @MainActor @Observable
 public final class MenuAnalysisStore {
     public var range: MenuRange = .week
     public var filter: MenuClass?
+    /// Famille choisie (nil = toutes) : les classes sont recalculées par le serveur sur ces seuls plats.
+    public var categoryId: String?
+    /// Plat choisi (ligne ou point touchés) : sa fiche s'affiche au-dessus de la liste.
+    public var pick: UUID?
+    public private(set) var sortKey: MenuSortKey = .quantity
+    public private(set) var sortAscending = false
     public private(set) var report: MenuAnalysisReport?
     public private(set) var isLoading = false
     public private(set) var isForbidden = false
@@ -161,9 +169,29 @@ public final class MenuAnalysisStore {
 
     public var items: [MenuAnalysisItem] {
         guard let report else { return [] }
-        guard let filter else { return report.items }
-        return report.items.filter { $0.class == filter }
+        let kept = filter.map { f in report.items.filter { $0.class == f } } ?? report.items
+        let ordered = kept.sorted { a, b in
+            switch sortKey {
+            case .name: a.name.localizedCaseInsensitiveCompare(b.name) == .orderedAscending
+            case .quantity: a.quantity < b.quantity
+            case .share: a.share < b.share
+            case .revenue: a.revenueHt < b.revenueHt
+            case .cost: (a.unitCost?.cents ?? -1) < (b.unitCost?.cents ?? -1)
+            case .margin: (a.unitMarginHt?.cents ?? Int.min) < (b.unitMarginHt?.cents ?? Int.min)
+            case .kind: (a.class?.rawValue ?? 9) < (b.class?.rawValue ?? 9)
+            }
+        }
+        return sortAscending ? ordered : ordered.reversed()
     }
+
+    public var pickedItem: MenuAnalysisItem? { report?.items.first { $0.productId == pick } }
+
+    /// Même colonne : inverse l'ordre ; nouvelle colonne : décroissant (croissant pour le nom).
+    public func sort(by key: MenuSortKey) {
+        if sortKey == key { sortAscending.toggle() } else { sortKey = key; sortAscending = key == .name }
+    }
+
+    public func togglePick(_ id: UUID) { pick = pick == id ? nil : id }
 
     public func count(_ menuClass: MenuClass) -> Int { report?.items.filter { $0.class == menuClass }.count ?? 0 }
 
@@ -176,7 +204,7 @@ public final class MenuAnalysisStore {
         let end = now()
         let start = range == .today ? calendar.startOfDay(for: end) : (calendar.date(byAdding: .day, value: -range.rawValue, to: end) ?? end)
         do {
-            report = try await api.menuAnalysis(from: start, to: end)
+            report = try await api.menuAnalysis(from: start, to: end, categoryId: categoryId)
         } catch let error as APIError {
             if case .forbidden = error { isForbidden = true; report = nil } else { notifier.error(error) }
         } catch {

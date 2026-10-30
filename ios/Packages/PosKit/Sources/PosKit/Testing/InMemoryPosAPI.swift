@@ -187,10 +187,10 @@ public actor InMemoryPosAPI: PosAPI {
     // MARK: Analyse du menu et réservations
 
     /// Données de démonstration déterministes : les premiers articles avec des quantités décroissantes (pas de lignes de commande fines en mémoire).
-    public func menuAnalysis(from: Date, to: Date) async throws -> MenuAnalysisReport {
+    public func menuAnalysis(from: Date, to: Date, categoryId: String?) async throws -> MenuAnalysisReport {
         try await step("menuAnalysis"); try requireManager()
         let quantities = [24, 18, 9, 4, 2, 1]
-        let sales = zip(productsStore.filter { $0.isActive != false }, quantities).map { product, quantity -> MenuSale in
+        let sales = zip(productsStore.filter { $0.isActive != false && (categoryId == nil || $0.categoryId == categoryId) }, quantities).map { product, quantity -> MenuSale in
             let htCents = Decimal(product.price.cents) / (1 + product.taxRatePercent / 100) * Decimal(quantity)
             return MenuSale(productId: product.id, name: product.name, categoryName: categoriesStore.first { $0.id == product.categoryId }?.name,
                             quantity: quantity, revenueHtCents: htCents, unitCostCents: product.cost?.cents)

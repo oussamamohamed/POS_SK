@@ -590,6 +590,8 @@
   "login.locked_title": "Terminal locked",
   "menu.axis_margin": "Unit margin excl. tax →",
   "menu.axis_popularity": "Popularity (sales share) →",
+  "menu.cat_all": "All categories",
+  "menu.cat_label": "Category",
   "menu.chart_label": "Popularity and unit margin of each dish",
   "menu.class_Dog": "Dogs",
   "menu.class_Plowhorse": "Plowhorses",
