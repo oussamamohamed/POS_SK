@@ -96,7 +96,12 @@ public protocol PosAPI: Sendable {
     func exportFec(from: Date, to: Date, siren: String, company: String?) async throws -> (fileName: String, data: Data)
     func dashboard(from: Date, to: Date) async throws -> FinancialDashboard
     /// Encaissements de la journée [from, to) comparés à la semaine passée ; `tzOffsetMinutes` : décalage local du restaurant (courbe par heure locale).
-    func takings(from: Date, to: Date, tzOffsetMinutes: Int) async throws -> TakingsReport
+    /// `compare` : `lastWeek`, `previous` ou nil (défaut selon la durée : un jour contre la semaine passée, plus long contre la période précédente).
+    func takings(from: Date, to: Date, tzOffsetMinutes: Int, compare: String?) async throws -> TakingsReport
+    /// Reçus de la période, du plus récent au plus ancien (300 au plus).
+    func takingsReceipts(from: Date, to: Date) async throws -> [TakingsReceipt]
+    /// Journal technique du jour courant seulement.
+    func journalToday(tzOffsetMinutes: Int) async throws -> [JournalEntry]
     func verifyChains() async throws -> FiscalVerificationResult
     func periodClosures(terminalId: String?, periodType: FiscalPeriodType?) async throws -> [FiscalPeriodClosure]
     func executePeriodClosure(terminalId: String, periodType: FiscalPeriodType, periodKey: String) async throws -> FiscalPeriodClosure
@@ -196,6 +201,10 @@ public struct ProductDraft: Hashable, Sendable {
 }
 
 public extension PosAPI {
+    func takings(from: Date, to: Date, tzOffsetMinutes: Int) async throws -> TakingsReport {
+        try await takings(from: from, to: to, tzOffsetMinutes: tzOffsetMinutes, compare: nil)
+    }
+
     func menuAnalysis(from: Date, to: Date) async throws -> MenuAnalysisReport {
         try await menuAnalysis(from: from, to: to, categoryId: nil)
     }

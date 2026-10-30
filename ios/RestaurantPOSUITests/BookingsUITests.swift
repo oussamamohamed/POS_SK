@@ -96,6 +96,23 @@ final class BookingsUITests: PosUITestCase {
         assertExists("nav.fiscal")
     }
 
+    func testTakingsPeriodsDetailsReceiptsAndJournal() {
+        launch(section: "takings")
+        assertExists("takings.extraTiles")
+        tap("takings.period.week")
+        assertExists("takings.tiles")
+        tap("takings.cumulative")
+        for id in ["takings.categories", "takings.top", "takings.vat", "takings.receipts", "takings.journal"] { assertExists(id) }
+        tap("takings.compare")
+        app.buttons["Période précédente"].firstMatch.tap()
+        tap("takings.period.today")
+        // Le duplicata d'un ticket envoie un toast « Duplicata n°1 ».
+        let reprint = element("takings.reprint.T01-000003")
+        for _ in 0..<6 where !reprint.isHittable { app.swipeUp() }
+        reprint.tap()
+        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label CONTAINS 'Duplicata'")).firstMatch.waitForExistence(timeout: 5))
+    }
+
     /// Mode autonome : les encaissements viennent des reçus fiscaux de la base locale.
     func testStandaloneTakingsScreenLoads() {
         launchStandalone()

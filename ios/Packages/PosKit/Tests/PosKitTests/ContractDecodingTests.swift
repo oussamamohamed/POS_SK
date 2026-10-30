@@ -36,10 +36,19 @@ struct ContractDecodingTests {
 
     @Test func decodesTakings() throws {
         let report = try decode(TakingsReport.self, "takings")
-        #expect(report.hours.count == 24)
-        #expect(report.hours.contains { $0.today.cents > 0 })
+        #expect(report.isHourly && report.series.count == 24 && report.compare == "lastWeek")
+        #expect(report.series.contains { $0.current.cents > 0 })
+        #expect(report.totalTtc.cents == report.series.reduce(0) { $0 + $1.current.cents })
         #expect(!report.paymentMethods.isEmpty && !report.staffPerformance.isEmpty)
-        #expect(report.totalTtc.cents == report.hours.reduce(0) { $0 + $1.today.cents })
+        #expect(!report.categories.isEmpty && !report.topProducts.isEmpty && !report.vat.isEmpty)
+        #expect(report.tipsTotalTtc.cents == report.tipsByServer.reduce(0) { $0 + $1.tipsTtc.cents })
+    }
+
+    @Test func decodesTakingsReceiptsAndJournal() throws {
+        let receipts = try decode([TakingsReceipt].self, "takings_receipts")
+        #expect(!receipts.isEmpty && receipts.allSatisfy { !$0.receiptNumber.isEmpty })
+        let journal = try decode([JournalEntry].self, "takings_journal")
+        #expect(!journal.isEmpty && journal.allSatisfy { !$0.eventType.isEmpty })
     }
 
     @Test func decodesProductCostForManagers() throws {

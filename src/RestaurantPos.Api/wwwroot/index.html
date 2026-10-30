@@ -7,7 +7,7 @@
     <title data-i18n="common.app_title">Restaurant POS — Système Tactile & Local-First</title>
     <link rel="preload" href="fonts/bricolage-latin.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="icon" type="image/jpeg" href="agy_pos_logo.jpg">
-    <link rel="stylesheet" href="styles.css?v=20261030_8">
+    <link rel="stylesheet" href="styles.css?v=20261030_9">
 </head>
 
 <body class="pos-dark">
@@ -997,7 +997,23 @@
                     <h2 data-i18n="takings.title">Encaissements</h2>
                     <button type="button" class="bk-act" id="takingsRefresh" data-i18n="takings.refresh">Actualiser</button>
                 </div>
-                <p class="text-muted" data-i18n="takings.subtitle">La journée en cours, comparée au même jour de la semaine passée.</p>
+                <p class="text-muted" data-i18n="takings.subtitle">Une période, comparée au même jour de la semaine passée ou à la période précédente.</p>
+                <div class="tk-controls">
+                    <div class="menu-range" id="takingsPeriod" role="group" data-i18n-aria-label="takings.period_label" aria-label="Période">
+                        <button type="button" data-period="today" data-i18n="takings.p_today">Aujourd'hui</button>
+                        <button type="button" data-period="yesterday" data-i18n="takings.p_yesterday">Hier</button>
+                        <button type="button" data-period="7" data-i18n="takings.p_7">7 jours</button>
+                        <button type="button" data-period="30" data-i18n="takings.p_30">30 jours</button>
+                    </div>
+                    <label class="tk-field"><span data-i18n="takings.p_date">Date</span> <input type="date" id="takingsDate"></label>
+                    <label class="tk-field"><span data-i18n="takings.compare_label">Comparer à</span>
+                        <select id="takingsCompare">
+                            <option value="auto" data-i18n="takings.cmp_auto">Automatique</option>
+                            <option value="lastWeek" data-i18n="takings.cmp_week">Même jour, semaine passée</option>
+                            <option value="previous" data-i18n="takings.cmp_previous">Période précédente</option>
+                        </select>
+                    </label>
+                </div>
                 <div id="takingsBody" aria-live="polite"></div>
                 <div class="menu-tip" id="takingsTip" role="tooltip" hidden></div>
             </div>
@@ -1974,7 +1990,7 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
     <script src="i18n.js?v=20260927_1"></script>
-    <script src="app.js?v=20261030_9"></script>
+    <script src="app.js?v=20261030_11"></script>
 </body>
 </html>
 

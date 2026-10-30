@@ -463,9 +463,21 @@ public final class DashboardStore {
 /// Encaissements du jour comparés à la semaine passée (page « Encaissements »).
 @MainActor @Observable
 public final class TakingsStore {
+    public enum Period: String, CaseIterable, Identifiable, Sendable {
+        case today, yesterday, week, month, date
+        public var id: String { rawValue }
+    }
+
     public private(set) var report: TakingsReport?
+    public private(set) var receipts: [TakingsReceipt] = []
+    public private(set) var journal: [JournalEntry] = []
     public private(set) var isLoading = false
     public var asTable = false
+    public var cumulative = false
+    /// `nil` = automatique (semaine passée pour un jour, période précédente au-delà).
+    public var compare: String?
+    public var period: Period = .today
+    public var date: Date
     private let api: PosAPI
     private let notifier: Notifier
     private let calendar: Calendar
@@ -476,15 +488,49 @@ public final class TakingsStore {
         self.notifier = notifier
         self.calendar = calendar
         self.now = now
+        self.date = now()
+    }
+
+    /// Bornes `[du, au[` de la période choisie, en jours locaux.
+    public var bounds: (from: Date, to: Date) {
+        let start = calendar.startOfDay(for: now())
+        func day(_ d: Date, _ n: Int) -> Date { calendar.date(byAdding: .day, value: n, to: d) ?? d.addingTimeInterval(Double(n) * 86_400) }
+        switch period {
+        case .today: return (start, day(start, 1))
+        case .yesterday: return (day(start, -1), start)
+        case .week: return (day(start, -6), day(start, 1))
+        case .month: return (day(start, -29), day(start, 1))
+        case .date:
+            let d = calendar.startOfDay(for: date)
+            return (d, day(d, 1))
+        }
+    }
+
+    public func select(_ period: Period) async {
+        self.period = period
+        await load()
     }
 
     public func load() async {
         isLoading = true
         defer { isLoading = false }
-        let current = now()
-        let start = calendar.startOfDay(for: current)
-        let end = calendar.date(byAdding: .day, value: 1, to: start) ?? start.addingTimeInterval(86_400)
-        do { report = try await api.takings(from: start, to: end, tzOffsetMinutes: calendar.timeZone.secondsFromGMT(for: current) / 60) } catch { notifier.error(error) }
+        let range = bounds
+        let offset = calendar.timeZone.secondsFromGMT(for: now()) / 60
+        do {
+            async let r = api.takings(from: range.from, to: range.to, tzOffsetMinutes: offset, compare: compare)
+            async let t = api.takingsReceipts(from: range.from, to: range.to)
+            async let j = api.journalToday(tzOffsetMinutes: offset)
+            (report, receipts, journal) = try await (r, t, j)
+        } catch { notifier.error(error) }
+    }
+
+    /// Réimprime un duplicata ; l'écran affiche le numéro retourné.
+    public func reprint(_ receipt: TakingsReceipt) async -> ReprintResult? {
+        do {
+            let result = try await api.reprintReceipt(receiptIdentifier: receipt.id.uuidString)
+            await load()
+            return result
+        } catch { notifier.error(error); return nil }
     }
 }
 

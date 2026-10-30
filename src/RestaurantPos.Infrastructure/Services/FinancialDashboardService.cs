@@ -26,40 +26,175 @@ public sealed class FinancialDashboardService : IFinancialDashboardService
         DateTimeOffset toUtc,
         int tzOffsetMinutes = 0,
         DateTimeOffset? nowUtc = null,
+        string? compare = null,
         CancellationToken cancellationToken = default)
     {
         var now = nowUtc ?? DateTimeOffset.UtcNow;
-        var week = TimeSpan.FromDays(7);
-        var today = await GetFinancialDashboardAsync(new FinancialDashboardFilterDto(fromUtc, toUtc), cancellationToken).ConfigureAwait(false);
+        var span = toUtc - fromUtc;
+        bool byHour = span <= TimeSpan.FromHours(25);
+        string cmp = compare is "previous" or "lastWeek" ? compare : (byHour ? "lastWeek" : "previous");
+        var shift = cmp == "previous" ? span : TimeSpan.FromDays(7);
         var offset = TimeSpan.FromMinutes(tzOffsetMinutes);
+        var day = TimeSpan.FromDays(1);
+        // Une heure de tolérance : une semaine locale qui traverse un changement d'heure mesure 7 jours ± 1 h.
+        int buckets = byHour ? 24 : Math.Clamp((int)Math.Ceiling((span - TimeSpan.FromHours(1)) / day), 1, 92);
 
-        // Reçus non annulés par heure locale, aujourd'hui puis le même jour la semaine précédente.
-        var receipts = await _dbContext.FiscalReceipts.ToListAsync(cancellationToken).ConfigureAwait(false);
-        var voided = receipts.Where(r => r.VoidedReceiptId != null).Select(r => r.VoidedReceiptId!.Value).ToHashSet();
-        var valid = receipts.Where(r => r.VoidedReceiptId == null && !voided.Contains(r.Id)).ToList();
-        decimal[] ByHour(DateTimeOffset from, DateTimeOffset to)
+        var today = await GetFinancialDashboardAsync(new FinancialDashboardFilterDto(fromUtc, toUtc), cancellationToken).ConfigureAwait(false);
+
+        var receipts = await _dbContext.FiscalReceipts.Include(r => r.Tenders).AsNoTracking().ToListAsync(cancellationToken).ConfigureAwait(false);
+        var voidedIds = receipts.Where(r => r.VoidedReceiptId != null).Select(r => r.VoidedReceiptId!.Value).ToHashSet();
+        var valid = receipts.Where(r => r.VoidedReceiptId == null && !voidedIds.Contains(r.Id)).ToList();
+
+        decimal[] Series(DateTimeOffset from, DateTimeOffset to)
         {
-            var hours = new decimal[24];
+            var values = new decimal[buckets];
             foreach (var r in valid.Where(r => r.CreatedAtUtc >= from && r.CreatedAtUtc < to))
             {
-                hours[(r.CreatedAtUtc + offset).Hour] += r.TotalTtcAmount.AmountInCents / 100.0m;
+                int i = byHour ? (r.CreatedAtUtc + offset).Hour : Math.Min(buckets - 1, (int)((r.CreatedAtUtc - from) / day));
+                values[i] += r.TotalTtcAmount.AmountInCents / 100.0m;
             }
-            return hours;
+            return values;
         }
 
-        var todayHours = ByHour(fromUtc, toUtc);
-        var lastWeekHours = ByHour(fromUtc - week, toUtc - week);
-        decimal lastWeekByNow = valid
-            .Where(r => r.CreatedAtUtc >= fromUtc - week && r.CreatedAtUtc < toUtc - week && r.CreatedAtUtc <= now - week)
+        var current = Series(fromUtc, toUtc);
+        var reference = Series(fromUtc - shift, toUtc - shift);
+        decimal compareByNow = valid
+            .Where(r => r.CreatedAtUtc >= fromUtc - shift && r.CreatedAtUtc < toUtc - shift && r.CreatedAtUtc <= now - shift)
             .Sum(r => r.TotalTtcAmount.AmountInCents) / 100.0m;
+        var series = Enumerable.Range(0, buckets).Select(i => new TakingsPointDto(
+            byHour ? i.ToString(System.Globalization.CultureInfo.InvariantCulture) : (fromUtc + offset + (day * i)).ToString("MM-dd", System.Globalization.CultureInfo.InvariantCulture),
+            current[i], reference[i])).ToList();
 
+        // Commandes réglées de la période, hors commandes annulées par avoir.
+        var voidedOrderIds = receipts.Where(r => voidedIds.Contains(r.Id)).Select(r => r.OrderId).ToHashSet();
+        var orders = (await _dbContext.Orders.AsNoTracking().Include(o => o.Items)
+                .Where(o => o.Status == OrderStatus.Paid).ToListAsync(cancellationToken).ConfigureAwait(false))
+            .Where(o => o.CreatedAtUtc >= fromUtc && o.CreatedAtUtc < toUtc && !voidedOrderIds.Contains(o.Id))
+            .ToList();
+        var products = await _dbContext.Products.AsNoTracking().ToDictionaryAsync(p => p.Id, cancellationToken).ConfigureAwait(false);
+        var categoryNames = await _dbContext.Categories.AsNoTracking().ToDictionaryAsync(c => c.Id, c => c.Name, cancellationToken).ConfigureAwait(false);
+        var users = await _dbContext.Users.AsNoTracking().ToDictionaryAsync(u => u.Id, cancellationToken).ConfigureAwait(false);
+        var tables = await _dbContext.DiningTables.AsNoTracking().ToDictionaryAsync(t => t.TableNumber, StringComparer.OrdinalIgnoreCase, cancellationToken).ConfigureAwait(false);
+
+        long discounts = 0, comps = 0, tips = 0;
+        var tipsByServer = new Dictionary<string, long>();
+        var byCategory = new Dictionary<string, (int Quantity, decimal Sales)>();
+        var byProduct = new Dictionary<Guid, (string Name, int Quantity, decimal Sales)>();
+        foreach (var order in orders)
+        {
+            long subtotal = order.Subtotal.AmountInCents, orderTotal = order.TotalTtc.AmountInCents;
+            decimal scale = subtotal > 0 ? (decimal)orderTotal / subtotal : 0m;
+            if (order.GlobalDiscountType == DiscountType.Comp)
+            {
+                comps += subtotal;
+            }
+            else
+            {
+                discounts += subtotal - orderTotal;
+                foreach (var item in order.Items)
+                {
+                    long baseCents = (item.UnitPrice.AmountInCents + item.ModifiersPriceExtra.AmountInCents) * item.Quantity;
+                    if (item.IsComp) comps += baseCents;
+                    else if (item.DiscountPercent > 0) discounts += baseCents - item.CalculateTotalTtc().AmountInCents;
+                }
+            }
+
+            tips += order.TipAmount.AmountInCents;
+            string server = users.TryGetValue(order.OperatorId, out var user) ? user.Name
+                : tables.TryGetValue(order.TableNumber, out var table) && !string.IsNullOrWhiteSpace(table.AssignedWaiterName) ? table.AssignedWaiterName! : "Serveur Inconnu";
+            tipsByServer[server] = tipsByServer.GetValueOrDefault(server) + order.TipAmount.AmountInCents;
+
+            if (order.GlobalDiscountType == DiscountType.Comp) continue;
+            foreach (var item in order.Items.Where(i => !i.IsComp && i.Quantity > 0))
+            {
+                decimal sales = item.CalculateTotalTtc().AmountInCents * scale / 100m;
+                string category = products.TryGetValue(item.ProductId, out var product) && categoryNames.TryGetValue(product.CategoryId, out var name) ? name : "—";
+                var c = byCategory.GetValueOrDefault(category);
+                byCategory[category] = (c.Quantity + item.Quantity, c.Sales + sales);
+                var p = byProduct.GetValueOrDefault(item.ProductId);
+                byProduct[item.ProductId] = (item.ProductName, p.Quantity + item.Quantity, p.Sales + sales);
+            }
+        }
+
+        decimal totalSales = byCategory.Values.Sum(v => v.Sales);
+        var categories = byCategory.OrderByDescending(kv => kv.Value.Sales)
+            .Select(kv => new CategoryTakingDto(kv.Key, kv.Value.Quantity, Math.Round(kv.Value.Sales, 2), totalSales > 0 ? Math.Round(kv.Value.Sales / totalSales, 4) : 0)).ToList();
+        var topProducts = byProduct.OrderByDescending(kv => kv.Value.Sales).Take(5)
+            .Select(kv => new TopProductSaleDto(kv.Key, kv.Value.Name, kv.Value.Quantity, Math.Round(kv.Value.Sales, 2),
+                totalSales > 0 ? Math.Round(kv.Value.Sales / totalSales * 100m, 1, MidpointRounding.AwayFromZero) : 0)).ToList();
+
+        // TVA : montants par taux des reçus valides (TaxBreakdownJson), base HT si connue (HtBreakdownJson), sinon déduite du taux.
+        var vat = new Dictionary<decimal, (long Base, long Vat)>();
+        foreach (var r in valid.Where(r => r.CreatedAtUtc >= fromUtc && r.CreatedAtUtc < toUtc))
+        {
+            var vatByRate = ParseRates(r.TaxBreakdownJson);
+            var htByRate = r.HtBreakdownJson is null ? null : ParseRates(r.HtBreakdownJson);
+            foreach (var (rate, vatCents) in vatByRate)
+            {
+                long baseCents = htByRate is not null && htByRate.TryGetValue(rate, out var ht) ? ht : rate > 0 ? (long)Math.Round(vatCents * 100m / rate, MidpointRounding.AwayFromZero) : 0;
+                var v = vat.GetValueOrDefault(rate);
+                vat[rate] = (v.Base + baseCents, v.Vat + vatCents);
+            }
+        }
+
+        var credits = receipts.Where(r => r.VoidedReceiptId != null && r.CreatedAtUtc >= fromUtc && r.CreatedAtUtc < toUtc).ToList();
         decimal total = today.Kpis.TotalSalesTtc;
         int covers = today.Kpis.TotalCoversCount;
         return new TakingsReportDto(
-            fromUtc, toUtc, total, lastWeekHours.Sum(), lastWeekByNow, covers, today.Kpis.TotalOrdersCount,
+            fromUtc, toUtc, byHour ? "hour" : "day", cmp, total, reference.Sum(), compareByNow, covers, today.Kpis.TotalOrdersCount,
             covers > 0 ? Math.Round(total / covers, 2, MidpointRounding.AwayFromZero) : 0,
-            Enumerable.Range(0, 24).Select(h => new HourlyTakingDto(h, todayHours[h], lastWeekHours[h])).ToList(),
-            today.PaymentMethods, today.StaffPerformance);
+            series, today.PaymentMethods, today.StaffPerformance,
+            tips / 100.0m, tipsByServer.Where(kv => kv.Value > 0).OrderByDescending(kv => kv.Value).Select(kv => new ServerTipDto(kv.Key, kv.Value / 100.0m)).ToList(),
+            discounts / 100.0m, comps / 100.0m, credits.Count, Math.Abs(credits.Sum(r => r.TotalTtcAmount.AmountInCents)) / 100.0m,
+            categories, topProducts,
+            vat.OrderBy(kv => kv.Key).Select(kv => new VatLineDto(kv.Key, kv.Value.Base / 100.0m, kv.Value.Vat / 100.0m)).ToList());
+    }
+
+    private static Dictionary<decimal, long> ParseRates(string? json)
+    {
+        var result = new Dictionary<decimal, long>();
+        if (string.IsNullOrWhiteSpace(json) || json == "{}") return result;
+        try
+        {
+            foreach (var (key, value) in System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, long>>(json) ?? [])
+            {
+                if (decimal.TryParse(key, System.Globalization.NumberStyles.Number, System.Globalization.CultureInfo.InvariantCulture, out var rate)) result[rate] = value;
+            }
+        }
+        catch (System.Text.Json.JsonException)
+        {
+            // Ventilation illisible : ce reçu n'apporte rien au détail de TVA.
+        }
+        return result;
+    }
+
+    public async Task<IReadOnlyList<TakingsReceiptDto>> GetReceiptsAsync(DateTimeOffset fromUtc, DateTimeOffset toUtc, CancellationToken cancellationToken = default)
+    {
+        var all = await _dbContext.FiscalReceipts.Include(r => r.Tenders).AsNoTracking().ToListAsync(cancellationToken).ConfigureAwait(false);
+        var voidedIds = all.Where(r => r.VoidedReceiptId != null).Select(r => r.VoidedReceiptId!.Value).ToHashSet();
+        var inRange = all.Where(r => r.CreatedAtUtc >= fromUtc && r.CreatedAtUtc < toUtc).OrderByDescending(r => r.CreatedAtUtc).Take(300).ToList();
+        var orderIds = inRange.Select(r => r.OrderId).ToList();
+        var orders = (await _dbContext.Orders.AsNoTracking().ToListAsync(cancellationToken).ConfigureAwait(false)).Where(o => orderIds.Contains(o.Id)).ToDictionary(o => o.Id);
+        var users = await _dbContext.Users.AsNoTracking().ToDictionaryAsync(u => u.Id, u => u.Name, cancellationToken).ConfigureAwait(false);
+        return inRange.Select(r =>
+        {
+            orders.TryGetValue(r.OrderId, out var order);
+            string server = order is not null && users.TryGetValue(order.OperatorId, out var name) ? name : "Serveur Inconnu";
+            return new TakingsReceiptDto(
+                r.Id, r.ReceiptNumber, r.CreatedAtUtc, order?.TableNumber, server,
+                r.Tenders.Select(t => GetPaymentMethodName(t.Method)).Distinct().ToList(),
+                r.TotalTtcAmount.AmountInCents / 100.0m, r.VoidedReceiptId != null, voidedIds.Contains(r.Id));
+        }).ToList();
+    }
+
+    public async Task<IReadOnlyList<JournalEntryDto>> GetJournalAsync(DateTimeOffset fromUtc, CancellationToken cancellationToken = default)
+    {
+        var entries = (await _dbContext.JournalEntries.AsNoTracking().ToListAsync(cancellationToken).ConfigureAwait(false))
+            .Where(e => e.OccurredAtUtc >= fromUtc).OrderByDescending(e => e.OccurredAtUtc).ThenByDescending(e => e.LocalSequence).Take(300).ToList();
+        var users = await _dbContext.Users.AsNoTracking().ToDictionaryAsync(u => u.Id, u => u.Name, cancellationToken).ConfigureAwait(false);
+        return entries.Select(e => new JournalEntryDto(
+            e.Id, e.OccurredAtUtc, e.EventType, e.TerminalId,
+            e.OperatorId is { } id && users.TryGetValue(id, out var name) ? name : null, e.PayloadJson)).ToList();
     }
 
     public async Task<FinancialDashboardReportDto> GetFinancialDashboardAsync(

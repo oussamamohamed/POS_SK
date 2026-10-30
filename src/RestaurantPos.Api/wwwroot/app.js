@@ -772,7 +772,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // ==================== ENCAISSEMENTS ====================
-    const takingsState = { report: null, asTable: false, bound: false };
+    const takingsState = { period: 'today', date: '', compare: 'auto', cumulative: false, asTable: false, report: null, receipts: [], journal: [], bound: false };
+
+    function takingsBounds() {
+        const start = new Date(); start.setHours(0, 0, 0, 0);
+        const day = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
+        if (takingsState.period === 'yesterday') return [day(start, -1), start];
+        if (takingsState.period === '7') return [day(start, -6), day(start, 1)];
+        if (takingsState.period === '30') return [day(start, -29), day(start, 1)];
+        if (takingsState.period === 'date' && takingsState.date) { const d = new Date(`${takingsState.date}T00:00:00`); return [d, day(d, 1)]; }
+        return [start, day(start, 1)];
+    }
 
     async function loadTakings() {
         const body = document.getElementById('takingsBody');
@@ -780,19 +790,50 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!takingsState.bound) {
             takingsState.bound = true;
             document.getElementById('takingsRefresh').addEventListener('click', loadTakings);
-            body.addEventListener('click', (e) => {
-                if (e.target.closest('[data-takings-table]')) { takingsState.asTable = !takingsState.asTable; renderTakings(); }
-                if (e.target.closest('[data-go-z]')) switchView('fiscalView');
+            document.getElementById('takingsPeriod').addEventListener('click', (e) => {
+                const b = e.target.closest('button[data-period]');
+                if (!b) return;
+                takingsState.period = b.dataset.period;
+                document.getElementById('takingsDate').value = '';
+                takingsState.date = '';
+                loadTakings();
+            });
+            document.getElementById('takingsDate').addEventListener('change', (e) => {
+                if (!e.target.value) return;
+                takingsState.period = 'date';
+                takingsState.date = e.target.value;
+                loadTakings();
+            });
+            document.getElementById('takingsCompare').addEventListener('change', (e) => { takingsState.compare = e.target.value; loadTakings(); });
+            body.addEventListener('click', async (e) => {
+                if (e.target.closest('[data-takings-table]')) { takingsState.asTable = !takingsState.asTable; renderTakings(); return; }
+                if (e.target.closest('[data-takings-cumulative]')) { takingsState.cumulative = !takingsState.cumulative; renderTakings(); return; }
+                if (e.target.closest('[data-go-z]')) { switchView('fiscalView'); return; }
+                const reprint = e.target.closest('[data-reprint]');
+                if (reprint) {
+                    const res = await fetch(`/api/checkout/receipts/${encodeURIComponent(reprint.dataset.reprint)}/reprint`, { method: 'POST' });
+                    if (res.ok) { const j = await res.json(); showToast(t('takings.reprint_done', { n: j.duplicateNumber }), j.printQueued ? 'success' : 'warning'); } else { showToast(await readApiError(res, t('takings.reprint_error')), 'error'); }
+                }
             });
         }
+        document.querySelectorAll('#takingsPeriod button').forEach(b => b.classList.toggle('active', b.dataset.period === takingsState.period));
+        document.getElementById('takingsCompare').value = takingsState.compare;
         try {
             await ensureAuthToken();
-            const from = new Date(); from.setHours(0, 0, 0, 0);
-            const to = new Date(from); to.setDate(to.getDate() + 1);
-            const res = await fetch(`/api/dashboard/takings?from=${encodeURIComponent(from.toISOString())}&to=${encodeURIComponent(to.toISOString())}&tzOffsetMinutes=${-new Date().getTimezoneOffset()}`);
+            const [from, to] = takingsBounds();
+            const range = `from=${encodeURIComponent(from.toISOString())}&to=${encodeURIComponent(to.toISOString())}`;
+            const tz = -new Date().getTimezoneOffset();
+            const cmp = takingsState.compare === 'auto' ? '' : `&compare=${takingsState.compare}`;
+            const [res, receipts, journal] = await Promise.all([
+                fetch(`/api/dashboard/takings?${range}&tzOffsetMinutes=${tz}${cmp}`),
+                fetchJsonOrEmpty(`/api/dashboard/receipts?${range}`),
+                fetchJsonOrEmpty(`/api/dashboard/journal?tzOffsetMinutes=${tz}`)
+            ]);
             if (res.status === 403) { body.innerHTML = `<p class="menu-empty">${escapeHtml(t('menu.forbidden'))}</p>`; return; }
             if (!res.ok) throw new Error(String(res.status));
             takingsState.report = await res.json();
+            takingsState.receipts = Array.isArray(receipts) ? receipts : [];
+            takingsState.journal = Array.isArray(journal) ? journal : [];
             renderTakings();
         } catch (err) {
             console.error('Erreur encaissements:', err);
@@ -800,66 +841,126 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
+    const takingsEur = (v) => `<bdi dir="ltr">${Number(v).toFixed(2)} €</bdi>`;
+
     function renderTakings() {
         const r = takingsState.report;
         const body = document.getElementById('takingsBody');
         if (!r || !body) return;
-        const eur = (v) => `<bdi dir="ltr">${Number(v).toFixed(2)} €</bdi>`;
-        const pct = r.lastWeekByNowTtc > 0 ? Math.round((r.totalTtc / r.lastWeekByNowTtc - 1) * 100) : null;
-        const delta = pct == null ? t('takings.no_comparison') : t('takings.vs_last_week', { pct: `${pct >= 0 ? '+' : '−'}${Math.abs(pct)}` });
+        const eur = takingsEur;
+        const pct = r.compareByNowTtc > 0 ? Math.round((r.totalTtc / r.compareByNowTtc - 1) * 100) : null;
+        const cmpLabel = t(r.compare === 'previous' ? 'takings.vs_previous' : 'takings.vs_last_week', { pct: pct == null ? '' : `${pct >= 0 ? '+' : '−'}${Math.abs(pct)}` });
+        const delta = pct == null ? t('takings.no_comparison') : cmpLabel;
         const tile = (label, value, sub, cls = '') => `<div class="floor-stat${cls}"><b>${value}</b><span>${escapeHtml(label)}</span><small>${sub}</small></div>`;
         const tiles = tile(t('takings.tile_total'), eur(r.totalTtc), escapeHtml(delta), pct != null && pct < 0 ? ' warn' : '') +
             tile(t('takings.tile_covers'), r.covers, '') + tile(t('takings.tile_spend'), eur(r.spendPerCover), escapeHtml(t('takings.before_tips'))) +
             tile(t('takings.tile_tables'), r.tablesTurned, '');
+        const extra = tile(t('takings.tile_tips'), eur(r.tipsTotalTtc), '') + tile(t('takings.tile_discounts'), eur(r.discountsTtc), '') +
+            tile(t('takings.tile_comps'), eur(r.compsTtc), '') + tile(t('takings.tile_voids'), `${r.voidsCount}`, r.voidsCount ? eur(r.voidsTtc) : '', r.voidsCount ? ' warn' : '');
 
         const pays = r.paymentMethods || [];
         const maxPay = Math.max(1, ...pays.map(p => p.totalAmount));
         const payHtml = pays.length ? pays.map(p => `<div class="tk-pay"><div class="tk-pay-l"><span>${escapeHtml(p.methodName)}</span><span>${eur(p.totalAmount)} <small>${Math.round(p.percentageOfTotal)} %</small></span></div><div class="tk-pay-t"><i style="width:${(p.totalAmount / maxPay * 100).toFixed(0)}%"></i></div></div>`).join('')
             : `<p class="needs-empty">${escapeHtml(t('takings.none'))}</p>`;
+        const none = `<p class="needs-empty">${escapeHtml(t('takings.none'))}</p>`;
+        const tipsOf = Object.fromEntries((r.tipsByServer || []).map(x => [x.serverName, x.tipsTtc]));
         const staff = (r.staffPerformance || []).length
-            ? `<table class="menu-table"><thead><tr><th>${escapeHtml(t('takings.col_server'))}</th><th class="num">${escapeHtml(t('takings.col_tables'))}</th><th class="num">${escapeHtml(t('takings.col_takings'))}</th><th class="num">${escapeHtml(t('takings.col_avg'))}</th></tr></thead><tbody>${r.staffPerformance.map(s => `<tr><td><strong>${escapeHtml(s.serverName)}</strong></td><td class="num">${s.tablesServedCount}</td><td class="num">${eur(s.totalSalesTtc)}</td><td class="num">${eur(s.averageTableTtc)}</td></tr>`).join('')}</tbody></table>`
-            : `<p class="needs-empty">${escapeHtml(t('takings.none'))}</p>`;
+            ? `<div class="menu-table-wrap"><table class="menu-table"><thead><tr><th>${escapeHtml(t('takings.col_server'))}</th><th class="num">${escapeHtml(t('takings.col_tables'))}</th><th class="num">${escapeHtml(t('takings.col_takings'))}</th><th class="num">${escapeHtml(t('takings.col_avg'))}</th><th class="num">${escapeHtml(t('takings.col_tips'))}</th></tr></thead><tbody>${r.staffPerformance.map(s => `<tr><td><strong>${escapeHtml(s.serverName)}</strong></td><td class="num">${s.tablesServedCount}</td><td class="num">${eur(s.totalSalesTtc)}</td><td class="num">${eur(s.averageTableTtc)}</td><td class="num">${eur(tipsOf[s.serverName] || 0)}</td></tr>`).join('')}</tbody></table></div>`
+            : none;
+        const maxCat = Math.max(1, ...(r.categories || []).map(c => c.salesTtc));
+        const cats = (r.categories || []).length ? r.categories.map(c => `<div class="tk-pay"><div class="tk-pay-l"><span>${escapeHtml(c.name)} <small>×${c.quantity}</small></span><span>${eur(c.salesTtc)} <small>${Math.round(c.share * 100)} %</small></span></div><div class="tk-pay-t"><i style="width:${(c.salesTtc / maxCat * 100).toFixed(0)}%"></i></div></div>`).join('') : none;
+        const top = (r.topProducts || []).length ? `<div class="menu-table-wrap"><table class="menu-table"><tbody>${r.topProducts.map(p => `<tr><td><strong>${escapeHtml(p.productName)}</strong></td><td class="num">×${p.quantitySold}</td><td class="num">${eur(p.totalSalesTtc)}</td></tr>`).join('')}</tbody></table></div>` : none;
+        const vat = (r.vat || []).length ? `<div class="menu-table-wrap"><table class="menu-table"><thead><tr><th>${escapeHtml(t('takings.vat_rate'))}</th><th class="num">${escapeHtml(t('takings.vat_base'))}</th><th class="num">${escapeHtml(t('takings.vat_amount'))}</th></tr></thead><tbody>${r.vat.map(v => `<tr><td>${Number(v.ratePercent)} %</td><td class="num">${eur(v.baseHt)}</td><td class="num">${eur(v.vat)}</td></tr>`).join('')}</tbody></table></div>` : none;
 
-        body.innerHTML = `<div class="floor-stats">${tiles}</div>
+        const tickets = takingsState.receipts.length ? `<div class="menu-table-wrap"><table class="menu-table"><thead><tr><th>${escapeHtml(t('takings.col_time'))}</th><th>${escapeHtml(t('takings.col_receipt'))}</th><th>${escapeHtml(t('takings.col_table'))}</th><th>${escapeHtml(t('takings.col_server'))}</th><th>${escapeHtml(t('takings.col_method'))}</th><th class="num">${escapeHtml(t('takings.col_total'))}</th><th></th></tr></thead><tbody>${takingsState.receipts.map(x => {
+            const d = new Date(x.atUtc);
+            const when = r.granularity === 'day' ? `${bkPad(d.getDate())}/${bkPad(d.getMonth() + 1)} ${bkTime(x.atUtc)}` : bkTime(x.atUtc);
+            const flag = x.isCredit ? ` <span class="menu-badge menu-cls-Dog">${escapeHtml(t('takings.credit'))}</span>` : x.isCancelled ? ` <span class="menu-badge menu-badge-missing">${escapeHtml(t('takings.cancelled'))}</span>` : '';
+            return `<tr><td>${escapeHtml(when)}</td><td>${escapeHtml(x.receiptNumber)}${flag}</td><td>${escapeHtml(x.tableNumber || '—')}</td><td>${escapeHtml(x.serverName)}</td><td>${escapeHtml((x.methods || []).join(', '))}</td><td class="num">${eur(x.totalTtc)}</td><td>${x.isCredit ? '' : `<button type="button" class="bk-act" data-reprint="${escapeHtml(x.id)}">${escapeHtml(t('takings.reprint'))}</button>`}</td></tr>`;
+        }).join('')}</tbody></table></div>` : none;
+
+        const journal = takingsState.journal.length ? `<ul class="tk-journal">${takingsState.journal.map(e => `<li><time>${escapeHtml(bkTime(e.atUtc))}</time><b>${escapeHtml(journalLabel(e.eventType))}</b><span>${escapeHtml(journalSummary(e))}</span></li>`).join('')}</ul>` : none;
+
+        body.innerHTML = `<div class="floor-stats">${tiles}</div><div class="floor-stats">${extra}</div>
             <div class="bk-grid">
-                <div class="bk-card"><div class="takings-h"><h3>${escapeHtml(t('takings.hourly_title'))}</h3><button type="button" class="bk-act" data-takings-table>${escapeHtml(t(takingsState.asTable ? 'takings.as_chart' : 'takings.as_table'))}</button></div>${renderTakingsHourly(r, eur)}</div>
+                <div class="bk-card"><div class="takings-h"><h3>${escapeHtml(t(r.granularity === 'day' ? 'takings.daily_title' : 'takings.hourly_title'))}</h3><span><button type="button" class="bk-act" data-takings-cumulative aria-pressed="${takingsState.cumulative}">${escapeHtml(t('takings.cumulative'))}</button> <button type="button" class="bk-act" data-takings-table>${escapeHtml(t(takingsState.asTable ? 'takings.as_chart' : 'takings.as_table'))}</button></span></div>${renderTakingsSeries(r, eur)}</div>
                 <div><div class="bk-card"><h3>${escapeHtml(t('takings.pay_title'))}</h3>${payHtml}</div>
                 <div class="bk-card" style="margin-top:16px;"><h3>${escapeHtml(t('takings.z_title'))}</h3><p class="needs-empty">${escapeHtml(t('takings.z_hint'))}</p><button type="button" class="bk-act" data-go-z>${escapeHtml(t('takings.z_open'))}</button></div></div>
             </div>
-            <div class="bk-card" style="margin-top:16px;"><h3>${escapeHtml(t('takings.servers_title'))}</h3>${staff}</div>`;
+            <div class="bk-grid" style="margin-top:16px;">
+                <div class="bk-card"><h3>${escapeHtml(t('takings.categories_title'))}</h3>${cats}</div>
+                <div><div class="bk-card"><h3>${escapeHtml(t('takings.top_title'))}</h3>${top}</div><div class="bk-card" style="margin-top:16px;"><h3>${escapeHtml(t('takings.vat_title'))}</h3>${vat}</div></div>
+            </div>
+            <div class="bk-card" style="margin-top:16px;"><h3>${escapeHtml(t('takings.servers_title'))}</h3>${staff}</div>
+            <div class="bk-card" style="margin-top:16px;"><h3>${escapeHtml(t('takings.tickets_title'))}</h3>${tickets}</div>
+            <div class="bk-card" style="margin-top:16px;"><h3>${escapeHtml(t('takings.journal_title'))}</h3><p class="needs-empty">${escapeHtml(t('takings.journal_hint'))}</p>${journal}</div>`;
         bindTakingsChart();
     }
 
-    function renderTakingsHourly(r, eur) {
-        const nonzero = r.hours.filter(h => h.today > 0 || h.lastWeek > 0).map(h => h.hour);
-        const startH = Math.min(11, ...(nonzero.length ? nonzero : [11])), endH = Math.max(22, ...(nonzero.length ? nonzero : [22]));
-        const hours = r.hours.filter(h => h.hour >= startH && h.hour <= endH);
+    /** Libellé d'un événement du journal technique (le type brut sinon). */
+    function journalLabel(type) {
+        const key = `journal.${type}`;
+        const label = t(key);
+        return label === key ? type : label;
+    }
+
+    /** Résumé court d'une écriture : trois premiers champs simples de sa charge utile. */
+    function journalSummary(entry) {
+        const parts = [];
+        if (entry.operatorName) parts.push(entry.operatorName);
+        if (entry.terminalId) parts.push(entry.terminalId);
+        try {
+            const payload = JSON.parse(entry.payloadJson);
+            for (const [k, v] of Object.entries(payload)) {
+                if (parts.length >= 5) break;
+                if (v !== null && typeof v !== 'object') parts.push(`${k}: ${v}`);
+            }
+        } catch {
+            // Charge utile non JSON : seulement l'opérateur et le poste.
+        }
+        return parts.join(' · ');
+    }
+
+    function renderTakingsSeries(r, eur) {
+        let series = r.series;
+        if (takingsState.cumulative) {
+            let a = 0, b = 0;
+            series = series.map(p => { a += p.current; b += p.compare; return { ...p, current: a, compare: b }; });
+        }
+        const used = series.map((p, i) => (p.current > 0 || p.compare > 0) ? i : -1).filter(i => i >= 0);
+        const hourly = r.granularity === 'hour';
+        const lo = hourly ? Math.min(11, ...(used.length ? used : [11])) : 0, hi = hourly ? Math.max(22, ...(used.length ? used : [22])) : series.length - 1;
+        const pts = series.slice(lo, hi + 1);
+        const labelOf = (p) => hourly ? `${String(p.label).padStart(2, '0')}h` : p.label;
         if (takingsState.asTable) {
-            return `<table class="menu-table"><thead><tr><th>${escapeHtml(t('takings.col_hour'))}</th><th class="num">${escapeHtml(t('takings.today'))}</th><th class="num">${escapeHtml(t('takings.last_week'))}</th></tr></thead><tbody>${hours.map(h => `<tr><td>${String(h.hour).padStart(2, '0')}h</td><td class="num">${eur(h.today)}</td><td class="num">${eur(h.lastWeek)}</td></tr>`).join('')}</tbody></table>`;
+            return `<table class="menu-table"><thead><tr><th>${escapeHtml(t(hourly ? 'takings.col_hour' : 'takings.col_day'))}</th><th class="num">${escapeHtml(t('takings.current'))}</th><th class="num">${escapeHtml(t('takings.compare'))}</th></tr></thead><tbody>${pts.map(p => `<tr><td>${escapeHtml(labelOf(p))}</td><td class="num">${eur(p.current)}</td><td class="num">${eur(p.compare)}</td></tr>`).join('')}</tbody></table>`;
         }
         const W = 640, H = 290, m = { l: 48, r: 12, t: 14, b: 30 };
-        const max = Math.max(1, ...hours.map(h => Math.max(h.today, h.lastWeek))) * 1.08, step = niceStep(max / 4), yMax = Math.ceil(max / step) * step;
-        const band = (W - m.l - m.r) / hours.length, bw = Math.min(26, band * .55);
+        const max = Math.max(1, ...pts.map(p => Math.max(p.current, p.compare))) * 1.08, step = niceStep(max / 4), yMax = Math.ceil(max / step) * step;
+        const band = (W - m.l - m.r) / pts.length, bw = Math.min(26, band * .55);
         const cx = i => m.l + band * (i + .5), Y = v => H - m.b - v / yMax * (H - m.t - m.b);
         let grid = '';
         for (let v = 0; v <= yMax + 1e-9; v += step) grid += `<line x1="${m.l}" x2="${W - m.r}" y1="${Y(v).toFixed(1)}" y2="${Y(v).toFixed(1)}" class="menu-grid"/><text x="${m.l - 6}" y="${(Y(v) + 4).toFixed(1)}" text-anchor="end" class="menu-axis">${Math.round(v)}</text>`;
-        const labels = hours.map((h, i) => `<text x="${cx(i).toFixed(1)}" y="${H - 8}" text-anchor="middle" class="menu-axis">${h.hour}</text>`).join('');
-        const bars = hours.map((h, i) => h.today > 0 ? `<rect class="tk-bar" x="${(cx(i) - bw / 2).toFixed(1)}" y="${Y(h.today).toFixed(1)}" width="${bw}" height="${(H - m.b - Y(h.today)).toFixed(1)}" rx="3"/>` : '').join('');
-        const line = `<path class="tk-line" d="M${hours.map((h, i) => `${cx(i).toFixed(1)},${Y(h.lastWeek).toFixed(1)}`).join('L')}"/>`;
-        return `<svg viewBox="0 0 ${W} ${H}" class="menu-chart" role="img" aria-label="${escapeHtml(t('takings.chart_label'))}" data-hours='${escapeHtml(JSON.stringify(hours))}' data-geo="${m.l},${band.toFixed(2)}">${grid}${labels}${bars}${line}<rect x="${m.l}" y="${m.t}" width="${W - m.l - m.r}" height="${H - m.t - m.b}" fill="transparent" data-hit/></svg>
-            <div class="tk-key"><span><i class="bar"></i>${escapeHtml(t('takings.today'))}</span><span><i class="ln"></i>${escapeHtml(t('takings.last_week'))}</span></div>`;
+        const every = Math.ceil(pts.length / 14);
+        const labels = pts.map((p, i) => i % every === 0 ? `<text x="${cx(i).toFixed(1)}" y="${H - 8}" text-anchor="middle" class="menu-axis">${escapeHtml(hourly ? p.label : p.label.slice(3) + '/' + p.label.slice(0, 2))}</text>` : '').join('');
+        const bars = takingsState.cumulative ? '' : pts.map((p, i) => p.current > 0 ? `<rect class="tk-bar" x="${(cx(i) - bw / 2).toFixed(1)}" y="${Y(p.current).toFixed(1)}" width="${bw}" height="${(H - m.b - Y(p.current)).toFixed(1)}" rx="3"/>` : '').join('');
+        const path = (key, cls) => `<path class="${cls}" d="M${pts.map((p, i) => `${cx(i).toFixed(1)},${Y(p[key]).toFixed(1)}`).join('L')}"/>`;
+        const compareLine = path('compare', 'tk-line');
+        const currentLine = takingsState.cumulative ? path('current', 'tk-line tk-cur') : '';
+        return `<svg viewBox="0 0 ${W} ${H}" class="menu-chart" role="img" aria-label="${escapeHtml(t('takings.chart_label'))}" data-pts='${escapeHtml(JSON.stringify(pts.map(p => ({ l: labelOf(p), c: p.current, r: p.compare }))))}' data-geo="${m.l},${band.toFixed(2)}">${grid}${labels}${bars}${compareLine}${currentLine}<rect x="${m.l}" y="${m.t}" width="${W - m.l - m.r}" height="${H - m.t - m.b}" fill="transparent" data-hit/></svg>
+            <div class="tk-key"><span><i class="bar"></i>${escapeHtml(t('takings.current'))}</span><span><i class="ln"></i>${escapeHtml(t('takings.compare'))}</span></div>`;
     }
 
     function bindTakingsChart() {
-        const svg = document.querySelector('#takingsBody svg[data-hours]');
+        const svg = document.querySelector('#takingsBody svg[data-pts]');
         if (!svg) return;
-        const hours = JSON.parse(svg.dataset.hours), [left, band] = svg.dataset.geo.split(',').map(Number);
+        const pts = JSON.parse(svg.dataset.pts), [left, band] = svg.dataset.geo.split(',').map(Number);
         const tip = document.getElementById('takingsTip');
         const show = (e) => {
             const box = svg.getBoundingClientRect(), scale = box.width / 640;
-            const i = Math.min(hours.length - 1, Math.max(0, Math.floor(((e.clientX - box.left) / scale - left) / band)));
-            const h = hours[i];
-            tip.innerHTML = `<b>${String(h.hour).padStart(2, '0')}:00–${String(h.hour + 1).padStart(2, '0')}:00</b><span>${escapeHtml(t('takings.today'))} ${Number(h.today).toFixed(2)} €</span><span>${escapeHtml(t('takings.last_week'))} ${Number(h.lastWeek).toFixed(2)} €</span>`;
+            const i = Math.min(pts.length - 1, Math.max(0, Math.floor(((e.clientX - box.left) / scale - left) / band)));
+            const p = pts[i];
+            tip.innerHTML = `<b>${escapeHtml(p.l)}</b><span>${escapeHtml(t('takings.current'))} ${Number(p.c).toFixed(2)} €</span><span>${escapeHtml(t('takings.compare'))} ${Number(p.r).toFixed(2)} €</span>`;
             tip.hidden = false;
             tip.style.left = `${Math.min(e.clientX + 16, innerWidth - tip.offsetWidth - 8)}px`;
             tip.style.top = `${Math.max(8, e.clientY - tip.offsetHeight - 12)}px`;
@@ -3201,7 +3302,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const needs = needsState.items.length;
         const tile = (n, key, extra = '') => `<div class="floor-stat${extra}"><b>${n}</b><span>${escapeHtml(t(key))}</span></div>`;
         const tk = floorState.takings;
-        const pct = tk && tk.lastWeekByNowTtc > 0 ? Math.round((tk.totalTtc / tk.lastWeekByNowTtc - 1) * 100) : null;
+        const pct = tk && tk.compareByNowTtc > 0 ? Math.round((tk.totalTtc / tk.compareByNowTtc - 1) * 100) : null;
         const takingsTile = tk ? `<div class="floor-stat${pct != null && pct < 0 ? ' warn' : ''}"><b>${Number(tk.totalTtc).toFixed(2)} €</b><span>${escapeHtml(t('takings.tile_total'))}</span><small>${pct == null ? '' : escapeHtml(t('takings.vs_last_week', { pct: `${pct >= 0 ? '+' : '−'}${Math.abs(pct)}` }))}</small></div>` : '';
         document.getElementById('floorStats').innerHTML = takingsTile +
             tile(`${occupied}/${dining.length}`, 'floor.stat_tables') + tile(guests, 'floor.stat_guests') +

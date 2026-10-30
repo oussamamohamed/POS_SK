@@ -1,0 +1,98 @@
+[
+  {
+    "id": "01a18c57-4593-76fc-a20f-c37177fcf54e",
+    "atUtc": "2026-10-30T10:24:52.115424+00:00",
+    "eventType": "LOGIN_SUCCEEDED",
+    "terminalId": null,
+    "operatorName": "Alexandre Dupont (Manager)",
+    "payloadJson": "{\"OperatorName\":\"Alexandre Dupont (Manager)\",\"Role\":\"FloorManager\",\"ClientIp\":\"127.0.0.1\"}"
+  },
+  {
+    "id": "01a18c56-fb10-727c-b09d-8efdc9bfa722",
+    "atUtc": "2026-10-30T10:24:33.04084+00:00",
+    "eventType": "LOGIN_SUCCEEDED",
+    "terminalId": null,
+    "operatorName": "Alexandre Dupont (Manager)",
+    "payloadJson": "{\"OperatorName\":\"Alexandre Dupont (Manager)\",\"Role\":\"FloorManager\",\"ClientIp\":\"127.0.0.1\"}"
+  },
+  {
+    "id": "01a18c56-f70e-72ba-b615-b18871e41f31",
+    "atUtc": "2026-10-30T10:24:32.014502+00:00",
+    "eventType": "LOGIN_SUCCEEDED",
+    "terminalId": null,
+    "operatorName": "Admin Système",
+    "payloadJson": "{\"OperatorName\":\"Admin Syst\\u00E8me\",\"Role\":\"Admin\",\"ClientIp\":\"127.0.0.1\"}"
+  },
+  {
+    "id": "01a18c56-f4af-7c2d-a284-406e97f4c5a4",
+    "atUtc": "2026-10-30T10:24:31.407464+00:00",
+    "eventType": "LOGIN_SUCCEEDED",
+    "terminalId": null,
+    "operatorName": "Alexandre Dupont (Manager)",
+    "payloadJson": "{\"OperatorName\":\"Alexandre Dupont (Manager)\",\"Role\":\"FloorManager\",\"ClientIp\":\"127.0.0.1\"}"
+  },
+  {
+    "id": "01a18c56-efd9-7dfc-ab28-22b1044bec06",
+    "atUtc": "2026-10-30T10:24:30.169405+00:00",
+    "eventType": "LOGIN_SUCCEEDED",
+    "terminalId": null,
+    "operatorName": "Alexandre Dupont (Manager)",
+    "payloadJson": "{\"OperatorName\":\"Alexandre Dupont (Manager)\",\"Role\":\"FloorManager\",\"ClientIp\":\"127.0.0.1\"}"
+  },
+  {
+    "id": "01a18c56-eacb-7e1a-b368-f2a4dd07830b",
+    "atUtc": "2026-10-30T10:24:28.875246+00:00",
+    "eventType": "LOGIN_SUCCEEDED",
+    "terminalId": null,
+    "operatorName": "Alexandre Dupont (Manager)",
+    "payloadJson": "{\"OperatorName\":\"Alexandre Dupont (Manager)\",\"Role\":\"FloorManager\",\"ClientIp\":\"127.0.0.1\"}"
+  },
+  {
+    "id": "01a18c56-e2e1-7e57-95b8-c4c18571462e",
+    "atUtc": "2026-10-30T10:24:26.849464+00:00",
+    "eventType": "LOGIN_SUCCEEDED",
+    "terminalId": null,
+    "operatorName": "Alexandre Dupont (Manager)",
+    "payloadJson": "{\"OperatorName\":\"Alexandre Dupont (Manager)\",\"Role\":\"FloorManager\",\"ClientIp\":\"127.0.0.1\"}"
+  },
+  {
+    "id": "01a18c56-dbb1-72d8-b079-444a2f637b8f",
+    "atUtc": "2026-10-30T10:24:25.009397+00:00",
+    "eventType": "LOGIN_SUCCEEDED",
+    "terminalId": null,
+    "operatorName": "Alexandre Dupont (Manager)",
+    "payloadJson": "{\"OperatorName\":\"Alexandre Dupont (Manager)\",\"Role\":\"FloorManager\",\"ClientIp\":\"127.0.0.1\"}"
+  },
+  {
+    "id": "01a18c56-d6df-7e4e-b6a1-90994b27e684",
+    "atUtc": "2026-10-30T10:24:23.775796+00:00",
+    "eventType": "LOGIN_SUCCEEDED",
+    "terminalId": null,
+    "operatorName": "Alexandre Dupont (Manager)",
+    "payloadJson": "{\"OperatorName\":\"Alexandre Dupont (Manager)\",\"Role\":\"FloorManager\",\"ClientIp\":\"127.0.0.1\"}"
+  },
+  {
+    "id": "01a18c56-ca91-7813-a7e7-38c4d3a0f7a5",
+    "atUtc": "2026-10-30T10:24:20.625584+00:00",
+    "eventType": "LOGIN_SUCCEEDED",
+    "terminalId": null,
+    "operatorName": "Alexandre Dupont (Manager)",
+    "payloadJson": "{\"OperatorName\":\"Alexandre Dupont (Manager)\",\"Role\":\"FloorManager\",\"ClientIp\":\"127.0.0.1\"}"
+  },
+  {
+    "id": "01a18c56-c677-7a07-ba02-71d8610052c0",
+    "atUtc": "2026-10-30T10:24:19.575535+00:00",
+    "eventType": "LOGIN_SUCCEEDED",
+    "terminalId": null,
+    "operatorName": "Alexandre Dupont (Manager)",
+    "payloadJson": "{\"OperatorName\":\"Alexandre Dupont (Manager)\",\"Role\":\"FloorManager\",\"ClientIp\":\"127.0.0.1\"}"
+  },
+  {
+    "id": "01a18c56-c325-7cad-b79d-17062a0b1c37",
+    "atUtc": "2026-10-30T10:24:18.725067+00:00",
+    "eventType": "LOGIN_SUCCEEDED",
+    "terminalId": null,
+    "operatorName": "Alexandre Dupont (Manager)",
+    "payloadJson": "{\"OperatorName\":\"Alexandre Dupont (Manager)\",\"Role\":\"FloorManager\",\"ClientIp\":\"127.0.0.1\"}"
+  }
+]

@@ -32,8 +32,35 @@ public static class DashboardEndpoints
             DateTimeOffset from,
             DateTimeOffset to,
             int? tzOffsetMinutes,
+            string? compare,
             IFinancialDashboardService dashboardService,
             CancellationToken ct) =>
-            Results.Ok(await dashboardService.GetTakingsAsync(from, to, Math.Clamp(tzOffsetMinutes ?? 0, -14 * 60, 14 * 60), null, ct)));
+        {
+            // Au plus 92 jours : la courbe quotidienne et les agrégats se calculent en mémoire.
+            if (to <= from || to - from > TimeSpan.FromDays(92)) return Results.BadRequest();
+            return Results.Ok(await dashboardService.GetTakingsAsync(from, to, Math.Clamp(tzOffsetMinutes ?? 0, -14 * 60, 14 * 60), null, compare, ct));
+        });
+
+        group.MapGet("/receipts", async (
+            DateTimeOffset from,
+            DateTimeOffset to,
+            IFinancialDashboardService dashboardService,
+            CancellationToken ct) =>
+            to <= from || to - from > TimeSpan.FromDays(92)
+                ? Results.BadRequest()
+                : Results.Ok(await dashboardService.GetReceiptsAsync(from, to, ct)));
+
+        // Journal du jour en cours seulement : le début du jour se calcule côté serveur avec le décalage local du restaurant.
+        group.MapGet("/journal", async (
+            int? tzOffsetMinutes,
+            IFinancialDashboardService dashboardService,
+            TimeProvider clock,
+            CancellationToken ct) =>
+        {
+            var offset = TimeSpan.FromMinutes(Math.Clamp(tzOffsetMinutes ?? 0, -14 * 60, 14 * 60));
+            var localNow = clock.GetUtcNow() + offset;
+            var startUtc = new DateTimeOffset(localNow.UtcDateTime.Date, TimeSpan.Zero) - offset;
+            return Results.Ok(await dashboardService.GetJournalAsync(startUtc, ct));
+        });
     }
 }

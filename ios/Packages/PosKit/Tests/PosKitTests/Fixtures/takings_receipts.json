@@ -1,0 +1,106 @@
+[
+  {
+    "id": "01a18c56-dfd7-7d95-b1c3-f5b427a5f32e",
+    "receiptNumber": "T170-000008",
+    "atUtc": "2026-10-30T10:24:26.071703+00:00",
+    "tableNumber": "R865034",
+    "serverName": "Serveur Inconnu",
+    "methods": [
+      "Card (CB)"
+    ],
+    "totalTtc": 6.16,
+    "isCredit": false,
+    "isCancelled": false
+  },
+  {
+    "id": "01a18c56-df67-70c4-8f71-72b2a2176153",
+    "receiptNumber": "T170-000007",
+    "atUtc": "2026-10-30T10:24:25.959283+00:00",
+    "tableNumber": "R865034",
+    "serverName": "Serveur Inconnu",
+    "methods": [
+      "Card (CB)"
+    ],
+    "totalTtc": 6.17,
+    "isCredit": false,
+    "isCancelled": false
+  },
+  {
+    "id": "01a18c56-df15-7fde-b10f-4fc1ab9201e5",
+    "receiptNumber": "T170-000006",
+    "atUtc": "2026-10-30T10:24:25.877984+00:00",
+    "tableNumber": "R865034",
+    "serverName": "Serveur Inconnu",
+    "methods": [
+      "Card (CB)"
+    ],
+    "totalTtc": 6.17,
+    "isCredit": false,
+    "isCancelled": false
+  },
+  {
+    "id": "01a18c56-aa4c-7e11-9300-4e9fac5e8a44",
+    "receiptNumber": "T170-000005",
+    "atUtc": "2026-10-30T10:24:12.364339+00:00",
+    "tableNumber": "Comptoir",
+    "serverName": "Alexandre Dupont (Manager)",
+    "methods": [
+      "Cash"
+    ],
+    "totalTtc": 12,
+    "isCredit": false,
+    "isCancelled": false
+  },
+  {
+    "id": "01a18c56-8905-79f5-b068-0e608fe9c6b4",
+    "receiptNumber": "T170-000004",
+    "atUtc": "2026-10-30T10:24:03.845171+00:00",
+    "tableNumber": "Comptoir",
+    "serverName": "Alexandre Dupont (Manager)",
+    "methods": [
+      "Card (CB)"
+    ],
+    "totalTtc": 52,
+    "isCredit": false,
+    "isCancelled": false
+  },
+  {
+    "id": "01a18c56-7db4-7ad6-a34d-9741c5da130f",
+    "receiptNumber": "T170-000003",
+    "atUtc": "2026-10-30T10:24:00.948094+00:00",
+    "tableNumber": "P840432",
+    "serverName": "Serveur Inconnu",
+    "methods": [
+      "Card (CB)"
+    ],
+    "totalTtc": 6,
+    "isCredit": false,
+    "isCancelled": false
+  },
+  {
+    "id": "01a18c56-6b87-7eb5-a7db-e575d5080fdc",
+    "receiptNumber": "T170-000002",
+    "atUtc": "2026-10-30T10:23:56.295674+00:00",
+    "tableNumber": "R835729",
+    "serverName": "Serveur Inconnu",
+    "methods": [
+      "Card (CB)"
+    ],
+    "totalTtc": 3,
+    "isCredit": false,
+    "isCancelled": false
+  },
+  {
+    "id": "01a18c56-66a1-7f9e-92a5-87c34a2f3033",
+    "receiptNumber": "T170-000001",
+    "atUtc": "2026-10-30T10:23:55.041343+00:00",
+    "tableNumber": "R834570",
+    "serverName": "Serveur Inconnu",
+    "methods": [
+      "Card (CB)"
+    ],
+    "totalTtc": 6,
+    "isCredit": false,
+    "isCancelled": false
+  }
+]

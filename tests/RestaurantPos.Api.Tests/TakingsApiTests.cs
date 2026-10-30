@@ -42,9 +42,45 @@ public class TakingsApiTests : IClassFixture<PosApiApplicationFactory>
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<JsonElement>();
-        body.GetProperty("hours").GetArrayLength().Should().Be(24);
-        body.TryGetProperty("lastWeekByNowTtc", out _).Should().BeTrue();
-        body.TryGetProperty("spendPerCover", out _).Should().BeTrue();
-        body.GetProperty("paymentMethods").ValueKind.Should().Be(JsonValueKind.Array);
+        body.GetProperty("series").GetArrayLength().Should().Be(24);
+        body.GetProperty("granularity").GetString().Should().Be("hour");
+        foreach (var field in new[] { "compareByNowTtc", "spendPerCover", "tipsTotalTtc", "discountsTtc", "compsTtc", "voidsCount" })
+        {
+            body.TryGetProperty(field, out _).Should().BeTrue(field);
+        }
+        foreach (var field in new[] { "paymentMethods", "categories", "topProducts", "vat", "tipsByServer" })
+        {
+            body.GetProperty(field).ValueKind.Should().Be(JsonValueKind.Array, field);
+        }
+    }
+
+    [Fact]
+    public async Task Rejects_an_inverted_or_oversized_period_and_supports_the_previous_comparison()
+    {
+        var from = new DateTimeOffset(DateTimeOffset.UtcNow.Date, TimeSpan.Zero);
+        string Q(DateTimeOffset a, DateTimeOffset b, string extra = "") => $"/api/dashboard/takings?from={Uri.EscapeDataString(a.ToString("O"))}&to={Uri.EscapeDataString(b.ToString("O"))}{extra}";
+
+        (await ClientAs("Admin").GetAsync(Q(from, from))).StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        (await ClientAs("Admin").GetAsync(Q(from, from.AddDays(120)))).StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        var week = await (await ClientAs("Admin").GetAsync(Q(from.AddDays(-7), from, "&compare=previous"))).Content.ReadFromJsonAsync<JsonElement>();
+        week.GetProperty("granularity").GetString().Should().Be("day");
+        week.GetProperty("compare").GetString().Should().Be("previous");
+        week.GetProperty("series").GetArrayLength().Should().Be(7);
+    }
+
+    [Fact]
+    public async Task Receipts_and_journal_are_for_managers_only_and_the_journal_covers_today_only()
+    {
+        var from = new DateTimeOffset(DateTimeOffset.UtcNow.Date, TimeSpan.Zero);
+        var receiptsUrl = $"/api/dashboard/receipts?from={Uri.EscapeDataString(from.ToString("O"))}&to={Uri.EscapeDataString(from.AddDays(1).ToString("O"))}";
+        (await ClientAs(null).GetAsync(receiptsUrl)).StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        (await ClientAs("Waiter").GetAsync(receiptsUrl)).StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        (await ClientAs("Waiter").GetAsync("/api/dashboard/journal")).StatusCode.Should().Be(HttpStatusCode.Forbidden);
+
+        (await ClientAs("Admin").GetAsync(receiptsUrl)).StatusCode.Should().Be(HttpStatusCode.OK);
+        var journal = await ClientAs("Admin").GetAsync("/api/dashboard/journal?tzOffsetMinutes=60");
+        journal.StatusCode.Should().Be(HttpStatusCode.OK);
+        (await journal.Content.ReadFromJsonAsync<JsonElement>()).ValueKind.Should().Be(JsonValueKind.Array);
     }
 }

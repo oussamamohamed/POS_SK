@@ -1,178 +1,250 @@
 {
-  "fromUtc": "2026-10-29T23:00:00+00:00",
-  "toUtc": "2026-10-30T23:00:00+00:00",
-  "totalTtc": 1018,
-  "lastWeekTotalTtc": 0,
-  "lastWeekByNowTtc": 0,
-  "covers": 150,
-  "tablesTurned": 162,
-  "spendPerCover": 6.79,
-  "hours": [
-    {
-      "hour": 0,
-      "today": 621.5,
-      "lastWeek": 0
-    },
-    {
-      "hour": 1,
-      "today": 0,
-      "lastWeek": 0
-    },
-    {
-      "hour": 2,
-      "today": 0,
-      "lastWeek": 0
-    },
-    {
-      "hour": 3,
-      "today": 0,
-      "lastWeek": 0
-    },
-    {
-      "hour": 4,
-      "today": 0,
-      "lastWeek": 0
-    },
-    {
-      "hour": 5,
-      "today": 0,
-      "lastWeek": 0
-    },
-    {
-      "hour": 6,
-      "today": 0,
-      "lastWeek": 0
-    },
-    {
-      "hour": 7,
-      "today": 0,
-      "lastWeek": 0
-    },
-    {
-      "hour": 8,
-      "today": 108.0,
-      "lastWeek": 0
-    },
-    {
-      "hour": 9,
-      "today": 288.5,
-      "lastWeek": 0
-    },
-    {
-      "hour": 10,
-      "today": 0,
-      "lastWeek": 0
-    },
-    {
-      "hour": 11,
-      "today": 0,
-      "lastWeek": 0
-    },
-    {
-      "hour": 12,
-      "today": 0,
-      "lastWeek": 0
-    },
-    {
-      "hour": 13,
-      "today": 0,
-      "lastWeek": 0
-    },
-    {
-      "hour": 14,
-      "today": 0,
-      "lastWeek": 0
-    },
-    {
-      "hour": 15,
-      "today": 0,
-      "lastWeek": 0
-    },
-    {
-      "hour": 16,
-      "today": 0,
-      "lastWeek": 0
-    },
-    {
-      "hour": 17,
-      "today": 0,
-      "lastWeek": 0
-    },
-    {
-      "hour": 18,
-      "today": 0,
-      "lastWeek": 0
-    },
-    {
-      "hour": 19,
-      "today": 0,
-      "lastWeek": 0
-    },
-    {
-      "hour": 20,
-      "today": 0,
-      "lastWeek": 0
-    },
-    {
-      "hour": 21,
-      "today": 0,
-      "lastWeek": 0
-    },
-    {
-      "hour": 22,
-      "today": 0,
-      "lastWeek": 0
-    },
-    {
-      "hour": 23,
-      "today": 0,
-      "lastWeek": 0
-    }
-  ],
-  "paymentMethods": [
-    {
-      "method": 1,
-      "methodName": "Card (CB)",
-      "totalAmount": 730.6,
-      "transactionsCount": 86,
-      "percentageOfTotal": 70.5
-    },
-    {
-      "method": 0,
-      "methodName": "Cash",
-      "totalAmount": 194,
-      "transactionsCount": 54,
-      "percentageOfTotal": 18.7
-    },
-    {
-      "method": 4,
-      "methodName": "Room Charge (PMS)",
-      "totalAmount": 71,
-      "transactionsCount": 6,
-      "percentageOfTotal": 6.9
-    },
-    {
-      "method": 2,
-      "methodName": "Meal Vouchers",
-      "totalAmount": 40,
-      "transactionsCount": 16,
-      "percentageOfTotal": 3.9
-    }
-  ],
-  "staffPerformance": [
-    {
-      "serverId": "01a18862-0e8d-7248-a014-89bcb67c21c5",
-      "serverName": "Alexandre Dupont (Manager)",
-      "tablesServedCount": 1,
-      "totalSalesTtc": 746,
-      "averageTableTtc": 746
-    },
-    {
-      "serverId": null,
-      "serverName": "Serveur Inconnu",
-      "tablesServedCount": 25,
-      "totalSalesTtc": 290,
-      "averageTableTtc": 11.6
-    }
-  ]
+    "fromUtc": "2026-10-29T23:00:00+00:00",
+    "toUtc": "2026-10-30T23:00:00+00:00",
+    "granularity": "hour",
+    "compare": "lastWeek",
+    "totalTtc": 144.25,
+    "compareTotalTtc": 0,
+    "compareByNowTtc": 0,
+    "covers": 20,
+    "tablesTurned": 22,
+    "spendPerCover": 7.21,
+    "series": [
+        {
+            "label": "0",
+            "current": 0,
+            "compare": 0
+        },
+        {
+            "label": "1",
+            "current": 0,
+            "compare": 0
+        },
+        {
+            "label": "2",
+            "current": 0,
+            "compare": 0
+        },
+        {
+            "label": "3",
+            "current": 0,
+            "compare": 0
+        },
+        {
+            "label": "4",
+            "current": 0,
+            "compare": 0
+        },
+        {
+            "label": "5",
+            "current": 0,
+            "compare": 0
+        },
+        {
+            "label": "6",
+            "current": 0,
+            "compare": 0
+        },
+        {
+            "label": "7",
+            "current": 0,
+            "compare": 0
+        },
+        {
+            "label": "8",
+            "current": 0,
+            "compare": 0
+        },
+        {
+            "label": "9",
+            "current": 0,
+            "compare": 0
+        },
+        {
+            "label": "10",
+            "current": 0,
+            "compare": 0
+        },
+        {
+            "label": "11",
+            "current": 144.25,
+            "compare": 0
+        },
+        {
+            "label": "12",
+            "current": 0,
+            "compare": 0
+        },
+        {
+            "label": "13",
+            "current": 0,
+            "compare": 0
+        },
+        {
+            "label": "14",
+            "current": 0,
+            "compare": 0
+        },
+        {
+            "label": "15",
+            "current": 0,
+            "compare": 0
+        },
+        {
+            "label": "16",
+            "current": 0,
+            "compare": 0
+        },
+        {
+            "label": "17",
+            "current": 0,
+            "compare": 0
+        },
+        {
+            "label": "18",
+            "current": 0,
+            "compare": 0
+        },
+        {
+            "label": "19",
+            "current": 0,
+            "compare": 0
+        },
+        {
+            "label": "20",
+            "current": 0,
+            "compare": 0
+        },
+        {
+            "label": "21",
+            "current": 0,
+            "compare": 0
+        },
+        {
+            "label": "22",
+            "current": 0,
+            "compare": 0
+        },
+        {
+            "label": "23",
+            "current": 0,
+            "compare": 0
+        }
+    ],
+    "paymentMethods": [
+        {
+            "method": 1,
+            "methodName": "Card (CB)",
+            "totalAmount": 114.35,
+            "transactionsCount": 13,
+            "percentageOfTotal": 78.0
+        },
+        {
+            "method": 0,
+            "methodName": "Cash",
+            "totalAmount": 27.25,
+            "transactionsCount": 7,
+            "percentageOfTotal": 18.6
+        },
+        {
+            "method": 2,
+            "methodName": "Meal Vouchers",
+            "totalAmount": 5,
+            "transactionsCount": 2,
+            "percentageOfTotal": 3.4
+        }
+    ],
+    "staffPerformance": [
+        {
+            "serverId": "01a0e370-d966-7087-a406-47d384b2f219",
+            "serverName": "Alexandre Dupont (Manager)",
+            "tablesServedCount": 1,
+            "totalSalesTtc": 110.75,
+            "averageTableTtc": 110.75
+        },
+        {
+            "serverId": null,
+            "serverName": "Serveur Inconnu",
+            "tablesServedCount": 4,
+            "totalSalesTtc": 36.5,
+            "averageTableTtc": 9.13
+        }
+    ],
+    "tipsTotalTtc": 2.35,
+    "tipsByServer": [
+        {
+            "serverName": "Alexandre Dupont (Manager)",
+            "tipsTtc": 1.75
+        },
+        {
+            "serverName": "Serveur Inconnu",
+            "tipsTtc": 0.6
+        }
+    ],
+    "discountsTtc": 5.25,
+    "compsTtc": 0,
+    "voidsCount": 0,
+    "voidsTtc": 0,
+    "categories": [
+        {
+            "name": "Boissons & Vins",
+            "quantity": 23,
+            "salesTtc": 91.25,
+            "share": 0.646
+        },
+        {
+            "name": "Plats & Grillades",
+            "quantity": 2,
+            "salesTtc": 37.5,
+            "share": 0.2655
+        },
+        {
+            "name": "Pizzas Artisanales",
+            "quantity": 1,
+            "salesTtc": 12.5,
+            "share": 0.0885
+        }
+    ],
+    "topProducts": [
+        {
+            "productId": "01a0e370-d9b2-7055-a4b3-f2693bc8b292",
+            "productName": "Bi\u00e8re Artisanale IPA 33cl",
+            "quantitySold": 10,
+            "totalSalesTtc": 59,
+            "percentageOfTotal": 41.8
+        },
+        {
+            "productId": "01a0e370-d9b0-74cb-aec5-feb8cc43a626",
+            "productName": "Burger Gourmet Rossini",
+            "quantitySold": 2,
+            "totalSalesTtc": 37.5,
+            "percentageOfTotal": 26.5
+        },
+        {
+            "productId": "01a0e370-d9b2-7065-a3b6-c7ac3ac48ee9",
+            "productName": "Expresso Pur Arabica",
+            "quantitySold": 13,
+            "totalSalesTtc": 32.25,
+            "percentageOfTotal": 22.8
+        },
+        {
+            "productId": "01a0e370-d9b1-7c6b-93a5-ff83589f51e5",
+            "productName": "Pizza Margherita AOP",
+            "quantitySold": 1,
+            "totalSalesTtc": 12.5,
+            "percentageOfTotal": 8.8
+        }
+    ],
+    "vat": [
+        {
+            "ratePercent": 10,
+            "baseHt": 74.74,
+            "vat": 7.51
+        },
+        {
+            "ratePercent": 20,
+            "baseHt": 51.68,
+            "vat": 10.32
+        }
+    ]
 }

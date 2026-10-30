@@ -409,8 +409,18 @@ public actor HTTPPosAPI: PosAPI {
         try await call("GET", "dashboard/financial", query: ["from": Self.iso(from), "to": Self.iso(to)])
     }
 
-    public func takings(from: Date, to: Date, tzOffsetMinutes: Int) async throws -> TakingsReport {
-        try await call("GET", "dashboard/takings", query: ["from": Self.iso(from), "to": Self.iso(to), "tzOffsetMinutes": "\(tzOffsetMinutes)"])
+    public func takings(from: Date, to: Date, tzOffsetMinutes: Int, compare: String?) async throws -> TakingsReport {
+        var query = ["from": Self.iso(from), "to": Self.iso(to), "tzOffsetMinutes": "\(tzOffsetMinutes)"]
+        if let compare { query["compare"] = compare }
+        return try await call("GET", "dashboard/takings", query: query)
+    }
+
+    public func takingsReceipts(from: Date, to: Date) async throws -> [TakingsReceipt] {
+        try await call("GET", "dashboard/receipts", query: ["from": Self.iso(from), "to": Self.iso(to)])
+    }
+
+    public func journalToday(tzOffsetMinutes: Int) async throws -> [JournalEntry] {
+        try await call("GET", "dashboard/journal", query: ["tzOffsetMinutes": "\(tzOffsetMinutes)"])
     }
 
     public func verifyChains() async throws -> FiscalVerificationResult {

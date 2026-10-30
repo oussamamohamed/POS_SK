@@ -754,18 +754,59 @@ public actor InMemoryPosAPI: PosAPI {
         return FinancialDashboard(kpis: .init(totalSalesTtc: Money(cents: ttc), totalSalesHt: Money(cents: ht), averageOrderTtc: Money(cents: ttc / count), averageCoverTtc: Money(cents: ttc / count), totalOrdersCount: receipts.count, totalCoversCount: receipts.count))
     }
 
-    /// Journée de démonstration déterministe : une courbe horaire, la semaine passée un peu plus basse jusqu'à maintenant.
-    public func takings(from: Date, to: Date, tzOffsetMinutes: Int) async throws -> TakingsReport {
+    /// Journée (ou période) de démonstration déterministe : une courbe horaire ou quotidienne, la référence un peu plus basse jusqu'à maintenant.
+    public func takings(from: Date, to: Date, tzOffsetMinutes: Int, compare: String?) async throws -> TakingsReport {
         try await step("takings"); try requireManager()
-        let today = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6400, 14200, 12800, 5200, 3900, 4800, 9600, 15800, 0, 0, 0, 0, 0]
-        let lastWeek = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5900, 11400, 13900, 6100, 4200, 5600, 10400, 16800, 21600, 19800, 12100, 0, 0]
-        let hours = (0..<24).map { HourlyTaking(hour: $0, today: Money(cents: today[$0]), lastWeek: Money(cents: lastWeek[$0])) }
-        let total = today.reduce(0, +)
+        let hourly = to.timeIntervalSince(from) <= 25 * 3600
+        let todayHours = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6400, 14200, 12800, 5200, 3900, 4800, 9600, 15800, 0, 0, 0, 0, 0]
+        let weekHours = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5900, 11400, 13900, 6100, 4200, 5600, 10400, 16800, 21600, 19800, 12100, 0, 0]
+        let days = max(1, Int((to.timeIntervalSince(from) / 86_400).rounded(.up)))
+        let series: [TakingsPoint]
+        if hourly {
+            series = (0..<24).map { TakingsPoint(label: "\($0)", current: Money(cents: todayHours[$0]), compare: Money(cents: weekHours[$0])) }
+        } else {
+            let calendar = Calendar(identifier: .gregorian)
+            series = (0..<days).map { i in
+                let day = calendar.date(byAdding: .day, value: i, to: from) ?? from
+                let c = calendar.dateComponents([.month, .day], from: day)
+                return TakingsPoint(label: String(format: "%02d-%02d", c.month ?? 0, c.day ?? 0), current: Money(cents: 60_000 + (i % 3) * 15_000), compare: Money(cents: 55_000 + (i % 4) * 12_000))
+            }
+        }
+        let total = series.reduce(0) { $0 + $1.current.cents }
+        let reference = series.reduce(0) { $0 + $1.compare.cents }
+        let byNow = hourly ? weekHours[0...18].reduce(0, +) : reference
+        let cardShare = total * 6 / 10
         return TakingsReport(
-            fromUtc: from, toUtc: to, totalTtc: Money(cents: total), lastWeekTotalTtc: Money(cents: lastWeek.reduce(0, +)),
-            lastWeekByNowTtc: Money(cents: lastWeek[0...18].reduce(0, +)), covers: 40, tablesTurned: 12, spendPerCover: Money(cents: total / 40), hours: hours,
-            paymentMethods: [.init(methodName: "Carte", totalAmount: Money(cents: total * 6 / 10), transactionsCount: 8, percentageOfTotal: 60), .init(methodName: "Espèces", totalAmount: Money(cents: total * 4 / 10), transactionsCount: 4, percentageOfTotal: 40)],
-            staffPerformance: [.init(serverName: "Sophie", tablesServedCount: 7, totalSalesTtc: Money(cents: total * 6 / 10), averageTableTtc: Money(cents: total * 6 / 70)), .init(serverName: "Marc", tablesServedCount: 5, totalSalesTtc: Money(cents: total * 4 / 10), averageTableTtc: Money(cents: total * 4 / 50))])
+            fromUtc: from, toUtc: to, granularity: hourly ? "hour" : "day", compare: compare ?? (hourly ? "lastWeek" : "previous"),
+            totalTtc: Money(cents: total), compareTotalTtc: Money(cents: reference), compareByNowTtc: Money(cents: byNow),
+            covers: 40 * days, tablesTurned: 12 * days, spendPerCover: Money(cents: total / (40 * days)), series: series,
+            paymentMethods: [.init(methodName: "Carte", totalAmount: Money(cents: cardShare), transactionsCount: 8, percentageOfTotal: 60), .init(methodName: "Espèces", totalAmount: Money(cents: total - cardShare), transactionsCount: 4, percentageOfTotal: 40)],
+            staffPerformance: [.init(serverName: "Sophie", tablesServedCount: 7, totalSalesTtc: Money(cents: cardShare), averageTableTtc: Money(cents: cardShare / 7)), .init(serverName: "Marc", tablesServedCount: 5, totalSalesTtc: Money(cents: total - cardShare), averageTableTtc: Money(cents: (total - cardShare) / 5))],
+            tipsTotalTtc: Money(cents: total / 25), tipsByServer: [.init(serverName: "Sophie", tipsTtc: Money(cents: total / 40)), .init(serverName: "Marc", tipsTtc: Money(cents: total / 100))],
+            discountsTtc: Money(cents: total / 30), compsTtc: Money(cents: total / 50), voidsCount: 1, voidsTtc: Money(cents: 2_400),
+            categories: [.init(name: "Plats", quantity: 30, salesTtc: Money(cents: total * 6 / 10), share: 0.6), .init(name: "Boissons", quantity: 50, salesTtc: Money(cents: total * 3 / 10), share: 0.3), .init(name: "Desserts", quantity: 12, salesTtc: Money(cents: total / 10), share: 0.1)],
+            topProducts: [.init(productId: UUID(), productName: "Burger Gourmet Rossini", quantitySold: 18, totalSalesTtc: Money(cents: total / 3), percentageOfTotal: 33.3), .init(productId: UUID(), productName: "Pizza Margherita AOP", quantitySold: 12, totalSalesTtc: Money(cents: total / 5), percentageOfTotal: 20)],
+            vat: [.init(ratePercent: 5.5, baseHt: Money(cents: total / 10), vat: Money(cents: total / 100)), .init(ratePercent: 10, baseHt: Money(cents: total * 7 / 10), vat: Money(cents: total / 14))])
+    }
+
+    public func takingsReceipts(from: Date, to: Date) async throws -> [TakingsReceipt] {
+        try await step("takingsReceipts"); try requireManager()
+        let base = min(Date(), to)
+        return [
+            TakingsReceipt(receiptNumber: "T01-000003", atUtc: base.addingTimeInterval(-600), tableNumber: "T3", serverName: "Sophie", methods: ["Carte"], totalTtc: Money(cents: 4_650)),
+            TakingsReceipt(receiptNumber: "T01-000002", atUtc: base.addingTimeInterval(-3_000), tableNumber: "T2", serverName: "Marc", methods: ["Espèces"], totalTtc: Money(cents: 2_400), isCancelled: true),
+            TakingsReceipt(receiptNumber: "T01-000001", atUtc: base.addingTimeInterval(-3_100), tableNumber: "T2", serverName: "Marc", methods: ["Espèces"], totalTtc: Money(cents: -2_400), isCredit: true)
+        ]
+    }
+
+    public func journalToday(tzOffsetMinutes: Int) async throws -> [JournalEntry] {
+        try await step("journalToday"); try requireManager()
+        let now = Date()
+        return [
+            JournalEntry(atUtc: now.addingTimeInterval(-300), eventType: "DUPLICATE_PRINTED", terminalId: "T01", operatorName: "Alexandre Dupont", payloadJson: "{\"receiptNumber\":\"T01-000003\",\"duplicateNumber\":1}"),
+            JournalEntry(atUtc: now.addingTimeInterval(-3_000), eventType: "RECEIPT_VOIDED", terminalId: "T01", operatorName: "Alexandre Dupont", payloadJson: "{\"receiptNumber\":\"T01-000001\"}"),
+            JournalEntry(atUtc: now.addingTimeInterval(-7_200), eventType: "LOGIN_SUCCEEDED", operatorName: "Alexandre Dupont")
+        ]
     }
 
     public var mockVerificationResult: FiscalVerificationResult?

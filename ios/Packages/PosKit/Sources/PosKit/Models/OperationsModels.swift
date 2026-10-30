@@ -495,51 +495,157 @@ public struct FinancialDashboard: Codable, Hashable, Sendable {
     }
 }
 
-public struct HourlyTaking: Codable, Hashable, Sendable, Identifiable {
-    public var hour: Int
-    public var today: Money
-    public var lastWeek: Money
-    public var id: Int { hour }
+/// Un point de la courbe : une heure locale (période d'un jour, `label` = « 12 ») ou un jour (« 10-29 »).
+public struct TakingsPoint: Codable, Hashable, Sendable, Identifiable {
+    public var label: String
+    public var current: Money
+    public var compare: Money
+    public var id: String { label }
 
-    public init(hour: Int, today: Money, lastWeek: Money) {
-        self.hour = hour
-        self.today = today
-        self.lastWeek = lastWeek
+    public init(label: String, current: Money, compare: Money) {
+        self.label = label
+        self.current = current
+        self.compare = compare
     }
 }
 
-/// Miroir de `TakingsReportDto` : encaissements d'une journée de service comparés au même jour de la semaine précédente.
+public struct CategoryTaking: Codable, Hashable, Sendable, Identifiable {
+    public var name: String
+    public var quantity: Int
+    public var salesTtc: Money
+    public var share: Double
+    public var id: String { name }
+}
+
+public struct TakingsVatLine: Codable, Hashable, Sendable, Identifiable {
+    public var ratePercent: Decimal
+    public var baseHt: Money
+    public var vat: Money
+    public var id: Decimal { ratePercent }
+}
+
+public struct ServerTip: Codable, Hashable, Sendable, Identifiable {
+    public var serverName: String
+    public var tipsTtc: Money
+    public var id: String { serverName }
+}
+
+/// Miroir de `TakingsReportDto` : encaissements d'une période comparés à une période de référence.
 public struct TakingsReport: Codable, Hashable, Sendable {
     public var fromUtc: Date
     public var toUtc: Date
+    /// `hour` (période d'un jour) ou `day`.
+    public var granularity: String
+    /// `lastWeek` ou `previous` : période de référence effectivement utilisée.
+    public var compare: String
     public var totalTtc: Money
-    public var lastWeekTotalTtc: Money
-    /// Semaine précédente cumulée jusqu'à la même heure.
-    public var lastWeekByNowTtc: Money
+    public var compareTotalTtc: Money
+    /// Période de référence cumulée jusqu'à la même heure.
+    public var compareByNowTtc: Money
     public var covers: Int
     public var tablesTurned: Int
     public var spendPerCover: Money
-    public var hours: [HourlyTaking]
+    public var series: [TakingsPoint]
     public var paymentMethods: [FinancialDashboard.PaymentShare]
     public var staffPerformance: [FinancialDashboard.StaffPerformance]
+    public var tipsTotalTtc: Money
+    public var tipsByServer: [ServerTip]
+    public var discountsTtc: Money
+    public var compsTtc: Money
+    public var voidsCount: Int
+    public var voidsTtc: Money
+    public var categories: [CategoryTaking]
+    public var topProducts: [FinancialDashboard.TopProduct]
+    public var vat: [TakingsVatLine]
 
-    public init(fromUtc: Date, toUtc: Date, totalTtc: Money, lastWeekTotalTtc: Money, lastWeekByNowTtc: Money, covers: Int, tablesTurned: Int, spendPerCover: Money, hours: [HourlyTaking], paymentMethods: [FinancialDashboard.PaymentShare] = [], staffPerformance: [FinancialDashboard.StaffPerformance] = []) {
+    public init(fromUtc: Date, toUtc: Date, granularity: String = "hour", compare: String = "lastWeek", totalTtc: Money, compareTotalTtc: Money, compareByNowTtc: Money, covers: Int, tablesTurned: Int, spendPerCover: Money, series: [TakingsPoint], paymentMethods: [FinancialDashboard.PaymentShare] = [], staffPerformance: [FinancialDashboard.StaffPerformance] = [], tipsTotalTtc: Money = .zero, tipsByServer: [ServerTip] = [], discountsTtc: Money = .zero, compsTtc: Money = .zero, voidsCount: Int = 0, voidsTtc: Money = .zero, categories: [CategoryTaking] = [], topProducts: [FinancialDashboard.TopProduct] = [], vat: [TakingsVatLine] = []) {
         self.fromUtc = fromUtc
         self.toUtc = toUtc
+        self.granularity = granularity
+        self.compare = compare
         self.totalTtc = totalTtc
-        self.lastWeekTotalTtc = lastWeekTotalTtc
-        self.lastWeekByNowTtc = lastWeekByNowTtc
+        self.compareTotalTtc = compareTotalTtc
+        self.compareByNowTtc = compareByNowTtc
         self.covers = covers
         self.tablesTurned = tablesTurned
         self.spendPerCover = spendPerCover
-        self.hours = hours
+        self.series = series
         self.paymentMethods = paymentMethods
         self.staffPerformance = staffPerformance
+        self.tipsTotalTtc = tipsTotalTtc
+        self.tipsByServer = tipsByServer
+        self.discountsTtc = discountsTtc
+        self.compsTtc = compsTtc
+        self.voidsCount = voidsCount
+        self.voidsTtc = voidsTtc
+        self.categories = categories
+        self.topProducts = topProducts
+        self.vat = vat
     }
 
-    /// Écart en % avec la semaine passée à la même heure ; nil sans comparaison possible.
+    /// Écart en % avec la période de référence à la même heure ; nil sans comparaison possible.
     public var deltaPercent: Int? {
-        lastWeekByNowTtc.cents > 0 ? Int(((Double(totalTtc.cents) / Double(lastWeekByNowTtc.cents) - 1) * 100).rounded()) : nil
+        compareByNowTtc.cents > 0 ? Int(((Double(totalTtc.cents) / Double(compareByNowTtc.cents) - 1) * 100).rounded()) : nil
+    }
+
+    public var isHourly: Bool { granularity == "hour" }
+}
+
+/// Un reçu de la période. `isCredit` : avoir (annulation) ; `isCancelled` : reçu d'origine annulé par un avoir.
+public struct TakingsReceipt: Codable, Hashable, Sendable, Identifiable {
+    public var id: UUID
+    public var receiptNumber: String
+    public var atUtc: Date
+    public var tableNumber: String?
+    public var serverName: String
+    public var methods: [String]
+    public var totalTtc: Money
+    public var isCredit: Bool
+    public var isCancelled: Bool
+
+    public init(id: UUID = UUID(), receiptNumber: String, atUtc: Date, tableNumber: String? = nil, serverName: String, methods: [String] = [], totalTtc: Money, isCredit: Bool = false, isCancelled: Bool = false) {
+        self.id = id
+        self.receiptNumber = receiptNumber
+        self.atUtc = atUtc
+        self.tableNumber = tableNumber
+        self.serverName = serverName
+        self.methods = methods
+        self.totalTtc = totalTtc
+        self.isCredit = isCredit
+        self.isCancelled = isCancelled
+    }
+}
+
+/// Une écriture du journal technique (JET) du jour courant.
+public struct JournalEntry: Codable, Hashable, Sendable, Identifiable {
+    public var id: UUID
+    public var atUtc: Date
+    public var eventType: String
+    public var terminalId: String?
+    public var operatorName: String?
+    public var payloadJson: String
+
+    public init(id: UUID = UUID(), atUtc: Date, eventType: String, terminalId: String? = nil, operatorName: String? = nil, payloadJson: String = "{}") {
+        self.id = id
+        self.atUtc = atUtc
+        self.eventType = eventType
+        self.terminalId = terminalId
+        self.operatorName = operatorName
+        self.payloadJson = payloadJson
+    }
+
+    /// Résumé court : opérateur, poste et premiers champs simples de la charge utile.
+    public var summary: String {
+        var parts: [String] = []
+        if let operatorName { parts.append(operatorName) }
+        if let terminalId { parts.append(terminalId) }
+        if let data = payloadJson.data(using: .utf8), let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
+            for (key, value) in object.sorted(by: { $0.key < $1.key }) where parts.count < 5 {
+                if value is NSNull || value is [Any] || value is [String: Any] { continue }
+                parts.append("\(key): \(value)")
+            }
+        }
+        return parts.joined(separator: " · ")
     }
 }
 

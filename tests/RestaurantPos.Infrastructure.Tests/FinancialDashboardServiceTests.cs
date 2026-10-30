@@ -40,14 +40,121 @@ public sealed class FinancialDashboardServiceTests
         var report = await new FinancialDashboardService(db).GetTakingsAsync(dayStart, dayStart.AddDays(1), tzOffsetMinutes: 60, nowUtc: now);
 
         report.TotalTtc.Should().Be(50.00m);
-        report.Hours.Should().HaveCount(24);
-        report.Hours[12].Today.Should().Be(20.00m);
-        report.Hours[19].Today.Should().Be(30.00m);
-        report.Hours[19].LastWeek.Should().Be(10.00m);
-        report.Hours[22].LastWeek.Should().Be(40.00m);
-        report.LastWeekTotalTtc.Should().Be(50.00m);
-        report.LastWeekByNowTtc.Should().Be(10.00m);
+        report.Granularity.Should().Be("hour");
+        report.Compare.Should().Be("lastWeek");
+        report.Series.Should().HaveCount(24);
+        report.Series[12].Current.Should().Be(20.00m);
+        report.Series[19].Current.Should().Be(30.00m);
+        report.Series[19].Compare.Should().Be(10.00m);
+        report.Series[22].Compare.Should().Be(40.00m);
+        report.CompareTotalTtc.Should().Be(50.00m);
+        report.CompareByNowTtc.Should().Be(10.00m);
         report.TablesTurned.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task GetTakingsAsync_OverSeveralDays_ComparesWithThePreviousPeriodByDay()
+    {
+        using var db = new AppDbContext(new DbContextOptionsBuilder<AppDbContext>().UseInMemoryDatabase("TakingsDays_" + Guid.NewGuid().ToString("N")).Options);
+        var start = new DateTimeOffset(2026, 10, 10, 0, 0, 0, TimeSpan.Zero);
+        void Receipt(DateTimeOffset at, int cents, string number)
+        {
+            var order = new Order { TableNumber = "T1", Status = OrderStatus.Paid, CreatedAtUtc = at };
+            order.Items.Add(new OrderItem { ProductName = "Plat", Quantity = 1, UnitPrice = Money.FromCents(cents), TaxRatePercent = 10m });
+            db.Orders.Add(order);
+            db.FiscalReceipts.Add(new FiscalReceipt { TerminalId = "T01", ReceiptNumber = number, OrderId = order.Id, SequenceNumber = db.FiscalReceipts.Local.Count + 1, TotalTtcAmount = Money.FromCents(cents), TotalHtAmount = Money.FromCents(cents), CreatedAtUtc = at });
+        }
+        Receipt(start.AddHours(12), 1000, "A");                  // jour 0
+        Receipt(start.AddDays(2).AddHours(12), 3000, "B");       // jour 2
+        Receipt(start.AddDays(-3).AddHours(12), 500, "C");       // période précédente, jour 0
+        await db.SaveChangesAsync();
+
+        var report = await new FinancialDashboardService(db).GetTakingsAsync(start, start.AddDays(3), 0, start.AddDays(10));
+
+        report.Granularity.Should().Be("day");
+        report.Compare.Should().Be("previous");
+        report.Series.Select(p => p.Label).Should().Equal("10-10", "10-11", "10-12");
+        report.Series.Select(p => p.Current).Should().Equal(10.00m, 0m, 30.00m);
+        report.Series.Select(p => p.Compare).Should().Equal(5.00m, 0m, 0m);
+        report.CompareTotalTtc.Should().Be(5.00m);
+        report.CompareByNowTtc.Should().Be(5.00m);
+    }
+
+    [Fact]
+    public async Task GetTakingsAsync_AWeekAcrossADaylightSavingChange_StillHasSevenDays()
+    {
+        using var db = new AppDbContext(new DbContextOptionsBuilder<AppDbContext>().UseInMemoryDatabase("TakingsDst_" + Guid.NewGuid().ToString("N")).Options);
+        // Semaine locale du 24 au 30 octobre 2026 à Paris : le 25 dure 25 h, donc 7 jours + 1 h en UTC.
+        var from = new DateTimeOffset(2026, 10, 23, 22, 0, 0, TimeSpan.Zero);
+        var to = new DateTimeOffset(2026, 10, 30, 23, 0, 0, TimeSpan.Zero);
+
+        var report = await new FinancialDashboardService(db).GetTakingsAsync(from, to, 120, to);
+
+        report.Series.Should().HaveCount(7);
+    }
+
+    [Fact]
+    public async Task GetTakingsAsync_BreaksDownTipsDiscountsCompsVoidsCategoriesAndVat()
+    {
+        using var db = new AppDbContext(new DbContextOptionsBuilder<AppDbContext>().UseInMemoryDatabase("TakingsDetail_" + Guid.NewGuid().ToString("N")).Options);
+        var day = new DateTimeOffset(2026, 10, 12, 0, 0, 0, TimeSpan.Zero);
+        var at = day.AddHours(12);
+        db.Categories.Add(new Category { Id = "PLATS", Name = "Plats" });
+        db.Categories.Add(new Category { Id = "BOISSONS", Name = "Boissons" });
+        var plat = new Product { Name = "Plat", CategoryId = "PLATS", Price = Money.FromCents(2000) };
+        var boisson = new Product { Name = "Boisson", CategoryId = "BOISSONS", Price = Money.FromCents(500) };
+        db.Products.AddRange(plat, boisson);
+
+        var order = new Order { TableNumber = "T1", Status = OrderStatus.Paid, CreatedAtUtc = at, TipAmount = Money.FromCents(300), GlobalDiscountType = DiscountType.Percentage, GlobalDiscountValue = 10m };
+        order.Items.Add(new OrderItem { ProductId = plat.Id, ProductName = "Plat", Quantity = 2, UnitPrice = Money.FromCents(2000), TaxRatePercent = 10m });      // 40,00
+        order.Items.Add(new OrderItem { ProductId = boisson.Id, ProductName = "Boisson", Quantity = 2, UnitPrice = Money.FromCents(500), TaxRatePercent = 20m, IsComp = true }); // offert 10,00
+        db.Orders.Add(order);                                                                                                                                       // sous-total 40,00, remise 10 % = 4,00, total 36,00
+        var receipt = new FiscalReceipt { TerminalId = "T01", ReceiptNumber = "R1", OrderId = order.Id, SequenceNumber = 1, TotalTtcAmount = Money.FromCents(3600), TotalHtAmount = Money.FromCents(3273), TaxBreakdownJson = "{\"10\":327}", HtBreakdownJson = "{\"10\":3273}", CreatedAtUtc = at };
+        receipt.Tenders.Add(new PaymentTender { Method = PaymentMethod.CreditCard, Amount = Money.FromCents(3600), Tendered = Money.FromCents(3600) });
+        db.FiscalReceipts.Add(receipt);
+
+        // Un second ticket annulé par un avoir : n'entre ni dans le total ni dans la TVA, mais dans les annulations.
+        var cancelledOrder = new Order { TableNumber = "T2", Status = OrderStatus.Paid, CreatedAtUtc = at };
+        cancelledOrder.Items.Add(new OrderItem { ProductId = plat.Id, ProductName = "Plat", Quantity = 1, UnitPrice = Money.FromCents(2000), TaxRatePercent = 10m });
+        db.Orders.Add(cancelledOrder);
+        var original = new FiscalReceipt { TerminalId = "T01", ReceiptNumber = "R2", OrderId = cancelledOrder.Id, SequenceNumber = 2, TotalTtcAmount = Money.FromCents(2000), TotalHtAmount = Money.FromCents(1818), TaxBreakdownJson = "{\"10\":182}", CreatedAtUtc = at };
+        db.FiscalReceipts.Add(original);
+        db.FiscalReceipts.Add(new FiscalReceipt { TerminalId = "T01", ReceiptNumber = "R3", OrderId = cancelledOrder.Id, SequenceNumber = 3, TotalTtcAmount = Money.FromCents(-2000), TotalHtAmount = Money.FromCents(-1818), TaxBreakdownJson = "{\"10\":-182}", VoidedReceiptId = original.Id, CreatedAtUtc = at });
+        await db.SaveChangesAsync();
+
+        var service = new FinancialDashboardService(db);
+        var report = await service.GetTakingsAsync(day, day.AddDays(1), 0, at);
+
+        report.TotalTtc.Should().Be(36.00m);
+        report.TipsTotalTtc.Should().Be(3.00m);
+        report.DiscountsTtc.Should().Be(4.00m);
+        report.CompsTtc.Should().Be(10.00m);
+        report.VoidsCount.Should().Be(1);
+        report.VoidsTtc.Should().Be(20.00m);
+        report.Categories.Select(c => c.Name).Should().Equal("Plats");
+        report.Categories[0].SalesTtc.Should().Be(36.00m);
+        report.TopProducts.Single().ProductName.Should().Be("Plat");
+        report.Vat.Should().ContainSingle().Which.Should().BeEquivalentTo(new VatLineDto(10m, 32.73m, 3.27m));
+
+        var receipts = await service.GetReceiptsAsync(day, day.AddDays(1));
+        receipts.Should().HaveCount(3);
+        receipts.Single(r => r.ReceiptNumber == "R3").IsCredit.Should().BeTrue();
+        receipts.Single(r => r.ReceiptNumber == "R2").IsCancelled.Should().BeTrue();
+        receipts.Single(r => r.ReceiptNumber == "R1").Methods.Should().ContainSingle();
+    }
+
+    [Fact]
+    public async Task GetJournalAsync_ReturnsOnlyEntriesSinceTheGivenDayStartNewestFirst()
+    {
+        using var db = new AppDbContext(new DbContextOptionsBuilder<AppDbContext>().UseInMemoryDatabase("Journal_" + Guid.NewGuid().ToString("N")).Options);
+        var start = new DateTimeOffset(2026, 10, 12, 0, 0, 0, TimeSpan.Zero);
+        TransactionJournalEntry Entry(string type, DateTimeOffset at, long seq) => new() { LocalSequence = seq, OccurredAtUtc = at, IdempotencyKey = type + seq, EventType = type, PayloadJson = "{}", EntryHash = "h" + seq };
+        db.JournalEntries.AddRange(Entry("OLD", start.AddHours(-1), 1), Entry("A", start.AddHours(9), 2), Entry("B", start.AddHours(10), 3));
+        await db.SaveChangesAsync();
+
+        var entries = await new FinancialDashboardService(db).GetJournalAsync(start);
+
+        entries.Select(e => e.EventType).Should().Equal("B", "A");
     }
 
     [Fact]
