@@ -77,6 +77,18 @@ test.describe('Corrections du client web', () => {
     expect(ticket.tableNumber).toBe(table);
   });
 
+  test('Table : le sélecteur indique « Sur place » à l’ouverture, et le comptoir redevient « À emporter »', async ({ page }) => {
+    await login(page);
+    await openFreshTable(page);
+    await page.click('#btnNavPos');
+    await expect(page.locator('#btnDestEatIn')).toHaveClass(/active/);
+    await expect(page.locator('#btnDestTakeaway')).not.toHaveClass(/active/);
+
+    await page.click('#btnNavFloor');
+    await page.locator('.table-card').filter({ has: page.locator('.table-num', { hasText: /^Comptoir$/ }) }).first().click();
+    await expect(page.locator('#btnDestTakeaway')).toHaveClass(/active/);
+  });
+
   test('Les quantités modifiées après un délai sont bien enregistrées', async ({ page }) => {
     await login(page);
     const table = await openFreshTable(page);

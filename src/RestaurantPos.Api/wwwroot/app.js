@@ -1816,9 +1816,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 state.activeCovers = orderData.coversCount || 2;
                 elements.activeCoversBadge.textContent = t('order.covers_badge', { count: state.activeCovers });
                 hydrateCartFromOrder(orderData, true);
+                state.destination = destinationFromEnum(orderData.destination);
+                updateDestinationToggleUI();
                 renderCart();
             } else if (res.status === 404) {
-                // Aucune commande enregistrée : on conserve les éventuels brouillons de cette table.
+                // Aucune commande enregistrée : une table est servie sur place, le comptoir garde son mode (à emporter après une table).
+                if (tableNumber !== 'Comptoir') state.destination = 'EatIn';
+                else if (switching) state.destination = 'Takeaway';
+                updateDestinationToggleUI();
                 state.activeOrderId = null;
                 state.globalDiscount = null;
                 state.amountPaid = 0;
