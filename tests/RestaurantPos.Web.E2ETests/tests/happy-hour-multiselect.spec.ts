@@ -128,8 +128,13 @@ test.describe('Happy Hour Multi-Select Configuration (Articles & Familles)', () 
 
     const todayDayOfWeek = new Date().getDay(); // 0-6
 
+    // Créer et supprimer un créneau exige un responsable (RequireManagerOrAdmin) : jeton du PIN 1234.
+    const login = await request.post('/api/auth/login', { data: { pin: '1234' } });
+    const auth = { Authorization: `Bearer ${(await login.json()).token}` };
+
     // Sched Low Priority
     const schedLowRes = await request.post('/api/happy-hour/schedules', {
+      headers: auth,
       data: {
         name: 'Overlap Low Priority',
         daysOfWeek: [todayDayOfWeek],
@@ -155,6 +160,7 @@ test.describe('Happy Hour Multi-Select Configuration (Articles & Familles)', () 
 
     // Sched High Priority
     const schedHighRes = await request.post('/api/happy-hour/schedules', {
+      headers: auth,
       data: {
         name: 'Overlap High Priority VIP',
         daysOfWeek: [todayDayOfWeek],
@@ -197,8 +203,8 @@ test.describe('Happy Hour Multi-Select Configuration (Articles & Familles)', () 
       await expect(vipCard).toContainText('Priorité: 10');
     } finally {
       // Nettoyage des créneaux de test
-      await request.delete(`/api/happy-hour/schedules/${schedLow.id}`);
-      await request.delete(`/api/happy-hour/schedules/${schedHigh.id}`);
+      await request.delete(`/api/happy-hour/schedules/${schedLow.id}`, { headers: auth });
+      await request.delete(`/api/happy-hour/schedules/${schedHigh.id}`, { headers: auth });
     }
   });
 

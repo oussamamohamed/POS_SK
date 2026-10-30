@@ -504,7 +504,9 @@ public class ReportAccuracyTests
         await db.SaveChangesAsync();
 
         // Act
-        var filter = new FinancialDashboardFilterDto(now.Date, now.Date.AddDays(1));
+        // Bornes en UTC : `now.Date` serait relu en heure locale et exclurait le reçu en fin de journée UTC.
+        var today = new DateTimeOffset(now.UtcDateTime.Date, TimeSpan.Zero);
+        var filter = new FinancialDashboardFilterDto(today, today.AddDays(1));
         var report = await dashboardService.GetFinancialDashboardAsync(filter);
 
         // Assert net totals reflect settled receipt
