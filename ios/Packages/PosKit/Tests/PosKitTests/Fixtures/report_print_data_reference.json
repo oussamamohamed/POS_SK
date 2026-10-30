@@ -1601,9 +1601,14 @@
                   "productName": "Article 5",
                   "quantity": 8,
                   "totalTtcCents": 11252
+                },
+                {
+                  "productName": "Menu midi",
+                  "quantity": 1,
+                  "totalTtcCents": 1500
                 }
               ],
-              "subtotalTtcCents": 94172
+              "subtotalTtcCents": 95672
             }
           ],
           "tips": [
@@ -1648,12 +1653,17 @@
                   "totalTtcCents": 31358
                 },
                 {
+                  "productName": "Menu midi",
+                  "quantity": 1,
+                  "totalTtcCents": 1500
+                },
+                {
                   "productName": "Pain",
                   "quantity": 1,
                   "totalTtcCents": 1000
                 }
               ],
-              "subtotalTtcCents": 228498
+              "subtotalTtcCents": 229998
             }
           ],
           "tips": [],

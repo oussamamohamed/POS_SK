@@ -66,8 +66,9 @@ public static class DayScenarioGenerator
 
     private static List<DayOperation> MandatoryCases()
     {
-        static DayOperation Order(string reference, string key, string waiter, string table, int covers, DayLine[] lines, DayOrderDiscount? discount, DayTender[][] payments) =>
-            new("table_order", key, waiter, table, covers, "EatIn", lines, discount, 0,
+        // destination = null : le client n'en choisit pas, la table reste sur place (valeur par défaut du serveur pour une table de salle).
+        static DayOperation Order(string reference, string key, string waiter, string table, int covers, DayLine[] lines, DayOrderDiscount? discount, DayTender[][] payments, string? destination = "EatIn") =>
+            new("table_order", key, waiter, table, covers, destination, lines, discount, 0,
                 payments.Select(p => (IReadOnlyList<DayTender>)p.ToList()).ToList(), Ref: reference);
 
         return
@@ -81,6 +82,10 @@ public static class DayScenarioGenerator
             // 10,03 € en cinq règlements dont un reste de division
             Order("m3", "A", "waiter4", "4", 4, [new("Plat", 1, 1003, 10m)], null,
                 [[new("Cash", 200, 300)], [new("Cash", 200)], [new("CreditCard", 200)], [new("MealVoucher", 200)], [new("GiftCard", 203)]]),
+            // table ouverte sans choisir de mode : sur place par défaut, donc TVA 10 % et non le taux à emporter (5,5 %)
+            Order("m4", "B", "waiter1", "5", 2, [new("Menu midi", 1, 1500, 10m, 5.5m)], null, [[new("CreditCard", 1500)]], destination: null),
+            // la même table passée explicitement à emporter : taux à emporter
+            Order("m5", "C", "waiter2", "6", 2, [new("Menu midi", 1, 1500, 10m, 5.5m)], null, [[new("CreditCard", 1500)]], destination: "Takeaway"),
         ];
     }
 
@@ -102,7 +107,12 @@ public static class DayScenarioGenerator
             < 75 => new DayOrderDiscount("Percentage", Pick(rng, PercentDiscounts)),
             _ => new DayOrderDiscount("FixedAmount", Pick(rng, FixedDiscountsEuros)),
         };
-        string destination = table ? (rng.Next(100) < 10 ? "Takeaway" : "EatIn") : (rng.Next(2) == 0 ? "Takeaway" : "EatIn");
+        string? destination = table ? (rng.Next(100) < 10 ? "Takeaway" : "EatIn") : (rng.Next(2) == 0 ? "Takeaway" : "EatIn");
+        if (table && destination == "EatIn" && index % 2 == 0)
+        {
+            destination = null; // une table sur deux garde le mode par défaut du serveur (sans consommer le générateur : les autres tirages ne bougent pas)
+        }
+
         var draft = new DayOperation(table ? "table_order" : "counter_order", key, waiter, table ? (1 + rng.Next(12)).ToString(CultureInfo.InvariantCulture) : null,
             table ? 1 + rng.Next(6) : 0, destination, lines, discount, Ref: $"o{index}");
         if (DayLedgerOracle.OrderTotalCents(draft) <= 0)

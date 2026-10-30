@@ -52,8 +52,9 @@ public class DaySimulationTests(DayFixture day) : IClassFixture<DayFixture>
         a.Terminals.Select(t => t.Key).Should().Equal("A", "B", "C");
         var orders = a.Operations.Where(o => o.Type is "table_order" or "counter_order").ToList();
         orders.Select(o => o.Waiter).Distinct().Should().HaveCountLessThanOrEqualTo(4);
-        orders.Count(o => o.Ref!.StartsWith('m')).Should().Be(4, "quatre cas imposés en tête");
-        a.Operations.Take(4).Select(o => o.Ref).Should().Equal("m0", "m1", "m2", "m3");
+        orders.Count(o => o.Ref!.StartsWith('m')).Should().Be(6, "six cas imposés en tête");
+        a.Operations.Take(6).Select(o => o.Ref).Should().Equal("m0", "m1", "m2", "m3", "m4", "m5");
+        orders.Should().Contain(o => o.Table != null && o.Destination == null, "des tables gardent le mode par défaut du serveur (sur place)");
 
         int firstZ = FirstZ(a);
         a.Operations.Select((o, i) => (o, i)).Where(x => x.o.Type is "table_order" or "counter_order" or "hold_then_void").Should()

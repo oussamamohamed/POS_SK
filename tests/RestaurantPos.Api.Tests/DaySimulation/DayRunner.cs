@@ -241,7 +241,16 @@ public static class DayRunner
             var opened = await SendAsync(client, HttpMethod.Post, $"/api/tables/{table}/open",
                 new OpenTableRequest(waiter.Name, op.Covers, waiter.Id), waiter.Token);
             var orderId = opened.GetProperty("activeOrderId").GetGuid();
-            if (op.Destination is not null)
+            if (op.Destination is null)
+            {
+                // Sans choix du client, une table de salle est servie sur place (c'est le comptoir seul qui est à emporter par défaut).
+                var fresh = await SendAsync(client, HttpMethod.Get, $"/api/tables/{table}/order", null, waiter.Token);
+                if (fresh.GetProperty("destination").GetInt32() != (int)OrderDestination.EatIn)
+                {
+                    throw new InvalidOperationException($"table {table} ouverte sans mode : la commande devrait être sur place");
+                }
+            }
+            else
             {
                 await SendAsync(client, HttpMethod.Post, $"/api/orders/{orderId}/destination",
                     new SwitchDestinationRequest(Enum.Parse<OrderDestination>(op.Destination)), waiter.Token);

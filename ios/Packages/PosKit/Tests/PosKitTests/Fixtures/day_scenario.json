@@ -170,9 +170,71 @@
       "type": "table_order",
       "terminal": "B",
       "waiter": "waiter1",
+      "table": "5",
+      "covers": 2,
+      "lines": [
+        {
+          "name": "Menu midi",
+          "quantity": 1,
+          "unitPriceCents": 1500,
+          "taxRatePercent": "10",
+          "taxRateTakeawayPercent": "5.5",
+          "modifiersExtraCents": 0,
+          "comp": false
+        }
+      ],
+      "tipCents": 0,
+      "payments": [
+        [
+          {
+            "method": "CreditCard",
+            "amountCents": 1500,
+            "extraTenderedCents": 0
+          }
+        ]
+      ],
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "m4"
+    },
+    {
+      "type": "table_order",
+      "terminal": "C",
+      "waiter": "waiter2",
+      "table": "6",
+      "covers": 2,
+      "destination": "Takeaway",
+      "lines": [
+        {
+          "name": "Menu midi",
+          "quantity": 1,
+          "unitPriceCents": 1500,
+          "taxRatePercent": "10",
+          "taxRateTakeawayPercent": "5.5",
+          "modifiersExtraCents": 0,
+          "comp": false
+        }
+      ],
+      "tipCents": 0,
+      "payments": [
+        [
+          {
+            "method": "CreditCard",
+            "amountCents": 1500,
+            "extraTenderedCents": 0
+          }
+        ]
+      ],
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "m5"
+    },
+    {
+      "type": "table_order",
+      "terminal": "B",
+      "waiter": "waiter1",
       "table": "2",
       "covers": 3,
-      "destination": "EatIn",
       "lines": [
         {
           "name": "Article 1",
@@ -235,7 +297,7 @@
       ],
       "reprint": false,
       "holdAndRecall": false,
-      "ref": "o4"
+      "ref": "o6"
     },
     {
       "type": "table_order",
@@ -303,7 +365,7 @@
       ],
       "reprint": false,
       "holdAndRecall": false,
-      "ref": "o5"
+      "ref": "o7"
     },
     {
       "type": "table_order",
@@ -311,7 +373,6 @@
       "waiter": "waiter3",
       "table": "5",
       "covers": 2,
-      "destination": "EatIn",
       "lines": [
         {
           "name": "Article 1",
@@ -335,7 +396,7 @@
       ],
       "reprint": false,
       "holdAndRecall": false,
-      "ref": "o6"
+      "ref": "o8"
     },
     {
       "type": "table_order",
@@ -387,7 +448,7 @@
       ],
       "reprint": false,
       "holdAndRecall": false,
-      "ref": "o7"
+      "ref": "o9"
     },
     {
       "type": "counter_order",
@@ -427,7 +488,7 @@
       ],
       "reprint": true,
       "holdAndRecall": true,
-      "ref": "o8"
+      "ref": "o10"
     },
     {
       "type": "counter_order",
@@ -470,7 +531,7 @@
       ],
       "reprint": false,
       "holdAndRecall": false,
-      "ref": "o9"
+      "ref": "o11"
     },
     {
       "type": "counter_order",
@@ -552,7 +613,7 @@
       ],
       "reprint": false,
       "holdAndRecall": false,
-      "ref": "o10"
+      "ref": "o12"
     },
     {
       "type": "hold_then_void",
@@ -581,7 +642,6 @@
       "waiter": "waiter4",
       "table": "3",
       "covers": 6,
-      "destination": "EatIn",
       "lines": [
         {
           "name": "Article 1",
@@ -657,7 +717,7 @@
       "voidPaymentIndex": 1,
       "reprint": false,
       "holdAndRecall": false,
-      "ref": "o12"
+      "ref": "o14"
     },
     {
       "type": "counter_order",
@@ -731,7 +791,7 @@
       "voidPaymentIndex": 0,
       "reprint": true,
       "holdAndRecall": false,
-      "ref": "o13"
+      "ref": "o15"
     },
     {
       "type": "hold_then_void",
@@ -820,7 +880,7 @@
       ],
       "reprint": false,
       "holdAndRecall": false,
-      "ref": "o15"
+      "ref": "o17"
     },
     {
       "type": "x_report",
@@ -910,7 +970,7 @@
       ],
       "reprint": true,
       "holdAndRecall": false,
-      "ref": "o19"
+      "ref": "o21"
     },
     {
       "type": "counter_order",
@@ -976,7 +1036,7 @@
       ],
       "reprint": true,
       "holdAndRecall": false,
-      "ref": "o20"
+      "ref": "o22"
     },
     {
       "type": "table_order",
@@ -1028,7 +1088,7 @@
       ],
       "reprint": false,
       "holdAndRecall": false,
-      "ref": "o21"
+      "ref": "o23"
     },
     {
       "type": "table_order",
@@ -1036,7 +1096,6 @@
       "waiter": "waiter2",
       "table": "1",
       "covers": 5,
-      "destination": "EatIn",
       "lines": [
         {
           "name": "Article 1",
@@ -1104,7 +1163,7 @@
       ],
       "reprint": false,
       "holdAndRecall": false,
-      "ref": "o22"
+      "ref": "o24"
     },
     {
       "type": "table_order",
@@ -1185,7 +1244,7 @@
       ],
       "reprint": false,
       "holdAndRecall": false,
-      "ref": "o23"
+      "ref": "o25"
     },
     {
       "type": "counter_order",
@@ -1248,7 +1307,7 @@
       ],
       "reprint": false,
       "holdAndRecall": false,
-      "ref": "o24"
+      "ref": "o26"
     },
     {
       "type": "counter_order",
@@ -1283,7 +1342,7 @@
       "voidPaymentIndex": 0,
       "reprint": false,
       "holdAndRecall": false,
-      "ref": "o25"
+      "ref": "o27"
     },
     {
       "type": "table_order",
@@ -1291,7 +1350,6 @@
       "waiter": "waiter4",
       "table": "6",
       "covers": 1,
-      "destination": "EatIn",
       "lines": [
         {
           "name": "Article 1",
@@ -1334,7 +1392,7 @@
       ],
       "reprint": false,
       "holdAndRecall": false,
-      "ref": "o26"
+      "ref": "o28"
     },
     {
       "type": "table_order",
@@ -1401,7 +1459,7 @@
       ],
       "reprint": false,
       "holdAndRecall": false,
-      "ref": "o27"
+      "ref": "o29"
     },
     {
       "type": "counter_order",
@@ -1477,7 +1535,7 @@
       ],
       "reprint": false,
       "holdAndRecall": false,
-      "ref": "o28"
+      "ref": "o30"
     },
     {
       "type": "counter_order",
@@ -1542,7 +1600,7 @@
       "voidPaymentIndex": 0,
       "reprint": false,
       "holdAndRecall": false,
-      "ref": "o29"
+      "ref": "o31"
     },
     {
       "type": "table_order",
@@ -1550,7 +1608,6 @@
       "waiter": "waiter2",
       "table": "12",
       "covers": 4,
-      "destination": "EatIn",
       "lines": [
         {
           "name": "Article 1",
@@ -1580,7 +1637,7 @@
       "voidPaymentIndex": 0,
       "reprint": false,
       "holdAndRecall": false,
-      "ref": "o30"
+      "ref": "o32"
     },
     {
       "type": "x_report",
@@ -1658,7 +1715,7 @@
       ],
       "reprint": false,
       "holdAndRecall": false,
-      "ref": "o34"
+      "ref": "o36"
     },
     {
       "type": "counter_order",
@@ -1760,7 +1817,7 @@
       ],
       "reprint": false,
       "holdAndRecall": false,
-      "ref": "o35"
+      "ref": "o37"
     },
     {
       "type": "table_order",
@@ -1768,7 +1825,6 @@
       "waiter": "waiter3",
       "table": "7",
       "covers": 5,
-      "destination": "EatIn",
       "lines": [
         {
           "name": "Article 1",
@@ -1829,7 +1885,7 @@
       ],
       "reprint": false,
       "holdAndRecall": false,
-      "ref": "o36"
+      "ref": "o38"
     },
     {
       "type": "table_order",
@@ -1893,7 +1949,7 @@
       ],
       "reprint": false,
       "holdAndRecall": false,
-      "ref": "o37"
+      "ref": "o39"
     },
     {
       "type": "hold_then_void",
@@ -1987,7 +2043,7 @@
       ],
       "reprint": false,
       "holdAndRecall": false,
-      "ref": "o39"
+      "ref": "o41"
     },
     {
       "type": "counter_order",
@@ -2059,7 +2115,7 @@
       ],
       "reprint": true,
       "holdAndRecall": false,
-      "ref": "o40"
+      "ref": "o42"
     },
     {
       "type": "table_order",
@@ -2103,7 +2159,7 @@
       ],
       "reprint": false,
       "holdAndRecall": false,
-      "ref": "o41"
+      "ref": "o43"
     },
     {
       "type": "counter_order",
@@ -2177,7 +2233,7 @@
       ],
       "reprint": false,
       "holdAndRecall": false,
-      "ref": "o42"
+      "ref": "o44"
     },
     {
       "type": "counter_order",
@@ -2268,7 +2324,7 @@
       ],
       "reprint": false,
       "holdAndRecall": false,
-      "ref": "o43"
+      "ref": "o45"
     },
     {
       "type": "table_order",
@@ -2276,7 +2332,6 @@
       "waiter": "waiter3",
       "table": "7",
       "covers": 3,
-      "destination": "EatIn",
       "lines": [
         {
           "name": "Article 1",
@@ -2353,7 +2408,7 @@
       "voidPaymentIndex": 3,
       "reprint": false,
       "holdAndRecall": false,
-      "ref": "o44"
+      "ref": "o46"
     },
     {
       "type": "counter_order",
@@ -2407,7 +2462,7 @@
       ],
       "reprint": true,
       "holdAndRecall": false,
-      "ref": "o45"
+      "ref": "o47"
     },
     {
       "type": "x_report",
@@ -2470,7 +2525,7 @@
       ],
       "reprint": true,
       "holdAndRecall": false,
-      "ref": "o49"
+      "ref": "o51"
     },
     {
       "type": "table_order",
@@ -2478,7 +2533,6 @@
       "waiter": "waiter2",
       "table": "3",
       "covers": 5,
-      "destination": "EatIn",
       "lines": [
         {
           "name": "Article 1",
@@ -2539,7 +2593,7 @@
       ],
       "reprint": false,
       "holdAndRecall": false,
-      "ref": "o50"
+      "ref": "o52"
     },
     {
       "type": "counter_order",
@@ -2573,7 +2627,7 @@
       ],
       "reprint": false,
       "holdAndRecall": false,
-      "ref": "o51"
+      "ref": "o53"
     },
     {
       "type": "table_order",
@@ -2581,7 +2635,6 @@
       "waiter": "waiter2",
       "table": "1",
       "covers": 1,
-      "destination": "EatIn",
       "lines": [
         {
           "name": "Article 1",
@@ -2644,7 +2697,7 @@
       "voidPaymentIndex": 0,
       "reprint": false,
       "holdAndRecall": false,
-      "ref": "o52"
+      "ref": "o54"
     },
     {
       "type": "counter_order",
@@ -2711,7 +2764,7 @@
       ],
       "reprint": false,
       "holdAndRecall": true,
-      "ref": "o53"
+      "ref": "o55"
     },
     {
       "type": "counter_order",
@@ -2783,7 +2836,7 @@
       ],
       "reprint": false,
       "holdAndRecall": false,
-      "ref": "o54"
+      "ref": "o56"
     },
     {
       "type": "counter_order",
@@ -2844,7 +2897,7 @@
       ],
       "reprint": false,
       "holdAndRecall": false,
-      "ref": "o55"
+      "ref": "o57"
     },
     {
       "type": "table_order",
@@ -2852,7 +2905,6 @@
       "waiter": "waiter4",
       "table": "7",
       "covers": 3,
-      "destination": "EatIn",
       "lines": [
         {
           "name": "Article 1",
@@ -2933,7 +2985,7 @@
       ],
       "reprint": false,
       "holdAndRecall": false,
-      "ref": "o56"
+      "ref": "o58"
     },
     {
       "type": "counter_order",
@@ -2984,7 +3036,7 @@
       ],
       "reprint": false,
       "holdAndRecall": false,
-      "ref": "o57"
+      "ref": "o59"
     },
     {
       "type": "table_order",
@@ -2992,7 +3044,6 @@
       "waiter": "waiter2",
       "table": "3",
       "covers": 4,
-      "destination": "EatIn",
       "lines": [
         {
           "name": "Article 1",
@@ -3032,7 +3083,7 @@
       ],
       "reprint": false,
       "holdAndRecall": false,
-      "ref": "o58"
+      "ref": "o60"
     },
     {
       "type": "counter_order",
@@ -3076,7 +3127,7 @@
       "voidPaymentIndex": 0,
       "reprint": false,
       "holdAndRecall": false,
-      "ref": "o59"
+      "ref": "o61"
     },
     {
       "type": "hold_then_void",
@@ -3175,7 +3226,7 @@
       ],
       "reprint": false,
       "holdAndRecall": false,
-      "ref": "o64"
+      "ref": "o66"
     },
     {
       "type": "table_order",
@@ -3256,7 +3307,7 @@
       ],
       "reprint": false,
       "holdAndRecall": false,
-      "ref": "o65"
+      "ref": "o67"
     },
     {
       "type": "table_order",
@@ -3264,7 +3315,6 @@
       "waiter": "waiter4",
       "table": "10",
       "covers": 5,
-      "destination": "EatIn",
       "lines": [
         {
           "name": "Article 1",
@@ -3302,7 +3352,7 @@
       ],
       "reprint": false,
       "holdAndRecall": false,
-      "ref": "o66"
+      "ref": "o68"
     },
     {
       "type": "hold_then_void",
@@ -3398,7 +3448,7 @@
       ],
       "reprint": false,
       "holdAndRecall": false,
-      "ref": "o68"
+      "ref": "o70"
     },
     {
       "type": "table_order",
@@ -3442,7 +3492,7 @@
       ],
       "reprint": false,
       "holdAndRecall": false,
-      "ref": "o69"
+      "ref": "o71"
     },
     {
       "type": "counter_order",
@@ -3493,7 +3543,7 @@
       ],
       "reprint": false,
       "holdAndRecall": false,
-      "ref": "o70"
+      "ref": "o72"
     },
     {
       "type": "counter_order",
@@ -3563,7 +3613,7 @@
       ],
       "reprint": false,
       "holdAndRecall": true,
-      "ref": "o71"
+      "ref": "o73"
     },
     {
       "type": "x_report",
@@ -3655,7 +3705,7 @@
       "voidPaymentIndex": 0,
       "reprint": false,
       "holdAndRecall": false,
-      "ref": "o4"
+      "ref": "m4"
     },
     {
       "type": "void_receipt",
@@ -3688,56 +3738,56 @@
       }
     },
     "B": {
-      "ttcCents": 97108,
-      "htCents": 90017,
-      "receiptCount": 24,
+      "ttcCents": 98608,
+      "htCents": 91381,
+      "receiptCount": 25,
       "vatByRate": {
         "0": 0,
         "2.1": 134,
         "5.5": 1516,
-        "10": 1838,
+        "10": 1974,
         "20": 3603
       },
       "tenderByMethod": {
         "Cash": 13485,
-        "CreditCard": 71377,
+        "CreditCard": 72877,
         "GiftCard": 12147,
         "MealVoucher": 187
       }
     },
     "C": {
-      "ttcCents": 217573,
-      "htCents": 203384,
-      "receiptCount": 47,
+      "ttcCents": 219073,
+      "htCents": 204806,
+      "receiptCount": 48,
       "vatByRate": {
         "0": 0,
         "2.1": 868,
-        "5.5": 2020,
+        "5.5": 2098,
         "10": 4430,
         "20": 6871
       },
       "tenderByMethod": {
         "Cash": 76546,
-        "CreditCard": 77897,
+        "CreditCard": 79397,
         "GiftCard": 55144,
         "MealVoucher": 7986
       }
     }
   },
   "total": {
-    "ttcCents": 482224,
-    "htCents": 452981,
-    "receiptCount": 118,
+    "ttcCents": 485224,
+    "htCents": 455767,
+    "receiptCount": 120,
     "vatByRate": {
       "0": 0,
       "2.1": 1863,
-      "5.5": 5532,
-      "10": 8958,
+      "5.5": 5610,
+      "10": 9094,
       "20": 12890
     },
     "tenderByMethod": {
       "Cash": 134775,
-      "CreditCard": 233979,
+      "CreditCard": 236979,
       "GiftCard": 99233,
       "MealVoucher": 15253
     }

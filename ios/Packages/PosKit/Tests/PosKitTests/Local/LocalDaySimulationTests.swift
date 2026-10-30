@@ -166,6 +166,8 @@ struct LocalDaySimulationTests {
                 var order = try #require(try await api.activeOrder(table: table))
                 if let destination = op.destination {
                     try await api.setDestination(orderId: order.orderId, destination: destination == "EatIn" ? .eatIn : .takeaway)
+                } else {
+                    #expect(order.destination == .eatIn, "table \(table) ouverte sans mode : sur place par défaut")
                 }
                 order = try await api.addItems(table: table, items: (op.lines ?? []).map(input))
                 try await discountAndComps(op, table: table, order: order, waiterName: waiterName)
