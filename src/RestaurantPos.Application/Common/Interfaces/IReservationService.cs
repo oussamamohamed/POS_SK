@@ -13,6 +13,7 @@ public enum ReservationError
     InvalidName,
     InvalidCovers,
     InvalidDuration,
+    InvalidQuote,
     InvalidPhone,
     UnknownTable,
     TableRequired,

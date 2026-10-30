@@ -36,6 +36,12 @@ struct BookingSheet: View {
                         ForEach([60, 90, 120, 150], id: \.self) { Text(Self.durationLabel($0)).tag($0) }
                     }
                     Toggle("bookings.field_waitlist", isOn: $draft.isWaitlist).accessibilityIdentifier("booking.waitlist")
+                    if draft.isWaitlist {
+                        Stepper(value: quoteBinding, in: 5...240, step: 5) {
+                            Text("bookings.field_quote \(quoteBinding.wrappedValue)")
+                        }
+                        .accessibilityIdentifier("booking.quote")
+                    }
                     if !draft.isWaitlist {
                         Picker("bookings.field_table", selection: $draft.tableNumber) {
                             Text("bookings.field_table_none").tag(String?.none)
@@ -77,7 +83,9 @@ struct BookingSheet: View {
                 if isEditable {
                     ToolbarItem(placement: .confirmationAction) {
                         Button("common.save") {
-                            Task { if await model.bookings.save(draft, editing: existing?.id) != nil { dismiss() } }
+                            var toSave = draft
+                            if toSave.isWaitlist, toSave.quoteMinutes == nil { toSave.quoteMinutes = 15 }
+                            Task { if await model.bookings.save(toSave, editing: existing?.id) != nil { dismiss() } }
                         }
                         .accessibilityIdentifier("booking.save")
                     }
@@ -96,6 +104,8 @@ struct BookingSheet: View {
         existing?.hasPhone == true && existing?.phone == nil ? String(localized: "bookings.field_phone_hidden") : String(localized: "bookings.field_phone")
     }
     private var phoneBinding: Binding<String> { Binding(get: { draft.phone ?? "" }, set: { draft.phone = $0 }) }
+    /// Attente annoncée : 15 min par défaut pour un client en liste d'attente.
+    private var quoteBinding: Binding<Int> { Binding(get: { draft.quoteMinutes ?? 15 }, set: { draft.quoteMinutes = $0 }) }
     private var noteBinding: Binding<String> { Binding(get: { draft.note ?? "" }, set: { draft.note = $0 }) }
 
     private static func durationLabel(_ minutes: Int) -> String {

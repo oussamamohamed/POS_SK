@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using RestaurantPos.Application.Common.Interfaces;
 using RestaurantPos.Application.DTOs;
 using RestaurantPos.Domain.Entities;
+using RestaurantPos.Domain.ValueObjects;
 using RestaurantPos.Infrastructure.Persistence;
 using RestaurantPos.Infrastructure.Services;
 using Xunit;
@@ -51,6 +52,15 @@ public sealed class ReservationServiceTests
     }
 
     [Fact]
+    public async Task Quote_is_validated_and_kept_for_the_waitlist_only()
+    {
+        var (service, _, _) = Build();
+        await ShouldFail(service.CreateAsync(Input(table: null, waitlist: true) with { QuoteMinutes = 0 }, true), ReservationError.InvalidQuote);
+        (await service.CreateAsync(Input(table: null, waitlist: true) with { QuoteMinutes = 20 }, true)).QuoteMinutes.Should().Be(20);
+        (await service.CreateAsync(Input(at: T0.AddHours(3)) with { QuoteMinutes = 20 }, true)).QuoteMinutes.Should().BeNull();
+    }
+
+    [Fact]
     public async Task Create_rejects_unknown_table_and_too_small_table()
     {
         var (service, _, _) = Build();
@@ -83,6 +93,25 @@ public sealed class ReservationServiceTests
         (await service.ListAsync(T0, T0.AddDays(1), true)).Single().IsLate.Should().BeFalse();
         clock.Now = T0.AddHours(1).AddMinutes(20);
         (await service.ListAsync(T0, T0.AddDays(1), true)).Single().IsLate.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task Paying_the_table_completes_its_seated_reservation_only()
+    {
+        var (service, db, _) = Build();
+        var seated = await service.CreateAsync(Input(), true);
+        var later = await service.CreateAsync(Input(at: T0.AddHours(5)), true);
+        await service.SeatAsync(seated.Id, null, Guid.NewGuid(), "Sophie", true);
+        var order = new Order { TableNumber = "T1" };
+        order.Items.Add(new OrderItem { ProductName = "Menu", Quantity = 1, UnitPrice = Money.FromCents(2000), TaxRatePercent = 10m });
+        db.Orders.Add(order);
+        await db.SaveChangesAsync();
+
+        var checkout = new CheckoutPaymentService(db, new NF525FiscalAuditService(db));
+        (await checkout.ProcessPaymentTendersAsync(order.Id, "POS01", [new(PaymentMethod.Cash, 2000, 2000)])).IsSuccess.Should().BeTrue();
+
+        (await db.Reservations.FindAsync(seated.Id))!.Status.Should().Be(ReservationStatus.Done);
+        (await db.Reservations.FindAsync(later.Id))!.Status.Should().Be(ReservationStatus.Booked);
     }
 
     [Fact]

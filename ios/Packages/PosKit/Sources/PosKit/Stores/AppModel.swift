@@ -24,6 +24,7 @@ public final class AppModel {
     public let settingsStore: SettingsStore
     public let bookings: BookingsStore
     public let menuAnalysis: MenuAnalysisStore
+    public let needs: NeedsStore
 
     public private(set) var isRealtimeConnected = false
     /// Alerte imprimante (hors ligne / rétablie) ; l'UI l'affiche puis la remet à nil.
@@ -61,6 +62,7 @@ public final class AppModel {
         settingsStore = SettingsStore(api: api, notifier: notifier)
         bookings = BookingsStore(api: api, notifier: notifier, session: session)
         menuAnalysis = MenuAnalysisStore(api: api, notifier: notifier)
+        needs = NeedsStore(api: api)
     }
 
     /// Chargement initial après le premier déverrouillage.
@@ -70,7 +72,8 @@ public final class AppModel {
         async let tables: Void = floor.load()
         async let net: Void = network.refresh()
         async let attention: Void = bookings.refreshAttention()
-        _ = await (catalogLoad, hh, tables, net, attention)
+        async let needsLoad: Void = needs.refresh()
+        _ = await (catalogLoad, hh, tables, net, attention, needsLoad)
         if ticket.orderId == nil && ticket.lines.isEmpty {
             await ticket.openCounter(destination: .takeaway)
         }
@@ -116,6 +119,7 @@ public final class AppModel {
         switch event {
         case .kitchenChanged:
             await kitchen.load()
+            await needs.refresh()
         case .gridLayoutUpdated(let layout):
             if let layout { catalog.apply(layout: layout) } else { catalog.invalidateLayouts(); await catalog.loadCurrentLayout() }
         case .happyHourChanged(let status):
@@ -123,10 +127,12 @@ public final class AppModel {
             await happyHour.refresh()
         case .tablesChanged:
             await floor.load()
+            await needs.refresh()
         case .reservationsChanged:
             await bookings.refreshAttention()
             await bookings.load()
             await floor.load()
+            await needs.refresh()
         case let .printerStatusChanged(_, name, isOnline, pending):
             printerAlert = isOnline
                 ? String(format: L10n.string("messages.printer_back_online"), name)

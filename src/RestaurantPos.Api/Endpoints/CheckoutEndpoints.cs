@@ -4,7 +4,9 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using RestaurantPos.Api.Hubs;
 using RestaurantPos.Application.Common.Interfaces;
 using RestaurantPos.Application.DTOs;
 using RestaurantPos.Domain.Entities;
@@ -25,7 +27,7 @@ public static class CheckoutEndpoints
                        .WithTags("Checkout & Payments")
                        .RequireAuthorization();
 
-        group.MapPost("/pay", async (PaymentSettlementRequest req, ICheckoutPaymentService checkout, AppDbContext db, IMealVoucherPolicyService mealVoucherPolicyService, PrintDispatcher printing, HttpContext http) =>
+        group.MapPost("/pay", async (PaymentSettlementRequest req, ICheckoutPaymentService checkout, AppDbContext db, IMealVoucherPolicyService mealVoucherPolicyService, PrintDispatcher printing, IHubContext<PosHub, IPosHubClient> hub, HttpContext http) =>
         {
             var orderId = req.OrderId;
             if (orderId == Guid.Empty || !await db.Orders.AnyAsync(o => o.Id == orderId))
@@ -168,6 +170,9 @@ public static class CheckoutEndpoints
             var hasCash = (req.Tenders ?? []).Any(t => t.Method == PaymentMethod.Cash);
             var printQueued = req.RequestReceiptPrint && result.RemainingBalanceCents == 0
                 && await printing.QueueTableReceiptAsync(orderId, terminalId, result.ReceiptNumber, hasCash);
+
+            // Une table soldée termine la réservation installée dessus : les écrans de réservations se rechargent.
+            if (result.RemainingBalanceCents == 0) await hub.Clients.All.OnReservationsChanged();
 
             return Results.Ok(new
             {

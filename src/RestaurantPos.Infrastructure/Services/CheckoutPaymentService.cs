@@ -196,6 +196,7 @@ public class CheckoutPaymentService : ICheckoutPaymentService
                         table.AssignedWaiterId = null;
                         table.AssignedWaiterName = null;
                         table.OpenedAtUtc = null;
+                        await ReservationService.CompleteSeatedAsync(_dbContext, table.TableNumber, DateTimeOffset.UtcNow, ct).ConfigureAwait(false);
                     }
                 }
 

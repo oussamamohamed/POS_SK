@@ -28,6 +28,7 @@ extension LocalPosAPI {
         try orderRepository.setStatus(orderId: order.orderId, status)
         if let table = try floorRepository.tables().first(where: { $0.activeOrderId == order.orderId }) {
             try floorRepository.update(table.tableNumber, status: .free, covers: 0, waiterName: nil, waiterId: nil, activeOrderId: nil, openedAt: nil)
+            try reservationRepository.completeSeated(table: table.tableNumber, now: clock())
         }
     }
 

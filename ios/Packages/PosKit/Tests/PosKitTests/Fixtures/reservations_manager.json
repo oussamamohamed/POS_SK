@@ -12,7 +12,8 @@
     "status": 0,
     "isWaitlist": false,
     "isLate": true,
-    "createdAtUtc": "2026-10-29T23:42:20.124149+00:00"
+    "createdAtUtc": "2026-10-29T23:42:20.124149+00:00",
+    "quoteMinutes": null
   },
   {
     "id": "01a18a0b-03de-741f-b673-b14965355483",
@@ -27,7 +28,8 @@
     "status": 0,
     "isWaitlist": true,
     "isLate": false,
-    "createdAtUtc": "2026-10-29T23:42:20.126638+00:00"
+    "createdAtUtc": "2026-10-29T23:42:20.126638+00:00",
+    "quoteMinutes": null
   },
   {
     "id": "01a18a0b-ff15-756f-a420-d41c145e6f72",
@@ -42,7 +44,8 @@
     "status": 4,
     "isWaitlist": true,
     "isLate": false,
-    "createdAtUtc": "2026-10-29T23:43:24.437159+00:00"
+    "createdAtUtc": "2026-10-29T23:43:24.437159+00:00",
+    "quoteMinutes": null
   },
   {
     "id": "01a18a0c-0a78-7ed8-8f49-90e730ff2251",
@@ -57,7 +60,8 @@
     "status": 4,
     "isWaitlist": true,
     "isLate": false,
-    "createdAtUtc": "2026-10-29T23:43:27.3528+00:00"
+    "createdAtUtc": "2026-10-29T23:43:27.3528+00:00",
+    "quoteMinutes": null
   },
   {
     "id": "01a18a0c-6c1b-7d53-a7fb-3296388cf2fe",
@@ -72,7 +76,8 @@
     "status": 4,
     "isWaitlist": true,
     "isLate": false,
-    "createdAtUtc": "2026-10-29T23:43:52.347233+00:00"
+    "createdAtUtc": "2026-10-29T23:43:52.347233+00:00",
+    "quoteMinutes": null
   },
   {
     "id": "01a18a0e-2abc-787e-83d2-84b5abc79361",
@@ -87,7 +92,88 @@
     "status": 4,
     "isWaitlist": true,
     "isLate": false,
-    "createdAtUtc": "2026-10-29T23:45:46.684022+00:00"
+    "createdAtUtc": "2026-10-29T23:45:46.684022+00:00",
+    "quoteMinutes": null
+  },
+  {
+    "id": "01a18bdd-29fb-73a9-aadd-559e08eb9642",
+    "guestName": "E2E Retard 1793347889658",
+    "covers": 2,
+    "startsAtUtc": "2026-10-30T07:41:29.658+00:00",
+    "durationMinutes": 90,
+    "tableNumber": null,
+    "note": null,
+    "phone": null,
+    "hasPhone": false,
+    "status": 4,
+    "isWaitlist": true,
+    "isLate": false,
+    "createdAtUtc": "2026-10-30T08:11:29.659395+00:00",
+    "quoteMinutes": 5
+  },
+  {
+    "id": "01a18bdd-33bf-7197-bc30-4246ca20b5f1",
+    "guestName": "E2E Retard 1793347892158",
+    "covers": 2,
+    "startsAtUtc": "2026-10-30T07:41:32.158+00:00",
+    "durationMinutes": 90,
+    "tableNumber": null,
+    "note": null,
+    "phone": null,
+    "hasPhone": false,
+    "status": 4,
+    "isWaitlist": true,
+    "isLate": false,
+    "createdAtUtc": "2026-10-30T08:11:32.159865+00:00",
+    "quoteMinutes": 5
+  },
+  {
+    "id": "01a18bdd-5b95-7f0e-b398-6d81c2d19f36",
+    "guestName": "Demo Leroy",
+    "covers": 2,
+    "startsAtUtc": "2026-10-30T07:41:42.354+00:00",
+    "durationMinutes": 90,
+    "tableNumber": null,
+    "note": null,
+    "phone": null,
+    "hasPhone": false,
+    "status": 0,
+    "isWaitlist": true,
+    "isLate": false,
+    "createdAtUtc": "2026-10-30T08:11:42.357538+00:00",
+    "quoteMinutes": 10
+  },
+  {
+    "id": "01a18bdd-286e-77c0-a1e3-42b543d962c9",
+    "guestName": "E2E Attente 1793347889036",
+    "covers": 2,
+    "startsAtUtc": "2026-10-30T09:15:00+00:00",
+    "durationMinutes": 90,
+    "tableNumber": null,
+    "note": null,
+    "phone": null,
+    "hasPhone": false,
+    "status": 4,
+    "isWaitlist": true,
+    "isLate": false,
+    "createdAtUtc": "2026-10-30T08:11:29.26287+00:00",
+    "quoteMinutes": 15
+  },
+  {
+    "id": "01a18bdd-329a-74ba-8597-0ccd652b7d41",
+    "guestName": "E2E Attente 1793347891676",
+    "covers": 2,
+    "startsAtUtc": "2026-10-30T09:15:00+00:00",
+    "durationMinutes": 90,
+    "tableNumber": null,
+    "note": null,
+    "phone": null,
+    "hasPhone": false,
+    "status": 4,
+    "isWaitlist": true,
+    "isLate": false,
+    "createdAtUtc": "2026-10-30T08:11:31.866944+00:00",
+    "quoteMinutes": 15
   },
   {
     "id": "01a18a0b-03ce-7819-a5c0-52d09f611298",
@@ -102,7 +188,8 @@
     "status": 1,
     "isWaitlist": false,
     "isLate": false,
-    "createdAtUtc": "2026-10-29T23:42:20.11099+00:00"
+    "createdAtUtc": "2026-10-29T23:42:20.11099+00:00",
+    "quoteMinutes": null
   },
   {
     "id": "01a18a0b-03da-7313-b4c0-f40f848b3edb",
@@ -117,7 +204,8 @@
     "status": 0,
     "isWaitlist": false,
     "isLate": false,
-    "createdAtUtc": "2026-10-29T23:42:20.12202+00:00"
+    "createdAtUtc": "2026-10-29T23:42:20.12202+00:00",
+    "quoteMinutes": null
   },
   {
     "id": "01a18a0b-03dd-771a-8124-4c91573b4017",
@@ -132,6 +220,7 @@
     "status": 0,
     "isWaitlist": false,
     "isLate": false,
-    "createdAtUtc": "2026-10-29T23:42:20.125433+00:00"
+    "createdAtUtc": "2026-10-29T23:42:20.125433+00:00",
+    "quoteMinutes": null
   }
 ]

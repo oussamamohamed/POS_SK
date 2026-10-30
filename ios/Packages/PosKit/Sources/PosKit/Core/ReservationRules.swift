@@ -2,7 +2,7 @@ import Foundation
 
 /// Refus métier des réservations (miroir de `ReservationError` du .NET). Les messages sont ceux du .NET en français.
 public enum ReservationError: Error, Equatable, Sendable {
-    case notFound, invalidName, invalidCovers, invalidDuration, invalidPhone
+    case notFound, invalidName, invalidCovers, invalidDuration, invalidQuote, invalidPhone
     case unknownTable, tableRequired, tableCapacity, tableConflict, tableOccupied, invalidState
 
     public var apiError: APIError {
@@ -11,6 +11,7 @@ public enum ReservationError: Error, Equatable, Sendable {
         case .invalidName: .server(status: 400, message: "Le nom du client est obligatoire (100 caractères au plus).")
         case .invalidCovers: .server(status: 400, message: "Le nombre de couverts doit être compris entre 1 et 30.")
         case .invalidDuration: .server(status: 400, message: "La durée doit être comprise entre 30 et 240 minutes.")
+        case .invalidQuote: .server(status: 400, message: "L'attente annoncée doit être comprise entre 1 et 240 minutes.")
         case .invalidPhone: .server(status: 400, message: "Numéro de téléphone invalide.")
         case .unknownTable: .server(status: 400, message: "Table inconnue.")
         case .tableRequired: .server(status: 400, message: "Choisissez une table pour installer ce client.")
@@ -38,6 +39,8 @@ public enum ReservationRules {
         guard (1...100).contains(d.guestName.count) else { throw ReservationError.invalidName }
         guard (1...30).contains(d.covers) else { throw ReservationError.invalidCovers }
         guard (30...240).contains(d.durationMinutes) else { throw ReservationError.invalidDuration }
+        if let quote = d.quoteMinutes, !(1...240).contains(quote) { throw ReservationError.invalidQuote }
+        if !d.isWaitlist { d.quoteMinutes = nil }
         let phone = draft.phone?.trimmingCharacters(in: .whitespacesAndNewlines)
         d.phone = phone?.isEmpty == false ? phone : nil
         if let p = d.phone, !isValidPhone(p) { throw ReservationError.invalidPhone }

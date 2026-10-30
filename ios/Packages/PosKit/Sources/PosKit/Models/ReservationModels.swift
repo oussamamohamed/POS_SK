@@ -20,8 +20,10 @@ public struct Reservation: Codable, Identifiable, Hashable, Sendable {
     public var isWaitlist: Bool
     public var isLate: Bool
     public var createdAtUtc: Date
+    /// Attente annoncée (minutes) d'un client en liste d'attente ; dépassée, elle remonte dans « à traiter ».
+    public var quoteMinutes: Int?
 
-    public init(id: UUID = UUID(), guestName: String, covers: Int, startsAtUtc: Date, durationMinutes: Int = 90, tableNumber: String? = nil, note: String? = nil, phone: String? = nil, hasPhone: Bool? = nil, status: ReservationStatus = .booked, isWaitlist: Bool = false, isLate: Bool = false, createdAtUtc: Date = Date()) {
+    public init(id: UUID = UUID(), guestName: String, covers: Int, startsAtUtc: Date, durationMinutes: Int = 90, tableNumber: String? = nil, note: String? = nil, phone: String? = nil, hasPhone: Bool? = nil, status: ReservationStatus = .booked, isWaitlist: Bool = false, isLate: Bool = false, createdAtUtc: Date = Date(), quoteMinutes: Int? = nil) {
         self.id = id
         self.guestName = guestName
         self.covers = covers
@@ -35,6 +37,7 @@ public struct Reservation: Codable, Identifiable, Hashable, Sendable {
         self.isWaitlist = isWaitlist
         self.isLate = isLate
         self.createdAtUtc = createdAtUtc
+        self.quoteMinutes = quoteMinutes
     }
 
     public var endsAtUtc: Date { startsAtUtc.addingTimeInterval(TimeInterval(durationMinutes * 60)) }
@@ -50,8 +53,9 @@ public struct ReservationDraft: Hashable, Sendable {
     public var note: String?
     public var phone: String?
     public var isWaitlist: Bool
+    public var quoteMinutes: Int?
 
-    public init(guestName: String = "", covers: Int = 2, startsAt: Date = Date(), durationMinutes: Int = 90, tableNumber: String? = nil, note: String? = nil, phone: String? = nil, isWaitlist: Bool = false) {
+    public init(guestName: String = "", covers: Int = 2, startsAt: Date = Date(), durationMinutes: Int = 90, tableNumber: String? = nil, note: String? = nil, phone: String? = nil, isWaitlist: Bool = false, quoteMinutes: Int? = nil) {
         self.guestName = guestName
         self.covers = covers
         self.startsAt = startsAt
@@ -60,9 +64,10 @@ public struct ReservationDraft: Hashable, Sendable {
         self.note = note
         self.phone = phone
         self.isWaitlist = isWaitlist
+        self.quoteMinutes = quoteMinutes
     }
 
     public init(_ r: Reservation) {
-        self.init(guestName: r.guestName, covers: r.covers, startsAt: r.startsAtUtc, durationMinutes: r.durationMinutes, tableNumber: r.tableNumber, note: r.note, phone: r.phone, isWaitlist: r.isWaitlist)
+        self.init(guestName: r.guestName, covers: r.covers, startsAt: r.startsAtUtc, durationMinutes: r.durationMinutes, tableNumber: r.tableNumber, note: r.note, phone: r.phone, isWaitlist: r.isWaitlist, quoteMinutes: r.quoteMinutes)
     }
 }

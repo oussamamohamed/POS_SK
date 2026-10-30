@@ -8,8 +8,6 @@ public final class BookingsStore {
     public private(set) var isLoading = false
     /// Début du jour affiché (calendrier local).
     public private(set) var day: Date
-    /// Réservations en retard + clients en liste d'attente aujourd'hui : pastille de la navigation.
-    public private(set) var attentionCount = 0
     /// Heure de la prochaine réservation attendue de chaque table, aujourd'hui : repère « Réservée hh:mm » du plan de salle.
     public private(set) var heldByTable: [String: Date] = [:]
 
@@ -65,7 +63,6 @@ public final class BookingsStore {
     }
 
     private func apply(today: [Reservation]) {
-        attentionCount = today.filter { $0.isLate || ($0.isWaitlist && $0.status == .booked) }.count
         let current = now()
         var held: [String: Date] = [:]
         for r in today.sorted(by: { $0.startsAtUtc < $1.startsAtUtc }) where !r.isWaitlist && r.status == .booked && r.endsAtUtc > current {

@@ -467,9 +467,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         return [from, to];
     };
 
-    async function bkFetchList(day) {
+    function bkRangeUrl(day) {
         const [from, to] = bkDayBounds(day);
-        const res = await fetch(`/api/reservations?from=${encodeURIComponent(from.toISOString())}&to=${encodeURIComponent(to.toISOString())}`);
+        return `/api/reservations?from=${encodeURIComponent(from.toISOString())}&to=${encodeURIComponent(to.toISOString())}`;
+    }
+
+    async function bkFetchList(day) {
+        const res = await fetch(bkRangeUrl(day));
         if (!res.ok) throw new Error(String(res.status));
         return res.json();
     }
@@ -516,22 +520,104 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
         document.getElementById('bkFormWaitlist').addEventListener('change', (e) => {
             document.getElementById('bkFormTable').disabled = e.target.checked;
+            document.getElementById('bkQuoteGroup').hidden = !e.target.checked;
         });
     }
 
-    // Pastille de la navigation : réservations en retard + clients en liste d'attente (à traiter maintenant).
-    async function refreshBookingsBadge() {
-        const btn = document.getElementById('btnNavBookings');
-        if (!btn) return;
-        if (!(state.token || localStorage.getItem('pos_jwt_token'))) { btn.removeAttribute('data-badge'); return; }
+    // ==================== À TRAITER (cloche et pastilles) ====================
+    // shortcut: temps cible de cuisine fixé à 12 min (comme la démo Handi) ; à passer en réglage de l'établissement si besoin.
+    const KITCHEN_TARGET_MINUTES = 12;
+    const NEEDS_VIEW = { bill: 'floorPlanView', kitchen: 'kdsView', booking: 'bookingsView', wait: 'bookingsView' };
+    const needsState = { items: [] };
+
+    async function fetchJsonOrEmpty(url) {
         try {
-            const n = (await bkFetchList(bkDayString(new Date()))).filter(r => r.isLate || (r.isWaitlist && r.status === 0)).length;
-            if (n) btn.setAttribute('data-badge', String(n)); else btn.removeAttribute('data-badge');
+            const res = await fetch(url);
+            return res.ok ? await res.json() : [];
         } catch {
-            // Indisponible : la pastille garde sa dernière valeur.
+            return [];
         }
     }
-    setInterval(refreshBookingsBadge, 60000);
+
+    /** Ce qui attend un humain maintenant : additions demandées, plats en retard, clients attendus en retard, attentes dépassées. */
+    async function refreshNeeds() {
+        const btn = document.getElementById('needsBtn');
+        if (!btn) return;
+        if (!(state.token || localStorage.getItem('pos_jwt_token'))) { needsState.items = []; paintNeeds(); return; }
+        const now = Date.now();
+        const [tables, tickets, today] = await Promise.all([
+            fetchJsonOrEmpty('/api/tables'), fetchJsonOrEmpty('/api/kds/tickets'), fetchJsonOrEmpty(bkRangeUrl(bkDayString(new Date())))
+        ]);
+        const items = [];
+        tables.filter(tb => tb.status === 2).forEach(tb => items.push({
+            kind: 'bill', target: tb.tableNumber, since: now,
+            title: t('needs.bill', { table: tb.tableNumber }), sub: t('needs.bill_sub', { covers: tb.coversCount || 0, waiter: tb.assignedWaiterName || '—' })
+        }));
+        tickets.filter(k => (k.status === 0 || k.status === 1) && now - new Date(k.dispatchedAtUtc).getTime() > KITCHEN_TARGET_MINUTES * 60000).forEach(k => items.push({
+            kind: 'kitchen', target: k.tableNumber, since: new Date(k.dispatchedAtUtc).getTime(),
+            title: t('needs.late_food', { table: k.tableNumber }), sub: t('needs.late_food_sub', { time: bkTime(k.dispatchedAtUtc), server: k.serverName || '—' })
+        }));
+        today.filter(r => r.isLate).forEach(r => items.push({
+            kind: 'booking', target: r.id, since: new Date(r.startsAtUtc).getTime(),
+            title: t('needs.booking_late', { name: r.guestName }), sub: t('needs.booking_sub', { covers: r.covers, time: bkTime(r.startsAtUtc), table: r.tableNumber || '—' })
+        }));
+        today.filter(r => r.isWaitlist && r.status === 0 && r.quoteMinutes && now - new Date(r.startsAtUtc).getTime() > r.quoteMinutes * 60000).forEach(r => items.push({
+            kind: 'wait', target: r.id, since: new Date(r.startsAtUtc).getTime(),
+            title: t('needs.waitlist_over', { name: r.guestName }), sub: t('needs.waitlist_sub', { covers: r.covers, quote: r.quoteMinutes })
+        }));
+        needsState.items = items.sort((a, b) => a.since - b.since);
+        paintNeeds();
+    }
+
+    function paintNeeds() {
+        const items = needsState.items;
+        const btn = document.getElementById('needsBtn');
+        document.getElementById('needsN').textContent = items.length;
+        btn.classList.toggle('on', items.length > 0);
+        const count = (view) => items.filter(i => NEEDS_VIEW[i.kind] === view).length;
+        [['btnNavFloor', 'floorPlanView'], ['btnNavKds', 'kdsView'], ['btnNavBookings', 'bookingsView']].forEach(([id, view]) => {
+            const el = document.getElementById(id);
+            const n = count(view);
+            if (el) { if (n) el.setAttribute('data-badge', String(n)); else el.removeAttribute('data-badge'); }
+        });
+        const pop = document.getElementById('needsPop');
+        if (pop.hidden) return;
+        pop.innerHTML = `<p class="needs-pop-h">${escapeHtml(t('needs.title'))}</p>` + (items.length
+            ? `<ul class="needs-list">${items.map((i, n) => `<li><button type="button" data-need="${n}"><b>${escapeHtml(i.title)}</b><span>${escapeHtml(i.sub)}</span></button></li>`).join('')}</ul>`
+            : `<p class="needs-empty">${escapeHtml(t('needs.empty'))}</p>`);
+    }
+
+    /** Ouvre la vue concernée puis met l'élément en évidence. */
+    async function focusOn(item) {
+        switchView(NEEDS_VIEW[item.kind]);
+        await new Promise(r => setTimeout(r, 400));
+        const sel = item.kind === 'bill' ? `[data-table="${CSS.escape(item.target)}"]` : item.kind === 'kitchen' ? null : `[data-bk-id="${CSS.escape(item.target)}"]`;
+        const el = sel && document.querySelector(sel);
+        if (!el) return;
+        el.scrollIntoView({ block: 'center', inline: 'center', behavior: 'smooth' });
+        el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
+    }
+
+    (function bindNeeds() {
+        const btn = document.getElementById('needsBtn'), pop = document.getElementById('needsPop');
+        if (!btn || !pop) return;
+        const close = () => { pop.hidden = true; btn.setAttribute('aria-expanded', 'false'); };
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            pop.hidden = !pop.hidden;
+            btn.setAttribute('aria-expanded', String(!pop.hidden));
+            if (!pop.hidden) paintNeeds();
+        });
+        pop.addEventListener('click', (e) => {
+            const b = e.target.closest('[data-need]');
+            if (!b) return;
+            const item = needsState.items[Number(b.dataset.need)];
+            close();
+            if (item) focusOn(item);
+        });
+        document.addEventListener('click', (e) => { if (!pop.hidden && !e.target.closest('#needsPop')) close(); });
+    })();
+    setInterval(refreshNeeds, 30000);
 
     function renderBookings() {
         const body = document.getElementById('bkBody');
@@ -568,8 +654,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         const nowLine = bkState.day === bkDayString(new Date()) && nowMs >= dayStart && nowMs <= dayStart + spanMs
             ? `<div class="bk-now" style="left:calc(64px + (100% - 64px) * ${(pos(nowMs) / 100).toFixed(4)})"></div>` : '';
 
-        const item = (r, extra) => `<li><button type="button" class="bk-item${r.isLate ? ' late' : ''}" data-bk-id="${escapeHtml(r.id)}"><span><strong>${escapeHtml(r.guestName)}</strong> · ${r.covers}<small>${escapeHtml(extra)}</small></span>${r.isLate ? `<span class="bk-late">${escapeHtml(t('bookings.late'))}</span>` : ''}</button></li>`;
-        const waitItems = waiting.map(r => item(r, t('bookings.waited', { minutes: Math.max(0, Math.round((nowMs - new Date(r.startsAtUtc).getTime()) / 60000)) }))).join('');
+        const item = (r, extra, overdue = false) => `<li><button type="button" class="bk-item${r.isLate || overdue ? ' late' : ''}" data-bk-id="${escapeHtml(r.id)}"><span><strong>${escapeHtml(r.guestName)}</strong> · ${r.covers}<small>${escapeHtml(extra)}</small></span>${r.isLate || overdue ? `<span class="bk-late">${escapeHtml(t('bookings.late'))}</span>` : ''}</button></li>`;
+        const waitItems = waiting.map(r => {
+            const waited = Math.max(0, Math.round((nowMs - new Date(r.startsAtUtc).getTime()) / 60000));
+            return item(r, t('bookings.waited', { minutes: waited }) + (r.quoteMinutes ? ' · ' + t('bookings.quoted', { minutes: r.quoteMinutes }) : ''), r.quoteMinutes && waited > r.quoteMinutes);
+        }).join('');
         const unplacedItems = unplaced.map(r => item(r, bkTime(r.startsAtUtc))).join('');
         const empty = !bkState.list.length ? `<p class="bk-empty">${escapeHtml(t('bookings.empty'))}</p>` : '';
 
@@ -600,6 +689,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         tableSel.value = r?.tableNumber || '';
         $('bkFormWaitlist').checked = !!r?.isWaitlist;
         tableSel.disabled = !!r?.isWaitlist;
+        $('bkQuoteGroup').hidden = !r?.isWaitlist;
+        $('bkFormQuote').value = r?.quoteMinutes || 15;
         $('bkFormPhone').value = r?.phone || '';
         $('bkFormPhone').placeholder = r && r.hasPhone && !r.phone ? t('bookings.field_phone_hidden') : '';
         $('bkFormNote').value = r?.note || '';
@@ -637,7 +728,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             tableNumber: waitlist ? null : ($('bkFormTable').value || null),
             note: $('bkFormNote').value.trim() || null,
             phone: phone || null,
-            isWaitlist: waitlist
+            isWaitlist: waitlist,
+            quoteMinutes: waitlist ? parseInt($('bkFormQuote').value, 10) || null : null
         } };
     }
 
@@ -2874,6 +2966,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const card = document.createElement('div');
             const statusClass = getTableStatusClass(table.status);
             card.className = `table-card ${statusClass}`;
+            card.dataset.table = table.tableNumber;
             const total = Number(table.activeOrderTotalTtc || 0);
             const totalHtml = total > 0
                 ? `<div class="table-total">💶 ${total.toFixed(2)} €</div>`
@@ -5876,7 +5969,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 .withAutomaticReconnect()
                 .build();
             posConnection.on('OnReservationsChanged', () => {
-                refreshBookingsBadge();
+                refreshNeeds();
                 if (document.getElementById('bookingsView')?.classList.contains('active')) loadBookings();
                 if (document.getElementById('floorPlanView')?.classList.contains('active')) loadFloorPlanData();
             });
@@ -5888,7 +5981,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         }
         posConnectionStarted = true;
-        refreshBookingsBadge();
+        refreshNeeds();
         posConnection.start().catch(err => {
             posConnectionStarted = false; // sera retenté à la prochaine authentification
             console.log('SignalR hub /hubs/pos non connecté:', err);
@@ -5921,6 +6014,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             connection.on('ReceiveKitchenUpdate', () => {
                 loadKdsData();
+                refreshNeeds();
             });
 
             // Feature 019: Happy Hour Real-time Broadcast

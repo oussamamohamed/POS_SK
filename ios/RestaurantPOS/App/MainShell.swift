@@ -6,6 +6,7 @@ struct MainShell: View {
     @Environment(AppModel.self) private var model
     @Environment(Router.self) private var router
     @Environment(AppEnvironment.self) private var environment
+    @State private var ticks = 0
 
     var body: some View {
         HStack(spacing: 0) {
@@ -25,6 +26,8 @@ struct MainShell: View {
             // Horloge d'une seconde : compte à rebours Happy Hour.
             while !Task.isCancelled {
                 try? await Task.sleep(for: .seconds(1))
+                ticks += 1
+                if ticks % 30 == 0 { await model.needs.refresh() }
                 if model.happyHour.tick() { await model.happyHour.refresh() }
             }
         }
@@ -53,6 +56,15 @@ struct SidebarRail: View {
         !section.requiresManager || model.session.isManager
     }
 
+    private func needsBadge(for section: Router.Section) -> Int {
+        switch section {
+        case .floor: model.needs.billCount
+        case .kitchen: model.needs.lateFoodCount
+        case .bookings: model.needs.bookingCount
+        default: 0
+        }
+    }
+
     var body: some View {
         VStack(spacing: Theme.Space.s) {
             Image("BrandMark")
@@ -66,7 +78,7 @@ struct SidebarRail: View {
 
             ForEach(Router.Section.allCases) { section in
                 if isVisible(section) {
-                    RailButton(section: section, isSelected: router.section == section, badge: section == .bookings ? model.bookings.attentionCount : 0) {
+                    RailButton(section: section, isSelected: router.section == section, badge: needsBadge(for: section)) {
                         router.section = section
                     }
                 }
@@ -118,7 +130,7 @@ private struct RailButton: View {
                     Text("\(badge)").font(Font.posMono(11, .semibold)).foregroundStyle(.white)
                         .padding(.horizontal, 5).frame(minWidth: 18, minHeight: 18)
                         .background(Capsule().fill(Theme.danger))
-                        .accessibilityIdentifier("nav.bookings.badge")
+                        .accessibilityIdentifier("nav.\(section.rawValue).badge")
                 }
             }
         }
@@ -140,6 +152,7 @@ struct HeaderBar: View {
                 Text(context).font(Font.pos(15, .semibold)).foregroundStyle(Theme.inkMuted).lineLimit(1)
             }
             Spacer()
+            NeedsBell()
             ConnectionBadge(isOnline: model.network.isOnline || environment.launch.isUITest, isRealtime: model.isRealtimeConnected, terminal: model.settings.terminalId)
             if let op = model.session.currentOperator {
                 HStack(spacing: 10) {
@@ -174,6 +187,71 @@ struct HeaderBar: View {
     private func initials(of name: String) -> String {
         let letters = name.split(separator: " ").prefix(2).compactMap(\.first)
         return letters.isEmpty ? "?" : String(letters).uppercased()
+    }
+}
+
+/// Cloche « à traiter » : additions demandées, plats en retard, clients en retard, attentes dépassées. Un choix ouvre l'écran concerné.
+struct NeedsBell: View {
+    @Environment(AppModel.self) private var model
+    @Environment(Router.self) private var router
+    @State private var isOpen = false
+
+    var body: some View {
+        let items = model.needs.items
+        Button { isOpen = true } label: {
+            HStack(spacing: Theme.Space.s) {
+                Image(systemName: items.isEmpty ? "bell" : "bell.badge")
+                Text("\(items.count)").font(Font.posMono(15, .semibold))
+            }
+            .font(.posLabel)
+            .foregroundStyle(items.isEmpty ? Theme.ink : Theme.danger)
+            .padding(.horizontal, Theme.Space.m)
+            .frame(minHeight: Theme.touchMin)
+            .background(Capsule().fill(Theme.raised))
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("needs.bell_label")
+        .accessibilityValue("\(items.count)")
+        .accessibilityIdentifier("needs.bell")
+        .popover(isPresented: $isOpen) {
+            VStack(alignment: .leading, spacing: Theme.Space.s) {
+                Text("needs.title").font(.posHeadline).foregroundStyle(Theme.ink)
+                if items.isEmpty {
+                    Text("needs.empty").font(.posBody).foregroundStyle(Theme.inkSubtle)
+                } else {
+                    ScrollView {
+                        VStack(spacing: Theme.Space.s) {
+                            ForEach(items) { item in
+                                Button { open(item) } label: {
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(item.title).font(.posBody.weight(.semibold)).foregroundStyle(Theme.ink)
+                                        Text(item.subtitle).font(.posCaption).foregroundStyle(Theme.inkMuted)
+                                    }
+                                    .padding(.horizontal, Theme.Space.m)
+                                    .frame(maxWidth: .infinity, minHeight: Theme.touchTarget, alignment: .leading)
+                                    .background(RoundedRectangle(cornerRadius: Theme.Radius.sm, style: .continuous).fill(Theme.raised))
+                                }
+                                .buttonStyle(.plain)
+                                .accessibilityIdentifier("needs.item.\(item.id)")
+                            }
+                        }
+                    }
+                }
+            }
+            .padding(Theme.Space.l)
+            .frame(width: 380)
+            .frame(maxHeight: 460)
+            .presentationCompactAdaptation(.popover)
+        }
+    }
+
+    private func open(_ item: NeedItem) {
+        isOpen = false
+        switch item.kind {
+        case .bill: router.section = .floor
+        case .lateFood: router.section = .kitchen
+        case .lateBooking, .waitlist: router.section = .bookings
+        }
     }
 }
 

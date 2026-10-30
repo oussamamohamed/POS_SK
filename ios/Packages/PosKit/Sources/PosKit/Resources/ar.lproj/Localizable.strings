@@ -183,3 +183,11 @@
 "bookings.load_error" = "تعذّر تحميل الحجوزات";
 "bookings.saved_toast" = "تم حفظ الحجز";
 "bookings.seated_toast" = "تم إجلاس الضيف على الطاولة %@";
+"needs.bill" = "%@ طلبت الفاتورة";
+"needs.bill_sub" = "%lld شخص · %@";
+"needs.late_food" = "%@: الطعام متأخر";
+"needs.late_food_sub" = "أُرسل %@ · %@";
+"needs.booking_late" = "%@ لم يصل";
+"needs.booking_sub" = "%lld الساعة %@ · %@";
+"needs.waitlist_over" = "%@ تجاوز الانتظار المعلن";
+"needs.waitlist_sub" = "%lld · المعلن %lld د";

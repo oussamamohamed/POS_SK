@@ -10,7 +10,8 @@ public sealed record ReservationInput(
     string? TableNumber,
     string? Note,
     string? Phone,
-    bool IsWaitlist);
+    bool IsWaitlist,
+    int? QuoteMinutes = null);
 
 /// <summary><c>Phone</c> n'est renseigné que pour un responsable ; les autres voient seulement <c>HasPhone</c>.</summary>
 public sealed record ReservationDto(
@@ -26,4 +27,5 @@ public sealed record ReservationDto(
     int Status,
     bool IsWaitlist,
     bool IsLate,
-    DateTimeOffset CreatedAtUtc);
+    DateTimeOffset CreatedAtUtc,
+    int? QuoteMinutes);

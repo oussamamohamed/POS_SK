@@ -43,7 +43,7 @@ public static class ReservationEndpoints
     }
 
     private static ReservationInput ToInput(ReservationRequest r) =>
-        new(r.GuestName, r.Covers, r.StartsAtUtc, r.DurationMinutes, r.TableNumber, r.Note, r.Phone, r.IsWaitlist);
+        new(r.GuestName, r.Covers, r.StartsAtUtc, r.DurationMinutes, r.TableNumber, r.Note, r.Phone, r.IsWaitlist, r.QuoteMinutes);
 
     private static async Task<bool> CanSeePhone(HttpContext http, IAuthorizationService authz) =>
         (await authz.AuthorizeAsync(http.User, "RequireManagerOrAdmin")).Succeeded;

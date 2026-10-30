@@ -77,7 +77,7 @@ public actor InMemoryPosAPI: PosAPI {
             Reservation(guestName: "Martin", covers: 2, startsAtUtc: at(60), tableNumber: "T1", note: "Anniversaire", phone: "+33 6 12 34 56 78"),
             Reservation(guestName: "Petit", covers: 4, startsAtUtc: at(-30), tableNumber: "T2", isLate: true),
             Reservation(guestName: "Durand", covers: 3, startsAtUtc: at(120)),
-            Reservation(guestName: "Leroy", covers: 2, startsAtUtc: at(-5), isWaitlist: true)
+            Reservation(guestName: "Leroy", covers: 2, startsAtUtc: at(-20), isWaitlist: true, quoteMinutes: 10)
         ]
     }
 
@@ -232,7 +232,7 @@ public actor InMemoryPosAPI: PosAPI {
         try await step("createReservation"); try requireAuth()
         let d: ReservationDraft
         do { d = try ReservationRules.validate(draft); try checkTable(d, ignoring: nil) } catch let e as ReservationError { throw e.apiError }
-        let r = Reservation(guestName: d.guestName, covers: d.covers, startsAtUtc: d.startsAt, durationMinutes: d.durationMinutes, tableNumber: d.tableNumber, note: d.note, phone: d.phone, isWaitlist: d.isWaitlist)
+        let r = Reservation(guestName: d.guestName, covers: d.covers, startsAtUtc: d.startsAt, durationMinutes: d.durationMinutes, tableNumber: d.tableNumber, note: d.note, phone: d.phone, isWaitlist: d.isWaitlist, quoteMinutes: d.quoteMinutes)
         reservationsStore.append(r)
         return visible(r)
     }
@@ -252,6 +252,7 @@ public actor InMemoryPosAPI: PosAPI {
         reservationsStore[i].note = d.note
         if !keepPhone { reservationsStore[i].phone = d.phone; reservationsStore[i].hasPhone = d.phone != nil }
         reservationsStore[i].isWaitlist = d.isWaitlist
+        reservationsStore[i].quoteMinutes = d.quoteMinutes
         return visible(reservationsStore[i])
     }
 
@@ -552,6 +553,9 @@ public actor InMemoryPosAPI: PosAPI {
             tablesStore[i].coversCount = 0
             tablesStore[i].openedAtUtc = nil
             tablesStore[i].assignedWaiterName = nil
+            for r in reservationsStore.indices where reservationsStore[r].tableNumber == tablesStore[i].tableNumber && reservationsStore[r].status == .seated {
+                reservationsStore[r].status = .done
+            }
         }
         return (receipt.number, paid, change, remaining)
     }

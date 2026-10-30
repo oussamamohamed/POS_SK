@@ -637,6 +637,7 @@ public class TableManagementService : ITableManagementService
             table.AssignedWaiterId = null;
             table.AssignedWaiterName = null;
             table.OpenedAtUtc = null;
+            await ReservationService.CompleteSeatedAsync(_dbContext, tableNumber, DateTimeOffset.UtcNow, cancellationToken).ConfigureAwait(false);
         }
 
         await _dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);

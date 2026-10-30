@@ -211,10 +211,10 @@ public actor HTTPPosAPI: PosAPI {
 
     struct ReservationBody: Encodable {
         let guestName: String, covers: Int, startsAtUtc: Date, durationMinutes: Int
-        let tableNumber: String?, note: String?, phone: String?, isWaitlist: Bool
+        let tableNumber: String?, note: String?, phone: String?, isWaitlist: Bool, quoteMinutes: Int?
         init(_ d: ReservationDraft) {
             guestName = d.guestName; covers = d.covers; startsAtUtc = d.startsAt; durationMinutes = d.durationMinutes
-            tableNumber = d.tableNumber; note = d.note; phone = d.phone; isWaitlist = d.isWaitlist
+            tableNumber = d.tableNumber; note = d.note; phone = d.phone; isWaitlist = d.isWaitlist; quoteMinutes = d.quoteMinutes
         }
     }
 

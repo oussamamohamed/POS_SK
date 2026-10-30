@@ -28,6 +28,8 @@ public class Reservation
     public string? Phone { get; set; }
     public ReservationStatus Status { get; set; } = ReservationStatus.Booked;
     public bool IsWaitlist { get; set; }
+    /// <summary>Attente annoncée au client en liste d'attente, en minutes ; dépassée, elle remonte dans « à traiter ».</summary>
+    public int? QuoteMinutes { get; set; }
     public DateTimeOffset CreatedAtUtc { get; init; } = DateTimeOffset.UtcNow;
     public DateTimeOffset UpdatedAtUtc { get; set; } = DateTimeOffset.UtcNow;
 }

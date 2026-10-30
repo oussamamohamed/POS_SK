@@ -184,6 +184,9 @@
   <data name="errors.reservation_invalidphone" xml:space="preserve">
     <value>Invalid phone number.</value>
   </data>
+  <data name="errors.reservation_invalidquote" xml:space="preserve">
+    <value>The quoted wait must be between 1 and 240 minutes.</value>
+  </data>
   <data name="errors.reservation_unknowntable" xml:space="preserve">
     <value>Unknown table.</value>
   </data>

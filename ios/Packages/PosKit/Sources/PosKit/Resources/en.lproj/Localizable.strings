@@ -183,3 +183,11 @@
 "bookings.load_error" = "Could not load bookings";
 "bookings.saved_toast" = "Booking saved";
 "bookings.seated_toast" = "Guest seated at table %@";
+"needs.bill" = "%@ asked for the bill";
+"needs.bill_sub" = "%lld guest(s) · %@";
+"needs.late_food" = "%@: food is late";
+"needs.late_food_sub" = "fired %@ · %@";
+"needs.booking_late" = "%@ has not arrived";
+"needs.booking_sub" = "%lld at %@ · %@";
+"needs.waitlist_over" = "%@ waited past the quote";
+"needs.waitlist_sub" = "%lld · quoted %lld min";

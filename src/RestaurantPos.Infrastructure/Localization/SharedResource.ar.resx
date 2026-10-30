@@ -184,6 +184,9 @@
   <data name="errors.reservation_invalidphone" xml:space="preserve">
     <value>رقم الهاتف غير صالح.</value>
   </data>
+  <data name="errors.reservation_invalidquote" xml:space="preserve">
+    <value>يجب أن يكون الانتظار المعلن بين 1 و240 دقيقة.</value>
+  </data>
   <data name="errors.reservation_unknowntable" xml:space="preserve">
     <value>الطاولة غير معروفة.</value>
   </data>

@@ -183,3 +183,11 @@
 "bookings.load_error" = "Erreur de chargement des réservations";
 "bookings.saved_toast" = "Réservation enregistrée";
 "bookings.seated_toast" = "Client installé en table %@";
+"needs.bill" = "%@ demande l’addition";
+"needs.bill_sub" = "%lld couvert(s) · %@";
+"needs.late_food" = "%@ : plat en retard";
+"needs.late_food_sub" = "envoyé à %@ · %@";
+"needs.booking_late" = "%@ n’est pas arrivé";
+"needs.booking_sub" = "%lld à %@ · %@";
+"needs.waitlist_over" = "%@ a dépassé l’attente annoncée";
+"needs.waitlist_sub" = "%lld · annoncé %lld min";

@@ -224,6 +224,7 @@ public partial class Program
                 UpdatedAtUtc TEXT NOT NULL
             );"); } catch { }
             try { dbContext.Database.ExecuteSqlRaw("CREATE INDEX IF NOT EXISTS IX_Reservations_StartsAtUtc ON Reservations (StartsAtUtc);"); } catch { }
+            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE Reservations ADD COLUMN QuoteMinutes INTEGER NULL;"); } catch { }
             try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE OrderItems ADD COLUMN IsFoodVoucherEligible INTEGER NOT NULL DEFAULT 1;"); } catch { }
             try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE OrderItems ADD COLUMN TaxRateTakeawayPercent TEXT NULL;"); } catch { }
             try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE Orders ADD COLUMN Destination INTEGER NOT NULL DEFAULT 0;"); } catch { }
@@ -859,7 +860,7 @@ public record CreateCategoryRequest(string Name, string? ColorHex, int DisplayOr
 public record UpdateCategoryRequest(string Name, string? ColorHex, int DisplayOrder, string? IconName, bool? IsActive, string? PreparationStationId = null);
 public record CreateProductRequest(string Name, string CategoryId, decimal Price, decimal TaxRatePercent, string? Description, string? ColorHex, int DisplayOrder, bool IsQuickKey, string? StationId, decimal? Cost = null);
 public record UpdateProductRequest(string Name, string CategoryId, decimal Price, decimal TaxRatePercent, string? Description, string? ColorHex, int DisplayOrder, bool? IsAvailable, bool? IsActive, bool IsQuickKey, string? StationId, decimal? Cost = null, bool ClearCost = false);
-public record ReservationRequest(string GuestName, int Covers, DateTimeOffset StartsAtUtc, int DurationMinutes = 90, string? TableNumber = null, string? Note = null, string? Phone = null, bool IsWaitlist = false);
+public record ReservationRequest(string GuestName, int Covers, DateTimeOffset StartsAtUtc, int DurationMinutes = 90, string? TableNumber = null, string? Note = null, string? Phone = null, bool IsWaitlist = false, int? QuoteMinutes = null);
 public record SeatReservationRequest(string? TableNumber, Guid? OperatorId, string? WaiterName);
 public record ReservationStatusRequest(ReservationStatus Status);
 public record CreateStaffRequest(string Name, string Role, string Pin);

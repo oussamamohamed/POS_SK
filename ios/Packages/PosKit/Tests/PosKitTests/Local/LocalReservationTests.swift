@@ -90,6 +90,22 @@ struct LocalReservationTests {
         await #expect(throws: ReservationError.tableOccupied.apiError) { try await api.seatReservation(id: second.id, tableNumber: "T1", operatorId: nil, waiterName: nil) }
     }
 
+    @Test func payingTheTableCompletesItsSeatedReservationOnly() async throws {
+        let clock = LocalTestClock()
+        let api = try await makeLocalAPI(clock: clock)
+        let seated = try await api.createReservation(draft(clock, hours: 1))
+        let later = try await api.createReservation(draft(clock, hours: 5))
+        _ = try await api.seatReservation(id: seated.id, tableNumber: nil, operatorId: nil, waiterName: "Sophie")
+        let burger = try await localProduct(api, "Burger Gourmet Rossini")
+        _ = try await api.addItems(table: "T1", items: [localInput(burger)])
+        let order = try #require(try await api.activeOrder(table: "T1"))
+        _ = try await api.pay(localPayment(order, table: "T1", tenders: [localTender(.cash, order.totalTtcAmount?.cents ?? 0)]))
+
+        let all = try await list(api, clock)
+        #expect(all.first { $0.id == seated.id }?.status == .done)
+        #expect(all.first { $0.id == later.id }?.status == .booked)
+    }
+
     @Test func waitlistEntryNeedsATableToBeSeated() async throws {
         let clock = LocalTestClock()
         let api = try await makeLocalAPI(clock: clock)

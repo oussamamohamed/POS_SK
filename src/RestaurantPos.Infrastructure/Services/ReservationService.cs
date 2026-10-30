@@ -121,6 +121,19 @@ public sealed partial class ReservationService : IReservationService
         return ToDto(reservation, includePhone);
     }
 
+    /// <summary>
+    /// Une table libérée (paiement soldé, libération manuelle) termine la réservation installée dessus.
+    /// Écrit dans le contexte de l'appelant : à sauvegarder avec sa propre transaction.
+    /// </summary>
+    internal static async Task CompleteSeatedAsync(AppDbContext db, string tableNumber, DateTimeOffset now, CancellationToken ct)
+    {
+        foreach (var r in await db.Reservations.Where(r => r.TableNumber == tableNumber && r.Status == ReservationStatus.Seated).ToListAsync(ct).ConfigureAwait(false))
+        {
+            r.Status = ReservationStatus.Done;
+            r.UpdatedAtUtc = now;
+        }
+    }
+
     public async Task<int> PurgeAsync(CancellationToken ct = default)
     {
         var now = _clock.GetUtcNow();
@@ -143,11 +156,12 @@ public sealed partial class ReservationService : IReservationService
         if (name.Length is 0 or > 100) throw new ReservationException(ReservationError.InvalidName);
         if (input.Covers is < 1 or > 30) throw new ReservationException(ReservationError.InvalidCovers);
         if (input.DurationMinutes is < 30 or > 240) throw new ReservationException(ReservationError.InvalidDuration);
+        if (input.QuoteMinutes is < 1 or > 240) throw new ReservationException(ReservationError.InvalidQuote);
         var phone = string.IsNullOrWhiteSpace(input.Phone) ? null : input.Phone.Trim();
         if (phone is not null && !PhonePattern().IsMatch(phone)) throw new ReservationException(ReservationError.InvalidPhone);
         var note = string.IsNullOrWhiteSpace(input.Note) ? null : input.Note.Trim();
         var table = input.IsWaitlist || string.IsNullOrWhiteSpace(input.TableNumber) ? null : input.TableNumber.Trim();
-        return input with { GuestName = name, Phone = phone, Note = note, TableNumber = table };
+        return input with { GuestName = name, Phone = phone, Note = note, TableNumber = table, QuoteMinutes = input.IsWaitlist ? input.QuoteMinutes : null };
     }
 
     private async Task CheckTableAsync(ReservationInput input, Guid? ignoreId, CancellationToken ct)
@@ -176,6 +190,7 @@ public sealed partial class ReservationService : IReservationService
         reservation.Note = input.Note;
         reservation.Phone = input.Phone;
         reservation.IsWaitlist = input.IsWaitlist;
+        reservation.QuoteMinutes = input.QuoteMinutes;
         reservation.UpdatedAtUtc = _clock.GetUtcNow();
     }
 
@@ -183,5 +198,5 @@ public sealed partial class ReservationService : IReservationService
         r.Id, r.GuestName, r.Covers, r.StartsAtUtc, r.DurationMinutes, r.TableNumber, r.Note,
         includePhone ? r.Phone : null, !string.IsNullOrEmpty(r.Phone), (int)r.Status, r.IsWaitlist,
         r.Status == ReservationStatus.Booked && !r.IsWaitlist && _clock.GetUtcNow() > r.StartsAtUtc + LateGrace,
-        r.CreatedAtUtc);
+        r.CreatedAtUtc, r.QuoteMinutes);
 }

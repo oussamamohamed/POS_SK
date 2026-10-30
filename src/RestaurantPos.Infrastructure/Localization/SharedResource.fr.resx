@@ -184,6 +184,9 @@
   <data name="errors.reservation_invalidphone" xml:space="preserve">
     <value>Numéro de téléphone invalide.</value>
   </data>
+  <data name="errors.reservation_invalidquote" xml:space="preserve">
+    <value>L'attente annoncée doit être comprise entre 1 et 240 minutes.</value>
+  </data>
   <data name="errors.reservation_unknowntable" xml:space="preserve">
     <value>Table inconnue.</value>
   </data>

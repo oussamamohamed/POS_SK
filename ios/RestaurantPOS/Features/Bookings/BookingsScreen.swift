@@ -50,7 +50,8 @@ struct BookingsScreen: View {
                         .frame(maxWidth: .infinity)
                     VStack(spacing: Theme.Space.l) {
                         BookingsList(title: String(localized: "bookings.waitlist_title"), empty: String(localized: "bookings.waitlist_empty"), items: store.waitlist, identifier: "bookings.waitlist") { r in
-                            String(localized: "bookings.waited \(max(0, Int(Date().timeIntervalSince(r.startsAtUtc) / 60)))")
+                            let waited = max(0, Int(Date().timeIntervalSince(r.startsAtUtc) / 60))
+                            return String(localized: "bookings.waited \(waited)") + (r.quoteMinutes.map { " · " + String(localized: "bookings.quoted \($0)") } ?? "")
                         } onSelect: { target = .existing($0) }
                         BookingsList(title: String(localized: "bookings.unplaced_title"), empty: String(localized: "bookings.none_unplaced"), items: store.unplaced, identifier: "bookings.unplaced") { r in
                             r.startsAtUtc.formatted(date: .omitted, time: .shortened)
@@ -102,6 +103,10 @@ private struct BookingsList: View {
     let caption: (Reservation) -> String
     let onSelect: (Reservation) -> Void
 
+    private func isOverdue(_ r: Reservation) -> Bool {
+        r.isWaitlist && (r.quoteMinutes.map { Date().timeIntervalSince(r.startsAtUtc) > TimeInterval($0 * 60) } ?? false)
+    }
+
     var body: some View {
         Card {
             VStack(alignment: .leading, spacing: Theme.Space.s) {
@@ -117,7 +122,7 @@ private struct BookingsList: View {
                                     Text(caption(r)).font(.posCaption).foregroundStyle(Theme.inkMuted)
                                 }
                                 Spacer()
-                                if r.isLate { Badge(text: String(localized: "bookings.late"), color: Theme.danger) }
+                                if r.isLate || isOverdue(r) { Badge(text: String(localized: "bookings.late"), color: Theme.danger) }
                             }
                             .padding(.horizontal, Theme.Space.m)
                             .frame(maxWidth: .infinity, minHeight: Theme.touchTarget, alignment: .leading)

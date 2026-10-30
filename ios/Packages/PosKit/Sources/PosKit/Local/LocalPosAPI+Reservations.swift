@@ -47,7 +47,7 @@ extension LocalPosAPI {
     public func createReservation(_ draft: ReservationDraft) async throws -> Reservation {
         let member = try requireAuth()
         let d = try validated(draft, ignoring: nil)
-        let r = Reservation(guestName: d.guestName, covers: d.covers, startsAtUtc: d.startsAt, durationMinutes: d.durationMinutes, tableNumber: d.tableNumber, note: d.note, phone: d.phone, isWaitlist: d.isWaitlist)
+        let r = Reservation(guestName: d.guestName, covers: d.covers, startsAtUtc: d.startsAt, durationMinutes: d.durationMinutes, tableNumber: d.tableNumber, note: d.note, phone: d.phone, isWaitlist: d.isWaitlist, quoteMinutes: d.quoteMinutes)
         try reservationRepository.insert(r, now: clock())
         return visible(r, isManager: member.role.isManager)
     }

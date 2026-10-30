@@ -65,6 +65,16 @@ final class BookingsUITests: PosUITestCase {
         XCTAssertTrue(app.staticTexts["Okafor · 2"].waitForExistence(timeout: 5))
     }
 
+    func testNeedsBellListsLateBookingsAndOpensTheirScreen() {
+        launch(section: "floor")
+        tap("needs.bell")
+        let late = app.buttons.matching(NSPredicate(format: "label CONTAINS 'Petit'")).firstMatch
+        XCTAssertTrue(late.waitForExistence(timeout: 5))
+        late.tap()
+        assertExists("bookings.timeline")
+        assertExists("nav.bookings.badge")
+    }
+
     func testWaiterDoesNotSeeTheMenuAnalysisTab() {
         launch(pin: "2468")
         assertNotExists("nav.menu", timeout: 2)
