@@ -71,7 +71,7 @@ struct TakingsJournalCard: View {
                     HStack(alignment: .top, spacing: Theme.Space.m) {
                         Text(e.atUtc.formatted(date: .omitted, time: .standard)).frame(width: 90, alignment: .leading).font(Font.posMono(13))
                         Text(Self.label(e.eventType)).font(.posBody.weight(.semibold)).frame(width: 240, alignment: .leading)
-                        Text(e.summary).font(.posLabel).foregroundStyle(Theme.inkMuted).frame(maxWidth: .infinity, alignment: .leading)
+                        Text(e.summary(translate: Self.translate)).font(.posLabel).foregroundStyle(Theme.inkMuted).frame(maxWidth: .infinity, alignment: .leading)
                     }
                     .foregroundStyle(Theme.ink)
                     .frame(minHeight: Theme.touchMin)
@@ -82,6 +82,12 @@ struct TakingsJournalCard: View {
         }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("takings.journal")
+    }
+
+    /// Libellé d'une clé du catalogue de l'app, nil si elle n'existe pas.
+    static func translate(_ key: String) -> String? {
+        let text = Bundle.main.localizedString(forKey: key, value: key, table: nil)
+        return text == key ? nil : text
     }
 
     /// Libellé traduit de l'événement (`journal.<TYPE>`), le code brut à défaut.

@@ -73,3 +73,13 @@ struct LocalTakingsTests {
         #expect(report.deltaPercent == 20)
     }
 }
+
+@Suite("JournalEntry : résumé")
+struct JournalSummaryTests {
+    @Test func translatesKnownFieldsAndSkipsOperatorAndTerminal() {
+        let entry = JournalEntry(atUtc: Date(), eventType: "DUPLICATE_PRINTED", terminalId: "T01", operatorName: "Alex", payloadJson: #"{"receiptNumber":"T01-000003","duplicateNumber":1,"documentType":"receipt","OperatorName":"Alex"}"#)
+        let labels = ["journal.field.receiptNumber": "Ticket", "journal.field.duplicateNumber": "N° de duplicata", "journal.field.documentType": "Document", "journal.doc.receipt": "Ticket"]
+        #expect(entry.summary(translate: { labels[$0] }) == "Alex · T01 · Document : Ticket · N° de duplicata : 1 · Ticket : T01-000003")
+        #expect(entry.summary().contains("duplicateNumber : 1"))
+    }
+}

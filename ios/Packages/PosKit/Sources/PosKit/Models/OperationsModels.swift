@@ -634,15 +634,18 @@ public struct JournalEntry: Codable, Hashable, Sendable, Identifiable {
         self.payloadJson = payloadJson
     }
 
-    /// Résumé court : opérateur, poste et premiers champs simples de la charge utile.
-    public var summary: String {
+    /// Résumé court : opérateur, poste et premiers champs simples de la charge utile. `translate` rend le libellé d'une clé
+    /// (`journal.field.<clé>`, `journal.doc.<valeur>`) ou nil ; l'opérateur et le poste, déjà en tête, ne sont pas répétés.
+    public func summary(translate: (String) -> String? = { _ in nil }) -> String {
         var parts: [String] = []
         if let operatorName { parts.append(operatorName) }
         if let terminalId { parts.append(terminalId) }
         if let data = payloadJson.data(using: .utf8), let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
             for (key, value) in object.sorted(by: { $0.key < $1.key }) where parts.count < 5 {
-                if value is NSNull || value is [Any] || value is [String: Any] { continue }
-                parts.append("\(key): \(value)")
+                let name = key.prefix(1).lowercased() + key.dropFirst()
+                if value is NSNull || value is [Any] || value is [String: Any] || ["operatorName", "operatorId", "terminalId"].contains(name) { continue }
+                let text = name == "documentType" ? translate("journal.doc.\(value)") ?? "\(value)" : "\(value)"
+                parts.append("\(translate("journal.field.\(name)") ?? key) : \(text)")
             }
         }
         return parts.joined(separator: " · ")

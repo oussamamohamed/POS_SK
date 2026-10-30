@@ -904,16 +904,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         return label === key ? type : label;
     }
 
-    /** Résumé court d'une écriture : trois premiers champs simples de sa charge utile. */
+    // Champs du JET traduits ; l'opérateur et le poste sont déjà dits en tête, le reste garde son nom brut.
+    const JOURNAL_FIELDS = new Set(['receiptNumber', 'duplicateNumber', 'documentType', 'role', 'clientIp', 'reason', 'voidedBy', 'error', 'machineName']);
+    const JOURNAL_DOCS = new Set(['receipt', 'closure', 'print_job']);
     function journalSummary(entry) {
         const parts = [];
         if (entry.operatorName) parts.push(entry.operatorName);
         if (entry.terminalId) parts.push(entry.terminalId);
         try {
-            const payload = JSON.parse(entry.payloadJson);
-            for (const [k, v] of Object.entries(payload)) {
+            for (const [key, v] of Object.entries(JSON.parse(entry.payloadJson))) {
                 if (parts.length >= 5) break;
-                if (v !== null && typeof v !== 'object') parts.push(`${k}: ${v}`);
+                const k = key.charAt(0).toLowerCase() + key.slice(1);
+                if (v === null || typeof v === 'object' || k === 'operatorName' || k === 'operatorId' || k === 'terminalId') continue;
+                const value = k === 'documentType' && JOURNAL_DOCS.has(v) ? t(`journal.doc.${v}`) : v;
+                parts.push(`${JOURNAL_FIELDS.has(k) ? t(`journal.field.${k}`) : k} : ${value}`);
             }
         } catch {
             // Charge utile non JSON : seulement l'opérateur et le poste.
