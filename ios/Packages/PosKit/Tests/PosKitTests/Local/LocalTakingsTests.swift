@@ -36,6 +36,33 @@ struct LocalTakingsTests {
         #expect(!report.vat.isEmpty && report.vat.reduce(0) { $0 + $1.baseHt.cents + $1.vat.cents } == totalCents)
     }
 
+    @Test func dashboardReportsTheDaysSalesInsteadOfFailing() async throws {
+        let api = try await makeLocalAPI()
+        let burger = try await localProduct(api, "Burger Gourmet Rossini")
+        try await seatTable(api, "T1", covers: 2, items: [localInput(burger, quantity: 2)])
+        let order = try #require(try await api.activeOrder(table: "T1"))
+        let totalCents = order.totalTtcAmount?.cents ?? 0
+        _ = try await api.pay(localPayment(order, table: "T1", tenders: [localTender(.cash, totalCents)]))
+
+        let day = today()
+        let dashboard = try await api.dashboard(from: day.from, to: day.to)
+        #expect(dashboard.kpis.totalSalesTtc == Money(cents: totalCents) && dashboard.kpis.totalOrdersCount == 1)
+        #expect(dashboard.kpis.totalSalesHt.cents > 0 && dashboard.kpis.totalSalesHt.cents < totalCents)
+        #expect(dashboard.services.reduce(0) { $0 + $1.salesTtc.cents } == totalCents)
+        #expect(dashboard.topProducts.first?.productName == "Burger Gourmet Rossini" && dashboard.topProducts.first?.quantitySold == 2)
+        #expect(dashboard.paymentMethods.count == 1 && dashboard.staffPerformance.count == 1)
+    }
+
+    @Test func demoSalesFillTheDashboard() async throws {
+        let api = try LocalPosAPI(path: ":memory:")
+        try await api.seedDemoSales()
+        let day = today()
+        let dashboard = try await api.dashboard(from: day.from, to: day.to)
+        #expect(dashboard.kpis.totalOrdersCount == 4 && dashboard.kpis.totalSalesTtc.cents > 0)
+        #expect(dashboard.paymentMethods.count == 3 && dashboard.staffPerformance.count == 1)
+        #expect(dashboard.topProducts.count == 10 || dashboard.topProducts.count > 5)
+    }
+
     @Test func aWeekIsReportedByDayAgainstThePreviousWeek() async throws {
         let api = try await makeLocalAPI()
         let day = today()

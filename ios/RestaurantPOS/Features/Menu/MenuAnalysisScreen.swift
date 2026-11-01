@@ -102,7 +102,7 @@ struct MenuAnalysisScreen: View {
                 HStack(spacing: Theme.Space.xl) {
                     stat("menu.col_qty", "\(item.quantity)")
                     stat("menu.col_revenue", item.revenueHt.formatted)
-                    stat("menu.col_cost", item.unitCost?.formatted ?? "—")
+                    if let cost = item.unitCost { stat("menu.col_cost", cost.formatted) } else { CostEntry(productId: item.productId, width: 130) }
                     stat("menu.col_margin", item.unitMarginHt?.formatted ?? "—")
                 }
                 if let menuClass = item.class {
@@ -184,7 +184,10 @@ struct MenuAnalysisScreen: View {
                         Text("\(item.quantity)").frame(width: 60, alignment: .trailing)
                         Text((item.share as NSDecimalNumber).doubleValue.formatted(.percent.precision(.fractionLength(1)))).frame(width: 80, alignment: .trailing)
                         Text(item.revenueHt.formatted).frame(width: 110, alignment: .trailing)
-                        Text(item.unitCost?.formatted ?? "—").frame(width: 90, alignment: .trailing)
+                        Group {
+                            if let cost = item.unitCost { Text(cost.formatted) } else { CostEntry(productId: item.productId, width: 90) }
+                        }
+                        .frame(width: 90, alignment: .trailing)
                         Text(item.unitMarginHt?.formatted ?? "—").frame(width: 110, alignment: .trailing)
                         Group {
                             if let menuClass = item.class {
@@ -273,6 +276,45 @@ private struct MenuScatter: View {
                 .accessibilityLabel("menu.chart_label")
             }
             .accessibilityIdentifier("menu.chart")
+        }
+    }
+}
+
+/// Saisie directe du coût de revient HT d'un plat qui n'en a pas (validation par le clavier ou le bouton).
+private struct CostEntry: View {
+    @Environment(AppModel.self) private var model
+    let productId: UUID
+    let width: CGFloat
+    @State private var text = ""
+    @State private var isSaving = false
+
+    var body: some View {
+        HStack(spacing: 4) {
+            TextField("menu.cost_placeholder", text: $text)
+                .keyboardType(.decimalPad)
+                .multilineTextAlignment(.trailing)
+                .textFieldStyle(.plain)
+                .padding(.horizontal, 6)
+                .frame(width: width - 30, height: 34)
+                .background(RoundedRectangle(cornerRadius: 8).strokeBorder(Theme.lineStrong))
+                .onSubmit(save)
+                .accessibilityIdentifier("menu.cost.\(productId.uuidString.prefix(8))")
+            Button(action: save) { Image(systemName: "checkmark.circle.fill").font(.system(size: 22)) }
+                .buttonStyle(.plain)
+                .foregroundStyle(Theme.success)
+                .disabled(isSaving || Money.parse(text) == nil)
+                .accessibilityLabel(Text("menu.cost_save"))
+                .accessibilityIdentifier("menu.cost.save.\(productId.uuidString.prefix(8))")
+        }
+        .environment(\.layoutDirection, .leftToRight)
+    }
+
+    private func save() {
+        guard let cost = Money.parse(text), !isSaving else { return }
+        isSaving = true
+        Task {
+            await model.menuAnalysis.setCost(productId: productId, cost)
+            isSaving = false
         }
     }
 }

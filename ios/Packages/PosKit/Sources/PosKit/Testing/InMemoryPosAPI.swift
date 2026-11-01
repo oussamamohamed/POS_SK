@@ -1147,18 +1147,18 @@ enum Seed {
             ModifierOption(name: "Bacon Croustillant", extraPrice: Money(cents: 200)),
             ModifierOption(name: "Œuf au Plat", extraPrice: Money(cents: 150)),
         ])
-        let ipa = Product(name: "Bière Artisanale IPA 33cl", categoryId: "CAT_DRINKS", price: Money(cents: 600), taxRatePercent: 20, colorHex: "#2980B9", displayOrder: 1, isQuickKey: true, preparationStationId: "BAR")
+        let ipa = Product(name: "Bière Artisanale IPA 33cl", categoryId: "CAT_DRINKS", price: Money(cents: 600), taxRatePercent: 20, colorHex: "#2980B9", displayOrder: 1, isQuickKey: true, preparationStationId: "BAR", cost: Money(cents: 150))
         let products = [
             ipa,
-            Product(name: "Burger Gourmet Rossini", categoryId: "CAT_MAINS", price: Money(cents: 1950), taxRatePercent: 10, colorHex: "#C0392B", displayOrder: 1, isQuickKey: true, preparationStationId: "HOT_KITCHEN", modifierGroups: [cooking, extras]),
-            Product(name: "Pizza Margherita AOP", categoryId: "CAT_PIZZAS", price: Money(cents: 1250), taxRatePercent: 10, taxRateTakeawayPercent: 5.5, colorHex: "#D35400", displayOrder: 1, isQuickKey: true, preparationStationId: "HOT_KITCHEN"),
-            Product(name: "Salade César Poulet", categoryId: "CAT_STARTERS", price: Money(cents: 1100), taxRatePercent: 10, taxRateTakeawayPercent: 5.5, colorHex: "#27AE60", displayOrder: 1, preparationStationId: "COLD"),
-            Product(name: "Tartare de Saumon", categoryId: "CAT_STARTERS", price: Money(cents: 1350), taxRatePercent: 10, colorHex: "#16A085", displayOrder: 2, preparationStationId: "COLD"),
-            Product(name: "Entrecôte 300g", categoryId: "CAT_MAINS", price: Money(cents: 2600), taxRatePercent: 10, colorHex: "#922B21", displayOrder: 2, preparationStationId: "GRILL", modifierGroups: [cooking]),
-            Product(name: "Pizza 4 Fromages", categoryId: "CAT_PIZZAS", price: Money(cents: 1450), taxRatePercent: 10, taxRateTakeawayPercent: 5.5, colorHex: "#E59866", displayOrder: 2, preparationStationId: "HOT_KITCHEN"),
-            Product(name: "Tiramisu Maison", categoryId: "CAT_DESSERTS", price: Money(cents: 750), taxRatePercent: 10, taxRateTakeawayPercent: 5.5, colorHex: "#8E44AD", displayOrder: 1, preparationStationId: "DESSERT"),
-            Product(name: "Café Gourmand", categoryId: "CAT_DESSERTS", price: Money(cents: 850), taxRatePercent: 10, colorHex: "#6C3483", displayOrder: 2, isQuickKey: true, preparationStationId: "BAR"),
-            Product(name: "Verre Bordeaux AOP 12cl", categoryId: "CAT_DRINKS", price: Money(cents: 550), taxRatePercent: 20, colorHex: "#7B241C", displayOrder: 2, preparationStationId: "BAR"),
+            Product(name: "Burger Gourmet Rossini", categoryId: "CAT_MAINS", price: Money(cents: 1950), taxRatePercent: 10, colorHex: "#C0392B", displayOrder: 1, isQuickKey: true, preparationStationId: "HOT_KITCHEN", modifierGroups: [cooking, extras], cost: Money(cents: 520)),
+            Product(name: "Pizza Margherita AOP", categoryId: "CAT_PIZZAS", price: Money(cents: 1250), taxRatePercent: 10, taxRateTakeawayPercent: 5.5, colorHex: "#D35400", displayOrder: 1, isQuickKey: true, preparationStationId: "HOT_KITCHEN", cost: Money(cents: 260)),
+            Product(name: "Salade César Poulet", categoryId: "CAT_STARTERS", price: Money(cents: 1100), taxRatePercent: 10, taxRateTakeawayPercent: 5.5, colorHex: "#27AE60", displayOrder: 1, preparationStationId: "COLD", cost: Money(cents: 280)),
+            Product(name: "Tartare de Saumon", categoryId: "CAT_STARTERS", price: Money(cents: 1350), taxRatePercent: 10, colorHex: "#16A085", displayOrder: 2, preparationStationId: "COLD", cost: Money(cents: 450)),
+            Product(name: "Entrecôte 300g", categoryId: "CAT_MAINS", price: Money(cents: 2600), taxRatePercent: 10, colorHex: "#922B21", displayOrder: 2, preparationStationId: "GRILL", modifierGroups: [cooking], cost: Money(cents: 900)),
+            Product(name: "Pizza 4 Fromages", categoryId: "CAT_PIZZAS", price: Money(cents: 1450), taxRatePercent: 10, taxRateTakeawayPercent: 5.5, colorHex: "#E59866", displayOrder: 2, preparationStationId: "HOT_KITCHEN", cost: Money(cents: 340)),
+            Product(name: "Tiramisu Maison", categoryId: "CAT_DESSERTS", price: Money(cents: 750), taxRatePercent: 10, taxRateTakeawayPercent: 5.5, colorHex: "#8E44AD", displayOrder: 1, preparationStationId: "DESSERT", cost: Money(cents: 180)),
+            Product(name: "Café Gourmand", categoryId: "CAT_DESSERTS", price: Money(cents: 850), taxRatePercent: 10, colorHex: "#6C3483", displayOrder: 2, isQuickKey: true, preparationStationId: "BAR", cost: Money(cents: 200)),
+            Product(name: "Verre Bordeaux AOP 12cl", categoryId: "CAT_DRINKS", price: Money(cents: 550), taxRatePercent: 20, colorHex: "#7B241C", displayOrder: 2, preparationStationId: "BAR", cost: Money(cents: 140)),
             Product(name: "Eau Pétillante 50cl", categoryId: "CAT_DRINKS", price: Money(cents: 450), taxRatePercent: 10, taxRateTakeawayPercent: 5.5, colorHex: "#5DADE2", displayOrder: 3, preparationStationId: "BAR"),
         ]
         let tables = [("T1", 2), ("T2", 4), ("T3", 6), ("T4", 2), ("T5", 8), ("T6", 4), ("T7", 2), ("T8", 4)].map { DiningTable(tableNumber: $0.0, capacity: $0.1) }

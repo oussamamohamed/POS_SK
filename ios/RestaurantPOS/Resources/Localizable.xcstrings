@@ -3658,6 +3658,75 @@
         }
       }
     },
+    "admin.hand_label": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "اليد"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hand"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Main"
+          }
+        }
+      }
+    },
+    "admin.hand_left": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "أعسر"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Left-handed"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gaucher"
+          }
+        }
+      }
+    },
+    "admin.hand_right": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "أيمن"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Right-handed"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Droitier"
+          }
+        }
+      }
+    },
     "admin.theme_label": {
       "extractionState": "manual",
       "localizations": {
@@ -12628,6 +12697,52 @@
         }
       }
     },
+    "menu.cost_placeholder": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "التكلفة"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cost HT"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Coût HT"
+          }
+        }
+      }
+    },
+    "menu.cost_save": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "حفظ التكلفة"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save cost"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enregistrer le coût"
+          }
+        }
+      }
+    },
     "menu.missing_cost": {
       "extractionState": "manual",
       "localizations": {
@@ -13002,19 +13117,19 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld طبق بلا تكلفة: أدخلها في الإعدادات ← الكتالوج لتصنيفها."
+            "value": "%lld طبق بلا تكلفة: أدخلها في عمود «التكلفة» أدناه لتصنيفها."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld dish(es) without a cost: enter it in Settings → Catalog to classify them."
+            "value": "%lld dish(es) without a cost: enter it in the Cost column below to classify them."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld plat(s) sans coût de revient : renseignez-le dans Gestion → Catalogue pour les classer."
+            "value": "%lld plat(s) sans coût de revient : saisissez-le dans la colonne Coût HT ci-dessous pour les classer."
           }
         }
       }

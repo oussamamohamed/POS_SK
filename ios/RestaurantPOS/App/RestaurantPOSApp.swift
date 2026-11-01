@@ -36,6 +36,7 @@ struct RestaurantPOSApp: App {
 /// - `-UITestSection floor` : écran affiché après connexion (mode test uniquement).
 /// - `-UITestPaired` : poste déjà appairé (sinon écran d'appairage, mode test uniquement).
 /// - `-UITestLocal` : mode autonome sur une base SQLite en mémoire avec les données de démonstration (mode test uniquement).
+/// - `-UITestDemoSales` : avec `-UITestLocal`, ajoute quelques ventes du jour à la démonstration (tableau de bord, Encaissements).
 /// - `-UITestLocalBlank` : mode autonome sur une base en mémoire vierge, donc première configuration (mode test uniquement).
 /// - `-UITestModeChoice` : aucun mode mémorisé, l'écran « Serveur / Autonome » s'affiche (mode test uniquement).
 struct LaunchConfiguration {
@@ -48,6 +49,7 @@ struct LaunchConfiguration {
     let startsPaired: Bool
     let usesLocalBackend: Bool
     let localIsBlank: Bool
+    let seedsDemoSales: Bool
     let showsModeChoice: Bool
     let backupFolder: URL?
 
@@ -65,6 +67,7 @@ struct LaunchConfiguration {
             startsPaired: isUITest && args.contains("-UITestPaired"),
             usesLocalBackend: isUITest && (args.contains("-UITestLocal") || args.contains("-UITestLocalBlank")),
             localIsBlank: isUITest && args.contains("-UITestLocalBlank"),
+            seedsDemoSales: isUITest && args.contains("-UITestLocal") && args.contains("-UITestDemoSales"),
             showsModeChoice: isUITest && args.contains("-UITestModeChoice"),
             backupFolder: isUITest ? defaults.string(forKey: "UITestBackupFolder").map { URL(fileURLWithPath: $0, isDirectory: true) } : nil
         )
@@ -173,6 +176,7 @@ final class AppEnvironment {
             api = try LocalPosAPI.openStandalone(path: LocalDatabaseLocation.defaultURL().path, transport: transport)
         }
         Task { await api.startPrintWorker() }
+        if launch.seedsDemoSales { Task { try? await api.seedDemoSales() } }
         return api
     }
 

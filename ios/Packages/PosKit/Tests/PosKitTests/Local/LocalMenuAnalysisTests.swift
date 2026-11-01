@@ -35,7 +35,7 @@ struct LocalMenuAnalysisTests {
         let api = try await makeLocalAPI()
         let now = Date()
         let burger = try await localProduct(api, "Burger Gourmet Rossini")
-        let pizza = try await localProduct(api, "Pizza Margherita AOP")
+        let pizza = try await localProduct(api, "Eau Pétillante 50cl") // la seule du jeu de démonstration sans coût
         var draft = ProductDraft(product: burger)
         draft.cost = Money(cents: 950)
         try await api.updateProduct(id: burger.id, draft)
@@ -83,7 +83,10 @@ struct LocalMenuAnalysisTests {
         #expect(try await localProduct(api, "Burger Gourmet Rossini").cost == Money(cents: 400))
 
         // Mise à jour sans coût (client qui ne l'envoie pas) : conservé.
-        try await api.updateProduct(id: burger.id, ProductDraft(product: burger))
+        var withoutCost = ProductDraft(product: burger)
+        withoutCost.cost = nil
+        withoutCost.hadCost = false
+        try await api.updateProduct(id: burger.id, withoutCost)
         #expect(try await localProduct(api, "Burger Gourmet Rossini").cost == Money(cents: 400))
 
         _ = try await api.login(pin: "2468")

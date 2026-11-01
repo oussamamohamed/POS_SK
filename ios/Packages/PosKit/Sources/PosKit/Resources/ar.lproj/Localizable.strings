@@ -191,3 +191,4 @@
 "needs.booking_sub" = "%lld الساعة %@ · %@";
 "needs.waitlist_over" = "%@ تجاوز الانتظار المعلن";
 "needs.waitlist_sub" = "%lld · المعلن %lld د";
+"menu.cost_invalid" = "أدخل تكلفة صحيحة.";

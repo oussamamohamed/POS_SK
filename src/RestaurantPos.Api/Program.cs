@@ -657,20 +657,20 @@ public partial class Program
             var catDesserts = await catalogService.CreateCategoryAsync("Desserts Maison", "#9B59B6", 4, "cake", preparationStationId: "DESSERT");
             var catBoissons = await catalogService.CreateCategoryAsync("Boissons & Vins", "#3498DB", 5, "glass", preparationStationId: "BAR");
 
-            prodSalade = await catalogService.CreateProductAsync("Salade César Poulet", catEntrees.Id, 9.50m, 10.0m, "Poulet mariné, parmesan, croûtons", "#27AE60", 1, true, "COLD");
-            await catalogService.CreateProductAsync("Tartare de Saumon Frais", catEntrees.Id, 12.00m, 10.0m, "Saumon d'Islande, aneth, agrumes", "#2ECC71", 2, false, "COLD");
+            prodSalade = await catalogService.CreateProductAsync("Salade César Poulet", catEntrees.Id, 9.50m, 10.0m, "Poulet mariné, parmesan, croûtons", "#27AE60", 1, true, "COLD", cost: 2.80m);
+            await catalogService.CreateProductAsync("Tartare de Saumon Frais", catEntrees.Id, 12.00m, 10.0m, "Saumon d'Islande, aneth, agrumes", "#2ECC71", 2, false, "COLD", cost: 4.50m);
 
-            prodBurger = await catalogService.CreateProductAsync("Burger Gourmet Rossini", catPlats.Id, 19.50m, 10.0m, "Bœuf charolais, foie gras poêlé", "#C0392B", 1, true, "HOT_KITCHEN");
-            await catalogService.CreateProductAsync("Entrecôte Grillée 300g", catPlats.Id, 24.00m, 10.0m, "Frites maison et sauce béarnaise", "#E74C3C", 2, true, "HOT_KITCHEN");
+            prodBurger = await catalogService.CreateProductAsync("Burger Gourmet Rossini", catPlats.Id, 19.50m, 10.0m, "Bœuf charolais, foie gras poêlé", "#C0392B", 1, true, "HOT_KITCHEN", cost: 5.20m);
+            await catalogService.CreateProductAsync("Entrecôte Grillée 300g", catPlats.Id, 24.00m, 10.0m, "Frites maison et sauce béarnaise", "#E74C3C", 2, true, "HOT_KITCHEN", cost: 9.00m);
 
-            prodPizza = await catalogService.CreateProductAsync("Pizza Margherita AOP", catPizzas.Id, 12.50m, 10.0m, "Tomates San Marzano, mozzarella fior di latte", "#D35400", 1, true, "HOT_KITCHEN");
-            await catalogService.CreateProductAsync("Pizza Reine Royale", catPizzas.Id, 14.50m, 10.0m, "Jambon blanc supérieur, champignons frais", "#E67E22", 2, false, "HOT_KITCHEN");
+            prodPizza = await catalogService.CreateProductAsync("Pizza Margherita AOP", catPizzas.Id, 12.50m, 10.0m, "Tomates San Marzano, mozzarella fior di latte", "#D35400", 1, true, "HOT_KITCHEN", cost: 2.60m);
+            await catalogService.CreateProductAsync("Pizza Reine Royale", catPizzas.Id, 14.50m, 10.0m, "Jambon blanc supérieur, champignons frais", "#E67E22", 2, false, "HOT_KITCHEN", cost: 3.40m);
 
-            await catalogService.CreateProductAsync("Tiramisu Spéculos Maison", catDesserts.Id, 7.50m, 10.0m, "Mascarpone onctueux, café pur arabica", "#8E44AD", 1, true, "DESSERT");
-            await catalogService.CreateProductAsync("Fondant Chocolat Valrhona", catDesserts.Id, 8.00m, 10.0m, "Cœur coulant, glace vanille Bourbon", "#9B59B6", 2, false, "DESSERT");
+            await catalogService.CreateProductAsync("Tiramisu Spéculos Maison", catDesserts.Id, 7.50m, 10.0m, "Mascarpone onctueux, café pur arabica", "#8E44AD", 1, true, "DESSERT", cost: 1.80m);
+            await catalogService.CreateProductAsync("Fondant Chocolat Valrhona", catDesserts.Id, 8.00m, 10.0m, "Cœur coulant, glace vanille Bourbon", "#9B59B6", 2, false, "DESSERT", cost: 2.20m);
 
-            prodBeer = await catalogService.CreateProductAsync("Bière Artisanale IPA 33cl", catBoissons.Id, 6.00m, 20.0m, "Brasserie locale du terroir", "#2980B9", 1, true, "BAR");
-            await catalogService.CreateProductAsync("Verre Bordeaux AOP 12cl", catBoissons.Id, 5.50m, 20.0m, "Grand Cru Saint-Émilion", "#3498DB", 2, false, "BAR");
+            prodBeer = await catalogService.CreateProductAsync("Bière Artisanale IPA 33cl", catBoissons.Id, 6.00m, 20.0m, "Brasserie locale du terroir", "#2980B9", 1, true, "BAR", cost: 1.50m);
+            await catalogService.CreateProductAsync("Verre Bordeaux AOP 12cl", catBoissons.Id, 5.50m, 20.0m, "Grand Cru Saint-Émilion", "#3498DB", 2, false, "BAR", cost: 1.40m);
             await catalogService.CreateProductAsync("Expresso Pur Arabica", catBoissons.Id, 2.50m, 10.0m, "Café torréfaction artisanale", "#1F618D", 3, true, "BAR");
         }
 

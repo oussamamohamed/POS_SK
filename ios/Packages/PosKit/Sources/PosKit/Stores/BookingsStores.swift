@@ -198,6 +198,23 @@ public final class MenuAnalysisStore {
 
     public func togglePick(_ id: UUID) { pick = pick == id ? nil : id }
 
+    /// Renseigne le coût de revient HT d'un plat sans coût (le reste de l'article est conservé) puis recalcule l'analyse.
+    @discardableResult
+    public func setCost(productId: UUID, _ cost: Money) async -> Bool {
+        guard cost.cents > 0 else { notifier.warning(L10n.string("menu.cost_invalid")); return false }
+        do {
+            guard let product = try await api.products().first(where: { $0.id == productId }) else { return false }
+            var draft = ProductDraft(product: product)
+            draft.cost = cost
+            try await api.updateProduct(id: productId, draft)
+            await load()
+            return true
+        } catch {
+            notifier.error(error)
+            return false
+        }
+    }
+
     public func count(_ menuClass: MenuClass) -> Int { report?.items.filter { $0.class == menuClass }.count ?? 0 }
 
     public func toggleFilter(_ menuClass: MenuClass) { filter = filter == menuClass ? nil : menuClass }

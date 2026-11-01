@@ -191,3 +191,4 @@
 "needs.booking_sub" = "%lld at %@ · %@";
 "needs.waitlist_over" = "%@ waited past the quote";
 "needs.waitlist_sub" = "%lld · quoted %lld min";
+"menu.cost_invalid" = "Enter a valid cost.";
