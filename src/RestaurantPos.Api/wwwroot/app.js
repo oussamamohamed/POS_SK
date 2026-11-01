@@ -1104,6 +1104,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function saveMenuCost(productId, raw) {
         const cost = parseFloat(String(raw).replace(',', '.'));
         if (!(cost > 0)) { showToast(t('menu.cost_invalid'), 'warning'); return; }
+        document.activeElement?.blur(); // rend le clavier avant que le formulaire ne soit remplacé
         try {
             const list = await (await fetch('/api/catalog/products')).json();
             const p = list.find(x => x.id === productId);

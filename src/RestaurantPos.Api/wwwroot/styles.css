@@ -2315,7 +2315,7 @@ html[data-hand="left"] .pos-cart-panel { border-inline-end: 0; border-left: 1px 
 .menu-table td small { display:block; color: var(--text-muted); }
 .menu-table .num { text-align:end; font-family: var(--font-mono); }
 .menu-cost-form { display:inline-flex; gap:4px; align-items:center; user-select:auto; }
-.menu-cost-form input { width:84px; padding:6px 8px; border-radius:8px; border:1px solid var(--border-highlight); background: var(--bg-card); color: var(--text-main); font: inherit; text-align:end; }
+.menu-cost-form input { width:84px; padding:6px 8px; border-radius:8px; border:1px solid var(--border-highlight); background: var(--bg-card); color: var(--text-main); font: inherit; font-size:16px; text-align:end; } /* 16 px : en dessous, Safari iPad zoome à la saisie et la page (overflow caché) reste bloquée */
 .menu-cost-form button { min-width:34px; min-height:34px; border-radius:8px; border:0; background: var(--success); color:#fff; font-weight:700; cursor:pointer; }
 .menu-badge { display:inline-block; padding:3px 10px; border-radius:999px; font-size:0.8rem; font-weight:600; color:#fff; background: var(--cls); }
 .menu-badge-missing { background: var(--steel); }

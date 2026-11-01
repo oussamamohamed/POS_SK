@@ -287,6 +287,7 @@ private struct CostEntry: View {
     let width: CGFloat
     @State private var text = ""
     @State private var isSaving = false
+    @FocusState private var isFocused: Bool
 
     var body: some View {
         HStack(spacing: 4) {
@@ -297,7 +298,15 @@ private struct CostEntry: View {
                 .padding(.horizontal, 6)
                 .frame(width: width - 30, height: 34)
                 .background(RoundedRectangle(cornerRadius: 8).strokeBorder(Theme.lineStrong))
+                .focused($isFocused)
                 .onSubmit(save)
+                // Le pavé décimal n'a pas de touche de validation : sans ce bouton le clavier reste et masque le bas du tableau.
+                .toolbar {
+                    ToolbarItemGroup(placement: .keyboard) {
+                        Spacer()
+                        Button(String(localized: "menu.cost_save"), action: save).disabled(Money.parse(text) == nil)
+                    }
+                }
                 .accessibilityIdentifier("menu.cost.\(productId.uuidString.prefix(8))")
             Button(action: save) { Image(systemName: "checkmark.circle.fill").font(.system(size: 22)) }
                 .buttonStyle(.plain)
@@ -311,6 +320,7 @@ private struct CostEntry: View {
 
     private func save() {
         guard let cost = Money.parse(text), !isSaving else { return }
+        isFocused = false
         isSaving = true
         Task {
             await model.menuAnalysis.setCost(productId: productId, cost)
