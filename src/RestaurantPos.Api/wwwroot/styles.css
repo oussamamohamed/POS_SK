@@ -2282,7 +2282,9 @@ html[data-hand="left"] .pos-cart-panel { border-inline-end: 0; border-left: 1px 
 }
 
 /* ==================== ANALYSE DU MENU ==================== */
-.menu-page { max-width: 1100px; margin: 0 auto; padding: 8px 4px 32px; --cls-Puzzle:#3f6f9f; }
+/* La page est en overflow caché : ces panneaux défilent eux-mêmes, sinon le bas (tableau, TVA, tickets, journal) est coupé. */
+#menuView, #takingsView { overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+.menu-page { width: 100%; max-width: 1100px; margin: 0 auto; padding: 8px 4px 32px; --cls-Puzzle:#3f6f9f; }
 .menu-head { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }
 .menu-head h2 { margin:0; }
 .menu-range { display:inline-flex; border:1px solid var(--border-color); border-radius: var(--radius-sm); overflow:hidden; background: var(--bg-panel); }

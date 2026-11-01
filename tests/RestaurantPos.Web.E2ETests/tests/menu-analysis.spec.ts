@@ -88,6 +88,27 @@ test.describe('Analyse du menu', () => {
     await expect(page.locator('.menu-warn')).toHaveCount(0);
   });
 
+  test('les pages Encaissements et Analyse du menu défilent elles-mêmes', async ({ page }) => {
+    await ensureLoggedIn(page);
+    for (const [nav, view] of [['#btnNavTakings', '#takingsView'], ['#btnNavMenu', '#menuView']]) {
+      await page.click(nav);
+      await expect(page.locator(view)).toHaveClass(/active/);
+      // Le corps de la page est en overflow caché : sans défilement propre, le bas du tableau est coupé.
+      await expect(page.locator(view)).toHaveCSS('overflow-y', 'auto');
+      // Du contenu plus haut que le panneau (mesure déterministe, indépendante des ventes en base) reste atteignable.
+      const top = await page.locator(view).evaluate((el: HTMLElement) => {
+        const spacer = document.createElement('div');
+        spacer.style.height = '3000px';
+        el.firstElementChild!.appendChild(spacer);
+        el.scrollTop = el.scrollHeight;
+        const reached = Math.round(el.scrollTop);
+        spacer.remove();
+        return reached;
+      });
+      expect(top).toBeGreaterThan(1000);
+    }
+  });
+
   test('le champ coût de revient existe dans le formulaire de création d\'article', async ({ page }) => {
     await ensureLoggedIn(page);
     await expect(page.locator('#inputProdCost')).toHaveCount(1);
