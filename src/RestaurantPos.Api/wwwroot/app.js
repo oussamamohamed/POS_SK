@@ -1004,7 +1004,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 menuState.days = Number(btn.dataset.days);
                 loadMenuAnalysis();
             });
+            body.addEventListener('submit', (e) => {
+                const form = e.target.closest('.menu-cost-form');
+                if (!form) return;
+                e.preventDefault();
+                saveMenuCost(form.dataset.cost, form.elements.cost.value);
+            });
             body.addEventListener('click', (e) => {
+                if (e.target.closest('.menu-cost-form')) return;
                 const card = e.target.closest('[data-menu-class]');
                 if (card) {
                     menuState.filter = menuState.filter === card.dataset.menuClass ? null : card.dataset.menuClass;
@@ -1085,6 +1092,42 @@ document.addEventListener('DOMContentLoaded', async () => {
         tip.style.top = `${Math.max(8, y - tip.offsetHeight - 12)}px`;
     }
 
+    /** Saisie directe du coût de revient HT d'un plat qui n'en a pas. */
+    function menuCostForm(productId) {
+        return `<form class="menu-cost-form" data-cost="${escapeHtml(productId)}">
+            <input name="cost" type="number" inputmode="decimal" step="0.01" min="0.01" placeholder="${escapeHtml(t('menu.cost_placeholder'))}" aria-label="${escapeHtml(t('menu.cost_placeholder'))}" required>
+            <button type="submit" aria-label="${escapeHtml(t('menu.cost_save'))}" title="${escapeHtml(t('menu.cost_save'))}">✓</button>
+        </form>`;
+    }
+
+    /** Renseigne le coût d'un plat (le reste de l'article est conservé), puis recalcule l'analyse. */
+    async function saveMenuCost(productId, raw) {
+        const cost = parseFloat(String(raw).replace(',', '.'));
+        if (!(cost > 0)) { showToast(t('menu.cost_invalid'), 'warning'); return; }
+        try {
+            const list = await (await fetch('/api/catalog/products')).json();
+            const p = list.find(x => x.id === productId);
+            if (!p) throw new Error('unknown product');
+            const res = await fetch(`/api/catalog/products/${productId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: p.name, categoryId: p.categoryId, price: p.price, cost, taxRatePercent: p.taxRatePercent,
+                    description: p.description || '', colorHex: p.colorHex || null, displayOrder: p.displayOrder || 0,
+                    isAvailable: p.isAvailable ?? true, isActive: true, isQuickKey: !!p.isQuickKey, stationId: p.preparationStationId || null
+                })
+            });
+            if (!res.ok) { showToast(await readApiError(res, t('admin.product_edit_error')), 'error'); return; }
+            showToast(t('menu.cost_saved'), 'success');
+            state.gridLayouts = {};
+            await loadCatalogData();
+            await loadMenuAnalysis();
+        } catch (err) {
+            console.error('Erreur enregistrement du coût:', err);
+            showToast(t('admin.product_edit_error'), 'error');
+        }
+    }
+
     function renderMenuAnalysis() {
         const body = document.getElementById('menuAnalysisBody');
         const report = menuState.report;
@@ -1116,7 +1159,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <td class="num">${i.quantity}</td>
                 <td class="num"><bdi dir="ltr">${(i.share * 100).toFixed(1)} %</bdi></td>
                 <td class="num">${MENU_EUR(i.revenueHt)}</td>
-                <td class="num">${i.unitCost == null ? '—' : MENU_EUR(i.unitCost)}</td>
+                <td class="num">${i.unitCost == null ? menuCostForm(i.productId) : MENU_EUR(i.unitCost)}</td>
                 <td class="num">${i.unitMarginHt == null ? '—' : MENU_EUR(i.unitMarginHt)}</td>
                 <td>${cls}</td>
             </tr>`;
@@ -1142,7 +1185,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         return `<div class="menu-pick"><b>${escapeHtml(i.name)}</b><dl>
             <div><dt>${escapeHtml(t('menu.col_qty'))}</dt><dd>${i.quantity}</dd></div>
             <div><dt>${escapeHtml(t('menu.col_revenue'))}</dt><dd>${euros(i.revenueHt)}</dd></div>
-            <div><dt>${escapeHtml(t('menu.col_cost'))}</dt><dd>${euros(i.unitCost)}</dd></div>
+            <div><dt>${escapeHtml(t('menu.col_cost'))}</dt><dd>${i.unitCost == null ? menuCostForm(i.productId) : euros(i.unitCost)}</dd></div>
             <div><dt>${escapeHtml(t('menu.col_margin'))}</dt><dd>${euros(i.unitMarginHt)}</dd></div></dl><p>${klass}</p></div>`;
     }
 
