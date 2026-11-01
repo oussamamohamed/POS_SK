@@ -88,9 +88,9 @@ test.describe('Analyse du menu', () => {
     await expect(page.locator('.menu-warn')).toHaveCount(0);
   });
 
-  test('les pages Encaissements et Analyse du menu défilent elles-mêmes', async ({ page }) => {
+  test('les pages Encaissements, Analyse du menu, Réservations et Fiscalité défilent elles-mêmes', async ({ page }) => {
     await ensureLoggedIn(page);
-    for (const [nav, view] of [['#btnNavTakings', '#takingsView'], ['#btnNavMenu', '#menuView']]) {
+    for (const [nav, view] of [['#btnNavTakings', '#takingsView'], ['#btnNavMenu', '#menuView'], ['#btnNavBookings', '#bookingsView'], ['#btnNavFiscal', '#fiscalView']]) {
       await page.click(nav);
       await expect(page.locator(view)).toHaveClass(/active/);
       // Le corps de la page est en overflow caché : sans défilement propre, le bas du tableau est coupé.
@@ -99,7 +99,7 @@ test.describe('Analyse du menu', () => {
       const top = await page.locator(view).evaluate((el: HTMLElement) => {
         const spacer = document.createElement('div');
         spacer.style.height = '3000px';
-        el.firstElementChild!.appendChild(spacer);
+        el.appendChild(spacer);
         el.scrollTop = el.scrollHeight;
         const reached = Math.round(el.scrollTop);
         spacer.remove();
