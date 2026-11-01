@@ -1054,26 +1054,27 @@ try { window.applyDesign(localStorage.getItem('pos_design') === 'classic'); } ca
         <!-- ==================== VIEW 5: FISCAL NF525 ==================== -->
         <section class="view-panel" id="fiscalView">
                 <div class="fiscal-card">
-                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:8px;">
-                        <h2 data-i18n="fiscal.title" style="margin:0;">📜 Traçabilité Fiscale NF525 & Clôtures</h2>
+                    <div class="fiscal-head">
+                        <h2 data-i18n="fiscal.title">📜 Traçabilité Fiscale NF525 & Clôtures</h2>
                         <div id="fiscalCertBadge"></div>
                     </div>
                     <p class="text-muted" data-i18n="fiscal.subtitle">Chaînage cryptographique inaltérable SHA-256 des règlements et scellement journalier.</p>
 
-                    <div class="fiscal-actions" style="display:flex; gap:12px; margin-bottom:16px; flex-wrap:wrap;">
-                        <button class="btn-fiscal" id="btnExecuteZ" style="background:var(--success); color:#fff;">
+                    <div class="fiscal-main">
+                    <div class="fiscal-actions">
+                        <button class="btn-fiscal btn-fiscal--z" id="btnExecuteZ">
                             <span>🔒</span> <span data-i18n="fiscal.execute_z">Exécuter la Clôture Journalière (Rapport Z)</span>
                         </button>
-                        <button class="btn-fiscal" id="btnPreviewX" style="background:rgb(var(--veil) / 0.1); color: var(--text-main); border:1px solid rgb(var(--veil) / 0.2);">
+                        <button class="btn-fiscal btn-fiscal--ghost" id="btnPreviewX">
                             <span>👁️</span> <span data-i18n="fiscal.preview_x">Aperçu du Rapport X (En cours)</span>
                         </button>
-                        <button class="btn-fiscal" id="btnPrintXReport" style="background:rgb(var(--veil) / 0.1); color: var(--text-main); border:1px solid rgb(var(--veil) / 0.2);">
+                        <button class="btn-fiscal btn-fiscal--ghost" id="btnPrintXReport">
                             <span>🖨️</span> <span data-i18n="fiscal.print_x_report">Imprimer le rapport X</span>
                         </button>
-                        <button class="btn-fiscal" id="btnReprintZ" style="background:rgb(var(--veil) / 0.1); color: var(--text-main); border:1px solid rgb(var(--veil) / 0.2);">
+                        <button class="btn-fiscal btn-fiscal--ghost" id="btnReprintZ">
                             <span>🖨️</span> <span data-i18n="fiscal.reprint_z">Réimprimer la dernière clôture</span>
                         </button>
-                        <button class="btn-fiscal" id="btnVerifyChains" style="background:var(--primary); color:#fff;">
+                        <button class="btn-fiscal btn-fiscal--dark" id="btnVerifyChains">
                             <span>🔍</span> <span data-i18n="fiscal.verify_chains">Vérifier l'intégrité</span>
                         </button>
                     </div>
@@ -1101,6 +1102,7 @@ try { window.applyDesign(localStorage.getItem('pos_design') === 'classic'); } ca
                                 <p class="verified-tag" id="slipTag" data-i18n="fiscal.chain_ready">✓ Chaîne d'Audit Fiscale Prête</p>
                             </div>
                         </div>
+                    </div>
                     </div>
                 </div>
 
