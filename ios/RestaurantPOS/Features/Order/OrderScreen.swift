@@ -1,9 +1,11 @@
 import SwiftUI
 import PosKit
 
-/// Écran de vente : catalogue à gauche, ticket à droite.
+/// Écran de vente : catalogue et ticket de part et d'autre ; le ticket est à gauche pour un droitier, à droite pour un gaucher.
 struct OrderScreen: View {
     @Environment(AppModel.self) private var model
+    @Environment(\.layoutDirection) private var layoutDirection
+    @AppStorage(HandPreference.storageKey) private var hand = HandPreference.right.rawValue
     @State private var modifierProduct: ModifierRequest?
 
     struct ModifierRequest: Identifiable {
@@ -14,20 +16,24 @@ struct OrderScreen: View {
 
     var body: some View {
         GeometryReader { proxy in
-            HStack(spacing: 0) {
-                CatalogPane { product, course in
-                    if product.hasModifiers {
-                        modifierProduct = ModifierRequest(product: product, course: course)
-                    } else {
-                        model.ticket.add(product, course: course)
-                        Haptics.tap()
-                    }
-                } onCustomize: { product, course in
+            let catalog = CatalogPane { product, course in
+                if product.hasModifiers {
                     modifierProduct = ModifierRequest(product: product, course: course)
+                } else {
+                    model.ticket.add(product, course: course)
+                    Haptics.tap()
                 }
+            } onCustomize: { product, course in
+                modifierProduct = ModifierRequest(product: product, course: course)
+            }
+            // Côté physique du ticket : à gauche pour un droitier (bandeau de navigation à droite), quel que soit le sens de lecture.
+            let ticketLast = (HandPreference(rawValue: hand) == .left) == (layoutDirection == .leftToRight)
+            HStack(spacing: 0) {
+                if ticketLast { catalog }
                 TicketPanel()
                     .frame(width: min(Theme.ticketWidth, proxy.size.width * 0.42))
-                    .overlay(alignment: .leading) { Theme.line.frame(width: 1) }
+                    .overlay(alignment: ticketLast ? .leading : .trailing) { Theme.line.frame(width: 1) }
+                if !ticketLast { catalog }
             }
         }
         .sheet(item: $modifierProduct) { request in

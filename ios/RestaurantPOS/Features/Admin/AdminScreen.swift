@@ -40,11 +40,13 @@ struct AdminScreen: View {
         HStack(spacing: 0) {
             List(Section.allCases, selection: $section) { item in
                 Label(item.title, systemImage: item.systemImage)
+                    .foregroundStyle(section == item ? Theme.selectedInk : Theme.ink)
                     .accessibilityElement(children: .combine)
                     .accessibilityIdentifier("admin.\(item.rawValue)")
                     .tag(item)
             }
             .listStyle(.sidebar)
+            .tint(Theme.selectedFill) // la sélection de la liste suit les éléments sélectionnés du reste de l'app
             .frame(width: 240)
             Divider()
             Group {
@@ -713,6 +715,7 @@ struct NetworkSettingsView: View {
     @Environment(AppEnvironment.self) private var environment
     @State private var showsServer = false
     @AppStorage(AppearancePreference.storageKey) private var appearance = AppearancePreference.light.rawValue
+    @AppStorage(HandPreference.storageKey) private var hand = HandPreference.right.rawValue
 
     var body: some View {
         let network = model.network
@@ -761,6 +764,10 @@ struct NetworkSettingsView: View {
                     ForEach(AppearancePreference.allCases) { Text($0.label).tag($0.rawValue) }
                 }
                 .accessibilityIdentifier("settings.appearance")
+                Picker("admin.hand_label", selection: $hand) {
+                    ForEach(HandPreference.allCases) { Text($0.label).tag($0.rawValue) }
+                }
+                .accessibilityIdentifier("settings.hand")
             }
         }
         .task { await network.refresh() }

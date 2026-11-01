@@ -34,6 +34,11 @@ enum Theme {
     static let primaryInk = dynamic(dark: 0xF1ECE1, light: 0x1E1B17)
     /// Fond du bouton tonal et de l'onglet actif.
     static let primarySoft = dynamic(dark: 0xF1ECE1, light: 0x1E1B17, darkAlpha: 0.14, lightAlpha: 0.08)
+    /// Élément sélectionné (chip, bouton actif du bandeau) : encre pleine en clair ; en sombre, crème translucide cerclée
+    /// de crème, plus douce que l'aplat crème de `primary`.
+    static let selectedFill = dynamic(dark: 0xF1ECE1, light: 0x1E1B17, darkAlpha: 0.20, lightAlpha: 1)
+    static let selectedInk = dynamic(dark: 0xF1ECE1, light: 0xF1ECE1)
+    static let selectedStroke = dynamic(dark: 0xF1ECE1, light: 0x1E1B17, darkAlpha: 0.55, lightAlpha: 0)
     static let brandCyan = dynamic(dark: 0x7FB3B8, light: 0x2F6F77)
     static let brandViolet = dynamic(dark: 0xB79BD6, light: 0x6B4E8F)
     static let focus = dynamic(dark: 0xF0735A, light: 0xD4462A)
@@ -202,6 +207,19 @@ extension Font {
     static let posAmountXL = Font.posMono(44, .semibold)
     static let posAmount = Font.posMono(20, .semibold)
     static let posAmountSmall = Font.posMono(15, .medium)
+}
+
+/// Main dominante : bandeau de navigation du côté de la main (droitier : à droite) et ticket de l'écran de vente à l'opposé.
+enum HandPreference: String, CaseIterable, Identifiable {
+    case right, left
+    static let storageKey = "hand"
+    var id: String { rawValue }
+    var label: String {
+        switch self {
+        case .right: String(localized: "admin.hand_right")
+        case .left: String(localized: "admin.hand_left")
+        }
+    }
 }
 
 /// Apparence choisie dans Gestion (clair par défaut, comme le web ; le sombre reste disponible pour la salle).

@@ -10,6 +10,20 @@
     <link rel="stylesheet" href="styles.css?v=20261030_9">
 </head>
 
+<script>
+// Design choisi (pos_design) appliqué avant le premier rendu ; polices du design Classique chargées à la demande (le reste est auto-hébergé).
+window.applyDesign = function (classic) {
+    if (classic) {
+        document.documentElement.dataset.design = 'classic';
+        if (!document.getElementById('classicFonts')) {
+            const l = document.createElement('link'); l.id = 'classicFonts'; l.rel = 'stylesheet'; l.href = 'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap';
+            document.head.appendChild(l);
+        }
+    } else delete document.documentElement.dataset.design;
+};
+try { document.documentElement.dataset.hand = localStorage.getItem('pos_hand') === 'left' ? 'left' : 'right'; } catch { document.documentElement.dataset.hand = 'right'; }
+try { window.applyDesign(localStorage.getItem('pos_design') === 'classic'); } catch { /* stockage indisponible */ }
+</script>
 <body class="pos-dark">
     <div class="app-shell">
     <!-- Barre latérale (grands écrans) : devient une rangée d'onglets sous 1100 px -->
@@ -496,7 +510,7 @@
                         </div>
 
                         <!-- Dimensions Toolbar (Customizable Matrix Screen Size) -->
-                        <div class="grid-dimensions-toolbar" style="display:flex; align-items:center; justify-content:space-between; background:rgba(251,249,246,0.7); border:1px solid var(--border-color); border-radius:var(--radius-sm); padding:10px 16px; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
+                        <div class="grid-dimensions-toolbar" style="display:flex; align-items:center; justify-content:space-between; background:color-mix(in srgb, var(--sheet) 70%, transparent); border:1px solid var(--border-color); border-radius:var(--radius-sm); padding:10px 16px; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
                             <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
                                 <span style="font-weight:700; font-size:0.88rem; color:var(--text-main);" data-i18n="admin.format_screen_label">📐 Format / Écran :</span>
                                 <select id="selectGridDimensionsPreset" style="padding:6px 12px; border-radius:var(--radius-sm); background:var(--bg-panel); color: var(--text-main); border:1px solid var(--border-color); font-size:0.85rem;">
@@ -538,7 +552,7 @@
                                     </div>
                                     <span id="adminGridLayoutVersion" style="font-size:0.75rem; color:var(--text-muted); font-family:var(--font-mono);" data-i18n="admin.layout_version">Version: 1</span>
                                 </div>
-                                <div id="adminMatrixGrid" style="flex:1; display:grid; grid-template-columns:repeat(4, 1fr); grid-auto-rows:1fr; gap:10px; background:rgba(251,249,246,0.45); padding:10px; border:1px dashed var(--border-color); border-radius:var(--radius-sm);">
+                                <div id="adminMatrixGrid" style="flex:1; display:grid; grid-template-columns:repeat(4, 1fr); grid-auto-rows:1fr; gap:10px; background:color-mix(in srgb, var(--sheet) 45%, transparent); padding:10px; border:1px dashed var(--border-color); border-radius:var(--radius-sm);">
                                     <!-- Dynamic Slots Rendered Here -->
                                 </div>
                             </div>
@@ -564,7 +578,7 @@
                                 <form id="formManualServerConfig" class="admin-form">
                                     <div class="form-group">
                                         <label data-i18n="admin.server_url_label">Adresse URL du Serveur Maître :</label>
-                                        <input type="text" id="inputManualServerUrl" value="http://127.0.0.1:5000" data-i18n-placeholder="admin.server_url_placeholder" placeholder="Ex: http://192.168.1.50:5000" required style="width:100%; padding:10px; border-radius: 2px; background:rgba(30,27,23,0.05); border:1px solid var(--border-color); color: var(--text-main);">
+                                        <input type="text" id="inputManualServerUrl" value="http://127.0.0.1:5000" data-i18n-placeholder="admin.server_url_placeholder" placeholder="Ex: http://192.168.1.50:5000" required style="width:100%; padding:10px; border-radius: 2px; background:rgb(var(--veil) / 0.05); border:1px solid var(--border-color); color: var(--text-main);">
                                     </div>
                                     <div style="display:flex; gap:10px;">
                                         <button type="button" class="btn-archive" id="btnTestServerConn" style="flex:1; padding:10px; font-weight:700;" data-i18n="admin.test_connection">📡 Tester Connexion</button>
@@ -661,7 +675,7 @@
                                 <div style="font-size:0.75rem; color:var(--text-dim);" id="kpiSalesHt" data-i18n="admin.kpi_sales_ht">HT : 0.00 €</div>
                             </div>
 
-                            <div class="admin-card" style="background:linear-gradient(135deg, rgba(30,27,23,0.15), rgba(30,27,23,0.05)); border:1px solid rgba(30,27,23,0.3); padding:16px; border-radius:12px;">
+                            <div class="admin-card" style="background:linear-gradient(135deg, rgb(var(--veil) / 0.15), rgb(var(--veil) / 0.05)); border:1px solid rgb(var(--veil) / 0.3); padding:16px; border-radius:12px;">
                                 <div style="font-size:0.8rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px;" data-i18n="admin.kpi_avg_cover">Panier Moyen / Couvert</div>
                                 <div style="font-size:1.8rem; font-weight:700; color:var(--primary); margin:8px 0 4px 0;" id="kpiAvgCover">0.00 €</div>
                                 <div style="font-size:0.75rem; color:var(--text-dim);" id="kpiTotalCovers" data-i18n="admin.kpi_total_covers">0 couverts servis</div>
@@ -726,7 +740,7 @@
                             </div>
 
                             <!-- Formulaire Collapsible de création de créneau -->
-                            <div id="containerNewScheduleForm" style="display:none; margin-top:16px; padding-top:16px; border-top:1px solid rgba(30,27,23,0.08);">
+                            <div id="containerNewScheduleForm" style="display:none; margin-top:16px; padding-top:16px; border-top:1px solid rgb(var(--veil) / 0.08);">
                                 <h5 data-i18n="admin.hh_new_schedule_title">Nouveau Créneau Horaire</h5>
                                 <form id="formAddHappyHourSchedule" class="admin-form" style="margin-top:10px;">
                                     <div class="form-row">
@@ -777,7 +791,7 @@
                         <!-- Configuration des Règles du créneau sélectionné -->
                         <div id="hhRulesManagerSection">
                             <!-- Sous-navigation onglets tactiles pour les règles -->
-                            <div class="hh-subtabs-nav" style="display:flex; gap:8px; margin-bottom:16px; border-bottom:1px solid rgba(30,27,23,0.1); padding-bottom:8px;">
+                            <div class="hh-subtabs-nav" style="display:flex; gap:8px; margin-bottom:16px; border-bottom:1px solid rgb(var(--veil) / 0.1); padding-bottom:8px;">
                                 <button type="button" class="hh-subtab-btn active" id="btnSubtabHhArticles" data-hh-subtab="hhSubtabArticles" data-i18n="admin.hh_subtab_articles">🍺 Articles spécifiques</button>
                                 <button type="button" class="hh-subtab-btn" id="btnSubtabHhFamilies" data-hh-subtab="hhSubtabFamilies" data-i18n="admin.hh_subtab_families">🏷️ Familles éligibles</button>
                                 <button type="button" class="hh-subtab-btn" id="btnSubtabHhActiveRules" data-hh-subtab="hhSubtabActiveRules"><span data-i18n="admin.hh_subtab_active_rules">📋 Règles actives (</span><span id="hhRulesCountBadge">0</span>)</button>
@@ -808,14 +822,14 @@
                                     </div>
 
                                     <!-- Barre d'action groupée pour articles -->
-                                    <div class="hh-batch-action-bar" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; background:rgba(30,27,23,0.04); padding:12px 16px; border-radius:8px; border:1px solid rgba(30,27,23,0.08); margin-top:12px;">
+                                    <div class="hh-batch-action-bar" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; background:rgb(var(--veil) / 0.04); padding:12px 16px; border-radius:8px; border:1px solid rgb(var(--veil) / 0.08); margin-top:12px;">
                                         <div style="font-weight:600; color:var(--primary);">
                                             <span id="hhSelectedArticlesCount">0</span> <span data-i18n="admin.hh_articles_selected">article(s) sélectionné(s)</span>
                                         </div>
                                         <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
                                             <div class="hh-price-mode-toggle" style="display:flex; border-radius:6px; overflow:hidden; border:1px solid var(--border-color);">
                                                 <button type="button" id="btnHhModeFixed" class="btn-mode active" style="padding:6px 12px; border:none; background:var(--primary); color:#fff; cursor:pointer;" data-i18n="admin.hh_mode_fixed">Prix Fixe (€)</button>
-                                                <button type="button" id="btnHhModePercent" class="btn-mode" style="padding:6px 12px; border:none; background:rgba(30,27,23,0.06); color:var(--text-muted); cursor:pointer;" data-i18n="admin.hh_mode_percent">Remise (%)</button>
+                                                <button type="button" id="btnHhModePercent" class="btn-mode" style="padding:6px 12px; border:none; background:rgb(var(--veil) / 0.06); color:var(--text-muted); cursor:pointer;" data-i18n="admin.hh_mode_percent">Remise (%)</button>
                                             </div>
                                             <div style="display:flex; align-items:center; gap:6px;">
                                                 <input type="number" step="0.10" id="inputHhBatchValue" value="5.00" dir="ltr" style="width:90px; padding:6px 10px; border-radius:6px; background:var(--bg-main); color: var(--text-main); border:1px solid var(--border-color); text-align:end;">
@@ -847,7 +861,7 @@
                                     </div>
 
                                     <!-- Barre d'action groupée pour familles -->
-                                    <div class="hh-batch-action-bar" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; background:rgba(30,27,23,0.04); padding:12px 16px; border-radius:8px; border:1px solid rgba(30,27,23,0.08); margin-top:12px;">
+                                    <div class="hh-batch-action-bar" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; background:rgb(var(--veil) / 0.04); padding:12px 16px; border-radius:8px; border:1px solid rgb(var(--veil) / 0.08); margin-top:12px;">
                                         <div style="font-weight:600; color:var(--primary);">
                                             <span id="hhSelectedFamiliesCount">0</span> <span data-i18n="admin.hh_families_selected">famille(s) sélectionnée(s)</span>
                                         </div>
@@ -1050,13 +1064,13 @@
                         <button class="btn-fiscal" id="btnExecuteZ" style="background:var(--success); color:#fff;">
                             <span>🔒</span> <span data-i18n="fiscal.execute_z">Exécuter la Clôture Journalière (Rapport Z)</span>
                         </button>
-                        <button class="btn-fiscal" id="btnPreviewX" style="background:rgba(30,27,23,0.1); color: var(--text-main); border:1px solid rgba(30,27,23,0.2);">
+                        <button class="btn-fiscal" id="btnPreviewX" style="background:rgb(var(--veil) / 0.1); color: var(--text-main); border:1px solid rgb(var(--veil) / 0.2);">
                             <span>👁️</span> <span data-i18n="fiscal.preview_x">Aperçu du Rapport X (En cours)</span>
                         </button>
-                        <button class="btn-fiscal" id="btnPrintXReport" style="background:rgba(30,27,23,0.1); color: var(--text-main); border:1px solid rgba(30,27,23,0.2);">
+                        <button class="btn-fiscal" id="btnPrintXReport" style="background:rgb(var(--veil) / 0.1); color: var(--text-main); border:1px solid rgb(var(--veil) / 0.2);">
                             <span>🖨️</span> <span data-i18n="fiscal.print_x_report">Imprimer le rapport X</span>
                         </button>
-                        <button class="btn-fiscal" id="btnReprintZ" style="background:rgba(30,27,23,0.1); color: var(--text-main); border:1px solid rgba(30,27,23,0.2);">
+                        <button class="btn-fiscal" id="btnReprintZ" style="background:rgb(var(--veil) / 0.1); color: var(--text-main); border:1px solid rgb(var(--veil) / 0.2);">
                             <span>🖨️</span> <span data-i18n="fiscal.reprint_z">Réimprimer la dernière clôture</span>
                         </button>
                         <button class="btn-fiscal" id="btnVerifyChains" style="background:var(--primary); color:#fff;">
@@ -1096,7 +1110,7 @@
                     <div id="fiscalChainsTableContainer" style="overflow-x: auto;">
                         <table class="data-table" style="width: 100%; border-collapse: collapse; margin-top: 8px;">
                             <thead>
-                                <tr style="border-bottom: 1px solid rgba(30,27,23,0.1); text-align: left;">
+                                <tr style="border-bottom: 1px solid rgb(var(--veil) / 0.1); text-align: left;">
                                     <th style="padding: 8px;" data-i18n="fiscal.col_chain">Chaîne</th>
                                     <th style="padding: 8px;" data-i18n="fiscal.col_terminal">Terminal</th>
                                     <th style="padding: 8px;" data-i18n="fiscal.col_checked">Éléments vérifiés</th>
@@ -1114,17 +1128,17 @@
                     <h2 data-i18n="fiscal.period_closures_title">📅 Clôtures de Période (Mois & Année NF525)</h2>
                     <p class="text-muted" data-i18n="fiscal.period_closures_subtitle">Clôtures mensuelles et annuelles cumulatives scellées et chaînées par terminal.</p>
 
-                    <div style="display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin:16px 0; background:rgba(30,27,23,0.03); padding:16px; border-radius:10px; border:1px solid rgba(30,27,23,0.08);">
+                    <div style="display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin:16px 0; background:rgb(var(--veil) / 0.03); padding:16px; border-radius:10px; border:1px solid rgb(var(--veil) / 0.08);">
                         <div>
                             <label style="display:block; font-size:0.82rem; color:var(--text-muted); margin-bottom:6px;" data-i18n="fiscal.period_type">Type de période</label>
-                            <select id="periodClosureType" class="form-input" style="padding:8px 12px; border-radius:6px; background:rgba(30,27,23,0.05); border:1px solid rgba(30,27,23,0.15); color: var(--text-main);">
+                            <select id="periodClosureType" class="form-input" style="padding:8px 12px; border-radius:6px; background:rgb(var(--veil) / 0.05); border:1px solid rgb(var(--veil) / 0.15); color: var(--text-main);">
                                 <option value="monthly" data-i18n="fiscal.period_monthly">Mensuelle</option>
                                 <option value="annual" data-i18n="fiscal.period_annual">Annuelle</option>
                             </select>
                         </div>
                         <div>
                             <label style="display:block; font-size:0.82rem; color:var(--text-muted); margin-bottom:6px;" data-i18n="fiscal.period_key">Période (AAAA-MM ou AAAA)</label>
-                            <input type="text" id="periodClosureKey" placeholder="2026-09" class="form-input" style="padding:8px 12px; border-radius:6px; background:rgba(30,27,23,0.05); border:1px solid rgba(30,27,23,0.15); color: var(--text-main); width:140px;">
+                            <input type="text" id="periodClosureKey" placeholder="2026-09" class="form-input" style="padding:8px 12px; border-radius:6px; background:rgb(var(--veil) / 0.05); border:1px solid rgb(var(--veil) / 0.15); color: var(--text-main); width:140px;">
                         </div>
                         <button class="btn-fiscal" id="btnExecutePeriodClosure" style="background:var(--success); color:#fff;">
                             <span>🔒</span> <span data-i18n="fiscal.execute_period_closure">Clôturer la période</span>
@@ -1136,7 +1150,7 @@
                     <div style="overflow-x:auto;">
                         <table class="data-table" style="width:100%; border-collapse:collapse; margin-top:8px;">
                             <thead>
-                                <tr style="border-bottom:1px solid rgba(30,27,23,0.1); text-align:left;">
+                                <tr style="border-bottom:1px solid rgb(var(--veil) / 0.1); text-align:left;">
                                     <th style="padding:8px;" data-i18n="fiscal.col_type">Type</th>
                                     <th style="padding:8px;" data-i18n="fiscal.col_period">Période</th>
                                     <th style="padding:8px;" data-i18n="fiscal.col_sequence">Séquence</th>
@@ -1157,7 +1171,7 @@
                     <h2 data-i18n="fiscal.archives_title">📦 Archives Fiscales (NF525)</h2>
                     <p class="text-muted" data-i18n="fiscal.archives_subtitle">Génération, conservation et vérification d'intégrité des archives scellées.</p>
 
-                    <div style="background:rgba(30,27,23,0.03); padding:16px; border-radius:10px; border:1px solid rgba(30,27,23,0.08); margin:16px 0;">
+                    <div style="background:rgb(var(--veil) / 0.03); padding:16px; border-radius:10px; border:1px solid rgb(var(--veil) / 0.08); margin:16px 0;">
                         <h3 style="font-size:0.95rem; margin-bottom:8px; color:var(--text-main);" data-i18n="fiscal.verify_archive_title">🔍 Vérifier l'intégrité d'une archive</h3>
                         <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
                             <input type="file" id="archiveVerifyFileInput" accept=".zip" class="form-input" style="padding:6px; color: var(--text-main);" />
@@ -1171,7 +1185,7 @@
                     <div style="overflow-x:auto;">
                         <table class="data-table" style="width:100%; border-collapse:collapse; margin-top:8px;">
                             <thead>
-                                <tr style="border-bottom:1px solid rgba(30,27,23,0.1); text-align:left;">
+                                <tr style="border-bottom:1px solid rgb(var(--veil) / 0.1); text-align:left;">
                                     <th style="padding:8px;" data-i18n="fiscal.col_archive_seq">Seq</th>
                                     <th style="padding:8px;" data-i18n="fiscal.col_archive_file">Fichier</th>
                                     <th style="padding:8px;" data-i18n="fiscal.col_period">Période</th>
@@ -1192,7 +1206,7 @@
                     <p class="text-muted" data-i18n="fiscal.reprint_receipt_subtitle">Réimprimer un reçu fiscal avec mention DUPLICATA obligatoire et numérotation incrémentale.</p>
 
                     <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin:16px 0;">
-                        <input type="text" id="reprintReceiptInput" data-i18n-placeholder="fiscal.reprint_receipt_placeholder" placeholder="N° de reçu ou UUID (ex: POS_MAIN_TERM-000001)" class="form-input" style="flex:1; min-width:260px; padding:10px 14px; border-radius:8px; background:rgba(30,27,23,0.05); border:1px solid rgba(30,27,23,0.15); color: var(--text-main);" />
+                        <input type="text" id="reprintReceiptInput" data-i18n-placeholder="fiscal.reprint_receipt_placeholder" placeholder="N° de reçu ou UUID (ex: POS_MAIN_TERM-000001)" class="form-input" style="flex:1; min-width:260px; padding:10px 14px; border-radius:8px; background:rgb(var(--veil) / 0.05); border:1px solid rgb(var(--veil) / 0.15); color: var(--text-main);" />
                         <button class="btn-fiscal" id="btnReprintReceipt" style="background:var(--accent); color:var(--ink); font-weight:700;">
                             <span>🖨️</span> <span data-i18n="fiscal.reprint_receipt_btn">Réimprimer le ticket</span>
                         </button>
@@ -1204,18 +1218,18 @@
                     <h2 data-i18n="fiscal.fec_title">📂 Export Comptable FEC (Article A.47 A-1 LPF)</h2>
                     <p class="text-muted" data-i18n="fiscal.fec_subtitle">Génération du Fichier des Écritures Comptables normalisé (18 colonnes DGFIP) pour l'administration fiscale et l'expert-comptable.</p>
 
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin: 16px 0; background: rgba(30,27,23,0.03); padding: 16px; border-radius: 10px; border: 1px solid rgba(30,27,23,0.08);">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin: 16px 0; background: rgb(var(--veil) / 0.03); padding: 16px; border-radius: 10px; border: 1px solid rgb(var(--veil) / 0.08);">
                         <div>
                             <label style="display:block; font-size: 0.82rem; color: var(--text-muted); margin-bottom: 6px;" data-i18n="fiscal.fec_start_date">Date de début</label>
-                            <input type="date" id="fecStartDate" class="form-input" style="width: 100%; padding: 8px 12px; border-radius: 6px; background: rgba(30,27,23,0.05); border: 1px solid rgba(30,27,23,0.15); color: var(--text-main);">
+                            <input type="date" id="fecStartDate" class="form-input" style="width: 100%; padding: 8px 12px; border-radius: 6px; background: rgb(var(--veil) / 0.05); border: 1px solid rgb(var(--veil) / 0.15); color: var(--text-main);">
                         </div>
                         <div>
                             <label style="display:block; font-size: 0.82rem; color: var(--text-muted); margin-bottom: 6px;" data-i18n="fiscal.fec_end_date">Date de fin</label>
-                            <input type="date" id="fecEndDate" class="form-input" style="width: 100%; padding: 8px 12px; border-radius: 6px; background: rgba(30,27,23,0.05); border: 1px solid rgba(30,27,23,0.15); color: var(--text-main);">
+                            <input type="date" id="fecEndDate" class="form-input" style="width: 100%; padding: 8px 12px; border-radius: 6px; background: rgb(var(--veil) / 0.05); border: 1px solid rgb(var(--veil) / 0.15); color: var(--text-main);">
                         </div>
                         <div>
                             <label style="display:block; font-size: 0.82rem; color: var(--text-muted); margin-bottom: 6px;" data-i18n="fiscal.fec_siren">Numéro SIREN (9 chiffres)</label>
-                            <input type="text" id="fecSiren" maxlength="9" placeholder="123456789" value="123456789" class="form-input" style="width: 100%; padding: 8px 12px; border-radius: 6px; background: rgba(30,27,23,0.05); border: 1px solid rgba(30,27,23,0.15); color: var(--text-main);">
+                            <input type="text" id="fecSiren" maxlength="9" placeholder="123456789" value="123456789" class="form-input" style="width: 100%; padding: 8px 12px; border-radius: 6px; background: rgb(var(--veil) / 0.05); border: 1px solid rgb(var(--veil) / 0.15); color: var(--text-main);">
                         </div>
                     </div>
 
@@ -1272,6 +1286,20 @@
                     <option value="ar">العربية</option>
                 </select>
             </label>
+            <label class="pin-language">
+                <span data-i18n="login.design">Design</span>
+                <select id="designSelect">
+                    <option value="handi" data-i18n="login.design_light">Clair</option>
+                    <option value="classic" data-i18n="login.design_dark">Sombre</option>
+                </select>
+            </label>
+            <label class="pin-language">
+                <span data-i18n="login.hand">Main</span>
+                <select id="handSelect">
+                    <option value="right" data-i18n="login.hand_right">Droitier</option>
+                    <option value="left" data-i18n="login.hand_left">Gaucher</option>
+                </select>
+            </label>
             <div class="pin-quick-hints">
                 <small><span data-i18n="login.demo_accounts_label">Comptes démo :</span> Alexandre (<code>1234</code>) | Sophie (<code>2468</code>) | Admin
                     (<code>9999</code>)</small>
@@ -1282,7 +1310,7 @@
     <!-- Modifiers & Extras Modal -->
     <div class="modal-overlay" id="modifiersModal">
         <div class="modal-card" style="width: 540px; max-width: 95vw; background: var(--bg-panel); border: 1px solid var(--border-color); border-radius: 12px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);">
-            <div class="modal-header" style="border-bottom: 1px solid rgba(30,27,23,0.08); padding: 16px 20px; display: flex; justify-content: space-between; align-items: center;">
+            <div class="modal-header" style="border-bottom: 1px solid rgb(var(--veil) / 0.08); padding: 16px 20px; display: flex; justify-content: space-between; align-items: center;">
                 <div>
                     <h3 id="modifiersModalTitle" style="margin:0; font-size:1.2rem; color:var(--text-main); font-weight:700;" data-i18n="order.modifiers_title">Personnalisation & Options</h3>
                     <div id="modifiersModalSubtitle" style="font-size:0.85rem; color:var(--text-muted); margin-top:2px;" data-i18n="order.select_item">Sélectionnez un article</div>
@@ -1293,12 +1321,12 @@
                 <div id="modifiersGroupsContainer" style="display: flex; flex-direction: column; gap: 20px;">
                     <!-- Dynamically populated modifier groups -->
                 </div>
-                <div style="margin-top: 18px; padding-top: 16px; border-top: 1px dashed rgba(30,27,23,0.1);">
+                <div style="margin-top: 18px; padding-top: 16px; border-top: 1px dashed rgb(var(--veil) / 0.1);">
                     <label style="font-size:0.85rem; font-weight:600; color:var(--text-muted); display:block; margin-bottom:6px;" data-i18n="order.kitchen_note_label">💬 Remarque spéciale cuisine :</label>
                     <input type="text" id="inputModifiersComment" data-i18n-placeholder="order.kitchen_note_placeholder" placeholder="Ex: Sans sel, bien chaud, sauce à part..." style="width:100%; padding:10px 14px; background:var(--bg-card); border:1px solid var(--border-color); color:var(--text-main); border-radius:8px; font-size:0.9rem;" />
                 </div>
             </div>
-            <div class="modal-footer" style="padding: 16px 20px; border-top: 1px solid rgba(30,27,23,0.08); display: flex; justify-content: space-between; align-items: center; background: rgba(251,249,246, 0.4); border-end-start-radius: 12px; border-end-end-radius: 12px;">
+            <div class="modal-footer" style="padding: 16px 20px; border-top: 1px solid rgb(var(--veil) / 0.08); display: flex; justify-content: space-between; align-items: center; background: color-mix(in srgb, var(--sheet) 40%, transparent); border-end-start-radius: 12px; border-end-end-radius: 12px;">
                 <div>
                     <div style="font-size:0.8rem; color:var(--text-muted);"><span data-i18n="order.extras_label">Suppléments :</span> <strong id="lblModifiersExtraTotal" style="color:var(--success); font-size:0.95rem;">+0.00 €</strong></div>
                     <div style="font-size:1.15rem; font-weight:700; color:var(--text-main);"><span data-i18n="order.final_price_label">Prix final :</span> <span id="lblModifiersEffectivePrice" style="color:var(--primary);">0.00 €</span></div>
@@ -1379,7 +1407,7 @@
                     <button class="btn-tender" data-tender="Card" data-i18n="payment.tender_card">💳 Carte Bancaire</button>
                     <button class="btn-tender" data-tender="Cash" data-i18n="payment.tender_cash">💶 Espèces</button>
                     <button class="btn-tender" data-tender="MealVoucher" data-i18n="payment.tender_meal_voucher">🍽️ Titre Restaurant</button>
-                    <button class="btn-tender btn-tender-hotel" id="btnOpenRoomChargeModal" style="border-color:var(--primary); background:rgba(30,27,23, 0.15); color:var(--text-main);" data-i18n="payment.tender_room_charge">🏨 Imputer sur Chambre Hôtel (PMS)</button>
+                    <button class="btn-tender btn-tender-hotel" id="btnOpenRoomChargeModal" style="border-color:var(--primary); background:rgb(var(--veil) / 0.15); color:var(--text-main);" data-i18n="payment.tender_room_charge">🏨 Imputer sur Chambre Hôtel (PMS)</button>
                 </div>
             </div>
         </div>
@@ -1392,7 +1420,7 @@
             <div style="font-size:1.1rem; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:1px;" data-i18n="payment.change_due">Monnaie à rendre</div>
             <div id="changeOverlayAmount" style="font-size:3.5rem; font-weight:900; color:var(--success); margin:10px 0; font-family:monospace;">0.00 €</div>
             <div id="changeOverlayDetails" style="font-size:1rem; color:var(--text-muted); margin-bottom:16px;"></div>
-            <div id="changeOverlayPickupBox" style="background:rgba(30,27,23,0.15); border:1px solid var(--primary); border-radius:8px; padding:12px; margin-bottom:20px;">
+            <div id="changeOverlayPickupBox" style="background:rgb(var(--veil) / 0.15); border:1px solid var(--primary); border-radius:8px; padding:12px; margin-bottom:20px;">
                 <div style="font-size:0.8rem; color:var(--primary); font-weight:700; text-transform:uppercase;" data-i18n="payment.pickup_number">Numéro de retrait</div>
                 <div id="changeOverlayPickupNumber" style="font-size:2.2rem; font-weight:900; color: var(--text-main);">--</div>
                 <div id="changeOverlayBuzzer" style="font-size:0.9rem; color:var(--text-main); font-weight:600; display:none;"><span data-i18n="payment.buzzer_value_label">📟 Bipeur :</span> <span id="changeOverlayBuzzerVal"></span></div>
@@ -1405,7 +1433,7 @@
             <button type="button" class="btn-action btn-pay" id="btnChangeDone" style="width:100%; padding:16px; font-size:1.2rem; font-weight:800;" data-i18n="payment.new_sale">
                 OK — Nouvelle Vente
             </button>
-            <button type="button" class="btn-fiscal" id="btnReprintCurrentReceipt" style="display:none; width:100%; margin-top:10px; background:rgba(30,27,23,0.1); color: var(--text-main); border:1px solid rgba(30,27,23,0.2); padding:12px; border-radius:8px; cursor:pointer;">
+            <button type="button" class="btn-fiscal" id="btnReprintCurrentReceipt" style="display:none; width:100%; margin-top:10px; background:rgb(var(--veil) / 0.1); color: var(--text-main); border:1px solid rgb(var(--veil) / 0.2); padding:12px; border-radius:8px; cursor:pointer;">
                 <span>🖨️</span> <span data-i18n="payment.reprint_receipt">Réimprimer le ticket (Duplicata)</span>
             </button>
             <div id="reprintCurrentReceiptNotice" style="display:none; margin-top:8px; font-size:0.95rem; color:var(--accent); font-weight:700;"></div>
@@ -1497,7 +1525,7 @@
             <form id="formTransferTable" class="admin-form" style="display:flex; flex-direction:column; gap:14px;">
                 <div class="form-group">
                     <label data-i18n="order.transfer_source_label">Table Source Actuelle :</label>
-                    <input type="text" id="transferSourceTable" readonly style="background:rgba(30,27,23,0.05); font-weight:700; color:var(--accent);" />
+                    <input type="text" id="transferSourceTable" readonly style="background:rgb(var(--veil) / 0.05); font-weight:700; color:var(--accent);" />
                 </div>
                 <div class="form-group">
                     <label data-i18n="order.transfer_target_label">Table Cible :</label>
@@ -1552,7 +1580,7 @@
                 <div id="groupDiscountValue" class="form-row" style="display:flex; gap:12px;">
                     <div class="form-group" style="flex:1;">
                         <label data-i18n="order.discount_value_label">Valeur :</label>
-                        <input type="number" step="0.01" min="0" id="inputDiscountVal" value="10" required style="width:100%; padding:10px; border-radius: 2px; background:rgba(30,27,23,0.05); border:1px solid var(--border-color); color: var(--text-main);" />
+                        <input type="number" step="0.01" min="0" id="inputDiscountVal" value="10" required style="width:100%; padding:10px; border-radius: 2px; background:rgb(var(--veil) / 0.05); border:1px solid var(--border-color); color: var(--text-main);" />
                     </div>
                     <div class="form-group" style="flex:1;">
                         <label data-i18n="order.discount_unit_label">Unité :</label>
@@ -1571,7 +1599,7 @@
                         <option value="VIP / Direction" data-i18n="order.discount_reason_vip">VIP / Direction</option>
                         <option value="Autre motif" data-i18n="order.discount_reason_other">Autre motif (préciser ci-dessous)</option>
                     </select>
-                    <input type="text" id="inputDiscountCustomReason" data-i18n-placeholder="order.discount_reason_custom_placeholder" placeholder="Préciser le motif..." style="margin-top:6px; display:none; width:100%; padding:8px; border-radius: 2px; background:rgba(30,27,23,0.05); border:1px solid var(--border-color); color: var(--text-main);" />
+                    <input type="text" id="inputDiscountCustomReason" data-i18n-placeholder="order.discount_reason_custom_placeholder" placeholder="Préciser le motif..." style="margin-top:6px; display:none; width:100%; padding:8px; border-radius: 2px; background:rgb(var(--veil) / 0.05); border:1px solid var(--border-color); color: var(--text-main);" />
                 </div>
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
                     <button type="button" class="btn-archive" id="btnResetDiscount" data-i18n="order.remove_discount">Supprimer Remise</button>
@@ -1596,7 +1624,7 @@
                     <label data-i18n="payment.select_room_label">Sélectionner la Chambre :</label>
                     <select id="selectHotelRoom" required style="width:100%; padding:10px; border-radius: 2px; background:var(--bg-card); border:1px solid var(--border-color); color: var(--text-main); font-size:1rem;"></select>
                 </div>
-                <div class="room-guest-card" id="roomGuestInfoCard" style="background:rgba(30,27,23, 0.1); border:1px solid rgba(30,27,23, 0.3); border-radius: 2px; padding:12px; display:flex; justify-content:space-between; align-items:center;">
+                <div class="room-guest-card" id="roomGuestInfoCard" style="background:rgb(var(--veil) / 0.1); border:1px solid rgb(var(--veil) / 0.3); border-radius: 2px; padding:12px; display:flex; justify-content:space-between; align-items:center;">
                     <div>
                         <div style="font-weight:700; color:var(--text-main); font-size:1.05rem;" id="roomGuestName">-</div>
                         <div style="font-size:0.8rem; color:var(--text-muted);" data-i18n="payment.resident_active_stay">Résident en séjour actif</div>
@@ -1612,9 +1640,9 @@
                 </div>
                 <div class="form-group">
                     <label data-i18n="payment.resident_signature_label">Signature du Résident (Tactile / Écran) * :</label>
-                    <div style="border:1px dashed var(--border-color); border-radius: 2px; background:rgba(30,27,23,0.05); position:relative; overflow:hidden;">
+                    <div style="border:1px dashed var(--border-color); border-radius: 2px; background:rgb(var(--veil) / 0.05); position:relative; overflow:hidden;">
                         <canvas id="signatureCanvas" width="430" height="130" style="touch-action:none; width:100%; height:130px; cursor:crosshair;"></canvas>
-                        <button type="button" id="btnClearSignature" style="position:absolute; top:6px; inset-inline-end:6px; background:rgba(30,27,23,0.1); border:none; color:var(--text-muted); font-size:0.75rem; padding:4px 8px; border-radius: 2px; cursor:pointer;" data-i18n="common.clear">Effacer</button>
+                        <button type="button" id="btnClearSignature" style="position:absolute; top:6px; inset-inline-end:6px; background:rgb(var(--veil) / 0.1); border:none; color:var(--text-muted); font-size:0.75rem; padding:4px 8px; border-radius: 2px; cursor:pointer;" data-i18n="common.clear">Effacer</button>
                     </div>
                 </div>
                 <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:6px;">
@@ -1655,12 +1683,12 @@
             <form id="formAddNewTable" class="admin-form" style="display:flex; flex-direction:column; gap:16px; padding:20px;">
                 <div class="form-group">
                     <label for="inputNewTableNum" data-i18n="floor.table_number_label">Numéro / Nom de la Table * :</label>
-                    <input type="text" id="inputNewTableNum" data-i18n-placeholder="floor.table_number_placeholder" placeholder="Ex: T9, T10, Terrasse 1, Bar 2" required style="width:100%; padding:10px; border-radius: 2px; background:rgba(30,27,23,0.05); border:1px solid var(--border-color); color: var(--text-main); font-size:1rem;" />
+                    <input type="text" id="inputNewTableNum" data-i18n-placeholder="floor.table_number_placeholder" placeholder="Ex: T9, T10, Terrasse 1, Bar 2" required style="width:100%; padding:10px; border-radius: 2px; background:rgb(var(--veil) / 0.05); border:1px solid var(--border-color); color: var(--text-main); font-size:1rem;" />
                 </div>
                 <div class="form-group">
                     <label for="inputNewTableCap" data-i18n="floor.table_capacity_label">Capacité (nombre de places) :</label>
                     <div style="display:flex; align-items:center; gap:10px;">
-                        <input type="number" id="inputNewTableCap" value="4" min="1" max="30" required style="width:100px; padding:10px; border-radius: 2px; background:rgba(30,27,23,0.05); border:1px solid var(--border-color); color: var(--text-main); font-size:1rem;" />
+                        <input type="number" id="inputNewTableCap" value="4" min="1" max="30" required style="width:100px; padding:10px; border-radius: 2px; background:rgb(var(--veil) / 0.05); border:1px solid var(--border-color); color: var(--text-main); font-size:1rem;" />
                         <div style="display:flex; gap:6px;">
                             <button type="button" class="btn-cap-quick" data-cap="2">2p</button>
                             <button type="button" class="btn-cap-quick" data-cap="4">4p</button>
@@ -1749,7 +1777,7 @@
                 <input type="hidden" id="editProdId" />
                 <div class="form-group">
                     <label for="editProdName" data-i18n="admin.product_name_required_label">Nom de l'article * :</label>
-                    <input type="text" id="editProdName" required style="width:100%; padding:10px; border-radius: 2px; background:rgba(30,27,23,0.05); border:1px solid var(--border-color); color: var(--text-main);" />
+                    <input type="text" id="editProdName" required style="width:100%; padding:10px; border-radius: 2px; background:rgb(var(--veil) / 0.05); border:1px solid var(--border-color); color: var(--text-main);" />
                 </div>
                 <div class="form-row" style="display:flex; gap:12px;">
                     <div class="form-group" style="flex:1;">
@@ -1758,13 +1786,13 @@
                     </div>
                     <div class="form-group" style="flex:1;">
                         <label for="editProdPrice" data-i18n="admin.price_required_label">Prix TTC (€) * :</label>
-                        <input type="number" step="0.10" min="0" id="editProdPrice" required style="width:100%; padding:10px; border-radius: 2px; background:rgba(30,27,23,0.05); border:1px solid var(--border-color); color: var(--text-main);" />
+                        <input type="number" step="0.10" min="0" id="editProdPrice" required style="width:100%; padding:10px; border-radius: 2px; background:rgb(var(--veil) / 0.05); border:1px solid var(--border-color); color: var(--text-main);" />
                     </div>
                 </div>
                 <div class="form-row" style="display:flex; gap:12px;">
                     <div class="form-group" style="flex:1;">
                         <label for="editProdCost" data-i18n="admin.cost_label">Coût de revient HT (€), facultatif :</label>
-                        <input type="number" step="0.01" min="0" id="editProdCost" style="width:100%; padding:10px; border-radius: 2px; background:rgba(30,27,23,0.05); border:1px solid var(--border-color); color: var(--text-main);" />
+                        <input type="number" step="0.01" min="0" id="editProdCost" style="width:100%; padding:10px; border-radius: 2px; background:rgb(var(--veil) / 0.05); border:1px solid var(--border-color); color: var(--text-main);" />
                     </div>
                     <div class="form-group" style="flex:1;">
                         <label for="editProdTax" data-i18n="admin.vat_percent_label">TVA (%) :</label>
@@ -1810,7 +1838,7 @@
                 <input type="hidden" id="editCatId" />
                 <div class="form-group">
                     <label for="editCatName" data-i18n="admin.category_name_required_label">Nom de la famille * :</label>
-                    <input type="text" id="editCatName" required style="width:100%; padding:10px; border-radius: 2px; background:rgba(30,27,23,0.05); border:1px solid var(--border-color); color: var(--text-main);" />
+                    <input type="text" id="editCatName" required style="width:100%; padding:10px; border-radius: 2px; background:rgb(var(--veil) / 0.05); border:1px solid var(--border-color); color: var(--text-main);" />
                 </div>
                 <div class="form-group">
                     <label for="editCatColor" data-i18n="admin.badge_color_label">Couleur du Badge :</label>
@@ -1846,7 +1874,7 @@
                 <input type="hidden" id="editStaffId" />
                 <div class="form-group">
                     <label for="editStaffName" data-i18n="admin.staff_name_required_label">Nom de l'employé * :</label>
-                    <input type="text" id="editStaffName" required style="width:100%; padding:10px; border-radius: 2px; background:rgba(30,27,23,0.05); border:1px solid var(--border-color); color: var(--text-main);" />
+                    <input type="text" id="editStaffName" required style="width:100%; padding:10px; border-radius: 2px; background:rgb(var(--veil) / 0.05); border:1px solid var(--border-color); color: var(--text-main);" />
                 </div>
                 <div class="form-group">
                     <label for="editStaffRole" data-i18n="admin.role_profile_label">Rôle / Profil :</label>
@@ -1860,7 +1888,7 @@
                 </div>
                 <div class="form-group">
                     <label for="editStaffPin" data-i18n="admin.new_pin_label">Nouveau Code PIN (4 à 6 chiffres, laisser vide pour conserver l'actuel) :</label>
-                    <input type="password" maxlength="6" id="editStaffPin" placeholder="Ex: 5678" style="width:100%; padding:10px; border-radius: 2px; background:rgba(30,27,23,0.05); border:1px solid var(--border-color); color: var(--text-main);" />
+                    <input type="password" maxlength="6" id="editStaffPin" placeholder="Ex: 5678" style="width:100%; padding:10px; border-radius: 2px; background:rgb(var(--veil) / 0.05); border:1px solid var(--border-color); color: var(--text-main);" />
                 </div>
                 <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:10px;">
                     <button type="button" class="btn-archive" id="btnCancelEditStaff" data-i18n="common.cancel">Annuler</button>
@@ -1881,16 +1909,16 @@
                 <input type="hidden" id="editPrinterId" />
                 <div class="form-group">
                     <label for="editPrinterName" data-i18n="admin.printer_name_required_label">Nom de l'imprimante * :</label>
-                    <input type="text" id="editPrinterName" required style="width:100%; padding:10px; border-radius: 2px; background:rgba(30,27,23,0.05); border:1px solid var(--border-color); color: var(--text-main);" />
+                    <input type="text" id="editPrinterName" required style="width:100%; padding:10px; border-radius: 2px; background:rgb(var(--veil) / 0.05); border:1px solid var(--border-color); color: var(--text-main);" />
                 </div>
                 <div class="form-row" style="display:flex; gap:12px;">
                     <div class="form-group" style="flex:2;">
                         <label for="editPrinterIp" data-i18n="admin.printer_ip_required_label">Adresse IP Réseau * :</label>
-                        <input type="text" id="editPrinterIp" required style="width:100%; padding:10px; border-radius: 2px; background:rgba(30,27,23,0.05); border:1px solid var(--border-color); color: var(--text-main);" />
+                        <input type="text" id="editPrinterIp" required style="width:100%; padding:10px; border-radius: 2px; background:rgb(var(--veil) / 0.05); border:1px solid var(--border-color); color: var(--text-main);" />
                     </div>
                     <div class="form-group" style="flex:1;">
                         <label for="editPrinterPort" data-i18n="admin.printer_tcp_port_label">Port TCP :</label>
-                        <input type="number" id="editPrinterPort" value="9100" style="width:100%; padding:10px; border-radius: 2px; background:rgba(30,27,23,0.05); border:1px solid var(--border-color); color: var(--text-main);" />
+                        <input type="number" id="editPrinterPort" value="9100" style="width:100%; padding:10px; border-radius: 2px; background:rgb(var(--veil) / 0.05); border:1px solid var(--border-color); color: var(--text-main);" />
                     </div>
                 </div>
                 <div class="form-group checkbox-group" style="display:flex; align-items:center; gap:8px;">
@@ -1931,7 +1959,7 @@
 
                 <div class="form-group">
                     <label for="inputSlotCustomLabel" data-i18n="admin.custom_short_label_label">Libellé Court Personnalisé (Optionnel) :</label>
-                    <input type="text" id="inputSlotCustomLabel" data-i18n-placeholder="admin.custom_short_label_placeholder" placeholder="Ex: MARGHERITA" style="width:100%; padding:10px; border-radius:var(--radius-sm); background:rgba(30,27,23,0.05); color: var(--text-main); border:1px solid var(--border-color);" />
+                    <input type="text" id="inputSlotCustomLabel" data-i18n-placeholder="admin.custom_short_label_placeholder" placeholder="Ex: MARGHERITA" style="width:100%; padding:10px; border-radius:var(--radius-sm); background:rgb(var(--veil) / 0.05); color: var(--text-main); border:1px solid var(--border-color);" />
                 </div>
 
                 <div class="form-group">
@@ -1961,12 +1989,12 @@
 
                 <div class="form-group">
                     <label data-i18n="admin.hh_supervisor_pin_label">Code PIN Superviseur :</label>
-                    <input type="password" id="inputHhPin" placeholder="••••" maxlength="6" style="width:100%; text-align:center; font-size:1.5rem; letter-spacing:6px; padding:10px; border-radius:var(--radius-sm); background:rgba(30,27,23,0.05); color: var(--text-main); border:1px solid var(--border-color);" />
+                    <input type="password" id="inputHhPin" placeholder="••••" maxlength="6" style="width:100%; text-align:center; font-size:1.5rem; letter-spacing:6px; padding:10px; border-radius:var(--radius-sm); background:rgb(var(--veil) / 0.05); color: var(--text-main); border:1px solid var(--border-color);" />
                 </div>
 
                 <div class="form-group">
                     <label data-i18n="admin.hh_override_reason_label">Motif de dérogation :</label>
-                    <input type="text" id="inputHhReason" data-i18n-placeholder="admin.hh_override_reason_placeholder" placeholder="Ex: Prolongation affluence match" style="width:100%; padding:10px; border-radius:var(--radius-sm); background:rgba(30,27,23,0.05); color: var(--text-main); border:1px solid var(--border-color);" />
+                    <input type="text" id="inputHhReason" data-i18n-placeholder="admin.hh_override_reason_placeholder" placeholder="Ex: Prolongation affluence match" style="width:100%; padding:10px; border-radius:var(--radius-sm); background:rgb(var(--veil) / 0.05); color: var(--text-main); border:1px solid var(--border-color);" />
                 </div>
 
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">

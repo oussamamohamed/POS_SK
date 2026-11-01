@@ -394,6 +394,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         const languageSelect = document.getElementById('languageSelect');
         languageSelect.value = window.i18n.lang;
         languageSelect.addEventListener('change', e => window.i18n.setLanguage(e.target.value));
+        const handSelect = document.getElementById('handSelect');
+        handSelect.value = document.documentElement.dataset.hand === 'left' ? 'left' : 'right';
+        handSelect.addEventListener('change', e => {
+            document.documentElement.dataset.hand = e.target.value;
+            try { localStorage.setItem('pos_hand', e.target.value); } catch { /* stockage indisponible */ }
+        });
+        const designSelect = document.getElementById('designSelect');
+        designSelect.value = document.documentElement.dataset.design === 'classic' ? 'classic' : 'handi';
+        designSelect.addEventListener('change', e => {
+            const classic = e.target.value === 'classic';
+            window.applyDesign(classic);
+            try { localStorage.setItem('pos_design', classic ? 'classic' : 'handi'); } catch { /* stockage indisponible */ }
+        });
         setupAdminTabs();
         setupDashboardHandlers();
         setupModals();
@@ -1501,13 +1514,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         prod.modifierGroups.forEach(group => {
             const groupCard = document.createElement('div');
             groupCard.className = 'modifier-group-card';
-            groupCard.style.cssText = 'background:rgba(30,27,23,0.03); border:1px solid rgba(30,27,23,0.08); border-radius:8px; padding:14px;';
+            groupCard.style.cssText = 'background:rgb(var(--veil) / 0.03); border:1px solid rgb(var(--veil) / 0.08); border-radius:8px; padding:14px;';
 
             const header = document.createElement('div');
             header.style.cssText = 'display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;';
             header.innerHTML = `
                 <div style="font-weight:700; color:var(--text-main); font-size:0.95rem;">${escapeHtml(group.groupName)}</div>
-                <span style="font-size:0.75rem; font-weight:600; padding:2px 8px; border-radius:4px; ${group.isMandatory ? 'background:rgba(185,119,14, 0.15); color:var(--accent); border:1px solid rgba(185,119,14, 0.3);' : 'background:rgba(30,27,23, 0.1); color:var(--text-muted);'}">
+                <span style="font-size:0.75rem; font-weight:600; padding:2px 8px; border-radius:4px; ${group.isMandatory ? 'background:rgba(185,119,14, 0.15); color:var(--accent); border:1px solid rgba(185,119,14, 0.3);' : 'background:rgb(var(--veil) / 0.1); color:var(--text-muted);'}">
                     ${group.isSingleChoice ? (group.isMandatory ? t('order.modifier_choice_required') : t('order.modifier_choice_max')) : (group.minSelections > 0 ? t('order.modifier_min_selections', { min: group.minSelections }) : t('order.modifier_optional'))}
                 </span>
             `;
@@ -1535,8 +1548,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 optBtn.style.cssText = `
                     display:flex; flex-direction:column; align-items:flex-start; justify-content:center;
                     padding:10px 12px; border-radius:8px; cursor:pointer; text-align:start; transition:all 0.15s ease;
-                    border: 1px solid ${isPreSelected ? 'var(--primary)' : 'rgba(30,27,23,0.1)'};
-                    background: ${isPreSelected ? 'rgba(30,27,23, 0.15)' : 'rgba(251,249,246, 0.6)'};
+                    border: 1px solid ${isPreSelected ? 'var(--primary)' : 'rgb(var(--veil) / 0.1)'};
+                    background: ${isPreSelected ? 'rgb(var(--veil) / 0.15)' : 'color-mix(in srgb, var(--sheet) 60%, transparent)'};
                     color: ${isPreSelected ? 'var(--primary)' : 'var(--text-main)'};
                 `;
 
@@ -1578,8 +1591,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     optionsGrid.querySelectorAll('.btn-modifier-option').forEach(b => {
                         const bOptId = b.getAttribute('data-option-id');
                         const sel = currentSelectedModifiers.some(m => m.optionId === bOptId);
-                        b.style.border = `1px solid ${sel ? 'var(--primary)' : 'rgba(30,27,23,0.1)'}`;
-                        b.style.background = sel ? 'rgba(30,27,23, 0.15)' : 'rgba(251,249,246, 0.6)';
+                        b.style.border = `1px solid ${sel ? 'var(--primary)' : 'rgb(var(--veil) / 0.1)'}`;
+                        b.style.background = sel ? 'rgb(var(--veil) / 0.15)' : 'color-mix(in srgb, var(--sheet) 60%, transparent)';
                         b.style.color = sel ? 'var(--primary)' : 'var(--text-main)';
                     });
 
@@ -3670,7 +3683,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 elServices.innerHTML = `<p class="text-muted">${t('admin.dash_no_services')}</p>`;
             } else {
                 elServices.innerHTML = data.services.map(s => `
-                    <div style="background:rgba(30,27,23,0.03); padding:12px; border-radius:8px; border:1px solid rgba(30,27,23,0.06);">
+                    <div style="background:rgb(var(--veil) / 0.03); padding:12px; border-radius:8px; border:1px solid rgb(var(--veil) / 0.06);">
                         <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
                             <strong>${escapeHtml(s.serviceName)}</strong>
                             <strong style="color:var(--success); direction:ltr; unicode-bidi:isolate;">${s.salesTtc.toFixed(2)} €</strong>
@@ -3691,12 +3704,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 elPayments.innerHTML = `<p class="text-muted">${t('admin.dash_no_payments')}</p>`;
             } else {
                 elPayments.innerHTML = data.paymentMethods.map(p => `
-                    <div style="background:rgba(30,27,23,0.03); padding:10px 12px; border-radius:8px; border:1px solid rgba(30,27,23,0.06);">
+                    <div style="background:rgb(var(--veil) / 0.03); padding:10px 12px; border-radius:8px; border:1px solid rgb(var(--veil) / 0.06);">
                         <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:0.88rem;">
                             <span>${escapeHtml(p.methodName)} <span style="color:var(--text-muted); font-size:0.78rem;">(${p.transactionsCount} tx)</span></span>
                             <strong style="direction:ltr; unicode-bidi:isolate;">${p.totalAmount.toFixed(2)} € <span style="color:var(--primary); font-size:0.8rem;">(${p.percentageOfTotal}%)</span></strong>
                         </div>
-                        <div style="background:rgba(30,27,23,0.08); height:6px; border-radius:3px; overflow:hidden;">
+                        <div style="background:rgb(var(--veil) / 0.08); height:6px; border-radius:3px; overflow:hidden;">
                             <div style="background:var(--primary); height:100%; width:${Math.min(100, Math.max(0, p.percentageOfTotal))}%;"></div>
                         </div>
                     </div>
@@ -3711,12 +3724,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 elTopProds.innerHTML = `<p class="text-muted">${t('admin.dash_no_sales')}</p>`;
             } else {
                 elTopProds.innerHTML = data.topProducts.map((prod, idx) => `
-                    <div style="background:rgba(30,27,23,0.03); padding:10px 12px; border-radius:8px; border:1px solid rgba(30,27,23,0.06);">
+                    <div style="background:rgb(var(--veil) / 0.03); padding:10px 12px; border-radius:8px; border:1px solid rgb(var(--veil) / 0.06);">
                         <div style="display:flex; justify-content:space-between; margin-bottom:4px; font-size:0.88rem;">
                             <span><strong style="color:var(--accent); margin-inline-end:6px;">#${idx + 1}</strong> ${escapeHtml(prod.productName)} <span style="color:var(--text-muted); font-size:0.8rem;">(x${prod.quantitySold})</span></span>
                             <strong style="color:var(--success); direction:ltr; unicode-bidi:isolate;">${prod.totalSalesTtc.toFixed(2)} € <span style="color:var(--text-muted); font-size:0.75rem;">(${prod.percentageOfTotal}%)</span></strong>
                         </div>
-                        <div style="background:rgba(30,27,23,0.08); height:6px; border-radius:3px; overflow:hidden;">
+                        <div style="background:rgb(var(--veil) / 0.08); height:6px; border-radius:3px; overflow:hidden;">
                             <div style="background:var(--success); height:100%; width:${Math.min(100, Math.max(0, prod.percentageOfTotal))}%;"></div>
                         </div>
                     </div>
@@ -3731,7 +3744,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 elStaff.innerHTML = `<p class="text-muted">${t('admin.dash_no_staff_activity')}</p>`;
             } else {
                 elStaff.innerHTML = data.staffPerformance.map(s => `
-                    <div style="background:rgba(30,27,23,0.03); padding:10px 12px; border-radius:8px; border:1px solid rgba(30,27,23,0.06); display:flex; justify-content:space-between; align-items:center;">
+                    <div style="background:rgb(var(--veil) / 0.03); padding:10px 12px; border-radius:8px; border:1px solid rgb(var(--veil) / 0.06); display:flex; justify-content:space-between; align-items:center;">
                         <div>
                             <strong>👤 ${escapeHtml(s.serverName)}</strong>
                             <div style="font-size:0.78rem; color:var(--text-muted); margin-top:2px;">${t('admin.dash_staff_summary', { tables: s.tablesServedCount, amount: s.averageTableTtc.toFixed(2) })}</div>
@@ -3760,7 +3773,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <small style="display:block;color:var(--text-muted);">${t('admin.catalog_row_station', { station: escapeHtml(p.preparationStationId || 'HOT') })}${p.isQuickKey ? ' | ' + t('admin.catalog_row_quick_key') : ''}</small>
                 </div>
                 <div style="display:flex; gap:6px;">
-                    <button class="btn-archive btn-edit-product" data-id="${escapeHtml(p.id)}" style="background:rgba(30,27,23,0.2); border-color:rgba(30,27,23,0.4); color:var(--primary);">${t('admin.btn_edit_row')}</button>
+                    <button class="btn-archive btn-edit-product" data-id="${escapeHtml(p.id)}" style="background:rgb(var(--veil) / 0.2); border-color:rgb(var(--veil) / 0.4); color:var(--primary);">${t('admin.btn_edit_row')}</button>
                     <button class="btn-archive btn-del-product" data-id="${escapeHtml(p.id)}">${t('admin.btn_deactivate')}</button>
                 </div>
             `;
@@ -3828,7 +3841,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <small style="display:block;color:var(--text-muted);">${t('admin.staff_row_role', { role: escapeHtml(operatorRoleLabel(s.role)) })}</small>
                     </div>
                     <div style="display:flex; gap:6px;">
-                        <button class="btn-archive btn-edit-staff" data-id="${escapeHtml(s.id)}" style="background:rgba(30,27,23,0.2); border-color:rgba(30,27,23,0.4); color:var(--primary);">${t('admin.btn_edit_row')}</button>
+                        <button class="btn-archive btn-edit-staff" data-id="${escapeHtml(s.id)}" style="background:rgb(var(--veil) / 0.2); border-color:rgb(var(--veil) / 0.4); color:var(--primary);">${t('admin.btn_edit_row')}</button>
                         <button class="btn-archive btn-del-staff" data-id="${escapeHtml(s.id)}">${t('admin.btn_deactivate')}</button>
                     </div>
                 `;
@@ -4002,7 +4015,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     </div>
                     <div style="display:flex; gap:6px;">
                         ${hasJobs ? `<button class="btn-archive btn-printer-jobs" data-id="${escapeHtml(pr.id)}">${t('admin.printer_jobs_btn')}</button>` : ''}
-                        <button class="btn-archive btn-edit-printer" data-id="${escapeHtml(pr.id)}" style="background:rgba(30,27,23,0.2); border-color:rgba(30,27,23,0.4); color:var(--primary);">${t('admin.btn_edit_row')}</button>
+                        <button class="btn-archive btn-edit-printer" data-id="${escapeHtml(pr.id)}" style="background:rgb(var(--veil) / 0.2); border-color:rgb(var(--veil) / 0.4); color:var(--primary);">${t('admin.btn_edit_row')}</button>
                         <button class="btn-archive btn-del-printer" data-id="${escapeHtml(pr.id)}">${pr.isActive === false ? t('admin.btn_reactivate') : t('admin.btn_deactivate')}</button>
                     </div>
                 `;
@@ -4288,11 +4301,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             const isSelected = s.id === hhAdminState.selectedScheduleId;
 
             return `
-                <div style="background:rgba(30,27,23,0.03); padding:12px; border-radius:8px; border:1px solid ${isSelected ? 'var(--primary)' : 'rgba(30,27,23,0.06)'}; display:flex; justify-content:space-between; align-items:center;">
+                <div style="background:rgb(var(--veil) / 0.03); padding:12px; border-radius:8px; border:1px solid ${isSelected ? 'var(--primary)' : 'rgb(var(--veil) / 0.06)'}; display:flex; justify-content:space-between; align-items:center;">
                     <div>
                         <strong>🍻 ${escapeHtml(s.name)}</strong>
                         <span style="font-size:0.75rem; color:var(--accent); margin-inline-start:6px;">${escapeHtml(s.startTime)} - ${escapeHtml(s.endTime)}</span>
-                        <span style="font-size:0.72rem; background:rgba(30,27,23,0.2); color:var(--primary); border:1px solid rgba(30,27,23,0.3); padding:2px 6px; border-radius:10px; margin-inline-start:6px;">${t('admin.hh_priority_value', { value: s.priority || 1 })}</span>
+                        <span style="font-size:0.72rem; background:rgb(var(--veil) / 0.2); color:var(--primary); border:1px solid rgb(var(--veil) / 0.3); padding:2px 6px; border-radius:10px; margin-inline-start:6px;">${t('admin.hh_priority_value', { value: s.priority || 1 })}</span>
                         <div style="font-size:0.8rem; color:var(--text-muted); margin-top:2px;">${t('admin.hh_days_value', { days: escapeHtml(dayLabels) })} ${s.appliesToTakeaway ? t('admin.hh_takeaway_included') : t('admin.hh_dine_in_only')}</div>
                         <div style="font-size:0.78rem; color:var(--primary); margin-top:2px;">${t('admin.hh_rules_configured_count', { count: rulesCount })}</div>
                     </div>
@@ -5152,7 +5165,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             elements.fiscalChainsTableBody.innerHTML = '';
             (data.chains || []).forEach(chain => {
                 const tr = document.createElement('tr');
-                tr.style.borderBottom = '1px solid rgba(30,27,23,0.05)';
+                tr.style.borderBottom = '1px solid rgb(var(--veil) / 0.05)';
 
                 const tdChain = document.createElement('td');
                 tdChain.style.padding = '8px';
@@ -5247,7 +5260,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         archives.forEach(a => {
             const tr = document.createElement('tr');
-            tr.style.borderBottom = '1px solid rgba(30,27,23,0.05)';
+            tr.style.borderBottom = '1px solid rgb(var(--veil) / 0.05)';
             const dateStr = a.createdAtUtc ? new Date(a.createdAtUtc).toLocaleString() : '—';
             const sigTrunc = a.signatureHash ? a.signatureHash.substring(0, 16) + '...' : '—';
             const sizeKb = (a.fileSizeBytes / 1024).toFixed(1) + ' KB';
@@ -5255,7 +5268,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             tr.innerHTML = `
                 <td style="padding:8px; font-family:monospace;">#${a.archiveSequence}</td>
                 <td style="padding:8px; font-weight:600; font-family:monospace; font-size:0.85rem;">${escapeHtml(a.fileName)}</td>
-                <td style="padding:8px;"><span style="display:inline-block; padding:2px 8px; border-radius:4px; font-size:0.78rem; font-weight:600; background:rgba(30,27,23,0.15); color:var(--primary);">${escapeHtml(a.periodKey)}</span></td>
+                <td style="padding:8px;"><span style="display:inline-block; padding:2px 8px; border-radius:4px; font-size:0.78rem; font-weight:600; background:rgb(var(--veil) / 0.15); color:var(--primary);">${escapeHtml(a.periodKey)}</span></td>
                 <td style="padding:8px; font-size:0.85rem; color:var(--text-muted);">${sizeKb}</td>
                 <td style="padding:8px; font-size:0.82rem; color:var(--text-muted);">${dateStr}</td>
                 <td style="padding:8px; font-family:monospace; font-size:0.75rem; color:var(--text-muted);" title="${escapeHtml(a.signatureHash || '')}">${escapeHtml(sigTrunc)}</td>
@@ -5279,7 +5292,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         closures.forEach(c => {
             const tr = document.createElement('tr');
-            tr.style.borderBottom = '1px solid rgba(30,27,23,0.05)';
+            tr.style.borderBottom = '1px solid rgb(var(--veil) / 0.05)';
             const typeLabel = c.periodType === 'monthly' ? t('fiscal.period_monthly') : t('fiscal.period_annual');
             const totalTtcFormatted = (c.totalTtcCents != null ? (c.totalTtcCents / 100).toFixed(2) : (c.totalTtc || 0).toFixed(2)) + ' €';
             const grandTotalFormatted = (c.perpetualGrandTotalCents != null ? (c.perpetualGrandTotalCents / 100).toFixed(2) : (c.perpetualGrandTotal || 0).toFixed(2)) + ' €';
@@ -5295,7 +5308,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             tr.innerHTML = `
-                <td style="padding:8px;"><span style="display:inline-block; padding:2px 8px; border-radius:4px; font-size:0.78rem; font-weight:600; background:rgba(30,27,23,0.15); color:var(--primary);">${escapeHtml(typeLabel)}</span></td>
+                <td style="padding:8px;"><span style="display:inline-block; padding:2px 8px; border-radius:4px; font-size:0.78rem; font-weight:600; background:rgb(var(--veil) / 0.15); color:var(--primary);">${escapeHtml(typeLabel)}</span></td>
                 <td style="padding:8px; font-weight:600;">${escapeHtml(c.periodKey)}</td>
                 <td style="padding:8px; font-family:monospace;">#${c.closureSequence}</td>
                 <td style="padding:8px; font-weight:600;">${totalTtcFormatted}</td>

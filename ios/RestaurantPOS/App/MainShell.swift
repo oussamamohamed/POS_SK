@@ -6,11 +6,15 @@ struct MainShell: View {
     @Environment(AppModel.self) private var model
     @Environment(Router.self) private var router
     @Environment(AppEnvironment.self) private var environment
+    @Environment(\.layoutDirection) private var layoutDirection
+    @AppStorage(HandPreference.storageKey) private var hand = HandPreference.right.rawValue
     @State private var ticks = 0
 
     var body: some View {
+        // Bandeau de navigation du côté de la main (droitier : à droite), quel que soit le sens de lecture.
+        let railLast = (HandPreference(rawValue: hand) != .left) == (layoutDirection == .leftToRight)
         HStack(spacing: 0) {
-            SidebarRail()
+            if !railLast { SidebarRail() }
             VStack(spacing: 0) {
                 HeaderBar()
                 if environment.isStandalone, let backup = environment.backup, backup.needsAttention { BackupBanner(controller: backup) }
@@ -20,6 +24,7 @@ struct MainShell: View {
                 content
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
+            if railLast { SidebarRail() }
         }
         .background(Theme.canvas)
         .task {
@@ -123,8 +128,9 @@ private struct RailButton: View {
                 Text(section.title).font(Font.pos(12, .semibold)).lineLimit(1).minimumScaleFactor(0.7)
             }
             .frame(width: 72, height: 64)
-            .foregroundStyle(isSelected ? Theme.primaryInk : Theme.inkMuted)
-            .background(RoundedRectangle(cornerRadius: Theme.Radius.md, style: .continuous).fill(isSelected ? Theme.primarySoft : .clear))
+            .foregroundStyle(isSelected ? Theme.selectedInk : Theme.inkMuted)
+            .background(RoundedRectangle(cornerRadius: Theme.Radius.md, style: .continuous).fill(isSelected ? Theme.selectedFill : .clear))
+            .overlay(RoundedRectangle(cornerRadius: Theme.Radius.md, style: .continuous).strokeBorder(isSelected ? Theme.selectedStroke : .clear, lineWidth: 1.5))
             .contentShape(RoundedRectangle(cornerRadius: Theme.Radius.md, style: .continuous))
             .overlay(alignment: .topTrailing) {
                 if badge > 0 {

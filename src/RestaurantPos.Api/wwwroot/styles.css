@@ -4,6 +4,7 @@
 :root {
     --paper: #f1ece1;
     --ink: #1e1b17;
+    --veil: 30 27 23; /* voiles translucides : encre sur papier (Handi), blanc sur fond sombre (Classique) */
     --steel: #8b9198;
     --tomato: #d4462a;
     --sheet: color-mix(in srgb, var(--paper) 30%, #fff);
@@ -33,6 +34,41 @@
     --radius-md: 14px;
     --radius-sm: 10px;
     --side-w: 220px;
+}
+
+/* Design « Classique » (d'avant Handi) : choisi sur l'écran du PIN, mémorisé dans localStorage (pos_design).
+   --ink / --paper y servent de fond d'action / texte dessus, comme --primary avant Handi. */
+html[data-design="classic"] {
+    --veil: 255 255 255;
+    --paper: #fff;
+    --ink: #3b82f6;
+    --steel: #64748b;
+    --tomato: #ef4444;
+    --sheet: #1e293b;
+
+    --bg-main: #0f172a;
+    --bg-panel: #1e293b;
+    --bg-card: #334155;
+    --bg-card-hover: #475569;
+    --border-color: rgba(255, 255, 255, 0.08);
+    --border-highlight: rgba(255, 255, 255, 0.18);
+
+    --primary: #3b82f6;
+    --primary-glow: rgba(59, 130, 246, 0.4);
+    --accent: #f59e0b;
+    --success: #10b981;
+    --danger: #ef4444;
+    --warning: #f97316;
+
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    --text-dim: #64748b;
+    --tomato-l: rgba(239, 68, 68, 0.12);
+
+    --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans Arabic', Roboto, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+    --radius-md: 12px;
+    --radius-sm: 8px;
 }
 
 * {
@@ -207,7 +243,7 @@ body.pos-dark {
 
 .nav-btn:hover {
     color: var(--text-main);
-    background: rgba(30,27,23, 0.06);
+    background: rgb(var(--veil) / 0.06);
 }
 
 .nav-btn.active {
@@ -242,7 +278,7 @@ body.pos-dark {
     display: flex;
     align-items: center;
     gap: 10px;
-    background: rgba(30,27,23, 0.06);
+    background: rgb(var(--veil) / 0.06);
     padding: 6px 14px;
     border-radius: 30px;
     border: 1px solid var(--border-color);
@@ -313,6 +349,21 @@ body.pos-dark {
 }
 
 /* Cart Panel */
+/* Main dominante (data-hand, réglage de l'écran du PIN), en côtés physiques : droitier = bandeau de navigation à droite
+   et ticket à gauche, gaucher = l'inverse. Le DOM met le bandeau et le ticket en premier (à gauche en LTR). */
+@media (min-width: 1101px) {
+    html[data-hand="right"] .app-shell { flex-direction: row-reverse; }
+    html[data-hand="right"][dir="rtl"] .app-shell { flex-direction: row; }
+    html[data-hand="left"][dir="rtl"] .app-shell { flex-direction: row-reverse; }
+}
+html[data-hand="left"] .pos-layout { flex-direction: row-reverse; }
+html[data-hand="left"][dir="rtl"] .pos-layout { flex-direction: row; }
+html[data-hand="right"][dir="rtl"] .pos-layout { flex-direction: row-reverse; }
+html[data-hand="right"] .side { border-inline-end: 0; border-left: 1px solid var(--border-color); }
+html[data-hand="left"] .side { border-inline-end: 0; border-right: 1px solid var(--border-color); }
+html[data-hand="right"] .pos-cart-panel { border-inline-end: 0; border-right: 1px solid var(--border-color); }
+html[data-hand="left"] .pos-cart-panel { border-inline-end: 0; border-left: 1px solid var(--border-color); }
+
 .pos-cart-panel {
     width: 380px;
     min-width: 340px;
@@ -346,7 +397,7 @@ body.pos-dark {
 }
 
 .covers-badge {
-    background: rgba(30,27,23, 0.08);
+    background: rgb(var(--veil) / 0.08);
     color: var(--text-muted);
     padding: 4px 10px;
     border-radius: 6px;
@@ -372,7 +423,7 @@ body.pos-dark {
 }
 
 .cart-item-row {
-    background: rgba(30,27,23, 0.03);
+    background: rgb(var(--veil) / 0.03);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-sm);
     padding: 10px;
@@ -383,7 +434,7 @@ body.pos-dark {
 }
 
 .cart-item-row:hover {
-    background: rgba(30,27,23, 0.06);
+    background: rgb(var(--veil) / 0.06);
 }
 
 .cart-item-row.dispatched {
@@ -443,7 +494,7 @@ body.pos-dark {
     height: 28px;
     border-radius: 6px;
     border: 1px solid var(--border-color);
-    background: rgba(30,27,23, 0.08);
+    background: rgb(var(--veil) / 0.08);
     color: var(--text-main);
     font-weight: 700;
     cursor: pointer;
@@ -458,7 +509,7 @@ body.pos-dark {
 }
 
 .cart-summary {
-    background: rgba(251,249,246, 0.7);
+    background: color-mix(in srgb, var(--sheet) 70%, transparent);
     border-top: 1px solid var(--border-color);
     padding: 16px;
     display: flex;
@@ -580,9 +631,9 @@ body.pos-dark {
 }
 
 .course-badge.direct {
-    background: rgba(30,27,23, 0.2);
+    background: rgb(var(--veil) / 0.2);
     color: #93c5fd;
-    border: 1px solid rgba(30,27,23, 0.4);
+    border: 1px solid rgb(var(--veil) / 0.4);
 }
 
 .course-badge.suite {
@@ -695,7 +746,7 @@ body.pos-dark {
     gap: 8px;
     align-content: stretch;
     padding: 8px;
-    background: rgba(251,249,246, 0.45);
+    background: color-mix(in srgb, var(--sheet) 45%, transparent);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-sm);
 }
@@ -706,7 +757,7 @@ body.pos-dark {
     justify-content: space-between;
     align-items: center;
     padding: 6px 14px;
-    background: rgba(251,249,246, 0.85);
+    background: color-mix(in srgb, var(--sheet) 85%, transparent);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
     min-height: 52px;
@@ -763,7 +814,7 @@ body.pos-dark {
     width: 10px;
     height: 10px;
     border-radius: 50%;
-    background: rgba(30,27,23, 0.2);
+    background: rgb(var(--veil) / 0.2);
     cursor: pointer;
     transition: all 0.2s ease;
 }
@@ -807,7 +858,7 @@ body.pos-dark {
 .btn-admin-add-page {
     padding: 4px 10px;
     border-radius: var(--radius-sm);
-    border: 1px dashed rgba(30,27,23, 0.3);
+    border: 1px dashed rgb(var(--veil) / 0.3);
     background: transparent;
     color: var(--success);
     font-size: 0.78rem;
@@ -822,7 +873,7 @@ body.pos-dark {
 /* Touches Articles Adaptatives à la Taille d'Écran */
 .product-card {
     background: var(--bg-panel);
-    border: 1px solid rgba(30,27,23, 0.12);
+    border: 1px solid rgb(var(--veil) / 0.12);
     border-radius: 0px; /* Carré strict */
     width: 100%;
     height: 100%;
@@ -843,7 +894,7 @@ body.pos-dark {
 }
 
 .product-card:hover {
-    border-color: rgba(30,27,23, 0.4);
+    border-color: rgb(var(--veil) / 0.4);
     background: var(--bg-card);
     transform: translateY(-2px);
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
@@ -851,7 +902,7 @@ body.pos-dark {
 
 .product-card:active {
     transform: scale(0.96);
-    background: rgba(30,27,23, 0.2);
+    background: rgb(var(--veil) / 0.2);
 }
 
 .product-card-top {
@@ -865,7 +916,7 @@ body.pos-dark {
     font-weight: 700;
     padding: 2px 6px;
     border-radius: 2px;
-    background: rgba(30,27,23, 0.1);
+    background: rgb(var(--veil) / 0.1);
     color: var(--text-muted);
 }
 
@@ -911,7 +962,7 @@ body.pos-dark {
 
 .product-price-strike {
     font-size: 0.72rem;
-    color: rgba(30,27,23, 0.5);
+    color: rgb(var(--veil) / 0.5);
     text-decoration: line-through;
     font-weight: 600;
 }
@@ -1017,8 +1068,8 @@ body.pos-dark {
 
 /* Slot vide de caisse (s'adapte à la cellule et préserve l'alignement absolu) */
 .product-card-empty {
-    background: rgba(30,27,23, 0.02);
-    border: 1px dashed rgba(30,27,23, 0.06);
+    background: rgb(var(--veil) / 0.02);
+    border: 1px dashed rgb(var(--veil) / 0.06);
     border-radius: 0px;
     width: 100%;
     height: 100%;
@@ -1031,7 +1082,7 @@ body.pos-dark {
 /* ==================== ADMIN GRID EDITOR ==================== */
 .admin-grid-slot {
     background: var(--bg-panel);
-    border: 1px solid rgba(30,27,23, 0.12);
+    border: 1px solid rgb(var(--veil) / 0.12);
     border-radius: 2px;
     width: 100%;
     height: 100%;
@@ -1053,14 +1104,14 @@ body.pos-dark {
 }
 
 .admin-grid-slot.empty-slot {
-    background: rgba(30,27,23, 0.03);
-    border: 1px dashed rgba(30,27,23, 0.15);
+    background: rgb(var(--veil) / 0.03);
+    border: 1px dashed rgb(var(--veil) / 0.15);
     cursor: pointer;
     justify-content: center;
 }
 
 .admin-grid-slot.empty-slot:hover {
-    background: rgba(30,27,23, 0.1);
+    background: rgb(var(--veil) / 0.1);
     border-color: var(--primary);
 }
 
@@ -1107,7 +1158,7 @@ body.pos-dark {
 }
 
 .btn-slot-icon {
-    background: rgba(30,27,23, 0.08);
+    background: rgb(var(--veil) / 0.08);
     border: 1px solid var(--border-color);
     color: var(--text-muted);
     font-size: 0.72rem;
@@ -1237,7 +1288,7 @@ body.pos-dark {
 
 .table-card.paid {
     border-color: var(--primary);
-    background: rgba(30,27,23, 0.08);
+    background: rgb(var(--veil) / 0.08);
 }
 
 .table-card:hover {
@@ -1260,10 +1311,10 @@ body.pos-dark {
     font-weight: 800;
     color: var(--primary);
     margin-top: 6px;
-    background: rgba(30,27,23, 0.12);
+    background: rgb(var(--veil) / 0.12);
     padding: 3px 8px;
     border-radius: 6px;
-    border: 1px solid rgba(30,27,23, 0.25);
+    border: 1px solid rgb(var(--veil) / 0.25);
     display: inline-block;
 }
 
@@ -1330,7 +1381,7 @@ body.pos-dark {
 }
 
 .col-count {
-    background: rgba(30,27,23, 0.1);
+    background: rgb(var(--veil) / 0.1);
     padding: 2px 8px;
     border-radius: 12px;
     font-size: 0.78rem;
@@ -1414,7 +1465,7 @@ body.pos-dark {
 
 .admin-tab-btn:hover {
     color: var(--text-main);
-    background: rgba(30,27,23, 0.05);
+    background: rgb(var(--veil) / 0.05);
 }
 
 .admin-tab-btn.active {
@@ -1650,7 +1701,7 @@ body.pos-dark {
     inset-inline-start: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(251,249,246, 0.8);
+    background: color-mix(in srgb, var(--sheet) 80%, transparent);
     backdrop-filter: blur(10px);
     display: none;
     align-items: center;
@@ -1951,7 +2002,7 @@ body.pos-dark {
 /* Direct & Takeaway Sales (Feature 018) */
 .destination-toggle-group {
     display: inline-flex;
-    background: rgba(251,249,246, 0.6);
+    background: color-mix(in srgb, var(--sheet) 60%, transparent);
     padding: 3px;
     border-radius: var(--radius-sm);
     border: 1px solid var(--border-color);
@@ -2050,12 +2101,12 @@ body.pos-dark {
 .hh-subtabs-nav {
     display: flex;
     gap: 8px;
-    border-bottom: 1px solid rgba(30,27,23, 0.1);
+    border-bottom: 1px solid rgb(var(--veil) / 0.1);
     padding-bottom: 8px;
 }
 
 .hh-subtab-btn {
-    background: rgba(30,27,23, 0.05);
+    background: rgb(var(--veil) / 0.05);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-sm);
     color: var(--text-muted);
@@ -2069,7 +2120,7 @@ body.pos-dark {
 
 .hh-subtab-btn:hover {
     color: var(--text-main);
-    background: rgba(30,27,23, 0.1);
+    background: rgb(var(--veil) / 0.1);
 }
 
 .hh-subtab-btn.active {
@@ -2085,7 +2136,7 @@ body.pos-dark {
 }
 
 .hh-pill-filter {
-    background: rgba(30,27,23, 0.06);
+    background: rgb(var(--veil) / 0.06);
     border: 1px solid var(--border-color);
     border-radius: 20px;
     color: var(--text-muted);
@@ -2111,7 +2162,7 @@ body.pos-dark {
 
 /* Multi-select Cards for Articles and Categories */
 .hh-select-card {
-    background: rgba(30,27,23, 0.03);
+    background: rgb(var(--veil) / 0.03);
     border: 2px solid var(--border-color);
     border-radius: var(--radius-sm);
     padding: 12px;
@@ -2125,8 +2176,8 @@ body.pos-dark {
 }
 
 .hh-select-card:hover {
-    background: rgba(30,27,23, 0.07);
-    border-color: rgba(30,27,23, 0.3);
+    background: rgb(var(--veil) / 0.07);
+    border-color: rgb(var(--veil) / 0.3);
 }
 
 .hh-select-card.selected {
@@ -2161,8 +2212,8 @@ body.pos-dark {
 }
 
 .hh-batch-action-bar {
-    background: rgba(30,27,23, 0.04);
-    border: 1px solid rgba(30,27,23, 0.08);
+    background: rgb(var(--veil) / 0.04);
+    border: 1px solid rgb(var(--veil) / 0.08);
     border-radius: var(--radius-md);
     padding: 14px 18px;
 }
@@ -2183,15 +2234,15 @@ body.pos-dark {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: rgba(30,27,23, 0.02);
-    border: 1px solid rgba(30,27,23, 0.06);
+    background: rgb(var(--veil) / 0.02);
+    border: 1px solid rgb(var(--veil) / 0.06);
     border-radius: 6px;
     padding: 10px 14px;
     transition: all 0.15s ease;
 }
 
 .hh-active-rule-item:hover {
-    background: rgba(30,27,23, 0.05);
+    background: rgb(var(--veil) / 0.05);
 }
 
 .hh-active-rule-item input[type="checkbox"] {

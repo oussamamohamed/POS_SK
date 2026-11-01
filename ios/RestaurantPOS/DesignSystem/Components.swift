@@ -94,20 +94,21 @@ struct ChipButton: View {
             HStack(spacing: Theme.Space.s) {
                 if let tint {
                     Circle().fill(tint).frame(width: 10, height: 10)
-                        .overlay(Circle().stroke(isSelected ? Theme.onPrimary : .clear, lineWidth: 2))
+                        .overlay(Circle().stroke(isSelected ? Theme.selectedInk : .clear, lineWidth: 2))
                 }
                 if let systemImage { Image(systemName: systemImage) }
                 Text(title).lineLimit(1)
                 if let count {
                     Text("\(count)").font(Font.posMono(13, .semibold))
-                        .foregroundStyle(isSelected ? Theme.onPrimary : Theme.inkMuted)
+                        .foregroundStyle(isSelected ? Theme.selectedInk : Theme.inkMuted)
                 }
             }
             .font(.posLabel)
             .padding(.horizontal, Theme.Space.l)
             .frame(minHeight: Theme.touchMin)
-            .foregroundStyle(isSelected ? Theme.onPrimary : Theme.ink)
-            .background(Capsule().fill(isSelected ? Theme.primary : Theme.raised))
+            .foregroundStyle(isSelected ? Theme.selectedInk : Theme.ink)
+            .background(Capsule().fill(isSelected ? Theme.selectedFill : Theme.raised))
+            .overlay(Capsule().strokeBorder(isSelected ? Theme.selectedStroke : .clear, lineWidth: 1.5))
         }
         .buttonStyle(.plain)
         .accessibilityAddTraits(isSelected ? .isSelected : [])
