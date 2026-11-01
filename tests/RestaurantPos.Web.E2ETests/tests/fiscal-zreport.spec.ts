@@ -17,6 +17,28 @@ test.describe('Fiscalité NF525, Clôtures & Export FEC', () => {
     }
   }
 
+  test('le rapport X porte sur le terminal de l\'appareil appairé, sinon sur POS_MAIN_TERM', async ({ page }) => {
+    const asked: string[] = [];
+    await page.route('**/api/fiscal/x-report?**', route => {
+      asked.push(new URL(route.request().url()).searchParams.get('terminalId') ?? '');
+      return route.continue();
+    });
+
+    // Sans appareil appairé : l'ancien poste principal.
+    await ensureLoggedIn(page);
+    await page.click('#btnNavFiscal');
+    await page.click('#btnPreviewX');
+    await expect.poll(() => asked.at(-1)).toBe('POS_MAIN_TERM');
+
+    // Appareil appairé T77 : les reçus s'écrivent sous T77, c'est donc son rapport X qu'il faut lire.
+    await page.evaluate(() => localStorage.setItem('pos_device', JSON.stringify({ token: 'x', terminalId: 'T77', name: 'Caisse test' })));
+    await ensureLoggedIn(page);
+    await page.click('#btnNavFiscal');
+    await page.click('#btnPreviewX');
+    await expect.poll(() => asked.at(-1)).toBe('T77');
+    await page.evaluate(() => localStorage.removeItem('pos_device'));
+  });
+
   test('Doit naviguer vers l onglet Fiscalité NF525 et afficher les sections légales', async ({ page }) => {
     await ensureLoggedIn(page);
 

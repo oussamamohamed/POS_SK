@@ -52,6 +52,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
+    /** Terminal des rapports fiscaux : celui de l'appareil appairé (c'est là que le serveur écrit les reçus), sinon l'ancien poste principal. */
+    function fiscalTerminal() {
+        return state.device?.terminalId || 'POS_MAIN_TERM';
+    }
+
     function storeDevice(device) {
         state.device = device;
         if (device) state.terminalId = device.terminalId;
@@ -4835,7 +4840,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         method: 'POST',
                         headers: headers,
                         body: JSON.stringify({
-                            terminalId: 'POS_MAIN_TERM',
+                            terminalId: fiscalTerminal(),
                             managerId: managerId,
                             managerName: managerName
                         })
@@ -5025,7 +5030,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             loadPrintSettings();
             await loadPeriodClosures();
             const headers = state.token ? { 'Authorization': `Bearer ${state.token}` } : {};
-            const res = await fetch('/api/fiscal/latest-closure', { headers });
+            const res = await fetch(`/api/fiscal/latest-closure?terminalId=${encodeURIComponent(fiscalTerminal())}`, { headers });
             if (res.ok) {
                 const closure = await res.json();
                 renderFiscalSlip(closure, true);
@@ -5040,7 +5045,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function postFiscalPrint(path) {
         await ensureAuthToken();
         const headers = state.token ? { 'Authorization': `Bearer ${state.token}` } : {};
-        const res = await fetch(`${path}?terminalId=POS_MAIN_TERM`, { method: 'POST', headers });
+        const res = await fetch(`${path}?terminalId=${encodeURIComponent(fiscalTerminal())}`, { method: 'POST', headers });
         if (!res.ok) {
             showToast(await readApiError(res, t('fiscal.print_error')), 'error');
             return;
@@ -5103,7 +5108,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             await ensureAuthToken();
             const headers = state.token ? { 'Authorization': `Bearer ${state.token}` } : {};
-            const res = await fetch('/api/fiscal/x-report?terminalId=POS_MAIN_TERM', { headers });
+            const res = await fetch(`/api/fiscal/x-report?terminalId=${encodeURIComponent(fiscalTerminal())}`, { headers });
             if (res.ok) {
                 const data = await res.json();
                 renderFiscalSlip(data, false);
@@ -5128,7 +5133,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         if (elements.slipTerminal) {
-            elements.slipTerminal.textContent = t('fiscal.slip_terminal_value', { id: data.terminalId || 'POS_MAIN_TERM' });
+            elements.slipTerminal.textContent = t('fiscal.slip_terminal_value', { id: data.terminalId || fiscalTerminal() });
         }
 
         if (elements.slipTotalTtc) {
@@ -5268,7 +5273,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             await ensureAuthToken();
             const headers = state.token ? { 'Authorization': `Bearer ${state.token}` } : {};
             await loadArchives();
-            const res = await fetch('/api/fiscal/period-closures?terminalId=POS_MAIN_TERM', { headers });
+            const res = await fetch(`/api/fiscal/period-closures?terminalId=${encodeURIComponent(fiscalTerminal())}`, { headers });
             if (!res.ok) return;
             const closures = await res.json();
             renderPeriodClosures(closures);
@@ -5476,7 +5481,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 method: 'POST',
                 headers,
                 body: JSON.stringify({
-                    terminalId: 'POS_MAIN_TERM',
+                    terminalId: fiscalTerminal(),
                     periodType,
                     periodKey
                 })
