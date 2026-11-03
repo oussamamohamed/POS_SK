@@ -9,7 +9,7 @@ Write-Host "VERIFICATION PHASE 7 : REGLES DE PANIER ET CREATION DIRECTE DE TABLE
 Write-Host "===================================================================" -ForegroundColor Cyan
 
 # 1. Execution des tests unitaires et d integration
-Write-Host "`n[1/3] Execution de la suite de tests automatisee .NET 9.0..." -ForegroundColor Yellow
+Write-Host "`n[1/3] Execution de la suite de tests automatisee .NET 10.0..." -ForegroundColor Yellow
 $testResult = dotnet test --configuration Release --verbosity minimal
 if ($LASTEXITCODE -ne 0) {
     Write-Error "Echec lors de l execution des tests unitaires !"

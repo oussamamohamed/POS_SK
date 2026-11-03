@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Restaurant POS for iPad with French NF525 fiscal compliance. Three pieces:
 
-- **`src/`** — .NET 9 ASP.NET Core backend (`RestaurantPos.slnx`): Domain / Application / Infrastructure / Api.
+- **`src/`** — .NET 10 ASP.NET Core backend (`RestaurantPos.slnx`): Domain / Application / Infrastructure / Api.
 - **`src/RestaurantPos.Api/wwwroot/`** — vanilla JS touch web client (`app.js`, single large file), served as static files by the API.
 - **`ios/`** — native SwiftUI iPad client (Swift 6, iPadOS 17+) at feature parity with the web client. See `ios/README.md`.
 

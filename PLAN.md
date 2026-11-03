@@ -4,7 +4,7 @@
 **Statut :** Spécification Technique & Plan d'Exécution Complet
 **Cible Client :** iPadOS 17+ & iOS 17+ (Apple iPad 10.2", 10.9", iPad Pro 11"/13", iPad Mini)
 **Stack Frontend :** Application iPad native SwiftUI (Swift 6, iPadOS 17+) — voir `ios/README.md` (le client .NET MAUI a été abandonné)
-**Stack Backend :** .NET 9 (C#) / ASP.NET Core (Clean Architecture + CQRS + SignalR)
+**Stack Backend :** .NET 10 (C#) / ASP.NET Core (Clean Architecture + CQRS + SignalR)
 **Mode de Fonctionnement :** Local-First / Hybride (SQLite local sur iPad + Sync temps réel)
 **Conformité Fiscale :** Traçabilité inaltérable, Chaînage SHA-256 & Clôtures Z (Norme NF525)
 
@@ -51,7 +51,7 @@ Concevoir une application de caisse enregistreuse tactile, de prise de commande 
 │             └────────────────┬───────────────┘                                          │
 │                              ▼                                                          │
 │                 ┌─────────────────────────┐                                             │
-│                 │   Serveur Local .NET 9   │ (Mini-PC / Box Linux / Mac mini local)     │
+│                 │   Serveur Local .NET 10   │ (Mini-PC / Box Linux / Mac mini local)     │
 │                 │ ASP.NET Core + SignalR  │ ➔ PostgreSQL + SQLite Backup                │
 │                 │  + Hub mDNS / Zeroconf  │ ➔ Queue d'événements offline               │
 │                 └────────────┬────────────┘                                             │
