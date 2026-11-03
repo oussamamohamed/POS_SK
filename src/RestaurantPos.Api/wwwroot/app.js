@@ -429,6 +429,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             updatePinDots();
         }
         startPosHub();
+        startKitchenHub();
 
         await loadCatalogData();
         // Sans jeton, ces chargements (protégés) sont faits par validatePin() après le PIN.
@@ -5975,6 +5976,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 state.token = data.token;
                 localStorage.setItem('pos_jwt_token', data.token);
                 startPosHub();
+                startKitchenHub();
                 state.operator = { name: data.operatorName, role: data.role, id: data.operatorId };
                 elements.currentOperatorName.textContent = data.operatorName;
                 elements.currentOperatorRole.textContent = operatorRoleLabel(data.role);
@@ -6551,11 +6553,24 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
+    // Hub [Authorize] : les gestionnaires sont posés au chargement, la connexion démarre dès qu'un jeton existe (startKitchenHub).
+    let kitchenConnection = null;
+    let kitchenConnectionStarted = false;
+    function startKitchenHub() {
+        if (!kitchenConnection || kitchenConnectionStarted) return;
+        if (!(state.token || localStorage.getItem('pos_jwt_token'))) return;
+        kitchenConnectionStarted = true;
+        kitchenConnection.start().catch(err => {
+            kitchenConnectionStarted = false;
+            console.log('SignalR hub non connecté (mode standalone):', err);
+        });
+    }
+
     function setupSignalR() {
         if (typeof signalR === 'undefined') return;
         try {
             const connection = new signalR.HubConnectionBuilder()
-                .withUrl('/hubs/kitchen')
+                .withUrl('/hubs/kitchen', { accessTokenFactory: () => state.token || localStorage.getItem('pos_jwt_token') || '' })
                 .withAutomaticReconnect()
                 .build();
 
@@ -6585,9 +6600,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 applyHappyHourStatus(status);
             });
 
-            connection.start().catch(err => {
-                console.log('SignalR hub non connecté (mode standalone):', err);
-            });
+            kitchenConnection = connection;
+            startKitchenHub();
         } catch (e) {
             console.warn('SignalR initialisation passée:', e);
         }
