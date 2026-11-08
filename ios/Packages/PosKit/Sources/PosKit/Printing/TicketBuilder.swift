@@ -122,7 +122,7 @@ enum TicketBuilder {
 
     // MARK: Cuisine, page de test, duplicata
 
-    static func kitchenTicket(_ ticket: TicketKitchen, order: TicketOrder, language: String, context: TicketContext) -> TicketDocument {
+    static func kitchenTicket(_ ticket: TicketKitchen, order: TicketOrder, language: String, context: TicketContext, allergens: TicketKitchenAllergens? = nil) -> TicketDocument {
         let lang = resolve(language)
         var lines: [TicketLine] = [
             .text(order.destination == .takeaway
@@ -145,12 +145,27 @@ enum TicketBuilder {
             if let comment = item.kitchenComment, !isBlank(comment) {
                 lines.append(.text(text(lang, "kitchen_ticket.comment", ["comment": comment]), bold: true))
             }
+            if let allergens { appendKitchenAllergens(&lines, lang, item.productId, allergens) }
             // Comme le .NET : service retrouvé par produit, premier article de la commande.
             let course = order.items.first { $0.productId == item.productId }?.course ?? .direct
             lines.append(.text(text(lang, courseKey(course))))
             lines.append(.separator())
         }
+        if let disclaimer = allergens?.disclaimer, !isBlank(disclaimer) { lines.append(.text(disclaimer.trimmingCharacters(in: .whitespacesAndNewlines))) }
         return document(lang, lines)
+    }
+
+    /// « non renseignés » (≠ « aucun ») s'imprime ; un plat déclaré sans allergène n'ajoute rien.
+    private static func appendKitchenAllergens(_ lines: inout [TicketLine], _ lang: String, _ productId: UUID?, _ allergens: TicketKitchenAllergens) {
+        // Le .NET écrit les identifiants en minuscules ; la comparaison ne dépend pas de la casse.
+        let product = productId.flatMap { id in allergens.byProduct.first { $0.key.lowercased() == id.uuidString.lowercased() }?.value }
+        guard let product, product.declared else {
+            lines.append(.text(text(lang, "kitchen_ticket.allergens_unknown"), bold: true))
+            return
+        }
+        guard product.mask != 0 else { return }
+        let list = Allergens.names(in: product.mask).map { text(lang, "kitchen_ticket.allergen_\($0)") }.joined(separator: ", ")
+        lines.append(.text(text(lang, "kitchen_ticket.allergens", ["list": list]), bold: true))
     }
 
     static func testPage(printer: Printer, language: String, now: Date) -> TicketDocument {

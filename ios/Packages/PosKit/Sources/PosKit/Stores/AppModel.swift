@@ -15,6 +15,7 @@ public final class AppModel {
     public let kitchen: KitchenStore
     public let fiscal: FiscalStore
     public let catalogAdmin: CatalogAdminStore
+    public let stock: StockStore
     public let staff: StaffStore
     public let printers: PrinterStore
     public let gridEditor: GridEditorStore
@@ -54,6 +55,7 @@ public final class AppModel {
         kitchen = KitchenStore(api: api, notifier: notifier)
         fiscal = FiscalStore(api: api, notifier: notifier, session: session, settings: settings)
         catalogAdmin = CatalogAdminStore(api: api, notifier: notifier, catalog: catalog)
+        stock = StockStore(api: api, notifier: notifier)
         staff = StaffStore(api: api, notifier: notifier)
         printers = PrinterStore(api: api, notifier: notifier)
         gridEditor = GridEditorStore(api: api, notifier: notifier, catalog: catalog)
@@ -135,6 +137,8 @@ public final class AppModel {
             await bookings.load()
             await floor.load()
             await needs.refresh()
+        case let .productAvailabilityChanged(productId, isAvailable):
+            catalog.apply(availability: isAvailable, productId: productId)
         case let .printerStatusChanged(_, name, isOnline, pending):
             printerAlert = isOnline
                 ? String(format: L10n.string("messages.printer_back_online"), name)

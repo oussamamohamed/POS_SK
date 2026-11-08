@@ -26,7 +26,7 @@ public static class HospitalityEndpoints
         // 9. Hospitality Features
         var tableGroup = app.MapGroup("/api/tables").WithTags("Hospitality & Tables").RequireAuthorization();
         var orderGroup = app.MapGroup("/api/orders").WithTags("Orders & Discounts").RequireAuthorization();
-        var hotelGroup = app.MapGroup("/api/hotel").WithTags("Hotel PMS").RequireAuthorization();
+        var hotelGroup = app.MapGroup("/api/hotel").WithTags("Hotel PMS").RequireAuthorization().AddEndpointFilter<StockAvailabilityFilter>();
 
         tableGroup.MapPost("/{tableNumber}/transfer", async (string tableNumber, TransferTableRequest req, ITableManagementService tableService) =>
         {

@@ -9,6 +9,10 @@ public class AppDbContext : DbContext
     public DbSet<User> Users => Set<User>();
     public DbSet<Product> Products => Set<Product>();
     public DbSet<Reservation> Reservations => Set<Reservation>();
+    public DbSet<Ingredient> Ingredients => Set<Ingredient>();
+    public DbSet<RecipeLine> RecipeLines => Set<RecipeLine>();
+    public DbSet<StockMovement> StockMovements => Set<StockMovement>();
+    public DbSet<ModifierOptionConsumption> ModifierOptionConsumptions => Set<ModifierOptionConsumption>();
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<TaxRate> TaxRates => Set<TaxRate>();
     public DbSet<DiningTable> DiningTables => Set<DiningTable>();
@@ -122,6 +126,36 @@ public class AppDbContext : DbContext
             entity.Property(r => r.Note).HasMaxLength(500);
             entity.Property(r => r.Phone).HasMaxLength(20);
             entity.HasIndex(r => r.StartsAtUtc);
+        });
+
+        modelBuilder.Entity<Ingredient>(entity =>
+        {
+            entity.HasKey(i => i.Id);
+            entity.Property(i => i.Name).HasMaxLength(100).IsRequired();
+            entity.Property(i => i.Unit).HasMaxLength(8).IsRequired();
+        });
+
+        modelBuilder.Entity<RecipeLine>(entity =>
+        {
+            entity.HasKey(l => l.Id);
+            entity.Property(l => l.OwnerKind).HasMaxLength(16).IsRequired();
+            entity.HasIndex(l => new { l.OwnerKind, l.OwnerId, l.IngredientId }).IsUnique();
+            entity.HasIndex(l => l.IngredientId);
+        });
+
+        modelBuilder.Entity<StockMovement>(entity =>
+        {
+            entity.HasKey(m => m.Id);
+            entity.Property(m => m.Kind).HasMaxLength(16).IsRequired();
+            entity.Property(m => m.Note).HasMaxLength(500);
+            entity.HasIndex(m => m.IngredientId);
+            entity.HasIndex(m => m.OrderId);
+        });
+
+        modelBuilder.Entity<ModifierOptionConsumption>(entity =>
+        {
+            entity.HasKey(c => c.Id);
+            entity.HasIndex(c => new { c.OptionId, c.IngredientId }).IsUnique();
         });
 
         modelBuilder.Entity<TaxRate>(entity =>

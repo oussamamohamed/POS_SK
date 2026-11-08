@@ -18,10 +18,12 @@ public sealed class MenuAnalysisService : IMenuAnalysisService
     private const decimal PopularityFactor = 0.7m;
 
     private readonly AppDbContext _dbContext;
+    private readonly IRecipeService _recipes;
 
-    public MenuAnalysisService(AppDbContext dbContext)
+    public MenuAnalysisService(AppDbContext dbContext, IRecipeService recipes)
     {
         _dbContext = dbContext;
+        _recipes = recipes;
     }
 
     public async Task<MenuAnalysisReportDto> GetMenuAnalysisAsync(
@@ -85,13 +87,16 @@ public sealed class MenuAnalysisService : IMenuAnalysisService
             }
         }
 
+        // Le coût de la fiche technique prime sur le coût saisi à la main.
+        var recipeCosts = await _recipes.ProductCostsCentsAsync(cancellationToken).ConfigureAwait(false);
+
         int totalQuantity = sold.Values.Sum(s => s.Quantity);
         decimal threshold = sold.Count > 0 ? PopularityFactor / sold.Count : 0m;
 
         var rows = sold.Select(kv =>
         {
             products.TryGetValue(kv.Key, out var product);
-            decimal? unitCostCents = product?.Cost?.AmountInCents;
+            decimal? unitCostCents = recipeCosts.TryGetValue(kv.Key, out var recipeCents) ? recipeCents : product?.Cost?.AmountInCents;
             decimal? marginCents = unitCostCents.HasValue ? kv.Value.RevenueHtCents - (unitCostCents.Value * kv.Value.Quantity) : null;
             return (Id: kv.Key, Product: product, kv.Value.Name, kv.Value.Quantity, kv.Value.RevenueHtCents, UnitCostCents: unitCostCents, MarginCents: marginCents);
         }).ToList();

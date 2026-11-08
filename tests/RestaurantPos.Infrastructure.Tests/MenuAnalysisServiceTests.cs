@@ -71,7 +71,7 @@ public sealed class MenuAnalysisServiceTests
         db.FiscalReceipts.Add(new FiscalReceipt { TerminalId = "T01", ReceiptNumber = "R2", OrderId = voided.Id, SequenceNumber = 2, VoidedReceiptId = original.Id, TotalTtcAmount = Money.FromCents(-110000), TotalHtAmount = Money.FromCents(-100000), CreatedAtUtc = Now });
         await db.SaveChangesAsync();
 
-        var report = await new MenuAnalysisService(db).GetMenuAnalysisAsync(Now.AddDays(-1), Now.AddDays(1));
+        var report = await new MenuAnalysisService(db, new RecipeService(db)).GetMenuAnalysisAsync(Now.AddDays(-1), Now.AddDays(1));
 
         var byName = report.Items.ToDictionary(i => i.Name);
         report.Items.Should().HaveCount(5);
@@ -92,6 +92,29 @@ public sealed class MenuAnalysisServiceTests
     }
 
     [Fact]
+    public async Task Recipe_cost_beats_the_hand_typed_cost_and_fills_a_missing_one()
+    {
+        using var db = NewDb();
+        db.Categories.Add(new Category { Id = "PLATS", Name = "Plats" });
+        var typed = AddProduct(db, "Typed", 9m);
+        var none = AddProduct(db, "None", null);
+        var flour = new Ingredient { Name = "Farine", Unit = "g", UnitCostMilliCents = 1000 }; // 1 c/g
+        db.Ingredients.Add(flour);
+        // 300 g = 3,00 € ; 500 g = 5,00 €
+        db.RecipeLines.Add(new RecipeLine { OwnerKind = RecipeLine.OwnerProduct, OwnerId = typed.Id, IngredientId = flour.Id, QuantityMilli = 300_000 });
+        db.RecipeLines.Add(new RecipeLine { OwnerKind = RecipeLine.OwnerProduct, OwnerId = none.Id, IngredientId = flour.Id, QuantityMilli = 500_000 });
+        AddPaidOrder(db, (typed, 2, false), (none, 2, false));
+        await db.SaveChangesAsync();
+
+        var report = await new MenuAnalysisService(db, new RecipeService(db)).GetMenuAnalysisAsync(Now.AddDays(-1), Now.AddDays(1));
+
+        var byName = report.Items.ToDictionary(i => i.Name);
+        byName["Typed"].UnitCost.Should().Be(3.00m);
+        byName["None"].UnitCost.Should().Be(5.00m);
+        byName["None"].MissingCost.Should().BeFalse();
+    }
+
+    [Fact]
     public async Task Category_filter_recomputes_the_classes_on_the_selection()
     {
         using var db = NewDb();
@@ -104,8 +127,8 @@ public sealed class MenuAnalysisServiceTests
         AddPaidOrder(db, (a, 8, false), (b, 8, false), (dessert, 40, false));
         await db.SaveChangesAsync();
 
-        var all = await new MenuAnalysisService(db).GetMenuAnalysisAsync(Now.AddDays(-1), Now.AddDays(1));
-        var plats = await new MenuAnalysisService(db).GetMenuAnalysisAsync(Now.AddDays(-1), Now.AddDays(1), "PLATS");
+        var all = await new MenuAnalysisService(db, new RecipeService(db)).GetMenuAnalysisAsync(Now.AddDays(-1), Now.AddDays(1));
+        var plats = await new MenuAnalysisService(db, new RecipeService(db)).GetMenuAnalysisAsync(Now.AddDays(-1), Now.AddDays(1), "PLATS");
 
         all.Items.Should().HaveCount(3);
         plats.Items.Select(i => i.Name).Should().BeEquivalentTo("PlatA", "PlatB");
@@ -124,7 +147,7 @@ public sealed class MenuAnalysisServiceTests
         AddPaidOrder(db, (dish, 2, false));
         await db.SaveChangesAsync();
 
-        var report = await new MenuAnalysisService(db).GetMenuAnalysisAsync(Now.AddDays(10), Now.AddDays(20));
+        var report = await new MenuAnalysisService(db, new RecipeService(db)).GetMenuAnalysisAsync(Now.AddDays(10), Now.AddDays(20));
 
         report.Items.Should().BeEmpty();
         report.AverageUnitMarginHt.Should().BeNull();

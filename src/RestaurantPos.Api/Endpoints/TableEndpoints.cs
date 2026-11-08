@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
+using RestaurantPos.Application.Common;
 using RestaurantPos.Application.Common.Interfaces;
 using RestaurantPos.Application.DTOs;
 using RestaurantPos.Infrastructure.Localization;
@@ -58,8 +59,15 @@ public static class TableEndpoints
                 return Results.BadRequest(new { Message = Texts.T("errors.order_item_invalid") });
             }
 
-            var updated = await tableService.AddOrUpdateTableOrderItemsAsync(tableNumber, req.Items);
-            return Results.Ok(updated);
+            try
+            {
+                var updated = await tableService.AddOrUpdateTableOrderItemsAsync(tableNumber, req.Items);
+                return Results.Ok(updated);
+            }
+            catch (ProductUnavailableException ex)
+            {
+                return Results.Conflict(new { code = "product_unavailable", productId = ex.ProductId, Message = Texts.T("errors.product_unavailable") });
+            }
         });
 
         group.MapPost("/{tableNumber}/dispatch", async (string tableNumber, ITableManagementService tableService, IKitchenRoutingService kds, AppDbContext db, PrintDispatcher printing) =>

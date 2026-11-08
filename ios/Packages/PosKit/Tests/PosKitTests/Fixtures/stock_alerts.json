@@ -1,0 +1,28 @@
+{
+  "lowStock": [
+    {
+      "ingredientId": "01a1b355-0534-70cf-add8-7532bd5b75bf",
+      "name": "Farine vkcpo",
+      "unit": "g",
+      "stockMilli": 4000000,
+      "lowStockMilli": 5000000
+    },
+    {
+      "ingredientId": "01a1b352-face-791c-9ee4-de59c04d6ea9",
+      "name": "Farine xl70e",
+      "unit": "g",
+      "stockMilli": 0,
+      "lowStockMilli": 5000000
+    }
+  ],
+  "recentCounts": [
+    {
+      "ingredientId": "01a1b355-0534-70cf-add8-7532bd5b75bf",
+      "name": "Farine vkcpo",
+      "unit": "g",
+      "varianceMilli": -4000000,
+      "valueCents": -4000,
+      "createdAtUtc": "2026-11-07T00:07:37.994752+00:00"
+    }
+  ]
+}

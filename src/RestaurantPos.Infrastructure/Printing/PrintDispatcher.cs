@@ -90,6 +90,7 @@ public sealed class PrintDispatcher
             var tickets = await _db.KitchenTickets.AsNoTracking().Include(t => t.Items).Where(t => ids.Contains(t.Id)).ToListAsync(ct).ConfigureAwait(false);
             var printers = await _db.PrinterConfigurations.AsNoTracking().Where(p => p.IsActive).ToListAsync(ct).ConfigureAwait(false);
             var language = (await _settings.GetAsync(ct).ConfigureAwait(false)).KitchenTicketLanguage;
+            var allergens = await LoadKitchenAllergensAsync(tickets, ct).ConfigureAwait(false);
             foreach (var ticket in tickets)
             {
                 var targets = printers.Where(p => p.AssignedStationIds.Contains(ticket.StationId)).ToList();
@@ -98,7 +99,7 @@ public sealed class PrintDispatcher
                     PrintLog.NoPrinter(_logger, ticket.StationId);
                     continue;
                 }
-                var document = TicketDocumentBuilder.KitchenTicket(ticket, await LoadOrderAsync(ticket.OrderId, ct).ConfigureAwait(false), language);
+                var document = TicketDocumentBuilder.KitchenTicket(ticket, await LoadOrderAsync(ticket.OrderId, ct).ConfigureAwait(false), language, allergens);
                 foreach (var printer in targets)
                 {
                     try
@@ -116,6 +117,16 @@ public sealed class PrintDispatcher
         {
             PrintLog.QueueFailed(_logger, ex);
         }
+    }
+
+    /// <summary>Allergènes des plats des bons, si l'option est active (désactivée par défaut) ; <c>null</c> sinon.</summary>
+    private async Task<TicketDocumentBuilder.KitchenAllergens?> LoadKitchenAllergensAsync(IReadOnlyList<KitchenTicket> tickets, CancellationToken ct)
+    {
+        var row = await _db.RestaurantSettings.AsNoTracking().FirstOrDefaultAsync(ct).ConfigureAwait(false);
+        if (row?.PrintAllergensOnKitchenTicket != true) return null;
+        var productIds = tickets.SelectMany(t => t.Items).Select(i => i.ProductId).Distinct().ToList();
+        var products = await _db.Products.AsNoTracking().Where(p => productIds.Contains(p.Id)).Select(p => new { p.Id, p.AllergensDeclared, p.AllergenMask }).ToListAsync(ct).ConfigureAwait(false);
+        return new TicketDocumentBuilder.KitchenAllergens(products.ToDictionary(p => p.Id, p => new TicketDocumentBuilder.ProductAllergens(p.AllergensDeclared, p.AllergenMask)), row.AllergenDisclaimer);
     }
 
     public Task<bool> QueueXReportAsync(FiscalSummaryDto summary, CancellationToken ct = default)

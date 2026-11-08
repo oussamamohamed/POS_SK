@@ -147,8 +147,9 @@ extension LocalPosAPI {
                 }
                 let items = try db.query("SELECT * FROM KitchenTicketItems WHERE TicketId = ? ORDER BY rowid", [.uuid(id)])
                 guard let orderId = row.uuid("OrderId") else { continue }
-                let doc = TicketBuilder.kitchenTicket(LocalTicketMapping.kitchen(row, items: items), order: try loadOrder(orderId), language: language,
-                                                      context: ticketContext)
+                let kitchen = LocalTicketMapping.kitchen(row, items: items)
+                let doc = TicketBuilder.kitchenTicket(kitchen, order: try loadOrder(orderId), language: language, context: ticketContext,
+                                                      allergens: try stockRepository.kitchenAllergens(productIds: kitchen.items.compactMap(\.productId)))
                 for printer in targets {
                     do {
                         try printQueue.enqueue(printerId: printer.id, kind: .kitchenTicket, documentJson: try TicketDocumentJSON.serialize(doc),

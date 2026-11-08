@@ -25,7 +25,8 @@ public static class CheckoutEndpoints
     {
         var group = app.MapGroup("/api/checkout")
                        .WithTags("Checkout & Payments")
-                       .RequireAuthorization();
+                       .RequireAuthorization()
+                       .AddEndpointFilter<StockAvailabilityFilter>();
 
         group.MapPost("/pay", async (PaymentSettlementRequest req, ICheckoutPaymentService checkout, AppDbContext db, IMealVoucherPolicyService mealVoucherPolicyService, PrintDispatcher printing, IHubContext<PosHub, IPosHubClient> hub, HttpContext http) =>
         {
@@ -218,7 +219,7 @@ public static class CheckoutEndpoints
                 return Results.Json(new { message = "Annulation impossible : ce reçu comprend une facturation chambre (la note de chambre ne serait pas rétablie)." }, statusCode: StatusCodes.Status409Conflict);
             }
 
-            var result = await checkout.VoidReceiptAsync(receiptId, RequireDeviceFilter.PairedDevice(http).TerminalId, operatorId);
+            var result = await checkout.VoidReceiptAsync(receiptId, RequireDeviceFilter.PairedDevice(http).TerminalId, operatorId, req.Restock);
             if (!result.IsSuccess)
             {
                 return Results.BadRequest(new { Message = Texts.T("errors.void_failed") });

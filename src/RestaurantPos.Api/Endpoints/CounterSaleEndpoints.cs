@@ -28,7 +28,8 @@ public static class CounterSaleEndpoints
     {
         var group = app.MapGroup("/api/orders/counter")
                        .WithTags("Counter & Takeaway Sales")
-                       .RequireAuthorization();
+                       .RequireAuthorization()
+                       .AddEndpointFilter<StockAvailabilityFilter>();
 
         // 1. Get or Open Direct Counter Order
         group.MapPost("/direct", async (DirectCounterOpenRequest req, AppDbContext db, ITableManagementService tableService) =>

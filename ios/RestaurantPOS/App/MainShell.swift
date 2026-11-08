@@ -258,6 +258,7 @@ struct NeedsBell: View {
         case .bill: router.section = .floor
         case .lateFood: router.section = .kitchen
         case .lateBooking, .waitlist: router.section = .bookings
+        case .lowStock: router.section = .admin
         }
     }
 }

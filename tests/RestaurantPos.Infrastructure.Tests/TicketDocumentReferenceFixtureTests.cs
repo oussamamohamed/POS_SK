@@ -275,9 +275,9 @@ public class TicketDocumentReferenceFixtureTests
 
     private static List<Scenario> KitchenScenarios()
     {
-        Scenario Kitchen(string name, string lang, Order order, KitchenTicket ticket) =>
-            new(name, "kitchenTicket", lang, new { kitchen = InKitchen(ticket), order = InOrder(order) },
-                TicketDocumentBuilder.KitchenTicket(ticket, order, lang));
+        Scenario Kitchen(string name, string lang, Order order, KitchenTicket ticket, TicketDocumentBuilder.KitchenAllergens? allergens = null) =>
+            new(name, "kitchenTicket", lang, new { kitchen = InKitchen(ticket), order = InOrder(order), allergens },
+                TicketDocumentBuilder.KitchenTicket(ticket, order, lang, allergens));
 
         var takeaway = SampleOrder(OrderDestination.Takeaway, "Comptoir", "C03", "12", Item("Burger maison", 2, 1450, Burger));
         var table = SampleOrder(OrderDestination.EatIn, "21", null, null,
@@ -290,7 +290,22 @@ public class TicketDocumentReferenceFixtureTests
             Kitchen("kitchen_table_courses", "fr", table,
                 SampleKitchen("Paul", 4, "2025-01-15T19:45:00.000Z",
                     ("Salade César", 1, Salad, null, null), ("Tiramisu", 1, Tiramisu, null, "Bougie"), ("Café", 1, Coffee, "Serré", null), ("Plat disparu", 3, Absent, null, null))),
-            Kitchen("kitchen_ar", "ar", ar, SampleKitchen("ليلى", 2, "2025-07-15T20:05:00.000Z", ("Burger maison", 1, Burger, "بدون بصل", null)))
+            Kitchen("kitchen_ar", "ar", ar, SampleKitchen("ليلى", 2, "2025-07-15T20:05:00.000Z", ("Burger maison", 1, Burger, "بدون بصل", null))),
+            // Option « allergènes sur le ticket » : déclaré avec allergènes, déclaré sans allergène (rien), non renseigné, produit inconnu du catalogue, mention légale.
+            Kitchen("kitchen_allergens_fr", "fr", table,
+                SampleKitchen("Paul", 4, "2025-01-15T19:45:00.000Z", ("Salade César", 1, Salad, null, null), ("Tiramisu", 1, Tiramisu, null, null), ("Café", 1, Coffee, null, null), ("Plat disparu", 1, Absent, null, null)),
+                new TicketDocumentBuilder.KitchenAllergens(new Dictionary<Guid, TicketDocumentBuilder.ProductAllergens>
+                {
+                    [Salad] = new(true, (1 << 0) | (1 << 2) | (1 << 3)),
+                    [Tiramisu] = new(true, 0),
+                    [Coffee] = new(false, 0),
+                }, "Demandez conseil : nos plats peuvent contenir des traces.")),
+            Kitchen("kitchen_allergens_en", "en", takeaway,
+                SampleKitchen("Marie", 1, "2025-07-15T10:30:45.000Z", ("Burger maison", 2, Burger, null, null)),
+                new TicketDocumentBuilder.KitchenAllergens(new Dictionary<Guid, TicketDocumentBuilder.ProductAllergens> { [Burger] = new(true, (1 << 0) | (1 << 6) | (1 << 13)) }, null)),
+            Kitchen("kitchen_allergens_ar", "ar", ar,
+                SampleKitchen("ليلى", 2, "2025-07-15T20:05:00.000Z", ("Burger maison", 1, Burger, null, null)),
+                new TicketDocumentBuilder.KitchenAllergens(new Dictionary<Guid, TicketDocumentBuilder.ProductAllergens> { [Burger] = new(true, (1 << 6) | (1 << 10)) }, null))
         ];
     }
 

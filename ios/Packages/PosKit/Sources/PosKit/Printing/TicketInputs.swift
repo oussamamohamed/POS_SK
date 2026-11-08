@@ -46,6 +46,18 @@ struct TicketKitchenItem: Codable, Equatable, Sendable {
     var kitchenComment: String?
 }
 
+/// Allergènes d'un plat tels que déclarés au catalogue ; `declared` faux = « non renseignés » (≠ « aucun »).
+struct TicketProductAllergens: Codable, Equatable, Sendable {
+    var declared: Bool
+    var mask: Int
+}
+
+/// Option « allergènes sur le ticket de cuisine » : par produit (identifiant en texte, comme le JSON du .NET) et mention légale facultative.
+struct TicketKitchenAllergens: Codable, Equatable, Sendable {
+    var byProduct: [String: TicketProductAllergens]
+    var disclaimer: String?
+}
+
 struct TicketKitchen: Codable, Equatable, Sendable {
     var serverName: String
     var coversCount: Int

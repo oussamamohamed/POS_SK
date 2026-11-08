@@ -920,6 +920,83 @@ html[data-hand="left"] .pos-cart-panel { border-inline-end: 0; border-left: 1px 
     color: var(--text-muted);
 }
 
+/* Ruptures et allergènes (spec 023) */
+.product-card-unavailable {
+    opacity: 0.45;
+    filter: grayscale(0.8);
+}
+
+.stockout-badge {
+    font-size: clamp(0.55rem, 0.75vw, 0.72rem);
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 2px;
+    background: var(--danger);
+    color: #fff;
+    margin-inline-end: 4px;
+}
+
+.product-allergens {
+    font-size: 0.65rem;
+    line-height: 1.15;
+    color: var(--warning);
+    max-height: 2.3em;
+    overflow: hidden;
+    word-break: break-word;
+    flex-shrink: 0;
+}
+
+.product-allergens.unknown {
+    color: var(--text-dim);
+}
+
+.cart-item-allergens {
+    font-size: 0.72rem;
+    color: var(--warning);
+    margin-top: 2px;
+}
+
+.allergen-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 8px;
+}
+
+.allergen-chip,
+.allergen-chip-check {
+    min-height: 56px;
+    padding: 8px 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-card);
+    color: var(--text-main);
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.allergen-chip.active {
+    background: var(--warning);
+    border-color: var(--warning);
+    color: #fff;
+}
+
+.allergen-chip-check input {
+    width: 22px;
+    height: 22px;
+}
+
+.allergen-fieldset {
+    border: 1px solid var(--border-color);
+    padding: 12px;
+    margin: 0;
+}
+
+.catalog-tool {
+    flex-shrink: 0;
+}
+
 .product-name {
     font-size: clamp(0.78rem, 1.3vw, 1.05rem);
     font-weight: 700;
@@ -2498,3 +2575,7 @@ html[data-design="classic"] .btn-fiscal.btn-fiscal--dark { color: #fff; }
 .tk-journal li { display:grid; grid-template-columns:60px minmax(140px, 220px) 1fr; gap:10px; padding:6px 0; border-bottom:1px solid var(--border-color); align-items:baseline; }
 .tk-journal time { font-family: var(--font-mono); color: var(--text-muted); }
 .tk-journal span { color: var(--text-muted); font-size:.85rem; overflow-wrap:anywhere; }
+
+.stock-keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.stock-keypad button { min-height: 52px; font-size: 1.3rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); cursor: pointer; }
+.stock-level.low { color: var(--danger); font-weight: 700; }

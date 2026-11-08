@@ -30,6 +30,7 @@ struct TicketScenarioInput: Decodable {
     var buzzer: String?
     var nowUtc: Date?
     var kitchen: TicketKitchen?
+    var allergens: TicketKitchenAllergens?
     var summary: TicketReportSummary?
     var closure: TicketDailyClosure?
     var periodClosure: TicketPeriodClosure?
@@ -62,7 +63,7 @@ struct TicketScenarioInput: Decodable {
             return TicketBuilder.pickupCoupon(order: try need(i.order, "order"), pickupNumber: try need(i.pickupNumber, "pickupNumber"),
                                               buzzer: i.buzzer, language: language, now: try need(i.nowUtc, "nowUtc"))
         case "kitchenTicket":
-            return TicketBuilder.kitchenTicket(try need(i.kitchen, "kitchen"), order: try need(i.order, "order"), language: language, context: context)
+            return TicketBuilder.kitchenTicket(try need(i.kitchen, "kitchen"), order: try need(i.order, "order"), language: language, context: context, allergens: i.allergens)
         case "xReport":
             return TicketBuilder.xReport(try need(i.summary, "summary"), data: try need(i.reportData, "reportData"), language: language,
                                          now: try need(i.nowUtc, "nowUtc"), settings: i.settings, context: context)

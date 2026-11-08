@@ -26,6 +26,11 @@ extension LocalPosAPI {
     /// Clôture la commande (réglée ou annulée) et libère la table qui pointe encore sur elle (pas forcément `order.tableNumber`).
     func closeOrder(_ order: ActiveOrder, as status: LocalOrderStatus) throws {
         try orderRepository.setStatus(orderId: order.orderId, status)
+        if status == .paid {
+            // Consommation du stock dans la transaction du règlement ; jamais bloquante pour la vente, hors de toute chaîne fiscale.
+            stockRepository.recordSale(order: order, operatorId: nil)
+            _ = try? stockRepository.refreshAutoAvailability()
+        }
         if let table = try floorRepository.tables().first(where: { $0.activeOrderId == order.orderId }) {
             try floorRepository.update(table.tableNumber, status: .free, covers: 0, waiterName: nil, waiterId: nil, activeOrderId: nil, openedAt: nil)
             try reservationRepository.completeSeated(table: table.tableNumber, now: clock())

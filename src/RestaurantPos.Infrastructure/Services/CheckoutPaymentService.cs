@@ -175,6 +175,8 @@ public class CheckoutPaymentService : ICheckoutPaymentService
                 if (remainingBalanceCents == 0)
                 {
                     order.Status = OrderStatus.Paid;
+                    // Consommation du stock dans la même transaction ; jamais bloquante pour la vente, hors de toute chaîne fiscale.
+                    await StockConsumption.RecordSaleAsync(_dbContext, order, null, ct).ConfigureAwait(false);
 
                     var table = await _dbContext.DiningTables
                         .FindAsync([order.TableNumber], ct)
@@ -219,6 +221,7 @@ public class CheckoutPaymentService : ICheckoutPaymentService
         Guid originalReceiptId,
         string terminalId,
         Guid operatorId,
+        bool restock = false,
         CancellationToken cancellationToken = default)
     {
         return await _dbContext.ExecuteInTransactionAsync(
@@ -311,6 +314,8 @@ public class CheckoutPaymentService : ICheckoutPaymentService
                 if (order is not null)
                 {
                     order.Status = OrderStatus.Cancelled;
+                    // Le stock n'est restitué que si le responsable l'a demandé (produit non consommé).
+                    if (restock) await StockConsumption.RestoreSaleAsync(_dbContext, order.Id, operatorId, ct).ConfigureAwait(false);
                 }
 
                 await _dbContext.SaveChangesAsync(ct).ConfigureAwait(false);

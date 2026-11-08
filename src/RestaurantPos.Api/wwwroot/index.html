@@ -326,6 +326,9 @@ try { window.applyDesign(localStorage.getItem('pos_design') === 'classic'); } ca
                     <button class="admin-tab-btn" data-admin-tab="tabHappyHour">
                         <span>🍻</span> <span data-i18n="admin.tab_happy_hour">Plages Happy Hour</span>
                     </button>
+                    <button class="admin-tab-btn" data-admin-tab="tabStock">
+                        <span>🥕</span> <span data-i18n="stock.tab">Ingrédients</span>
+                    </button>
                     <button class="admin-tab-btn" data-admin-tab="tabEstablishment">
                         <span>🏢</span> <span data-i18n="admin.tab_establishment">Établissement & Exercice</span>
                     </button>
@@ -919,6 +922,70 @@ try { window.applyDesign(localStorage.getItem('pos_design') === 'classic'); } ca
                     </div>
 
                     <!-- Tab 9: Establishment & Fiscal Year -->
+                    <div class="admin-tab-pane" id="tabStock">
+                        <label class="admin-card" style="display:flex; align-items:center; gap:10px; margin-bottom:12px; cursor:pointer;">
+                            <input type="checkbox" id="stockAutoUnavailable" style="width:18px; height:18px;" />
+                            <span data-i18n="stock.auto_unavailable_label">Passer un plat en rupture quand un de ses ingrédients est épuisé</span>
+                        </label>
+                        <div class="admin-card" style="margin-bottom:12px; display:flex; flex-direction:column; gap:8px;">
+                            <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+                                <input type="checkbox" id="stockPrintAllergens" style="width:18px; height:18px;" />
+                                <span data-i18n="stock.print_allergens_label">Imprimer les allergènes sur le ticket de cuisine</span>
+                            </label>
+                            <input type="text" id="stockDisclaimer" maxlength="200" data-i18n-placeholder="stock.disclaimer_placeholder" placeholder="Mention légale facultative (bas du ticket)">
+                        </div>
+                        <div class="admin-split">
+                            <div class="admin-card">
+                                <h4 id="stockFormTitle" data-i18n="stock.new_title">➕ Nouvel ingrédient</h4>
+                                <form id="formStockIngredient" class="admin-form">
+                                    <input type="hidden" id="stockId" />
+                                    <div class="form-group">
+                                        <label for="stockName" data-i18n="stock.name_label">Nom :</label>
+                                        <input type="text" id="stockName" maxlength="100" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="stockUnit" data-i18n="stock.unit_label">Unité :</label>
+                                        <select id="stockUnit">
+                                            <option value="g" data-i18n="stock.unit_g">Gramme (g)</option>
+                                            <option value="ml" data-i18n="stock.unit_ml">Millilitre (ml)</option>
+                                            <option value="piece" data-i18n="stock.unit_piece">Pièce</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="stockPrice"><span data-i18n="stock.price_label">Prix d'achat HT</span> (<span id="stockPriceUnit">€/kg</span>) :</label>
+                                        <input type="number" id="stockPrice" min="0" step="0.01" value="0">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="stockLow"><span data-i18n="stock.low_label">Seuil d'alerte</span> (<span class="stock-qty-unit">g</span>) :</label>
+                                        <input type="number" id="stockLow" min="0" step="any">
+                                    </div>
+                                    <div class="form-group checkbox-group">
+                                        <label style="cursor:pointer; display:flex; align-items:center; gap:8px;">
+                                            <input type="checkbox" id="stockIsPrep" style="width:18px; height:18px;" />
+                                            <span data-i18n="stock.is_prep_label">Préparation (sous-recette)</span>
+                                        </label>
+                                    </div>
+                                    <div class="form-group" id="stockYieldGroup" style="display:none;">
+                                        <label for="stockYield"><span data-i18n="stock.yield_label">Rendement</span> (<span class="stock-qty-unit">g</span>) :</label>
+                                        <input type="number" id="stockYield" min="0" step="any">
+                                    </div>
+                                    <fieldset class="allergen-fieldset">
+                                        <legend data-i18n="admin.allergens_title">Allergènes présents</legend>
+                                        <div class="allergen-grid" id="stockAllergens"></div>
+                                    </fieldset>
+                                    <div style="display:flex; gap:10px;">
+                                        <button type="submit" class="btn-primary" data-i18n="stock.save">Enregistrer</button>
+                                        <button type="button" class="btn-archive" id="btnStockReset" data-i18n="common.cancel">Annuler</button>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="admin-card">
+                                <h4 data-i18n="stock.list_title">Ingrédients</h4>
+                                <div id="stockList"></div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="admin-tab-pane" id="tabEstablishment">
                         <div class="admin-card" style="max-width: 700px;">
                             <h3 data-i18n="admin.establishment_title">🏢 Identité de l'Établissement & Exercice Fiscal</h3>
@@ -1770,7 +1837,7 @@ try { window.applyDesign(localStorage.getItem('pos_design') === 'classic'); } ca
 
     <!-- Edit Product Modal -->
     <div class="modal-overlay" id="editProductModal">
-        <div class="modal-card">
+        <div class="modal-card" style="max-height:92vh; overflow-y:auto;">
             <div class="modal-header">
                 <h3 data-i18n="admin.edit_product_title">✏️ Modifier l'Article</h3>
                 <button class="btn-close-modal" id="btnCloseEditProductModal">✕</button>
@@ -1821,6 +1888,29 @@ try { window.applyDesign(localStorage.getItem('pos_design') === 'classic'); } ca
                         <span data-i18n="admin.quick_key_pin">Épingler dans les Touches Rapides ("Coup de feu")</span>
                     </label>
                 </div>
+                <fieldset class="allergen-fieldset">
+                    <legend data-i18n="admin.allergens_title">Allergènes présents</legend>
+                    <label style="cursor:pointer; display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+                        <input type="checkbox" id="editProdAllergensDeclared" style="width:18px; height:18px;" />
+                        <span data-i18n="admin.allergens_declared_label">Allergènes renseignés (sinon « non renseignés »)</span>
+                    </label>
+                    <div class="allergen-grid" id="editProdAllergens"></div>
+                </fieldset>
+                <fieldset class="allergen-fieldset" id="editProdOptionsSet" style="min-width:0; display:none;">
+                    <legend data-i18n="stock.options_title">Consommation des options</legend>
+                    <div id="editProdOptions"></div>
+                </fieldset>
+                <fieldset class="allergen-fieldset" id="editProdRecipeSet" style="min-width:0;">
+                    <legend data-i18n="stock.recipe_title">Fiche technique</legend>
+                    <div id="editProdRecipeLines"></div>
+                    <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-top:8px;">
+                        <select id="editRecipeIngredient" style="flex:2 1 140px; min-width:0;"></select>
+                        <input type="number" id="editRecipeQty" min="0" step="any" style="flex:1 1 80px; min-width:0;" />
+                        <span id="editRecipeQtyUnit"></span>
+                        <button type="button" class="btn-archive" id="btnRecipeAdd" data-i18n="stock.recipe_add">Ajouter</button>
+                    </div>
+                    <p style="margin:8px 0 0 0; font-weight:700;"><span data-i18n="stock.recipe_cost">Coût matière</span> : <span id="editRecipeCost">—</span></p>
+                </fieldset>
                 <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:10px;">
                     <button type="button" class="btn-archive" id="btnCancelEditProduct" data-i18n="common.cancel">Annuler</button>
                     <button type="submit" class="btn-primary" style="padding:10px 20px; font-weight:700;" data-i18n="admin.save_changes">Enregistrer les Modifications</button>

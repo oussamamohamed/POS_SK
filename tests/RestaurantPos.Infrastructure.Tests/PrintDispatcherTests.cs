@@ -153,6 +153,28 @@ public class PrintDispatcherTests
     }
 
     [Fact]
+    public async Task Kitchen_AllergensAreOnlyPrintedWhenTheOptionIsOn()
+    {
+        var (d, db) = Create();
+        Printer(db, "Chaud", ["HOT_KITCHEN"]);
+        var burger = new Product { Name = "Burger", CategoryId = "PLATS", Price = Money.FromCents(1200), AllergensDeclared = true, AllergenMask = 0b1000001 };
+        db.Products.Add(burger);
+        var order = new Order { TableNumber = "T05", Destination = OrderDestination.EatIn };
+        db.Orders.Add(order);
+        var ticket = new KitchenTicket { OrderId = order.Id, TableNumber = "T05", StationId = "HOT_KITCHEN", Items = { new KitchenTicketItem { ProductId = burger.Id, ProductName = "Burger" } } };
+        db.KitchenTickets.Add(ticket);
+        db.SaveChanges();
+        string Printed() => string.Join("\n", TicketDocumentJson.Deserialize(db.PrintJobs.OrderBy(j => j.CreatedAtUtc).Last().DocumentJson).Lines.OfType<TicketText>().Select(t => t.Text));
+
+        await d.QueueKitchenTicketsAsync([ticket.Id]);
+        Printed().Should().NotContain("ALLERG"); // option désactivée par défaut : ticket inchangé
+
+        await new StockService(db).UpdateSettingsAsync(new StockSettings(false, true, "Traces possibles."));
+        await d.QueueKitchenTicketsAsync([ticket.Id]);
+        Printed().Should().Contain("ALLERGÈNES : Gluten, Lait").And.Contain("Traces possibles.");
+    }
+
+    [Fact]
     public async Task Kitchen_StationWithoutPrinter_QueuesNothing()
     {
         var (d, db) = Create();

@@ -442,6 +442,19 @@ struct LiveAPITests {
         #expect(try await api.activeOrder(table: table.tableNumber) == nil)
     }
 
+    @Test func stockOutRefusesAddThenRestores() async throws {
+        let (api, _, _) = try await Self.pairedSession()
+        let product = try #require(try await api.products().first { !$0.hasModifiers && !$0.isOutOfStock })
+        let table = try #require(try await api.tables().first { $0.status == .free && !$0.isCounter })
+        let line = CartLine(productId: product.id, name: product.name, unitPrice: product.price, taxRatePercent: product.taxRatePercent, station: product.station, quantity: 1)
+        try await api.setAvailability(productId: product.id, isAvailable: false)
+        await #expect(throws: APIError.self) { _ = try await api.addItems(table: table.tableNumber, items: [line.asInput]) }
+        #expect(try await api.products().first { $0.id == product.id }?.isOutOfStock == true)
+        try await api.setAvailability(productId: product.id, isAvailable: true)
+        #expect(try await api.products().first { $0.id == product.id }?.isOutOfStock == false)
+        #expect(try await api.activeOrder(table: table.tableNumber) == nil)
+    }
+
     @Test func readEndpointsDecode() async throws {
         let (api, _, _) = try await Self.pairedSession()
         _ = try await api.categories()

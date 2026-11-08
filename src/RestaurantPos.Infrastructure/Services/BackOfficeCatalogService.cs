@@ -19,7 +19,7 @@ public class BackOfficeCatalogService : IBackOfficeCatalogService
     private readonly IMemoryCache _cache;
     private readonly IFiscalJournal _fiscalJournal;
     private static readonly string CacheKeyCategories = "catalog_categories";
-    private static readonly string CacheKeyProducts = "catalog_products";
+    internal static readonly string CacheKeyProducts = "catalog_products";
 
     public BackOfficeCatalogService(AppDbContext dbContext, IMemoryCache cache, IFiscalJournal? fiscalJournal = null)
     {
@@ -160,7 +160,35 @@ public class BackOfficeCatalogService : IBackOfficeCatalogService
         return product;
     }
 
-    public async Task<Product> UpdateProductAsync(Guid productId, string name, string categoryId, decimal price, decimal taxRatePercent, string? description, string? colorHex, int displayOrder, bool isAvailable, bool isActive, bool isQuickKey, string? stationId, decimal? cost = null, bool clearCost = false, CancellationToken ct = default)
+    public async Task<Product?> SetProductAvailabilityAsync(Guid productId, bool isAvailable, CancellationToken ct = default)
+    {
+        var product = await _dbContext.Products.FindAsync([productId], ct).ConfigureAwait(false);
+        if (product is null) return null;
+
+        product.IsAvailable = isAvailable;
+        product.AutoUnavailable = false; // une décision manuelle remplace toute rupture automatique
+        product.UpdatedAtUtc = DateTimeOffset.UtcNow;
+        await _dbContext.SaveChangesAsync(ct).ConfigureAwait(false);
+        InvalidateCache();
+        return product;
+    }
+
+    public async Task<Product?> SetProductAllergensAsync(Guid productId, bool declared, int mask, bool overridden, CancellationToken ct = default)
+    {
+        if (!Allergens.IsValidMask(mask)) throw new ArgumentOutOfRangeException(nameof(mask));
+        var product = await _dbContext.Products.FindAsync([productId], ct).ConfigureAwait(false);
+        if (product is null) return null;
+
+        product.AllergensDeclared = declared;
+        product.AllergenMask = declared ? mask : 0;
+        product.AllergensOverridden = overridden;
+        product.UpdatedAtUtc = DateTimeOffset.UtcNow;
+        await _dbContext.SaveChangesAsync(ct).ConfigureAwait(false);
+        InvalidateCache();
+        return product;
+    }
+
+    public async Task<Product> UpdateProductAsync(Guid productId, string name, string categoryId, decimal price, decimal taxRatePercent, string? description, string? colorHex, int displayOrder, bool? isAvailable, bool isActive, bool isQuickKey, string? stationId, decimal? cost = null, bool clearCost = false, CancellationToken ct = default)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(price);
         if (cost.HasValue) ArgumentOutOfRangeException.ThrowIfNegative(cost.Value);
@@ -178,7 +206,11 @@ public class BackOfficeCatalogService : IBackOfficeCatalogService
         product.Description = description;
         product.ColorHex = colorHex;
         product.DisplayOrder = displayOrder;
-        product.IsAvailable = isAvailable;
+        if (isAvailable.HasValue)
+        {
+            product.IsAvailable = isAvailable.Value;
+            product.AutoUnavailable = false;
+        }
         product.IsActive = isActive;
         product.IsQuickKey = isQuickKey;
         product.PreparationStationId = stationId;

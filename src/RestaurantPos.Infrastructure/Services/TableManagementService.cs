@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using RestaurantPos.Application.Common;
 using RestaurantPos.Application.Common.Interfaces;
 using RestaurantPos.Domain.Common;
 using RestaurantPos.Domain.Entities;
@@ -376,6 +377,9 @@ public class TableManagementService : ITableManagementService
                 foreach (var input in items)
                 {
                     var product = await _dbContext.Products.FindAsync([input.ProductId], ct).ConfigureAwait(false);
+                    // Le refus annule toute la transaction : une ligne en rupture ne passe pas, les lignes déjà envoyées ne changent pas.
+                    if (product is { IsAvailable: false })
+                        throw new ProductUnavailableException(product.Id);
                     var productName = product?.Name ?? input.ProductName;
                     var taxRatePercent = product?.TaxRatePercent ?? input.TaxRatePercent;
                     var taxRateTakeawayPercent = product != null ? product.TaxRateTakeawayPercent : input.TaxRateTakeawayPercent;

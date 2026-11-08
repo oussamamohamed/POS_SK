@@ -71,6 +71,8 @@ public actor HTTPPosAPI: PosAPI {
         guard let http = response as? HTTPURLResponse else { throw APIError.transport(L10n.string("errors.non_http_response")) }
         guard (200..<300).contains(http.statusCode) else {
             let message = Self.extractMessage(from: data)
+            if http.statusCode == 400 || http.statusCode == 409, let code = Self.errorCode(in: data),
+               let refusal = RecipeError(code: code, products: Self.stringList("products", in: data)) { throw refusal }
             switch http.statusCode {
             case 401: throw Self.errorCode(in: data) == "device_not_paired" ? APIError.deviceNotPaired : APIError.unauthorized
             case 403: throw APIError.forbidden(message)
@@ -85,6 +87,10 @@ public actor HTTPPosAPI: PosAPI {
     static func extractMessage(from data: Data) -> String? {
         guard let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { return nil }
         return (object["message"] ?? object["errorMessage"] ?? object["Message"]) as? String
+    }
+
+    static func stringList(_ key: String, in data: Data) -> [String] {
+        ((try? JSONSerialization.jsonObject(with: data) as? [String: Any])?[key] as? [String]) ?? []
     }
 
     static func errorCode(in data: Data) -> String? {
@@ -176,13 +182,14 @@ public actor HTTPPosAPI: PosAPI {
 
     struct ProductBody: Encodable {
         let name: String, categoryId: String, price: Money, taxRatePercent: Decimal, description: String, colorHex: String
-        let displayOrder: Int, isQuickKey: Bool, stationId: String?, isAvailable: Bool?, isActive: Bool?
+        let displayOrder: Int, isQuickKey: Bool, stationId: String?, isActive: Bool?
         let cost: Money?, clearCost: Bool?
         init(_ d: ProductDraft, update: Bool) {
             name = d.name; categoryId = d.categoryId; price = d.price; taxRatePercent = d.taxRatePercent
             description = d.description; colorHex = d.colorHex; displayOrder = d.displayOrder
             isQuickKey = d.isQuickKey; stationId = d.stationId
-            isAvailable = update ? true : nil; isActive = update ? true : nil
+            // `isAvailable` n'est jamais envoyé : modifier un produit ne lève pas sa rupture (route dédiée).
+            isActive = update ? true : nil
             cost = d.cost; clearCost = update && d.hadCost && d.cost == nil ? true : nil
         }
     }
@@ -198,6 +205,85 @@ public actor HTTPPosAPI: PosAPI {
     public func archiveProduct(id: UUID) async throws {
         try await perform("DELETE", "catalog/products/\(id.uuidString.lowercased())")
     }
+
+    public func setAvailability(productId: UUID, isAvailable: Bool) async throws {
+        try await perform("PUT", "catalog/products/\(productId.uuidString.lowercased())/availability", body: ["isAvailable": isAvailable])
+    }
+
+    struct AllergensBody: Encodable { let declared: Bool, mask: Int, overridden: Bool }
+
+    public func setAllergens(productId: UUID, declared: Bool, mask: Int, overridden: Bool) async throws {
+        try await perform("PUT", "catalog/products/\(productId.uuidString.lowercased())/allergens", body: AllergensBody(declared: declared, mask: mask, overridden: overridden))
+    }
+
+    // MARK: - Stock
+
+    public func ingredients() async throws -> [Ingredient] { try await call("GET", "stock/ingredients") }
+
+    public func createIngredient(_ draft: IngredientDraft) async throws -> Ingredient { try await call("POST", "stock/ingredients", body: draft) }
+
+    public func updateIngredient(id: UUID, _ draft: IngredientDraft) async throws -> Ingredient {
+        try await call("PUT", "stock/ingredients/\(id.uuidString.lowercased())", body: draft)
+    }
+
+    public func deleteIngredient(id: UUID) async throws { try await perform("DELETE", "stock/ingredients/\(id.uuidString.lowercased())") }
+
+    struct RecipeBody: Encodable { let lines: [RecipeLine] }
+    struct LinesResponse: Decodable { let lines: [RecipeLine] }
+
+    public func recipe(productId: UUID) async throws -> Recipe { try await call("GET", "catalog/products/\(productId.uuidString.lowercased())/recipe") }
+
+    public func setRecipe(productId: UUID, lines: [RecipeLine]) async throws -> Recipe {
+        try await call("PUT", "catalog/products/\(productId.uuidString.lowercased())/recipe", body: RecipeBody(lines: lines))
+    }
+
+    public func preparationRecipe(id: UUID) async throws -> [RecipeLine] {
+        (try await call("GET", "stock/ingredients/\(id.uuidString.lowercased())/recipe", as: LinesResponse.self)).lines
+    }
+
+    public func setPreparationRecipe(id: UUID, lines: [RecipeLine]) async throws -> Ingredient {
+        try await call("PUT", "stock/ingredients/\(id.uuidString.lowercased())/recipe", body: RecipeBody(lines: lines))
+    }
+
+    struct ReceiptBody: Encodable { let ingredientId: UUID, quantityMilli: Int64, unitCostMilliCents: Int64, note: String? }
+    struct CountBody: Encodable { let ingredientId: UUID, countedMilli: Int64, note: String? }
+    struct LossBody: Encodable { let ingredientId: UUID, quantityMilli: Int64, note: String? }
+
+    public func receiveStock(ingredientId: UUID, quantityMilli: Int64, unitCostMilliCents: Int64, note: String?) async throws -> StockMovement {
+        try await call("POST", "stock/receipts", body: ReceiptBody(ingredientId: ingredientId, quantityMilli: quantityMilli, unitCostMilliCents: unitCostMilliCents, note: note))
+    }
+
+    public func countStock(ingredientId: UUID, countedMilli: Int64, note: String?) async throws -> CountResult {
+        try await call("POST", "stock/counts", body: CountBody(ingredientId: ingredientId, countedMilli: countedMilli, note: note))
+    }
+
+    public func recordStockLoss(ingredientId: UUID, quantityMilli: Int64, note: String?) async throws -> StockMovement {
+        try await call("POST", "stock/losses", body: LossBody(ingredientId: ingredientId, quantityMilli: quantityMilli, note: note))
+    }
+
+    public func stockMovements(ingredientId: UUID?, from: Date?, to: Date?) async throws -> [StockMovement] {
+        var query: [String: String] = [:]
+        if let ingredientId { query["ingredientId"] = ingredientId.uuidString.lowercased() }
+        if let from { query["from"] = Self.iso(from) }
+        if let to { query["to"] = Self.iso(to) }
+        return try await call("GET", "stock/movements", query: query)
+    }
+
+    struct ConsumptionBody: Encodable { let items: [ModifierConsumptionItem] }
+
+    public func modifierConsumption(optionId: UUID) async throws -> [ModifierConsumptionItem] {
+        try await call("GET", "catalog/modifier-options/\(optionId.uuidString.lowercased())/consumption")
+    }
+
+    public func setModifierConsumption(optionId: UUID, items: [ModifierConsumptionItem]) async throws -> [ModifierConsumptionItem] {
+        try await call("PUT", "catalog/modifier-options/\(optionId.uuidString.lowercased())/consumption", body: ConsumptionBody(items: items))
+    }
+
+    public func stockAlerts() async throws -> StockAlerts { try await call("GET", "stock/alerts") }
+
+    public func stockSettings() async throws -> StockSettings { try await call("GET", "stock/settings") }
+
+    public func saveStockSettings(_ settings: StockSettings) async throws -> StockSettings { try await call("PUT", "stock/settings", body: settings) }
 
     // MARK: - Analyse du menu et réservations
 
@@ -387,6 +473,15 @@ public actor HTTPPosAPI: PosAPI {
 
     public func reprintReceipt(receiptIdentifier: String) async throws -> ReprintResult {
         try await call("POST", "checkout/receipts/\(receiptIdentifier)/reprint", as: ReprintResult.self)
+    }
+
+    struct VoidReceiptBody: Encodable { let terminalId: String, operatorId: UUID, restock: Bool }
+    struct VoidResponse: Decodable { let receiptNumber: String? }
+
+    public func voidReceipt(receiptId: UUID, restock: Bool) async throws -> OperationResult {
+        // Le serveur prend l'opérateur du jeton et le poste de l'appareil appairé.
+        let r: VoidResponse = try await call("POST", "checkout/void/\(receiptId.uuidString.lowercased())", body: VoidReceiptBody(terminalId: "", operatorId: UUID(uuid: (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)), restock: restock))
+        return OperationResult(success: true, message: r.receiptNumber)
     }
 
     public func exportFec(from: Date, to: Date, siren: String, company: String?) async throws -> (fileName: String, data: Data) {

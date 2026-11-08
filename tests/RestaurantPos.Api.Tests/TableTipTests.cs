@@ -149,7 +149,7 @@ public class TableTipTests
             throw new InvalidOperationException("échec simulé");
         }
 
-        public Task<CheckoutResult> VoidReceiptAsync(Guid originalReceiptId, string terminalId, Guid operatorId, CancellationToken cancellationToken = default) => throw new NotSupportedException();
+        public Task<CheckoutResult> VoidReceiptAsync(Guid originalReceiptId, string terminalId, Guid operatorId, bool restock = false, CancellationToken cancellationToken = default) => throw new NotSupportedException();
 
         public IReadOnlyList<long> CalculateEqualSplitPartitions(long totalAmountCents, int numberOfGuests) => throw new NotSupportedException();
     }

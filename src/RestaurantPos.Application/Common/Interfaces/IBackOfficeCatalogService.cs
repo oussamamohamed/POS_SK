@@ -15,6 +15,9 @@ public interface IBackOfficeCatalogService
 
     Task<IReadOnlyList<Product>> GetProductsByCategoryAsync(string categoryId, bool includeArchived = false, CancellationToken ct = default);
     Task<Product> CreateProductAsync(string name, string categoryId, decimal price, decimal taxRatePercent, string? description, string? colorHex, int displayOrder, bool isQuickKey, string? stationId, decimal? cost = null, CancellationToken ct = default);
-    Task<Product> UpdateProductAsync(Guid productId, string name, string categoryId, decimal price, decimal taxRatePercent, string? description, string? colorHex, int displayOrder, bool isAvailable, bool isActive, bool isQuickKey, string? stationId, decimal? cost = null, bool clearCost = false, CancellationToken ct = default);
+    Task<Product?> SetProductAvailabilityAsync(Guid productId, bool isAvailable, CancellationToken ct = default);
+    Task<Product?> SetProductAllergensAsync(Guid productId, bool declared, int mask, bool overridden, CancellationToken ct = default);
+    /// <summary><paramref name="isAvailable"/> nul = disponibilité inchangée (l'éditeur de produit ne doit pas lever une rupture sans le dire).</summary>
+    Task<Product> UpdateProductAsync(Guid productId, string name, string categoryId, decimal price, decimal taxRatePercent, string? description, string? colorHex, int displayOrder, bool? isAvailable, bool isActive, bool isQuickKey, string? stationId, decimal? cost = null, bool clearCost = false, CancellationToken ct = default);
     Task<bool> ArchiveProductAsync(Guid productId, CancellationToken ct = default);
 }

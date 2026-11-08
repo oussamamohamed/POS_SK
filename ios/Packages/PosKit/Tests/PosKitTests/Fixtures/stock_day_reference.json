@@ -1,0 +1,647 @@
+{
+  "seed": 20261107,
+  "ingredients": [
+    {
+      "name": "Boeuf",
+      "priceMilli": 1800,
+      "isPreparation": false,
+      "yieldMilli": null,
+      "lines": null
+    },
+    {
+      "name": "Tomate",
+      "priceMilli": 300,
+      "isPreparation": false,
+      "yieldMilli": null,
+      "lines": null
+    },
+    {
+      "name": "Farine",
+      "priceMilli": 125,
+      "isPreparation": false,
+      "yieldMilli": null,
+      "lines": null
+    },
+    {
+      "name": "Mozzarella",
+      "priceMilli": 1900,
+      "isPreparation": false,
+      "yieldMilli": null,
+      "lines": null
+    },
+    {
+      "name": "Creme",
+      "priceMilli": 450,
+      "isPreparation": false,
+      "yieldMilli": null,
+      "lines": null
+    },
+    {
+      "name": "Sel",
+      "priceMilli": 20,
+      "isPreparation": false,
+      "yieldMilli": null,
+      "lines": null
+    },
+    {
+      "name": "Sauce tomate",
+      "priceMilli": 0,
+      "isPreparation": true,
+      "yieldMilli": 500000,
+      "lines": [
+        {
+          "ingredient": "Tomate",
+          "quantityMilli": 1000000
+        },
+        {
+          "ingredient": "Sel",
+          "quantityMilli": 5000
+        }
+      ]
+    }
+  ],
+  "products": [
+    {
+      "name": "Steak",
+      "priceCents": 1900,
+      "recipe": [
+        {
+          "ingredient": "Boeuf",
+          "quantityMilli": 200000
+        },
+        {
+          "ingredient": "Sel",
+          "quantityMilli": 2000
+        }
+      ]
+    },
+    {
+      "name": "Pizza",
+      "priceCents": 1300,
+      "recipe": [
+        {
+          "ingredient": "Farine",
+          "quantityMilli": 250000
+        },
+        {
+          "ingredient": "Sauce tomate",
+          "quantityMilli": 80000
+        },
+        {
+          "ingredient": "Mozzarella",
+          "quantityMilli": 125000
+        }
+      ]
+    },
+    {
+      "name": "Dessert",
+      "priceCents": 700,
+      "recipe": [
+        {
+          "ingredient": "Creme",
+          "quantityMilli": 90000
+        }
+      ]
+    },
+    {
+      "name": "Eau",
+      "priceCents": 300,
+      "recipe": []
+    }
+  ],
+  "operations": [
+    {
+      "type": "receipt",
+      "product": null,
+      "quantity": 0,
+      "ingredient": "Boeuf",
+      "quantityMilli": 27000000,
+      "unitCostMilliCents": 1800,
+      "restock": false,
+      "saleIndex": null
+    },
+    {
+      "type": "receipt",
+      "product": null,
+      "quantity": 0,
+      "ingredient": "Tomate",
+      "quantityMilli": 25000000,
+      "unitCostMilliCents": 300,
+      "restock": false,
+      "saleIndex": null
+    },
+    {
+      "type": "receipt",
+      "product": null,
+      "quantity": 0,
+      "ingredient": "Farine",
+      "quantityMilli": 10000000,
+      "unitCostMilliCents": 125,
+      "restock": false,
+      "saleIndex": null
+    },
+    {
+      "type": "receipt",
+      "product": null,
+      "quantity": 0,
+      "ingredient": "Mozzarella",
+      "quantityMilli": 20000000,
+      "unitCostMilliCents": 1900,
+      "restock": false,
+      "saleIndex": null
+    },
+    {
+      "type": "receipt",
+      "product": null,
+      "quantity": 0,
+      "ingredient": "Creme",
+      "quantityMilli": 7000000,
+      "unitCostMilliCents": 450,
+      "restock": false,
+      "saleIndex": null
+    },
+    {
+      "type": "receipt",
+      "product": null,
+      "quantity": 0,
+      "ingredient": "Sel",
+      "quantityMilli": 18000000,
+      "unitCostMilliCents": 20,
+      "restock": false,
+      "saleIndex": null
+    },
+    {
+      "type": "sale",
+      "product": "Eau",
+      "quantity": 2,
+      "ingredient": null,
+      "quantityMilli": 0,
+      "unitCostMilliCents": 0,
+      "restock": false,
+      "saleIndex": null
+    },
+    {
+      "type": "sale",
+      "product": "Pizza",
+      "quantity": 2,
+      "ingredient": null,
+      "quantityMilli": 0,
+      "unitCostMilliCents": 0,
+      "restock": false,
+      "saleIndex": null
+    },
+    {
+      "type": "loss",
+      "product": null,
+      "quantity": 0,
+      "ingredient": "Boeuf",
+      "quantityMilli": 425000,
+      "unitCostMilliCents": 0,
+      "restock": false,
+      "saleIndex": null
+    },
+    {
+      "type": "sale",
+      "product": "Eau",
+      "quantity": 3,
+      "ingredient": null,
+      "quantityMilli": 0,
+      "unitCostMilliCents": 0,
+      "restock": false,
+      "saleIndex": null
+    },
+    {
+      "type": "sale",
+      "product": "Eau",
+      "quantity": 1,
+      "ingredient": null,
+      "quantityMilli": 0,
+      "unitCostMilliCents": 0,
+      "restock": false,
+      "saleIndex": null
+    },
+    {
+      "type": "sale",
+      "product": "Dessert",
+      "quantity": 2,
+      "ingredient": null,
+      "quantityMilli": 0,
+      "unitCostMilliCents": 0,
+      "restock": false,
+      "saleIndex": null
+    },
+    {
+      "type": "sale",
+      "product": "Pizza",
+      "quantity": 4,
+      "ingredient": null,
+      "quantityMilli": 0,
+      "unitCostMilliCents": 0,
+      "restock": false,
+      "saleIndex": null
+    },
+    {
+      "type": "sale",
+      "product": "Dessert",
+      "quantity": 4,
+      "ingredient": null,
+      "quantityMilli": 0,
+      "unitCostMilliCents": 0,
+      "restock": false,
+      "saleIndex": null
+    },
+    {
+      "type": "sale",
+      "product": "Pizza",
+      "quantity": 1,
+      "ingredient": null,
+      "quantityMilli": 0,
+      "unitCostMilliCents": 0,
+      "restock": false,
+      "saleIndex": null
+    },
+    {
+      "type": "sale",
+      "product": "Steak",
+      "quantity": 4,
+      "ingredient": null,
+      "quantityMilli": 0,
+      "unitCostMilliCents": 0,
+      "restock": false,
+      "saleIndex": null
+    },
+    {
+      "type": "sale",
+      "product": "Eau",
+      "quantity": 3,
+      "ingredient": null,
+      "quantityMilli": 0,
+      "unitCostMilliCents": 0,
+      "restock": false,
+      "saleIndex": null
+    },
+    {
+      "type": "sale",
+      "product": "Steak",
+      "quantity": 1,
+      "ingredient": null,
+      "quantityMilli": 0,
+      "unitCostMilliCents": 0,
+      "restock": false,
+      "saleIndex": null
+    },
+    {
+      "type": "sale",
+      "product": "Steak",
+      "quantity": 2,
+      "ingredient": null,
+      "quantityMilli": 0,
+      "unitCostMilliCents": 0,
+      "restock": false,
+      "saleIndex": null
+    },
+    {
+      "type": "sale",
+      "product": "Steak",
+      "quantity": 4,
+      "ingredient": null,
+      "quantityMilli": 0,
+      "unitCostMilliCents": 0,
+      "restock": false,
+      "saleIndex": null
+    },
+    {
+      "type": "sale",
+      "product": "Eau",
+      "quantity": 4,
+      "ingredient": null,
+      "quantityMilli": 0,
+      "unitCostMilliCents": 0,
+      "restock": false,
+      "saleIndex": null
+    },
+    {
+      "type": "sale",
+      "product": "Dessert",
+      "quantity": 2,
+      "ingredient": null,
+      "quantityMilli": 0,
+      "unitCostMilliCents": 0,
+      "restock": false,
+      "saleIndex": null
+    },
+    {
+      "type": "sale",
+      "product": "Eau",
+      "quantity": 1,
+      "ingredient": null,
+      "quantityMilli": 0,
+      "unitCostMilliCents": 0,
+      "restock": false,
+      "saleIndex": null
+    },
+    {
+      "type": "sale",
+      "product": "Dessert",
+      "quantity": 4,
+      "ingredient": null,
+      "quantityMilli": 0,
+      "unitCostMilliCents": 0,
+      "restock": false,
+      "saleIndex": null
+    },
+    {
+      "type": "sale",
+      "product": "Dessert",
+      "quantity": 1,
+      "ingredient": null,
+      "quantityMilli": 0,
+      "unitCostMilliCents": 0,
+      "restock": false,
+      "saleIndex": null
+    },
+    {
+      "type": "sale",
+      "product": "Eau",
+      "quantity": 1,
+      "ingredient": null,
+      "quantityMilli": 0,
+      "unitCostMilliCents": 0,
+      "restock": false,
+      "saleIndex": null
+    },
+    {
+      "type": "sale",
+      "product": "Dessert",
+      "quantity": 1,
+      "ingredient": null,
+      "quantityMilli": 0,
+      "unitCostMilliCents": 0,
+      "restock": false,
+      "saleIndex": null
+    },
+    {
+      "type": "sale",
+      "product": "Eau",
+      "quantity": 1,
+      "ingredient": null,
+      "quantityMilli": 0,
+      "unitCostMilliCents": 0,
+      "restock": false,
+      "saleIndex": null
+    },
+    {
+      "type": "loss",
+      "product": null,
+      "quantity": 0,
+      "ingredient": "Creme",
+      "quantityMilli": 333000,
+      "unitCostMilliCents": 0,
+      "restock": false,
+      "saleIndex": null
+    },
+    {
+      "type": "sale",
+      "product": "Pizza",
+      "quantity": 2,
+      "ingredient": null,
+      "quantityMilli": 0,
+      "unitCostMilliCents": 0,
+      "restock": false,
+      "saleIndex": null
+    },
+    {
+      "type": "sale",
+      "product": "Steak",
+      "quantity": 1,
+      "ingredient": null,
+      "quantityMilli": 0,
+      "unitCostMilliCents": 0,
+      "restock": false,
+      "saleIndex": null
+    },
+    {
+      "type": "receipt",
+      "product": null,
+      "quantity": 0,
+      "ingredient": "Boeuf",
+      "quantityMilli": 5000000,
+      "unitCostMilliCents": 1867,
+      "restock": false,
+      "saleIndex": null
+    },
+    {
+      "type": "receipt",
+      "product": null,
+      "quantity": 0,
+      "ingredient": "Mozzarella",
+      "quantityMilli": 6000000,
+      "unitCostMilliCents": 1508,
+      "restock": false,
+      "saleIndex": null
+    },
+    {
+      "type": "loss",
+      "product": null,
+      "quantity": 0,
+      "ingredient": "Creme",
+      "quantityMilli": 497000,
+      "unitCostMilliCents": 0,
+      "restock": false,
+      "saleIndex": null
+    },
+    {
+      "type": "count",
+      "product": null,
+      "quantity": 0,
+      "ingredient": "Creme",
+      "quantityMilli": 4000000,
+      "unitCostMilliCents": 0,
+      "restock": false,
+      "saleIndex": null
+    },
+    {
+      "type": "sale",
+      "product": "Steak",
+      "quantity": 1,
+      "ingredient": null,
+      "quantityMilli": 0,
+      "unitCostMilliCents": 0,
+      "restock": false,
+      "saleIndex": null
+    },
+    {
+      "type": "sale",
+      "product": "Pizza",
+      "quantity": 2,
+      "ingredient": null,
+      "quantityMilli": 0,
+      "unitCostMilliCents": 0,
+      "restock": false,
+      "saleIndex": null
+    },
+    {
+      "type": "sale",
+      "product": "Eau",
+      "quantity": 4,
+      "ingredient": null,
+      "quantityMilli": 0,
+      "unitCostMilliCents": 0,
+      "restock": false,
+      "saleIndex": null
+    },
+    {
+      "type": "count",
+      "product": null,
+      "quantity": 0,
+      "ingredient": "Sel",
+      "quantityMilli": 14000000,
+      "unitCostMilliCents": 0,
+      "restock": false,
+      "saleIndex": null
+    },
+    {
+      "type": "sale",
+      "product": "Dessert",
+      "quantity": 1,
+      "ingredient": null,
+      "quantityMilli": 0,
+      "unitCostMilliCents": 0,
+      "restock": false,
+      "saleIndex": null
+    },
+    {
+      "type": "sale",
+      "product": "Eau",
+      "quantity": 1,
+      "ingredient": null,
+      "quantityMilli": 0,
+      "unitCostMilliCents": 0,
+      "restock": false,
+      "saleIndex": null
+    },
+    {
+      "type": "sale",
+      "product": "Dessert",
+      "quantity": 3,
+      "ingredient": null,
+      "quantityMilli": 0,
+      "unitCostMilliCents": 0,
+      "restock": false,
+      "saleIndex": null
+    },
+    {
+      "type": "sale",
+      "product": "Dessert",
+      "quantity": 2,
+      "ingredient": null,
+      "quantityMilli": 0,
+      "unitCostMilliCents": 0,
+      "restock": false,
+      "saleIndex": null
+    },
+    {
+      "type": "sale",
+      "product": "Pizza",
+      "quantity": 3,
+      "ingredient": null,
+      "quantityMilli": 0,
+      "unitCostMilliCents": 0,
+      "restock": false,
+      "saleIndex": null
+    },
+    {
+      "type": "sale",
+      "product": "Eau",
+      "quantity": 1,
+      "ingredient": null,
+      "quantityMilli": 0,
+      "unitCostMilliCents": 0,
+      "restock": false,
+      "saleIndex": null
+    },
+    {
+      "type": "sale",
+      "product": "Eau",
+      "quantity": 2,
+      "ingredient": null,
+      "quantityMilli": 0,
+      "unitCostMilliCents": 0,
+      "restock": false,
+      "saleIndex": null
+    },
+    {
+      "type": "sale",
+      "product": "Steak",
+      "quantity": 4,
+      "ingredient": null,
+      "quantityMilli": 0,
+      "unitCostMilliCents": 0,
+      "restock": false,
+      "saleIndex": null
+    },
+    {
+      "type": "loss",
+      "product": null,
+      "quantity": 0,
+      "ingredient": "Sel",
+      "quantityMilli": 217000,
+      "unitCostMilliCents": 0,
+      "restock": false,
+      "saleIndex": null
+    },
+    {
+      "type": "sale",
+      "product": "Pizza",
+      "quantity": 2,
+      "ingredient": null,
+      "quantityMilli": 0,
+      "unitCostMilliCents": 0,
+      "restock": false,
+      "saleIndex": null
+    },
+    {
+      "type": "receipt",
+      "product": null,
+      "quantity": 0,
+      "ingredient": "Farine",
+      "quantityMilli": 1000000,
+      "unitCostMilliCents": 669,
+      "restock": false,
+      "saleIndex": null
+    },
+    {
+      "type": "sale",
+      "product": "Steak",
+      "quantity": 3,
+      "ingredient": null,
+      "quantityMilli": 0,
+      "unitCostMilliCents": 0,
+      "restock": false,
+      "saleIndex": null
+    }
+  ],
+  "expected": {
+    "stockMilli": {
+      "Boeuf": 27575000,
+      "Tomate": 22440000,
+      "Farine": 7000000,
+      "Mozzarella": 24000000,
+      "Creme": 3460000,
+      "Sel": 13765000
+    },
+    "unitCostMilli": {
+      "Boeuf": 1811,
+      "Tomate": 300,
+      "Farine": 203,
+      "Mozzarella": 1805,
+      "Creme": 450,
+      "Sel": 20
+    },
+    "productCostCents": {
+      "Steak": 362,
+      "Pizza": 324,
+      "Dessert": 41
+    }
+  }
+}

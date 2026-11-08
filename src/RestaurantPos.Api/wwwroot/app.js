@@ -413,6 +413,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             try { localStorage.setItem('pos_design', classic ? 'classic' : 'handi'); } catch { /* stockage indisponible */ }
         });
         setupAdminTabs();
+        setupStockForm();
+        setupRecipeEditor();
         setupDashboardHandlers();
         setupModals();
         setupEditModals();
@@ -547,7 +549,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // ==================== À TRAITER (cloche et pastilles) ====================
     // shortcut: temps cible de cuisine fixé à 12 min (comme la démo Handi) ; à passer en réglage de l'établissement si besoin.
     const KITCHEN_TARGET_MINUTES = 12;
-    const NEEDS_VIEW = { bill: 'floorPlanView', kitchen: 'kdsView', booking: 'bookingsView', wait: 'bookingsView' };
+    const NEEDS_VIEW = { bill: 'floorPlanView', kitchen: 'kdsView', booking: 'bookingsView', wait: 'bookingsView', lowStock: 'adminView' };
     const needsState = { items: [] };
 
     async function fetchJsonOrEmpty(url) {
@@ -565,8 +567,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!btn) return;
         if (!(state.token || localStorage.getItem('pos_jwt_token'))) { needsState.items = []; paintNeeds(); return; }
         const now = Date.now();
-        const [tables, tickets, today] = await Promise.all([
-            fetchJsonOrEmpty('/api/tables'), fetchJsonOrEmpty('/api/kds/tickets'), fetchJsonOrEmpty(bkRangeUrl(bkDayString(new Date())))
+        const [tables, tickets, today, stockAlerts] = await Promise.all([
+            fetchJsonOrEmpty('/api/tables'), fetchJsonOrEmpty('/api/kds/tickets'), fetchJsonOrEmpty(bkRangeUrl(bkDayString(new Date()))), fetchJsonOrEmpty('/api/stock/alerts')
         ]);
         const items = [];
         tables.filter(tb => tb.status === 2).forEach(tb => items.push({
@@ -584,6 +586,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         today.filter(r => r.isWaitlist && r.status === 0 && r.quoteMinutes && now - new Date(r.startsAtUtc).getTime() > r.quoteMinutes * 60000).forEach(r => items.push({
             kind: 'wait', target: r.id, since: new Date(r.startsAtUtc).getTime(),
             title: t('needs.waitlist_over', { name: r.guestName }), sub: t('needs.waitlist_sub', { covers: r.covers, quote: r.quoteMinutes })
+        }));
+        (stockAlerts.lowStock || []).forEach(a => items.push({
+            kind: 'lowStock', target: a.ingredientId, since: now,
+            title: t('needs.low_stock', { name: a.name }), sub: t('needs.low_stock_sub', { stock: a.stockMilli / 1000, unit: stockUnitKey(a.unit), low: a.lowStockMilli / 1000 })
         }));
         needsState.items = items.sort((a, b) => a.since - b.since);
         paintNeeds();
@@ -610,6 +616,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     /** Ouvre la vue concernée puis met l'élément en évidence. */
     async function focusOn(item) {
         switchView(NEEDS_VIEW[item.kind]);
+        if (item.kind === 'lowStock') { document.querySelector('button[data-admin-tab="tabStock"]')?.click(); return; }
         await new Promise(r => setTimeout(r, 400));
         const sel = item.kind === 'bill' ? `[data-table="${CSS.escape(item.target)}"]` : item.kind === 'kitchen' ? null : `[data-bk-id="${CSS.escape(item.target)}"]`;
         const el = sel && document.querySelector(sel);
@@ -828,6 +835,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (e.target.closest('[data-takings-table]')) { takingsState.asTable = !takingsState.asTable; renderTakings(); return; }
                 if (e.target.closest('[data-takings-cumulative]')) { takingsState.cumulative = !takingsState.cumulative; renderTakings(); return; }
                 if (e.target.closest('[data-go-z]')) { switchView('fiscalView'); return; }
+                const voidBtn = e.target.closest('[data-void]');
+                if (voidBtn) { openVoidReceipt(voidBtn.dataset.void, voidBtn.dataset.voidNumber); return; }
                 const reprint = e.target.closest('[data-reprint]');
                 if (reprint) {
                     const res = await fetch(`/api/checkout/receipts/${encodeURIComponent(reprint.dataset.reprint)}/reprint`, { method: 'POST' });
@@ -895,7 +904,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const d = new Date(x.atUtc);
             const when = r.granularity === 'day' ? `${bkPad(d.getDate())}/${bkPad(d.getMonth() + 1)} ${bkTime(x.atUtc)}` : bkTime(x.atUtc);
             const flag = x.isCredit ? ` <span class="menu-badge menu-cls-Dog">${escapeHtml(t('takings.credit'))}</span>` : x.isCancelled ? ` <span class="menu-badge menu-badge-missing">${escapeHtml(t('takings.cancelled'))}</span>` : '';
-            return `<tr><td>${escapeHtml(when)}</td><td>${escapeHtml(x.receiptNumber)}${flag}</td><td>${escapeHtml(x.tableNumber || '—')}</td><td>${escapeHtml(x.serverName)}</td><td>${escapeHtml((x.methods || []).join(', '))}</td><td class="num">${eur(x.totalTtc)}</td><td>${x.isCredit ? '' : `<button type="button" class="bk-act" data-reprint="${escapeHtml(x.id)}">${escapeHtml(t('takings.reprint'))}</button>`}</td></tr>`;
+            return `<tr><td>${escapeHtml(when)}</td><td>${escapeHtml(x.receiptNumber)}${flag}</td><td>${escapeHtml(x.tableNumber || '—')}</td><td>${escapeHtml(x.serverName)}</td><td>${escapeHtml((x.methods || []).join(', '))}</td><td class="num">${eur(x.totalTtc)}</td><td>${x.isCredit ? '' : `<button type="button" class="bk-act" data-reprint="${escapeHtml(x.id)}">${escapeHtml(t('takings.reprint'))}</button>`}${x.isCredit || x.isCancelled ? '' : ` <button type="button" class="bk-act" data-void="${escapeHtml(x.id)}" data-void-number="${escapeHtml(x.receiptNumber)}">${escapeHtml(t('takings.void'))}</button>`}</td></tr>`;
         }).join('')}</tbody></table></div>` : none;
 
         const journal = takingsState.journal.length ? `<ul class="tk-journal">${takingsState.journal.map(e => `<li><time>${escapeHtml(bkTime(e.atUtc))}</time><b>${escapeHtml(journalLabel(e.eventType))}</b><span>${escapeHtml(journalSummary(e))}</span></li>`).join('')}</ul>` : none;
@@ -1256,6 +1265,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     function renderCatalogTabs() {
         elements.categoryTabsBar.innerHTML = '';
 
+        // Outils de salle : filtre d'allergènes et mode « Ruptures » (tout opérateur)
+        const allergenBtn = document.createElement('button');
+        allergenBtn.className = `btn-cat-tab catalog-tool${allergenFilterMask ? ' active' : ''}`;
+        allergenBtn.innerHTML = `<span>⚠</span> <span>${escapeHtml(t('order.allergen_filter_button'))}</span>`;
+        allergenBtn.addEventListener('click', openAllergenFilter);
+        elements.categoryTabsBar.appendChild(allergenBtn);
+        const stockBtn = document.createElement('button');
+        stockBtn.className = `btn-cat-tab catalog-tool${stockOutMode ? ' active' : ''}`;
+        stockBtn.title = t('order.out_of_stock_mode_hint');
+        stockBtn.setAttribute('aria-pressed', String(stockOutMode));
+        stockBtn.innerHTML = `<span>⛔</span> <span>${escapeHtml(t('order.out_of_stock_mode'))}</span>`;
+        stockBtn.addEventListener('click', () => {
+            stockOutMode = !stockOutMode;
+            if (stockOutMode) showToast(t('order.out_of_stock_mode_hint'), 'info');
+            renderCatalogTabs();
+        });
+        elements.categoryTabsBar.appendChild(stockBtn);
+
         // All items button
         const allBtn = document.createElement('button');
         allBtn.className = `btn-cat-tab ${state.activeCategory === 'ALL' ? 'active' : ''}`;
@@ -1302,12 +1329,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function renderQuickKeys() {
         elements.quickKeysBar.innerHTML = '';
-        const quickItems = state.products.filter(p => p.isQuickKey);
+        const quickItems = state.products.filter(p => p.isQuickKey && passesAllergenFilter(p));
         quickItems.forEach(prod => {
             const btn = document.createElement('button');
-            btn.className = 'btn-quick-key';
+            btn.className = `btn-quick-key${prod.isAvailable === false ? ' product-card-unavailable' : ''}`;
             btn.innerHTML = `<span>⚡</span> <span>${escapeHtml(prod.name)} (${Number(prod.price).toFixed(2)} €)</span>`;
-            btn.addEventListener('click', () => handleProductClick(prod));
+            btn.addEventListener('click', () => activateProduct(prod));
             elements.quickKeysBar.appendChild(btn);
         });
     }
@@ -1346,7 +1373,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const layout = await loadGridLayout(currentCategory, state.activeGridPage);
 
         if (!layout || !layout.slots || layout.slots.length === 0) {
-            const filtered = currentCategory === 'ALL' ? state.products : state.products.filter(p => p.categoryId === currentCategory);
+            const filtered = (currentCategory === 'ALL' ? state.products : state.products.filter(p => p.categoryId === currentCategory)).filter(passesAllergenFilter);
             const cols = 4;
             const rows = 4;
             elements.productsGrid.style.setProperty('--grid-cols', cols);
@@ -1392,7 +1419,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (slot.productId && !slot.isDisabled) {
                 const prod = state.products.find(p => p.id === slot.productId) || slot.product;
-                if (prod) {
+                if (prod && passesAllergenFilter(prod)) {
                     const card = createProductCardElement(prod, slot);
                     elements.productsGrid.appendChild(card);
                 } else {
@@ -1497,9 +1524,139 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
+    // ==================== ALLERGÈNES ET RUPTURES ====================
+    // Ordre figé = bits 0 à 13 du masque serveur (Allergens.cs, miroir Swift : Allergens.swift).
+    const ALLERGEN_KEYS = ['gluten', 'crustaceans', 'eggs', 'fish', 'peanuts', 'soy', 'milk', 'nuts', 'celery', 'mustard', 'sesame', 'sulphites', 'lupin', 'molluscs'];
+    let allergenFilterMask = 0;
+    let stockOutMode = false;
+
+    function allergenList(mask) {
+        return ALLERGEN_KEYS.filter((_, i) => mask & (1 << i)).map(k => t('allergen.' + k)).join(', ');
+    }
+
+    /** Client allergique : seuls les plats déclarés sans l'allergène restent proposés (non renseigné = masqué, par prudence). */
+    function passesAllergenFilter(prod) {
+        return !allergenFilterMask || (prod.allergensDeclared && !(prod.allergenMask & allergenFilterMask));
+    }
+
+    function allergenLineHtml(prod) {
+        if (!prod.allergensDeclared) return `<div class="product-allergens unknown" title="${escapeHtml(t('order.allergens_unknown'))}">?</div>`;
+        return prod.allergenMask ? `<div class="product-allergens">⚠ ${escapeHtml(allergenList(prod.allergenMask))}</div>` : '';
+    }
+
+    function applyAvailability(productId, isAvailable) {
+        const p = state.products.find(x => x.id === productId);
+        if (!p || p.isAvailable === isAvailable) return;
+        p.isAvailable = isAvailable;
+        renderQuickKeys();
+        renderProductsGrid();
+    }
+
+    async function toggleProductAvailability(prod) {
+        const next = prod.isAvailable === false; // en rupture -> remis en vente, sinon rupture
+        try {
+            const res = await fetch(`/api/catalog/products/${prod.id}/availability`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ isAvailable: next })
+            });
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            applyAvailability(prod.id, next);
+            showToast(t(next ? 'order.product_set_available' : 'order.product_set_unavailable', { name: prod.name }), next ? 'success' : 'warning');
+        } catch (err) {
+            console.error('Erreur changement de disponibilité:', err);
+            showToast(t('order.availability_error'), 'error');
+        }
+    }
+
+    /** Touche sur un plat : bascule la rupture en mode « Ruptures », refuse un plat en rupture, sinon l'ajoute. */
+    function activateProduct(prod) {
+        if (stockOutMode) { toggleProductAvailability(prod); return; }
+        if (prod.isAvailable === false) {
+            showToast(t('order.product_unavailable_toast', { name: prod.name }), 'warning');
+            return;
+        }
+        handleProductClick(prod);
+    }
+
+    /** Cases d'allergènes de l'éditeur de produit ; désactivées tant que « renseignés » n'est pas coché. */
+    function renderEditAllergens(p) {
+        const declared = document.getElementById('editProdAllergensDeclared');
+        const grid = document.getElementById('editProdAllergens');
+        declared.checked = !!p.allergensDeclared;
+        grid.innerHTML = ALLERGEN_KEYS.map((k, i) => `
+            <label class="allergen-chip-check">
+                <input type="checkbox" data-bit="${i}" ${p.allergenMask & (1 << i) ? 'checked' : ''} ${p.allergensDeclared ? '' : 'disabled'}>
+                <span>${escapeHtml(t('allergen.' + k))}</span>
+            </label>`).join('');
+        declared.onchange = () => grid.querySelectorAll('input').forEach(cb => { cb.disabled = !declared.checked; });
+    }
+
+    function readEditAllergens() {
+        const declared = document.getElementById('editProdAllergensDeclared').checked;
+        let mask = 0;
+        document.querySelectorAll('#editProdAllergens input:checked').forEach(cb => { mask |= 1 << Number(cb.dataset.bit); });
+        return { declared, mask: declared ? mask : 0 };
+    }
+
+    function cartAllergenLine(item) {
+        const p = state.products.find(x => x.id === item.product.id);
+        return p && p.allergensDeclared && p.allergenMask
+            ? `<div class="cart-item-allergens">⚠ ${escapeHtml(allergenList(p.allergenMask))}</div>` : '';
+    }
+
+    function refreshCatalogView() {
+        renderCatalogTabs();
+        renderQuickKeys();
+        renderProductsGrid();
+    }
+
+    function openAllergenFilter() {
+        document.getElementById('allergenFilterModal')?.remove();
+        const overlay = document.createElement('div');
+        overlay.className = 'modal-overlay active';
+        overlay.id = 'allergenFilterModal';
+        overlay.innerHTML = `
+            <div class="modal-card">
+                <div class="modal-header"><h3>${escapeHtml(t('order.allergen_filter_title'))}</h3></div>
+                <div style="padding:20px; display:flex; flex-direction:column; gap:14px;">
+                    <p class="text-muted" style="margin:0;">${escapeHtml(t('order.allergen_filter_hint'))}</p>
+                    <div class="allergen-grid">${ALLERGEN_KEYS.map((k, i) => {
+                        const on = !!(allergenFilterMask & (1 << i));
+                        return `<button type="button" class="allergen-chip${on ? ' active' : ''}" data-bit="${i}" aria-pressed="${on}">${escapeHtml(t('allergen.' + k))}</button>`;
+                    }).join('')}</div>
+                    <div style="display:flex; justify-content:flex-end; gap:10px;">
+                        <button type="button" class="btn-archive" data-act="clear">${escapeHtml(t('order.allergen_filter_clear'))}</button>
+                        <button type="button" class="btn-primary" data-act="done" style="padding:10px 20px; font-weight:700;">${escapeHtml(t('order.allergen_filter_done'))}</button>
+                    </div>
+                </div>
+            </div>`;
+        overlay.addEventListener('click', (e) => {
+            const chip = e.target.closest('.allergen-chip');
+            if (chip) {
+                allergenFilterMask ^= 1 << Number(chip.dataset.bit);
+                const on = !!(allergenFilterMask & (1 << Number(chip.dataset.bit)));
+                chip.classList.toggle('active', on);
+                chip.setAttribute('aria-pressed', String(on));
+                refreshCatalogView();
+                return;
+            }
+            const act = e.target.closest('[data-act]')?.dataset.act;
+            if (act === 'clear') {
+                allergenFilterMask = 0;
+                overlay.remove();
+                refreshCatalogView();
+            } else if (act === 'done' || e.target === overlay) {
+                overlay.remove();
+            }
+        });
+        document.body.appendChild(overlay);
+    }
+
     function createProductCardElement(prod, slot = null) {
         const card = document.createElement('div');
         card.className = 'product-card';
+        if (prod.isAvailable === false) card.classList.add('product-card-unavailable');
         const color = (slot && slot.customColorHex) || prod.colorHex;
         if (color) {
             card.style.borderTop = `4px solid ${color}`;
@@ -1523,9 +1680,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         card.innerHTML = `
             <div class="product-card-top">
                 <span class="product-badge-station">${escapeHtml(prod.preparationStationId || 'HOT')}</span>
+                ${prod.isAvailable === false ? `<span class="stockout-badge">${escapeHtml(t('order.out_of_stock_badge'))}</span>` : ''}
                 ${hasOptions ? `<span style="font-size:0.68rem; background:rgba(95,102,112, 0.9); color:white; padding:2px 6px; border-radius:4px; font-weight:700; box-shadow:0 2px 4px rgba(0,0,0,0.3);">⚙️ Options</span>` : ''}
             </div>
             <div class="product-name">${escapeHtml(displayName)}</div>
+            ${allergenLineHtml(prod)}
             ${priceHtml}
         `;
         card.addEventListener('pointerdown', () => {
@@ -1534,7 +1693,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         card.addEventListener('pointerup', () => {
             card.style.transform = '';
         });
-        card.addEventListener('click', () => handleProductClick(prod));
+        card.addEventListener('click', () => activateProduct(prod));
         return card;
     }
 
@@ -2026,6 +2185,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     </div>
                     <span class="cart-item-meta">${unitPrice.toFixed(2)} € × ${item.quantity} ${item.originalUnitPrice ? `<span style="text-decoration:line-through; color:var(--text-muted); margin-inline-start:4px;">(${Number(item.originalUnitPrice).toFixed(2)} €)</span>` : ''} ${item.modifiersPriceExtra ? `<span style="color:var(--success); font-weight:600;">${t('order.modifiers_extra_note', { amount: Number(item.modifiersPriceExtra).toFixed(2) })}</span>` : ''} ${t('order.cart_item_vat_suffix', { vat: effectiveVatPercent })}</span>
                     ${item.modifiers && item.modifiers.length > 0 ? `<div style="font-size:0.75rem;color:var(--accent);margin-top:2px;">↳ ${escapeHtml(item.modifiers.join(', '))}</div>` : ''}
+                    ${cartAllergenLine(item)}
                     ${item.kitchenComment ? `<div style="font-size:0.72rem;color:var(--text-muted);font-style:italic;margin-top:1px;">💬 ${escapeHtml(item.kitchenComment)}</div>` : ''}
                 </div>
                 <div class="cart-item-controls">
@@ -3611,6 +3771,387 @@ document.addEventListener('DOMContentLoaded', async () => {
     }));
     setInterval(() => { if (document.getElementById('kdsView')?.classList.contains('active')) renderKdsBoard(kdsState.tickets); }, 15000);
 
+    // ==================== STOCK : INGRÉDIENTS ET FICHES TECHNIQUES ====================
+    // Quantités en millièmes d'unité de base (g, ml, pièce) ; prix en milli-centimes par unité de base.
+    let stockIngredients = [];
+    let recipeLines = [];       // [{ ingredientId, quantityMilli }] de la fiche en cours d'édition
+    let recipeDirty = false;
+
+    const stockUnitKey = (u) => t('stock.unit_short_' + u);
+    const priceToMilli = (unit, v) => Math.round(v * (unit === 'piece' ? 100000 : 100));
+    const milliToPrice = (unit, m) => m / (unit === 'piece' ? 100000 : 100);
+    const priceUnitLabel = (unit) => t(unit === 'g' ? 'stock.price_per_kg' : unit === 'ml' ? 'stock.price_per_l' : 'stock.price_per_piece');
+
+    async function stockError(res) {
+        let data = {};
+        try { data = await res.json(); } catch { /* corps vide */ }
+        const key = 'stock.err.' + data.code;
+        const text = data.code && t(key) !== key ? t(key, { list: (data.products || []).join(', ') }) : t('stock.err.generic');
+        return text;
+    }
+
+    async function loadAdminStock() {
+        const res = await fetch('/api/stock/ingredients');
+        stockIngredients = res.ok ? await res.json() : [];
+        loadStockSettings();
+        const list = document.getElementById('stockList');
+        if (!list) return;
+        list.innerHTML = stockIngredients.length ? '' : `<p class="text-muted">${escapeHtml(t('stock.empty'))}</p>`;
+        stockIngredients.forEach(i => {
+            const row = document.createElement('div');
+            row.className = 'stock-row';
+            row.style.cssText = 'display:flex; justify-content:space-between; align-items:center; gap:8px; padding:8px 0; border-bottom:1px solid rgb(var(--veil) / 0.08);';
+            const price = i.isPreparation ? '' : ` · ${milliToPrice(i.unit, i.unitCostMilliCents).toFixed(2)} ${escapeHtml(priceUnitLabel(i.unit))}`;
+            row.innerHTML = `
+                <div><strong>${escapeHtml(i.name)}</strong> <span class="text-muted">${escapeHtml(stockUnitKey(i.unit))}${i.isPreparation ? ' · ' + escapeHtml(t('stock.prep_badge')) : price}</span>
+                    ${i.isPreparation ? '' : `<span class="stock-level${i.lowStockMilli != null && i.stockMilli <= i.lowStockMilli ? ' low' : ''}" data-stock="${escapeHtml(i.id)}"> · ${escapeHtml(t('stock.level', { qty: i.stockMilli / 1000, unit: stockUnitKey(i.unit) }))}</span>`}</div>
+                <div style="display:flex; gap:6px;">
+                    ${i.isPreparation ? '' : `<button class="btn-archive" data-op="receipt">${escapeHtml(t('stock.op_receipt'))}</button>
+                    <button class="btn-archive" data-op="count">${escapeHtml(t('stock.op_count'))}</button>
+                    <button class="btn-archive" data-op="loss">${escapeHtml(t('stock.op_loss'))}</button>
+                    <button class="btn-archive" data-op="history">${escapeHtml(t('stock.op_history'))}</button>`}
+                    <button class="btn-archive btn-edit-ing" data-id="${escapeHtml(i.id)}">${t('admin.btn_edit_row')}</button>
+                    <button class="btn-archive btn-del-ing" data-id="${escapeHtml(i.id)}">🗑</button>
+                </div>`;
+            row.querySelectorAll('[data-op]').forEach(b => b.addEventListener('click', () => openStockOp(b.dataset.op, i)));
+            row.querySelector('.btn-edit-ing').addEventListener('click', () => fillStockForm(i));
+            row.querySelector('.btn-del-ing').addEventListener('click', async () => {
+                if (!confirm(t('stock.confirm_delete', { name: i.name }))) return;
+                const r = await fetch(`/api/stock/ingredients/${i.id}`, { method: 'DELETE' });
+                if (!r.ok) { showToast(await stockError(r), 'error'); return; }
+                showToast(t('stock.deleted_toast'), 'info');
+                await loadAdminStock();
+            });
+            list.appendChild(row);
+        });
+    }
+
+    /** Annulation d'un reçu par avoir, avec la case « produit non consommé » qui remet les ingrédients en stock. */
+    function openVoidReceipt(receiptId, number) {
+        document.getElementById('voidReceiptModal')?.remove();
+        const overlay = document.createElement('div');
+        overlay.className = 'modal-overlay active';
+        overlay.id = 'voidReceiptModal';
+        overlay.innerHTML = `
+            <div class="modal-card">
+                <div class="modal-header"><h3>${escapeHtml(t('takings.void_title', { number }))}</h3></div>
+                <p class="text-muted" style="margin:0;">${escapeHtml(t('takings.void_hint'))}</p>
+                <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+                    <input type="checkbox" id="voidRestock" style="width:18px; height:18px;">
+                    <span>${escapeHtml(t('takings.void_restock'))}</span>
+                </label>
+                <div style="display:flex; justify-content:flex-end; gap:10px;">
+                    <button type="button" class="btn-archive" data-act="cancel">${escapeHtml(t('common.cancel'))}</button>
+                    <button type="button" class="btn-primary" data-act="ok">${escapeHtml(t('takings.void_confirm'))}</button>
+                </div>
+            </div>`;
+        document.body.appendChild(overlay);
+        overlay.addEventListener('click', async (e) => {
+            const act = e.target.closest('[data-act]')?.dataset.act;
+            if (act === 'cancel') { overlay.remove(); return; }
+            if (act !== 'ok') return;
+            const res = await fetch(`/api/checkout/void/${encodeURIComponent(receiptId)}`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ terminalId: '', operatorId: '00000000-0000-0000-0000-000000000000', restock: overlay.querySelector('#voidRestock').checked })
+            });
+            if (!res.ok) { showToast(await readApiError(res, t('takings.void_error')), 'error'); return; }
+            overlay.remove();
+            showToast(t('takings.void_done', { number }), 'success');
+            loadTakings();
+            refreshNeeds();
+        });
+    }
+
+    // ---- Réception, inventaire, perte, historique (clavier numérique intégré : pas de clavier système en salle)
+    function openStockOp(op, ing) {
+        if (op === 'history') { openStockHistory(ing); return; }
+        document.getElementById('stockOpModal')?.remove();
+        const overlay = document.createElement('div');
+        overlay.className = 'modal-overlay active';
+        overlay.id = 'stockOpModal';
+        const withPrice = op === 'receipt';
+        overlay.innerHTML = `
+            <div class="modal-card" style="max-height:92vh; overflow-y:auto;">
+                <div class="modal-header"><h3>${escapeHtml(t('stock.op_' + op))} — ${escapeHtml(ing.name)}</h3></div>
+                <div class="admin-form" style="display:flex; flex-direction:column; gap:10px;">
+                    <label>${escapeHtml(t(op === 'count' ? 'stock.counted_label' : 'stock.qty_label'))} (${escapeHtml(stockUnitKey(ing.unit))})
+                        <input type="text" id="stockOpQty" inputmode="none" readonly data-pad="1" style="font-size:1.4rem;"></label>
+                    ${withPrice ? `<label>${escapeHtml(t('stock.price_label'))} (${escapeHtml(priceUnitLabel(ing.unit))})
+                        <input type="text" id="stockOpPrice" inputmode="none" readonly data-pad="1" value="${milliToPrice(ing.unit, ing.unitCostMilliCents)}"></label>` : ''}
+                    <label>${escapeHtml(t('stock.note_label'))} <input type="text" id="stockOpNote" maxlength="200"></label>
+                    <div class="stock-keypad">${['7','8','9','4','5','6','1','2','3','.','0','⌫'].map(k => `<button type="button" data-k="${k}">${k}</button>`).join('')}</div>
+                    <div style="display:flex; justify-content:flex-end; gap:10px;">
+                        <button type="button" class="btn-archive" data-act="cancel">${escapeHtml(t('common.cancel'))}</button>
+                        <button type="button" class="btn-primary" data-act="ok">${escapeHtml(t('stock.save'))}</button>
+                    </div>
+                </div>
+            </div>`;
+        document.body.appendChild(overlay);
+        let active = overlay.querySelector('#stockOpQty');
+        overlay.querySelectorAll('[data-pad]').forEach(el => el.addEventListener('focus', () => { active = el; }));
+        overlay.querySelector('.stock-keypad').addEventListener('click', (e) => {
+            const k = e.target.closest('[data-k]')?.dataset.k;
+            if (!k) return;
+            active.value = k === '⌫' ? active.value.slice(0, -1) : (k === '.' && active.value.includes('.') ? active.value : active.value + k);
+        });
+        overlay.addEventListener('click', async (e) => {
+            const act = e.target.closest('[data-act]')?.dataset.act;
+            if (act === 'cancel') { overlay.remove(); return; }
+            if (act !== 'ok') return;
+            const qty = parseFloat(overlay.querySelector('#stockOpQty').value);
+            if (isNaN(qty) || qty < (op === 'count' ? 0 : 0.001)) return;
+            const note = overlay.querySelector('#stockOpNote').value.trim() || null;
+            const qtyMilli = Math.round(qty * 1000);
+            const body = op === 'receipt'
+                ? { ingredientId: ing.id, quantityMilli: qtyMilli, unitCostMilliCents: priceToMilli(ing.unit, parseFloat(overlay.querySelector('#stockOpPrice').value) || 0), note }
+                : op === 'count' ? { ingredientId: ing.id, countedMilli: qtyMilli, note } : { ingredientId: ing.id, quantityMilli: qtyMilli, note };
+            const res = await fetch(`/api/stock/${op === 'loss' ? 'losses' : op + 's'}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+            if (!res.ok) { showToast(await stockError(res), 'error'); return; }
+            if (op === 'count') {
+                const r = await res.json();
+                showToast(t('stock.count_result', { variance: r.varianceMilli / 1000, unit: stockUnitKey(ing.unit), value: (r.valueCents / 100).toFixed(2) }), 'info');
+            } else {
+                showToast(t('stock.saved_toast'), 'success');
+            }
+            overlay.remove();
+            await loadAdminStock();
+            refreshNeeds();
+        });
+    }
+
+    async function openStockHistory(ing) {
+        document.getElementById('stockOpModal')?.remove();
+        const res = await fetch(`/api/stock/movements?ingredientId=${ing.id}`);
+        const rows = res.ok ? await res.json() : [];
+        const overlay = document.createElement('div');
+        overlay.className = 'modal-overlay active';
+        overlay.id = 'stockOpModal';
+        overlay.innerHTML = `
+            <div class="modal-card" style="max-height:92vh; overflow-y:auto;">
+                <div class="modal-header"><h3>${escapeHtml(t('stock.op_history'))} — ${escapeHtml(ing.name)}</h3></div>
+                <div id="stockHistoryRows">${rows.length ? rows.map(m => `<div style="display:flex; justify-content:space-between; gap:8px; padding:4px 0; border-bottom:1px solid rgb(var(--veil) / 0.08);">
+                        <span>${escapeHtml(t('stock.kind_' + m.kind))}${m.note ? ' · ' + escapeHtml(m.note) : ''}<br><small class="text-muted">${escapeHtml(new Date(m.createdAtUtc).toLocaleString())}</small></span>
+                        <strong>${m.quantityMilli > 0 ? '+' : ''}${m.quantityMilli / 1000} ${escapeHtml(stockUnitKey(ing.unit))}</strong></div>`).join('') : `<p class="text-muted">${escapeHtml(t('stock.history_empty'))}</p>`}</div>
+                <div style="display:flex; justify-content:flex-end; margin-top:10px;"><button type="button" class="btn-archive" data-act="cancel">${escapeHtml(t('common.cancel'))}</button></div>
+            </div>`;
+        document.body.appendChild(overlay);
+        overlay.addEventListener('click', (e) => { if (e.target.closest('[data-act="cancel"]')) overlay.remove(); });
+    }
+
+    async function loadStockSettings() {
+        const box = document.getElementById('stockAutoUnavailable');
+        if (!box) return;
+        const res = await fetch('/api/stock/settings');
+        if (!res.ok) return;
+        const settings = await res.json();
+        box.checked = !!settings.autoUnavailableOnStockOut;
+        const printBox = document.getElementById('stockPrintAllergens'), disclaimer = document.getElementById('stockDisclaimer');
+        printBox.checked = !!settings.printAllergensOnKitchenTicket;
+        disclaimer.value = settings.allergenDisclaimer || '';
+        const save = async () => {
+            const body = { autoUnavailableOnStockOut: box.checked, printAllergensOnKitchenTicket: printBox.checked, allergenDisclaimer: disclaimer.value.trim() || null };
+            const r = await fetch('/api/stock/settings', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+            if (r.ok) Object.assign(settings, await r.json()); else showToast(await stockError(r), 'error');
+        };
+        box.onchange = save;
+        printBox.onchange = save;
+        disclaimer.onchange = save;
+    }
+
+    function syncStockUnit() {
+        const unit = document.getElementById('stockUnit').value;
+        document.getElementById('stockPriceUnit').textContent = priceUnitLabel(unit);
+        document.querySelectorAll('.stock-qty-unit').forEach(el => { el.textContent = stockUnitKey(unit); });
+        const isPrep = document.getElementById('stockIsPrep').checked;
+        document.getElementById('stockYieldGroup').style.display = isPrep ? '' : 'none';
+        document.getElementById('stockPrice').disabled = isPrep;
+    }
+
+    function renderStockAllergens(mask) {
+        document.getElementById('stockAllergens').innerHTML = ALLERGEN_KEYS.map((k, i) => `
+            <label class="allergen-chip-check">
+                <input type="checkbox" data-bit="${i}" ${mask & (1 << i) ? 'checked' : ''}>
+                <span>${escapeHtml(t('allergen.' + k))}</span>
+            </label>`).join('');
+    }
+
+    function fillStockForm(i) {
+        document.getElementById('stockId').value = i?.id || '';
+        document.getElementById('stockFormTitle').textContent = t(i ? 'stock.edit_title' : 'stock.new_title');
+        document.getElementById('stockName').value = i?.name || '';
+        document.getElementById('stockUnit').value = i?.unit || 'g';
+        document.getElementById('stockUnit').disabled = false;
+        document.getElementById('stockPrice').value = i ? milliToPrice(i.unit, i.unitCostMilliCents) : 0;
+        document.getElementById('stockLow').value = i?.lowStockMilli != null ? i.lowStockMilli / 1000 : '';
+        document.getElementById('stockIsPrep').checked = !!i?.isPreparation;
+        document.getElementById('stockYield').value = i?.yieldMilli != null ? i.yieldMilli / 1000 : '';
+        renderStockAllergens(i?.allergenMask || 0);
+        syncStockUnit();
+    }
+
+    function setupStockForm() {
+        const form = document.getElementById('formStockIngredient');
+        if (!form) return;
+        document.getElementById('stockUnit').addEventListener('change', syncStockUnit);
+        document.getElementById('stockIsPrep').addEventListener('change', syncStockUnit);
+        document.getElementById('btnStockReset').addEventListener('click', () => fillStockForm(null));
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('stockId').value;
+            const unit = document.getElementById('stockUnit').value;
+            const isPrep = document.getElementById('stockIsPrep').checked;
+            const low = document.getElementById('stockLow').value;
+            let mask = 0;
+            document.querySelectorAll('#stockAllergens input:checked').forEach(cb => { mask |= 1 << Number(cb.dataset.bit); });
+            const body = {
+                name: document.getElementById('stockName').value.trim(),
+                unit,
+                // Le prix d'une préparation est recalculé depuis sa fiche : on garde celui du serveur.
+                unitCostMilliCents: isPrep ? (stockIngredients.find(x => x.id === id)?.unitCostMilliCents || 0) : priceToMilli(unit, parseFloat(document.getElementById('stockPrice').value) || 0),
+                isPreparation: isPrep,
+                yieldMilli: isPrep ? Math.round((parseFloat(document.getElementById('stockYield').value) || 0) * 1000) : null,
+                allergenMask: mask,
+                lowStockMilli: low === '' ? null : Math.round(parseFloat(low) * 1000),
+                isActive: stockIngredients.find(x => x.id === id)?.isActive ?? true
+            };
+            const res = await fetch(id ? `/api/stock/ingredients/${id}` : '/api/stock/ingredients', {
+                method: id ? 'PUT' : 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+            if (!res.ok) { showToast(await stockError(res), 'error'); return; }
+            showToast(t('stock.saved_toast'), 'success');
+            fillStockForm(null);
+            await loadAdminStock();
+        });
+        fillStockForm(null);
+    }
+
+    /** Coût affiché en direct : même formule que le serveur (Σ quantité × prix, arrondi au demi supérieur une seule fois). */
+    function recipeCostCents() {
+        const sum = recipeLines.reduce((acc, l) => acc + l.quantityMilli * (stockIngredients.find(i => i.id === l.ingredientId)?.unitCostMilliCents || 0), 0);
+        return Math.floor(sum / 1e6 + 0.5);
+    }
+
+    function renderRecipeEditor() {
+        const box = document.getElementById('editProdRecipeLines');
+        box.innerHTML = recipeLines.length ? '' : `<p class="text-muted" style="margin:0;">${escapeHtml(t('stock.recipe_none'))}</p>`;
+        recipeLines.forEach((l, idx) => {
+            const ing = stockIngredients.find(i => i.id === l.ingredientId);
+            const row = document.createElement('div');
+            row.style.cssText = 'display:flex; justify-content:space-between; align-items:center; gap:8px; padding:4px 0;';
+            row.innerHTML = `<span>${escapeHtml(ing?.name || '?')}</span><span>${l.quantityMilli / 1000} ${escapeHtml(ing ? stockUnitKey(ing.unit) : '')}
+                <button type="button" class="btn-archive" data-idx="${idx}" aria-label="${escapeHtml(t('stock.recipe_remove'))}">✕</button></span>`;
+            row.querySelector('button').addEventListener('click', () => { recipeLines.splice(idx, 1); recipeDirty = true; renderRecipeEditor(); });
+            box.appendChild(row);
+        });
+        document.getElementById('editRecipeCost').textContent = recipeLines.length ? `${(recipeCostCents() / 100).toFixed(2)} €` : '—';
+        const select = document.getElementById('editRecipeIngredient');
+        const used = new Set(recipeLines.map(l => l.ingredientId));
+        select.innerHTML = stockIngredients.filter(i => i.isActive && !used.has(i.id))
+            .map(i => `<option value="${escapeHtml(i.id)}">${escapeHtml(i.name)}</option>`).join('');
+        syncRecipeQtyUnit();
+    }
+
+    function syncRecipeQtyUnit() {
+        const ing = stockIngredients.find(i => i.id === document.getElementById('editRecipeIngredient').value);
+        document.getElementById('editRecipeQtyUnit').textContent = ing ? stockUnitKey(ing.unit) : '';
+    }
+
+    async function openRecipeEditor(productId) {
+        recipeDirty = false;
+        const [ingRes, recRes] = await Promise.all([fetch('/api/stock/ingredients'), fetch(`/api/catalog/products/${productId}/recipe`)]);
+        stockIngredients = ingRes.ok ? await ingRes.json() : [];
+        recipeLines = recRes.ok ? (await recRes.json()).lines : [];
+        renderRecipeEditor();
+    }
+
+    // ---- Consommation des options de modificateur : quantité ajoutée (ou retirée si négative) par portion vendue.
+    let optionConsumption = {};   // optionId -> [{ ingredientId, deltaQuantityMilli }]
+    let optionsDirty = new Set();
+
+    async function openOptionConsumption(product) {
+        optionConsumption = {}; optionsDirty = new Set();
+        const options = (product.modifierGroups || []).flatMap(g => (g.options || []).map(o => ({ id: o.id, name: `${g.groupName || g.name || ''} · ${o.name}` })));
+        const box = document.getElementById('editProdOptions');
+        document.getElementById('editProdOptionsSet').style.display = options.length ? '' : 'none';
+        if (!options.length) { box.innerHTML = ''; return; }
+        await Promise.all(options.map(async o => {
+            const res = await fetch(`/api/catalog/modifier-options/${o.id}/consumption`);
+            optionConsumption[o.id] = res.ok ? await res.json() : [];
+        }));
+        renderOptionConsumption(options);
+    }
+
+    function renderOptionConsumption(options) {
+        const raw = stockIngredients.filter(i => i.isActive && !i.isPreparation);
+        const box = document.getElementById('editProdOptions');
+        box.innerHTML = options.map(o => `
+            <div class="opt-cons" data-option="${escapeHtml(o.id)}" style="padding:6px 0; border-bottom:1px solid rgb(var(--veil) / 0.08);">
+                <strong>${escapeHtml(o.name)}</strong>
+                ${(optionConsumption[o.id] || []).map((c, idx) => {
+                    const ing = stockIngredients.find(i => i.id === c.ingredientId);
+                    return `<div style="display:flex; justify-content:space-between;"><span>${escapeHtml(ing?.name || '?')}</span><span>${c.deltaQuantityMilli > 0 ? '+' : ''}${c.deltaQuantityMilli / 1000} ${escapeHtml(ing ? stockUnitKey(ing.unit) : '')} <button type="button" class="btn-archive" data-rm="${idx}" aria-label="${escapeHtml(t('stock.recipe_remove'))}">✕</button></span></div>`;
+                }).join('')}
+                <div style="display:flex; gap:6px; margin-top:4px; flex-wrap:wrap;">
+                    <select class="opt-ing" style="flex:2 1 120px; min-width:0;">${raw.map(i => `<option value="${escapeHtml(i.id)}">${escapeHtml(i.name)}</option>`).join('')}</select>
+                    <input type="number" class="opt-qty" step="any" style="flex:1 1 70px; min-width:0;" placeholder="${escapeHtml(t('stock.option_qty_hint'))}">
+                    <button type="button" class="btn-archive" data-add>${escapeHtml(t('stock.recipe_add'))}</button>
+                </div>
+            </div>`).join('');
+        box.onclick = (e) => {
+            const row = e.target.closest('.opt-cons'); if (!row) return;
+            const id = row.dataset.option;
+            const rm = e.target.closest('[data-rm]');
+            if (rm) { optionConsumption[id].splice(Number(rm.dataset.rm), 1); optionsDirty.add(id); renderOptionConsumption(options); return; }
+            if (!e.target.closest('[data-add]')) return;
+            const ingredientId = row.querySelector('.opt-ing').value;
+            const delta = Math.round((parseFloat(row.querySelector('.opt-qty').value) || 0) * 1000);
+            if (!ingredientId || delta === 0 || optionConsumption[id].some(c => c.ingredientId === ingredientId)) return;
+            optionConsumption[id].push({ ingredientId, deltaQuantityMilli: delta });
+            optionsDirty.add(id);
+            renderOptionConsumption(options);
+        };
+    }
+
+    async function saveOptionConsumptions() {
+        for (const id of optionsDirty) {
+            const res = await fetch(`/api/catalog/modifier-options/${id}/consumption`, {
+                method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ items: optionConsumption[id] })
+            });
+            if (!res.ok) { showToast(await stockError(res), 'error'); return false; }
+        }
+        optionsDirty = new Set();
+        return true;
+    }
+
+    function setupRecipeEditor() {
+        const select = document.getElementById('editRecipeIngredient');
+        if (!select) return;
+        select.addEventListener('change', syncRecipeQtyUnit);
+        document.getElementById('btnRecipeAdd').addEventListener('click', () => {
+            const qty = Math.round((parseFloat(document.getElementById('editRecipeQty').value) || 0) * 1000);
+            if (!select.value || qty <= 0) return;
+            recipeLines.push({ ingredientId: select.value, quantityMilli: qty });
+            recipeDirty = true;
+            document.getElementById('editRecipeQty').value = '';
+            renderRecipeEditor();
+        });
+    }
+
+    /** Enregistre la fiche si elle a changé ; false (avec message) si le serveur la refuse. */
+    async function saveRecipeIfDirty(productId) {
+        if (!recipeDirty) return true;
+        const res = await fetch(`/api/catalog/products/${productId}/recipe`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ lines: recipeLines })
+        });
+        if (!res.ok) { showToast(await stockError(res), 'error'); return false; }
+        recipeDirty = false;
+        return true;
+    }
+
     // ==================== ADMIN FORMS & TABS ====================
     function setupAdminTabs() {
         elements.adminTabBtns.forEach(btn => {
@@ -3628,6 +4169,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     loadFinancialDashboard('today');
                 } else if (targetTab === 'tabDevices') {
                     loadAdminDevices();
+                } else if (targetTab === 'tabStock') {
+                    loadAdminStock();
                 } else if (targetTab === 'tabEstablishment') {
                     loadPrintSettings();
                 }
@@ -3838,6 +4381,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 setSelectValue('editProdTax', String(Number(p.taxRatePercent)));
                 setSelectValue('editProdStation', p.preparationStationId || '');
                 document.getElementById('editProdQuickKey').checked = !!p.isQuickKey;
+                renderEditAllergens(p);
+                openRecipeEditor(p.id).then(() => openOptionConsumption(p));
                 elements.editProductModal.classList.add('active');
             });
             row.querySelector('.btn-del-product').addEventListener('click', async () => {
@@ -5826,7 +6371,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     description: current.description || '',
                     colorHex: current.colorHex || 'var(--primary)',
                     displayOrder: current.displayOrder || 0,
-                    isAvailable: true,
+                    // isAvailable omis : modifier un plat ne doit pas lever une rupture (elle se gère en salle).
                     isActive: true,
                     isQuickKey: document.getElementById('editProdQuickKey').checked,
                     stationId: document.getElementById('editProdStation').value
@@ -5835,6 +6380,19 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (!res.ok) {
                 showToast(await readApiError(res, t('admin.product_edit_error')), 'error');
                 return;
+            }
+            if (!(await saveRecipeIfDirty(id)) || !(await saveOptionConsumptions())) return;
+            const allergens = readEditAllergens();
+            if (allergens.declared !== !!current.allergensDeclared || allergens.mask !== (current.allergenMask || 0)) {
+                const ares = await fetch(`/api/catalog/products/${id}/allergens`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ declared: allergens.declared, mask: allergens.mask, overridden: true })
+                });
+                if (!ares.ok) {
+                    showToast(await readApiError(ares, t('admin.product_edit_error')), 'error');
+                    return;
+                }
             }
             elements.editProductModal.classList.remove('active');
             showToast(t('admin.product_updated_toast'), 'success');
@@ -6538,6 +7096,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (document.getElementById('bookingsView')?.classList.contains('active')) loadBookings();
                 if (document.getElementById('floorPlanView')?.classList.contains('active')) loadFloorPlanData();
             });
+            posConnection.on('OnProductAvailabilityChanged', (productId, isAvailable) => applyAvailability(productId, isAvailable));
             posConnection.on('OnPrinterStatusChanged', (printerId, printerName, isOnline, pendingCount) => {
                 showToast(isOnline
                     ? t('messages.printer_back_online', { name: printerName })

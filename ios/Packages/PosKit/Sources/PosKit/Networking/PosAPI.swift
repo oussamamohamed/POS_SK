@@ -44,6 +44,34 @@ public protocol PosAPI: Sendable {
     func createProduct(_ draft: ProductDraft) async throws
     func updateProduct(id: UUID, _ draft: ProductDraft) async throws
     func archiveProduct(id: UUID) async throws
+    /// Rupture / remise en vente : tout opérateur connecté. Un produit en rupture refuse l'ajout à une commande (409 `product_unavailable`).
+    func setAvailability(productId: UUID, isAvailable: Bool) async throws
+    /// Allergènes d'un produit (responsable). `declared` faux = « non renseigné » : le masque est alors remis à 0.
+    func setAllergens(productId: UUID, declared: Bool, mask: Int, overridden: Bool) async throws
+
+    // Stock : ingrédients et fiches techniques (responsable)
+    func ingredients() async throws -> [Ingredient]
+    func createIngredient(_ draft: IngredientDraft) async throws -> Ingredient
+    func updateIngredient(id: UUID, _ draft: IngredientDraft) async throws -> Ingredient
+    func deleteIngredient(id: UUID) async throws
+    /// Fiche d'un produit avec son coût (centimes) et ses allergènes déduits.
+    func recipe(productId: UUID) async throws -> Recipe
+    /// Remplace la fiche ; les refus sont des `RecipeError`. Les allergènes du produit sont déduits sauf saisie manuelle.
+    func setRecipe(productId: UUID, lines: [RecipeLine]) async throws -> Recipe
+    func preparationRecipe(id: UUID) async throws -> [RecipeLine]
+    /// Remplace la fiche d'une préparation et renvoie la préparation avec son prix recalculé.
+    func setPreparationRecipe(id: UUID, lines: [RecipeLine]) async throws -> Ingredient
+    // Stock : mouvements et alertes (responsable). Réception : prix moyen pondéré ; inventaire : mouvement égal à l'écart.
+    func receiveStock(ingredientId: UUID, quantityMilli: Int64, unitCostMilliCents: Int64, note: String?) async throws -> StockMovement
+    func countStock(ingredientId: UUID, countedMilli: Int64, note: String?) async throws -> CountResult
+    func recordStockLoss(ingredientId: UUID, quantityMilli: Int64, note: String?) async throws -> StockMovement
+    func stockMovements(ingredientId: UUID?, from: Date?, to: Date?) async throws -> [StockMovement]
+    func stockAlerts() async throws -> StockAlerts
+    func stockSettings() async throws -> StockSettings
+    func modifierConsumption(optionId: UUID) async throws -> [ModifierConsumptionItem]
+    /// Remplace les ajustements d'une option de modificateur (ingrédients bruts, quantité non nulle, un ingrédient une seule fois).
+    func setModifierConsumption(optionId: UUID, items: [ModifierConsumptionItem]) async throws -> [ModifierConsumptionItem]
+    func saveStockSettings(_ settings: StockSettings) async throws -> StockSettings
 
     // Grille tactile
     func gridLayout(categoryId: String, page: Int) async throws -> TouchGridLayout
@@ -92,6 +120,8 @@ public protocol PosAPI: Sendable {
     func reprintLatestClosure(terminalId: String) async throws -> ReprintResult
     /// Réimprime un reçu fiscal ; retourne le résultat avec duplicateNumber.
     func reprintReceipt(receiptIdentifier: String) async throws -> ReprintResult
+    /// Annule un reçu par avoir (responsable, poste émetteur). `restock` remet les ingrédients en stock (produit non consommé) ; faux par défaut.
+    func voidReceipt(receiptId: UUID, restock: Bool) async throws -> OperationResult
     /// Export FEC ; `company` (facultatif) n'est que journalisé (`FEC_EXPORTED`), comme le paramètre `company` du .NET.
     func exportFec(from: Date, to: Date, siren: String, company: String?) async throws -> (fileName: String, data: Data)
     func dashboard(from: Date, to: Date) async throws -> FinancialDashboard

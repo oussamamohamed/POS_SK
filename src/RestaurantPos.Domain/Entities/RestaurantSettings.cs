@@ -16,6 +16,10 @@ public class RestaurantSettings
     public string? CertificateNumber { get; set; }
     public int FiscalYearStartMonth { get; set; } = 1;
     public int FiscalYearStartDay { get; set; } = 1;
+    /// <summary>Un produit dont un ingrédient suivi est épuisé passe indisponible (<c>Product.AutoUnavailable</c>) jusqu'à la prochaine réception.</summary>
+    public bool AutoUnavailableOnStockOut { get; set; }
+    public bool PrintAllergensOnKitchenTicket { get; set; }
+    public string? AllergenDisclaimer { get; set; }
     public DateTimeOffset UpdatedAtUtc { get; set; } = DateTimeOffset.UtcNow;
 }
 

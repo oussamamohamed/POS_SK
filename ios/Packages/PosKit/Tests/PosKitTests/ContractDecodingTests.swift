@@ -56,6 +56,27 @@ struct ContractDecodingTests {
         #expect(products.contains { $0.cost != nil })
     }
 
+    @Test func decodesProductAllergensAndAvailability() throws {
+        let products = try decode([Product].self, "products_with_allergens")
+        let flagged = try #require(products.first { $0.allergensDeclared })
+        #expect(flagged.declaredAllergens == ["gluten", "milk"] && flagged.allergensOverridden && flagged.isOutOfStock)
+        // Produit jamais renseigné : « non renseigné » (≠ « aucun »), disponible.
+        let untouched = try #require(products.first { !$0.allergensDeclared })
+        #expect(untouched.allergenMask == 0 && !untouched.isOutOfStock)
+    }
+
+    @Test func decodesIngredientsAndRecipe() throws {
+        let ingredients = try decode([Ingredient].self, "ingredients")
+        #expect(ingredients.count == 3 && ingredients.allSatisfy { !$0.isPreparation && $0.yieldMilli == nil })
+        let recipe = try decode(Recipe.self, "recipe")
+        #expect(recipe.lines.count == 3 && recipe.costCents == 443 && recipe.allergenMask == 65)
+    }
+
+    @Test func decodesStockAlerts() throws {
+        let alerts = try decode(StockAlerts.self, "stock_alerts")
+        #expect(!alerts.lowStock.isEmpty && alerts.lowStock.allSatisfy { $0.stockMilli <= $0.lowStockMilli })
+    }
+
     @Test func decodesPrinterTextMode() throws {
         let printers = try decode([Printer].self, "printers")
         #expect(printers.contains { $0.textMode })

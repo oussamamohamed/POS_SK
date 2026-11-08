@@ -154,7 +154,7 @@ public static class SyncEndpoints
                 result.FiscalSignature,
                 FiscalTimestampUtc = DateTimeOffset.UtcNow
             });
-        }).RequireAuthorization().RequirePairedDevice();
+        }).RequireAuthorization().RequirePairedDevice().AddEndpointFilter<StockAvailabilityFilter>();
 
         group.MapGet("/sync/status", async (AppDbContext db) =>
         {

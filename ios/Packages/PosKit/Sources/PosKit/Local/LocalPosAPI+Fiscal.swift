@@ -4,7 +4,7 @@ extension LocalPosAPI {
     /// Annule un reçu par contre-passation (`POST /api/checkout/void/{id}`) : nouveau reçu signé en négatif, entrée JET `RECEIPT_VOIDED`,
     /// commande annulée (comme le .NET, la table n'est pas touchée). Réservé aux responsables ; le reçu doit venir de `T01`.
     /// Annuler un des reçus d'une commande annule toute la commande (comme le .NET) ; un reçu comprenant une facturation chambre ne peut pas être annulé.
-    public func voidReceipt(receiptId: UUID) async throws -> OperationResult {
+    public func voidReceipt(receiptId: UUID, restock: Bool = false) async throws -> OperationResult {
         let manager = try requireManager()
         let fiscal = fiscalRepository, orders = orderRepository, database = db
         let now = clock()
@@ -22,6 +22,11 @@ extension LocalPosAPI {
                   let voided = try fiscal.voidReceipt(originalId: receiptId, terminalId: Self.standaloneTerminalId, operatorId: manager.id, now: now)
             else { throw APIError.server(status: 400, message: "Annulation du reçu impossible.") }
             try orders.setStatus(orderId: original.orderId, .cancelled)
+            // Le stock n'est restitué que si le responsable l'a demandé (produit non consommé).
+            if restock {
+                stockRepository.restoreSale(orderId: original.orderId, operatorId: manager.id)
+                _ = try? stockRepository.refreshAutoAvailability()
+            }
             return OperationResult(success: true, message: "Reçu \(original.receiptNumber) annulé (\(voided.receiptNumber)).")
         }
     }

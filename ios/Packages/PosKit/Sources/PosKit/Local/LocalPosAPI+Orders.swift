@@ -57,8 +57,12 @@ extension LocalPosAPI {
         guard items.allSatisfy({ $0.quantity > 0 && $0.unitPrice >= .zero && $0.modifiersPriceExtra >= .zero }) else {
             throw APIError.server(status: 400, message: "Ligne de commande invalide : la quantité doit être positive et les montants ne peuvent pas être négatifs.")
         }
-        let floor = floorRepository, orders = orderRepository
+        let floor = floorRepository, orders = orderRepository, catalog = catalogRepository
         try db.transaction {
+            // Le refus annule toute la transaction : les lignes déjà envoyées ne bougent pas.
+            for input in items {
+                if try catalog.isOutOfStock(productId: input.productId) { throw Self.productUnavailable }
+            }
             if try !floor.tableExists(number) { try floor.insert(DiningTable(tableNumber: number, capacity: 2)) }
             guard let table = try floor.table(number) else { throw SQLiteError(code: -1, message: "Table \(number) introuvable après création") }
             let orderId: UUID

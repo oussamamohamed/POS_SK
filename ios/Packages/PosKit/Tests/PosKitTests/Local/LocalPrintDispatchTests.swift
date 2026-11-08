@@ -179,6 +179,30 @@ struct LocalPrintDispatchTests {
         #expect(try document(hotJob) == expectedHot)
     }
 
+    @Test func kitchenTicketPrintsAllergensOnlyWhenTheOptionIsOn() async throws {
+        let api = try await makeAPI()
+        try await api.addTestPrinter(Printer(name: "Chaud", ipAddress: "10.0.0.1", assignedStationIds: ["HOT_KITCHEN"], textMode: true))
+        let burger = try await localProduct(api, Self.burger)
+        var input = localInput(burger)
+        input.preparationStationId = "HOT_KITCHEN"
+        try await seatTable(api, "T2", covers: 2, items: [input])
+        try await api.dispatch(table: "T2")
+        try await api.deleteTestJobs()
+        let ticketIds = try await api.testKitchenTickets().map(\.id)
+
+        func lines() async throws -> [String] {
+            await api.queueKitchenTickets(ticketIds: ticketIds)
+            let job = try #require(try await api.allTestJobs().last)
+            return try document(job).lines.compactMap { if case .text(let t, _, _, _) = $0 { t } else { nil } }
+        }
+
+        #expect(try await lines().allSatisfy { !$0.contains("ALLERG") })                       // option désactivée : ticket inchangé
+        try await api.setAllergens(productId: burger.id, declared: true, mask: 0b1000001, overridden: true)
+        _ = try await api.saveStockSettings(StockSettings(printAllergensOnKitchenTicket: true, allergenDisclaimer: "Traces possibles."))
+        let printed = try await lines()
+        #expect(printed.contains("ALLERGÈNES : Gluten, Lait") && printed.last == "Traces possibles.")
+    }
+
     // MARK: 5. Choix de l'imprimante de ticket
 
     @Test func noActiveReceiptPrinterQueuesNothing() async throws {

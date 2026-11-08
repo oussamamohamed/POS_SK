@@ -91,8 +91,12 @@ public struct Product: Codable, Identifiable, Hashable, Sendable {
     public var modifierGroups: [ModifierGroup]
     /// Coût de revient HT unitaire ; absent si inconnu ou si l'appelant n'est pas responsable (le serveur ne l'envoie qu'à eux).
     public var cost: Money?
+    /// Allergènes présents (bits de `Allergens`) ; sans valeur tant que `allergensDeclared` est faux (« non renseigné » ≠ « aucun »).
+    public var allergenMask: Int
+    public var allergensDeclared: Bool
+    public var allergensOverridden: Bool
 
-    public init(id: UUID = UUID(), name: String, categoryId: String, description: String? = nil, price: Money, taxRatePercent: Decimal = 10, taxRateTakeawayPercent: Decimal? = nil, colorHex: String? = nil, displayOrder: Int? = nil, isQuickKey: Bool = false, preparationStationId: String? = "HOT_KITCHEN", isAvailable: Bool? = true, isActive: Bool? = true, modifierGroups: [ModifierGroup] = [], cost: Money? = nil) {
+    public init(id: UUID = UUID(), name: String, categoryId: String, description: String? = nil, price: Money, taxRatePercent: Decimal = 10, taxRateTakeawayPercent: Decimal? = nil, colorHex: String? = nil, displayOrder: Int? = nil, isQuickKey: Bool = false, preparationStationId: String? = "HOT_KITCHEN", isAvailable: Bool? = true, isActive: Bool? = true, modifierGroups: [ModifierGroup] = [], cost: Money? = nil, allergenMask: Int = 0, allergensDeclared: Bool = false, allergensOverridden: Bool = false) {
         self.id = id
         self.name = name
         self.categoryId = categoryId
@@ -108,11 +112,15 @@ public struct Product: Codable, Identifiable, Hashable, Sendable {
         self.isActive = isActive
         self.modifierGroups = modifierGroups
         self.cost = cost
+        self.allergenMask = allergenMask
+        self.allergensDeclared = allergensDeclared
+        self.allergensOverridden = allergensOverridden
     }
 
     enum CodingKeys: String, CodingKey {
         case id, name, categoryId, description, price, taxRatePercent, taxRateTakeawayPercent, colorHex, displayOrder
         case isQuickKey, preparationStationId, isAvailable, isActive, modifierGroups, cost
+        case allergenMask, allergensDeclared, allergensOverridden
     }
 
     public init(from decoder: Decoder) throws {
@@ -132,9 +140,20 @@ public struct Product: Codable, Identifiable, Hashable, Sendable {
         isActive = try c.decodeIfPresent(Bool.self, forKey: .isActive)
         modifierGroups = try c.decodeIfPresent([ModifierGroup].self, forKey: .modifierGroups) ?? []
         cost = try c.decodeIfPresent(Money.self, forKey: .cost)
+        allergenMask = try c.decodeIfPresent(Int.self, forKey: .allergenMask) ?? 0
+        allergensDeclared = try c.decodeIfPresent(Bool.self, forKey: .allergensDeclared) ?? false
+        allergensOverridden = try c.decodeIfPresent(Bool.self, forKey: .allergensOverridden) ?? false
     }
 
     public var hasModifiers: Bool { !modifierGroups.isEmpty }
+    /// En rupture (l'absence de valeur du serveur veut dire disponible, comme le .NET).
+    public var isOutOfStock: Bool { isAvailable == false }
+    /// Allergènes à afficher ; vide si rien n'est déclaré.
+    public var declaredAllergens: [String] { allergensDeclared ? Allergens.names(in: allergenMask) : [] }
+    /// Filtre « éviter ces allergènes » : un plat dont les allergènes ne sont pas renseignés est masqué par prudence (comme le web).
+    public func passesAllergenFilter(_ avoided: Int) -> Bool {
+        avoided == 0 || (allergensDeclared && allergenMask & avoided == 0)
+    }
     /// Poste propre à l'article ; nil = le serveur retombe sur le poste de la famille.
     public var station: String? { preparationStationId }
 }

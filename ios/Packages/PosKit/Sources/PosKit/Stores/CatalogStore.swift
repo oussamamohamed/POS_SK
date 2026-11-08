@@ -56,10 +56,50 @@ public final class CatalogStore {
         return products.first { $0.id == id }
     }
 
-    public var quickKeys: [Product] { products.filter(\.isQuickKey) }
+    public var quickKeys: [Product] { products.filter { $0.isQuickKey && $0.passesAllergenFilter(avoidedAllergens) } }
 
     public func products(in categoryId: String) -> [Product] {
-        categoryId == Self.allCategoryId ? products : products.filter { $0.categoryId == categoryId }
+        (categoryId == Self.allCategoryId ? products : products.filter { $0.categoryId == categoryId })
+            .filter { $0.passesAllergenFilter(avoidedAllergens) }
+    }
+
+    // MARK: Allergènes et ruptures
+
+    /// Masque des allergènes à éviter ; 0 = pas de filtre. Les plats non renseignés sont masqués quand il est actif.
+    public var avoidedAllergens = 0
+    /// Mode « Ruptures » : toucher un plat bascule sa disponibilité au lieu de l'ajouter au ticket.
+    public var isStockOutMode = false
+
+    /// Mise à jour temps réel (`OnProductAvailabilityChanged`) ou retour d'une action locale.
+    public func apply(availability isAvailable: Bool, productId: UUID) {
+        guard let index = products.firstIndex(where: { $0.id == productId }) else { return }
+        products[index].isAvailable = isAvailable
+    }
+
+    public func toggleAvailability(_ product: Product) async {
+        let makeAvailable = product.isOutOfStock
+        do {
+            try await api.setAvailability(productId: product.id, isAvailable: makeAvailable)
+            apply(availability: makeAvailable, productId: product.id)
+            notifier.info(String(format: L10n.string(makeAvailable ? "order.product_set_available" : "order.product_set_unavailable"), product.name))
+        } catch {
+            notifier.error(L10n.string("order.availability_error"))
+        }
+    }
+
+    public func saveAllergens(_ product: Product, declared: Bool, mask: Int) async -> Bool {
+        do {
+            try await api.setAllergens(productId: product.id, declared: declared, mask: mask, overridden: true)
+            if let index = products.firstIndex(where: { $0.id == product.id }) {
+                products[index].allergensDeclared = declared
+                products[index].allergenMask = declared ? mask : 0
+                products[index].allergensOverridden = true
+            }
+            return true
+        } catch {
+            notifier.error(error)
+            return false
+        }
     }
 
     // MARK: Grille paginée
@@ -129,7 +169,7 @@ public final class CatalogStore {
         if let layout = currentLayout, !layout.slots.isEmpty {
             return layout.positions.map { position in
                 guard let slot = layout.slot(at: position), slot.isDisabled != true,
-                      let product = product(id: slot.productId) else {
+                      let product = product(id: slot.productId), product.passesAllergenFilter(avoidedAllergens) else {
                     return GridCell(position: position, product: nil, label: nil, colorHex: nil)
                 }
                 return GridCell(position: position, product: product, label: slot.customLabel ?? product.name, colorHex: slot.customColorHex ?? product.colorHex)

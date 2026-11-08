@@ -524,6 +524,16 @@ public final class TakingsStore {
         } catch { notifier.error(error) }
     }
 
+    /// Annule un reçu par avoir ; `restock` remet les ingrédients en stock (produit non consommé).
+    public func void(_ receipt: TakingsReceipt, restock: Bool) async -> Bool {
+        do {
+            _ = try await api.voidReceipt(receiptId: receipt.id, restock: restock)
+            notifier.success(String(format: L10n.string("takings.void_done"), receipt.receiptNumber))
+            await load()
+            return true
+        } catch { notifier.error(error); return false }
+    }
+
     /// Réimprime un duplicata ; l'écran affiche le numéro retourné.
     public func reprint(_ receipt: TakingsReceipt) async -> ReprintResult? {
         do {

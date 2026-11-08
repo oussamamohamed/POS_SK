@@ -163,6 +163,12 @@
   <data name="errors.order_item_invalid" xml:space="preserve">
     <value>Ligne de commande invalide : la quantité doit être positive et les montants ne peuvent pas être négatifs.</value>
   </data>
+  <data name="errors.product_unavailable" xml:space="preserve">
+    <value>Produit en rupture : il ne peut pas être ajouté à la commande.</value>
+  </data>
+  <data name="errors.allergen_mask_invalid" xml:space="preserve">
+    <value>Liste d'allergènes invalide.</value>
+  </data>
   <data name="errors.product_price_negative" xml:space="preserve">
     <value>Le prix d'un article ne peut pas être négatif.</value>
   </data>
@@ -429,6 +435,54 @@
   </data>
   <data name="kitchen_ticket.course_on_demand" xml:space="preserve">
     <value>À la demande</value>
+  </data>
+  <data name="kitchen_ticket.allergens" xml:space="preserve">
+    <value>ALLERGÈNES : {list}</value>
+  </data>
+  <data name="kitchen_ticket.allergens_unknown" xml:space="preserve">
+    <value>ALLERGÈNES NON RENSEIGNÉS</value>
+  </data>
+  <data name="kitchen_ticket.allergen_gluten" xml:space="preserve">
+    <value>Gluten</value>
+  </data>
+  <data name="kitchen_ticket.allergen_crustaceans" xml:space="preserve">
+    <value>Crustacés</value>
+  </data>
+  <data name="kitchen_ticket.allergen_eggs" xml:space="preserve">
+    <value>Œufs</value>
+  </data>
+  <data name="kitchen_ticket.allergen_fish" xml:space="preserve">
+    <value>Poissons</value>
+  </data>
+  <data name="kitchen_ticket.allergen_peanuts" xml:space="preserve">
+    <value>Arachides</value>
+  </data>
+  <data name="kitchen_ticket.allergen_soy" xml:space="preserve">
+    <value>Soja</value>
+  </data>
+  <data name="kitchen_ticket.allergen_milk" xml:space="preserve">
+    <value>Lait</value>
+  </data>
+  <data name="kitchen_ticket.allergen_nuts" xml:space="preserve">
+    <value>Fruits à coque</value>
+  </data>
+  <data name="kitchen_ticket.allergen_celery" xml:space="preserve">
+    <value>Céleri</value>
+  </data>
+  <data name="kitchen_ticket.allergen_mustard" xml:space="preserve">
+    <value>Moutarde</value>
+  </data>
+  <data name="kitchen_ticket.allergen_sesame" xml:space="preserve">
+    <value>Sésame</value>
+  </data>
+  <data name="kitchen_ticket.allergen_sulphites" xml:space="preserve">
+    <value>Sulfites</value>
+  </data>
+  <data name="kitchen_ticket.allergen_lupin" xml:space="preserve">
+    <value>Lupin</value>
+  </data>
+  <data name="kitchen_ticket.allergen_molluscs" xml:space="preserve">
+    <value>Mollusques</value>
   </data>
   <data name="report.x_title" xml:space="preserve">
     <value>RAPPORT X</value>

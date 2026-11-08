@@ -84,6 +84,7 @@ public enum RealtimeEvent: Equatable, Sendable {
     case happyHourChanged(HappyHourStatus?)
     case tablesChanged
     case reservationsChanged
+    case productAvailabilityChanged(productId: UUID, isAvailable: Bool)
     case printerStatusChanged(printerId: UUID?, name: String, isOnline: Bool, pendingCount: Int)
     case connectionChanged(isConnected: Bool)
 
@@ -99,6 +100,9 @@ public enum RealtimeEvent: Equatable, Sendable {
             return .tablesChanged
         case "OnReservationsChanged":
             return .reservationsChanged
+        case "OnProductAvailabilityChanged":
+            guard arguments.count >= 2, let id = arguments[0].decode(UUID.self), let available = arguments[1].decode(Bool.self) else { return nil }
+            return .productAvailabilityChanged(productId: id, isAvailable: available)
         case "OnPrinterStatusChanged":
             guard arguments.count >= 4 else { return nil }
             return .printerStatusChanged(

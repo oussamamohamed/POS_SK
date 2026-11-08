@@ -48,4 +48,19 @@ extension LocalPosAPI {
         try requireManager()
         guard try catalogRepository.archive(productId: id) else { throw APIError.notFound(nil) }
     }
+
+    public func setAvailability(productId: UUID, isAvailable: Bool) async throws {
+        try requireAuth()
+        guard try catalogRepository.setAvailability(productId: productId, isAvailable: isAvailable) else { throw APIError.notFound(nil) }
+    }
+
+    static let invalidAllergenMask = APIError.server(status: 400, message: "Liste d'allergènes invalide.")
+    /// Même texte que `errors.product_unavailable` du .NET (français).
+    static let productUnavailable = APIError.server(status: 409, message: "Produit en rupture : il ne peut pas être ajouté à la commande.")
+
+    public func setAllergens(productId: UUID, declared: Bool, mask: Int, overridden: Bool) async throws {
+        try requireManager()
+        guard Allergens.isValid(mask: mask) else { throw Self.invalidAllergenMask }
+        guard try catalogRepository.setAllergens(productId: productId, declared: declared, mask: mask, overridden: overridden) else { throw APIError.notFound(nil) }
+    }
 }

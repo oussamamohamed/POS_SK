@@ -20,6 +20,14 @@ public class Product
     public string? ColorHex { get; set; }
     public int DisplayOrder { get; set; }
     public bool IsAvailable { get; set; } = true;
+    /// <summary>Bits des 14 allergènes présents (voir <see cref="ValueObjects.Allergens"/>).</summary>
+    public int AllergenMask { get; set; }
+    /// <summary>Faux = allergènes non renseignés (différent de « aucun allergène »).</summary>
+    public bool AllergensDeclared { get; set; }
+    /// <summary>Vrai = saisie manuelle, la déduction depuis les ingrédients est ignorée.</summary>
+    public bool AllergensOverridden { get; set; }
+    /// <summary>Vrai = <see cref="IsAvailable"/> éteint par le stock, pas par une rupture manuelle.</summary>
+    public bool AutoUnavailable { get; set; }
     public bool IsActive { get; set; } = true;
     public bool IsQuickKey { get; set; }
     public string? PreparationStationId { get; set; }

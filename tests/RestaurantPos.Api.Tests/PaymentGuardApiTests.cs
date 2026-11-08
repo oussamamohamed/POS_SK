@@ -275,7 +275,7 @@ public class PaymentGuardApiTests : IClassFixture<PosApiApplicationFactory>
         public Task<RestaurantPos.Application.Common.Interfaces.CheckoutResult> ProcessPaymentTendersAsync(Guid orderId, string terminalId, IReadOnlyList<RestaurantPos.Application.Common.Interfaces.PaymentTenderRequest> tenders, CancellationToken cancellationToken = default)
             => throw new InvalidOperationException("base occupée");
 
-        public Task<RestaurantPos.Application.Common.Interfaces.CheckoutResult> VoidReceiptAsync(Guid originalReceiptId, string terminalId, Guid operatorId, CancellationToken cancellationToken = default)
+        public Task<RestaurantPos.Application.Common.Interfaces.CheckoutResult> VoidReceiptAsync(Guid originalReceiptId, string terminalId, Guid operatorId, bool restock = false, CancellationToken cancellationToken = default)
             => throw new NotSupportedException();
 
         public IReadOnlyList<long> CalculateEqualSplitPartitions(long totalAmountCents, int numberOfGuests)

@@ -31,6 +31,7 @@ public interface ICheckoutPaymentService
         Guid originalReceiptId,
         string terminalId,
         Guid operatorId,
+        bool restock = false,
         CancellationToken cancellationToken = default);
 
     IReadOnlyList<long> CalculateEqualSplitPartitions(long totalAmountCents, int numberOfGuests);

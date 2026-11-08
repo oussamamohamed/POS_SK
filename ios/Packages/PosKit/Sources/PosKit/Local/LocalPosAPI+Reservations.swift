@@ -111,10 +111,12 @@ extension LocalPosAPI {
         let products = Dictionary(uniqueKeysWithValues: try db.query("SELECT Id, Name, CategoryId, Cost FROM Products").compactMap { row in
             row.uuid("Id").map { ($0, (name: row.string("Name") ?? "", categoryId: row.string("CategoryId"), cost: row.int("Cost"))) }
         })
+        // Le coût de la fiche technique prime sur le coût saisi à la main.
+        let recipeCosts = try stockRepository.productCostsCents()
         let categories = Dictionary(uniqueKeysWithValues: try db.query("SELECT Id, Name FROM Categories").map { ($0.string("Id") ?? "", $0.string("Name") ?? "") })
         let sales = sold.filter { id, _ in categoryId == nil || products[id]?.categoryId == categoryId }.map { id, s in
             MenuSale(productId: id, name: products[id]?.name ?? s.name, categoryName: products[id]?.categoryId.flatMap { categories[$0] },
-                     quantity: s.quantity, revenueHtCents: s.revenueHtCents, unitCostCents: products[id]?.cost)
+                     quantity: s.quantity, revenueHtCents: s.revenueHtCents, unitCostCents: recipeCosts[id] ?? products[id]?.cost)
         }
         return MenuAnalysisCalculator.report(from: start, to: end, sales: sales)
     }

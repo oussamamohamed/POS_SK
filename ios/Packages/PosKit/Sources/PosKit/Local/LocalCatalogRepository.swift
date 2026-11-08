@@ -41,9 +41,28 @@ struct LocalCatalogRepository {
                 taxRateTakeawayPercent: $0.decimal("TaxRateTakeawayPercent"), colorHex: $0.string("ColorHex"), displayOrder: $0.int("DisplayOrder"),
                 isQuickKey: $0.bool("IsQuickKey"), preparationStationId: $0.string("PreparationStationId"),
                 isAvailable: $0.bool("IsAvailable"), isActive: $0.bool("IsActive"), modifierGroups: groups[$0.uuid("Id")!] ?? [],
-                cost: $0.int("Cost").map { Money(cents: $0) }
+                cost: $0.int("Cost").map { Money(cents: $0) },
+                allergenMask: $0.int("AllergenMask") ?? 0, allergensDeclared: $0.bool("AllergensDeclared"),
+                allergensOverridden: $0.bool("AllergensOverridden")
             )
         }
+    }
+
+    /// `false` si le produit est inconnu. Une décision manuelle remplace toute rupture automatique (comme le .NET).
+    func setAvailability(productId: UUID, isAvailable: Bool) throws -> Bool {
+        try db.run("UPDATE Products SET IsAvailable = ?, AutoUnavailable = 0, UpdatedAtUtc = ? WHERE Id = ?", [.bool(isAvailable), .date(Date()), .uuid(productId)]) > 0
+    }
+
+    /// `false` si le produit est inconnu ; « non renseigné » remet le masque à 0.
+    func setAllergens(productId: UUID, declared: Bool, mask: Int, overridden: Bool) throws -> Bool {
+        try db.run(
+            "UPDATE Products SET AllergensDeclared = ?, AllergenMask = ?, AllergensOverridden = ?, UpdatedAtUtc = ? WHERE Id = ?",
+            [.bool(declared), .integer(declared ? mask : 0), .bool(overridden), .date(Date()), .uuid(productId)]
+        ) > 0
+    }
+
+    func isOutOfStock(productId: UUID) throws -> Bool {
+        try db.query("SELECT IsAvailable FROM Products WHERE Id = ?", [.uuid(productId)]).first?.bool("IsAvailable") == false
     }
 
     func insert(_ p: Product) throws {

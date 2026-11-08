@@ -430,6 +430,54 @@
   <data name="kitchen_ticket.course_on_demand" xml:space="preserve">
     <value>عند الطلب</value>
   </data>
+  <data name="kitchen_ticket.allergens" xml:space="preserve">
+    <value>مسببات الحساسية: {list}</value>
+  </data>
+  <data name="kitchen_ticket.allergens_unknown" xml:space="preserve">
+    <value>مسببات الحساسية غير محددة</value>
+  </data>
+  <data name="kitchen_ticket.allergen_gluten" xml:space="preserve">
+    <value>الغلوتين</value>
+  </data>
+  <data name="kitchen_ticket.allergen_crustaceans" xml:space="preserve">
+    <value>القشريات</value>
+  </data>
+  <data name="kitchen_ticket.allergen_eggs" xml:space="preserve">
+    <value>البيض</value>
+  </data>
+  <data name="kitchen_ticket.allergen_fish" xml:space="preserve">
+    <value>السمك</value>
+  </data>
+  <data name="kitchen_ticket.allergen_peanuts" xml:space="preserve">
+    <value>الفول السوداني</value>
+  </data>
+  <data name="kitchen_ticket.allergen_soy" xml:space="preserve">
+    <value>الصويا</value>
+  </data>
+  <data name="kitchen_ticket.allergen_milk" xml:space="preserve">
+    <value>الحليب</value>
+  </data>
+  <data name="kitchen_ticket.allergen_nuts" xml:space="preserve">
+    <value>المكسرات</value>
+  </data>
+  <data name="kitchen_ticket.allergen_celery" xml:space="preserve">
+    <value>الكرفس</value>
+  </data>
+  <data name="kitchen_ticket.allergen_mustard" xml:space="preserve">
+    <value>الخردل</value>
+  </data>
+  <data name="kitchen_ticket.allergen_sesame" xml:space="preserve">
+    <value>السمسم</value>
+  </data>
+  <data name="kitchen_ticket.allergen_sulphites" xml:space="preserve">
+    <value>الكبريتات</value>
+  </data>
+  <data name="kitchen_ticket.allergen_lupin" xml:space="preserve">
+    <value>الترمس</value>
+  </data>
+  <data name="kitchen_ticket.allergen_molluscs" xml:space="preserve">
+    <value>الرخويات</value>
+  </data>
   <data name="report.x_title" xml:space="preserve">
     <value>تقرير X</value>
   </data>
@@ -492,6 +540,12 @@
   </data>
   <data xml:space="preserve" name="errors.fiscal_date_invalid">
     <value>تاريخ بداية السنة المالية غير صالح (الشهر 1-12، اليوم 1-28).</value>
+  </data>
+  <data xml:space="preserve" name="errors.product_unavailable">
+    <value>المنتج غير متوفر: لا يمكن إضافته إلى الطلب.</value>
+  </data>
+  <data xml:space="preserve" name="errors.allergen_mask_invalid">
+    <value>قائمة مسببات الحساسية غير صالحة.</value>
   </data>
   <data xml:space="preserve" name="errors.fiscal_year_locked">
     <value>لا يمكن تعديل تاريخ بداية السنة المالية بعد تنفيذ إقفال سنوي.</value>

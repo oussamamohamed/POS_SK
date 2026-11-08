@@ -48,12 +48,30 @@ struct CatalogPane: View {
     @Environment(AppModel.self) private var model
     let onSelect: (Product, CourseType) -> Void
     let onCustomize: (Product, CourseType) -> Void
+    @State private var showAllergenFilter = false
+
+    /// Mode « Ruptures » : le toucher bascule la disponibilité ; un plat en rupture ne s'ajoute pas (le serveur le refuserait).
+    private func select(_ product: Product, _ course: CourseType) {
+        if model.catalog.isStockOutMode {
+            Task { await model.catalog.toggleAvailability(product) }
+        } else if !product.isOutOfStock {
+            onSelect(product, course)
+        }
+    }
 
     var body: some View {
         let catalog = model.catalog
         VStack(spacing: 12) {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
+                    ChipButton(title: String(localized: "order.allergen_filter_button"), systemImage: "exclamationmark.triangle", isSelected: catalog.avoidedAllergens != 0) {
+                        showAllergenFilter = true
+                    }
+                    .accessibilityIdentifier("allergen.filter.open")
+                    ChipButton(title: String(localized: "order.out_of_stock_mode"), systemImage: "nosign", isSelected: catalog.isStockOutMode) {
+                        catalog.isStockOutMode.toggle()
+                    }
+                    .accessibilityIdentifier("stockout.mode")
                     ChipButton(title: String(localized: "order.all_menu"), systemImage: "fork.knife", isSelected: catalog.selectedCategoryId == CatalogStore.allCategoryId) {
                         Task { await catalog.selectCategory(CatalogStore.allCategoryId) }
                     }
@@ -75,7 +93,7 @@ struct CatalogPane: View {
                         Label("order.quick_products", systemImage: "bolt.fill").font(.posCaption).foregroundStyle(Theme.warning)
                         ForEach(catalog.quickKeys) { product in
                             Button {
-                                onSelect(product, .direct)
+                                select(product, .direct)
                             } label: {
                                 Text("\(product.name) · \u{2066}\(effectivePrice(product).formatted)\u{2069}")
                                     .font(.posLabel)
@@ -93,7 +111,7 @@ struct CatalogPane: View {
                 }
             }
 
-            ProductGrid(onSelect: onSelect, onCustomize: onCustomize)
+            ProductGrid(onSelect: select, onCustomize: onCustomize)
                 .padding(.horizontal, Theme.Space.l)
 
             if catalog.totalPages > 1 {
@@ -104,6 +122,7 @@ struct CatalogPane: View {
             }
         }
         .padding(.bottom, 12)
+        .sheet(isPresented: $showAllergenFilter) { AllergenFilterSheet() }
     }
 
     private func effectivePrice(_ product: Product) -> Money {
@@ -187,6 +206,9 @@ struct ProductTile: View {
                         .padding(.horizontal, 8)
                         .frame(minWidth: 28, minHeight: 28)
                         .background(Capsule().fill(Theme.primary))
+                } else if product.isOutOfStock {
+                    Text("order.out_of_stock_badge").font(Font.pos(11, .bold)).foregroundStyle(Theme.onPrimary)
+                        .padding(.horizontal, 8).frame(minHeight: 24).background(Capsule().fill(Theme.inkMuted))
                 } else if product.hasModifiers {
                     Image(systemName: "slider.horizontal.3").font(.caption.weight(.semibold)).foregroundStyle(Theme.inkMuted)
                 }
@@ -198,6 +220,7 @@ struct ProductTile: View {
                 .lineLimit(2)
                 .minimumScaleFactor(0.75)
                 .multilineTextAlignment(.leading)
+            allergenLine
             if let hh {
                 HStack(spacing: 6) {
                     Text(hh.standardPrice.formatted).strikethrough().font(Font.posMono(13)).foregroundStyle(Theme.inkSubtle).environment(\.layoutDirection, .leftToRight)
@@ -214,6 +237,7 @@ struct ProductTile: View {
                 .overlay(shape.fill(tint.opacity(0.14)))
         )
         .cardShadow(radius: Theme.smallRadius)
+        .opacity(product.isOutOfStock ? 0.45 : 1)
         .contentShape(shape)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(label), \((hh?.happyHourPrice ?? product.price).formatted)")
@@ -221,6 +245,18 @@ struct ProductTile: View {
         .accessibilityHint(product.hasModifiers ? "order.product_tile_hint_options" : "order.product_tile_hint_add")
         .accessibilityAddTraits(.isButton)
         .accessibilityIdentifier("product.\(product.name)")
+    }
+}
+
+extension ProductTile {
+    /// `⚠ Gluten, Lait`, ou `?` tant que les allergènes ne sont pas renseignés ; rien si le plat n'en contient aucun.
+    @ViewBuilder var allergenLine: some View {
+        if !product.allergensDeclared {
+            Text("?").font(.posCaption).foregroundStyle(Theme.inkSubtle).accessibilityHidden(true)
+        } else if product.allergenMask != 0 {
+            Text("⚠ " + product.declaredAllergens.map { String(localized: String.LocalizationValue("allergen.\($0)")) }.joined(separator: ", "))
+                .font(.posCaption).foregroundStyle(Theme.inkMuted).lineLimit(1)
+        }
     }
 }
 

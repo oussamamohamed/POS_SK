@@ -38,6 +38,12 @@ public actor InMemoryPosAPI: PosAPI {
     private var settingsStore = RestaurantSettings(receiptLanguage: "fr")
     /// Réservations avec leur téléphone en clair (masqué à la lecture pour un non-responsable).
     private var reservationsStore: [Reservation] = []
+    private var ingredientsStore: [Ingredient] = []
+    private var stockMovementsStore: [StockMovement] = []
+    private var stockSettingsStore = StockSettings()
+    private var modifierConsumptionStore: [UUID: [ModifierConsumptionItem]] = [:]
+    private var recipesStore: [UUID: [RecipeLine]] = [:]
+    private var preparationRecipesStore: [UUID: [RecipeLine]] = [:]
 
     /// Journal des appels (utile pour vérifier dans les tests qu'un endpoint a bien été sollicité).
     public private(set) var calls: [String] = []
@@ -184,6 +190,208 @@ public actor InMemoryPosAPI: PosAPI {
         productsStore[i].isActive = false
     }
 
+    public func setAvailability(productId: UUID, isAvailable: Bool) async throws {
+        try await step("setAvailability"); try requireAuth()
+        guard let i = productsStore.firstIndex(where: { $0.id == productId }) else { throw APIError.notFound(nil) }
+        productsStore[i].isAvailable = isAvailable
+    }
+
+    public func setAllergens(productId: UUID, declared: Bool, mask: Int, overridden: Bool) async throws {
+        try await step("setAllergens"); try requireManager()
+        guard Allergens.isValid(mask: mask) else { throw APIError.server(status: 400, message: "Liste d'allergènes invalide.") }
+        guard let i = productsStore.firstIndex(where: { $0.id == productId }) else { throw APIError.notFound(nil) }
+        productsStore[i].allergensDeclared = declared
+        productsStore[i].allergenMask = declared ? mask : 0
+        productsStore[i].allergensOverridden = overridden
+    }
+
+    // MARK: Stock : ingrédients et fiches techniques
+
+    public func ingredients() async throws -> [Ingredient] {
+        try await step("ingredients"); try requireManager()
+        return ingredientsStore.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }.map { i in
+            var copy = i
+            copy.stockMilli = i.isPreparation ? nil : stockLevel(i.id)
+            return copy
+        }
+    }
+
+    public func createIngredient(_ draft: IngredientDraft) async throws -> Ingredient {
+        try await step("createIngredient"); try requireManager()
+        let name = try RecipeRules.validate(draft, otherNames: ingredientsStore.map(\.name))
+        var ingredient = Ingredient(name: name)
+        apply(draft, name: name, to: &ingredient)
+        ingredientsStore.append(ingredient)
+        return ingredient
+    }
+
+    public func updateIngredient(id: UUID, _ draft: IngredientDraft) async throws -> Ingredient {
+        try await step("updateIngredient"); try requireManager()
+        guard let i = ingredientsStore.firstIndex(where: { $0.id == id }) else { throw APIError.notFound(nil) }
+        let name = try RecipeRules.validate(draft, otherNames: ingredientsStore.filter { $0.id != id }.map(\.name))
+        if ingredientsStore[i].unit != draft.unit, isUsed(id) { throw RecipeError.inUse(products: []) }
+        apply(draft, name: name, to: &ingredientsStore[i])
+        return ingredientsStore[i]
+    }
+
+    public func deleteIngredient(id: UUID) async throws {
+        try await step("deleteIngredient"); try requireManager()
+        guard ingredientsStore.contains(where: { $0.id == id }) else { throw APIError.notFound(nil) }
+        if stockMovementsStore.contains(where: { $0.ingredientId == id }) { throw RecipeError.hasMovements }
+        if isUsed(id) {
+            let products = recipesStore.filter { $0.value.contains { $0.ingredientId == id } }.compactMap { owner, _ in productsStore.first { $0.id == owner }?.name }
+            let preps = preparationRecipesStore.filter { $0.value.contains { $0.ingredientId == id } }.compactMap { owner, _ in ingredientsStore.first { $0.id == owner }?.name }
+            throw RecipeError.inUse(products: (products + preps).sorted())
+        }
+        ingredientsStore.removeAll { $0.id == id }
+        preparationRecipesStore[id] = nil
+    }
+
+    public func recipe(productId: UUID) async throws -> Recipe {
+        try await step("recipe"); try requireManager()
+        guard productsStore.contains(where: { $0.id == productId }) else { throw APIError.notFound(nil) }
+        return try recipeResult(recipesStore[productId] ?? [])
+    }
+
+    public func setRecipe(productId: UUID, lines: [RecipeLine]) async throws -> Recipe {
+        try await step("setRecipe"); try requireManager()
+        guard let p = productsStore.firstIndex(where: { $0.id == productId }) else { throw APIError.notFound(nil) }
+        try RecipeRules.checkLines(lines)
+        let result = try recipeResult(lines)
+        recipesStore[productId] = lines.isEmpty ? nil : lines
+        if !lines.isEmpty, !productsStore[p].allergensOverridden {
+            productsStore[p].allergenMask = result.allergenMask
+            productsStore[p].allergensDeclared = true
+        }
+        return result
+    }
+
+    public func preparationRecipe(id: UUID) async throws -> [RecipeLine] {
+        try await step("preparationRecipe"); try requireManager()
+        guard ingredientsStore.contains(where: { $0.id == id && $0.isPreparation }) else { throw APIError.notFound(nil) }
+        return preparationRecipesStore[id] ?? []
+    }
+
+    public func setPreparationRecipe(id: UUID, lines: [RecipeLine]) async throws -> Ingredient {
+        try await step("setPreparationRecipe"); try requireManager()
+        guard let i = ingredientsStore.firstIndex(where: { $0.id == id && $0.isPreparation }) else { throw APIError.notFound(nil) }
+        try RecipeRules.checkLines(lines)
+        var preps = preparationRecipesStore
+        preps[id] = lines
+        ingredientsStore[i].unitCostMilliCents = try RecipeCostCalculator.preparationUnitCost(id, ingredients: ingredientMap(), preparationLines: preps)
+        preparationRecipesStore[id] = lines
+        return ingredientsStore[i]
+    }
+
+    private func ingredientMap() -> [UUID: Ingredient] { Dictionary(uniqueKeysWithValues: ingredientsStore.map { ($0.id, $0) }) }
+
+    private func isUsed(_ ingredient: UUID) -> Bool {
+        recipesStore.values.contains { $0.contains { $0.ingredientId == ingredient } } || preparationRecipesStore.values.contains { $0.contains { $0.ingredientId == ingredient } }
+    }
+
+    private func recipeResult(_ lines: [RecipeLine]) throws -> Recipe {
+        let cost = try RecipeCostCalculator.compute(lines: lines, ingredients: ingredientMap(), preparationLines: preparationRecipesStore)
+        return Recipe(lines: lines, costCents: cost.cents, allergenMask: cost.allergenMask)
+    }
+
+    private func apply(_ d: IngredientDraft, name: String, to i: inout Ingredient) {
+        i.name = name
+        i.unit = d.unit
+        i.isPreparation = d.isPreparation
+        i.yieldMilli = d.isPreparation ? d.yieldMilli : nil
+        i.unitCostMilliCents = d.unitCostMilliCents
+        i.allergenMask = d.allergenMask
+        i.lowStockMilli = d.lowStockMilli
+        i.isActive = d.isActive
+    }
+
+    // MARK: Stock : mouvements et alertes
+
+    private func stockLevel(_ id: UUID) -> Int64 { stockMovementsStore.filter { $0.ingredientId == id }.reduce(0) { $0 + $1.quantityMilli } }
+
+    private func trackedIngredient(_ id: UUID) throws -> Int {
+        guard let i = ingredientsStore.firstIndex(where: { $0.id == id }) else { throw APIError.notFound(nil) }
+        if ingredientsStore[i].isPreparation { throw RecipeError.ingredientInvalid }
+        return i
+    }
+
+    public func receiveStock(ingredientId: UUID, quantityMilli: Int64, unitCostMilliCents: Int64, note: String?) async throws -> StockMovement {
+        try await step("receiveStock"); try requireManager()
+        guard quantityMilli > 0, unitCostMilliCents >= 0 else { throw RecipeError.ingredientInvalid }
+        let i = try trackedIngredient(ingredientId)
+        let stock = stockLevel(ingredientId)
+        if stock > 0 {
+            let sum = U128.zero.adding(UInt64(stock), times: UInt64(max(ingredientsStore[i].unitCostMilliCents, 0))).adding(UInt64(quantityMilli), times: UInt64(unitCostMilliCents))
+            ingredientsStore[i].unitCostMilliCents = Int64((try? sum.divided(by: UInt64(stock + quantityMilli))) ?? 0)
+        } else {
+            ingredientsStore[i].unitCostMilliCents = unitCostMilliCents
+        }
+        let movement = StockMovement(ingredientId: ingredientId, kind: StockMovementKind.receipt, quantityMilli: quantityMilli, unitCostMilliCents: unitCostMilliCents, note: note)
+        stockMovementsStore.append(movement)
+        return movement
+    }
+
+    public func countStock(ingredientId: UUID, countedMilli: Int64, note: String?) async throws -> CountResult {
+        try await step("countStock"); try requireManager()
+        guard countedMilli >= 0 else { throw RecipeError.ingredientInvalid }
+        let i = try trackedIngredient(ingredientId)
+        let variance = countedMilli - stockLevel(ingredientId)
+        let cost = ingredientsStore[i].unitCostMilliCents
+        if variance != 0 {
+            stockMovementsStore.append(StockMovement(ingredientId: ingredientId, kind: StockMovementKind.count, quantityMilli: variance, unitCostMilliCents: cost, note: note))
+        }
+        return CountResult(varianceMilli: variance, valueCents: LocalStockRepository.valueCents(quantityMilli: variance, unitCostMilliCents: cost))
+    }
+
+    public func recordStockLoss(ingredientId: UUID, quantityMilli: Int64, note: String?) async throws -> StockMovement {
+        try await step("recordStockLoss"); try requireManager()
+        guard quantityMilli > 0 else { throw RecipeError.ingredientInvalid }
+        let i = try trackedIngredient(ingredientId)
+        let movement = StockMovement(ingredientId: ingredientId, kind: StockMovementKind.loss, quantityMilli: -quantityMilli, unitCostMilliCents: ingredientsStore[i].unitCostMilliCents, note: note)
+        stockMovementsStore.append(movement)
+        return movement
+    }
+
+    public func stockMovements(ingredientId: UUID?, from: Date?, to: Date?) async throws -> [StockMovement] {
+        try await step("stockMovements"); try requireManager()
+        return stockMovementsStore.filter { (ingredientId == nil || $0.ingredientId == ingredientId) && (from == nil || $0.createdAtUtc >= from!) && (to == nil || $0.createdAtUtc <= to!) }
+            .sorted { $0.createdAtUtc > $1.createdAtUtc }
+    }
+
+    public func modifierConsumption(optionId: UUID) async throws -> [ModifierConsumptionItem] {
+        try await step("modifierConsumption"); try requireManager()
+        return modifierConsumptionStore[optionId] ?? []
+    }
+
+    public func setModifierConsumption(optionId: UUID, items: [ModifierConsumptionItem]) async throws -> [ModifierConsumptionItem] {
+        try await step("setModifierConsumption"); try requireManager()
+        guard productsStore.contains(where: { $0.modifierGroups.contains { $0.options.contains { $0.id == optionId } } }) else { throw APIError.notFound(nil) }
+        let raw = Set(ingredientsStore.filter { !$0.isPreparation }.map(\.id))
+        guard items.allSatisfy({ $0.deltaQuantityMilli != 0 && raw.contains($0.ingredientId) }), Set(items.map(\.ingredientId)).count == items.count else { throw RecipeError.ingredientInvalid }
+        modifierConsumptionStore[optionId] = items
+        return items
+    }
+
+    public func stockAlerts() async throws -> StockAlerts {
+        try await step("stockAlerts"); try requireManager()
+        let low = ingredientsStore.filter { !$0.isPreparation && $0.isActive }.compactMap { i -> LowStockAlert? in
+            guard let threshold = i.lowStockMilli, stockLevel(i.id) <= threshold else { return nil }
+            return LowStockAlert(ingredientId: i.id, name: i.name, unit: i.unit, stockMilli: stockLevel(i.id), lowStockMilli: threshold)
+        }
+        return StockAlerts(lowStock: low)
+    }
+
+    public func stockSettings() async throws -> StockSettings {
+        try await step("stockSettings"); try requireManager()
+        return stockSettingsStore
+    }
+
+    public func saveStockSettings(_ settings: StockSettings) async throws -> StockSettings {
+        try await step("saveStockSettings"); try requireManager()
+        stockSettingsStore = settings
+        return settings
+    }
+
     // MARK: Analyse du menu et réservations
 
     /// Données de démonstration déterministes : les premiers articles avec des quantités décroissantes (pas de lignes de commande fines en mémoire).
@@ -194,7 +402,8 @@ public actor InMemoryPosAPI: PosAPI {
         let sales = zip(productsStore.filter { $0.isActive != false && (categoryId == nil || $0.categoryId == categoryId) }, quantities).map { product, quantity -> MenuSale in
             let htCents = Decimal(product.price.cents) / (1 + product.taxRatePercent / 100) * Decimal(quantity)
             return MenuSale(productId: product.id, name: product.name, categoryName: categoriesStore.first { $0.id == product.categoryId }?.name,
-                            quantity: quantity, revenueHtCents: htCents, unitCostCents: product.cost?.cents)
+                            quantity: quantity, revenueHtCents: htCents,
+                            unitCostCents: recipesStore[product.id].flatMap { try? recipeResult($0).costCents }.map(Int.init) ?? product.cost?.cents)
         }
         return MenuAnalysisCalculator.report(from: from, to: to, sales: sales)
     }
@@ -436,6 +645,9 @@ public actor InMemoryPosAPI: PosAPI {
 
     public func addItems(table: String, items: [OrderItemInput]) async throws -> ActiveOrder {
         try await step("addItems"); try requireAuth()
+        if items.contains(where: { input in productsStore.first { $0.id == input.productId }?.isOutOfStock == true }) {
+            throw APIError.server(status: 409, message: "Produit en rupture : il ne peut pas être ajouté à la commande.")
+        }
         let id = ensureOrder(table: table)
         var order = orders[id]!.order
         for input in items {
@@ -790,14 +1002,28 @@ public actor InMemoryPosAPI: PosAPI {
             vat: [.init(ratePercent: 5.5, baseHt: Money(cents: total / 10), vat: Money(cents: total / 100)), .init(ratePercent: 10, baseHt: Money(cents: total * 7 / 10), vat: Money(cents: total / 14))])
     }
 
+    /// Reçu annulable de la démonstration (identifiant stable pour que l'écran puisse le désigner) et dernier appel d'annulation.
+    public static let voidableReceiptId = UUID(uuidString: "00000000-0000-0000-0000-000000000003")!
+    public private(set) var voidCalls: [(receiptId: UUID, restock: Bool)] = []
+
     public func takingsReceipts(from: Date, to: Date) async throws -> [TakingsReceipt] {
         try await step("takingsReceipts"); try requireManager()
         let base = min(Date(), to)
-        return [
-            TakingsReceipt(receiptNumber: "T01-000003", atUtc: base.addingTimeInterval(-600), tableNumber: "T3", serverName: "Sophie", methods: ["Carte"], totalTtc: Money(cents: 4_650)),
+        let voided = voidCalls.contains { $0.receiptId == Self.voidableReceiptId }
+        var rows = [
+            TakingsReceipt(id: Self.voidableReceiptId, receiptNumber: "T01-000003", atUtc: base.addingTimeInterval(-600), tableNumber: "T3", serverName: "Sophie", methods: ["Carte"], totalTtc: Money(cents: 4_650), isCancelled: voided),
             TakingsReceipt(receiptNumber: "T01-000002", atUtc: base.addingTimeInterval(-3_000), tableNumber: "T2", serverName: "Marc", methods: ["Espèces"], totalTtc: Money(cents: 2_400), isCancelled: true),
             TakingsReceipt(receiptNumber: "T01-000001", atUtc: base.addingTimeInterval(-3_100), tableNumber: "T2", serverName: "Marc", methods: ["Espèces"], totalTtc: Money(cents: -2_400), isCredit: true)
         ]
+        if voided { rows.insert(TakingsReceipt(receiptNumber: "T01-000004", atUtc: base.addingTimeInterval(-60), tableNumber: "T3", serverName: "Sophie", methods: ["Carte"], totalTtc: Money(cents: -4_650), isCredit: true), at: 0) }
+        return rows
+    }
+
+    public func voidReceipt(receiptId: UUID, restock: Bool) async throws -> OperationResult {
+        try await step("voidReceipt"); try requireManager()
+        guard receiptId == Self.voidableReceiptId, !voidCalls.contains(where: { $0.receiptId == receiptId }) else { throw APIError.server(status: 400, message: "Annulation du reçu impossible.") }
+        voidCalls.append((receiptId, restock))
+        return OperationResult(success: true, message: "T01-000003")
     }
 
     public func journalToday(tzOffsetMinutes: Int) async throws -> [JournalEntry] {
@@ -1151,8 +1377,8 @@ enum Seed {
         let ipa = Product(name: "Bière Artisanale IPA 33cl", categoryId: "CAT_DRINKS", price: Money(cents: 600), taxRatePercent: 20, colorHex: "#2980B9", displayOrder: 1, isQuickKey: true, preparationStationId: "BAR", cost: Money(cents: 150))
         let products = [
             ipa,
-            Product(name: "Burger Gourmet Rossini", categoryId: "CAT_MAINS", price: Money(cents: 1950), taxRatePercent: 10, colorHex: "#C0392B", displayOrder: 1, isQuickKey: true, preparationStationId: "HOT_KITCHEN", modifierGroups: [cooking, extras], cost: Money(cents: 520)),
-            Product(name: "Pizza Margherita AOP", categoryId: "CAT_PIZZAS", price: Money(cents: 1250), taxRatePercent: 10, taxRateTakeawayPercent: 5.5, colorHex: "#D35400", displayOrder: 1, isQuickKey: true, preparationStationId: "HOT_KITCHEN", cost: Money(cents: 260)),
+            Product(name: "Burger Gourmet Rossini", categoryId: "CAT_MAINS", price: Money(cents: 1950), taxRatePercent: 10, colorHex: "#C0392B", displayOrder: 1, isQuickKey: true, preparationStationId: "HOT_KITCHEN", modifierGroups: [cooking, extras], cost: Money(cents: 520), allergenMask: 65, allergensDeclared: true),
+            Product(name: "Pizza Margherita AOP", categoryId: "CAT_PIZZAS", price: Money(cents: 1250), taxRatePercent: 10, taxRateTakeawayPercent: 5.5, colorHex: "#D35400", displayOrder: 1, isQuickKey: true, preparationStationId: "HOT_KITCHEN", cost: Money(cents: 260), allergenMask: 0, allergensDeclared: true),
             Product(name: "Salade César Poulet", categoryId: "CAT_STARTERS", price: Money(cents: 1100), taxRatePercent: 10, taxRateTakeawayPercent: 5.5, colorHex: "#27AE60", displayOrder: 1, preparationStationId: "COLD", cost: Money(cents: 280)),
             Product(name: "Tartare de Saumon", categoryId: "CAT_STARTERS", price: Money(cents: 1350), taxRatePercent: 10, colorHex: "#16A085", displayOrder: 2, preparationStationId: "COLD", cost: Money(cents: 450)),
             Product(name: "Entrecôte 300g", categoryId: "CAT_MAINS", price: Money(cents: 2600), taxRatePercent: 10, colorHex: "#922B21", displayOrder: 2, preparationStationId: "GRILL", modifierGroups: [cooking], cost: Money(cents: 900)),

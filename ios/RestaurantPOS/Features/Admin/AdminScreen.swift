@@ -4,13 +4,14 @@ import PosKit
 /// Back-office (responsables) : navigation par sous-section.
 struct AdminScreen: View {
     enum Section: String, CaseIterable, Identifiable {
-        case dashboard, catalog, grid, staff, printers, happyHour, establishment, network
+        case dashboard, catalog, stock, grid, staff, printers, happyHour, establishment, network
         var id: String { rawValue }
 
         var title: String {
             switch self {
             case .dashboard: String(localized: "admin.section_dashboard")
             case .catalog: String(localized: "admin.section_catalog")
+            case .stock: String(localized: "admin.section_stock")
             case .grid: String(localized: "admin.section_grid")
             case .staff: String(localized: "admin.section_staff")
             case .printers: String(localized: "admin.section_printers")
@@ -24,6 +25,7 @@ struct AdminScreen: View {
             switch self {
             case .dashboard: "chart.bar.xaxis"
             case .catalog: "menucard"
+            case .stock: "carrot"
             case .grid: "square.grid.4x3.fill"
             case .staff: "person.3"
             case .printers: "printer"
@@ -53,6 +55,7 @@ struct AdminScreen: View {
                 switch section ?? .dashboard {
                 case .dashboard: DashboardView()
                 case .catalog: CatalogAdminView()
+                case .stock: StockAdminView()
                 case .grid: GridEditorView()
                 case .staff: StaffAdminView()
                 case .printers: PrintersAdminView()
@@ -268,6 +271,12 @@ struct ProductEditorSheet: View {
     @State private var priceText = ""
     @State private var costText = ""
     @State private var color: Color = .blue
+    @State private var allergensDeclared = false
+    @State private var allergenMask = 0
+    @State private var recipeLines: [RecipeLine] = []
+    @State private var recipeDirty = false
+    @State private var optionItems: [UUID: [ModifierConsumptionItem]] = [:]
+    @State private var optionsDirty: Set<UUID> = []
 
     var body: some View {
         NavigationStack {
@@ -298,6 +307,13 @@ struct ProductEditorSheet: View {
                     ColorPicker("admin.tile_color_label", selection: $color, supportsOpacity: false)
                     TextField("admin.description_placeholder", text: $draft.description, axis: .vertical)
                 }
+                if productId != nil {
+                    RecipeEditorSection(lines: $recipeLines, isDirty: $recipeDirty)
+                    if let id = productId, let groups = model.catalog.product(id: id)?.modifierGroups, !groups.isEmpty {
+                        OptionConsumptionSection(groups: groups, items: $optionItems, dirty: $optionsDirty)
+                    }
+                    AllergenEditorSection(declared: $allergensDeclared, mask: $allergenMask)
+                }
             }
             .navigationTitle(productId == nil ? "admin.new_product" : "admin.edit_product")
             .navigationBarTitleDisplayMode(.inline)
@@ -309,7 +325,23 @@ struct ProductEditorSheet: View {
                         // Vide = pas de coût (effacé s'il y en avait un) ; saisie invalide = coût inchangé.
                         draft.cost = costText.isEmpty ? nil : (Money.parse(costText) ?? draft.cost)
                         draft.colorHex = color.hexString
-                        Task { if await model.catalogAdmin.saveProduct(id: productId, draft: draft) { dismiss() } }
+                        Task {
+                            guard await model.catalogAdmin.saveProduct(id: productId, draft: draft) else { return }
+                            for option in optionsDirty {
+                                guard await model.stock.saveConsumption(optionId: option, items: optionItems[option] ?? []) else { return }
+                            }
+                            // La fiche déduit les allergènes du produit : on la sauvegarde avant de relire le catalogue.
+                            if recipeDirty, let id = productId {
+                                guard await model.stock.saveRecipe(productId: id, lines: recipeLines) else { return }
+                                await model.catalog.load()
+                            }
+                            // saveProduct recharge le catalogue : on relit le produit pour ne réécrire les allergènes que s'ils ont changé.
+                            if let id = productId, let current = model.catalog.product(id: id),
+                               current.allergensDeclared != allergensDeclared || current.allergenMask != (allergensDeclared ? allergenMask : 0) {
+                                guard await model.catalog.saveAllergens(current, declared: allergensDeclared, mask: allergenMask) else { return }
+                            }
+                            dismiss()
+                        }
                     }
                     .accessibilityIdentifier("product.save")
                 }
@@ -318,6 +350,16 @@ struct ProductEditorSheet: View {
                 priceText = draft.price.cents > 0 ? draft.price.plain : ""
                 costText = draft.cost?.plain ?? ""
                 color = Color(hex: draft.colorHex) ?? .blue
+                if let id = productId {
+                    Task {
+                        await model.stock.load()
+                        recipeLines = await model.stock.recipe(productId: id)?.lines ?? []
+                    }
+                }
+                if let id = productId, let product = model.catalog.product(id: id) {
+                    allergensDeclared = product.allergensDeclared
+                    allergenMask = product.allergenMask
+                }
             }
         }
     }

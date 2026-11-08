@@ -99,6 +99,8 @@ public partial class Program
         builder.Services.AddScoped<IFinancialDashboardService, FinancialDashboardService>();
         builder.Services.AddScoped<IMenuAnalysisService, MenuAnalysisService>();
         builder.Services.AddScoped<IReservationService, ReservationService>();
+        builder.Services.AddScoped<IRecipeService, RecipeService>();
+        builder.Services.AddScoped<IStockService, StockService>();
         builder.Services.AddScoped<IOrderDiscountService, OrderDiscountService>();
         builder.Services.AddScoped<IRoomBillingService, RoomBillingService>();
         builder.Services.AddScoped<IGridManagementService, GridManagementService>();
@@ -209,6 +211,10 @@ public partial class Program
             try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE Products ADD COLUMN IsFoodVoucherEligible INTEGER NOT NULL DEFAULT 1;"); } catch { }
             try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE Products ADD COLUMN TaxRateTakeawayPercent TEXT NULL;"); } catch { }
             try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE Products ADD COLUMN Cost INTEGER NULL;"); } catch { }
+            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE Products ADD COLUMN AllergenMask INTEGER NOT NULL DEFAULT 0;"); } catch { }
+            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE Products ADD COLUMN AllergensDeclared INTEGER NOT NULL DEFAULT 0;"); } catch { }
+            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE Products ADD COLUMN AllergensOverridden INTEGER NOT NULL DEFAULT 0;"); } catch { }
+            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE Products ADD COLUMN AutoUnavailable INTEGER NOT NULL DEFAULT 0;"); } catch { }
             try { dbContext.Database.ExecuteSqlRaw(@"CREATE TABLE IF NOT EXISTS Reservations (
                 Id TEXT PRIMARY KEY,
                 GuestName TEXT NOT NULL,
@@ -225,6 +231,48 @@ public partial class Program
             );"); } catch { }
             try { dbContext.Database.ExecuteSqlRaw("CREATE INDEX IF NOT EXISTS IX_Reservations_StartsAtUtc ON Reservations (StartsAtUtc);"); } catch { }
             try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE Reservations ADD COLUMN QuoteMinutes INTEGER NULL;"); } catch { }
+            try { dbContext.Database.ExecuteSqlRaw(@"CREATE TABLE IF NOT EXISTS Ingredients (
+                Id TEXT PRIMARY KEY,
+                Name TEXT NOT NULL,
+                Unit TEXT NOT NULL,
+                UnitCostMilliCents INTEGER NOT NULL DEFAULT 0,
+                IsPreparation INTEGER NOT NULL DEFAULT 0,
+                YieldMilli INTEGER NULL,
+                AllergenMask INTEGER NOT NULL DEFAULT 0,
+                LowStockMilli INTEGER NULL,
+                IsActive INTEGER NOT NULL DEFAULT 1
+            );"); } catch { }
+            try { dbContext.Database.ExecuteSqlRaw(@"CREATE TABLE IF NOT EXISTS RecipeLines (
+                Id TEXT PRIMARY KEY,
+                OwnerKind TEXT NOT NULL,
+                OwnerId TEXT NOT NULL,
+                IngredientId TEXT NOT NULL,
+                QuantityMilli INTEGER NOT NULL
+            );"); } catch { }
+            try { dbContext.Database.ExecuteSqlRaw("CREATE UNIQUE INDEX IF NOT EXISTS IX_RecipeLines_OwnerKind_OwnerId_IngredientId ON RecipeLines (OwnerKind, OwnerId, IngredientId);"); } catch { }
+            try { dbContext.Database.ExecuteSqlRaw("CREATE INDEX IF NOT EXISTS IX_RecipeLines_IngredientId ON RecipeLines (IngredientId);"); } catch { }
+            try { dbContext.Database.ExecuteSqlRaw(@"CREATE TABLE IF NOT EXISTS StockMovements (
+                Id TEXT PRIMARY KEY,
+                IngredientId TEXT NOT NULL,
+                Kind TEXT NOT NULL,
+                QuantityMilli INTEGER NOT NULL,
+                UnitCostMilliCents INTEGER NULL,
+                OrderId TEXT NULL,
+                OperatorId TEXT NULL,
+                Note TEXT NULL,
+                CreatedAtUtc TEXT NOT NULL
+            );"); } catch { }
+            try { dbContext.Database.ExecuteSqlRaw("CREATE INDEX IF NOT EXISTS IX_StockMovements_IngredientId ON StockMovements (IngredientId);"); } catch { }
+            try { dbContext.Database.ExecuteSqlRaw("CREATE INDEX IF NOT EXISTS IX_StockMovements_OrderId ON StockMovements (OrderId);"); } catch { }
+            // Une vente ne s'écrit qu'une fois par commande et ingrédient ; les mouvements sont en ajout seulement (voir StockSchema).
+            foreach (var statement in StockSchema.Statements) { try { dbContext.Database.ExecuteSqlRaw(statement); } catch { } }
+            try { dbContext.Database.ExecuteSqlRaw(@"CREATE TABLE IF NOT EXISTS ModifierOptionConsumptions (
+                Id TEXT PRIMARY KEY,
+                OptionId TEXT NOT NULL,
+                IngredientId TEXT NOT NULL,
+                DeltaQuantityMilli INTEGER NOT NULL
+            );"); } catch { }
+            try { dbContext.Database.ExecuteSqlRaw("CREATE UNIQUE INDEX IF NOT EXISTS IX_ModifierOptionConsumptions_OptionId_IngredientId ON ModifierOptionConsumptions (OptionId, IngredientId);"); } catch { }
             try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE OrderItems ADD COLUMN IsFoodVoucherEligible INTEGER NOT NULL DEFAULT 1;"); } catch { }
             try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE OrderItems ADD COLUMN TaxRateTakeawayPercent TEXT NULL;"); } catch { }
             try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE Orders ADD COLUMN Destination INTEGER NOT NULL DEFAULT 0;"); } catch { }
@@ -327,6 +375,9 @@ public partial class Program
             try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE RestaurantSettings ADD COLUMN CertificateNumber TEXT NULL;"); } catch { }
             try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE RestaurantSettings ADD COLUMN FiscalYearStartMonth INTEGER NOT NULL DEFAULT 1;"); } catch { }
             try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE RestaurantSettings ADD COLUMN FiscalYearStartDay INTEGER NOT NULL DEFAULT 1;"); } catch { }
+            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE RestaurantSettings ADD COLUMN AutoUnavailableOnStockOut INTEGER NOT NULL DEFAULT 0;"); } catch { }
+            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE RestaurantSettings ADD COLUMN PrintAllergensOnKitchenTicket INTEGER NOT NULL DEFAULT 0;"); } catch { }
+            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE RestaurantSettings ADD COLUMN AllergenDisclaimer TEXT NULL;"); } catch { }
             try { dbContext.Database.ExecuteSqlRaw(@"CREATE TABLE IF NOT EXISTS PeriodClosures (
                 Id TEXT PRIMARY KEY,
                 TerminalId TEXT NOT NULL,
@@ -532,6 +583,7 @@ public partial class Program
         app.MapDashboardEndpoints();
         app.MapMenuAnalysisEndpoints();
         app.MapReservationEndpoints();
+        app.MapStockEndpoints();
         app.MapCounterSaleEndpoints();
         app.MapHappyHourEndpoints();
 
@@ -870,6 +922,8 @@ public record UpdatePrinterRequest(string Name, string IpAddress, int Port, int 
 public record OpenTableRequest(string? WaiterName, int CoversCount, Guid? OperatorId);
 public record ZClosureRequest(string TerminalId, Guid ManagerId, string ManagerName);
 public record AddOrderItemsRequest(List<OrderItemInputDto> Items);
+public record SetAvailabilityRequest(bool IsAvailable);
+public record SetAllergensRequest(bool Declared, int Mask, bool Overridden);
 public record PaymentSettlementRequest(Guid OrderId, string? TableNumber, Guid? OperatorId, List<TenderItemRequest> Tenders, string? TerminalId = null, bool RequestReceiptPrint = false, decimal TipAmount = 0m);
 public record TenderItemRequest(PaymentMethod Method, decimal Amount, decimal Tendered, decimal ChangeGiven);
 public record TransferTableRequest(string TargetTableNumber);

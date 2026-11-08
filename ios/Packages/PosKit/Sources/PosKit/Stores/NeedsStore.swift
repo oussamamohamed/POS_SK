@@ -3,7 +3,7 @@ import Observation
 
 /// Une chose qui attend un humain maintenant (cloche « à traiter » et pastilles de navigation).
 public struct NeedItem: Identifiable, Hashable, Sendable {
-    public enum Kind: Hashable, Sendable { case bill, lateFood, lateBooking, waitlist }
+    public enum Kind: Hashable, Sendable { case bill, lateFood, lateBooking, waitlist, lowStock }
     public let kind: Kind
     public let id: String
     public let title: String
@@ -40,6 +40,7 @@ public final class NeedsStore {
         async let tables = try? api.tables()
         async let tickets = try? api.kitchenTickets()
         async let reservations = try? api.reservations(from: start, to: end)
+        async let stock = try? api.stockAlerts() // réservé aux responsables : nil pour les autres
         var found: [NeedItem] = []
         let time: (Date) -> String = { $0.formatted(date: .omitted, time: .shortened) }
 
@@ -73,6 +74,14 @@ public final class NeedsStore {
                     subtitle: String(format: L10n.string("needs.waitlist_sub"), r.covers, quote),
                     since: r.startsAtUtc, target: r.id.uuidString))
             }
+        }
+        for alert in await stock?.lowStock ?? [] {
+            let unit = L10n.string("stock.unit_short_\(alert.unit)")
+            found.append(NeedItem(
+                kind: .lowStock, id: "stock-\(alert.ingredientId)",
+                title: String(format: L10n.string("needs.low_stock"), alert.name),
+                subtitle: String(format: L10n.string("needs.low_stock_sub"), "\(Ingredient.quantity(fromMilli: alert.stockMilli))", unit, "\(Ingredient.quantity(fromMilli: alert.lowStockMilli))"),
+                since: current, target: alert.ingredientId.uuidString))
         }
         items = found.sorted { $0.since < $1.since }
     }

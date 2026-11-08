@@ -5,6 +5,7 @@ import PosKit
 struct TakingsReceiptsCard: View {
     @Environment(AppModel.self) private var model
     let store: TakingsStore
+    @State private var voiding: TakingsReceipt?
 
     var body: some View {
         Card {
@@ -20,6 +21,7 @@ struct TakingsReceiptsCard: View {
         }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("takings.receipts")
+        .sheet(item: $voiding) { VoidReceiptSheet(store: store, receipt: $0) }
     }
 
     private func row(_ r: TakingsReceipt) -> some View {
@@ -35,11 +37,18 @@ struct TakingsReceiptsCard: View {
             Text(r.methods.joined(separator: ", ")).frame(width: 150, alignment: .leading).lineLimit(1).foregroundStyle(Theme.inkMuted)
             Text(r.totalTtc.formatted).frame(width: 100, alignment: .trailing)
             if r.isCredit {
-                Color.clear.frame(width: 110, height: 1)
+                Color.clear.frame(width: 200, height: 1)
             } else {
                 Button("takings.reprint") { Task { await reprint(r) } }
                     .font(.posLabel).frame(width: 110)
                     .accessibilityIdentifier("takings.reprint.\(r.receiptNumber)")
+                if r.isCancelled {
+                    Color.clear.frame(width: 90, height: 1)
+                } else {
+                    Button("takings.void") { voiding = r }
+                        .font(.posLabel).foregroundStyle(Theme.danger).frame(width: 90)
+                        .accessibilityIdentifier("takings.void.\(r.receiptNumber)")
+                }
             }
         }
         .font(Font.posMono(13)).foregroundStyle(Theme.ink).environment(\.layoutDirection, .leftToRight)
@@ -93,5 +102,32 @@ struct TakingsJournalCard: View {
     /// Libellé traduit de l'événement (`journal.<TYPE>`), le code brut à défaut.
     static func label(_ type: String) -> String {
         Bundle.main.localizedString(forKey: "journal.\(type)", value: type, table: nil)
+    }
+}
+
+/// Annulation d'un reçu par avoir, avec la case « produit non consommé » qui remet les ingrédients en stock.
+struct VoidReceiptSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    let store: TakingsStore
+    let receipt: TakingsReceipt
+    @State private var restock = false
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section { Text("takings.void_hint").foregroundStyle(Theme.inkMuted) }
+                Section { Toggle("takings.void_restock", isOn: $restock).accessibilityIdentifier("void.restock") }
+            }
+            .navigationTitle(Text("takings.void_title \(receipt.receiptNumber)"))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) { Button("common.cancel") { dismiss() } }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("takings.void_confirm") { Task { if await store.void(receipt, restock: restock) { dismiss() } } }
+                        .accessibilityIdentifier("void.confirm")
+                }
+            }
+        }
+        .presentationDetents([.medium])
     }
 }

@@ -4,10 +4,13 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using RestaurantPos.Api.Hubs;
 using RestaurantPos.Application.Common.Interfaces;
 using RestaurantPos.Application.DTOs;
 using RestaurantPos.Domain.Common;
+using RestaurantPos.Domain.ValueObjects;
 using RestaurantPos.Infrastructure.Localization;
 
 namespace RestaurantPos.Api.Endpoints;
@@ -93,6 +96,9 @@ public static class CatalogEndpoints
                     p.IsQuickKey,
                     p.PreparationStationId,
                     p.IsAvailable,
+                    p.AllergenMask,
+                    p.AllergensDeclared,
+                    p.AllergensOverridden,
                     p.IsActive,
                     HasModifiers = groups.Count > 0,
                     ModifierGroups = groups
@@ -183,7 +189,7 @@ public static class CatalogEndpoints
                 req.Description,
                 req.ColorHex,
                 req.DisplayOrder,
-                req.IsAvailable ?? true,
+                req.IsAvailable,
                 req.IsActive ?? true,
                 req.IsQuickKey,
                 req.StationId,
@@ -201,6 +207,27 @@ public static class CatalogEndpoints
                 updated.PreparationStationId,
                 updated.IsActive
             });
+        }).RequireAuthorization("RequireManagerOrAdmin");
+
+        // Rupture : tout opérateur authentifié (un serveur la signale en salle), diffusée à tous les postes.
+        group.MapPut("/products/{id:guid}/availability", async (Guid id, SetAvailabilityRequest req, IBackOfficeCatalogService catalog, IHubContext<PosHub, IPosHubClient> hub) =>
+        {
+            var product = await catalog.SetProductAvailabilityAsync(id, req.IsAvailable);
+            if (product is null) return Results.NotFound();
+            await hub.Clients.All.OnProductAvailabilityChanged(product.Id, product.IsAvailable);
+            return Results.Ok(new { product.Id, product.Name, product.IsAvailable });
+        });
+
+        group.MapPut("/products/{id:guid}/allergens", async (Guid id, SetAllergensRequest req, IBackOfficeCatalogService catalog) =>
+        {
+            if (!Allergens.IsValidMask(req.Mask))
+            {
+                return Results.BadRequest(new { Message = Texts.T("errors.allergen_mask_invalid") });
+            }
+            var product = await catalog.SetProductAllergensAsync(id, req.Declared, req.Mask, req.Overridden);
+            return product is null
+                ? Results.NotFound()
+                : Results.Ok(new { product.Id, product.AllergenMask, product.AllergensDeclared, product.AllergensOverridden });
         }).RequireAuthorization("RequireManagerOrAdmin");
 
         group.MapDelete("/products/{id:guid}", async (Guid id, IBackOfficeCatalogService catalog) =>

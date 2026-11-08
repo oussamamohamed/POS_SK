@@ -10,6 +10,7 @@ enum SQLValue: Equatable, Sendable {
     case blob(Data)
 
     static func integer(_ v: Int?) -> SQLValue { v.map { .int(Int64($0)) } ?? .null }
+    static func int64(_ v: Int64?) -> SQLValue { v.map { .int($0) } ?? .null }
     static func bool(_ v: Bool) -> SQLValue { .int(v ? 1 : 0) }
     static func string(_ v: String?) -> SQLValue { v.map { .text($0) } ?? .null }
     static func real(_ v: Double?) -> SQLValue { v.map { .double($0) } ?? .null }
@@ -38,6 +39,7 @@ struct SQLRow {
 
     func string(_ c: String) -> String? { if case .text(let s) = self[c] { s } else { nil } }
     func int(_ c: String) -> Int? { if case .int(let v) = self[c] { Int(v) } else { nil } }
+    func int64(_ c: String) -> Int64? { if case .int(let v) = self[c] { v } else { nil } }
     func double(_ c: String) -> Double? {
         switch self[c] {
         case .double(let d): d

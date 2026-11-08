@@ -9,6 +9,22 @@
       "admin.payment_method_meal_voucher": "Meal Vouchers",
       "admin.payment_method_other": "Other Payment",
       "admin.payment_method_room_charge": "Room Charge (PMS)",
+      "kitchen_ticket.allergen_celery": "Celery",
+      "kitchen_ticket.allergen_crustaceans": "Crustaceans",
+      "kitchen_ticket.allergen_eggs": "Eggs",
+      "kitchen_ticket.allergen_fish": "Fish",
+      "kitchen_ticket.allergen_gluten": "Gluten",
+      "kitchen_ticket.allergen_lupin": "Lupin",
+      "kitchen_ticket.allergen_milk": "Milk",
+      "kitchen_ticket.allergen_molluscs": "Molluscs",
+      "kitchen_ticket.allergen_mustard": "Mustard",
+      "kitchen_ticket.allergen_nuts": "Nuts",
+      "kitchen_ticket.allergen_peanuts": "Peanuts",
+      "kitchen_ticket.allergen_sesame": "Sesame",
+      "kitchen_ticket.allergen_soy": "Soy",
+      "kitchen_ticket.allergen_sulphites": "Sulphites",
+      "kitchen_ticket.allergens": "ALLERGENS: {list}",
+      "kitchen_ticket.allergens_unknown": "ALLERGENS NOT DECLARED",
       "kitchen_ticket.buzzer": "Buzzer {buzzer}",
       "kitchen_ticket.comment": "Note: {comment}",
       "kitchen_ticket.course_dessert": "Dessert",
@@ -66,6 +82,22 @@
       "admin.payment_method_meal_voucher": "Titres Restaurant",
       "admin.payment_method_other": "Autre Règlement",
       "admin.payment_method_room_charge": "Note de Chambre (PMS)",
+      "kitchen_ticket.allergen_celery": "Céleri",
+      "kitchen_ticket.allergen_crustaceans": "Crustacés",
+      "kitchen_ticket.allergen_eggs": "Œufs",
+      "kitchen_ticket.allergen_fish": "Poissons",
+      "kitchen_ticket.allergen_gluten": "Gluten",
+      "kitchen_ticket.allergen_lupin": "Lupin",
+      "kitchen_ticket.allergen_milk": "Lait",
+      "kitchen_ticket.allergen_molluscs": "Mollusques",
+      "kitchen_ticket.allergen_mustard": "Moutarde",
+      "kitchen_ticket.allergen_nuts": "Fruits à coque",
+      "kitchen_ticket.allergen_peanuts": "Arachides",
+      "kitchen_ticket.allergen_sesame": "Sésame",
+      "kitchen_ticket.allergen_soy": "Soja",
+      "kitchen_ticket.allergen_sulphites": "Sulfites",
+      "kitchen_ticket.allergens": "ALLERGÈNES : {list}",
+      "kitchen_ticket.allergens_unknown": "ALLERGÈNES NON RENSEIGNÉS",
       "kitchen_ticket.buzzer": "Bipeur {buzzer}",
       "kitchen_ticket.comment": "Note : {comment}",
       "kitchen_ticket.course_dessert": "Dessert",
@@ -123,6 +155,22 @@
       "admin.payment_method_meal_voucher": "قسائم مطعم",
       "admin.payment_method_other": "دفع آخر",
       "admin.payment_method_room_charge": "التحميل على غرفة الفندق (PMS)",
+      "kitchen_ticket.allergen_celery": "الكرفس",
+      "kitchen_ticket.allergen_crustaceans": "القشريات",
+      "kitchen_ticket.allergen_eggs": "البيض",
+      "kitchen_ticket.allergen_fish": "السمك",
+      "kitchen_ticket.allergen_gluten": "الغلوتين",
+      "kitchen_ticket.allergen_lupin": "الترمس",
+      "kitchen_ticket.allergen_milk": "الحليب",
+      "kitchen_ticket.allergen_molluscs": "الرخويات",
+      "kitchen_ticket.allergen_mustard": "الخردل",
+      "kitchen_ticket.allergen_nuts": "المكسرات",
+      "kitchen_ticket.allergen_peanuts": "الفول السوداني",
+      "kitchen_ticket.allergen_sesame": "السمسم",
+      "kitchen_ticket.allergen_soy": "الصويا",
+      "kitchen_ticket.allergen_sulphites": "الكبريتات",
+      "kitchen_ticket.allergens": "مسببات الحساسية: {list}",
+      "kitchen_ticket.allergens_unknown": "مسببات الحساسية غير محددة",
       "kitchen_ticket.buzzer": "جهاز النداء {buzzer}",
       "kitchen_ticket.comment": "ملاحظة: {comment}",
       "kitchen_ticket.course_dessert": "حلوى",
@@ -2990,7 +3038,8 @@
               "course": 0
             }
           ]
-        }
+        },
+        "allergens": null
       },
       "expected": {
         "language": "en",
@@ -3142,7 +3191,8 @@
               "course": 3
             }
           ]
-        }
+        },
+        "allergens": null
       },
       "expected": {
         "language": "fr",
@@ -3297,7 +3347,8 @@
               "course": 0
             }
           ]
-        }
+        },
+        "allergens": null
       },
       "expected": {
         "language": "ar",
@@ -3341,6 +3392,449 @@
             "text": "+ بدون بصل",
             "align": 0,
             "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "فوري",
+            "align": 0,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "kitchen_allergens_fr",
+      "kind": "kitchenTicket",
+      "language": "fr",
+      "input": {
+        "kitchen": {
+          "serverName": "Paul",
+          "coversCount": 4,
+          "dispatchedAtUtc": "2025-01-15T19:45:00.000Z",
+          "items": [
+            {
+              "quantity": 1,
+              "productName": "Salade César",
+              "productId": "22222222-2222-2222-2222-222222222222",
+              "modifiersSummary": null,
+              "kitchenComment": null
+            },
+            {
+              "quantity": 1,
+              "productName": "Tiramisu",
+              "productId": "33333333-3333-3333-3333-333333333333",
+              "modifiersSummary": null,
+              "kitchenComment": null
+            },
+            {
+              "quantity": 1,
+              "productName": "Café",
+              "productId": "44444444-4444-4444-4444-444444444444",
+              "modifiersSummary": null,
+              "kitchenComment": null
+            },
+            {
+              "quantity": 1,
+              "productName": "Plat disparu",
+              "productId": "99999999-9999-9999-9999-999999999999",
+              "modifiersSummary": null,
+              "kitchenComment": null
+            }
+          ]
+        },
+        "order": {
+          "destination": 1,
+          "tableNumber": "21",
+          "pickupNumber": null,
+          "pickupBuzzer": null,
+          "items": [
+            {
+              "quantity": 1,
+              "productName": "Salade César",
+              "productId": "22222222-2222-2222-2222-222222222222",
+              "totalTtcCents": 1100,
+              "selectedModifiers": [],
+              "course": 1
+            },
+            {
+              "quantity": 1,
+              "productName": "Tiramisu",
+              "productId": "33333333-3333-3333-3333-333333333333",
+              "totalTtcCents": 600,
+              "selectedModifiers": [],
+              "course": 2
+            },
+            {
+              "quantity": 1,
+              "productName": "Café",
+              "productId": "44444444-4444-4444-4444-444444444444",
+              "totalTtcCents": 250,
+              "selectedModifiers": [],
+              "course": 3
+            }
+          ]
+        },
+        "allergens": {
+          "byProduct": {
+            "22222222-2222-2222-2222-222222222222": {
+              "declared": true,
+              "mask": 13
+            },
+            "33333333-3333-3333-3333-333333333333": {
+              "declared": true,
+              "mask": 0
+            },
+            "44444444-4444-4444-4444-444444444444": {
+              "declared": false,
+              "mask": 0
+            }
+          },
+          "disclaimer": "Demandez conseil : nos plats peuvent contenir des traces."
+        }
+      },
+      "expected": {
+        "language": "fr",
+        "rightToLeft": false,
+        "lines": [
+          {
+            "type": "TicketText",
+            "text": "TABLE 21",
+            "align": 1,
+            "bold": false,
+            "large": true
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Serveur",
+            "value": "Paul"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Couverts",
+            "value": "4"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Heure",
+            "value": "20:45"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "1x Salade César",
+            "align": 0,
+            "bold": false,
+            "large": true
+          },
+          {
+            "type": "TicketText",
+            "text": "ALLERGÈNES : Gluten, Œufs, Poissons",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Suite",
+            "align": 0,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "1x Tiramisu",
+            "align": 0,
+            "bold": false,
+            "large": true
+          },
+          {
+            "type": "TicketText",
+            "text": "Dessert",
+            "align": 0,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "1x Café",
+            "align": 0,
+            "bold": false,
+            "large": true
+          },
+          {
+            "type": "TicketText",
+            "text": "ALLERGÈNES NON RENSEIGNÉS",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "À la demande",
+            "align": 0,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "1x Plat disparu",
+            "align": 0,
+            "bold": false,
+            "large": true
+          },
+          {
+            "type": "TicketText",
+            "text": "ALLERGÈNES NON RENSEIGNÉS",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Direct",
+            "align": 0,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Demandez conseil : nos plats peuvent contenir des traces.",
+            "align": 0,
+            "bold": false,
+            "large": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "kitchen_allergens_en",
+      "kind": "kitchenTicket",
+      "language": "en",
+      "input": {
+        "kitchen": {
+          "serverName": "Marie",
+          "coversCount": 1,
+          "dispatchedAtUtc": "2025-07-15T10:30:45.000Z",
+          "items": [
+            {
+              "quantity": 2,
+              "productName": "Burger maison",
+              "productId": "11111111-1111-1111-1111-111111111111",
+              "modifiersSummary": null,
+              "kitchenComment": null
+            }
+          ]
+        },
+        "order": {
+          "destination": 0,
+          "tableNumber": "Comptoir",
+          "pickupNumber": "C03",
+          "pickupBuzzer": "12",
+          "items": [
+            {
+              "quantity": 2,
+              "productName": "Burger maison",
+              "productId": "11111111-1111-1111-1111-111111111111",
+              "totalTtcCents": 2900,
+              "selectedModifiers": [],
+              "course": 0
+            }
+          ]
+        },
+        "allergens": {
+          "byProduct": {
+            "11111111-1111-1111-1111-111111111111": {
+              "declared": true,
+              "mask": 8257
+            }
+          },
+          "disclaimer": null
+        }
+      },
+      "expected": {
+        "language": "en",
+        "rightToLeft": false,
+        "lines": [
+          {
+            "type": "TicketText",
+            "text": "TAKEAWAY",
+            "align": 1,
+            "bold": false,
+            "large": true
+          },
+          {
+            "type": "TicketText",
+            "text": "Pickup #C03",
+            "align": 1,
+            "bold": false,
+            "large": true
+          },
+          {
+            "type": "TicketText",
+            "text": "Buzzer 12",
+            "align": 1,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Server",
+            "value": "Marie"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Covers",
+            "value": "1"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Time",
+            "value": "12:30"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "2x Burger maison",
+            "align": 0,
+            "bold": false,
+            "large": true
+          },
+          {
+            "type": "TicketText",
+            "text": "ALLERGENS: Gluten, Milk, Molluscs",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Now",
+            "align": 0,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "kitchen_allergens_ar",
+      "kind": "kitchenTicket",
+      "language": "ar",
+      "input": {
+        "kitchen": {
+          "serverName": "ليلى",
+          "coversCount": 2,
+          "dispatchedAtUtc": "2025-07-15T20:05:00.000Z",
+          "items": [
+            {
+              "quantity": 1,
+              "productName": "Burger maison",
+              "productId": "11111111-1111-1111-1111-111111111111",
+              "modifiersSummary": null,
+              "kitchenComment": null
+            }
+          ]
+        },
+        "order": {
+          "destination": 1,
+          "tableNumber": "5",
+          "pickupNumber": null,
+          "pickupBuzzer": null,
+          "items": [
+            {
+              "quantity": 1,
+              "productName": "Burger maison",
+              "productId": "11111111-1111-1111-1111-111111111111",
+              "totalTtcCents": 1450,
+              "selectedModifiers": [],
+              "course": 0
+            }
+          ]
+        },
+        "allergens": {
+          "byProduct": {
+            "11111111-1111-1111-1111-111111111111": {
+              "declared": true,
+              "mask": 1088
+            }
+          },
+          "disclaimer": null
+        }
+      },
+      "expected": {
+        "language": "ar",
+        "rightToLeft": true,
+        "lines": [
+          {
+            "type": "TicketText",
+            "text": "طاولة 5",
+            "align": 1,
+            "bold": false,
+            "large": true
+          },
+          {
+            "type": "TicketColumns",
+            "label": "النادل",
+            "value": "ليلى"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "عدد الأشخاص",
+            "value": "2"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "الوقت",
+            "value": "22:05"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "1x Burger maison",
+            "align": 0,
+            "bold": false,
+            "large": true
+          },
+          {
+            "type": "TicketText",
+            "text": "مسببات الحساسية: الحليب, السمسم",
+            "align": 0,
+            "bold": true,
             "large": false
           },
           {

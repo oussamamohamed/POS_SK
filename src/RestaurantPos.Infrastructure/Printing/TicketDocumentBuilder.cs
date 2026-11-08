@@ -320,7 +320,13 @@ public static class TicketDocumentBuilder
         return assembly.GetName().Version?.ToString(3) ?? "1.0.0";
     }
 
-    public static TicketDocument KitchenTicket(KitchenTicket ticket, Order order, string language)
+    /// <summary>Allergènes d'un plat tels que déclarés au catalogue ; <c>Declared</c> faux = « non renseignés ».</summary>
+    public sealed record ProductAllergens(bool Declared, int Mask);
+
+    /// <summary>Option « allergènes sur le ticket de cuisine » : allergènes par produit et mention légale facultative (imprimée en bas du ticket).</summary>
+    public sealed record KitchenAllergens(IReadOnlyDictionary<Guid, ProductAllergens> ByProduct, string? Disclaimer);
+
+    public static TicketDocument KitchenTicket(KitchenTicket ticket, Order order, string language, KitchenAllergens? allergens = null)
     {
         ArgumentNullException.ThrowIfNull(ticket);
         ArgumentNullException.ThrowIfNull(order);
@@ -345,12 +351,29 @@ public static class TicketDocumentBuilder
             if (!string.IsNullOrWhiteSpace(item.ModifiersSummary)) lines.Add(new TicketText("+ " + item.ModifiersSummary));
             if (!string.IsNullOrWhiteSpace(item.KitchenComment))
                 lines.Add(new TicketText(Texts.Get(c, "kitchen_ticket.comment", ("comment", item.KitchenComment)), Bold: true));
+            if (allergens is not null) AppendKitchenAllergens(lines, c, item.ProductId, allergens);
             // ponytail: service retrouvé par ProductId (KitchenTicketItem ne le stocke pas) ; deux lignes du même article à des services différents affichent le premier. Stocker Course sur KitchenTicketItem si besoin.
             var course = order.Items.FirstOrDefault(i => i.ProductId == item.ProductId)?.Course ?? CourseType.Direct;
             lines.Add(new TicketText(Texts.Get(c, CourseKey(course))));
             lines.Add(new TicketSeparator());
         }
+        if (allergens is not null && !string.IsNullOrWhiteSpace(allergens.Disclaimer)) lines.Add(new TicketText(allergens.Disclaimer.Trim()));
         return new TicketDocument(lang, lang == "ar", lines);
+    }
+
+    /// <summary>« non renseignés » (≠ « aucun ») s'imprime ; un plat déclaré sans allergène n'ajoute rien.</summary>
+    private static void AppendKitchenAllergens(List<TicketLine> lines, CultureInfo c, Guid productId, KitchenAllergens allergens)
+    {
+        if (!allergens.ByProduct.TryGetValue(productId, out var product) || !product.Declared)
+        {
+            lines.Add(new TicketText(Texts.Get(c, "kitchen_ticket.allergens_unknown"), Bold: true));
+            return;
+        }
+        if (product.Mask == 0) return;
+        var list = string.Join(", ", RestaurantPos.Domain.ValueObjects.Allergens.Names
+            .Where(n => RestaurantPos.Domain.ValueObjects.Allergens.Contains(product.Mask, n))
+            .Select(n => Texts.Get(c, "kitchen_ticket.allergen_" + n)));
+        lines.Add(new TicketText(Texts.Get(c, "kitchen_ticket.allergens", ("list", list)), Bold: true));
     }
 
     private static string CourseKey(CourseType course) => course switch
