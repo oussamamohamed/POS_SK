@@ -267,7 +267,7 @@ final class AppEnvironment {
 @MainActor @Observable
 final class Router {
     enum Section: String, CaseIterable, Identifiable {
-        case order, floor, bookings, kitchen, menu, takings, fiscal, admin
+        case order, floor, bookings, kitchen, menu, takings, cash, fiscal, admin
         var id: String { rawValue }
 
         var title: String {
@@ -278,6 +278,7 @@ final class Router {
             case .kitchen: String(localized: "common.nav_kitchen")
             case .menu: String(localized: "common.nav_menu")
             case .takings: String(localized: "common.nav_takings")
+            case .cash: String(localized: "cash.nav")
             case .fiscal: String(localized: "common.nav_fiscal")
             case .admin: String(localized: "common.nav_admin")
             }
@@ -291,6 +292,7 @@ final class Router {
             case .kitchen: "flame"
             case .menu: "chart.bar.xaxis"
             case .takings: "chart.line.uptrend.xyaxis"
+            case .cash: "banknote"
             case .fiscal: "doc.text.magnifyingglass"
             case .admin: "gearshape.2"
             }

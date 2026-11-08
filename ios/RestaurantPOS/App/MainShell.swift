@@ -47,6 +47,7 @@ struct MainShell: View {
         case .kitchen: KitchenScreen()
         case .menu: MenuAnalysisScreen()
         case .takings: TakingsScreen()
+        case .cash: CashScreen()
         case .fiscal: FiscalScreen()
         case .admin: AdminScreen()
         }
@@ -258,7 +259,7 @@ struct NeedsBell: View {
         case .bill: router.section = .floor
         case .lateFood: router.section = .kitchen
         case .lateBooking, .waitlist: router.section = .bookings
-        case .lowStock: router.section = .admin
+        case .lowStock, .alert: router.section = .admin
         }
     }
 }

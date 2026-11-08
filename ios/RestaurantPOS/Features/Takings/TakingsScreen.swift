@@ -6,12 +6,16 @@ import PosKit
 struct TakingsScreen: View {
     @Environment(AppModel.self) private var model
     @Environment(Router.self) private var router
+    @State private var showSummary = false
 
     var body: some View {
         let store = model.takings
         ScrollView {
             VStack(alignment: .leading, spacing: Theme.Space.l) {
                 controls(store)
+                InsightsCard(store: model.insights)
+                ActionButton(title: String(localized: "takings.summary_open"), kind: .tonal) { showSummary = true }
+                    .accessibilityIdentifier("takings.openSummary")
                 if let report = store.report {
                     tiles(report)
                     extraTiles(report)
@@ -39,7 +43,8 @@ struct TakingsScreen: View {
             }
             .padding(Theme.Space.xl)
         }
-        .task { await store.load() }
+        .task { await store.load(); await model.insights.loadInsights() }
+        .sheet(isPresented: $showSummary) { DailySummarySheet(store: model.insights, terminalId: model.settings.terminalId) }
     }
 
     // MARK: Contrôles

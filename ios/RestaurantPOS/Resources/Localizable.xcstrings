@@ -9227,10 +9227,10 @@
     "fiscal.verification_title": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Contrôle d'intégrité des chaînes"
+            "value": "التحقق من سلامة السلاسل"
           }
         },
         "en": {
@@ -9239,10 +9239,10 @@
             "value": "Chain integrity verification"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "التحقق من سلامة السلاسل"
+            "value": "Contrôle d'intégrité des chaînes"
           }
         }
       }
@@ -9250,10 +9250,10 @@
     "fiscal.verification_subtitle": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Vérifie le chaînage cryptographique SHA-256 de tous les reçus, Z et JET."
+            "value": "يتحقق من التسلسل التشفيري SHA-256 لجميع الإيصالات وتقارير Z وسجل JET."
           }
         },
         "en": {
@@ -9262,10 +9262,10 @@
             "value": "Verifies SHA-256 cryptographic chaining of all receipts, Z and JET."
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "يتحقق من التسلسل التشفيري SHA-256 لجميع الإيصالات وتقارير Z وسجل JET."
+            "value": "Vérifie le chaînage cryptographique SHA-256 de tous les reçus, Z et JET."
           }
         }
       }
@@ -9273,10 +9273,10 @@
     "fiscal.verify_chains_button": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Vérifier l'intégrité"
+            "value": "التحقق من السلامة"
           }
         },
         "en": {
@@ -9285,10 +9285,10 @@
             "value": "Verify integrity"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "التحقق من السلامة"
+            "value": "Vérifier l'intégrité"
           }
         }
       }
@@ -9917,10 +9917,10 @@
     "fiscal.archives_title": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Archives Fiscales (NF525)"
+            "value": "الأرشيفات المالية (NF525)"
           }
         },
         "en": {
@@ -9929,10 +9929,10 @@
             "value": "Fiscal Archives (NF525)"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "الأرشيفات المالية (NF525)"
+            "value": "Archives Fiscales (NF525)"
           }
         }
       }
@@ -9940,10 +9940,10 @@
     "fiscal.archives_subtitle": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Génération, conservation et vérification d'intégrité des archives scellées."
+            "value": "إنشاء وحفظ والتحقق من سلامة الأرشيفات المختومة."
           }
         },
         "en": {
@@ -9952,10 +9952,10 @@
             "value": "Generation, retention and integrity verification of sealed archives."
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "إنشاء وحفظ والتحقق من سلامة الأرشيفات المختومة."
+            "value": "Génération, conservation et vérification d'intégrité des archives scellées."
           }
         }
       }
@@ -9963,10 +9963,10 @@
     "fiscal.action_archive": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Archiver"
+            "value": "أرشفة"
           }
         },
         "en": {
@@ -9975,10 +9975,10 @@
             "value": "Archive"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "أرشفة"
+            "value": "Archiver"
           }
         }
       }
@@ -9986,10 +9986,10 @@
     "fiscal.archive_created_success": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Archive générée et scellée avec succès"
+            "value": "تم إنشاء الأرشيف وختمه بنجاح"
           }
         },
         "en": {
@@ -9998,10 +9998,10 @@
             "value": "Archive generated and sealed successfully"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "تم إنشاء الأرشيف وختمه بنجاح"
+            "value": "Archive générée et scellée avec succès"
           }
         }
       }
@@ -10009,10 +10009,10 @@
     "fiscal.archive_valid": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Archive valide et intègre (chaîne intacte)"
+            "value": "أرشيف صالح وسليم (السلسلة سليمة)"
           }
         },
         "en": {
@@ -10021,10 +10021,10 @@
             "value": "Valid and intact archive (unbroken chain)"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "أرشيف صالح وسليم (السلسلة سليمة)"
+            "value": "Archive valide et intègre (chaîne intacte)"
           }
         }
       }
@@ -10032,10 +10032,10 @@
     "fiscal.archive_hash_mismatch": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Empreinte SHA-256 invalide : archive altérée !"
+            "value": "بصمة SHA-256 غير صالحة: تم العبث بالأرشيف!"
           }
         },
         "en": {
@@ -10044,10 +10044,10 @@
             "value": "Invalid SHA-256 hash: archive has been tampered with!"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "بصمة SHA-256 غير صالحة: تم العبث بالأرشيف!"
+            "value": "Empreinte SHA-256 invalide : archive altérée !"
           }
         }
       }
@@ -10055,10 +10055,10 @@
     "fiscal.archive_unknown": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Archive inconnue du système"
+            "value": "أرشيف غير معروف"
           }
         },
         "en": {
@@ -10067,10 +10067,10 @@
             "value": "Unknown archive"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "أرشيف غير معروف"
+            "value": "Archive inconnue du système"
           }
         }
       }
@@ -10078,10 +10078,10 @@
     "fiscal.archive_chain_break": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Rupture de chaîne détectée pour cette archive"
+            "value": "تم اكتشاف انقطاع في السلسلة لهذا الأرشيف"
           }
         },
         "en": {
@@ -10090,10 +10090,10 @@
             "value": "Chain break detected for this archive"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "تم اكتشاف انقطاع في السلسلة لهذا الأرشيف"
+            "value": "Rupture de chaîne détectée pour cette archive"
           }
         }
       }
@@ -10101,10 +10101,10 @@
     "fiscal.archive_forbidden": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Archivage réservé aux responsables"
+            "value": "الأرشفة مخصصة للمسؤولين فقط"
           }
         },
         "en": {
@@ -10113,10 +10113,10 @@
             "value": "Archiving is reserved for managers"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "الأرشفة مخصصة للمسؤولين فقط"
+            "value": "Archivage réservé aux responsables"
           }
         }
       }
@@ -10124,10 +10124,10 @@
     "fiscal.archived": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Archivée"
+            "value": "مؤرشف"
           }
         },
         "en": {
@@ -10136,10 +10136,10 @@
             "value": "Archived"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "مؤرشف"
+            "value": "Archivée"
           }
         }
       }
@@ -14402,10 +14402,10 @@
     "takings.p_today": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Aujourd’hui"
+            "value": "اليوم"
           }
         },
         "en": {
@@ -14414,10 +14414,10 @@
             "value": "Today"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "اليوم"
+            "value": "Aujourd’hui"
           }
         }
       }
@@ -14425,10 +14425,10 @@
     "takings.p_yesterday": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Hier"
+            "value": "أمس"
           }
         },
         "en": {
@@ -14437,10 +14437,10 @@
             "value": "Yesterday"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "أمس"
+            "value": "Hier"
           }
         }
       }
@@ -14448,10 +14448,10 @@
     "takings.p_7": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "7 jours"
+            "value": "7 أيام"
           }
         },
         "en": {
@@ -14460,10 +14460,10 @@
             "value": "7 days"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "7 أيام"
+            "value": "7 jours"
           }
         }
       }
@@ -14471,10 +14471,10 @@
     "takings.p_30": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "30 jours"
+            "value": "30 يومًا"
           }
         },
         "en": {
@@ -14483,10 +14483,10 @@
             "value": "30 days"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "30 يومًا"
+            "value": "30 jours"
           }
         }
       }
@@ -14494,10 +14494,10 @@
     "takings.p_date": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Date"
+            "value": "التاريخ"
           }
         },
         "en": {
@@ -14506,10 +14506,10 @@
             "value": "Date"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "التاريخ"
+            "value": "Date"
           }
         }
       }
@@ -14517,10 +14517,10 @@
     "takings.cmp_auto": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Automatique"
+            "value": "تلقائي"
           }
         },
         "en": {
@@ -14529,10 +14529,10 @@
             "value": "Automatic"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "تلقائي"
+            "value": "Automatique"
           }
         }
       }
@@ -14540,10 +14540,10 @@
     "takings.cmp_week": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Même jour, semaine passée"
+            "value": "نفس اليوم، الأسبوع الماضي"
           }
         },
         "en": {
@@ -14552,10 +14552,10 @@
             "value": "Same day, last week"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "نفس اليوم، الأسبوع الماضي"
+            "value": "Même jour, semaine passée"
           }
         }
       }
@@ -14563,10 +14563,10 @@
     "takings.cmp_previous": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Période précédente"
+            "value": "الفترة السابقة"
           }
         },
         "en": {
@@ -14575,10 +14575,10 @@
             "value": "Previous period"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "الفترة السابقة"
+            "value": "Période précédente"
           }
         }
       }
@@ -14586,10 +14586,10 @@
     "takings.cumulative": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Cumulé"
+            "value": "تراكمي"
           }
         },
         "en": {
@@ -14598,10 +14598,10 @@
             "value": "Cumulative"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "تراكمي"
+            "value": "Cumulé"
           }
         }
       }
@@ -14609,10 +14609,10 @@
     "takings.daily_title": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Par jour"
+            "value": "حسب اليوم"
           }
         },
         "en": {
@@ -14621,10 +14621,10 @@
             "value": "By the day"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "حسب اليوم"
+            "value": "Par jour"
           }
         }
       }
@@ -14632,10 +14632,10 @@
     "takings.current": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Période"
+            "value": "الفترة"
           }
         },
         "en": {
@@ -14644,10 +14644,10 @@
             "value": "Period"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "الفترة"
+            "value": "Période"
           }
         }
       }
@@ -14655,10 +14655,10 @@
     "takings.compare": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Comparaison"
+            "value": "المقارنة"
           }
         },
         "en": {
@@ -14667,10 +14667,10 @@
             "value": "Comparison"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "المقارنة"
+            "value": "Comparaison"
           }
         }
       }
@@ -14678,10 +14678,10 @@
     "takings.tile_tips": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Pourboires"
+            "value": "الإكراميات"
           }
         },
         "en": {
@@ -14690,10 +14690,10 @@
             "value": "Tips"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "الإكراميات"
+            "value": "Pourboires"
           }
         }
       }
@@ -14701,10 +14701,10 @@
     "takings.tile_discounts": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Remises"
+            "value": "الخصومات"
           }
         },
         "en": {
@@ -14713,10 +14713,10 @@
             "value": "Discounts"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "الخصومات"
+            "value": "Remises"
           }
         }
       }
@@ -14724,10 +14724,10 @@
     "takings.tile_comps": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Offerts"
+            "value": "المجاني"
           }
         },
         "en": {
@@ -14736,10 +14736,10 @@
             "value": "Comps"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "المجاني"
+            "value": "Offerts"
           }
         }
       }
@@ -14747,10 +14747,10 @@
     "takings.tile_voids": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Annulations"
+            "value": "الإلغاءات"
           }
         },
         "en": {
@@ -14759,10 +14759,10 @@
             "value": "Voids"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "الإلغاءات"
+            "value": "Annulations"
           }
         }
       }
@@ -14770,10 +14770,10 @@
     "takings.categories_title": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Par famille"
+            "value": "حسب الفئة"
           }
         },
         "en": {
@@ -14782,10 +14782,10 @@
             "value": "By category"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "حسب الفئة"
+            "value": "Par famille"
           }
         }
       }
@@ -14793,10 +14793,10 @@
     "takings.top_title": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Meilleurs plats"
+            "value": "أفضل الأطباق"
           }
         },
         "en": {
@@ -14805,10 +14805,10 @@
             "value": "Top dishes"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "أفضل الأطباق"
+            "value": "Meilleurs plats"
           }
         }
       }
@@ -14816,10 +14816,10 @@
     "takings.vat_title": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "TVA par taux"
+            "value": "الضريبة حسب المعدل"
           }
         },
         "en": {
@@ -14828,10 +14828,10 @@
             "value": "VAT by rate"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "الضريبة حسب المعدل"
+            "value": "TVA par taux"
           }
         }
       }
@@ -14839,10 +14839,10 @@
     "takings.tickets_title": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Tickets de la période"
+            "value": "إيصالات الفترة"
           }
         },
         "en": {
@@ -14851,10 +14851,10 @@
             "value": "Receipts of the period"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "إيصالات الفترة"
+            "value": "Tickets de la période"
           }
         }
       }
@@ -14862,10 +14862,10 @@
     "takings.credit": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Avoir"
+            "value": "إشعار دائن"
           }
         },
         "en": {
@@ -14874,10 +14874,10 @@
             "value": "Credit"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "إشعار دائن"
+            "value": "Avoir"
           }
         }
       }
@@ -14885,10 +14885,10 @@
     "takings.cancelled": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Annulé"
+            "value": "ملغى"
           }
         },
         "en": {
@@ -14897,10 +14897,10 @@
             "value": "Cancelled"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "ملغى"
+            "value": "Annulé"
           }
         }
       }
@@ -14908,10 +14908,10 @@
     "takings.reprint": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Réimprimer"
+            "value": "إعادة طباعة"
           }
         },
         "en": {
@@ -14920,10 +14920,10 @@
             "value": "Reprint"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "إعادة طباعة"
+            "value": "Réimprimer"
           }
         }
       }
@@ -14931,10 +14931,10 @@
     "takings.journal_title": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Journal des opérations"
+            "value": "سجل العمليات"
           }
         },
         "en": {
@@ -14943,10 +14943,10 @@
             "value": "Operations journal"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "سجل العمليات"
+            "value": "Journal des opérations"
           }
         }
       }
@@ -14954,10 +14954,10 @@
     "takings.journal_hint": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Journal technique du jour en cours seulement."
+            "value": "السجل التقني لليوم الجاري فقط."
           }
         },
         "en": {
@@ -14966,10 +14966,10 @@
             "value": "Technical journal for the current day only."
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "السجل التقني لليوم الجاري فقط."
+            "value": "Journal technique du jour en cours seulement."
           }
         }
       }
@@ -14977,10 +14977,10 @@
     "journal.ARCHIVE_CREATED": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Archive créée"
+            "value": "إنشاء أرشيف"
           }
         },
         "en": {
@@ -14989,10 +14989,10 @@
             "value": "Archive created"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "إنشاء أرشيف"
+            "value": "Archive créée"
           }
         }
       }
@@ -15000,10 +15000,10 @@
     "journal.ARCHIVE_EXPORTED": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Archive exportée"
+            "value": "تصدير أرشيف"
           }
         },
         "en": {
@@ -15012,10 +15012,10 @@
             "value": "Archive exported"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "تصدير أرشيف"
+            "value": "Archive exportée"
           }
         }
       }
@@ -15023,10 +15023,10 @@
     "journal.CHAIN_BREAK_DETECTED": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Rupture de chaîne détectée"
+            "value": "اكتشاف انقطاع السلسلة"
           }
         },
         "en": {
@@ -15035,10 +15035,10 @@
             "value": "Chain break detected"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "اكتشاف انقطاع السلسلة"
+            "value": "Rupture de chaîne détectée"
           }
         }
       }
@@ -15046,10 +15046,10 @@
     "journal.DEVICE_PAIRED": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Poste appairé"
+            "value": "إقران جهاز"
           }
         },
         "en": {
@@ -15058,10 +15058,10 @@
             "value": "Device paired"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "إقران جهاز"
+            "value": "Poste appairé"
           }
         }
       }
@@ -15069,10 +15069,10 @@
     "journal.DEVICE_REVOKED": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Poste révoqué"
+            "value": "سحب جهاز"
           }
         },
         "en": {
@@ -15081,10 +15081,10 @@
             "value": "Device revoked"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "سحب جهاز"
+            "value": "Poste révoqué"
           }
         }
       }
@@ -15092,10 +15092,10 @@
     "journal.DUPLICATE_PRINTED": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Duplicata imprimé"
+            "value": "طباعة نسخة"
           }
         },
         "en": {
@@ -15104,10 +15104,10 @@
             "value": "Duplicate printed"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "طباعة نسخة"
+            "value": "Duplicata imprimé"
           }
         }
       }
@@ -15115,10 +15115,10 @@
     "journal.EVENT_HAPPY_HOUR_OVERRIDE_ACTIVATED": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Happy Hour forcé"
+            "value": "تفعيل الهابي آور"
           }
         },
         "en": {
@@ -15127,10 +15127,10 @@
             "value": "Happy Hour override on"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "تفعيل الهابي آور"
+            "value": "Happy Hour forcé"
           }
         }
       }
@@ -15138,10 +15138,10 @@
     "journal.EVENT_HAPPY_HOUR_OVERRIDE_STOPPED": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Happy Hour forcé arrêté"
+            "value": "إيقاف الهابي آور"
           }
         },
         "en": {
@@ -15150,10 +15150,10 @@
             "value": "Happy Hour override off"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "إيقاف الهابي آور"
+            "value": "Happy Hour forcé arrêté"
           }
         }
       }
@@ -15161,10 +15161,10 @@
     "journal.EVENT_HELD_ORDER_VOIDED": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Commande en attente annulée"
+            "value": "إلغاء طلب معلق"
           }
         },
         "en": {
@@ -15173,10 +15173,10 @@
             "value": "Held order voided"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "إلغاء طلب معلق"
+            "value": "Commande en attente annulée"
           }
         }
       }
@@ -15184,10 +15184,10 @@
     "journal.FEC_EXPORTED": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Export FEC"
+            "value": "تصدير FEC"
           }
         },
         "en": {
@@ -15196,10 +15196,10 @@
             "value": "FEC export"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "تصدير FEC"
+            "value": "Export FEC"
           }
         }
       }
@@ -15207,10 +15207,10 @@
     "journal.FISCAL_SETTINGS_CHANGED": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Réglages fiscaux modifiés"
+            "value": "تغيير الإعدادات الضريبية"
           }
         },
         "en": {
@@ -15219,10 +15219,10 @@
             "value": "Fiscal settings changed"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "تغيير الإعدادات الضريبية"
+            "value": "Réglages fiscaux modifiés"
           }
         }
       }
@@ -15230,10 +15230,10 @@
     "journal.LOGIN_FAILED": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Connexion refusée"
+            "value": "فشل تسجيل الدخول"
           }
         },
         "en": {
@@ -15242,10 +15242,10 @@
             "value": "Login failed"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "فشل تسجيل الدخول"
+            "value": "Connexion refusée"
           }
         }
       }
@@ -15253,10 +15253,10 @@
     "journal.LOGIN_SUCCEEDED": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Connexion réussie"
+            "value": "تسجيل دخول ناجح"
           }
         },
         "en": {
@@ -15265,10 +15265,10 @@
             "value": "Login succeeded"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "تسجيل دخول ناجح"
+            "value": "Connexion réussie"
           }
         }
       }
@@ -15276,10 +15276,10 @@
     "journal.PERIOD_CLOSURE": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Clôture de période"
+            "value": "إقفال فترة"
           }
         },
         "en": {
@@ -15288,10 +15288,10 @@
             "value": "Period closure"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "إقفال فترة"
+            "value": "Clôture de période"
           }
         }
       }
@@ -15299,10 +15299,10 @@
     "journal.RECEIPT_VOIDED": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ticket annulé"
+            "value": "إلغاء إيصال"
           }
         },
         "en": {
@@ -15311,10 +15311,10 @@
             "value": "Receipt voided"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "إلغاء إيصال"
+            "value": "Ticket annulé"
           }
         }
       }
@@ -15322,10 +15322,10 @@
     "journal.SERVER_STARTED": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Démarrage du serveur"
+            "value": "بدء الخادم"
           }
         },
         "en": {
@@ -15334,10 +15334,10 @@
             "value": "Server started"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "بدء الخادم"
+            "value": "Démarrage du serveur"
           }
         }
       }
@@ -15345,10 +15345,10 @@
     "journal.SERVER_STOPPED": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Arrêt du serveur"
+            "value": "إيقاف الخادم"
           }
         },
         "en": {
@@ -15357,10 +15357,10 @@
             "value": "Server stopped"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "إيقاف الخادم"
+            "value": "Arrêt du serveur"
           }
         }
       }
@@ -15368,10 +15368,10 @@
     "journal.TAX_RATE_CHANGED": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Taux de TVA modifié"
+            "value": "تغيير معدل الضريبة"
           }
         },
         "en": {
@@ -15380,10 +15380,10 @@
             "value": "Tax rate changed"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "تغيير معدل الضريبة"
+            "value": "Taux de TVA modifié"
           }
         }
       }
@@ -15391,10 +15391,10 @@
     "journal.Z_CLOSURE": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Clôture Z"
+            "value": "إقفال Z"
           }
         },
         "en": {
@@ -15403,10 +15403,10 @@
             "value": "Z closure"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "إقفال Z"
+            "value": "Clôture Z"
           }
         }
       }
@@ -15414,10 +15414,10 @@
     "takings.reprint_done %lld": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Duplicata n°%lld envoyé"
+            "value": "أُرسلت النسخة رقم %lld"
           }
         },
         "en": {
@@ -15426,10 +15426,10 @@
             "value": "Duplicate #%lld sent"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "أُرسلت النسخة رقم %lld"
+            "value": "Duplicata n°%lld envoyé"
           }
         }
       }
@@ -15437,10 +15437,10 @@
     "takings.vs_previous %@": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ %% vs période précédente"
+            "value": "%@%% مقارنة بالفترة السابقة"
           }
         },
         "en": {
@@ -15449,10 +15449,10 @@
             "value": "%@%% vs previous period"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@%% مقارنة بالفترة السابقة"
+            "value": "%@ %% vs période précédente"
           }
         }
       }
@@ -15460,10 +15460,10 @@
     "journal.BACKUP_COMPLETED": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Sauvegarde terminée"
+            "value": "اكتمل النسخ الاحتياطي"
           }
         },
         "en": {
@@ -15472,10 +15472,10 @@
             "value": "Backup completed"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "اكتمل النسخ الاحتياطي"
+            "value": "Sauvegarde terminée"
           }
         }
       }
@@ -15483,10 +15483,10 @@
     "journal.BACKUP_FAILED": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Sauvegarde échouée"
+            "value": "فشل النسخ الاحتياطي"
           }
         },
         "en": {
@@ -15495,10 +15495,10 @@
             "value": "Backup failed"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "فشل النسخ الاحتياطي"
+            "value": "Sauvegarde échouée"
           }
         }
       }
@@ -15506,10 +15506,10 @@
     "journal.field.receiptNumber": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ticket"
+            "value": "التذكرة"
           }
         },
         "en": {
@@ -15518,10 +15518,10 @@
             "value": "Receipt"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "التذكرة"
+            "value": "Ticket"
           }
         }
       }
@@ -15529,10 +15529,10 @@
     "journal.field.duplicateNumber": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "N° de duplicata"
+            "value": "رقم النسخة"
           }
         },
         "en": {
@@ -15541,10 +15541,10 @@
             "value": "Duplicate no."
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "رقم النسخة"
+            "value": "N° de duplicata"
           }
         }
       }
@@ -15552,10 +15552,10 @@
     "journal.field.documentType": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Document"
+            "value": "المستند"
           }
         },
         "en": {
@@ -15564,10 +15564,10 @@
             "value": "Document"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "المستند"
+            "value": "Document"
           }
         }
       }
@@ -15575,10 +15575,10 @@
     "journal.field.role": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Rôle"
+            "value": "الدور"
           }
         },
         "en": {
@@ -15587,10 +15587,10 @@
             "value": "Role"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "الدور"
+            "value": "Rôle"
           }
         }
       }
@@ -15598,10 +15598,10 @@
     "journal.field.clientIp": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Adresse IP"
+            "value": "عنوان IP"
           }
         },
         "en": {
@@ -15610,10 +15610,10 @@
             "value": "IP address"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "عنوان IP"
+            "value": "Adresse IP"
           }
         }
       }
@@ -15621,10 +15621,10 @@
     "journal.field.reason": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Motif"
+            "value": "السبب"
           }
         },
         "en": {
@@ -15633,10 +15633,10 @@
             "value": "Reason"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "السبب"
+            "value": "Motif"
           }
         }
       }
@@ -15644,10 +15644,10 @@
     "journal.field.voidedBy": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Annulé par"
+            "value": "أُلغي بواسطة"
           }
         },
         "en": {
@@ -15656,10 +15656,10 @@
             "value": "Voided by"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "أُلغي بواسطة"
+            "value": "Annulé par"
           }
         }
       }
@@ -15667,10 +15667,10 @@
     "journal.field.error": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Erreur"
+            "value": "خطأ"
           }
         },
         "en": {
@@ -15679,10 +15679,10 @@
             "value": "Error"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "خطأ"
+            "value": "Erreur"
           }
         }
       }
@@ -15690,10 +15690,10 @@
     "journal.field.machineName": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Machine"
+            "value": "الجهاز"
           }
         },
         "en": {
@@ -15702,10 +15702,10 @@
             "value": "Machine"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "الجهاز"
+            "value": "Machine"
           }
         }
       }
@@ -15713,10 +15713,10 @@
     "journal.doc.receipt": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ticket"
+            "value": "تذكرة"
           }
         },
         "en": {
@@ -15725,10 +15725,10 @@
             "value": "Receipt"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "تذكرة"
+            "value": "Ticket"
           }
         }
       }
@@ -15736,10 +15736,10 @@
     "journal.doc.closure": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Clôture"
+            "value": "إقفال"
           }
         },
         "en": {
@@ -15748,10 +15748,10 @@
             "value": "Closure"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "إقفال"
+            "value": "Clôture"
           }
         }
       }
@@ -15759,10 +15759,10 @@
     "journal.doc.print_job": {
       "extractionState": "manual",
       "localizations": {
-        "fr": {
+        "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Impression"
+            "value": "مهمة طباعة"
           }
         },
         "en": {
@@ -15771,10 +15771,10 @@
             "value": "Print job"
           }
         },
-        "ar": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "مهمة طباعة"
+            "value": "Impression"
           }
         }
       }
@@ -17408,6 +17408,1363 @@
           "stringUnit": {
             "state": "translated",
             "value": "± quantité"
+          }
+        }
+      }
+    },
+    "alerts.list_title": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "التنبيهات"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alerts"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alertes"
+          }
+        }
+      }
+    },
+    "alerts.none": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "لا توجد تنبيهات."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No alerts."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aucune alerte."
+          }
+        }
+      }
+    },
+    "alerts.note": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ملاحظة (إلزامية)"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Note (required)"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Note (obligatoire)"
+          }
+        }
+      }
+    },
+    "alerts.note_required_label": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "طلب ملاحظة عند تجاوز فرق الصندوق للحد"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Require a note when the cash variance exceeds the threshold"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exiger une note quand l'écart de caisse dépasse le seuil"
+          }
+        }
+      }
+    },
+    "alerts.open": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "قيد المعالجة"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "To handle"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "À traiter"
+          }
+        }
+      }
+    },
+    "alerts.resolve": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "إغلاق"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Close"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clôturer"
+          }
+        }
+      }
+    },
+    "alerts.resolved": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تمت معالجتها"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Handled"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Traitées"
+          }
+        }
+      }
+    },
+    "alerts.rule_cash_variance": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "فرق الصندوق"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cash variance"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Écart de caisse"
+          }
+        }
+      }
+    },
+    "alerts.rule_comps_total": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "إجمالي المجاني"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Total comps"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Offerts cumulés"
+          }
+        }
+      }
+    },
+    "alerts.rule_discount_percent": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "خصم مرتفع"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "High discount"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remise élevée"
+          }
+        }
+      }
+    },
+    "alerts.rule_voids_count": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الإلغاءات"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Voids"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Annulations"
+          }
+        }
+      }
+    },
+    "alerts.rules_hint": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "يُطلق التنبيه عند تجاوز الحد، مرة واحدة لكل نادل ولكل خدمة (بين تقريرين Z)."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "An alert fires when the threshold is exceeded, once per server and per service (between two Z reports)."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Une alerte se déclenche quand le seuil est dépassé, une seule fois par serveur et par service (entre deux Z)."
+          }
+        }
+      }
+    },
+    "alerts.rules_title": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "حدود التنبيه"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alert thresholds"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seuils d'alerte"
+          }
+        }
+      }
+    },
+    "alerts.tab": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "التنبيهات والاتجاهات"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alerts and trends"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alertes et tendances"
+          }
+        }
+      }
+    },
+    "alerts.threshold": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الحد"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Threshold"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seuil"
+          }
+        }
+      }
+    },
+    "alerts.unit_cents": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "€"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "€"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "€"
+          }
+        }
+      }
+    },
+    "alerts.unit_count": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "إلغاءات"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "voids"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "annulations"
+          }
+        }
+      }
+    },
+    "alerts.unit_percent": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%"
+          }
+        }
+      }
+    },
+    "cash.amount": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "المبلغ (€)"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Amount (€)"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Montant (€)"
+          }
+        }
+      }
+    },
+    "cash.count": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "عدّ الصندوق"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Count the till"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compter la caisse"
+          }
+        }
+      }
+    },
+    "cash.count_confirm": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تأكيد العدّ"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Confirm count"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Valider le comptage"
+          }
+        }
+      }
+    },
+    "cash.counted": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "النقد المعدود"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Counted cash"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Espèces comptées"
+          }
+        }
+      }
+    },
+    "cash.denominations": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الفئات"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Denominations"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Coupures"
+          }
+        }
+      }
+    },
+    "cash.direct_amount": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "المبلغ الإجمالي المعدود (€)"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Total counted (€)"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Montant total compté (€)"
+          }
+        }
+      }
+    },
+    "cash.expected": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "النقد المتوقع"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Expected cash"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Espèces attendues"
+          }
+        }
+      }
+    },
+    "cash.float": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "رصيد الافتتاح"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opening float"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fond de caisse"
+          }
+        }
+      }
+    },
+    "cash.history": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "سجل العدّ"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Count history"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Historique des comptages"
+          }
+        }
+      }
+    },
+    "cash.history_empty": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "لا توجد عمليات عدّ."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No counts yet."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aucun comptage."
+          }
+        }
+      }
+    },
+    "cash.in": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "إيداع"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pay in"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entrée"
+          }
+        }
+      }
+    },
+    "cash.nav": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "درج النقود"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cash drawer"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tiroir-caisse"
+          }
+        }
+      }
+    },
+    "cash.no_session": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "لا توجد جلسة مفتوحة على هذه المحطة."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No session open on this terminal."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aucune session ouverte sur ce poste."
+          }
+        }
+      }
+    },
+    "cash.note": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ملاحظة (إلزامية إذا تجاوز الفرق الحد)"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Note (required if the variance exceeds the threshold)"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Note (obligatoire si l'écart dépasse le seuil)"
+          }
+        }
+      }
+    },
+    "cash.open": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "فتح الصندوق"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open the till"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ouvrir la caisse"
+          }
+        }
+      }
+    },
+    "cash.out": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "سحب"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pay out"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sortie"
+          }
+        }
+      }
+    },
+    "cash.reason": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "السبب (من 3 إلى 200 حرفًا)"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reason (3 to 200 characters)"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Motif (3 à 200 caractères)"
+          }
+        }
+      }
+    },
+    "insights.avg_ticket": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "متوسط الفاتورة"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Average ticket"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ticket moyen"
+          }
+        }
+      }
+    },
+    "insights.cumulative_ttc": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "المبيعات التراكمية"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cumulative sales"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "CA cumulé"
+          }
+        }
+      }
+    },
+    "insights.insufficient": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "السجل غير كاف (3 أيام على الأقل)"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not enough history (3 days minimum)"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pas assez d'historique (3 jours minimum)"
+          }
+        }
+      }
+    },
+    "insights.none": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "لا شيء يستدعي الانتباه"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing to report"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rien à signaler"
+          }
+        }
+      }
+    },
+    "insights.per_cover": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الإنفاق لكل زبون"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spend per cover"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Panier par couvert"
+          }
+        }
+      }
+    },
+    "insights.takeaway_share": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "حصة الطلبات الخارجية"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Takeaway share"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Part à emporter"
+          }
+        }
+      }
+    },
+    "insights.threshold": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "عتبة الاتجاهات (%)"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trend threshold (%)"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seuil des tendances (%)"
+          }
+        }
+      }
+    },
+    "insights.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "للمراقبة"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Watch list"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "À surveiller"
+          }
+        }
+      }
+    },
+    "insights.vs_last_week": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "مقارنة بنفس اليوم من الأسبوع الماضي"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "vs same day last week"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "vs même jour la semaine passée"
+          }
+        }
+      }
+    },
+    "summary.avg_ticket": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "متوسط الفاتورة"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Average ticket"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ticket moyen"
+          }
+        }
+      }
+    },
+    "summary.cash": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الصندوق (الرصيد ← المعدود، الفرق)"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cash (float → counted, variance)"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Caisse (fond → compté, écart)"
+          }
+        }
+      }
+    },
+    "summary.covers": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "عدد الزبائن"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Covers"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couverts"
+          }
+        }
+      }
+    },
+    "summary.none": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "لا يوجد إقفال Z بعد."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No Z closure yet."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aucune clôture Z pour le moment."
+          }
+        }
+      }
+    },
+    "summary.open_alerts": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "التنبيهات المفتوحة"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open alerts"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alertes ouvertes"
+          }
+        }
+      }
+    },
+    "summary.receipts": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الإيصالات"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Receipts"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tickets"
+          }
+        }
+      }
+    },
+    "summary.sales": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "المبيعات شاملة الضريبة"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sales incl. VAT"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ventes TTC"
+          }
+        }
+      }
+    },
+    "summary.tips": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "البقشيش"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tips"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pourboires"
+          }
+        }
+      }
+    },
+    "summary.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ملخص نهاية اليوم"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "End-of-day summary"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Résumé de fin de journée"
+          }
+        }
+      }
+    },
+    "takings.summary_open": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ملخص نهاية اليوم"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "End-of-day summary"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Résumé de fin de journée"
+          }
+        }
+      }
+    },
+    "journal.CASH_SESSION_OPENED": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "فتح الصندوق"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cash drawer opened"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ouverture de caisse"
+          }
+        }
+      }
+    },
+    "journal.CASH_MOVEMENT": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "حركة الصندوق"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cash movement"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mouvement de caisse"
+          }
+        }
+      }
+    },
+    "journal.CASH_COUNTED": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "جرد الصندوق"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cash count"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comptage de caisse"
+          }
+        }
+      }
+    },
+    "journal.ALERT_CREATED": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تنبيه جديد"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alert raised"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alerte créée"
+          }
+        }
+      }
+    },
+    "journal.ALERT_RESOLVED": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تم حل التنبيه"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alert resolved"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alerte résolue"
           }
         }
       }

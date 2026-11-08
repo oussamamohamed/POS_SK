@@ -4,7 +4,7 @@ import PosKit
 /// Back-office (responsables) : navigation par sous-section.
 struct AdminScreen: View {
     enum Section: String, CaseIterable, Identifiable {
-        case dashboard, catalog, stock, grid, staff, printers, happyHour, establishment, network
+        case dashboard, catalog, stock, alerts, grid, staff, printers, happyHour, establishment, network
         var id: String { rawValue }
 
         var title: String {
@@ -12,6 +12,7 @@ struct AdminScreen: View {
             case .dashboard: String(localized: "admin.section_dashboard")
             case .catalog: String(localized: "admin.section_catalog")
             case .stock: String(localized: "admin.section_stock")
+            case .alerts: String(localized: "alerts.tab")
             case .grid: String(localized: "admin.section_grid")
             case .staff: String(localized: "admin.section_staff")
             case .printers: String(localized: "admin.section_printers")
@@ -26,6 +27,7 @@ struct AdminScreen: View {
             case .dashboard: "chart.bar.xaxis"
             case .catalog: "menucard"
             case .stock: "carrot"
+            case .alerts: "bell.badge"
             case .grid: "square.grid.4x3.fill"
             case .staff: "person.3"
             case .printers: "printer"
@@ -56,6 +58,7 @@ struct AdminScreen: View {
                 case .dashboard: DashboardView()
                 case .catalog: CatalogAdminView()
                 case .stock: StockAdminView()
+                case .alerts: AlertsAdminView()
                 case .grid: GridEditorView()
                 case .staff: StaffAdminView()
                 case .printers: PrintersAdminView()
