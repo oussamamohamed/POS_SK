@@ -77,6 +77,21 @@ struct ContractDecodingTests {
         #expect(!alerts.lowStock.isEmpty && alerts.lowStock.allSatisfy { $0.stockMilli <= $0.lowStockMilli })
     }
 
+    @Test func decodesCashSessionAndAlerts() throws {
+        let session = try decode(CashSession.self, "cash_session")
+        #expect(session.openingFloatCents == 10_000 && session.movements.count == 1 && session.count?.varianceCents == -200 && session.expectedCents == 13_800)
+        let alerts = try decode([PilotAlert].self, "alerts")
+        #expect(alerts.count == 1 && alerts[0].ruleType == AlertRuleType.voidsCount && alerts[0].state == "resolved" && alerts[0].resolutionNote != nil)
+        #expect(alerts[0].detailInt("count") == 4)
+    }
+
+    @Test func decodesInsightsAndDailySummary() throws {
+        let insights = try decode(Insights.self, "insights")
+        #expect(insights.cards.map(\.metric) == ["cumulativeTtc", "avgTicket", "perCover"] && insights.cards[1].deltaPercent == -20 && !insights.insufficientData && insights.cards[0].titleKey == "insights.cumulative_ttc")
+        let summary = try decode(DailySummary.self, "daily_summary")
+        #expect(summary.totalSalesTtcCents == 6_450 && summary.paymentTotalsCents["Cash"] == 3_450 && summary.tipsByServer.first?.tipsCents == 250 && summary.cash?.varianceCents == -50 && summary.closureSequence == 1)
+    }
+
     @Test func decodesPrinterTextMode() throws {
         let printers = try decode([Printer].self, "printers")
         #expect(printers.contains { $0.textMode })

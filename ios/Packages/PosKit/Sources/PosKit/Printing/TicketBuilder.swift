@@ -313,6 +313,21 @@ enum TicketBuilder {
             }
             lines.append(.columns(label: text(lang, "report.tips_total"), value: TicketFormat.amount(data.totalTipsCents)))
         }
+        if let a = data.activity, a.discountsCents > 0 || a.compsCents > 0 || a.voidCount > 0 {
+            lines.append(.separator())
+            lines.append(.text(text(lang, "report.activity"), align: .center, bold: true))
+            if a.discountsCents > 0 { lines.append(.columns(label: text(lang, "report.discounts"), value: TicketFormat.amount(a.discountsCents))) }
+            if a.compsCents > 0 { lines.append(.columns(label: text(lang, "report.comps"), value: TicketFormat.amount(a.compsCents))) }
+            if a.voidCount > 0 { lines.append(.columns(label: text(lang, "report.voids", ["count": String(a.voidCount)]), value: TicketFormat.amount(a.voidCents))) }
+        }
+        if let cash = data.cash {
+            lines.append(.separator())
+            lines.append(.text(text(lang, "report.cash"), align: .center, bold: true))
+            lines.append(.columns(label: text(lang, "report.cash_float"), value: TicketFormat.amount(cash.floatCents)))
+            lines.append(.columns(label: text(lang, "report.cash_expected"), value: TicketFormat.amount(cash.countedCents - cash.varianceCents)))
+            lines.append(.columns(label: text(lang, "report.cash_counted"), value: TicketFormat.amount(cash.countedCents)))
+            lines.append(.columns(label: text(lang, "report.cash_variance"), value: TicketFormat.amount(cash.varianceCents)))
+        }
     }
 
     // MARK: Petits utilitaires

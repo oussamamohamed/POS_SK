@@ -30,6 +30,7 @@ extension LocalPosAPI {
             // Consommation du stock dans la transaction du règlement ; jamais bloquante pour la vente, hors de toute chaîne fiscale.
             stockRepository.recordSale(order: order, operatorId: nil)
             _ = try? stockRepository.refreshAutoAvailability()
+            _ = try? alertRepository.evaluate(now: clock()) // seuils d'alerte : une panne ne remet jamais en cause l'encaissement
         }
         if let table = try floorRepository.tables().first(where: { $0.activeOrderId == order.orderId }) {
             try floorRepository.update(table.tableNumber, status: .free, covers: 0, waiterName: nil, waiterId: nil, activeOrderId: nil, openedAt: nil)

@@ -81,21 +81,14 @@ extension LocalPosAPI {
             let totals = OrderMath.totals(lines: lines, destination: order.destination, discount: order.globalDiscount)
             let subtotal = totals.subtotalTtc.cents, orderTotal = totals.totalTtc.cents
             let scale: Decimal = subtotal > 0 ? Decimal(orderTotal) / Decimal(subtotal) : 0
-            let isGlobalComp = order.globalDiscountType == .comp
-            if isGlobalComp {
-                comps += subtotal
-            } else {
-                discounts += subtotal - orderTotal
-                for line in lines {
-                    let base = line.effectiveUnitPrice.cents * line.quantity
-                    if line.isComp { comps += base } else if line.discountPercent > 0 { discounts += base - OrderMath.lineTotal(line).cents }
-                }
-            }
+            let (orderDiscounts, orderComps) = OrderDiscounts.of(order)
+            discounts += orderDiscounts
+            comps += orderComps
             let tip = row.int("TipAmount") ?? 0
             let server = serverName(row.uuid("OperatorId"))
             tips += tip
             tipsByServer[server, default: 0] += tip
-            if isGlobalComp { continue }
+            if order.globalDiscountType == .comp { continue }
             for line in lines where !line.isComp && line.quantity > 0 {
                 let sales = Decimal(OrderMath.lineTotal(line).cents) * scale / 100
                 let category = products[line.productId].flatMap { categoryNames[$0] } ?? "—"

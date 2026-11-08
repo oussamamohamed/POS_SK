@@ -15,4 +15,9 @@ enum LocalJournalEvents {
     static let archiveCreated = "ARCHIVE_CREATED"
     static let archiveExported = "ARCHIVE_EXPORTED"
     static let chainBreakDetected = "CHAIN_BREAK_DETECTED"
+    static let cashSessionOpened = "CASH_SESSION_OPENED"
+    static let cashMovement = "CASH_MOVEMENT"
+    static let cashCounted = "CASH_COUNTED"
+    static let alertCreated = "ALERT_CREATED"
+    static let alertResolved = "ALERT_RESOLVED"
 }

@@ -132,11 +132,31 @@ extension LocalFiscalRepository {
         }
         let tips = tipsByOperator.map { ReportTipLine(serverName: userName[$0.operatorId], tipCents: $0.cents) }
 
+        // Mêmes formules que le .NET (remises, offerts) ; annulations = avoirs signés dans la période.
+        var discounts = 0, comps = 0
+        for row in rows {
+            guard let id = row.uuid("Id"), let order = try orders.order(id: id) else { continue }
+            let (orderDiscounts, orderComps) = OrderDiscounts.of(order)
+            discounts += orderDiscounts
+            comps += orderComps
+        }
+        let credits = receipts.filter { r in
+            guard r.string("VoidedReceiptId") != nil, let at = r.string("CreatedAtUtc") else { return false }
+            return at <= end && (start.map { at >= $0 } ?? true)
+        }
+        let activity = ReportActivity(
+            discountsCents: discounts, compsCents: comps, voidCount: credits.count,
+            voidCents: abs(credits.reduce(0) { $0 + ($1.int("TotalTtcAmount") ?? 0) })
+        )
+        let cash = try LocalCashRepository(db: db).summary(terminalId: terminalId, from: periodStart ?? .distantPast, to: periodEnd)
+            .map { ReportCash(floatCents: $0.float, countedCents: $0.counted, varianceCents: $0.variance) }
+
         return ReportPrintData(
             categories: Self.knownFirst(categories, name: \.categoryName),
             tips: Self.knownFirst(tips, name: \.serverName),
             totalTipsCents: tips.reduce(0) { $0 + $1.tipCents },
-            hasGlobalDiscount: rows.contains { $0.int("GlobalDiscountType") != nil }
+            hasGlobalDiscount: rows.contains { $0.int("GlobalDiscountType") != nil },
+            activity: activity, cash: cash
         )
     }
 

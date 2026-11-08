@@ -16,6 +16,9 @@ public final class AppModel {
     public let fiscal: FiscalStore
     public let catalogAdmin: CatalogAdminStore
     public let stock: StockStore
+    public let cash: CashStore
+    public let insights: InsightsStore
+    public let pilotAlerts: AlertStore
     public let staff: StaffStore
     public let printers: PrinterStore
     public let gridEditor: GridEditorStore
@@ -56,6 +59,9 @@ public final class AppModel {
         fiscal = FiscalStore(api: api, notifier: notifier, session: session, settings: settings)
         catalogAdmin = CatalogAdminStore(api: api, notifier: notifier, catalog: catalog)
         stock = StockStore(api: api, notifier: notifier)
+        cash = CashStore(api: api, notifier: notifier)
+        insights = InsightsStore(api: api, notifier: notifier)
+        pilotAlerts = AlertStore(api: api, notifier: notifier)
         staff = StaffStore(api: api, notifier: notifier)
         printers = PrinterStore(api: api, notifier: notifier)
         gridEditor = GridEditorStore(api: api, notifier: notifier, catalog: catalog)
@@ -136,6 +142,9 @@ public final class AppModel {
             await bookings.refreshAttention()
             await bookings.load()
             await floor.load()
+            await needs.refresh()
+        case .alertsChanged:
+            await pilotAlerts.load()
             await needs.refresh()
         case let .productAvailabilityChanged(productId, isAvailable):
             catalog.apply(availability: isAvailable, productId: productId)

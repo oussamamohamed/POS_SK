@@ -73,6 +73,7 @@ public actor HTTPPosAPI: PosAPI {
             let message = Self.extractMessage(from: data)
             if http.statusCode == 400 || http.statusCode == 409, let code = Self.errorCode(in: data),
                let refusal = RecipeError(code: code, products: Self.stringList("products", in: data)) { throw refusal }
+            if http.statusCode == 400 || http.statusCode == 409, let code = Self.errorCode(in: data), let refusal = CashError(code: code) { throw refusal }
             switch http.statusCode {
             case 401: throw Self.errorCode(in: data) == "device_not_paired" ? APIError.deviceNotPaired : APIError.unauthorized
             case 403: throw APIError.forbidden(message)
@@ -215,6 +216,61 @@ public actor HTTPPosAPI: PosAPI {
     public func setAllergens(productId: UUID, declared: Bool, mask: Int, overridden: Bool) async throws {
         try await perform("PUT", "catalog/products/\(productId.uuidString.lowercased())/allergens", body: AllergensBody(declared: declared, mask: mask, overridden: overridden))
     }
+
+    // MARK: - Tendances et résumé
+
+    public func insights(tzOffsetMinutes: Int) async throws -> Insights { try await call("GET", "dashboard/insights", query: ["tzOffsetMinutes": String(tzOffsetMinutes)]) }
+
+    public func dailySummary(terminalId: String, tzOffsetMinutes: Int) async throws -> DailySummary? {
+        do { return try await call("GET", "dashboard/daily-summary", query: ["terminalId": terminalId, "tzOffsetMinutes": String(tzOffsetMinutes)]) }
+        catch let error as APIError where error.isNotFound { return nil }
+    }
+
+    // MARK: - Caisse et alertes
+
+    struct OpenCashBody: Encodable { let openingFloatCents: Int }
+    struct CashMovementBody: Encodable { let kind: String, amountCents: Int, reason: String }
+    struct CashCountBody: Encodable { let countedCents: Int, denominations: [CashDenomination], varianceNote: String? }
+    struct AlertNoteBody: Encodable { let note: String }
+    struct AlertRuleBody: Encodable { let threshold: Int, enabled: Bool }
+
+    public func openCashSession(openingFloatCents: Int) async throws -> CashSession { try await call("POST", "cash/sessions", body: OpenCashBody(openingFloatCents: openingFloatCents)) }
+
+    public func currentCashSession() async throws -> CashSession? {
+        let (data, http) = try await send(makeRequest("GET", "cash/sessions/current"))
+        return http.statusCode == 204 || data.isEmpty ? nil : try decode(data)
+    }
+
+    public func addCashMovement(sessionId: UUID, kind: String, amountCents: Int, reason: String) async throws -> CashMovement {
+        try await call("POST", "cash/sessions/\(sessionId.uuidString.lowercased())/movements", body: CashMovementBody(kind: kind, amountCents: amountCents, reason: reason))
+    }
+
+    public func countCash(sessionId: UUID, countedCents: Int, denominations: [CashDenomination], varianceNote: String?) async throws -> CashCountResult {
+        try await call("POST", "cash/sessions/\(sessionId.uuidString.lowercased())/count", body: CashCountBody(countedCents: countedCents, denominations: denominations, varianceNote: varianceNote))
+    }
+
+    public func cashSessions(from: Date?, to: Date?) async throws -> [CashSession] {
+        var query: [String: String] = [:]
+        if let from { query["from"] = Self.iso(from) }
+        if let to { query["to"] = Self.iso(to) }
+        return try await call("GET", "cash/sessions", query: query)
+    }
+
+    public func alerts(state: String?) async throws -> [PilotAlert] { try await call("GET", "alerts", query: state.map { ["state": $0] } ?? [:]) }
+
+    public func resolveAlert(id: UUID, note: String) async throws -> PilotAlert {
+        try await call("POST", "alerts/\(id.uuidString.lowercased())/resolve", body: AlertNoteBody(note: note))
+    }
+
+    public func alertRules() async throws -> [AlertRule] { try await call("GET", "alerts/rules") }
+
+    public func setAlertRule(type: String, threshold: Int, enabled: Bool) async throws -> AlertRule {
+        try await call("PUT", "alerts/rules/\(type)", body: AlertRuleBody(threshold: threshold, enabled: enabled))
+    }
+
+    public func alertSettings() async throws -> AlertSettings { try await call("GET", "alerts/settings") }
+
+    public func saveAlertSettings(_ settings: AlertSettings) async throws -> AlertSettings { try await call("PUT", "alerts/settings", body: settings) }
 
     // MARK: - Stock
 

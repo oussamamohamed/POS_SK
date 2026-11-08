@@ -160,10 +160,27 @@ struct ReportTipLine: Codable, Equatable, Sendable {
     var tipCents: Int
 }
 
+/// Remises, offerts et annulations (avoirs) de la période ; informatif, comme le reste de `ReportPrintData`.
+struct ReportActivity: Codable, Equatable, Sendable {
+    var discountsCents: Int
+    var compsCents: Int
+    var voidCount: Int
+    var voidCents: Int
+}
+
+/// Dernier comptage de caisse de la période (fond, compté, écart).
+struct ReportCash: Codable, Equatable, Sendable {
+    var floatCents: Int
+    var countedCents: Int
+    var varianceCents: Int
+}
+
 struct ReportPrintData: Codable, Equatable, Sendable {
     var categories: [ReportCategoryGroup]
     var tips: [ReportTipLine]
     var totalTipsCents: Int
     var hasGlobalDiscount: Bool
+    var activity: ReportActivity?
+    var cash: ReportCash?
     static let empty = ReportPrintData(categories: [], tips: [], totalTipsCents: 0, hasGlobalDiscount: false)
 }

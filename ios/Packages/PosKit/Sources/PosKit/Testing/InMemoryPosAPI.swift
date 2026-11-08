@@ -42,6 +42,12 @@ public actor InMemoryPosAPI: PosAPI {
     private var stockMovementsStore: [StockMovement] = []
     private var stockSettingsStore = StockSettings()
     private var modifierConsumptionStore: [UUID: [ModifierConsumptionItem]] = [:]
+    private var cashSessionsStore: [CashSession] = []
+    private var alertRulesStore = [AlertRule(type: AlertRuleType.cashVariance, threshold: 1000, enabled: false), AlertRule(type: AlertRuleType.voidsCount, threshold: 3, enabled: false),
+                                   AlertRule(type: AlertRuleType.discountPercent, threshold: 30, enabled: false), AlertRule(type: AlertRuleType.compsTotal, threshold: 5000, enabled: false)]
+    private var alertSettingsStore = AlertSettings()
+    /// Démonstration : une alerte d'annulations à traiter (le serveur réel en crée au franchissement d'un seuil).
+    private var alertsStore = [PilotAlert(ruleType: AlertRuleType.voidsCount, operatorName: "Sophie", terminalId: "T01", periodKey: "T01:0", detailJson: "{\"count\":4,\"totalCents\":6000}")]
     private var recipesStore: [UUID: [RecipeLine]] = [:]
     private var preparationRecipesStore: [UUID: [RecipeLine]] = [:]
 
@@ -66,6 +72,7 @@ public actor InMemoryPosAPI: PosAPI {
         if !seed {
             productsStore = []
             categoriesStore = []
+            alertsStore = []
         } else {
             reservationsStore = Self.demoReservations(now: Date())
             // Coûts de revient de démonstration (les autres articles restent « coût manquant »).
@@ -78,7 +85,10 @@ public actor InMemoryPosAPI: PosAPI {
     /// Réservations de démonstration (tests UI, aperçus) autour de l'heure courante : une attendue avec téléphone,
     /// une en retard, une sans table et un client en liste d'attente.
     private static func demoReservations(now: Date) -> [Reservation] {
-        func at(_ minutes: Double) -> Date { now.addingTimeInterval(minutes * 60) }
+        // Toujours dans la journée locale en cours : près de minuit, « dans 1 h » ou « il y a 30 min » tomberait sur un autre jour
+        // et ces réservations disparaîtraient de l'écran du jour (tests instables).
+        let day = Calendar.current.startOfDay(for: now)
+        func at(_ minutes: Double) -> Date { min(max(now.addingTimeInterval(minutes * 60), day.addingTimeInterval(60)), day.addingTimeInterval(86_400 - 60)) }
         return [
             Reservation(guestName: "Martin", covers: 2, startsAtUtc: at(60), tableNumber: "T1", note: "Anniversaire", phone: "+33 6 12 34 56 78"),
             Reservation(guestName: "Petit", covers: 4, startsAtUtc: at(-30), tableNumber: "T2", isLate: true),
@@ -389,6 +399,120 @@ public actor InMemoryPosAPI: PosAPI {
     public func saveStockSettings(_ settings: StockSettings) async throws -> StockSettings {
         try await step("saveStockSettings"); try requireManager()
         stockSettingsStore = settings
+        return settings
+    }
+
+    // MARK: Tendances et résumé
+
+    public func insights(tzOffsetMinutes: Int) async throws -> Insights {
+        try await step("insights"); try requireManager()
+        // Démonstration : le ticket moyen baisse de 20 % par rapport à mercredi dernier à la même heure.
+        return Insights(cards: [InsightCard(metric: "avgTicket", currentCents: 3_120, referenceCents: 3_900, deltaPercent: InsightsMath.deltaPercent(current: 3_120, reference: 3_900))])
+    }
+
+    public func dailySummary(terminalId: String, tzOffsetMinutes: Int) async throws -> DailySummary? {
+        try await step("dailySummary"); try requireManager()
+        return DailySummary(terminalId: "T01", closureSequence: 12, closedAtUtc: Date(), totalSalesTtcCents: 64_500, totalSalesHtCents: 58_636, receiptCount: 30, covers: 52, averageTicketCents: 2_150,
+                            paymentTotalsCents: ["Cash": 34_500, "CreditCard": 30_000], tipsByServer: [TipSummary(serverName: "Sophie", tipsCents: 2_500)],
+                            cash: DailySummaryCash(floatCents: 5_000, countedCents: 39_400, varianceCents: -100), openAlerts: alertsStore.filter(\.isOpen))
+    }
+
+    // MARK: Caisse et alertes
+
+    private func expectedCash(_ s: CashSession) -> Int { CashMath.expected(openingFloat: s.openingFloatCents, cashTenders: [], movements: s.movements) }
+
+    public func openCashSession(openingFloatCents: Int) async throws -> CashSession {
+        try await step("openCashSession"); try requireAuth()
+        guard openingFloatCents >= 0 else { throw CashError.invalid }
+        guard !cashSessionsStore.contains(where: { $0.count == nil }) else { throw CashError.sessionAlreadyOpen }
+        let session = CashSession(terminalId: "T01", openedByOperatorId: UUID(), openingFloatCents: openingFloatCents, expectedCents: openingFloatCents)
+        cashSessionsStore.append(session)
+        return session
+    }
+
+    public func currentCashSession() async throws -> CashSession? {
+        try await step("currentCashSession"); try requireAuth()
+        return cashSessionsStore.first { $0.count == nil }
+    }
+
+    public func addCashMovement(sessionId: UUID, kind: String, amountCents: Int, reason: String) async throws -> CashMovement {
+        try await step("addCashMovement"); try requireAuth()
+        guard let i = cashSessionsStore.firstIndex(where: { $0.id == sessionId }) else { throw APIError.notFound(nil) }
+        let text = reason.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard amountCents > 0, kind == "in" || kind == "out", (3...200).contains(text.utf16.count) else { throw CashError.movementInvalid }
+        guard cashSessionsStore[i].count == nil else { throw CashError.sessionClosed }
+        let movement = CashMovement(kind: kind, amountCents: amountCents, reason: text, operatorId: cashSessionsStore[i].openedByOperatorId)
+        cashSessionsStore[i].movements.append(movement)
+        cashSessionsStore[i].expectedCents = expectedCash(cashSessionsStore[i])
+        return movement
+    }
+
+    public func countCash(sessionId: UUID, countedCents: Int, denominations: [CashDenomination], varianceNote: String?) async throws -> CashCountResult {
+        try await step("countCash"); try requireAuth()
+        guard let i = cashSessionsStore.firstIndex(where: { $0.id == sessionId }) else { throw APIError.notFound(nil) }
+        if let existing = cashSessionsStore[i].count { return CashCountResult(expectedCents: existing.expectedCents, countedCents: existing.countedCents, varianceCents: existing.varianceCents) }
+        guard countedCents >= 0 else { throw CashError.invalid }
+        let expected = expectedCash(cashSessionsStore[i])
+        let variance = CashMath.variance(counted: countedCents, expected: expected)
+        let note = varianceNote?.trimmingCharacters(in: .whitespacesAndNewlines).nilIfEmpty
+        let rule = alertRulesStore.first { $0.type == AlertRuleType.cashVariance }
+        if let rule, rule.enabled, alertSettingsStore.cashVarianceNoteRequired, abs(variance) > rule.threshold, note == nil { throw CashError.varianceNoteRequired }
+        cashSessionsStore[i].count = CashCount(expectedCents: expected, countedCents: countedCents, varianceCents: variance, varianceNote: note)
+        cashSessionsStore[i].expectedCents = expected
+        var created = false
+        if let rule, rule.enabled, abs(variance) > rule.threshold {
+            alertsStore.insert(PilotAlert(ruleType: AlertRuleType.cashVariance, terminalId: "T01", periodKey: "T01:0", detailJson: "{\"varianceCents\":\(variance)}"), at: 0)
+            created = true
+        }
+        return CashCountResult(expectedCents: expected, countedCents: countedCents, varianceCents: variance, alertCreated: created)
+    }
+
+    public func cashSessions(from: Date?, to: Date?) async throws -> [CashSession] {
+        try await step("cashSessions"); try requireManager()
+        return cashSessionsStore.reversed()
+    }
+
+    public func alerts(state: String?) async throws -> [PilotAlert] {
+        try await step("alerts"); try requireManager()
+        return alertsStore.filter { state == nil || $0.state == state }
+    }
+
+    public func resolveAlert(id: UUID, note: String) async throws -> PilotAlert {
+        try await step("resolveAlert"); try requireManager()
+        guard let i = alertsStore.firstIndex(where: { $0.id == id }) else { throw APIError.notFound(nil) }
+        let text = note.trimmingCharacters(in: .whitespacesAndNewlines)
+        if alertsStore[i].isOpen {
+            guard !text.isEmpty else { throw CashError.noteRequired }
+            alertsStore[i].state = "resolved"
+            alertsStore[i].resolvedAtUtc = Date()
+            alertsStore[i].resolutionNote = text
+        }
+        return alertsStore[i]
+    }
+
+    public func alertRules() async throws -> [AlertRule] {
+        try await step("alertRules"); try requireManager()
+        return alertRulesStore
+    }
+
+    public func setAlertRule(type: String, threshold: Int, enabled: Bool) async throws -> AlertRule {
+        try await step("setAlertRule"); try requireManager()
+        guard let i = alertRulesStore.firstIndex(where: { $0.type == type }) else { throw APIError.notFound(nil) }
+        guard threshold >= 0 else { throw CashError.ruleInvalid }
+        alertRulesStore[i].threshold = threshold
+        alertRulesStore[i].enabled = enabled
+        return alertRulesStore[i]
+    }
+
+    public func alertSettings() async throws -> AlertSettings {
+        try await step("alertSettings"); try requireManager()
+        return alertSettingsStore
+    }
+
+    public func saveAlertSettings(_ settings: AlertSettings) async throws -> AlertSettings {
+        try await step("saveAlertSettings"); try requireManager()
+        guard (1...100).contains(settings.trendThresholdPercent) else { throw CashError.ruleInvalid }
+        alertSettingsStore = settings
         return settings
     }
 

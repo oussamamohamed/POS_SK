@@ -421,6 +421,15 @@ struct LiveAPITests {
         return (api, login, device)
     }
 
+    /// Les deux routes de la spec 024 décodent la vraie réponse du serveur (le PIN par défaut est celui d'un gérant).
+    @Test func insightsAndDailySummaryDecode() async throws {
+        let (api, _, device) = try await Self.pairedSession()
+        let insights = try await api.insights(tzOffsetMinutes: 60)
+        #expect(insights.cards.count <= 4) // au plus une carte par métrique ; surtout : le décodage ne doit pas échouer
+        let summary = try await api.dailySummary(terminalId: device.terminalId, tzOffsetMinutes: 60) // nil tant qu'aucun Z n'existe : 404 `no_closure`
+        if let summary { #expect(summary.terminalId == device.terminalId) }
+    }
+
     @Test func endToEndTableFlow() async throws {
         let (api, login, device) = try await Self.pairedSession()
         let products = try await api.products()

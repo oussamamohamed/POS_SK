@@ -73,6 +73,26 @@ public protocol PosAPI: Sendable {
     func setModifierConsumption(optionId: UUID, items: [ModifierConsumptionItem]) async throws -> [ModifierConsumptionItem]
     func saveStockSettings(_ settings: StockSettings) async throws -> StockSettings
 
+    // Caisse (sessions, mouvements, comptage) et alertes de pilotage ; les refus sont des `CashError`.
+    func openCashSession(openingFloatCents: Int) async throws -> CashSession
+    /// Session ouverte du poste, ou `nil` : lisible par l'opérateur qui l'a ouverte et par le responsable.
+    func currentCashSession() async throws -> CashSession?
+    func addCashMovement(sessionId: UUID, kind: String, amountCents: Int, reason: String) async throws -> CashMovement
+    /// Compte la session (idempotent). L'écart au-dessus du seuil actif exige `varianceNote`.
+    func countCash(sessionId: UUID, countedCents: Int, denominations: [CashDenomination], varianceNote: String?) async throws -> CashCountResult
+    func cashSessions(from: Date?, to: Date?) async throws -> [CashSession]
+    func alerts(state: String?) async throws -> [PilotAlert]
+    func resolveAlert(id: UUID, note: String) async throws -> PilotAlert
+    func alertRules() async throws -> [AlertRule]
+    func setAlertRule(type: String, threshold: Int, enabled: Bool) async throws -> AlertRule
+    func alertSettings() async throws -> AlertSettings
+    func saveAlertSettings(_ settings: AlertSettings) async throws -> AlertSettings
+
+    // Tendances du jour et résumé de fin de journée (responsable).
+    func insights(tzOffsetMinutes: Int) async throws -> Insights
+    /// Résumé du dernier Z du poste ; `nil` s'il n'y en a pas encore.
+    func dailySummary(terminalId: String, tzOffsetMinutes: Int) async throws -> DailySummary?
+
     // Grille tactile
     func gridLayout(categoryId: String, page: Int) async throws -> TouchGridLayout
     func saveGridLayout(_ request: UpdateGridLayoutRequest) async throws -> TouchGridLayout

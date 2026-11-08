@@ -27,6 +27,7 @@ extension LocalPosAPI {
                 stockRepository.restoreSale(orderId: original.orderId, operatorId: manager.id)
                 _ = try? stockRepository.refreshAutoAvailability()
             }
+            _ = try? alertRepository.evaluate(now: now) // annulations : seuil d'alerte, sans jamais bloquer l'avoir
             return OperationResult(success: true, message: "Reçu \(original.receiptNumber) annulé (\(voided.receiptNumber)).")
         }
     }
@@ -96,7 +97,8 @@ extension LocalPosAPI {
             signatureHash: closure.signatureHash,
             closedAtUtc: closure.createdAtUtc,
             periodEndUtc: closure.periodEndUtc,
-            printQueued: false
+            printQueued: false,
+            cash: try cashRepository.summary(terminalId: term, from: closure.periodStartUtc, to: closure.createdAtUtc).map { CashZSummary(floatCents: $0.float, countedCents: $0.counted, varianceCents: $0.variance) }
         )
     }
 

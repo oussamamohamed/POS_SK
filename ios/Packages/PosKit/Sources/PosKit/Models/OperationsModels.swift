@@ -143,8 +143,17 @@ public struct FiscalReport: Codable, Hashable, Sendable {
     public var periodEndUtc: Date?
     /// Présent seulement sur la réponse de `POST /api/fiscal/z-closure` : la Z a-t-elle été mise en file d'impression.
     public var printQueued: Bool?
+    /// Comptage de caisse de la période : champs facultatifs, non signés (`cashFloat`, `cashCounted`, `cashVariance` de l'API).
+    public var cashFloat: Int?
+    public var cashCounted: Int?
+    public var cashVariance: Int?
 
-    public init(terminalId: String?, closureSequence: Int? = nil, totalSalesTtc: Money, totalSalesHt: Money, receiptCount: Int, vatBreakdown: [String: Money], paymentTotals: [String: Money], perpetualGrandTotal: Money, signatureHash: String? = nil, closedAtUtc: Date? = nil, periodEndUtc: Date? = nil, printQueued: Bool? = nil) {
+    /// Comptage de caisse de la période, s'il existe.
+    public var cash: CashZSummary? {
+        cashCounted.map { CashZSummary(floatCents: cashFloat ?? 0, countedCents: $0, varianceCents: cashVariance ?? 0) }
+    }
+
+    public init(terminalId: String?, closureSequence: Int? = nil, totalSalesTtc: Money, totalSalesHt: Money, receiptCount: Int, vatBreakdown: [String: Money], paymentTotals: [String: Money], perpetualGrandTotal: Money, signatureHash: String? = nil, closedAtUtc: Date? = nil, periodEndUtc: Date? = nil, printQueued: Bool? = nil, cash: CashZSummary? = nil) {
         self.terminalId = terminalId
         self.closureSequence = closureSequence
         self.totalSalesTtc = totalSalesTtc
@@ -157,6 +166,9 @@ public struct FiscalReport: Codable, Hashable, Sendable {
         self.closedAtUtc = closedAtUtc
         self.periodEndUtc = periodEndUtc
         self.printQueued = printQueued
+        self.cashFloat = cash?.floatCents
+        self.cashCounted = cash?.countedCents
+        self.cashVariance = cash?.varianceCents
     }
 
     public init(from decoder: Decoder) throws {
@@ -173,6 +185,9 @@ public struct FiscalReport: Codable, Hashable, Sendable {
         closedAtUtc = try c.decodeIfPresent(Date.self, forKey: .closedAtUtc)
         periodEndUtc = try c.decodeIfPresent(Date.self, forKey: .periodEndUtc)
         printQueued = try c.decodeIfPresent(Bool.self, forKey: .printQueued)
+        cashFloat = try c.decodeIfPresent(Int.self, forKey: .cashFloat)
+        cashCounted = try c.decodeIfPresent(Int.self, forKey: .cashCounted)
+        cashVariance = try c.decodeIfPresent(Int.self, forKey: .cashVariance)
     }
 
     /// Lignes de TVA triées par taux croissant (« 5.5 », « 10.0 », « 20.0 »).
