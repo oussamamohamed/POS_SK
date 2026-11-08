@@ -2579,3 +2579,18 @@ html[data-design="classic"] .btn-fiscal.btn-fiscal--dark { color: #fff; }
 .stock-keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .stock-keypad button { min-height: 52px; font-size: 1.3rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); cursor: pointer; }
 .stock-level.low { color: var(--danger); font-weight: 700; }
+
+.cash-denoms { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+.cash-denom { display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 6px; border: 1px solid var(--border-color); border-radius: 8px; }
+.cash-denom button { min-width: 44px; min-height: 44px; font-size: 1.2rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); cursor: pointer; }
+.cash-denom output { min-width: 24px; text-align: center; font-weight: 700; }
+.cash-variance { color: var(--danger); font-weight: 700; }
+
+.insight-card.down strong { color: var(--danger); }
+.insight-card.up strong { color: var(--success, #2e8b57); }
+@media print {
+    body > *:not(#dailySummaryModal) { display: none !important; }
+    #dailySummaryModal { position: static; background: none; }
+    #dailySummaryModal .modal-card { box-shadow: none; max-height: none; width: auto; }
+    #dailySummaryModal [data-act] { display: none; }
+}

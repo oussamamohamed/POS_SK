@@ -472,6 +472,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (viewId === 'kdsView') loadKdsData();
         if (viewId === 'menuView') loadMenuAnalysis();
         if (viewId === 'takingsView') loadTakings();
+        if (viewId === 'cashView') loadCash();
         if (viewId === 'bookingsView') loadBookings();
         if (viewId === 'adminView') loadAdminData();
         if (viewId === 'fiscalView') loadFiscalViewData();
@@ -549,7 +550,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // ==================== À TRAITER (cloche et pastilles) ====================
     // shortcut: temps cible de cuisine fixé à 12 min (comme la démo Handi) ; à passer en réglage de l'établissement si besoin.
     const KITCHEN_TARGET_MINUTES = 12;
-    const NEEDS_VIEW = { bill: 'floorPlanView', kitchen: 'kdsView', booking: 'bookingsView', wait: 'bookingsView', lowStock: 'adminView' };
+    const NEEDS_VIEW = { bill: 'floorPlanView', kitchen: 'kdsView', booking: 'bookingsView', wait: 'bookingsView', lowStock: 'adminView', alert: 'adminView' };
     const needsState = { items: [] };
 
     async function fetchJsonOrEmpty(url) {
@@ -567,8 +568,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!btn) return;
         if (!(state.token || localStorage.getItem('pos_jwt_token'))) { needsState.items = []; paintNeeds(); return; }
         const now = Date.now();
-        const [tables, tickets, today, stockAlerts] = await Promise.all([
-            fetchJsonOrEmpty('/api/tables'), fetchJsonOrEmpty('/api/kds/tickets'), fetchJsonOrEmpty(bkRangeUrl(bkDayString(new Date()))), fetchJsonOrEmpty('/api/stock/alerts')
+        const [tables, tickets, today, stockAlerts, openAlerts] = await Promise.all([
+            fetchJsonOrEmpty('/api/tables'), fetchJsonOrEmpty('/api/kds/tickets'), fetchJsonOrEmpty(bkRangeUrl(bkDayString(new Date()))), fetchJsonOrEmpty('/api/stock/alerts'), fetchJsonOrEmpty('/api/alerts?state=open')
         ]);
         const items = [];
         tables.filter(tb => tb.status === 2).forEach(tb => items.push({
@@ -590,6 +591,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         (stockAlerts.lowStock || []).forEach(a => items.push({
             kind: 'lowStock', target: a.ingredientId, since: now,
             title: t('needs.low_stock', { name: a.name }), sub: t('needs.low_stock_sub', { stock: a.stockMilli / 1000, unit: stockUnitKey(a.unit), low: a.lowStockMilli / 1000 })
+        }));
+        (Array.isArray(openAlerts) ? openAlerts : []).forEach(a => items.push({
+            kind: 'alert', target: a.id, since: new Date(a.createdAtUtc).getTime(),
+            title: t('alerts.rule_' + a.ruleType), sub: alertSummary(a)
         }));
         needsState.items = items.sort((a, b) => a.since - b.since);
         paintNeeds();
@@ -617,6 +622,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function focusOn(item) {
         switchView(NEEDS_VIEW[item.kind]);
         if (item.kind === 'lowStock') { document.querySelector('button[data-admin-tab="tabStock"]')?.click(); return; }
+        if (item.kind === 'alert') { document.querySelector('button[data-admin-tab="tabAlerts"]')?.click(); return; }
         await new Promise(r => setTimeout(r, 400));
         const sel = item.kind === 'bill' ? `[data-table="${CSS.escape(item.target)}"]` : item.kind === 'kitchen' ? null : `[data-bk-id="${CSS.escape(item.target)}"]`;
         const el = sel && document.querySelector(sel);
@@ -835,6 +841,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (e.target.closest('[data-takings-table]')) { takingsState.asTable = !takingsState.asTable; renderTakings(); return; }
                 if (e.target.closest('[data-takings-cumulative]')) { takingsState.cumulative = !takingsState.cumulative; renderTakings(); return; }
                 if (e.target.closest('[data-go-z]')) { switchView('fiscalView'); return; }
+                if (e.target.closest('#openDailySummary')) { openDailySummary(); return; }
                 const voidBtn = e.target.closest('[data-void]');
                 if (voidBtn) { openVoidReceipt(voidBtn.dataset.void, voidBtn.dataset.voidNumber); return; }
                 const reprint = e.target.closest('[data-reprint]');
@@ -863,6 +870,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             takingsState.receipts = Array.isArray(receipts) ? receipts : [];
             takingsState.journal = Array.isArray(journal) ? journal : [];
             renderTakings();
+            loadInsights();
         } catch (err) {
             console.error('Erreur encaissements:', err);
             body.innerHTML = `<p class="menu-empty">${escapeHtml(t('takings.load_error'))}</p>`;
@@ -909,7 +917,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const journal = takingsState.journal.length ? `<ul class="tk-journal">${takingsState.journal.map(e => `<li><time>${escapeHtml(bkTime(e.atUtc))}</time><b>${escapeHtml(journalLabel(e.eventType))}</b><span>${escapeHtml(journalSummary(e))}</span></li>`).join('')}</ul>` : none;
 
-        body.innerHTML = `<div class="floor-stats">${tiles}</div><div class="floor-stats">${extra}</div>
+        body.innerHTML = `<div id="insightsBox"></div><div style="margin:8px 0;"><button type="button" class="bk-act" id="openDailySummary">${escapeHtml(t('summary.open'))}</button></div><div class="floor-stats">${tiles}</div><div class="floor-stats">${extra}</div>
             <div class="bk-grid">
                 <div class="bk-card"><div class="takings-h"><h3>${escapeHtml(t(r.granularity === 'day' ? 'takings.daily_title' : 'takings.hourly_title'))}</h3><span><button type="button" class="bk-act" data-takings-cumulative aria-pressed="${takingsState.cumulative}">${escapeHtml(t('takings.cumulative'))}</button> <button type="button" class="bk-act" data-takings-table>${escapeHtml(t(takingsState.asTable ? 'takings.as_chart' : 'takings.as_table'))}</button></span></div>${renderTakingsSeries(r, eur)}</div>
                 <div><div class="bk-card"><h3>${escapeHtml(t('takings.pay_title'))}</h3>${payHtml}</div>
@@ -4152,6 +4160,291 @@ document.addEventListener('DOMContentLoaded', async () => {
         return true;
     }
 
+    // ==================== TIROIR-CAISSE ET ALERTES ====================
+    const cashEur = (cents) => `<bdi dir="ltr">${(cents / 100).toFixed(2)} €</bdi>`;
+    const CASH_DENOMINATIONS = [50000, 20000, 10000, 5000, 2000, 1000, 500, 200, 100, 50, 20, 10, 5, 2, 1];
+    let cashState = { session: null, history: [], isManager: false };
+
+    async function cashError(res) {
+        let data = {};
+        try { data = await res.json(); } catch { /* corps vide */ }
+        const key = 'cash.err.' + data.code;
+        return data.code && t(key) !== key ? t(key) : (data.message || t('cash.err.generic'));
+    }
+
+    /** Fenêtre de saisie au pavé numérique intégré (pas de clavier système). fields : [{ id, label, money, text }]. */
+    function openCashDialog({ title, hint, fields, extra, confirmLabel, onSubmit }) {
+        document.getElementById('cashDialog')?.remove();
+        const overlay = document.createElement('div');
+        overlay.className = 'modal-overlay active';
+        overlay.id = 'cashDialog';
+        overlay.innerHTML = `
+            <div class="modal-card" style="max-height:92vh; overflow-y:auto;">
+                <div class="modal-header"><h3>${escapeHtml(title)}</h3></div>
+                ${hint ? `<p class="text-muted" style="margin:0;">${escapeHtml(hint)}</p>` : ''}
+                <div class="admin-form" style="display:flex; flex-direction:column; gap:10px;">
+                    ${fields.map(f => `<label>${escapeHtml(f.label)}
+                        <input type="text" id="cashF_${f.id}" ${f.text ? 'maxlength="200"' : 'inputmode="none" readonly data-pad="1" style="font-size:1.4rem;"'} value="${escapeHtml(f.value || '')}"></label>`).join('')}
+                    ${extra || ''}
+                    <div class="stock-keypad">${['7','8','9','4','5','6','1','2','3','.','0','⌫'].map(k => `<button type="button" data-k="${k}">${k}</button>`).join('')}</div>
+                    <div style="display:flex; justify-content:flex-end; gap:10px;">
+                        <button type="button" class="btn-archive" data-act="cancel">${escapeHtml(t('common.cancel'))}</button>
+                        <button type="button" class="btn-primary" data-act="ok">${escapeHtml(confirmLabel)}</button>
+                    </div>
+                </div>
+            </div>`;
+        document.body.appendChild(overlay);
+        let active = overlay.querySelector('[data-pad]');
+        overlay.querySelectorAll('[data-pad]').forEach(el => el.addEventListener('focus', () => { active = el; }));
+        overlay.querySelector('.stock-keypad').addEventListener('click', (e) => {
+            const k = e.target.closest('[data-k]')?.dataset.k;
+            if (!k || !active) return;
+            active.value = k === '⌫' ? active.value.slice(0, -1) : (k === '.' && active.value.includes('.') ? active.value : active.value + k);
+            active.dispatchEvent(new Event('input', { bubbles: true }));
+        });
+        overlay.addEventListener('click', async (e) => {
+            const act = e.target.closest('[data-act]')?.dataset.act;
+            if (act === 'cancel') { overlay.remove(); return; }
+            if (act !== 'ok') return;
+            const values = Object.fromEntries(fields.map(f => [f.id, overlay.querySelector(`#cashF_${f.id}`).value]));
+            if (await onSubmit(values, overlay)) overlay.remove();
+        });
+        return overlay;
+    }
+
+    const toCents = (text) => Math.round((parseFloat(text) || 0) * 100);
+
+    async function loadCash() {
+        const body = document.getElementById('cashBody');
+        if (!body) return;
+        try { await ensureAuthToken(); } catch { /* verrouillé */ }
+        const [cur, history] = await Promise.all([fetch('/api/cash/sessions/current'), fetch('/api/cash/sessions')]);
+        cashState.session = cur.status === 200 ? await cur.json() : null;
+        cashState.isManager = history.ok;
+        cashState.history = history.ok ? await history.json() : [];
+        renderCash();
+    }
+
+    function renderCash() {
+        const body = document.getElementById('cashBody');
+        const s = cashState.session;
+        const card = !s
+            ? `<div class="bk-card"><p class="text-muted">${escapeHtml(t('cash.no_session'))}</p><button type="button" class="btn-primary" id="cashOpen" style="min-height:56px;">${escapeHtml(t('cash.open'))}</button></div>`
+            : `<div class="bk-card">
+                <div class="floor-stats">
+                    <div class="stat"><span>${escapeHtml(t('cash.float'))}</span><strong>${cashEur(s.openingFloatCents)}</strong></div>
+                    <div class="stat"><span>${escapeHtml(t('cash.expected'))}</span><strong id="cashExpected">${cashEur(s.expectedCents)}</strong></div>
+                </div>
+                <div style="display:flex; gap:10px; flex-wrap:wrap; margin:12px 0;">
+                    <button type="button" class="btn-archive" id="cashOut" style="min-height:56px;">${escapeHtml(t('cash.out'))}</button>
+                    <button type="button" class="btn-archive" id="cashIn" style="min-height:56px;">${escapeHtml(t('cash.in'))}</button>
+                    <button type="button" class="btn-primary" id="cashCount" style="min-height:56px;">${escapeHtml(t('cash.count'))}</button>
+                </div>
+                ${s.movements.length ? `<ul class="tk-journal">${s.movements.map(m => `<li><time>${escapeHtml(bkTime(m.createdAtUtc))}</time><b>${escapeHtml(t(m.kind === 'in' ? 'cash.in' : 'cash.out'))}</b><span>${cashEur(m.amountCents)} · ${escapeHtml(m.reason)}</span></li>`).join('')}</ul>` : ''}
+            </div>`;
+        const history = cashState.isManager ? `<div class="bk-card"><h3>${escapeHtml(t('cash.history'))}</h3>${cashState.history.filter(h => h.count).length
+            ? `<div class="menu-table-wrap"><table class="menu-table"><thead><tr><th>${escapeHtml(t('takings.col_time'))}</th><th>${escapeHtml(t('cash.terminal'))}</th><th class="num">${escapeHtml(t('cash.expected'))}</th><th class="num">${escapeHtml(t('cash.counted'))}</th><th class="num">${escapeHtml(t('cash.variance'))}</th><th>${escapeHtml(t('cash.note'))}</th></tr></thead><tbody>${cashState.history.filter(h => h.count).map(h => `<tr><td>${escapeHtml(new Date(h.count.closedAtUtc).toLocaleString())}</td><td>${escapeHtml(h.terminalId)}</td><td class="num">${cashEur(h.count.expectedCents)}</td><td class="num">${cashEur(h.count.countedCents)}</td><td class="num${h.count.varianceCents ? ' cash-variance' : ''}">${cashEur(h.count.varianceCents)}</td><td>${escapeHtml(h.count.varianceNote || '')}</td></tr>`).join('')}</tbody></table></div>`
+            : `<p class="text-muted">${escapeHtml(t('cash.history_empty'))}</p>`}</div>` : '';
+        body.innerHTML = card + history;
+        document.getElementById('cashOpen')?.addEventListener('click', () => openCashDialog({
+            title: t('cash.open'), hint: t('cash.open_hint'), confirmLabel: t('cash.open'), fields: [{ id: 'float', label: t('cash.float'), value: '0' }],
+            onSubmit: async (v) => {
+                const res = await fetch('/api/cash/sessions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ openingFloatCents: toCents(v.float) }) });
+                if (!res.ok) { showToast(await cashError(res), 'error'); return false; }
+                await loadCash();
+                return true;
+            }
+        }));
+        const movement = (kind) => openCashDialog({
+            title: t(kind === 'in' ? 'cash.in' : 'cash.out'), hint: t('cash.reason_hint'), confirmLabel: t('stock.save'),
+            fields: [{ id: 'amount', label: t('cash.amount') }, { id: 'reason', label: t('cash.reason'), text: true }],
+            onSubmit: async (v) => {
+                const res = await fetch(`/api/cash/sessions/${cashState.session.id}/movements`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ kind, amountCents: toCents(v.amount), reason: v.reason }) });
+                if (!res.ok) { showToast(await cashError(res), 'error'); return false; }
+                await loadCash();
+                return true;
+            }
+        });
+        document.getElementById('cashOut')?.addEventListener('click', () => movement('out'));
+        document.getElementById('cashIn')?.addEventListener('click', () => movement('in'));
+        document.getElementById('cashCount')?.addEventListener('click', openCashCount);
+    }
+
+    /** Comptage de clôture : saisie par coupures (boutons + et −) ou montant direct au pavé ; la note est demandée si le serveur l'exige. */
+    function openCashCount() {
+        const quantities = {};
+        const extra = `<div class="cash-denoms">${CASH_DENOMINATIONS.map(d => `<div class="cash-denom" data-d="${d}"><span>${(d / 100).toFixed(2)} €</span>
+            <button type="button" data-step="-1" aria-label="−">−</button><output>0</output><button type="button" data-step="1" aria-label="+">+</button></div>`).join('')}</div>
+            <p><strong>${escapeHtml(t('cash.counted'))} : <span id="cashCountedTotal">0.00 €</span></strong></p>`;
+        const overlay = openCashDialog({
+            title: t('cash.count'), hint: t('cash.count_hint'), confirmLabel: t('cash.count_confirm'), extra,
+            fields: [{ id: 'direct', label: t('cash.direct_amount') }, { id: 'note', label: t('cash.note'), text: true }],
+            onSubmit: async (v) => {
+                const denominations = CASH_DENOMINATIONS.filter(d => quantities[d] > 0).map(d => ({ valueCents: d, quantity: quantities[d] }));
+                const counted = denominations.length ? denominations.reduce((a, d) => a + d.valueCents * d.quantity, 0) : toCents(v.direct);
+                const res = await fetch(`/api/cash/sessions/${cashState.session.id}/count`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ countedCents: counted, denominations, varianceNote: v.note || null }) });
+                if (!res.ok) { showToast(await cashError(res), 'error'); overlay.querySelector('#cashF_note')?.focus(); return false; }
+                const r = await res.json();
+                showToast(t('cash.count_result', { expected: (r.expectedCents / 100).toFixed(2), counted: (r.countedCents / 100).toFixed(2), variance: (r.varianceCents / 100).toFixed(2) }), r.varianceCents ? 'warning' : 'success');
+                await loadCash();
+                refreshNeeds();
+                return true;
+            }
+        });
+        const refreshTotal = () => {
+            const total = CASH_DENOMINATIONS.reduce((a, d) => a + d * (quantities[d] || 0), 0);
+            overlay.querySelector('#cashCountedTotal').textContent = `${(total / 100).toFixed(2)} €`;
+        };
+        overlay.querySelector('.cash-denoms').addEventListener('click', (e) => {
+            const btn = e.target.closest('[data-step]'); if (!btn) return;
+            const row = btn.closest('.cash-denom'); const d = Number(row.dataset.d);
+            quantities[d] = Math.max(0, (quantities[d] || 0) + Number(btn.dataset.step));
+            row.querySelector('output').textContent = quantities[d];
+            refreshTotal();
+        });
+    }
+
+    // ---- Alertes : seuils, liste, clôture avec note
+    let alertState = { state: 'open', list: [] };
+    const ALERT_UNITS = { cash_variance: 'cents', comps_total: 'cents', voids_count: 'count', discount_percent: 'percent' };
+
+    async function loadAdminAlerts() {
+        const rulesBox = document.getElementById('alertRules');
+        if (!rulesBox) return;
+        const [rulesRes, settingsRes] = await Promise.all([fetch('/api/alerts/rules'), fetch('/api/alerts/settings')]);
+        const rules = rulesRes.ok ? await rulesRes.json() : [];
+        const settings = settingsRes.ok ? await settingsRes.json() : { trendThresholdPercent: 15, cashVarianceNoteRequired: true };
+        rulesBox.innerHTML = rules.map(r => `<div class="alert-rule" data-type="${escapeHtml(r.type)}" style="display:flex; align-items:center; gap:10px; padding:6px 0;">
+            <label style="display:flex; align-items:center; gap:8px; flex:1; cursor:pointer;"><input type="checkbox" class="rule-on" ${r.enabled ? 'checked' : ''} style="width:18px; height:18px;"><span>${escapeHtml(t('alerts.rule_' + r.type))}</span></label>
+            <input type="number" class="rule-threshold" min="0" step="any" value="${ALERT_UNITS[r.type] === 'cents' ? r.threshold / 100 : r.threshold}" style="width:100px;"> <span>${escapeHtml(t('alerts.unit_' + ALERT_UNITS[r.type]))}</span></div>`).join('');
+        rulesBox.onchange = async (e) => {
+            const row = e.target.closest('.alert-rule'); if (!row) return;
+            const type = row.dataset.type, raw = parseFloat(row.querySelector('.rule-threshold').value) || 0;
+            const res = await fetch(`/api/alerts/rules/${type}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ threshold: ALERT_UNITS[type] === 'cents' ? Math.round(raw * 100) : Math.round(raw), enabled: row.querySelector('.rule-on').checked }) });
+            if (!res.ok) showToast(await cashError(res), 'error');
+        };
+        const note = document.getElementById('alertNoteRequired'), trend = document.getElementById('alertTrend');
+        note.checked = !!settings.cashVarianceNoteRequired;
+        trend.value = settings.trendThresholdPercent;
+        const saveSettings = async () => {
+            const res = await fetch('/api/alerts/settings', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ trendThresholdPercent: parseInt(trend.value, 10) || 15, cashVarianceNoteRequired: note.checked }) });
+            if (!res.ok) showToast(await cashError(res), 'error');
+        };
+        note.onchange = saveSettings;
+        trend.onchange = saveSettings;
+        document.querySelectorAll('[data-alert-state]').forEach(b => { b.onclick = () => { alertState.state = b.dataset.alertState; loadAlertList(); }; });
+        await loadAlertList();
+    }
+
+    function alertSummary(a) {
+        let d = {};
+        try { d = JSON.parse(a.detailJson); } catch { /* détail illisible */ }
+        const who = a.operatorName || '—';
+        switch (a.ruleType) {
+            case 'voids_count': return t('alerts.sum_voids', { who, count: d.count, total: ((d.totalCents || 0) / 100).toFixed(2) });
+            case 'discount_percent': return t('alerts.sum_discount', { who, count: d.count, percent: d.maxPercent });
+            case 'comps_total': return t('alerts.sum_comps', { who, total: ((d.totalCents || 0) / 100).toFixed(2) });
+            default: return t('alerts.sum_cash', { who, variance: ((d.varianceCents || 0) / 100).toFixed(2), terminal: a.terminalId });
+        }
+    }
+
+    async function loadAlertList() {
+        const box = document.getElementById('alertList');
+        if (!box) return;
+        const res = await fetch(`/api/alerts?state=${alertState.state}`);
+        alertState.list = res.ok ? await res.json() : [];
+        document.querySelectorAll('[data-alert-state]').forEach(b => b.classList.toggle('active', b.dataset.alertState === alertState.state));
+        box.innerHTML = alertState.list.length ? alertState.list.map(a => `<div class="alert-row" data-id="${escapeHtml(a.id)}" style="padding:8px 0; border-bottom:1px solid rgb(var(--veil) / 0.08);">
+            <strong>${escapeHtml(t('alerts.rule_' + a.ruleType))}</strong> <small class="text-muted">${escapeHtml(new Date(a.createdAtUtc).toLocaleString())} · ${escapeHtml(a.terminalId)}</small>
+            <div>${escapeHtml(alertSummary(a))}</div>
+            ${a.state === 'open' ? `<div style="display:flex; gap:8px; margin-top:6px;">${a.ruleType === 'cash_variance' ? '' : `<button type="button" class="bk-act" data-tickets>${escapeHtml(t('alerts.see_tickets'))}</button>`}<button type="button" class="bk-act" data-resolve>${escapeHtml(t('alerts.resolve'))}</button></div>`
+                : `<div class="text-muted">${escapeHtml(t('alerts.note'))} : ${escapeHtml(a.resolutionNote || '')}</div>`}</div>`).join('') : `<p class="text-muted">${escapeHtml(t('alerts.none'))}</p>`;
+        box.onclick = (e) => {
+            const row = e.target.closest('.alert-row'); if (!row) return;
+            if (e.target.closest('[data-tickets]')) { switchView('takingsView'); return; }
+            if (!e.target.closest('[data-resolve]')) return;
+            const alert = alertState.list.find(a => a.id === row.dataset.id);
+            openCashDialog({
+                title: t('alerts.resolve'), hint: alertSummary(alert), confirmLabel: t('alerts.resolve'), fields: [{ id: 'note', label: t('alerts.note'), text: true }],
+                onSubmit: async (v) => {
+                    const r = await fetch(`/api/alerts/${alert.id}/resolve`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ note: v.note }) });
+                    if (!r.ok) { showToast(t('alerts.note_required'), 'error'); return false; }
+                    await loadAlertList();
+                    refreshNeeds();
+                    return true;
+                }
+            });
+        };
+    }
+
+    // ---- Tendances du jour (cartes « à surveiller ») et résumé de fin de journée
+    const INSIGHT_FORMAT = {
+        cumulativeTtc: (v) => `${(v / 100).toFixed(2)} €`, avgTicket: (v) => `${(v / 100).toFixed(2)} €`, perCover: (v) => `${(v / 100).toFixed(2)} €`,
+        takeawayShare: (v) => `${(v / 100).toFixed(1)} %`
+    };
+
+    async function loadInsights() {
+        const box = document.getElementById('insightsBox');
+        if (!box) return;
+        const res = await fetch(`/api/dashboard/insights?tzOffsetMinutes=${-new Date().getTimezoneOffset()}`);
+        if (!res.ok) { box.innerHTML = ''; return; }
+        const data = await res.json();
+        if (data.insufficientData) { box.innerHTML = `<p class="text-muted" id="insightsNote">${escapeHtml(t('insights.insufficient'))}</p>`; return; }
+        box.innerHTML = data.cards.length
+            ? `<div class="floor-stats">${data.cards.map(c => `<div class="stat insight-card ${c.deltaPercent < 0 ? 'down' : 'up'}" data-metric="${escapeHtml(c.metric)}">
+                <span>${escapeHtml(t('insights.metric_' + c.metric))}</span>
+                <strong>${c.deltaPercent > 0 ? '+' : ''}${c.deltaPercent.toFixed(1)} %</strong>
+                <small>${escapeHtml(INSIGHT_FORMAT[c.metric](c.currentCents))} · ${escapeHtml(t('insights.reference'))} ${escapeHtml(INSIGHT_FORMAT[c.metric](c.referenceCents))}</small></div>`).join('')}</div>`
+            : `<p class="text-muted" id="insightsNote">${escapeHtml(t('insights.none'))}</p>`;
+    }
+
+    /** Résumé du dernier Z de chaque poste (totaux identiques au Z), imprimable par le navigateur. */
+    async function openDailySummary() {
+        document.getElementById('dailySummaryModal')?.remove();
+        const devicesRes = await fetch('/api/devices');
+        const devices = devicesRes.ok ? await devicesRes.json() : [];
+        const own = (() => { try { return JSON.parse(localStorage.getItem('pos_device') || '{}').terminalId; } catch { return null; } })();
+        const terminals = [...new Set([own, 'POS_MAIN_TERM', ...devices.map(d => d.terminalId)].filter(Boolean))];
+        const tz = -new Date().getTimezoneOffset();
+        const summaries = (await Promise.all(terminals.map(async term => {
+            const r = await fetch(`/api/dashboard/daily-summary?terminalId=${encodeURIComponent(term)}&tzOffsetMinutes=${tz}`);
+            return r.ok ? await r.json() : null;
+        }))).filter(Boolean);
+        const eur = (c) => `${(c / 100).toFixed(2)} €`;
+        const total = summaries.reduce((a, x) => a + x.totalSalesTtcCents, 0);
+        const overlay = document.createElement('div');
+        overlay.className = 'modal-overlay active';
+        overlay.id = 'dailySummaryModal';
+        overlay.innerHTML = `
+            <div class="modal-card" style="width:min(720px, 96vw); max-height:92vh; overflow-y:auto;" id="dailySummaryPrint">
+                <div class="modal-header"><h3>${escapeHtml(t('summary.title'))}</h3></div>
+                ${summaries.length ? `<p><strong>${escapeHtml(t('summary.consolidated'))} : ${eur(total)}</strong></p>` : `<p class="text-muted">${escapeHtml(t('summary.none'))}</p>`}
+                ${summaries.map(x => `<div class="bk-card summary-terminal" data-terminal="${escapeHtml(x.terminalId)}">
+                    <h4>${escapeHtml(x.terminalId)} · Z n° ${x.closureSequence} <small class="text-muted">${escapeHtml(new Date(x.closedAtUtc).toLocaleString())}</small></h4>
+                    <div class="floor-stats">
+                        <div class="stat"><span>${escapeHtml(t('summary.sales'))}</span><strong class="summary-ttc">${eur(x.totalSalesTtcCents)}</strong></div>
+                        <div class="stat"><span>${escapeHtml(t('summary.receipts'))}</span><strong>${x.receiptCount}</strong></div>
+                        <div class="stat"><span>${escapeHtml(t('summary.avg_ticket'))}</span><strong>${eur(x.averageTicketCents)}</strong></div>
+                        <div class="stat"><span>${escapeHtml(t('summary.covers'))}</span><strong>${x.covers}</strong></div>
+                    </div>
+                    ${Object.entries(x.paymentTotalsCents).map(([m, c]) => `<div>${escapeHtml(m)} : ${eur(c)}</div>`).join('')}
+                    ${x.tipsByServer.length ? `<div><strong>${escapeHtml(t('summary.tips'))}</strong> ${x.tipsByServer.map(tp => `${escapeHtml(tp.serverName)} ${eur(tp.tipsCents)}`).join(' · ')}</div>` : ''}
+                    ${x.cash ? `<div>${escapeHtml(t('summary.cash'))} : ${eur(x.cash.floatCents)} → ${eur(x.cash.countedCents)} (${escapeHtml(t('cash.variance'))} ${eur(x.cash.varianceCents)})</div>` : ''}
+                    <div>${escapeHtml(t('summary.open_alerts'))} : ${x.openAlerts.length}</div>
+                </div>`).join('')}
+                <div style="display:flex; justify-content:flex-end; gap:10px;">
+                    <button type="button" class="btn-archive" data-act="close">${escapeHtml(t('common.cancel'))}</button>
+                    <button type="button" class="btn-primary" data-act="print">${escapeHtml(t('summary.print'))}</button>
+                </div>
+            </div>`;
+        document.body.appendChild(overlay);
+        overlay.addEventListener('click', (e) => {
+            const act = e.target.closest('[data-act]')?.dataset.act;
+            if (act === 'close') overlay.remove();
+            if (act === 'print') window.print();
+        });
+    }
+
     // ==================== ADMIN FORMS & TABS ====================
     function setupAdminTabs() {
         elements.adminTabBtns.forEach(btn => {
@@ -4171,6 +4464,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     loadAdminDevices();
                 } else if (targetTab === 'tabStock') {
                     loadAdminStock();
+                } else if (targetTab === 'tabAlerts') {
+                    loadAdminAlerts();
                 } else if (targetTab === 'tabEstablishment') {
                     loadPrintSettings();
                 }
@@ -7097,6 +7392,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (document.getElementById('floorPlanView')?.classList.contains('active')) loadFloorPlanData();
             });
             posConnection.on('OnProductAvailabilityChanged', (productId, isAvailable) => applyAvailability(productId, isAvailable));
+            posConnection.on('OnAlertsChanged', () => {
+                refreshNeeds();
+                if (document.getElementById('tabAlerts')?.classList.contains('active')) loadAlertList();
+            });
             posConnection.on('OnPrinterStatusChanged', (printerId, printerName, isOnline, pendingCount) => {
                 showToast(isOnline
                     ? t('messages.printer_back_online', { name: printerName })

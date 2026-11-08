@@ -58,6 +58,10 @@ try { window.applyDesign(localStorage.getItem('pos_design') === 'classic'); } ca
                 <svg class="nav-svg" viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-5 4 3 8-9"/><path d="M15 6h5v5"/></g></svg>
                 <span data-i18n="common.nav_takings">Encaissements</span>
             </button>
+            <button class="nav-btn" data-view="cashView" id="btnNavCash">
+                <svg class="nav-svg" viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="12" rx="2"/><path d="M3 11h18M8 15h3"/></g></svg>
+                <span data-i18n="cash.nav">Tiroir-caisse</span>
+            </button>
             <button class="nav-btn" data-view="adminView" id="btnNavAdmin">
                 <svg class="nav-svg" viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/></g></svg>
                 <span data-i18n="common.nav_admin">Paramétrage</span>
@@ -328,6 +332,9 @@ try { window.applyDesign(localStorage.getItem('pos_design') === 'classic'); } ca
                     </button>
                     <button class="admin-tab-btn" data-admin-tab="tabStock">
                         <span>🥕</span> <span data-i18n="stock.tab">Ingrédients</span>
+                    </button>
+                    <button class="admin-tab-btn" data-admin-tab="tabAlerts">
+                        <span>🔔</span> <span data-i18n="alerts.tab">Alertes et tendances</span>
                     </button>
                     <button class="admin-tab-btn" data-admin-tab="tabEstablishment">
                         <span>🏢</span> <span data-i18n="admin.tab_establishment">Établissement & Exercice</span>
@@ -986,6 +993,30 @@ try { window.applyDesign(localStorage.getItem('pos_design') === 'classic'); } ca
                         </div>
                     </div>
 
+                    <div class="admin-tab-pane" id="tabAlerts">
+                        <div class="admin-card" style="margin-bottom:12px;">
+                            <h4 data-i18n="alerts.rules_title">Seuils d'alerte</h4>
+                            <p class="text-muted" data-i18n="alerts.rules_hint">Une alerte se déclenche quand le seuil est dépassé, une seule fois par serveur et par service (entre deux Z).</p>
+                            <div id="alertRules"></div>
+                            <label style="display:flex; align-items:center; gap:10px; margin-top:10px; cursor:pointer;">
+                                <input type="checkbox" id="alertNoteRequired" style="width:18px; height:18px;">
+                                <span data-i18n="alerts.note_required_label">Exiger une note quand l'écart de caisse dépasse le seuil</span>
+                            </label>
+                            <label style="display:flex; align-items:center; gap:10px; margin-top:10px;">
+                                <span data-i18n="alerts.trend_label">Écart de tendance signalé (%)</span>
+                                <input type="number" id="alertTrend" min="1" max="100" style="width:90px;">
+                            </label>
+                        </div>
+                        <div class="admin-card">
+                            <h4 data-i18n="alerts.list_title">Alertes</h4>
+                            <div style="display:flex; gap:8px; margin-bottom:8px;">
+                                <button type="button" class="bk-act" data-alert-state="open" data-i18n="alerts.open">À traiter</button>
+                                <button type="button" class="bk-act" data-alert-state="resolved" data-i18n="alerts.resolved">Traitées</button>
+                            </div>
+                            <div id="alertList"></div>
+                        </div>
+                    </div>
+
                     <div class="admin-tab-pane" id="tabEstablishment">
                         <div class="admin-card" style="max-width: 700px;">
                             <h3 data-i18n="admin.establishment_title">🏢 Identité de l'Établissement & Exercice Fiscal</h3>
@@ -1072,6 +1103,16 @@ try { window.applyDesign(localStorage.getItem('pos_design') === 'classic'); } ca
         </section>
 
         <!-- ==================== VIEW : ENCAISSEMENTS ==================== -->
+        <section class="view-panel" id="cashView">
+            <div class="menu-page">
+                <div class="menu-head">
+                    <h2 data-i18n="cash.title">Tiroir-caisse</h2>
+                    <button type="button" class="bk-act" id="cashRefresh" data-i18n="takings.refresh">Actualiser</button>
+                </div>
+                <div id="cashBody"></div>
+            </div>
+        </section>
+
         <section class="view-panel" id="takingsView">
             <div class="menu-page">
                 <div class="menu-head">
