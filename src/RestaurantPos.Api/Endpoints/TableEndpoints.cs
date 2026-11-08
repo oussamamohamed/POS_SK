@@ -26,7 +26,7 @@ public static class TableEndpoints
         {
             var list = await tableService.GetFloorPlanTablesAsync();
             return Results.Ok(list);
-        }).AllowAnonymous();
+        });
 
         group.MapPost("/", async (CreateTableRequest req, ITableManagementService tableService) =>
         {

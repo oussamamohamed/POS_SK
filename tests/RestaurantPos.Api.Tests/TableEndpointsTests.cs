@@ -29,9 +29,10 @@ public class TableEndpointsTests : IClassFixture<PosApiApplicationFactory>
     }
 
     [Fact]
-    public async Task GetFloorPlan_AllowsAnonymous_ReturnsList()
+    public async Task GetFloorPlan_Anonymous_IsRefused_AndAuthenticatedReturnsList()
     {
-        var client = _factory.CreateClient();
+        (await _factory.CreateClient().GetAsync("/api/tables")).StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        var client = CreateAuthenticatedClient();
 
         var response = await client.GetAsync("/api/tables");
 

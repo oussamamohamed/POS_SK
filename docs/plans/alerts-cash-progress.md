@@ -37,3 +37,9 @@ Voir la fin de ce fichier (mis à jour après les suites complètes).
 - Migrations de schéma : `ApplySchema` ignore seulement « colonne/objet déjà présent » et journalise le reste (base ancienne et base neuve : 0 échec).
 - `AlertEvaluationFilter` journalise l'erreur au lieu de l'avaler.
 - Résultats : .NET 85 / 506 / 345, Playwright 114.
+
+## Dernière passe
+
+- `/api/tables` (plan de salle) demande maintenant une connexion ; tests adaptés.
+- Connexion PIN : PBKDF2 mesuré à 24 ms par employé (environ 0,5 s pour 20 employés), limitée à 5 essais / 30 s par IP. Pas de changement de schéma : le gain ne justifie pas de modifier l'écran de connexion des trois clients ni d'ajouter une empreinte rapide.
+- Résultats : .NET 85 / 510 / 345, PosKit 795, contrat live 8, UI iPad 89 (0 échec), Playwright 114 (base neuve). Sur une base déjà utilisée, `daily-summary.spec.ts` échoue (un Z existe déjà) : lancer Playwright sur une base neuve.

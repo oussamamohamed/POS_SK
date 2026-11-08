@@ -95,7 +95,7 @@ public class ReservationApiTests : IClassFixture<PosApiApplicationFactory>
 
         seat.StatusCode.Should().Be(HttpStatusCode.OK);
         (await seat.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("status").GetInt32().Should().Be(1);
-        var tables = await ClientAs(null).GetFromJsonAsync<List<JsonElement>>("/api/tables");
+        var tables = await ClientAs("Waiter").GetFromJsonAsync<List<JsonElement>>("/api/tables");
         tables!.Single(t => t.GetProperty("tableNumber").GetString() == table).GetProperty("status").GetInt32().Should().Be(1);
     }
 }
