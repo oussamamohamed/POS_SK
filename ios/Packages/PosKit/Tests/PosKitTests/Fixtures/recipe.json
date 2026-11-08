@@ -1,0 +1,18 @@
+{
+  "lines": [
+    {
+      "ingredientId": "01a1b344-cf2e-743b-8757-05c7610aff5a",
+      "quantityMilli": 150000
+    },
+    {
+      "ingredientId": "01a1b344-cfbf-7937-aeef-a8aec6acd594",
+      "quantityMilli": 100000
+    },
+    {
+      "ingredientId": "01a1b344-d099-7918-9bc3-efcffe2bef3e",
+      "quantityMilli": 125000
+    }
+  ],
+  "costCents": 443,
+  "allergenMask": 65
+}

@@ -1,0 +1,38 @@
+[
+  {
+    "id": "01a1b344-cf2e-743b-8757-05c7610aff5a",
+    "name": "Farine g8wf4",
+    "unit": "g",
+    "unitCostMilliCents": 1250,
+    "isPreparation": false,
+    "yieldMilli": null,
+    "allergenMask": 1,
+    "lowStockMilli": null,
+    "isActive": true,
+    "stockMilli": null
+  },
+  {
+    "id": "01a1b342-76e9-796f-b7de-8bda342baba8",
+    "name": "Farine h7r45",
+    "unit": "g",
+    "unitCostMilliCents": 1250,
+    "isPreparation": false,
+    "yieldMilli": null,
+    "allergenMask": 1,
+    "lowStockMilli": null,
+    "isActive": true,
+    "stockMilli": null
+  },
+  {
+    "id": "01a1b343-10ff-781d-a3db-2440c58e7a85",
+    "name": "Farine r2zd2",
+    "unit": "g",
+    "unitCostMilliCents": 1250,
+    "isPreparation": false,
+    "yieldMilli": null,
+    "allergenMask": 1,
+    "lowStockMilli": null,
+    "isActive": true,
+    "stockMilli": null
+  }
+]

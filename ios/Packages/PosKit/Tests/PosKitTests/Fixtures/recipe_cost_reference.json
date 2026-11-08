@@ -1,0 +1,3053 @@
+[
+  {
+    "name": "vide",
+    "ingredients": [],
+    "preparationLines": {},
+    "lines": [],
+    "expected": {
+      "cents": 0,
+      "allergenMask": 0,
+      "error": null,
+      "preparationUnitCosts": {}
+    }
+  },
+  {
+    "name": "arrondi_unique",
+    "ingredients": [
+      {
+        "id": "00000000-0000-0000-0000-000000000001",
+        "name": "i1",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 400,
+        "allergenMask": 0,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000002",
+        "name": "i2",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 400,
+        "allergenMask": 0,
+        "isActive": true
+      }
+    ],
+    "preparationLines": {},
+    "lines": [
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000001",
+        "quantityMilli": 1000
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000002",
+        "quantityMilli": 1000
+      }
+    ],
+    "expected": {
+      "cents": 1,
+      "allergenMask": 0,
+      "error": null,
+      "preparationUnitCosts": {}
+    }
+  },
+  {
+    "name": "demi_superieur",
+    "ingredients": [
+      {
+        "id": "00000000-0000-0000-0000-000000000001",
+        "name": "i1",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 1250,
+        "allergenMask": 1,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000002",
+        "name": "i2",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 300,
+        "allergenMask": 0,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000003",
+        "name": "i3",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 1800,
+        "allergenMask": 64,
+        "isActive": true
+      }
+    ],
+    "preparationLines": {},
+    "lines": [
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000001",
+        "quantityMilli": 150000
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000002",
+        "quantityMilli": 100000
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000003",
+        "quantityMilli": 125000
+      }
+    ],
+    "expected": {
+      "cents": 443,
+      "allergenMask": 65,
+      "error": null,
+      "preparationUnitCosts": {}
+    }
+  },
+  {
+    "name": "preparation_rendement",
+    "ingredients": [
+      {
+        "id": "00000000-0000-0000-0000-000000000001",
+        "name": "i1",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 300,
+        "allergenMask": 256,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000002",
+        "name": "p2",
+        "isPreparation": true,
+        "yieldMilli": 500000,
+        "unitCostMilliCents": 0,
+        "allergenMask": 0,
+        "isActive": true
+      }
+    ],
+    "preparationLines": {
+      "00000000-0000-0000-0000-000000000002": [
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000001",
+          "quantityMilli": 1000000
+        }
+      ]
+    },
+    "lines": [
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000002",
+        "quantityMilli": 100000
+      }
+    ],
+    "expected": {
+      "cents": 60,
+      "allergenMask": 256,
+      "error": null,
+      "preparationUnitCosts": {
+        "00000000-0000-0000-0000-000000000002": 600
+      }
+    }
+  },
+  {
+    "name": "preparation_arrondi_milli",
+    "ingredients": [
+      {
+        "id": "00000000-0000-0000-0000-000000000001",
+        "name": "i1",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 1000,
+        "allergenMask": 0,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000002",
+        "name": "p2",
+        "isPreparation": true,
+        "yieldMilli": 3000,
+        "unitCostMilliCents": 0,
+        "allergenMask": 0,
+        "isActive": true
+      }
+    ],
+    "preparationLines": {
+      "00000000-0000-0000-0000-000000000002": [
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000001",
+          "quantityMilli": 1000
+        }
+      ]
+    },
+    "lines": [
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000002",
+        "quantityMilli": 7000
+      }
+    ],
+    "expected": {
+      "cents": 2,
+      "allergenMask": 0,
+      "error": null,
+      "preparationUnitCosts": {
+        "00000000-0000-0000-0000-000000000002": 333
+      }
+    }
+  },
+  {
+    "name": "grands_nombres",
+    "ingredients": [
+      {
+        "id": "00000000-0000-0000-0000-000000000001",
+        "name": "i1",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 9000000000,
+        "allergenMask": 0,
+        "isActive": true
+      }
+    ],
+    "preparationLines": {},
+    "lines": [
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000001",
+        "quantityMilli": 4000000000
+      }
+    ],
+    "expected": {
+      "cents": 36000000000000,
+      "allergenMask": 0,
+      "error": null,
+      "preparationUnitCosts": {}
+    }
+  },
+  {
+    "name": "ingredient_inactif",
+    "ingredients": [
+      {
+        "id": "00000000-0000-0000-0000-000000000001",
+        "name": "i1",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 100,
+        "allergenMask": 0,
+        "isActive": false
+      }
+    ],
+    "preparationLines": {},
+    "lines": [
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000001",
+        "quantityMilli": 1000
+      }
+    ],
+    "expected": {
+      "cents": null,
+      "allergenMask": null,
+      "error": "ingredient_inactive",
+      "preparationUnitCosts": {}
+    }
+  },
+  {
+    "name": "ingredient_inconnu",
+    "ingredients": [],
+    "preparationLines": {},
+    "lines": [
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000009",
+        "quantityMilli": 1000
+      }
+    ],
+    "expected": {
+      "cents": null,
+      "allergenMask": null,
+      "error": "ingredient_unknown",
+      "preparationUnitCosts": {}
+    }
+  },
+  {
+    "name": "cycle",
+    "ingredients": [
+      {
+        "id": "00000000-0000-0000-0000-000000000001",
+        "name": "p1",
+        "isPreparation": true,
+        "yieldMilli": 1000,
+        "unitCostMilliCents": 0,
+        "allergenMask": 0,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000002",
+        "name": "p2",
+        "isPreparation": true,
+        "yieldMilli": 1000,
+        "unitCostMilliCents": 0,
+        "allergenMask": 0,
+        "isActive": true
+      }
+    ],
+    "preparationLines": {
+      "00000000-0000-0000-0000-000000000001": [
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000002",
+          "quantityMilli": 1000
+        }
+      ],
+      "00000000-0000-0000-0000-000000000002": [
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000001",
+          "quantityMilli": 1000
+        }
+      ]
+    },
+    "lines": [
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000001",
+        "quantityMilli": 1000
+      }
+    ],
+    "expected": {
+      "cents": null,
+      "allergenMask": null,
+      "error": "recipe_cycle",
+      "preparationUnitCosts": {}
+    }
+  },
+  {
+    "name": "profondeur_4",
+    "ingredients": [
+      {
+        "id": "00000000-0000-0000-0000-000000000001",
+        "name": "p1",
+        "isPreparation": true,
+        "yieldMilli": 1000,
+        "unitCostMilliCents": 0,
+        "allergenMask": 0,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000002",
+        "name": "p2",
+        "isPreparation": true,
+        "yieldMilli": 1000,
+        "unitCostMilliCents": 0,
+        "allergenMask": 0,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000003",
+        "name": "p3",
+        "isPreparation": true,
+        "yieldMilli": 1000,
+        "unitCostMilliCents": 0,
+        "allergenMask": 0,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000004",
+        "name": "p4",
+        "isPreparation": true,
+        "yieldMilli": 1000,
+        "unitCostMilliCents": 0,
+        "allergenMask": 0,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000005",
+        "name": "i5",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 1000,
+        "allergenMask": 0,
+        "isActive": true
+      }
+    ],
+    "preparationLines": {
+      "00000000-0000-0000-0000-000000000001": [
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000002",
+          "quantityMilli": 1000
+        }
+      ],
+      "00000000-0000-0000-0000-000000000002": [
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000003",
+          "quantityMilli": 1000
+        }
+      ],
+      "00000000-0000-0000-0000-000000000003": [
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000004",
+          "quantityMilli": 1000
+        }
+      ],
+      "00000000-0000-0000-0000-000000000004": [
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000005",
+          "quantityMilli": 1000
+        }
+      ]
+    },
+    "lines": [
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000001",
+        "quantityMilli": 1000
+      }
+    ],
+    "expected": {
+      "cents": 1,
+      "allergenMask": 0,
+      "error": null,
+      "preparationUnitCosts": {
+        "00000000-0000-0000-0000-000000000001": 1000,
+        "00000000-0000-0000-0000-000000000002": 1000,
+        "00000000-0000-0000-0000-000000000003": 1000,
+        "00000000-0000-0000-0000-000000000004": 1000
+      }
+    }
+  },
+  {
+    "name": "profondeur_5",
+    "ingredients": [
+      {
+        "id": "00000000-0000-0000-0000-000000000001",
+        "name": "p1",
+        "isPreparation": true,
+        "yieldMilli": 1000,
+        "unitCostMilliCents": 0,
+        "allergenMask": 0,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000002",
+        "name": "p2",
+        "isPreparation": true,
+        "yieldMilli": 1000,
+        "unitCostMilliCents": 0,
+        "allergenMask": 0,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000003",
+        "name": "p3",
+        "isPreparation": true,
+        "yieldMilli": 1000,
+        "unitCostMilliCents": 0,
+        "allergenMask": 0,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000004",
+        "name": "p4",
+        "isPreparation": true,
+        "yieldMilli": 1000,
+        "unitCostMilliCents": 0,
+        "allergenMask": 0,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000005",
+        "name": "p5",
+        "isPreparation": true,
+        "yieldMilli": 1000,
+        "unitCostMilliCents": 0,
+        "allergenMask": 0,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000006",
+        "name": "i6",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 1000,
+        "allergenMask": 0,
+        "isActive": true
+      }
+    ],
+    "preparationLines": {
+      "00000000-0000-0000-0000-000000000001": [
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000002",
+          "quantityMilli": 1000
+        }
+      ],
+      "00000000-0000-0000-0000-000000000002": [
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000003",
+          "quantityMilli": 1000
+        }
+      ],
+      "00000000-0000-0000-0000-000000000003": [
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000004",
+          "quantityMilli": 1000
+        }
+      ],
+      "00000000-0000-0000-0000-000000000004": [
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000005",
+          "quantityMilli": 1000
+        }
+      ],
+      "00000000-0000-0000-0000-000000000005": [
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000006",
+          "quantityMilli": 1000
+        }
+      ]
+    },
+    "lines": [
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000001",
+        "quantityMilli": 1000
+      }
+    ],
+    "expected": {
+      "cents": null,
+      "allergenMask": null,
+      "error": "recipe_depth",
+      "preparationUnitCosts": {}
+    }
+  },
+  {
+    "name": "aleatoire_0",
+    "ingredients": [
+      {
+        "id": "00000000-0000-0000-0000-000000000001",
+        "name": "i1",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 800,
+        "allergenMask": 8,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000002",
+        "name": "i2",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 4588,
+        "allergenMask": 8192,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000003",
+        "name": "i3",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 4580,
+        "allergenMask": 2,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000004",
+        "name": "i4",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 3344,
+        "allergenMask": 2048,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000005",
+        "name": "p5",
+        "isPreparation": true,
+        "yieldMilli": 564863,
+        "unitCostMilliCents": 0,
+        "allergenMask": 0,
+        "isActive": true
+      }
+    ],
+    "preparationLines": {
+      "00000000-0000-0000-0000-000000000005": [
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000001",
+          "quantityMilli": 1013375
+        },
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000003",
+          "quantityMilli": 62576
+        }
+      ]
+    },
+    "lines": [
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000001",
+        "quantityMilli": 726364
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000002",
+        "quantityMilli": 155825
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000005",
+        "quantityMilli": 122551
+      }
+    ],
+    "expected": {
+      "cents": 1534,
+      "allergenMask": 8202,
+      "error": null,
+      "preparationUnitCosts": {
+        "00000000-0000-0000-0000-000000000005": 1943
+      }
+    }
+  },
+  {
+    "name": "aleatoire_1",
+    "ingredients": [
+      {
+        "id": "00000000-0000-0000-0000-000000000001",
+        "name": "i1",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 1549,
+        "allergenMask": 128,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000002",
+        "name": "i2",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 570,
+        "allergenMask": 128,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000003",
+        "name": "i3",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 3958,
+        "allergenMask": 1,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000004",
+        "name": "i4",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 4501,
+        "allergenMask": 32,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000005",
+        "name": "p5",
+        "isPreparation": true,
+        "yieldMilli": 726658,
+        "unitCostMilliCents": 0,
+        "allergenMask": 0,
+        "isActive": true
+      }
+    ],
+    "preparationLines": {
+      "00000000-0000-0000-0000-000000000005": [
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000001",
+          "quantityMilli": 308691
+        },
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000003",
+          "quantityMilli": 369820
+        }
+      ]
+    },
+    "lines": [
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000001",
+        "quantityMilli": 492051
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000002",
+        "quantityMilli": 654268
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000005",
+        "quantityMilli": 4004
+      }
+    ],
+    "expected": {
+      "cents": 1146,
+      "allergenMask": 129,
+      "error": null,
+      "preparationUnitCosts": {
+        "00000000-0000-0000-0000-000000000005": 2672
+      }
+    }
+  },
+  {
+    "name": "aleatoire_2",
+    "ingredients": [
+      {
+        "id": "00000000-0000-0000-0000-000000000001",
+        "name": "i1",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 707,
+        "allergenMask": 2,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000002",
+        "name": "i2",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 2,
+        "allergenMask": 1024,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000003",
+        "name": "i3",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 393,
+        "allergenMask": 128,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000004",
+        "name": "i4",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 1331,
+        "allergenMask": 2,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000005",
+        "name": "p5",
+        "isPreparation": true,
+        "yieldMilli": 269628,
+        "unitCostMilliCents": 0,
+        "allergenMask": 0,
+        "isActive": true
+      }
+    ],
+    "preparationLines": {
+      "00000000-0000-0000-0000-000000000005": [
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000001",
+          "quantityMilli": 1087434
+        },
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000003",
+          "quantityMilli": 43595
+        }
+      ]
+    },
+    "lines": [
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000001",
+        "quantityMilli": 685692
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000002",
+        "quantityMilli": 469654
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000005",
+        "quantityMilli": 86451
+      }
+    ],
+    "expected": {
+      "cents": 738,
+      "allergenMask": 1154,
+      "error": null,
+      "preparationUnitCosts": {
+        "00000000-0000-0000-0000-000000000005": 2915
+      }
+    }
+  },
+  {
+    "name": "aleatoire_3",
+    "ingredients": [
+      {
+        "id": "00000000-0000-0000-0000-000000000001",
+        "name": "i1",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 4856,
+        "allergenMask": 256,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000002",
+        "name": "i2",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 982,
+        "allergenMask": 2,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000003",
+        "name": "i3",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 4982,
+        "allergenMask": 2048,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000004",
+        "name": "i4",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 4189,
+        "allergenMask": 1,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000005",
+        "name": "p5",
+        "isPreparation": true,
+        "yieldMilli": 214898,
+        "unitCostMilliCents": 0,
+        "allergenMask": 0,
+        "isActive": true
+      }
+    ],
+    "preparationLines": {
+      "00000000-0000-0000-0000-000000000005": [
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000001",
+          "quantityMilli": 516012
+        },
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000003",
+          "quantityMilli": 327775
+        }
+      ]
+    },
+    "lines": [
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000001",
+        "quantityMilli": 207783
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000002",
+        "quantityMilli": 709913
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000003",
+        "quantityMilli": 88252
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000004",
+        "quantityMilli": 587217
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000005",
+        "quantityMilli": 90324
+      }
+    ],
+    "expected": {
+      "cents": 6345,
+      "allergenMask": 2307,
+      "error": null,
+      "preparationUnitCosts": {
+        "00000000-0000-0000-0000-000000000005": 19259
+      }
+    }
+  },
+  {
+    "name": "aleatoire_4",
+    "ingredients": [
+      {
+        "id": "00000000-0000-0000-0000-000000000001",
+        "name": "i1",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 3502,
+        "allergenMask": 4096,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000002",
+        "name": "i2",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 1111,
+        "allergenMask": 2048,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000003",
+        "name": "i3",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 973,
+        "allergenMask": 256,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000004",
+        "name": "i4",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 2141,
+        "allergenMask": 128,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000005",
+        "name": "p5",
+        "isPreparation": true,
+        "yieldMilli": 39348,
+        "unitCostMilliCents": 0,
+        "allergenMask": 0,
+        "isActive": true
+      }
+    ],
+    "preparationLines": {
+      "00000000-0000-0000-0000-000000000005": [
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000001",
+          "quantityMilli": 851102
+        },
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000003",
+          "quantityMilli": 306016
+        }
+      ]
+    },
+    "lines": [
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000001",
+        "quantityMilli": 651579
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000002",
+        "quantityMilli": 156233
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000005",
+        "quantityMilli": 280370
+      }
+    ],
+    "expected": {
+      "cents": 25815,
+      "allergenMask": 6400,
+      "error": null,
+      "preparationUnitCosts": {
+        "00000000-0000-0000-0000-000000000005": 83316
+      }
+    }
+  },
+  {
+    "name": "aleatoire_5",
+    "ingredients": [
+      {
+        "id": "00000000-0000-0000-0000-000000000001",
+        "name": "i1",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 4261,
+        "allergenMask": 1024,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000002",
+        "name": "i2",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 1441,
+        "allergenMask": 8192,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000003",
+        "name": "i3",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 3107,
+        "allergenMask": 8192,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000004",
+        "name": "i4",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 790,
+        "allergenMask": 8192,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000005",
+        "name": "p5",
+        "isPreparation": true,
+        "yieldMilli": 273113,
+        "unitCostMilliCents": 0,
+        "allergenMask": 0,
+        "isActive": true
+      }
+    ],
+    "preparationLines": {
+      "00000000-0000-0000-0000-000000000005": [
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000001",
+          "quantityMilli": 1637720
+        },
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000003",
+          "quantityMilli": 339197
+        }
+      ]
+    },
+    "lines": [
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000001",
+        "quantityMilli": 609309
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000005",
+        "quantityMilli": 276424
+      }
+    ],
+    "expected": {
+      "cents": 10726,
+      "allergenMask": 9216,
+      "error": null,
+      "preparationUnitCosts": {
+        "00000000-0000-0000-0000-000000000005": 29410
+      }
+    }
+  },
+  {
+    "name": "aleatoire_6",
+    "ingredients": [
+      {
+        "id": "00000000-0000-0000-0000-000000000001",
+        "name": "i1",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 779,
+        "allergenMask": 32,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000002",
+        "name": "i2",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 4992,
+        "allergenMask": 1,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000003",
+        "name": "i3",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 1008,
+        "allergenMask": 4096,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000004",
+        "name": "i4",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 2001,
+        "allergenMask": 16,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000005",
+        "name": "p5",
+        "isPreparation": true,
+        "yieldMilli": 265373,
+        "unitCostMilliCents": 0,
+        "allergenMask": 0,
+        "isActive": true
+      }
+    ],
+    "preparationLines": {
+      "00000000-0000-0000-0000-000000000005": [
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000001",
+          "quantityMilli": 46746
+        },
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000003",
+          "quantityMilli": 417646
+        }
+      ]
+    },
+    "lines": [
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000001",
+        "quantityMilli": 798965
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000002",
+        "quantityMilli": 614570
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000003",
+        "quantityMilli": 411931
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000004",
+        "quantityMilli": 762277
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000005",
+        "quantityMilli": 113170
+      }
+    ],
+    "expected": {
+      "cents": 5826,
+      "allergenMask": 4145,
+      "error": null,
+      "preparationUnitCosts": {
+        "00000000-0000-0000-0000-000000000005": 1724
+      }
+    }
+  },
+  {
+    "name": "aleatoire_7",
+    "ingredients": [
+      {
+        "id": "00000000-0000-0000-0000-000000000001",
+        "name": "i1",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 1521,
+        "allergenMask": 64,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000002",
+        "name": "i2",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 3238,
+        "allergenMask": 1,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000003",
+        "name": "i3",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 1951,
+        "allergenMask": 64,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000004",
+        "name": "i4",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 1558,
+        "allergenMask": 256,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000005",
+        "name": "p5",
+        "isPreparation": true,
+        "yieldMilli": 644863,
+        "unitCostMilliCents": 0,
+        "allergenMask": 0,
+        "isActive": true
+      }
+    ],
+    "preparationLines": {
+      "00000000-0000-0000-0000-000000000005": [
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000001",
+          "quantityMilli": 1410922
+        },
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000003",
+          "quantityMilli": 304619
+        }
+      ]
+    },
+    "lines": [
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000001",
+        "quantityMilli": 750218
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000002",
+        "quantityMilli": 735053
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000003",
+        "quantityMilli": 565953
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000005",
+        "quantityMilli": 129845
+      }
+    ],
+    "expected": {
+      "cents": 5177,
+      "allergenMask": 65,
+      "error": null,
+      "preparationUnitCosts": {
+        "00000000-0000-0000-0000-000000000005": 4249
+      }
+    }
+  },
+  {
+    "name": "aleatoire_8",
+    "ingredients": [
+      {
+        "id": "00000000-0000-0000-0000-000000000001",
+        "name": "i1",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 4404,
+        "allergenMask": 4096,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000002",
+        "name": "i2",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 244,
+        "allergenMask": 2048,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000003",
+        "name": "i3",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 634,
+        "allergenMask": 1024,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000004",
+        "name": "i4",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 2695,
+        "allergenMask": 4,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000005",
+        "name": "p5",
+        "isPreparation": true,
+        "yieldMilli": 477783,
+        "unitCostMilliCents": 0,
+        "allergenMask": 0,
+        "isActive": true
+      }
+    ],
+    "preparationLines": {
+      "00000000-0000-0000-0000-000000000005": [
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000001",
+          "quantityMilli": 848305
+        },
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000003",
+          "quantityMilli": 102520
+        }
+      ]
+    },
+    "lines": [
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000001",
+        "quantityMilli": 409134
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000002",
+        "quantityMilli": 792618
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000005",
+        "quantityMilli": 255993
+      }
+    ],
+    "expected": {
+      "cents": 4032,
+      "allergenMask": 7168,
+      "error": null,
+      "preparationUnitCosts": {
+        "00000000-0000-0000-0000-000000000005": 7955
+      }
+    }
+  },
+  {
+    "name": "aleatoire_9",
+    "ingredients": [
+      {
+        "id": "00000000-0000-0000-0000-000000000001",
+        "name": "i1",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 2865,
+        "allergenMask": 8,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000002",
+        "name": "i2",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 1249,
+        "allergenMask": 64,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000003",
+        "name": "i3",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 2434,
+        "allergenMask": 4,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000004",
+        "name": "i4",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 3217,
+        "allergenMask": 1024,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000005",
+        "name": "p5",
+        "isPreparation": true,
+        "yieldMilli": 826035,
+        "unitCostMilliCents": 0,
+        "allergenMask": 0,
+        "isActive": true
+      }
+    ],
+    "preparationLines": {
+      "00000000-0000-0000-0000-000000000005": [
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000001",
+          "quantityMilli": 805402
+        },
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000003",
+          "quantityMilli": 293670
+        }
+      ]
+    },
+    "lines": [
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000001",
+        "quantityMilli": 345603
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000002",
+        "quantityMilli": 388066
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000003",
+        "quantityMilli": 275270
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000005",
+        "quantityMilli": 138736
+      }
+    ],
+    "expected": {
+      "cents": 2652,
+      "allergenMask": 76,
+      "error": null,
+      "preparationUnitCosts": {
+        "00000000-0000-0000-0000-000000000005": 3659
+      }
+    }
+  },
+  {
+    "name": "aleatoire_10",
+    "ingredients": [
+      {
+        "id": "00000000-0000-0000-0000-000000000001",
+        "name": "i1",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 1720,
+        "allergenMask": 16,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000002",
+        "name": "i2",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 795,
+        "allergenMask": 256,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000003",
+        "name": "i3",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 325,
+        "allergenMask": 16,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000004",
+        "name": "i4",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 1037,
+        "allergenMask": 512,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000005",
+        "name": "p5",
+        "isPreparation": true,
+        "yieldMilli": 514050,
+        "unitCostMilliCents": 0,
+        "allergenMask": 0,
+        "isActive": true
+      }
+    ],
+    "preparationLines": {
+      "00000000-0000-0000-0000-000000000005": [
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000001",
+          "quantityMilli": 1566344
+        },
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000003",
+          "quantityMilli": 146165
+        }
+      ]
+    },
+    "lines": [
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000001",
+        "quantityMilli": 348712
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000002",
+        "quantityMilli": 403389
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000003",
+        "quantityMilli": 771775
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000004",
+        "quantityMilli": 747490
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000005",
+        "quantityMilli": 96248
+      }
+    ],
+    "expected": {
+      "cents": 2460,
+      "allergenMask": 784,
+      "error": null,
+      "preparationUnitCosts": {
+        "00000000-0000-0000-0000-000000000005": 5333
+      }
+    }
+  },
+  {
+    "name": "aleatoire_11",
+    "ingredients": [
+      {
+        "id": "00000000-0000-0000-0000-000000000001",
+        "name": "i1",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 1688,
+        "allergenMask": 32,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000002",
+        "name": "i2",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 3194,
+        "allergenMask": 64,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000003",
+        "name": "i3",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 4876,
+        "allergenMask": 8,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000004",
+        "name": "i4",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 2190,
+        "allergenMask": 8,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000005",
+        "name": "p5",
+        "isPreparation": true,
+        "yieldMilli": 110061,
+        "unitCostMilliCents": 0,
+        "allergenMask": 0,
+        "isActive": true
+      }
+    ],
+    "preparationLines": {
+      "00000000-0000-0000-0000-000000000005": [
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000001",
+          "quantityMilli": 495843
+        },
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000003",
+          "quantityMilli": 97415
+        }
+      ]
+    },
+    "lines": [
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000001",
+        "quantityMilli": 103370
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000005",
+        "quantityMilli": 208440
+      }
+    ],
+    "expected": {
+      "cents": 2659,
+      "allergenMask": 40,
+      "error": null,
+      "preparationUnitCosts": {
+        "00000000-0000-0000-0000-000000000005": 11920
+      }
+    }
+  },
+  {
+    "name": "aleatoire_12",
+    "ingredients": [
+      {
+        "id": "00000000-0000-0000-0000-000000000001",
+        "name": "i1",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 3747,
+        "allergenMask": 2,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000002",
+        "name": "i2",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 4190,
+        "allergenMask": 4,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000003",
+        "name": "i3",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 3487,
+        "allergenMask": 512,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000004",
+        "name": "i4",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 3951,
+        "allergenMask": 2,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000005",
+        "name": "p5",
+        "isPreparation": true,
+        "yieldMilli": 219991,
+        "unitCostMilliCents": 0,
+        "allergenMask": 0,
+        "isActive": true
+      }
+    ],
+    "preparationLines": {
+      "00000000-0000-0000-0000-000000000005": [
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000001",
+          "quantityMilli": 1182025
+        },
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000003",
+          "quantityMilli": 367636
+        }
+      ]
+    },
+    "lines": [
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000001",
+        "quantityMilli": 432950
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000005",
+        "quantityMilli": 265918
+      }
+    ],
+    "expected": {
+      "cents": 8525,
+      "allergenMask": 514,
+      "error": null,
+      "preparationUnitCosts": {
+        "00000000-0000-0000-0000-000000000005": 25960
+      }
+    }
+  },
+  {
+    "name": "aleatoire_13",
+    "ingredients": [
+      {
+        "id": "00000000-0000-0000-0000-000000000001",
+        "name": "i1",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 696,
+        "allergenMask": 2048,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000002",
+        "name": "i2",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 4917,
+        "allergenMask": 32,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000003",
+        "name": "i3",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 3244,
+        "allergenMask": 4,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000004",
+        "name": "i4",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 33,
+        "allergenMask": 2,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000005",
+        "name": "p5",
+        "isPreparation": true,
+        "yieldMilli": 687527,
+        "unitCostMilliCents": 0,
+        "allergenMask": 0,
+        "isActive": true
+      }
+    ],
+    "preparationLines": {
+      "00000000-0000-0000-0000-000000000005": [
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000001",
+          "quantityMilli": 1441798
+        },
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000003",
+          "quantityMilli": 198154
+        }
+      ]
+    },
+    "lines": [
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000001",
+        "quantityMilli": 294963
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000005",
+        "quantityMilli": 22363
+      }
+    ],
+    "expected": {
+      "cents": 259,
+      "allergenMask": 2052,
+      "error": null,
+      "preparationUnitCosts": {
+        "00000000-0000-0000-0000-000000000005": 2395
+      }
+    }
+  },
+  {
+    "name": "aleatoire_14",
+    "ingredients": [
+      {
+        "id": "00000000-0000-0000-0000-000000000001",
+        "name": "i1",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 4714,
+        "allergenMask": 4,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000002",
+        "name": "i2",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 391,
+        "allergenMask": 1,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000003",
+        "name": "i3",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 1616,
+        "allergenMask": 512,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000004",
+        "name": "i4",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 3432,
+        "allergenMask": 32,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000005",
+        "name": "p5",
+        "isPreparation": true,
+        "yieldMilli": 114075,
+        "unitCostMilliCents": 0,
+        "allergenMask": 0,
+        "isActive": true
+      }
+    ],
+    "preparationLines": {
+      "00000000-0000-0000-0000-000000000005": [
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000001",
+          "quantityMilli": 1132254
+        },
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000003",
+          "quantityMilli": 458290
+        }
+      ]
+    },
+    "lines": [
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000001",
+        "quantityMilli": 498639
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000002",
+        "quantityMilli": 71069
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000003",
+        "quantityMilli": 401696
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000004",
+        "quantityMilli": 157982
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000005",
+        "quantityMilli": 36146
+      }
+    ],
+    "expected": {
+      "cents": 5496,
+      "allergenMask": 549,
+      "error": null,
+      "preparationUnitCosts": {
+        "00000000-0000-0000-0000-000000000005": 53281
+      }
+    }
+  },
+  {
+    "name": "aleatoire_15",
+    "ingredients": [
+      {
+        "id": "00000000-0000-0000-0000-000000000001",
+        "name": "i1",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 445,
+        "allergenMask": 256,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000002",
+        "name": "i2",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 3514,
+        "allergenMask": 2,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000003",
+        "name": "i3",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 1607,
+        "allergenMask": 4,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000004",
+        "name": "i4",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 3816,
+        "allergenMask": 1,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000005",
+        "name": "p5",
+        "isPreparation": true,
+        "yieldMilli": 49747,
+        "unitCostMilliCents": 0,
+        "allergenMask": 0,
+        "isActive": true
+      }
+    ],
+    "preparationLines": {
+      "00000000-0000-0000-0000-000000000005": [
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000001",
+          "quantityMilli": 1416989
+        },
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000003",
+          "quantityMilli": 399353
+        }
+      ]
+    },
+    "lines": [
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000001",
+        "quantityMilli": 521392
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000005",
+        "quantityMilli": 109267
+      }
+    ],
+    "expected": {
+      "cents": 3027,
+      "allergenMask": 260,
+      "error": null,
+      "preparationUnitCosts": {
+        "00000000-0000-0000-0000-000000000005": 25576
+      }
+    }
+  },
+  {
+    "name": "aleatoire_16",
+    "ingredients": [
+      {
+        "id": "00000000-0000-0000-0000-000000000001",
+        "name": "i1",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 3115,
+        "allergenMask": 8192,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000002",
+        "name": "i2",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 1970,
+        "allergenMask": 4,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000003",
+        "name": "i3",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 233,
+        "allergenMask": 8192,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000004",
+        "name": "i4",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 2637,
+        "allergenMask": 128,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000005",
+        "name": "p5",
+        "isPreparation": true,
+        "yieldMilli": 801098,
+        "unitCostMilliCents": 0,
+        "allergenMask": 0,
+        "isActive": true
+      }
+    ],
+    "preparationLines": {
+      "00000000-0000-0000-0000-000000000005": [
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000001",
+          "quantityMilli": 432987
+        },
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000003",
+          "quantityMilli": 371353
+        }
+      ]
+    },
+    "lines": [
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000001",
+        "quantityMilli": 610386
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000005",
+        "quantityMilli": 202282
+      }
+    ],
+    "expected": {
+      "cents": 2264,
+      "allergenMask": 8192,
+      "error": null,
+      "preparationUnitCosts": {
+        "00000000-0000-0000-0000-000000000005": 1792
+      }
+    }
+  },
+  {
+    "name": "aleatoire_17",
+    "ingredients": [
+      {
+        "id": "00000000-0000-0000-0000-000000000001",
+        "name": "i1",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 2800,
+        "allergenMask": 512,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000002",
+        "name": "i2",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 4045,
+        "allergenMask": 8192,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000003",
+        "name": "i3",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 989,
+        "allergenMask": 4,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000004",
+        "name": "i4",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 1399,
+        "allergenMask": 64,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000005",
+        "name": "p5",
+        "isPreparation": true,
+        "yieldMilli": 16385,
+        "unitCostMilliCents": 0,
+        "allergenMask": 0,
+        "isActive": true
+      }
+    ],
+    "preparationLines": {
+      "00000000-0000-0000-0000-000000000005": [
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000001",
+          "quantityMilli": 1935435
+        },
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000003",
+          "quantityMilli": 134015
+        }
+      ]
+    },
+    "lines": [
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000001",
+        "quantityMilli": 497238
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000002",
+        "quantityMilli": 40283
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000005",
+        "quantityMilli": 94474
+      }
+    ],
+    "expected": {
+      "cents": 33566,
+      "allergenMask": 8708,
+      "error": null,
+      "preparationUnitCosts": {
+        "00000000-0000-0000-0000-000000000005": 338832
+      }
+    }
+  },
+  {
+    "name": "aleatoire_18",
+    "ingredients": [
+      {
+        "id": "00000000-0000-0000-0000-000000000001",
+        "name": "i1",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 2563,
+        "allergenMask": 1,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000002",
+        "name": "i2",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 60,
+        "allergenMask": 32,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000003",
+        "name": "i3",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 4841,
+        "allergenMask": 1,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000004",
+        "name": "i4",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 577,
+        "allergenMask": 2,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000005",
+        "name": "p5",
+        "isPreparation": true,
+        "yieldMilli": 330,
+        "unitCostMilliCents": 0,
+        "allergenMask": 0,
+        "isActive": true
+      }
+    ],
+    "preparationLines": {
+      "00000000-0000-0000-0000-000000000005": [
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000001",
+          "quantityMilli": 1051432
+        },
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000003",
+          "quantityMilli": 368797
+        }
+      ]
+    },
+    "lines": [
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000001",
+        "quantityMilli": 457251
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000005",
+        "quantityMilli": 116724
+      }
+    ],
+    "expected": {
+      "cents": 1585848,
+      "allergenMask": 1,
+      "error": null,
+      "preparationUnitCosts": {
+        "00000000-0000-0000-0000-000000000005": 13576262
+      }
+    }
+  },
+  {
+    "name": "aleatoire_19",
+    "ingredients": [
+      {
+        "id": "00000000-0000-0000-0000-000000000001",
+        "name": "i1",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 3270,
+        "allergenMask": 16,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000002",
+        "name": "i2",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 3235,
+        "allergenMask": 8192,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000003",
+        "name": "i3",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 103,
+        "allergenMask": 64,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000004",
+        "name": "i4",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 1823,
+        "allergenMask": 32,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000005",
+        "name": "p5",
+        "isPreparation": true,
+        "yieldMilli": 607181,
+        "unitCostMilliCents": 0,
+        "allergenMask": 0,
+        "isActive": true
+      }
+    ],
+    "preparationLines": {
+      "00000000-0000-0000-0000-000000000005": [
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000001",
+          "quantityMilli": 352276
+        },
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000003",
+          "quantityMilli": 477669
+        }
+      ]
+    },
+    "lines": [
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000001",
+        "quantityMilli": 396402
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000005",
+        "quantityMilli": 155674
+      }
+    ],
+    "expected": {
+      "cents": 1604,
+      "allergenMask": 80,
+      "error": null,
+      "preparationUnitCosts": {
+        "00000000-0000-0000-0000-000000000005": 1978
+      }
+    }
+  },
+  {
+    "name": "aleatoire_20",
+    "ingredients": [
+      {
+        "id": "00000000-0000-0000-0000-000000000001",
+        "name": "i1",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 481,
+        "allergenMask": 256,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000002",
+        "name": "i2",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 4981,
+        "allergenMask": 512,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000003",
+        "name": "i3",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 2799,
+        "allergenMask": 16,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000004",
+        "name": "i4",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 1887,
+        "allergenMask": 1,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000005",
+        "name": "p5",
+        "isPreparation": true,
+        "yieldMilli": 676003,
+        "unitCostMilliCents": 0,
+        "allergenMask": 0,
+        "isActive": true
+      }
+    ],
+    "preparationLines": {
+      "00000000-0000-0000-0000-000000000005": [
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000001",
+          "quantityMilli": 1164829
+        },
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000003",
+          "quantityMilli": 404422
+        }
+      ]
+    },
+    "lines": [
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000001",
+        "quantityMilli": 198599
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000002",
+        "quantityMilli": 593916
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000005",
+        "quantityMilli": 133379
+      }
+    ],
+    "expected": {
+      "cents": 3388,
+      "allergenMask": 784,
+      "error": null,
+      "preparationUnitCosts": {
+        "00000000-0000-0000-0000-000000000005": 2503
+      }
+    }
+  },
+  {
+    "name": "aleatoire_21",
+    "ingredients": [
+      {
+        "id": "00000000-0000-0000-0000-000000000001",
+        "name": "i1",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 4516,
+        "allergenMask": 256,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000002",
+        "name": "i2",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 4119,
+        "allergenMask": 1024,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000003",
+        "name": "i3",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 3546,
+        "allergenMask": 32,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000004",
+        "name": "i4",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 4811,
+        "allergenMask": 8192,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000005",
+        "name": "p5",
+        "isPreparation": true,
+        "yieldMilli": 107595,
+        "unitCostMilliCents": 0,
+        "allergenMask": 0,
+        "isActive": true
+      }
+    ],
+    "preparationLines": {
+      "00000000-0000-0000-0000-000000000005": [
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000001",
+          "quantityMilli": 720372
+        },
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000003",
+          "quantityMilli": 422718
+        }
+      ]
+    },
+    "lines": [
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000001",
+        "quantityMilli": 385397
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000002",
+        "quantityMilli": 722793
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000005",
+        "quantityMilli": 40054
+      }
+    ],
+    "expected": {
+      "cents": 6487,
+      "allergenMask": 1312,
+      "error": null,
+      "preparationUnitCosts": {
+        "00000000-0000-0000-0000-000000000005": 44167
+      }
+    }
+  },
+  {
+    "name": "aleatoire_22",
+    "ingredients": [
+      {
+        "id": "00000000-0000-0000-0000-000000000001",
+        "name": "i1",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 4613,
+        "allergenMask": 64,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000002",
+        "name": "i2",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 4121,
+        "allergenMask": 4,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000003",
+        "name": "i3",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 61,
+        "allergenMask": 32,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000004",
+        "name": "i4",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 389,
+        "allergenMask": 4096,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000005",
+        "name": "p5",
+        "isPreparation": true,
+        "yieldMilli": 746384,
+        "unitCostMilliCents": 0,
+        "allergenMask": 0,
+        "isActive": true
+      }
+    ],
+    "preparationLines": {
+      "00000000-0000-0000-0000-000000000005": [
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000001",
+          "quantityMilli": 1168924
+        },
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000003",
+          "quantityMilli": 195438
+        }
+      ]
+    },
+    "lines": [
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000001",
+        "quantityMilli": 288129
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000005",
+        "quantityMilli": 192036
+      }
+    ],
+    "expected": {
+      "cents": 2719,
+      "allergenMask": 96,
+      "error": null,
+      "preparationUnitCosts": {
+        "00000000-0000-0000-0000-000000000005": 7240
+      }
+    }
+  },
+  {
+    "name": "aleatoire_23",
+    "ingredients": [
+      {
+        "id": "00000000-0000-0000-0000-000000000001",
+        "name": "i1",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 3413,
+        "allergenMask": 8,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000002",
+        "name": "i2",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 207,
+        "allergenMask": 1024,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000003",
+        "name": "i3",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 2851,
+        "allergenMask": 1024,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000004",
+        "name": "i4",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 2701,
+        "allergenMask": 512,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000005",
+        "name": "p5",
+        "isPreparation": true,
+        "yieldMilli": 688378,
+        "unitCostMilliCents": 0,
+        "allergenMask": 0,
+        "isActive": true
+      }
+    ],
+    "preparationLines": {
+      "00000000-0000-0000-0000-000000000005": [
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000001",
+          "quantityMilli": 1753600
+        },
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000003",
+          "quantityMilli": 192620
+        }
+      ]
+    },
+    "lines": [
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000001",
+        "quantityMilli": 473046
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000002",
+        "quantityMilli": 107119
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000005",
+        "quantityMilli": 180335
+      }
+    ],
+    "expected": {
+      "cents": 3348,
+      "allergenMask": 1032,
+      "error": null,
+      "preparationUnitCosts": {
+        "00000000-0000-0000-0000-000000000005": 9492
+      }
+    }
+  },
+  {
+    "name": "aleatoire_24",
+    "ingredients": [
+      {
+        "id": "00000000-0000-0000-0000-000000000001",
+        "name": "i1",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 391,
+        "allergenMask": 32,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000002",
+        "name": "i2",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 1220,
+        "allergenMask": 512,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000003",
+        "name": "i3",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 4528,
+        "allergenMask": 16,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000004",
+        "name": "i4",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 3994,
+        "allergenMask": 4096,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000005",
+        "name": "p5",
+        "isPreparation": true,
+        "yieldMilli": 256154,
+        "unitCostMilliCents": 0,
+        "allergenMask": 0,
+        "isActive": true
+      }
+    ],
+    "preparationLines": {
+      "00000000-0000-0000-0000-000000000005": [
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000001",
+          "quantityMilli": 1047051
+        },
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000003",
+          "quantityMilli": 174547
+        }
+      ]
+    },
+    "lines": [
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000001",
+        "quantityMilli": 307409
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000002",
+        "quantityMilli": 660499
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000003",
+        "quantityMilli": 587432
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000005",
+        "quantityMilli": 298384
+      }
+    ],
+    "expected": {
+      "cents": 4984,
+      "allergenMask": 560,
+      "error": null,
+      "preparationUnitCosts": {
+        "00000000-0000-0000-0000-000000000005": 4684
+      }
+    }
+  },
+  {
+    "name": "aleatoire_25",
+    "ingredients": [
+      {
+        "id": "00000000-0000-0000-0000-000000000001",
+        "name": "i1",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 3619,
+        "allergenMask": 32,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000002",
+        "name": "i2",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 2918,
+        "allergenMask": 64,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000003",
+        "name": "i3",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 82,
+        "allergenMask": 64,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000004",
+        "name": "i4",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 607,
+        "allergenMask": 128,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000005",
+        "name": "p5",
+        "isPreparation": true,
+        "yieldMilli": 529985,
+        "unitCostMilliCents": 0,
+        "allergenMask": 0,
+        "isActive": true
+      }
+    ],
+    "preparationLines": {
+      "00000000-0000-0000-0000-000000000005": [
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000001",
+          "quantityMilli": 1137504
+        },
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000003",
+          "quantityMilli": 439096
+        }
+      ]
+    },
+    "lines": [
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000001",
+        "quantityMilli": 200852
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000002",
+        "quantityMilli": 547594
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000005",
+        "quantityMilli": 107187
+      }
+    ],
+    "expected": {
+      "cents": 3165,
+      "allergenMask": 96,
+      "error": null,
+      "preparationUnitCosts": {
+        "00000000-0000-0000-0000-000000000005": 7835
+      }
+    }
+  },
+  {
+    "name": "aleatoire_26",
+    "ingredients": [
+      {
+        "id": "00000000-0000-0000-0000-000000000001",
+        "name": "i1",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 4117,
+        "allergenMask": 4,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000002",
+        "name": "i2",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 2533,
+        "allergenMask": 1024,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000003",
+        "name": "i3",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 4194,
+        "allergenMask": 2,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000004",
+        "name": "i4",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 4931,
+        "allergenMask": 512,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000005",
+        "name": "p5",
+        "isPreparation": true,
+        "yieldMilli": 51767,
+        "unitCostMilliCents": 0,
+        "allergenMask": 0,
+        "isActive": true
+      }
+    ],
+    "preparationLines": {
+      "00000000-0000-0000-0000-000000000005": [
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000001",
+          "quantityMilli": 1611932
+        },
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000003",
+          "quantityMilli": 338488
+        }
+      ]
+    },
+    "lines": [
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000001",
+        "quantityMilli": 287907
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000002",
+        "quantityMilli": 605471
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000003",
+        "quantityMilli": 169440
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000004",
+        "quantityMilli": 148836
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000005",
+        "quantityMilli": 283720
+      }
+    ],
+    "expected": {
+      "cents": 48316,
+      "allergenMask": 1542,
+      "error": null,
+      "preparationUnitCosts": {
+        "00000000-0000-0000-0000-000000000005": 155619
+      }
+    }
+  },
+  {
+    "name": "aleatoire_27",
+    "ingredients": [
+      {
+        "id": "00000000-0000-0000-0000-000000000001",
+        "name": "i1",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 1207,
+        "allergenMask": 2,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000002",
+        "name": "i2",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 4337,
+        "allergenMask": 1024,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000003",
+        "name": "i3",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 88,
+        "allergenMask": 64,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000004",
+        "name": "i4",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 1845,
+        "allergenMask": 256,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000005",
+        "name": "p5",
+        "isPreparation": true,
+        "yieldMilli": 243347,
+        "unitCostMilliCents": 0,
+        "allergenMask": 0,
+        "isActive": true
+      }
+    ],
+    "preparationLines": {
+      "00000000-0000-0000-0000-000000000005": [
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000001",
+          "quantityMilli": 1121860
+        },
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000003",
+          "quantityMilli": 357892
+        }
+      ]
+    },
+    "lines": [
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000001",
+        "quantityMilli": 51944
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000002",
+        "quantityMilli": 480375
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000003",
+        "quantityMilli": 65918
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000005",
+        "quantityMilli": 34328
+      }
+    ],
+    "expected": {
+      "cents": 2347,
+      "allergenMask": 1090,
+      "error": null,
+      "preparationUnitCosts": {
+        "00000000-0000-0000-0000-000000000005": 5694
+      }
+    }
+  },
+  {
+    "name": "aleatoire_28",
+    "ingredients": [
+      {
+        "id": "00000000-0000-0000-0000-000000000001",
+        "name": "i1",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 3460,
+        "allergenMask": 128,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000002",
+        "name": "i2",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 3124,
+        "allergenMask": 8,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000003",
+        "name": "i3",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 1217,
+        "allergenMask": 512,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000004",
+        "name": "i4",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 1165,
+        "allergenMask": 1024,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000005",
+        "name": "p5",
+        "isPreparation": true,
+        "yieldMilli": 629087,
+        "unitCostMilliCents": 0,
+        "allergenMask": 0,
+        "isActive": true
+      }
+    ],
+    "preparationLines": {
+      "00000000-0000-0000-0000-000000000005": [
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000001",
+          "quantityMilli": 754327
+        },
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000003",
+          "quantityMilli": 321547
+        }
+      ]
+    },
+    "lines": [
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000001",
+        "quantityMilli": 442454
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000002",
+        "quantityMilli": 525139
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000003",
+        "quantityMilli": 546825
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000005",
+        "quantityMilli": 272870
+      }
+    ],
+    "expected": {
+      "cents": 5139,
+      "allergenMask": 648,
+      "error": null,
+      "preparationUnitCosts": {
+        "00000000-0000-0000-0000-000000000005": 4771
+      }
+    }
+  },
+  {
+    "name": "aleatoire_29",
+    "ingredients": [
+      {
+        "id": "00000000-0000-0000-0000-000000000001",
+        "name": "i1",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 2496,
+        "allergenMask": 256,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000002",
+        "name": "i2",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 2216,
+        "allergenMask": 8,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000003",
+        "name": "i3",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 3507,
+        "allergenMask": 2,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000004",
+        "name": "i4",
+        "isPreparation": false,
+        "yieldMilli": null,
+        "unitCostMilliCents": 4030,
+        "allergenMask": 1024,
+        "isActive": true
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000005",
+        "name": "p5",
+        "isPreparation": true,
+        "yieldMilli": 124052,
+        "unitCostMilliCents": 0,
+        "allergenMask": 0,
+        "isActive": true
+      }
+    ],
+    "preparationLines": {
+      "00000000-0000-0000-0000-000000000005": [
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000001",
+          "quantityMilli": 1842870
+        },
+        {
+          "ingredientId": "00000000-0000-0000-0000-000000000003",
+          "quantityMilli": 39172
+        }
+      ]
+    },
+    "lines": [
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000001",
+        "quantityMilli": 454857
+      },
+      {
+        "ingredientId": "00000000-0000-0000-0000-000000000005",
+        "quantityMilli": 130659
+      }
+    ],
+    "expected": {
+      "cents": 6125,
+      "allergenMask": 258,
+      "error": null,
+      "preparationUnitCosts": {
+        "00000000-0000-0000-0000-000000000005": 38187
+      }
+    }
+  }
+]
