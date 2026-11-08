@@ -1,0 +1,26 @@
+{
+  "id": "01a1bb96-8b08-700b-8fd4-4b48892385de",
+  "terminalId": "T01",
+  "openedAtUtc": "2026-11-08T14:36:07.816061+00:00",
+  "openedByOperatorId": "01a1bb96-0f62-7006-a12f-6d352bf8470b",
+  "openingFloatCents": 10000,
+  "expectedCents": 13800,
+  "movements": [
+    {
+      "id": "01a1bb96-8c48-7473-a1d2-fa044dbd8f83",
+      "kind": "out",
+      "amountCents": 1200,
+      "reason": "Achat de glace",
+      "operatorId": "01a1bb96-0fef-72c0-bf0c-6bdee17f5a73",
+      "createdAtUtc": "2026-11-08T14:36:08.136514+00:00"
+    }
+  ],
+  "count": {
+    "expectedCents": 13800,
+    "countedCents": 13600,
+    "varianceCents": -200,
+    "varianceNote": null,
+    "denominationsJson": "[{\"valueCents\":10000,\"quantity\":1},{\"valueCents\":2000,\"quantity\":1},{\"valueCents\":1000,\"quantity\":1},{\"valueCents\":500,\"quantity\":1},{\"valueCents\":100,\"quantity\":1}]",
+    "closedAtUtc": "2026-11-08T14:36:08.511011+00:00"
+  }
+}

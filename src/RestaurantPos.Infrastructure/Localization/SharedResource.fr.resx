@@ -535,6 +535,33 @@
   <data name="report.unknown_server" xml:space="preserve">
     <value>Inconnu</value>
   </data>
+  <data name="report.activity" xml:space="preserve">
+    <value>ACTIVITÉ</value>
+  </data>
+  <data name="report.discounts" xml:space="preserve">
+    <value>Remises</value>
+  </data>
+  <data name="report.comps" xml:space="preserve">
+    <value>Offerts</value>
+  </data>
+  <data name="report.voids" xml:space="preserve">
+    <value>Annulations (avoirs) : {count}</value>
+  </data>
+  <data name="report.cash" xml:space="preserve">
+    <value>CAISSE</value>
+  </data>
+  <data name="report.cash_float" xml:space="preserve">
+    <value>Fond de caisse</value>
+  </data>
+  <data name="report.cash_expected" xml:space="preserve">
+    <value>Espèces attendues</value>
+  </data>
+  <data name="report.cash_counted" xml:space="preserve">
+    <value>Espèces comptées</value>
+  </data>
+  <data name="report.cash_variance" xml:space="preserve">
+    <value>Écart de caisse</value>
+  </data>
   <data name="report.signature" xml:space="preserve">
     <value>Signature</value>
   </data>

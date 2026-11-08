@@ -535,6 +535,33 @@
   <data name="report.unknown_server" xml:space="preserve">
     <value>Unknown</value>
   </data>
+  <data name="report.activity" xml:space="preserve">
+    <value>ACTIVITY</value>
+  </data>
+  <data name="report.discounts" xml:space="preserve">
+    <value>Discounts</value>
+  </data>
+  <data name="report.comps" xml:space="preserve">
+    <value>Comps</value>
+  </data>
+  <data name="report.voids" xml:space="preserve">
+    <value>Voids (credit notes): {count}</value>
+  </data>
+  <data name="report.cash" xml:space="preserve">
+    <value>CASH DRAWER</value>
+  </data>
+  <data name="report.cash_float" xml:space="preserve">
+    <value>Opening float</value>
+  </data>
+  <data name="report.cash_expected" xml:space="preserve">
+    <value>Expected cash</value>
+  </data>
+  <data name="report.cash_counted" xml:space="preserve">
+    <value>Counted cash</value>
+  </data>
+  <data name="report.cash_variance" xml:space="preserve">
+    <value>Cash variance</value>
+  </data>
   <data name="report.signature" xml:space="preserve">
     <value>Signature</value>
   </data>

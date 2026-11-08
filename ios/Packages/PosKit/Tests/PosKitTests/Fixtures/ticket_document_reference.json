@@ -56,7 +56,15 @@
       "receipt.total_ht": "TOTAL EXCL. VAT",
       "receipt.total_ttc": "TOTAL INCL. VAT",
       "receipt.vat_breakdown": "VAT BREAKDOWN (NF525)",
+      "report.activity": "ACTIVITY",
+      "report.cash": "CASH DRAWER",
+      "report.cash_counted": "Counted cash",
+      "report.cash_expected": "Expected cash",
+      "report.cash_float": "Opening float",
+      "report.cash_variance": "Cash variance",
       "report.closed_at": "Closed",
+      "report.comps": "Comps",
+      "report.discounts": "Discounts",
       "report.grand_total": "Perpetual grand total",
       "report.items_before_discount": "Amounts before bill discounts",
       "report.items_sold": "ITEMS SOLD",
@@ -72,6 +80,7 @@
       "report.tips_by_server": "TIPS BY SERVER",
       "report.tips_total": "Total tips",
       "report.unknown_server": "Unknown",
+      "report.voids": "Voids (credit notes): {count}",
       "report.x_title": "X REPORT",
       "report.z_title": "Z CLOSURE #{sequence}"
     },
@@ -129,7 +138,15 @@
       "receipt.total_ht": "TOTAL HT",
       "receipt.total_ttc": "TOTAL TTC",
       "receipt.vat_breakdown": "VENTILATION TVA (NF525)",
+      "report.activity": "ACTIVITÉ",
+      "report.cash": "CAISSE",
+      "report.cash_counted": "Espèces comptées",
+      "report.cash_expected": "Espèces attendues",
+      "report.cash_float": "Fond de caisse",
+      "report.cash_variance": "Écart de caisse",
       "report.closed_at": "Clôturé le",
+      "report.comps": "Offerts",
+      "report.discounts": "Remises",
       "report.grand_total": "Grand total perpétuel",
       "report.items_before_discount": "Montants avant remises sur note",
       "report.items_sold": "ARTICLES VENDUS",
@@ -145,6 +162,7 @@
       "report.tips_by_server": "POURBOIRES PAR SERVEUR",
       "report.tips_total": "Total pourboires",
       "report.unknown_server": "Inconnu",
+      "report.voids": "Annulations (avoirs) : {count}",
       "report.x_title": "RAPPORT X",
       "report.z_title": "CLÔTURE Z n° {sequence}"
     },
@@ -202,7 +220,15 @@
       "receipt.total_ht": "المجموع دون الضريبة",
       "receipt.total_ttc": "المجموع شامل الضريبة",
       "receipt.vat_breakdown": "تفصيل الضريبة (NF525)",
+      "report.activity": "النشاط",
+      "report.cash": "الصندوق",
+      "report.cash_counted": "النقد المعدود",
+      "report.cash_expected": "النقد المتوقع",
+      "report.cash_float": "رصيد الافتتاح",
+      "report.cash_variance": "فرق الصندوق",
       "report.closed_at": "أُغلق في",
+      "report.comps": "المقدَّم مجانًا",
+      "report.discounts": "الخصومات",
       "report.grand_total": "الإجمالي الدائم",
       "report.items_before_discount": "المبالغ قبل خصومات الفاتورة",
       "report.items_sold": "الأصناف المباعة",
@@ -218,6 +244,7 @@
       "report.tips_by_server": "الإكراميات حسب النادل",
       "report.tips_total": "مجموع الإكراميات",
       "report.unknown_server": "غير معروف",
+      "report.voids": "الإلغاءات (إشعارات دائنة): {count}",
       "report.x_title": "تقرير X",
       "report.z_title": "إغلاق Z رقم {sequence}"
     }
@@ -3889,7 +3916,9 @@
           "categories": [],
           "tips": [],
           "totalTipsCents": 0,
-          "hasGlobalDiscount": false
+          "hasGlobalDiscount": false,
+          "activity": null,
+          "cash": null
         },
         "nowUtc": "2025-07-15T10:31:00.000Z",
         "settings": {
@@ -4101,7 +4130,18 @@
             }
           ],
           "totalTipsCents": 700,
-          "hasGlobalDiscount": true
+          "hasGlobalDiscount": true,
+          "activity": {
+            "discountsCents": 1200,
+            "compsCents": 650,
+            "voidCount": 2,
+            "voidCents": 3000
+          },
+          "cash": {
+            "floatCents": 10000,
+            "countedCents": 12750,
+            "varianceCents": -450
+          }
         },
         "nowUtc": "2025-07-15T10:31:00.000Z",
         "settings": null
@@ -4300,6 +4340,63 @@
           },
           {
             "type": "TicketText",
+            "text": "ACTIVITÉ",
+            "align": 1,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Remises",
+            "value": "12.00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Offerts",
+            "value": "6.50"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Annulations (avoirs) : 2",
+            "value": "30.00"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "CAISSE",
+            "align": 1,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Fond de caisse",
+            "value": "100.00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Espèces attendues",
+            "value": "132.00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Espèces comptées",
+            "value": "127.50"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Écart de caisse",
+            "value": "-4.50"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
             "text": "Logiciel: RestaurantPOS v1.0.0",
             "align": 1,
             "bold": false,
@@ -4358,7 +4455,9 @@
           ],
           "tips": [],
           "totalTipsCents": 0,
-          "hasGlobalDiscount": false
+          "hasGlobalDiscount": false,
+          "activity": null,
+          "cash": null
         },
         "nowUtc": "2025-03-30T01:45:00.000Z",
         "settings": {
@@ -4573,7 +4672,9 @@
           ],
           "tips": [],
           "totalTipsCents": 0,
-          "hasGlobalDiscount": false
+          "hasGlobalDiscount": false,
+          "activity": null,
+          "cash": null
         },
         "nowUtc": "2025-01-15T22:05:00.000Z",
         "settings": {
@@ -4820,7 +4921,18 @@
             }
           ],
           "totalTipsCents": 700,
-          "hasGlobalDiscount": true
+          "hasGlobalDiscount": true,
+          "activity": {
+            "discountsCents": 1200,
+            "compsCents": 650,
+            "voidCount": 2,
+            "voidCents": 3000
+          },
+          "cash": {
+            "floatCents": 10000,
+            "countedCents": 12750,
+            "varianceCents": -450
+          }
         },
         "settings": {
           "companyName": "Chez Léa",
@@ -5030,6 +5142,63 @@
           },
           {
             "type": "TicketText",
+            "text": "ACTIVITÉ",
+            "align": 1,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Remises",
+            "value": "12.00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Offerts",
+            "value": "6.50"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Annulations (avoirs) : 2",
+            "value": "30.00"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "CAISSE",
+            "align": 1,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Fond de caisse",
+            "value": "100.00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Espèces attendues",
+            "value": "132.00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Espèces comptées",
+            "value": "127.50"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Écart de caisse",
+            "value": "-4.50"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
             "text": "Signature",
             "align": 0,
             "bold": true,
@@ -5116,7 +5285,9 @@
           ],
           "tips": [],
           "totalTipsCents": 0,
-          "hasGlobalDiscount": false
+          "hasGlobalDiscount": false,
+          "activity": null,
+          "cash": null
         },
         "settings": {
           "companyName": "Chez Léa",
@@ -5367,7 +5538,9 @@
           "categories": [],
           "tips": [],
           "totalTipsCents": 0,
-          "hasGlobalDiscount": false
+          "hasGlobalDiscount": false,
+          "activity": null,
+          "cash": null
         },
         "settings": null,
         "duplicateNumber": null
@@ -5591,7 +5764,18 @@
             }
           ],
           "totalTipsCents": 700,
-          "hasGlobalDiscount": true
+          "hasGlobalDiscount": true,
+          "activity": {
+            "discountsCents": 1200,
+            "compsCents": 650,
+            "voidCount": 2,
+            "voidCents": 3000
+          },
+          "cash": {
+            "floatCents": 10000,
+            "countedCents": 12750,
+            "varianceCents": -450
+          }
         },
         "settings": {
           "companyName": "Chez Léa",
@@ -5795,6 +5979,63 @@
           },
           {
             "type": "TicketText",
+            "text": "ACTIVITÉ",
+            "align": 1,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Remises",
+            "value": "12.00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Offerts",
+            "value": "6.50"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Annulations (avoirs) : 2",
+            "value": "30.00"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "CAISSE",
+            "align": 1,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Fond de caisse",
+            "value": "100.00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Espèces attendues",
+            "value": "132.00"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Espèces comptées",
+            "value": "127.50"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Écart de caisse",
+            "value": "-4.50"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
             "text": "Signature",
             "align": 0,
             "bold": true,
@@ -5865,7 +6106,9 @@
           ],
           "tips": [],
           "totalTipsCents": 0,
-          "hasGlobalDiscount": false
+          "hasGlobalDiscount": false,
+          "activity": null,
+          "cash": null
         },
         "settings": null
       },
@@ -6054,7 +6297,9 @@
           "categories": [],
           "tips": [],
           "totalTipsCents": 0,
-          "hasGlobalDiscount": false
+          "hasGlobalDiscount": false,
+          "activity": null,
+          "cash": null
         },
         "settings": null
       },
@@ -6200,7 +6445,9 @@
           "categories": [],
           "tips": [],
           "totalTipsCents": 0,
-          "hasGlobalDiscount": false
+          "hasGlobalDiscount": false,
+          "activity": null,
+          "cash": null
         },
         "settings": null
       },

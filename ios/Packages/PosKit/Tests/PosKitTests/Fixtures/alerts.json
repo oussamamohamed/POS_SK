@@ -1,0 +1,15 @@
+[
+  {
+    "id": "01a1bb96-856f-702a-8da5-14da6fe64dc2",
+    "ruleType": "voids_count",
+    "operatorId": "00000000-0000-0000-0000-000000000000",
+    "operatorName": null,
+    "terminalId": "T01",
+    "periodKey": "T01:0",
+    "detailJson": "{\"count\":4,\"totalCents\":4000,\"receiptIds\":[\"01a1bb96-8558-77b8-b7c9-f2e3f4d663b2\",\"01a1bb96-8563-7d41-a774-d398634575bc\",\"01a1bb96-8567-73b6-9642-65085cf56ba9\",\"01a1bb96-856b-7a9c-8ed9-75f81cac423d\"]}",
+    "state": "resolved",
+    "createdAtUtc": "2026-11-08T14:36:06.38351+00:00",
+    "resolvedAtUtc": "2026-11-08T14:36:06.819136+00:00",
+    "resolutionNote": "Erreurs de saisie vérifiées"
+  }
+]

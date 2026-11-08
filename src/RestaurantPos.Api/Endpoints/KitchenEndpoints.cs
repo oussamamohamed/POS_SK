@@ -17,16 +17,17 @@ public static class KitchenEndpoints
                        .WithTags("Kitchen Display System")
                        .RequireAuthorization();
 
+        // Authentifié (comme le reste du groupe). Les 50 derniers bons sont choisis sur deux colonnes seulement, puis chargés avec leurs lignes :
+        // SQLite ne trie pas un DateTimeOffset en SQL, et charger tout l'historique ralentirait chaque rafraîchissement de la cuisine.
         group.MapGet("/tickets", async (AppDbContext db) =>
         {
-            var tickets = (await db.KitchenTickets
-                .Include(t => t.Items)
-                .ToListAsync())
+            var latest = (await db.KitchenTickets.AsNoTracking().Select(t => new { t.Id, t.DispatchedAtUtc }).ToListAsync())
+                .OrderByDescending(t => t.DispatchedAtUtc).Take(50).Select(t => t.Id).ToList();
+            var tickets = (await db.KitchenTickets.Include(t => t.Items).Where(t => latest.Contains(t.Id)).ToListAsync())
                 .OrderByDescending(t => t.DispatchedAtUtc)
-                .Take(50)
                 .ToList();
             return Results.Ok(tickets);
-        }).AllowAnonymous();
+        });
 
         group.MapPost("/tickets/{id:guid}/bump", async (Guid id, IKitchenRoutingService kds) =>
         {

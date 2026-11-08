@@ -317,7 +317,8 @@ public class TicketDocumentReferenceFixtureTests
                 new ReportCategoryGroup("Boissons", [new ReportItemLine("Café", 3, 750), new ReportItemLine("Eau", 2, 500)], 1250),
                 new ReportCategoryGroup(null, [new ReportItemLine("Divers", 1, 300)], 300)
             ],
-            [new ReportTipLine("Alice", 500), new ReportTipLine(null, 200)], 700, true);
+            [new ReportTipLine("Alice", 500), new ReportTipLine(null, 200)], 700, true,
+            new ReportActivity(1200, 650, 2, 3000), new RestaurantPos.Application.Common.Interfaces.CashZSummary(10000, 12750, -450));
         var plain = new ReportPrintData([new ReportCategoryGroup("Plats", [new ReportItemLine("Burger", 2, 2900)], 2900)], [], 0, false);
 
         FiscalSummaryDto Summary(string start, string end, long seq) => new("T01", start == "" ? DateTimeOffset.MinValue : Utc(start), Utc(end),
@@ -550,7 +551,9 @@ public class TicketDocumentReferenceFixtureTests
         }).ToArray(),
         tips = d.Tips.Select(t => new { serverName = t.ServerName, tipCents = t.TipCents }).ToArray(),
         totalTipsCents = d.TotalTipsCents,
-        hasGlobalDiscount = d.HasGlobalDiscount
+        hasGlobalDiscount = d.HasGlobalDiscount,
+        activity = d.Activity is { } a ? new { discountsCents = a.DiscountsCents, compsCents = a.CompsCents, voidCount = a.VoidCount, voidCents = a.VoidCents } : null,
+        cash = d.Cash is { } k ? new { floatCents = k.FloatCents, countedCents = k.CountedCents, varianceCents = k.VarianceCents } : null
     };
 
     // MARK: utilitaires

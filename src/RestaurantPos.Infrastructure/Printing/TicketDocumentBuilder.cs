@@ -230,6 +230,23 @@ public static class TicketDocumentBuilder
                 lines.Add(new TicketColumns(tip.ServerName ?? Texts.Get(c, "report.unknown_server"), Amount(tip.TipCents)));
             lines.Add(new TicketColumns(Texts.Get(c, "report.tips_total"), Amount(data.TotalTipsCents)));
         }
+        if (data.Activity is { } a && (a.DiscountsCents > 0 || a.CompsCents > 0 || a.VoidCount > 0))
+        {
+            lines.Add(new TicketSeparator());
+            lines.Add(new TicketText(Texts.Get(c, "report.activity"), TicketAlign.Center, Bold: true));
+            if (a.DiscountsCents > 0) lines.Add(new TicketColumns(Texts.Get(c, "report.discounts"), Amount(a.DiscountsCents)));
+            if (a.CompsCents > 0) lines.Add(new TicketColumns(Texts.Get(c, "report.comps"), Amount(a.CompsCents)));
+            if (a.VoidCount > 0) lines.Add(new TicketColumns(Texts.Get(c, "report.voids", ("count", a.VoidCount)), Amount(a.VoidCents)));
+        }
+        if (data.Cash is { } cash)
+        {
+            lines.Add(new TicketSeparator());
+            lines.Add(new TicketText(Texts.Get(c, "report.cash"), TicketAlign.Center, Bold: true));
+            lines.Add(new TicketColumns(Texts.Get(c, "report.cash_float"), Amount(cash.FloatCents)));
+            lines.Add(new TicketColumns(Texts.Get(c, "report.cash_expected"), Amount(cash.CountedCents - cash.VarianceCents)));
+            lines.Add(new TicketColumns(Texts.Get(c, "report.cash_counted"), Amount(cash.CountedCents)));
+            lines.Add(new TicketColumns(Texts.Get(c, "report.cash_variance"), Amount(cash.VarianceCents)));
+        }
     }
 
     private static string PaymentLabel(CultureInfo c, PaymentMethod method) => Texts.Get(c, method switch

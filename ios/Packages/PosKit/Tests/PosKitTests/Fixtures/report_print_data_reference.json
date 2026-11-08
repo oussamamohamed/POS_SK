@@ -651,7 +651,14 @@
         ],
         "tips": [],
         "totalTipsCents": 0,
-        "hasGlobalDiscount": true
+        "hasGlobalDiscount": true,
+        "activity": {
+          "discountsCents": 1245,
+          "compsCents": 650,
+          "voidCount": 0,
+          "voidCents": 0
+        },
+        "cash": null
       }
     },
     {
@@ -1008,7 +1015,14 @@
           }
         ],
         "totalTipsCents": 1260,
-        "hasGlobalDiscount": false
+        "hasGlobalDiscount": false,
+        "activity": {
+          "discountsCents": 0,
+          "compsCents": 0,
+          "voidCount": 0,
+          "voidCents": 0
+        },
+        "cash": null
       }
     },
     {
@@ -1399,7 +1413,14 @@
         ],
         "tips": [],
         "totalTipsCents": 0,
-        "hasGlobalDiscount": true
+        "hasGlobalDiscount": true,
+        "activity": {
+          "discountsCents": 0,
+          "compsCents": 1200,
+          "voidCount": 2,
+          "voidCents": 2000
+        },
+        "cash": null
       }
     },
     {
@@ -1484,7 +1505,14 @@
         ],
         "tips": [],
         "totalTipsCents": 0,
-        "hasGlobalDiscount": true
+        "hasGlobalDiscount": true,
+        "activity": {
+          "discountsCents": 200,
+          "compsCents": 0,
+          "voidCount": 0,
+          "voidCents": 0
+        },
+        "cash": null
       }
     },
     {
@@ -1501,7 +1529,14 @@
         "categories": [],
         "tips": [],
         "totalTipsCents": 0,
-        "hasGlobalDiscount": false
+        "hasGlobalDiscount": false,
+        "activity": {
+          "discountsCents": 0,
+          "compsCents": 0,
+          "voidCount": 0,
+          "voidCents": 0
+        },
+        "cash": null
       }
     }
   ],
@@ -1568,7 +1603,14 @@
             }
           ],
           "totalTipsCents": 928,
-          "hasGlobalDiscount": true
+          "hasGlobalDiscount": true,
+          "activity": {
+            "discountsCents": 13992,
+            "compsCents": 7395,
+            "voidCount": 4,
+            "voidCents": 24606
+          },
+          "cash": null
         }
       ],
       "B": [
@@ -1618,7 +1660,14 @@
             }
           ],
           "totalTipsCents": 88,
-          "hasGlobalDiscount": true
+          "hasGlobalDiscount": true,
+          "activity": {
+            "discountsCents": 6471,
+            "compsCents": 0,
+            "voidCount": 1,
+            "voidCents": 165
+          },
+          "cash": null
         }
       ],
       "C": [
@@ -1668,7 +1717,14 @@
           ],
           "tips": [],
           "totalTipsCents": 0,
-          "hasGlobalDiscount": true
+          "hasGlobalDiscount": true,
+          "activity": {
+            "discountsCents": 10925,
+            "compsCents": 8835,
+            "voidCount": 3,
+            "voidCents": 28874
+          },
+          "cash": null
         }
       ]
     }

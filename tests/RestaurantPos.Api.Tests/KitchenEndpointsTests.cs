@@ -61,9 +61,11 @@ public class KitchenEndpointsTests : IClassFixture<PosApiApplicationFactory>
     }
 
     [Fact]
-    public async Task GetTickets_AllowsAnonymous_ReturnsList()
+    public async Task GetTickets_Anonymous_IsRefused_AndAuthenticatedReturnsList()
     {
-        var client = _factory.CreateClient();
+        (await _factory.CreateClient().GetAsync("/api/kds/tickets")).StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+
+        var client = CreateClientWithRole("Waiter");
         await CreateTestTicketAsync();
 
         var response = await client.GetAsync("/api/kds/tickets");
@@ -72,6 +74,18 @@ public class KitchenEndpointsTests : IClassFixture<PosApiApplicationFactory>
         var tickets = await response.Content.ReadFromJsonAsync<List<JsonElement>>();
         tickets.Should().NotBeNull();
         tickets.Should().NotBeEmpty();
+    }
+
+    [Fact]
+    public async Task GetTickets_ReturnsTheFiftyNewestWithTheirLines_NewestFirst()
+    {
+        for (var i = 0; i < 52; i++) await CreateTestTicketAsync();
+
+        var tickets = await CreateClientWithRole("Waiter").GetFromJsonAsync<List<JsonElement>>("/api/kds/tickets");
+
+        tickets.Should().HaveCount(50);
+        tickets!.Select(t => t.GetProperty("dispatchedAtUtc").GetDateTimeOffset()).Should().BeInDescendingOrder();
+        tickets.Should().OnlyContain(t => t.GetProperty("items").GetArrayLength() > 0);
     }
 
     [Fact]

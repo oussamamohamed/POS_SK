@@ -26,7 +26,8 @@ public static class CheckoutEndpoints
         var group = app.MapGroup("/api/checkout")
                        .WithTags("Checkout & Payments")
                        .RequireAuthorization()
-                       .AddEndpointFilter<StockAvailabilityFilter>();
+                       .AddEndpointFilter<StockAvailabilityFilter>()
+                       .AddEndpointFilter<AlertEvaluationFilter>();
 
         group.MapPost("/pay", async (PaymentSettlementRequest req, ICheckoutPaymentService checkout, AppDbContext db, IMealVoucherPolicyService mealVoucherPolicyService, PrintDispatcher printing, IHubContext<PosHub, IPosHubClient> hub, HttpContext http) =>
         {

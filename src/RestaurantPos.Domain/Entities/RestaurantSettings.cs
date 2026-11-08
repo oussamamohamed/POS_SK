@@ -20,6 +20,10 @@ public class RestaurantSettings
     public bool AutoUnavailableOnStockOut { get; set; }
     public bool PrintAllergensOnKitchenTicket { get; set; }
     public string? AllergenDisclaimer { get; set; }
+    /// <summary>Écart (%) en deçà duquel une tendance n'est pas signalée.</summary>
+    public int TrendThresholdPercent { get; set; } = 15;
+    /// <summary>Une note est obligatoire quand l'écart de caisse dépasse le seuil actif.</summary>
+    public bool CashVarianceNoteRequired { get; set; } = true;
     public DateTimeOffset UpdatedAtUtc { get; set; } = DateTimeOffset.UtcNow;
 }
 

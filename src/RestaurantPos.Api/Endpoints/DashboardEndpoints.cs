@@ -62,5 +62,16 @@ public static class DashboardEndpoints
             var startUtc = new DateTimeOffset(localNow.UtcDateTime.Date, TimeSpan.Zero) - offset;
             return Results.Ok(await dashboardService.GetJournalAsync(startUtc, ct));
         });
+
+        // Tendances du jour (carte « à surveiller ») : aucune persistance, comparées au même jour de la semaine passée à la même heure.
+        group.MapGet("/insights", async (int? tzOffsetMinutes, IInsightsService insights, TimeProvider clock, CancellationToken ct) =>
+            Results.Ok(await insights.GetInsightsAsync(Math.Clamp(tzOffsetMinutes ?? 0, -14 * 60, 14 * 60), clock.GetUtcNow(), ct)));
+
+        // Résumé de fin de journée : totaux identiques au dernier Z du poste (ou de la date locale donnée).
+        group.MapGet("/daily-summary", async (string? terminalId, DateOnly? date, int? tzOffsetMinutes, IInsightsService insights, CancellationToken ct) =>
+        {
+            var summary = await insights.GetDailySummaryAsync(string.IsNullOrWhiteSpace(terminalId) ? "POS_MAIN_TERM" : terminalId, Math.Clamp(tzOffsetMinutes ?? 0, -14 * 60, 14 * 60), date, ct);
+            return summary is null ? Results.NotFound(new { Code = "no_closure" }) : Results.Ok(summary);
+        });
     }
 }

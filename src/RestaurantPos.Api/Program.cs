@@ -31,6 +31,14 @@ namespace RestaurantPos.Api;
 
 public partial class Program
 {
+    /// <summary>Applique une instruction de schéma idempotente. « Colonne ou objet déjà présent » est attendu à chaque démarrage ; toute autre erreur (base verrouillée, disque plein…) est journalisée.</summary>
+    private static void ApplySchema(AppDbContext db, ILogger log, string sql)
+    {
+        try { db.Database.ExecuteSqlRaw(sql); }
+        catch (Microsoft.Data.Sqlite.SqliteException ex) when (ex.Message.Contains("duplicate column", StringComparison.OrdinalIgnoreCase) || ex.Message.Contains("already exists", StringComparison.OrdinalIgnoreCase)) { }
+        catch (Exception ex) when (ex is not OperationCanceledException) { SchemaLogMessages.StatementFailed(log, ex, sql.Length > 80 ? sql[..80] : sql); }
+    }
+
     public static void Main(string[] args)
     {
         var projectDir = Path.Combine(Directory.GetCurrentDirectory(), "src", "RestaurantPos.Api");
@@ -101,6 +109,9 @@ public partial class Program
         builder.Services.AddScoped<IReservationService, ReservationService>();
         builder.Services.AddScoped<IRecipeService, RecipeService>();
         builder.Services.AddScoped<IStockService, StockService>();
+        builder.Services.AddScoped<IAlertService, AlertService>();
+        builder.Services.AddScoped<ICashSessionService, CashSessionService>();
+        builder.Services.AddScoped<IInsightsService, InsightsService>();
         builder.Services.AddScoped<IOrderDiscountService, OrderDiscountService>();
         builder.Services.AddScoped<IRoomBillingService, RoomBillingService>();
         builder.Services.AddScoped<IGridManagementService, GridManagementService>();
@@ -131,7 +142,8 @@ public partial class Program
                 {
                     if (!builder.Environment.IsDevelopment() && !builder.Environment.IsEnvironment("Testing"))
                         throw new InvalidOperationException("'Jwt:Secret' must be securely configured via environment variable in non-development environments.");
-                    secret = "SuperSecretKeyForRestaurantPosSystemThatIsAtLeast32BytesLong!";
+                    // Pas de clé publique en repli : une clé aléatoire par démarrage ne permet de forger aucun jeton.
+                    secret = Convert.ToHexString(System.Security.Cryptography.RandomNumberGenerator.GetBytes(32));
                 }
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
@@ -207,15 +219,16 @@ public partial class Program
         {
             using var schemaScope = app.Services.CreateScope();
             var dbContext = schemaScope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var schemaLog = app.Services.GetRequiredService<ILoggerFactory>().CreateLogger("RestaurantPos.Schema");
             dbContext.Database.EnsureCreated();
-            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE Products ADD COLUMN IsFoodVoucherEligible INTEGER NOT NULL DEFAULT 1;"); } catch { }
-            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE Products ADD COLUMN TaxRateTakeawayPercent TEXT NULL;"); } catch { }
-            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE Products ADD COLUMN Cost INTEGER NULL;"); } catch { }
-            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE Products ADD COLUMN AllergenMask INTEGER NOT NULL DEFAULT 0;"); } catch { }
-            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE Products ADD COLUMN AllergensDeclared INTEGER NOT NULL DEFAULT 0;"); } catch { }
-            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE Products ADD COLUMN AllergensOverridden INTEGER NOT NULL DEFAULT 0;"); } catch { }
-            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE Products ADD COLUMN AutoUnavailable INTEGER NOT NULL DEFAULT 0;"); } catch { }
-            try { dbContext.Database.ExecuteSqlRaw(@"CREATE TABLE IF NOT EXISTS Reservations (
+            ApplySchema(dbContext, schemaLog, "ALTER TABLE Products ADD COLUMN IsFoodVoucherEligible INTEGER NOT NULL DEFAULT 1;");
+            ApplySchema(dbContext, schemaLog, "ALTER TABLE Products ADD COLUMN TaxRateTakeawayPercent TEXT NULL;");
+            ApplySchema(dbContext, schemaLog, "ALTER TABLE Products ADD COLUMN Cost INTEGER NULL;");
+            ApplySchema(dbContext, schemaLog, "ALTER TABLE Products ADD COLUMN AllergenMask INTEGER NOT NULL DEFAULT 0;");
+            ApplySchema(dbContext, schemaLog, "ALTER TABLE Products ADD COLUMN AllergensDeclared INTEGER NOT NULL DEFAULT 0;");
+            ApplySchema(dbContext, schemaLog, "ALTER TABLE Products ADD COLUMN AllergensOverridden INTEGER NOT NULL DEFAULT 0;");
+            ApplySchema(dbContext, schemaLog, "ALTER TABLE Products ADD COLUMN AutoUnavailable INTEGER NOT NULL DEFAULT 0;");
+            ApplySchema(dbContext, schemaLog, @"CREATE TABLE IF NOT EXISTS Reservations (
                 Id TEXT PRIMARY KEY,
                 GuestName TEXT NOT NULL,
                 Covers INTEGER NOT NULL,
@@ -228,10 +241,10 @@ public partial class Program
                 IsWaitlist INTEGER NOT NULL DEFAULT 0,
                 CreatedAtUtc TEXT NOT NULL,
                 UpdatedAtUtc TEXT NOT NULL
-            );"); } catch { }
-            try { dbContext.Database.ExecuteSqlRaw("CREATE INDEX IF NOT EXISTS IX_Reservations_StartsAtUtc ON Reservations (StartsAtUtc);"); } catch { }
-            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE Reservations ADD COLUMN QuoteMinutes INTEGER NULL;"); } catch { }
-            try { dbContext.Database.ExecuteSqlRaw(@"CREATE TABLE IF NOT EXISTS Ingredients (
+            );");
+            ApplySchema(dbContext, schemaLog, "CREATE INDEX IF NOT EXISTS IX_Reservations_StartsAtUtc ON Reservations (StartsAtUtc);");
+            ApplySchema(dbContext, schemaLog, "ALTER TABLE Reservations ADD COLUMN QuoteMinutes INTEGER NULL;");
+            ApplySchema(dbContext, schemaLog, @"CREATE TABLE IF NOT EXISTS Ingredients (
                 Id TEXT PRIMARY KEY,
                 Name TEXT NOT NULL,
                 Unit TEXT NOT NULL,
@@ -241,17 +254,17 @@ public partial class Program
                 AllergenMask INTEGER NOT NULL DEFAULT 0,
                 LowStockMilli INTEGER NULL,
                 IsActive INTEGER NOT NULL DEFAULT 1
-            );"); } catch { }
-            try { dbContext.Database.ExecuteSqlRaw(@"CREATE TABLE IF NOT EXISTS RecipeLines (
+            );");
+            ApplySchema(dbContext, schemaLog, @"CREATE TABLE IF NOT EXISTS RecipeLines (
                 Id TEXT PRIMARY KEY,
                 OwnerKind TEXT NOT NULL,
                 OwnerId TEXT NOT NULL,
                 IngredientId TEXT NOT NULL,
                 QuantityMilli INTEGER NOT NULL
-            );"); } catch { }
-            try { dbContext.Database.ExecuteSqlRaw("CREATE UNIQUE INDEX IF NOT EXISTS IX_RecipeLines_OwnerKind_OwnerId_IngredientId ON RecipeLines (OwnerKind, OwnerId, IngredientId);"); } catch { }
-            try { dbContext.Database.ExecuteSqlRaw("CREATE INDEX IF NOT EXISTS IX_RecipeLines_IngredientId ON RecipeLines (IngredientId);"); } catch { }
-            try { dbContext.Database.ExecuteSqlRaw(@"CREATE TABLE IF NOT EXISTS StockMovements (
+            );");
+            ApplySchema(dbContext, schemaLog, "CREATE UNIQUE INDEX IF NOT EXISTS IX_RecipeLines_OwnerKind_OwnerId_IngredientId ON RecipeLines (OwnerKind, OwnerId, IngredientId);");
+            ApplySchema(dbContext, schemaLog, "CREATE INDEX IF NOT EXISTS IX_RecipeLines_IngredientId ON RecipeLines (IngredientId);");
+            ApplySchema(dbContext, schemaLog, @"CREATE TABLE IF NOT EXISTS StockMovements (
                 Id TEXT PRIMARY KEY,
                 IngredientId TEXT NOT NULL,
                 Kind TEXT NOT NULL,
@@ -261,25 +274,78 @@ public partial class Program
                 OperatorId TEXT NULL,
                 Note TEXT NULL,
                 CreatedAtUtc TEXT NOT NULL
-            );"); } catch { }
-            try { dbContext.Database.ExecuteSqlRaw("CREATE INDEX IF NOT EXISTS IX_StockMovements_IngredientId ON StockMovements (IngredientId);"); } catch { }
-            try { dbContext.Database.ExecuteSqlRaw("CREATE INDEX IF NOT EXISTS IX_StockMovements_OrderId ON StockMovements (OrderId);"); } catch { }
+            );");
+            ApplySchema(dbContext, schemaLog, "CREATE INDEX IF NOT EXISTS IX_StockMovements_IngredientId ON StockMovements (IngredientId);");
+            ApplySchema(dbContext, schemaLog, "CREATE INDEX IF NOT EXISTS IX_StockMovements_OrderId ON StockMovements (OrderId);");
             // Une vente ne s'écrit qu'une fois par commande et ingrédient ; les mouvements sont en ajout seulement (voir StockSchema).
-            foreach (var statement in StockSchema.Statements) { try { dbContext.Database.ExecuteSqlRaw(statement); } catch { } }
-            try { dbContext.Database.ExecuteSqlRaw(@"CREATE TABLE IF NOT EXISTS ModifierOptionConsumptions (
+            foreach (var statement in StockSchema.Statements) { ApplySchema(dbContext, schemaLog, statement); }
+            ApplySchema(dbContext, schemaLog, @"CREATE TABLE IF NOT EXISTS ModifierOptionConsumptions (
                 Id TEXT PRIMARY KEY,
                 OptionId TEXT NOT NULL,
                 IngredientId TEXT NOT NULL,
                 DeltaQuantityMilli INTEGER NOT NULL
-            );"); } catch { }
-            try { dbContext.Database.ExecuteSqlRaw("CREATE UNIQUE INDEX IF NOT EXISTS IX_ModifierOptionConsumptions_OptionId_IngredientId ON ModifierOptionConsumptions (OptionId, IngredientId);"); } catch { }
-            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE OrderItems ADD COLUMN IsFoodVoucherEligible INTEGER NOT NULL DEFAULT 1;"); } catch { }
-            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE OrderItems ADD COLUMN TaxRateTakeawayPercent TEXT NULL;"); } catch { }
-            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE Orders ADD COLUMN Destination INTEGER NOT NULL DEFAULT 0;"); } catch { }
-            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE Orders ADD COLUMN PickupNumber TEXT NULL;"); } catch { }
-            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE Orders ADD COLUMN PickupBuzzer TEXT NULL;"); } catch { }
-            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE Orders ADD COLUMN PickupScheduledAtUtc TEXT NULL;"); } catch { }
-            try { dbContext.Database.ExecuteSqlRaw(@"CREATE TABLE IF NOT EXISTS HeldOrders (
+            );");
+            ApplySchema(dbContext, schemaLog, "CREATE UNIQUE INDEX IF NOT EXISTS IX_ModifierOptionConsumptions_OptionId_IngredientId ON ModifierOptionConsumptions (OptionId, IngredientId);");
+            ApplySchema(dbContext, schemaLog, @"CREATE TABLE IF NOT EXISTS CashSessions (
+                Id TEXT PRIMARY KEY,
+                TerminalId TEXT NOT NULL,
+                OpenedAtUtc TEXT NOT NULL,
+                OpenedByOperatorId TEXT NOT NULL,
+                OpeningFloatCents INTEGER NOT NULL
+            );");
+            ApplySchema(dbContext, schemaLog, "CREATE INDEX IF NOT EXISTS IX_CashSessions_TerminalId ON CashSessions (TerminalId);");
+            ApplySchema(dbContext, schemaLog, @"CREATE TABLE IF NOT EXISTS CashMovements (
+                Id TEXT PRIMARY KEY,
+                SessionId TEXT NOT NULL,
+                Kind TEXT NOT NULL,
+                AmountCents INTEGER NOT NULL,
+                Reason TEXT NOT NULL,
+                OperatorId TEXT NOT NULL,
+                CreatedAtUtc TEXT NOT NULL
+            );");
+            ApplySchema(dbContext, schemaLog, "CREATE INDEX IF NOT EXISTS IX_CashMovements_SessionId ON CashMovements (SessionId);");
+            ApplySchema(dbContext, schemaLog, @"CREATE TABLE IF NOT EXISTS CashCounts (
+                Id TEXT PRIMARY KEY,
+                SessionId TEXT NOT NULL,
+                ClosedAtUtc TEXT NOT NULL,
+                ClosedByOperatorId TEXT NOT NULL,
+                CountedCents INTEGER NOT NULL,
+                ExpectedCents INTEGER NOT NULL,
+                VarianceCents INTEGER NOT NULL,
+                DenominationsJson TEXT NULL,
+                VarianceNote TEXT NULL
+            );");
+            ApplySchema(dbContext, schemaLog, "CREATE UNIQUE INDEX IF NOT EXISTS IX_CashCounts_SessionId ON CashCounts (SessionId);");
+            ApplySchema(dbContext, schemaLog, @"CREATE TABLE IF NOT EXISTS AlertRules (
+                Type TEXT PRIMARY KEY,
+                Threshold INTEGER NOT NULL,
+                Enabled INTEGER NOT NULL DEFAULT 0,
+                UpdatedAtUtc TEXT NOT NULL,
+                UpdatedBy TEXT NULL
+            );");
+            ApplySchema(dbContext, schemaLog, @"CREATE TABLE IF NOT EXISTS Alerts (
+                Id TEXT PRIMARY KEY,
+                RuleType TEXT NOT NULL,
+                OperatorId TEXT NULL,
+                TerminalId TEXT NOT NULL,
+                PeriodKey TEXT NOT NULL,
+                DedupeKey TEXT NOT NULL,
+                DetailJson TEXT NOT NULL,
+                State TEXT NOT NULL,
+                CreatedAtUtc TEXT NOT NULL,
+                ResolvedAtUtc TEXT NULL,
+                ResolvedBy TEXT NULL,
+                ResolutionNote TEXT NULL
+            );");
+            ApplySchema(dbContext, schemaLog, "CREATE UNIQUE INDEX IF NOT EXISTS IX_Alerts_DedupeKey ON Alerts (DedupeKey);");
+            foreach (var statement in CashSchema.Statements) { ApplySchema(dbContext, schemaLog, statement); }
+            ApplySchema(dbContext, schemaLog, "ALTER TABLE OrderItems ADD COLUMN IsFoodVoucherEligible INTEGER NOT NULL DEFAULT 1;");
+            ApplySchema(dbContext, schemaLog, "ALTER TABLE OrderItems ADD COLUMN TaxRateTakeawayPercent TEXT NULL;");
+            ApplySchema(dbContext, schemaLog, "ALTER TABLE Orders ADD COLUMN Destination INTEGER NOT NULL DEFAULT 0;");
+            ApplySchema(dbContext, schemaLog, "ALTER TABLE Orders ADD COLUMN PickupNumber TEXT NULL;");
+            ApplySchema(dbContext, schemaLog, "ALTER TABLE Orders ADD COLUMN PickupBuzzer TEXT NULL;");
+            ApplySchema(dbContext, schemaLog, "ALTER TABLE Orders ADD COLUMN PickupScheduledAtUtc TEXT NULL;");
+            ApplySchema(dbContext, schemaLog, @"CREATE TABLE IF NOT EXISTS HeldOrders (
                 Id TEXT PRIMARY KEY,
                 TerminalId TEXT NOT NULL,
                 OrderId TEXT NOT NULL,
@@ -297,12 +363,12 @@ public partial class Program
                 VoidReason TEXT,
                 VoidedByStaffId TEXT
             );
-            CREATE INDEX IF NOT EXISTS IX_HeldOrders_TerminalId_IsRecalled_IsVoided ON HeldOrders(TerminalId, IsRecalled, IsVoided);"); } catch { }
-            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE OrderItems ADD COLUMN IsHappyHourApplied INTEGER NOT NULL DEFAULT 0;"); } catch { }
-            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE OrderItems ADD COLUMN OriginalUnitPrice INTEGER NULL;"); } catch { }
-            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE OrderItems ADD COLUMN AppliedHappyHourScheduleId TEXT NULL;"); } catch { }
-            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE OrderItems ADD COLUMN OrderedAtUtc TEXT NOT NULL DEFAULT '';"); } catch { }
-            try { dbContext.Database.ExecuteSqlRaw(@"CREATE TABLE IF NOT EXISTS HappyHourSchedules (
+            CREATE INDEX IF NOT EXISTS IX_HeldOrders_TerminalId_IsRecalled_IsVoided ON HeldOrders(TerminalId, IsRecalled, IsVoided);");
+            ApplySchema(dbContext, schemaLog, "ALTER TABLE OrderItems ADD COLUMN IsHappyHourApplied INTEGER NOT NULL DEFAULT 0;");
+            ApplySchema(dbContext, schemaLog, "ALTER TABLE OrderItems ADD COLUMN OriginalUnitPrice INTEGER NULL;");
+            ApplySchema(dbContext, schemaLog, "ALTER TABLE OrderItems ADD COLUMN AppliedHappyHourScheduleId TEXT NULL;");
+            ApplySchema(dbContext, schemaLog, "ALTER TABLE OrderItems ADD COLUMN OrderedAtUtc TEXT NOT NULL DEFAULT '';");
+            ApplySchema(dbContext, schemaLog, @"CREATE TABLE IF NOT EXISTS HappyHourSchedules (
                 Id TEXT PRIMARY KEY,
                 Name TEXT NOT NULL,
                 DaysOfWeek TEXT NOT NULL,
@@ -313,8 +379,8 @@ public partial class Program
                 Priority INTEGER NOT NULL DEFAULT 1,
                 CreatedAtUtc TEXT NOT NULL,
                 UpdatedAtUtc TEXT
-            );"); } catch { }
-            try { dbContext.Database.ExecuteSqlRaw(@"CREATE TABLE IF NOT EXISTS HappyHourPriceRules (
+            );");
+            ApplySchema(dbContext, schemaLog, @"CREATE TABLE IF NOT EXISTS HappyHourPriceRules (
                 Id TEXT PRIMARY KEY,
                 ScheduleId TEXT NOT NULL,
                 TargetType INTEGER NOT NULL,
@@ -325,8 +391,8 @@ public partial class Program
                 DiscountPercent TEXT,
                 CreatedAtUtc TEXT NOT NULL,
                 FOREIGN KEY(ScheduleId) REFERENCES HappyHourSchedules(Id) ON DELETE CASCADE
-            );"); } catch { }
-            try { dbContext.Database.ExecuteSqlRaw(@"CREATE TABLE IF NOT EXISTS HappyHourOverrideSessions (
+            );");
+            ApplySchema(dbContext, schemaLog, @"CREATE TABLE IF NOT EXISTS HappyHourOverrideSessions (
                 Id TEXT PRIMARY KEY,
                 TerminalId TEXT NOT NULL,
                 OperatorId TEXT NOT NULL,
@@ -338,8 +404,8 @@ public partial class Program
                 IsActive INTEGER NOT NULL DEFAULT 1,
                 CreatedAtUtc TEXT NOT NULL
             );
-            CREATE INDEX IF NOT EXISTS IX_HappyHourOverrideSessions_TerminalId_IsActive ON HappyHourOverrideSessions(TerminalId, IsActive);"); } catch { }
-            try { dbContext.Database.ExecuteSqlRaw(@"CREATE TABLE IF NOT EXISTS Devices (
+            CREATE INDEX IF NOT EXISTS IX_HappyHourOverrideSessions_TerminalId_IsActive ON HappyHourOverrideSessions(TerminalId, IsActive);");
+            ApplySchema(dbContext, schemaLog, @"CREATE TABLE IF NOT EXISTS Devices (
                 Id TEXT PRIMARY KEY,
                 Name TEXT NOT NULL,
                 Role INTEGER NOT NULL,
@@ -350,8 +416,8 @@ public partial class Program
                 RevokedAtUtc TEXT NULL
             );
             CREATE UNIQUE INDEX IF NOT EXISTS IX_Devices_TerminalId ON Devices(TerminalId);
-            CREATE UNIQUE INDEX IF NOT EXISTS IX_Devices_TokenHash ON Devices(TokenHash);"); } catch { }
-            try { dbContext.Database.ExecuteSqlRaw(@"CREATE TABLE IF NOT EXISTS DevicePairingCodes (
+            CREATE UNIQUE INDEX IF NOT EXISTS IX_Devices_TokenHash ON Devices(TokenHash);");
+            ApplySchema(dbContext, schemaLog, @"CREATE TABLE IF NOT EXISTS DevicePairingCodes (
                 Id TEXT PRIMARY KEY,
                 CodeHash TEXT NOT NULL,
                 Name TEXT NOT NULL,
@@ -360,25 +426,27 @@ public partial class Program
                 UsedAtUtc TEXT NULL,
                 CreatedByOperatorId TEXT NOT NULL
             );
-            CREATE INDEX IF NOT EXISTS IX_DevicePairingCodes_CodeHash ON DevicePairingCodes(CodeHash);"); } catch { }
-            try { dbContext.Database.ExecuteSqlRaw(@"CREATE TABLE IF NOT EXISTS RestaurantSettings (
+            CREATE INDEX IF NOT EXISTS IX_DevicePairingCodes_CodeHash ON DevicePairingCodes(CodeHash);");
+            ApplySchema(dbContext, schemaLog, @"CREATE TABLE IF NOT EXISTS RestaurantSettings (
                 Id INTEGER PRIMARY KEY,
                 ReceiptLanguage TEXT NOT NULL,
                 UpdatedAtUtc TEXT NOT NULL
-            );"); } catch { }
-            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE RestaurantSettings ADD COLUMN KitchenTicketLanguage TEXT NULL;"); } catch { }
-            try { dbContext.Database.ExecuteSqlRaw("UPDATE RestaurantSettings SET KitchenTicketLanguage = ReceiptLanguage WHERE KitchenTicketLanguage IS NULL;"); } catch { }
-            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE RestaurantSettings ADD COLUMN CompanyName TEXT NOT NULL DEFAULT 'RESTAURANT L''ANTIGRAVITE';"); } catch { }
-            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE RestaurantSettings ADD COLUMN AddressLines TEXT NOT NULL DEFAULT '12 Rue de la Gastronomie\n75001 Paris';"); } catch { }
-            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE RestaurantSettings ADD COLUMN Siret TEXT NOT NULL DEFAULT '88877766600012';"); } catch { }
-            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE RestaurantSettings ADD COLUMN VatNumber TEXT NOT NULL DEFAULT 'FR12888777666';"); } catch { }
-            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE RestaurantSettings ADD COLUMN CertificateNumber TEXT NULL;"); } catch { }
-            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE RestaurantSettings ADD COLUMN FiscalYearStartMonth INTEGER NOT NULL DEFAULT 1;"); } catch { }
-            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE RestaurantSettings ADD COLUMN FiscalYearStartDay INTEGER NOT NULL DEFAULT 1;"); } catch { }
-            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE RestaurantSettings ADD COLUMN AutoUnavailableOnStockOut INTEGER NOT NULL DEFAULT 0;"); } catch { }
-            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE RestaurantSettings ADD COLUMN PrintAllergensOnKitchenTicket INTEGER NOT NULL DEFAULT 0;"); } catch { }
-            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE RestaurantSettings ADD COLUMN AllergenDisclaimer TEXT NULL;"); } catch { }
-            try { dbContext.Database.ExecuteSqlRaw(@"CREATE TABLE IF NOT EXISTS PeriodClosures (
+            );");
+            ApplySchema(dbContext, schemaLog, "ALTER TABLE RestaurantSettings ADD COLUMN KitchenTicketLanguage TEXT NULL;");
+            ApplySchema(dbContext, schemaLog, "UPDATE RestaurantSettings SET KitchenTicketLanguage = ReceiptLanguage WHERE KitchenTicketLanguage IS NULL;");
+            ApplySchema(dbContext, schemaLog, "ALTER TABLE RestaurantSettings ADD COLUMN CompanyName TEXT NOT NULL DEFAULT 'RESTAURANT L''ANTIGRAVITE';");
+            ApplySchema(dbContext, schemaLog, "ALTER TABLE RestaurantSettings ADD COLUMN AddressLines TEXT NOT NULL DEFAULT '12 Rue de la Gastronomie\n75001 Paris';");
+            ApplySchema(dbContext, schemaLog, "ALTER TABLE RestaurantSettings ADD COLUMN Siret TEXT NOT NULL DEFAULT '88877766600012';");
+            ApplySchema(dbContext, schemaLog, "ALTER TABLE RestaurantSettings ADD COLUMN VatNumber TEXT NOT NULL DEFAULT 'FR12888777666';");
+            ApplySchema(dbContext, schemaLog, "ALTER TABLE RestaurantSettings ADD COLUMN CertificateNumber TEXT NULL;");
+            ApplySchema(dbContext, schemaLog, "ALTER TABLE RestaurantSettings ADD COLUMN FiscalYearStartMonth INTEGER NOT NULL DEFAULT 1;");
+            ApplySchema(dbContext, schemaLog, "ALTER TABLE RestaurantSettings ADD COLUMN FiscalYearStartDay INTEGER NOT NULL DEFAULT 1;");
+            ApplySchema(dbContext, schemaLog, "ALTER TABLE RestaurantSettings ADD COLUMN AutoUnavailableOnStockOut INTEGER NOT NULL DEFAULT 0;");
+            ApplySchema(dbContext, schemaLog, "ALTER TABLE RestaurantSettings ADD COLUMN PrintAllergensOnKitchenTicket INTEGER NOT NULL DEFAULT 0;");
+            ApplySchema(dbContext, schemaLog, "ALTER TABLE RestaurantSettings ADD COLUMN AllergenDisclaimer TEXT NULL;");
+            ApplySchema(dbContext, schemaLog, "ALTER TABLE RestaurantSettings ADD COLUMN TrendThresholdPercent INTEGER NOT NULL DEFAULT 15;");
+            ApplySchema(dbContext, schemaLog, "ALTER TABLE RestaurantSettings ADD COLUMN CashVarianceNoteRequired INTEGER NOT NULL DEFAULT 1;");
+            ApplySchema(dbContext, schemaLog, @"CREATE TABLE IF NOT EXISTS PeriodClosures (
                 Id TEXT PRIMARY KEY,
                 TerminalId TEXT NOT NULL,
                 PeriodType INTEGER NOT NULL,
@@ -397,9 +465,9 @@ public partial class Program
                 SealedByUserId TEXT NOT NULL,
                 SealedByUserName TEXT NOT NULL,
                 CreatedAtUtc TEXT NOT NULL
-            );"); } catch { }
-            try { dbContext.Database.ExecuteSqlRaw("CREATE UNIQUE INDEX IF NOT EXISTS IX_PeriodClosures_Terminal_Type_Key ON PeriodClosures (TerminalId, PeriodType, PeriodKey);"); } catch { }
-            try { dbContext.Database.ExecuteSqlRaw(@"CREATE TABLE IF NOT EXISTS FiscalArchives (
+            );");
+            ApplySchema(dbContext, schemaLog, "CREATE UNIQUE INDEX IF NOT EXISTS IX_PeriodClosures_Terminal_Type_Key ON PeriodClosures (TerminalId, PeriodType, PeriodKey);");
+            ApplySchema(dbContext, schemaLog, @"CREATE TABLE IF NOT EXISTS FiscalArchives (
                 Id TEXT PRIMARY KEY,
                 PeriodClosureId TEXT NOT NULL,
                 PeriodType INTEGER NOT NULL,
@@ -414,10 +482,10 @@ public partial class Program
                 CreatedAtUtc TEXT NOT NULL
             );
             CREATE UNIQUE INDEX IF NOT EXISTS IX_FiscalArchives_PeriodClosureId ON FiscalArchives (PeriodClosureId);
-            CREATE UNIQUE INDEX IF NOT EXISTS IX_FiscalArchives_ArchiveSequence ON FiscalArchives (ArchiveSequence);"); } catch { }
-            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE Categories ADD COLUMN PreparationStationId TEXT NULL;"); } catch { }
-            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE Devices ADD COLUMN ReceiptPrinterId TEXT NULL;"); } catch { }
-            try { dbContext.Database.ExecuteSqlRaw(@"CREATE TABLE IF NOT EXISTS PrintJobs (
+            CREATE UNIQUE INDEX IF NOT EXISTS IX_FiscalArchives_ArchiveSequence ON FiscalArchives (ArchiveSequence);");
+            ApplySchema(dbContext, schemaLog, "ALTER TABLE Categories ADD COLUMN PreparationStationId TEXT NULL;");
+            ApplySchema(dbContext, schemaLog, "ALTER TABLE Devices ADD COLUMN ReceiptPrinterId TEXT NULL;");
+            ApplySchema(dbContext, schemaLog, @"CREATE TABLE IF NOT EXISTS PrintJobs (
                 Id TEXT PRIMARY KEY,
                 PrinterId TEXT NOT NULL,
                 Kind INTEGER NOT NULL,
@@ -431,13 +499,13 @@ public partial class Program
                 CreatedAtUtc TEXT NOT NULL,
                 SentAtUtc TEXT NULL
             );
-            CREATE INDEX IF NOT EXISTS IX_PrintJobs_Status_NextAttemptAtUtc ON PrintJobs(Status, NextAttemptAtUtc);"); } catch { }
-            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE PrinterConfigurations ADD COLUMN TextMode INTEGER NOT NULL DEFAULT 0;"); } catch { }
-            try { dbContext.Database.ExecuteSqlRaw("CREATE INDEX IF NOT EXISTS IX_FiscalReceipts_VoidedReceiptId ON FiscalReceipts (VoidedReceiptId);"); } catch { }
-            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE JournalEntries ADD COLUMN ChainSequence INTEGER NULL;"); } catch { }
-            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE JournalEntries ADD COLUMN PreviousHash TEXT NULL;"); } catch { }
-            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE JournalEntries ADD COLUMN OperatorId TEXT NULL;"); } catch { }
-            try { dbContext.Database.ExecuteSqlRaw("CREATE UNIQUE INDEX IF NOT EXISTS IX_JournalEntries_ChainSequence ON JournalEntries (ChainSequence) WHERE ChainSequence IS NOT NULL;"); } catch { }
+            CREATE INDEX IF NOT EXISTS IX_PrintJobs_Status_NextAttemptAtUtc ON PrintJobs(Status, NextAttemptAtUtc);");
+            ApplySchema(dbContext, schemaLog, "ALTER TABLE PrinterConfigurations ADD COLUMN TextMode INTEGER NOT NULL DEFAULT 0;");
+            ApplySchema(dbContext, schemaLog, "CREATE INDEX IF NOT EXISTS IX_FiscalReceipts_VoidedReceiptId ON FiscalReceipts (VoidedReceiptId);");
+            ApplySchema(dbContext, schemaLog, "ALTER TABLE JournalEntries ADD COLUMN ChainSequence INTEGER NULL;");
+            ApplySchema(dbContext, schemaLog, "ALTER TABLE JournalEntries ADD COLUMN PreviousHash TEXT NULL;");
+            ApplySchema(dbContext, schemaLog, "ALTER TABLE JournalEntries ADD COLUMN OperatorId TEXT NULL;");
+            ApplySchema(dbContext, schemaLog, "CREATE UNIQUE INDEX IF NOT EXISTS IX_JournalEntries_ChainSequence ON JournalEntries (ChainSequence) WHERE ChainSequence IS NOT NULL;");
             // TerminalId est devenu nullable (événements sans terminal) : SQLite ne sait pas
             // retirer NOT NULL, on reconstruit la table une seule fois.
             try
@@ -467,11 +535,11 @@ public partial class Program
                     tx.Commit();
                 }
             }
-            catch { }
-            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE PrintJobs ADD COLUMN DuplicateOfDocumentId TEXT NULL;"); } catch { }
-            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE FiscalReceipts ADD COLUMN HtBreakdownJson TEXT NULL;"); } catch { }
-            try { dbContext.Database.ExecuteSqlRaw("ALTER TABLE PrintJobs ADD COLUMN DuplicateNumber INTEGER NULL;"); } catch { }
-            try { dbContext.Database.ExecuteSqlRaw("CREATE INDEX IF NOT EXISTS IX_PrintJobs_DuplicateOfDocumentId ON PrintJobs (DuplicateOfDocumentId);"); } catch { }
+            catch (Exception ex) when (ex is not OperationCanceledException) { SchemaLogMessages.StatementFailed(schemaLog, ex, "JournalEntries rebuild"); }
+            ApplySchema(dbContext, schemaLog, "ALTER TABLE PrintJobs ADD COLUMN DuplicateOfDocumentId TEXT NULL;");
+            ApplySchema(dbContext, schemaLog, "ALTER TABLE FiscalReceipts ADD COLUMN HtBreakdownJson TEXT NULL;");
+            ApplySchema(dbContext, schemaLog, "ALTER TABLE PrintJobs ADD COLUMN DuplicateNumber INTEGER NULL;");
+            ApplySchema(dbContext, schemaLog, "CREATE INDEX IF NOT EXISTS IX_PrintJobs_DuplicateOfDocumentId ON PrintJobs (DuplicateOfDocumentId);");
 
             // Initialise ReceiptLanguage au démarrage plutôt qu'à la première lecture paresseuse :
             // sinon une installation EN/AR fraîche qui prend des commandes avant l'ouverture de
@@ -584,6 +652,8 @@ public partial class Program
         app.MapMenuAnalysisEndpoints();
         app.MapReservationEndpoints();
         app.MapStockEndpoints();
+        app.MapCashEndpoints();
+        app.MapAlertEndpoints();
         app.MapCounterSaleEndpoints();
         app.MapHappyHourEndpoints();
 
@@ -908,6 +978,12 @@ public partial class Program
         }
     }
 }
+internal static partial class SchemaLogMessages
+{
+    [LoggerMessage(EventId = 3001, Level = LogLevel.Error, Message = "Schema statement failed and was skipped: {Statement}")]
+    public static partial void StatementFailed(ILogger logger, Exception exception, string statement);
+}
+
 public record CreateCategoryRequest(string Name, string? ColorHex, int DisplayOrder, string? IconName, string? PreparationStationId = null);
 public record UpdateCategoryRequest(string Name, string? ColorHex, int DisplayOrder, string? IconName, bool? IsActive, string? PreparationStationId = null);
 public record CreateProductRequest(string Name, string CategoryId, decimal Price, decimal TaxRatePercent, string? Description, string? ColorHex, int DisplayOrder, bool IsQuickKey, string? StationId, decimal? Cost = null);

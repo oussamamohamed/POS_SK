@@ -529,6 +529,33 @@
   <data name="report.unknown_server" xml:space="preserve">
     <value>غير معروف</value>
   </data>
+  <data name="report.activity" xml:space="preserve">
+    <value>النشاط</value>
+  </data>
+  <data name="report.discounts" xml:space="preserve">
+    <value>الخصومات</value>
+  </data>
+  <data name="report.comps" xml:space="preserve">
+    <value>المقدَّم مجانًا</value>
+  </data>
+  <data name="report.voids" xml:space="preserve">
+    <value>الإلغاءات (إشعارات دائنة): {count}</value>
+  </data>
+  <data name="report.cash" xml:space="preserve">
+    <value>الصندوق</value>
+  </data>
+  <data name="report.cash_float" xml:space="preserve">
+    <value>رصيد الافتتاح</value>
+  </data>
+  <data name="report.cash_expected" xml:space="preserve">
+    <value>النقد المتوقع</value>
+  </data>
+  <data name="report.cash_counted" xml:space="preserve">
+    <value>النقد المعدود</value>
+  </data>
+  <data name="report.cash_variance" xml:space="preserve">
+    <value>فرق الصندوق</value>
+  </data>
   <data name="report.signature" xml:space="preserve">
     <value>التوقيع</value>
   </data>

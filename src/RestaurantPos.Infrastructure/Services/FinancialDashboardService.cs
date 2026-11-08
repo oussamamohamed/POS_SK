@@ -84,20 +84,9 @@ public sealed class FinancialDashboardService : IFinancialDashboardService
         {
             long subtotal = order.Subtotal.AmountInCents, orderTotal = order.TotalTtc.AmountInCents;
             decimal scale = subtotal > 0 ? (decimal)orderTotal / subtotal : 0m;
-            if (order.GlobalDiscountType == DiscountType.Comp)
-            {
-                comps += subtotal;
-            }
-            else
-            {
-                discounts += subtotal - orderTotal;
-                foreach (var item in order.Items)
-                {
-                    long baseCents = (item.UnitPrice.AmountInCents + item.ModifiersPriceExtra.AmountInCents) * item.Quantity;
-                    if (item.IsComp) comps += baseCents;
-                    else if (item.DiscountPercent > 0) discounts += baseCents - item.CalculateTotalTtc().AmountInCents;
-                }
-            }
+            var (orderDiscounts, orderComps) = OrderDiscounts.Of(order);
+            discounts += orderDiscounts;
+            comps += orderComps;
 
             tips += order.TipAmount.AmountInCents;
             string server = users.TryGetValue(order.OperatorId, out var user) ? user.Name

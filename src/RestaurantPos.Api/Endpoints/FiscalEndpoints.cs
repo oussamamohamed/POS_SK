@@ -197,7 +197,7 @@ public static class FiscalEndpoints
             }));
         });
 
-        group.MapGet("/latest-closure", async (string? terminalId, INF525FiscalAuditService fiscal) =>
+        group.MapGet("/latest-closure", async (string? terminalId, INF525FiscalAuditService fiscal, ICashSessionService cash) =>
         {
             var term = string.IsNullOrWhiteSpace(terminalId) ? "POS_MAIN_TERM" : terminalId;
             var closure = await fiscal.GetLatestZClosureAsync(term);
@@ -206,9 +206,14 @@ public static class FiscalEndpoints
                 return Results.NotFound(new { Message = Texts.T("errors.no_closure_found") });
             }
 
+            // Comptage de caisse de la période : champs facultatifs, non signés (lecture seule de CashCounts, aucune chaîne touchée).
+            var cashSummary = await cash.CashForPeriodAsync(term, closure.PeriodStartUtc, closure.ClosedAtUtc);
             return Results.Ok(new
             {
                 closure.ClosureSequence,
+                CashFloat = cashSummary?.FloatCents,
+                CashCounted = cashSummary?.CountedCents,
+                CashVariance = cashSummary?.VarianceCents,
                 TotalSalesTtc = closure.TotalSalesTtcCents / 100.0m,
                 TotalSalesHt = closure.TotalSalesHtCents / 100.0m,
                 closure.ReceiptCount,

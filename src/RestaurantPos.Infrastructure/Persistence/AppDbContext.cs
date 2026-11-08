@@ -13,6 +13,11 @@ public class AppDbContext : DbContext
     public DbSet<RecipeLine> RecipeLines => Set<RecipeLine>();
     public DbSet<StockMovement> StockMovements => Set<StockMovement>();
     public DbSet<ModifierOptionConsumption> ModifierOptionConsumptions => Set<ModifierOptionConsumption>();
+    public DbSet<CashSession> CashSessions => Set<CashSession>();
+    public DbSet<CashMovement> CashMovements => Set<CashMovement>();
+    public DbSet<CashCount> CashCounts => Set<CashCount>();
+    public DbSet<AlertRule> AlertRules => Set<AlertRule>();
+    public DbSet<Alert> Alerts => Set<Alert>();
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<TaxRate> TaxRates => Set<TaxRate>();
     public DbSet<DiningTable> DiningTables => Set<DiningTable>();
@@ -156,6 +161,39 @@ public class AppDbContext : DbContext
         {
             entity.HasKey(c => c.Id);
             entity.HasIndex(c => new { c.OptionId, c.IngredientId }).IsUnique();
+        });
+
+        modelBuilder.Entity<CashSession>(entity =>
+        {
+            entity.HasKey(c => c.Id);
+            entity.Property(c => c.TerminalId).HasMaxLength(32).IsRequired();
+            entity.HasIndex(c => c.TerminalId);
+        });
+
+        modelBuilder.Entity<CashMovement>(entity =>
+        {
+            entity.HasKey(m => m.Id);
+            entity.Property(m => m.Kind).HasMaxLength(8).IsRequired();
+            entity.Property(m => m.Reason).HasMaxLength(200).IsRequired();
+            entity.HasIndex(m => m.SessionId);
+        });
+
+        modelBuilder.Entity<CashCount>(entity =>
+        {
+            entity.HasKey(c => c.Id);
+            entity.HasIndex(c => c.SessionId).IsUnique();
+            entity.Property(c => c.VarianceNote).HasMaxLength(500);
+        });
+
+        modelBuilder.Entity<AlertRule>(entity => entity.HasKey(r => r.Type));
+
+        modelBuilder.Entity<Alert>(entity =>
+        {
+            entity.HasKey(a => a.Id);
+            entity.Property(a => a.RuleType).HasMaxLength(32).IsRequired();
+            entity.Property(a => a.DedupeKey).HasMaxLength(200).IsRequired();
+            entity.HasIndex(a => a.DedupeKey).IsUnique();
+            entity.Property(a => a.ResolutionNote).HasMaxLength(500);
         });
 
         modelBuilder.Entity<TaxRate>(entity =>

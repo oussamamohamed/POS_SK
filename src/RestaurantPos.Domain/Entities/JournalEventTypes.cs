@@ -19,6 +19,13 @@ public static class JournalEventTypes
     public const string DevicePaired = "DEVICE_PAIRED";
     public const string DeviceRevoked = "DEVICE_REVOKED";
 
+    // Caisse et alertes (journal technique non fiscal, même formule de chaîne)
+    public const string CashSessionOpened = "CASH_SESSION_OPENED";
+    public const string CashMovement = "CASH_MOVEMENT";
+    public const string CashCounted = "CASH_COUNTED";
+    public const string AlertCreated = "ALERT_CREATED";
+    public const string AlertResolved = "ALERT_RESOLVED";
+
     // Événements existants conservés
     public const string EventHeldOrderVoided = "EVENT_HELD_ORDER_VOIDED";
     public const string EventHappyHourActivated = "EVENT_HAPPY_HOUR_OVERRIDE_ACTIVATED";

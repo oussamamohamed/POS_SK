@@ -1,0 +1,472 @@
+{
+  "cashCases": [
+    {
+      "name": "espece_avec_rendu",
+      "openingFloat": 10000,
+      "receipts": [
+        {
+          "credit": false,
+          "tenders": [
+            {
+              "method": "Cash",
+              "amount": 5000,
+              "tendered": 6000
+            }
+          ]
+        }
+      ],
+      "movements": [],
+      "counted": 15000,
+      "noteRequiredThreshold": false,
+      "threshold": 0,
+      "note": null,
+      "expectedCents": 15000,
+      "varianceCents": 0,
+      "error": null
+    },
+    {
+      "name": "mixte_carte_et_especes",
+      "openingFloat": 10000,
+      "receipts": [
+        {
+          "credit": false,
+          "tenders": [
+            {
+              "method": "CreditCard",
+              "amount": 3000,
+              "tendered": 3000
+            },
+            {
+              "method": "Cash",
+              "amount": 1000,
+              "tendered": 1000
+            }
+          ]
+        }
+      ],
+      "movements": [],
+      "counted": 11000,
+      "noteRequiredThreshold": false,
+      "threshold": 0,
+      "note": null,
+      "expectedCents": 11000,
+      "varianceCents": 0,
+      "error": null
+    },
+    {
+      "name": "avoir_especes",
+      "openingFloat": 20000,
+      "receipts": [
+        {
+          "credit": false,
+          "tenders": [
+            {
+              "method": "Cash",
+              "amount": 5000,
+              "tendered": 5000
+            }
+          ]
+        },
+        {
+          "credit": true,
+          "tenders": [
+            {
+              "method": "Cash",
+              "amount": -2000,
+              "tendered": -2000
+            }
+          ]
+        }
+      ],
+      "movements": [],
+      "counted": 23000,
+      "noteRequiredThreshold": false,
+      "threshold": 0,
+      "note": null,
+      "expectedCents": 23000,
+      "varianceCents": 0,
+      "error": null
+    },
+    {
+      "name": "sorties_et_entrees",
+      "openingFloat": 10000,
+      "receipts": [
+        {
+          "credit": false,
+          "tenders": [
+            {
+              "method": "Cash",
+              "amount": 5000,
+              "tendered": 5000
+            }
+          ]
+        }
+      ],
+      "movements": [
+        {
+          "kind": "out",
+          "amount": 1200,
+          "reason": "Achat de glace"
+        },
+        {
+          "kind": "in",
+          "amount": 500,
+          "reason": "Appoint"
+        }
+      ],
+      "counted": 14300,
+      "noteRequiredThreshold": false,
+      "threshold": 0,
+      "note": null,
+      "expectedCents": 14300,
+      "varianceCents": 0,
+      "error": null
+    },
+    {
+      "name": "ecart_negatif",
+      "openingFloat": 10000,
+      "receipts": [
+        {
+          "credit": false,
+          "tenders": [
+            {
+              "method": "Cash",
+              "amount": 5000,
+              "tendered": 5000
+            }
+          ]
+        }
+      ],
+      "movements": [
+        {
+          "kind": "out",
+          "amount": 1200,
+          "reason": "Achat de glace"
+        }
+      ],
+      "counted": 13000,
+      "noteRequiredThreshold": false,
+      "threshold": 0,
+      "note": null,
+      "expectedCents": 13800,
+      "varianceCents": -800,
+      "error": null
+    },
+    {
+      "name": "ecart_positif",
+      "openingFloat": 0,
+      "receipts": [
+        {
+          "credit": false,
+          "tenders": [
+            {
+              "method": "Cash",
+              "amount": 1234,
+              "tendered": 2000
+            }
+          ]
+        }
+      ],
+      "movements": [],
+      "counted": 1500,
+      "noteRequiredThreshold": false,
+      "threshold": 0,
+      "note": null,
+      "expectedCents": 1234,
+      "varianceCents": 266,
+      "error": null
+    },
+    {
+      "name": "sans_fond",
+      "openingFloat": 0,
+      "receipts": [],
+      "movements": [],
+      "counted": 0,
+      "noteRequiredThreshold": false,
+      "threshold": 0,
+      "note": null,
+      "expectedCents": 0,
+      "varianceCents": 0,
+      "error": null
+    },
+    {
+      "name": "note_requise",
+      "openingFloat": 10000,
+      "receipts": [],
+      "movements": [],
+      "counted": 8000,
+      "noteRequiredThreshold": true,
+      "threshold": 1000,
+      "note": null,
+      "expectedCents": null,
+      "varianceCents": null,
+      "error": "variance_note_required"
+    },
+    {
+      "name": "note_fournie",
+      "openingFloat": 10000,
+      "receipts": [],
+      "movements": [],
+      "counted": 8000,
+      "noteRequiredThreshold": true,
+      "threshold": 1000,
+      "note": "Rendu erron\u00E9",
+      "expectedCents": 10000,
+      "varianceCents": -2000,
+      "error": null
+    },
+    {
+      "name": "sous_le_seuil_sans_note",
+      "openingFloat": 10000,
+      "receipts": [],
+      "movements": [],
+      "counted": 9500,
+      "noteRequiredThreshold": true,
+      "threshold": 1000,
+      "note": null,
+      "expectedCents": 10000,
+      "varianceCents": -500,
+      "error": null
+    }
+  ],
+  "alertCases": [
+    {
+      "name": "annulations_au_dessus_du_seuil",
+      "ruleType": "voids_count",
+      "threshold": 3,
+      "sales": [
+        {
+          "operator": "A",
+          "credit": true,
+          "totalCents": -1000,
+          "discountType": null,
+          "discountValue": 0,
+          "subtotalCents": 1000,
+          "compCents": 0,
+          "lineDiscountPercent": 0
+        },
+        {
+          "operator": "A",
+          "credit": true,
+          "totalCents": -1000,
+          "discountType": null,
+          "discountValue": 0,
+          "subtotalCents": 1000,
+          "compCents": 0,
+          "lineDiscountPercent": 0
+        },
+        {
+          "operator": "A",
+          "credit": true,
+          "totalCents": -1000,
+          "discountType": null,
+          "discountValue": 0,
+          "subtotalCents": 1000,
+          "compCents": 0,
+          "lineDiscountPercent": 0
+        },
+        {
+          "operator": "A",
+          "credit": true,
+          "totalCents": -1000,
+          "discountType": null,
+          "discountValue": 0,
+          "subtotalCents": 1000,
+          "compCents": 0,
+          "lineDiscountPercent": 0
+        },
+        {
+          "operator": "B",
+          "credit": true,
+          "totalCents": -1000,
+          "discountType": null,
+          "discountValue": 0,
+          "subtotalCents": 1000,
+          "compCents": 0,
+          "lineDiscountPercent": 0
+        }
+      ],
+      "expectedAlerts": [
+        "voids_count|A|T01:0"
+      ]
+    },
+    {
+      "name": "annulations_au_seuil_exact",
+      "ruleType": "voids_count",
+      "threshold": 3,
+      "sales": [
+        {
+          "operator": "A",
+          "credit": true,
+          "totalCents": -1000,
+          "discountType": null,
+          "discountValue": 0,
+          "subtotalCents": 1000,
+          "compCents": 0,
+          "lineDiscountPercent": 0
+        },
+        {
+          "operator": "A",
+          "credit": true,
+          "totalCents": -1000,
+          "discountType": null,
+          "discountValue": 0,
+          "subtotalCents": 1000,
+          "compCents": 0,
+          "lineDiscountPercent": 0
+        },
+        {
+          "operator": "A",
+          "credit": true,
+          "totalCents": -1000,
+          "discountType": null,
+          "discountValue": 0,
+          "subtotalCents": 1000,
+          "compCents": 0,
+          "lineDiscountPercent": 0
+        }
+      ],
+      "expectedAlerts": []
+    },
+    {
+      "name": "remise_au_dessus",
+      "ruleType": "discount_percent",
+      "threshold": 30,
+      "sales": [
+        {
+          "operator": "A",
+          "credit": false,
+          "totalCents": 600,
+          "discountType": "Percentage",
+          "discountValue": 40,
+          "subtotalCents": 1000,
+          "compCents": 0,
+          "lineDiscountPercent": 0
+        },
+        {
+          "operator": "B",
+          "credit": false,
+          "totalCents": 900,
+          "discountType": "Percentage",
+          "discountValue": 10,
+          "subtotalCents": 1000,
+          "compCents": 0,
+          "lineDiscountPercent": 0
+        }
+      ],
+      "expectedAlerts": [
+        "discount_percent|A|T01:0"
+      ]
+    },
+    {
+      "name": "remise_par_ligne",
+      "ruleType": "discount_percent",
+      "threshold": 30,
+      "sales": [
+        {
+          "operator": "A",
+          "credit": false,
+          "totalCents": 500,
+          "discountType": null,
+          "discountValue": 0,
+          "subtotalCents": 1000,
+          "compCents": 0,
+          "lineDiscountPercent": 50
+        },
+        {
+          "operator": "B",
+          "credit": false,
+          "totalCents": 800,
+          "discountType": null,
+          "discountValue": 0,
+          "subtotalCents": 1000,
+          "compCents": 0,
+          "lineDiscountPercent": 20
+        }
+      ],
+      "expectedAlerts": [
+        "discount_percent|A|T01:0"
+      ]
+    },
+    {
+      "name": "remise_fixe_en_pourcentage",
+      "ruleType": "discount_percent",
+      "threshold": 30,
+      "sales": [
+        {
+          "operator": "A",
+          "credit": false,
+          "totalCents": 500,
+          "discountType": "FixedAmount",
+          "discountValue": 5,
+          "subtotalCents": 1000,
+          "compCents": 0,
+          "lineDiscountPercent": 0
+        }
+      ],
+      "expectedAlerts": [
+        "discount_percent|A|T01:0"
+      ]
+    },
+    {
+      "name": "offerts_cumules",
+      "ruleType": "comps_total",
+      "threshold": 5000,
+      "sales": [
+        {
+          "operator": "A",
+          "credit": false,
+          "totalCents": 0,
+          "discountType": null,
+          "discountValue": 0,
+          "subtotalCents": 3000,
+          "compCents": 3000,
+          "lineDiscountPercent": 0
+        },
+        {
+          "operator": "A",
+          "credit": false,
+          "totalCents": 0,
+          "discountType": null,
+          "discountValue": 0,
+          "subtotalCents": 3000,
+          "compCents": 3000,
+          "lineDiscountPercent": 0
+        },
+        {
+          "operator": "B",
+          "credit": false,
+          "totalCents": 0,
+          "discountType": null,
+          "discountValue": 0,
+          "subtotalCents": 2000,
+          "compCents": 2000,
+          "lineDiscountPercent": 0
+        }
+      ],
+      "expectedAlerts": [
+        "comps_total|A|T01:0"
+      ]
+    },
+    {
+      "name": "commande_offerte_entiere",
+      "ruleType": "comps_total",
+      "threshold": 1000,
+      "sales": [
+        {
+          "operator": "A",
+          "credit": false,
+          "totalCents": 0,
+          "discountType": "Comp",
+          "discountValue": 0,
+          "subtotalCents": 2500,
+          "compCents": 0,
+          "lineDiscountPercent": 0
+        }
+      ],
+      "expectedAlerts": [
+        "comps_total|A|T01:0"
+      ]
+    }
+  ]
+}
