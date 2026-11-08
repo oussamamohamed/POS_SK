@@ -1,0 +1,172 @@
+[
+  {
+    "id": "01a0e370-d9b2-7055-a4b3-f2693bc8b292",
+    "name": "Bière Artisanale IPA 33cl",
+    "categoryId": "CAT_70FDBC93",
+    "description": "Brasserie locale du terroir",
+    "price": 6,
+    "cost": 2,
+    "taxRatePercent": 20.0,
+    "colorHex": "#2980B9",
+    "displayOrder": 1,
+    "isQuickKey": true,
+    "preparationStationId": "BAR",
+    "isAvailable": false,
+    "allergenMask": 65,
+    "allergensDeclared": true,
+    "allergensOverridden": true,
+    "isActive": true,
+    "hasModifiers": false,
+    "modifierGroups": []
+  },
+  {
+    "id": "01a0e370-d9b0-74cb-aec5-feb8cc43a626",
+    "name": "Burger Gourmet Rossini",
+    "categoryId": "CAT_7F6D5B4C",
+    "description": "Bœuf charolais, foie gras poêlé",
+    "price": 19.5,
+    "cost": 3.4,
+    "taxRatePercent": 10.0,
+    "colorHex": "#C0392B",
+    "displayOrder": 1,
+    "isQuickKey": true,
+    "preparationStationId": "HOT_KITCHEN",
+    "isAvailable": true,
+    "allergenMask": 0,
+    "allergensDeclared": false,
+    "allergensOverridden": false,
+    "isActive": true,
+    "hasModifiers": true,
+    "modifierGroups": [
+      {
+        "id": "01a0e370-d9b7-7d0c-99d0-84bf303d8409",
+        "groupName": "Cuisson de la Viande",
+        "minSelections": 1,
+        "maxSelections": 1,
+        "isMandatory": true,
+        "isSingleChoice": true,
+        "options": [
+          {
+            "id": "01a0e370-d9b7-7025-9aa1-0fb986736b44",
+            "name": "Bleu",
+            "extraPrice": 0,
+            "isDefault": false
+          },
+          {
+            "id": "01a0e370-d9b7-7a94-b0a9-6d3e1bf598ed",
+            "name": "Saignant",
+            "extraPrice": 0,
+            "isDefault": false
+          },
+          {
+            "id": "01a0e370-d9b7-7413-b016-df194ac0c544",
+            "name": "À Point",
+            "extraPrice": 0,
+            "isDefault": true
+          },
+          {
+            "id": "01a0e370-d9b7-7ea1-a640-195770a89876",
+            "name": "Bien Cuit",
+            "extraPrice": 0,
+            "isDefault": false
+          }
+        ]
+      },
+      {
+        "id": "01a0e370-d9b7-736c-aa55-87dd0b17a333",
+        "groupName": "Suppléments Gourmands",
+        "minSelections": 0,
+        "maxSelections": 5,
+        "isMandatory": false,
+        "isSingleChoice": false,
+        "options": [
+          {
+            "id": "01a0e370-d9b7-77d5-b46e-b91995d4aee4",
+            "name": "Double Cheddar Fondu",
+            "extraPrice": 2,
+            "isDefault": false
+          },
+          {
+            "id": "01a0e370-d9b7-7235-bcaf-a479cd68f0e7",
+            "name": "Bacon Fumé Croustillant",
+            "extraPrice": 1.5,
+            "isDefault": false
+          },
+          {
+            "id": "01a0e370-d9b7-7304-8a65-0b6bd485adbc",
+            "name": "Foie Gras Poêlé Extra",
+            "extraPrice": 4.5,
+            "isDefault": false
+          },
+          {
+            "id": "01a0e370-d9b7-74d8-b32f-7ddab91cc912",
+            "name": "Sauce Poivre Vert Maison",
+            "extraPrice": 1,
+            "isDefault": false
+          },
+          {
+            "id": "01a0e370-d9b7-73ca-8ecd-9be5330a4dc3",
+            "name": "Frites Rustiques Maison",
+            "extraPrice": 2.5,
+            "isDefault": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "01a0e370-d9b1-7c6b-93a5-ff83589f51e5",
+    "name": "Pizza Margherita AOP",
+    "categoryId": "CAT_CB56E383",
+    "description": "Tomates San Marzano, mozzarella fior di latte",
+    "price": 12.5,
+    "cost": 2.4,
+    "taxRatePercent": 10.0,
+    "colorHex": "#D35400",
+    "displayOrder": 1,
+    "isQuickKey": true,
+    "preparationStationId": "HOT_KITCHEN",
+    "isAvailable": true,
+    "allergenMask": 0,
+    "allergensDeclared": false,
+    "allergensOverridden": false,
+    "isActive": true,
+    "hasModifiers": true,
+    "modifierGroups": [
+      {
+        "id": "01a0e370-d9c2-7f1b-b91c-09bf0eb8834d",
+        "groupName": "Suppléments Pizza",
+        "minSelections": 0,
+        "maxSelections": 4,
+        "isMandatory": false,
+        "isSingleChoice": false,
+        "options": [
+          {
+            "id": "01a0e370-d9c2-7e81-aea7-09d3f166742d",
+            "name": "Double Mozzarella di Bufala",
+            "extraPrice": 2.5,
+            "isDefault": false
+          },
+          {
+            "id": "01a0e370-d9c2-75f4-bb0a-dd840a36af2f",
+            "name": "Jambon de Parme AOP",
+            "extraPrice": 3,
+            "isDefault": false
+          },
+          {
+            "id": "01a0e370-d9c2-7b91-86c2-5d626ebf17ee",
+            "name": "Roquette & Huile de Truffe",
+            "extraPrice": 2,
+            "isDefault": false
+          },
+          {
+            "id": "01a0e370-d9c2-70d2-8e54-198b98012267",
+            "name": "Piment Frais Émincé",
+            "extraPrice": 0.5,
+            "isDefault": false
+          }
+        ]
+      }
+    ]
+  }
+]
