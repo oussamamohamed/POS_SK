@@ -24,6 +24,12 @@ Sans fournisseur configuré, rien ne change : la carte reste saisie à la main (
 
 `Simulator` : accepte tout montant, refuse ceux dont les centimes valent 13 (ex. 10,13 €).
 
+## Mode autonome de l'iPad
+
+Même flux, mais c'est l'iPad qui parle à Stripe (`StripeCardTerminal.swift`, `LocalPosAPI+CardPayment.swift`) : Administration → section « Terminal de paiement (TPE) ».
+Saisir une **clé restreinte** Stripe (`rk_…`, droits PaymentIntents et Terminal seulement) et l'identifiant du lecteur (`tmr_…`). Une clé secrète complète (`sk_…`) est refusée : la clé est stockée dans le Trousseau de l'iPad (propre à l'appareil, hors sauvegarde et iCloud).
+Mêmes refus que le serveur (402 : carte refusée, terminal injoignable ou occupé, délai de 60 s dépassé), même relance.
+
 ## Marques
 
 | Marque | Statut | Voie d'intégration |
@@ -39,6 +45,7 @@ Ajouter une marque = une classe `ICardTerminal` dans `Infrastructure/Payments/` 
 ## Limites connues
 
 - Un seul lecteur pour tout le restaurant, un encaissement à la fois.
-- Mode autonome de l'iPad (sans serveur) : non pris en charge, le TPE est piloté par le serveur.
+- Mode autonome de l'iPad : Stripe seulement (voir ci-dessous). Les terminaux en réseau local (Concert/Nexo) ne sont pas faits, ni en mode serveur ni en mode autonome.
+- Mode autonome : l'iPad parle directement à Stripe. Une carte ne peut pas dépasser le dû, sinon le TPE débiterait un règlement que l'encaissement refuserait ensuite (même contrôle côté .NET : à faire).
 - Si la carte est débitée mais que le reçu ne peut pas être écrit (conflit rare), une erreur est journalisée avec la référence du TPE : le remboursement se fait à la main depuis le tableau de bord du fournisseur.
 - Remboursement automatique lors de l'annulation d'un reçu (`/void`) : non fait.

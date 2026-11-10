@@ -20,6 +20,9 @@ public actor LocalPosAPI: PosAPI {
     var printTicker: Task<Void, Never>?
     var printWake: AsyncStream<Void>.Continuation?
     var nextPrintPurge = Date.distantPast
+    /// TPE piloté par l'iPad (aucun = carte saisie à la main) et verrou : un seul encaissement par carte à la fois, jamais de double débit.
+    var cardTerminal: (any CardTerminal)?
+    var cardCharging = false
 
     private static let tokenPrefix = "local-"
     /// Identique à `SessionStore.pinLength` (isolé au MainActor, donc non réutilisable ici).
@@ -42,6 +45,8 @@ public actor LocalPosAPI: PosAPI {
         self.archivesDirectory = archivesDirectory ?? Self.defaultArchivesDirectory(databasePath: path)
         self.transport = transport
     }
+
+    public func setCardTerminal(_ terminal: (any CardTerminal)?) { cardTerminal = terminal }
 
     deinit {
         printWorker?.cancel()

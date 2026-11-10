@@ -92,6 +92,8 @@ final class AppEnvironment {
     private(set) var startupError: String?
     /// Sauvegarde du mode autonome (`nil` en mode serveur).
     private(set) var backup: BackupController?
+    /// TPE du mode autonome (`nil` en mode serveur : le serveur pilote alors le terminal).
+    private(set) var cardTerminal: CardTerminalController?
     @ObservationIgnored private let defaults: UserDefaults
     /// **Une seule instance** de l'acteur pour tout le processus : la recréer ouvrirait une seconde connexion sur le même fichier.
     @ObservationIgnored private var localAPI: LocalPosAPI?
@@ -146,6 +148,7 @@ final class AppEnvironment {
         self.setupState = mode == .standalone && startupError == nil ? .checking : .done
         model = Self.makeModel(settings: settings, launch: launch, localAPI: api)
         backup = makeBackup()
+        cardTerminal = makeCardTerminal()
         if let section = launch.initialSection { router.section = section }
         if let pin = launch.autoPin {
             let session = model.session
@@ -158,6 +161,13 @@ final class AppEnvironment {
         guard mode == .standalone, let localAPI else { return nil }
         let store: BackupPassphraseStore = launch.isUITest ? InMemoryBackupPassphraseStore() : KeychainBackupPassphraseStore()
         return BackupController(api: localAPI, passphrases: store, defaults: defaults, folderOverride: launch.backupFolder)
+    }
+
+    /// Lecteur Stripe du mode autonome ; `nil` hors mode autonome. En test UI : mémoire, jamais le Trousseau.
+    private func makeCardTerminal() -> CardTerminalController? {
+        guard mode == .standalone, let localAPI else { return nil }
+        let store: CardTerminalCredentialStore = launch.isUITest ? InMemoryCardTerminalCredentialStore() : KeychainCardTerminalCredentialStore()
+        return CardTerminalController(api: localAPI, store: store)
     }
 
     private static func standaloneSettings(defaults: UserDefaults) -> TerminalSettings {
@@ -216,6 +226,7 @@ final class AppEnvironment {
         }
         model = Self.makeModel(settings: settings, launch: launch, localAPI: newMode == .standalone ? localAPI : nil)
         backup = makeBackup()
+        cardTerminal = makeCardTerminal()
         router.section = .order
         generation += 1
     }

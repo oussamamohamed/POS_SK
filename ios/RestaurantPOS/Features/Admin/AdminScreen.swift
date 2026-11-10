@@ -770,6 +770,7 @@ struct NetworkSettingsView: View {
                     Text("mode.standalone_detail").font(.footnote).foregroundStyle(Theme.inkMuted)
                 }
                 BackupSettingsSection()
+                CardTerminalSection()
             } else {
             Section("common.master_server_section") {
                 LabeledContent("admin.address_label", value: environment.launch.isUITest ? String(localized: "admin.demo_data_label") : model.settings.serverURL)

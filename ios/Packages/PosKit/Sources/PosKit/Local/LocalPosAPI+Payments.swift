@@ -74,6 +74,20 @@ extension LocalPosAPI {
     public func pay(_ request: PaymentRequest) async throws -> PaymentResult {
         try requireAuth()
         guard request.tipAmount >= .zero else { throw APIError.server(status: 400, message: "Montant de pourboire invalide.") }
+        // TPE : le montant part au terminal avant toute écriture ; refus ou délai = rien n'est soldé, l'opérateur relance.
+        let orderId = try request.orderId ?? floorRepository.table(request.tableNumber)?.activeOrderId
+        let card = try await chargeCard(request.tenders.map { ($0.method, $0.amount) }, orderId: orderId) { $0 + request.tipAmount }
+        do {
+            return try await recordPayment(request)
+        } catch {
+            logCardNotRecorded(card, orderId: orderId)
+            throw error
+        }
+    }
+
+    private func recordPayment(_ request: PaymentRequest) async throws -> PaymentResult {
+        try requireAuth()
+        guard request.tipAmount >= .zero else { throw APIError.server(status: 400, message: "Montant de pourboire invalide.") }
         let floor = floorRepository, orders = orderRepository, holds = holdRepository
         let (paidOrderId, result) = try db.transaction { () throws -> (UUID, PaymentResult) in
             let notFound = APIError.server(status: 400, message: "Commande introuvable pour ce règlement.")
