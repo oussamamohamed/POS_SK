@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using RestaurantPos.Api.Security;
+using RestaurantPos.Api.Services;
 using RestaurantPos.Application.Common.Interfaces;
 using RestaurantPos.Application.DTOs;
 using RestaurantPos.Domain.Common;
@@ -213,7 +214,7 @@ public static class CounterSaleEndpoints
         });
 
         // 7. Counter & Takeaway Multi-Tender Checkout
-        group.MapPost("/checkout", async (CounterCheckoutRequest req, AppDbContext db, ICheckoutPaymentService checkout, ITakeawayCounterService counterService, IMealVoucherPolicyService mealVoucherPolicyService, PrintDispatcher printing, HttpContext http) =>
+        group.MapPost("/checkout", async (CounterCheckoutRequest req, AppDbContext db, ICheckoutPaymentService checkout, ITakeawayCounterService counterService, IMealVoucherPolicyService mealVoucherPolicyService, PrintDispatcher printing, CardTerminalCharger cardTerminal, HttpContext http) =>
         {
             var order = await db.Orders
                 .Include(o => o.Items)
@@ -252,6 +253,10 @@ public static class CounterSaleEndpoints
                     return Results.BadRequest(new { Message = voucherValidation.ErrorMessage });
                 }
             }
+
+            // 2 bis. TPE : le montant part au terminal avant la moindre écriture ; refus ou délai = commande intacte, le client relance.
+            var card = await cardTerminal.ChargeAsync(paymentTenderRequests, order.Id, http.RequestAborted);
+            if (card.Failure is not null) return card.Failure;
 
             // 3. Assign sequential daily pickup number (#A-01 .. #A-99)
             string pickupNumber = await counterService.GetNextPickupNumberAsync(terminalId);
@@ -301,6 +306,7 @@ public static class CounterSaleEndpoints
             if (!checkoutResult.IsSuccess)
             {
                 // Échec résiduel (concurrence) : on restitue le pourboire d'origine.
+                if (card.Reference is not null) cardTerminal.LogApprovedButNotRecorded(order.Id, card.Reference);
                 order.TipAmount = previousTip;
                 await db.SaveChangesAsync();
                 return Results.BadRequest(new { Message = Texts.T("errors.payment_failed") });

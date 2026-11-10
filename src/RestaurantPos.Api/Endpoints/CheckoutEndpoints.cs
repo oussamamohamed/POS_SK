@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using RestaurantPos.Api.Hubs;
+using RestaurantPos.Api.Services;
 using RestaurantPos.Application.Common.Interfaces;
 using RestaurantPos.Application.DTOs;
 using RestaurantPos.Domain.Entities;
@@ -29,7 +30,7 @@ public static class CheckoutEndpoints
                        .AddEndpointFilter<StockAvailabilityFilter>()
                        .AddEndpointFilter<AlertEvaluationFilter>();
 
-        group.MapPost("/pay", async (PaymentSettlementRequest req, ICheckoutPaymentService checkout, AppDbContext db, IMealVoucherPolicyService mealVoucherPolicyService, PrintDispatcher printing, IHubContext<PosHub, IPosHubClient> hub, HttpContext http) =>
+        group.MapPost("/pay", async (PaymentSettlementRequest req, ICheckoutPaymentService checkout, AppDbContext db, IMealVoucherPolicyService mealVoucherPolicyService, PrintDispatcher printing, IHubContext<PosHub, IPosHubClient> hub, CardTerminalCharger cardTerminal, HttpContext http) =>
         {
             var orderId = req.OrderId;
             if (orderId == Guid.Empty || !await db.Orders.AnyAsync(o => o.Id == orderId))
@@ -143,6 +144,18 @@ public static class CheckoutEndpoints
 
             var terminalId = RequireDeviceFilter.PairedDevice(http).TerminalId;
 
+            // TPE : le montant part au terminal avant toute écriture ; refus, délai ou terminal absent = rien n'est soldé, le client relance.
+            var card = await cardTerminal.ChargeAsync(tenderRequests, orderId, http.RequestAborted);
+            if (card.Failure is not null)
+            {
+                if (tippedOrder is not null)
+                {
+                    tippedOrder.TipAmount = Money.FromCents(tippedOrder.TipAmount.AmountInCents - tipCents);
+                    await db.SaveChangesAsync();
+                }
+                return card.Failure;
+            }
+
             CheckoutResult result;
             try
             {
@@ -161,6 +174,7 @@ public static class CheckoutEndpoints
 
             if (!result.IsSuccess)
             {
+                if (card.Reference is not null) cardTerminal.LogApprovedButNotRecorded(orderId, card.Reference);
                 if (tippedOrder is not null)
                 {
                     tippedOrder.TipAmount = Money.FromCents(tippedOrder.TipAmount.AmountInCents - tipCents);

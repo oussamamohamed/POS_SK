@@ -109,11 +109,16 @@ public actor HTTPPosAPI: PosAPI {
         return try decode(data)
     }
 
-    private func call<Body: Encodable, Response: Decodable>(_ method: String, _ path: String, body: Body, query: [String: String] = [:], as type: Response.Type = Response.self) async throws -> Response {
+    private func call<Body: Encodable, Response: Decodable>(_ method: String, _ path: String, body: Body, query: [String: String] = [:], timeout: TimeInterval? = nil, as type: Response.Type = Response.self) async throws -> Response {
         let payload = try encoder.encode(body)
-        let (data, _) = try await send(makeRequest(method, path, query: query, body: payload))
+        var request = try makeRequest(method, path, query: query, body: payload)
+        if let timeout { request.timeoutInterval = timeout }
+        let (data, _) = try await send(request)
         return try decode(data)
     }
+
+    /// Un paiement par carte attend la décision du TPE (60 s au plus côté serveur) : le délai de 10 s des autres appels le couperait.
+    private static let cardPaymentTimeout: TimeInterval = 90
 
     private func perform(_ method: String, _ path: String, query: [String: String] = [:]) async throws {
         _ = try await send(makeRequest(method, path, query: query))
@@ -464,7 +469,7 @@ public actor HTTPPosAPI: PosAPI {
 
     // MARK: - Encaissement
 
-    public func pay(_ request: PaymentRequest) async throws -> PaymentResult { try await call("POST", "checkout/pay", body: request) }
+    public func pay(_ request: PaymentRequest) async throws -> PaymentResult { try await call("POST", "checkout/pay", body: request, timeout: Self.cardPaymentTimeout) }
     public func hotelRooms() async throws -> [HotelRoom] { try await call("GET", "hotel/rooms") }
     public func chargeRoom(_ request: RoomChargeRequest) async throws -> OperationResult { try await call("POST", "hotel/room-charge", body: request) }
 
@@ -494,7 +499,7 @@ public actor HTTPPosAPI: PosAPI {
     }
 
     public func counterCheckout(_ request: CounterCheckoutRequest) async throws -> CounterCheckoutResult {
-        try await call("POST", "orders/counter/checkout", body: request)
+        try await call("POST", "orders/counter/checkout", body: request, timeout: Self.cardPaymentTimeout)
     }
 
     // MARK: - Cuisine

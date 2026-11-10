@@ -22,6 +22,7 @@ using RestaurantPos.Domain.Common;
 using RestaurantPos.Domain.Entities;
 using RestaurantPos.Domain.ValueObjects;
 using RestaurantPos.Infrastructure.Localization;
+using RestaurantPos.Infrastructure.Payments;
 using RestaurantPos.Infrastructure.Persistence;
 using RestaurantPos.Infrastructure.Printing;
 using RestaurantPos.Infrastructure.Security;
@@ -131,6 +132,28 @@ public partial class Program
         builder.Services.AddSingleton<IPinRateLimiterService, PinRateLimiterService>();
         builder.Services.AddSingleton(TimeProvider.System);
         builder.Services.AddSingleton<BackupService>();
+        // TPE : CardTerminal:Provider = Simulator | Stripe ; absent = carte saisie à la main (aucun appel au terminal). Voir docs/tpe.md.
+        switch (builder.Configuration["CardTerminal:Provider"]?.Trim().ToLowerInvariant())
+        {
+            case "simulator":
+                builder.Services.AddSingleton<ICardTerminal, SimulatorCardTerminal>();
+                break;
+            case "stripe":
+                var stripeKey = builder.Configuration["CardTerminal:Stripe:SecretKey"];
+                var stripeReader = builder.Configuration["CardTerminal:Stripe:ReaderId"];
+                if (string.IsNullOrWhiteSpace(stripeKey) || string.IsNullOrWhiteSpace(stripeReader))
+                {
+                    throw new InvalidOperationException("CardTerminal:Stripe:SecretKey et CardTerminal:Stripe:ReaderId sont requis avec le fournisseur Stripe.");
+                }
+                builder.Services.AddHttpClient("stripe-terminal", c =>
+                {
+                    c.BaseAddress = new Uri("https://api.stripe.com/v1/");
+                    c.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", stripeKey);
+                });
+                builder.Services.AddSingleton<ICardTerminal>(sp => new StripeCardTerminal(sp.GetRequiredService<IHttpClientFactory>().CreateClient("stripe-terminal"), stripeReader));
+                break;
+        }
+        builder.Services.AddSingleton<CardTerminalCharger>();
         builder.Services.AddScoped<IDeviceService, DeviceService>();
         builder.Services.AddScoped<IRestaurantSettingsService, RestaurantSettingsService>();
         if (!builder.Environment.IsEnvironment("Testing"))

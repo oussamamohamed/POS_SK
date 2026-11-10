@@ -157,6 +157,18 @@
   <data name="errors.order_not_found_for_payment" xml:space="preserve">
     <value>Commande introuvable pour ce règlement.</value>
   </data>
+  <data name="errors.card_declined" xml:space="preserve">
+    <value>Carte refusée.</value>
+  </data>
+  <data name="errors.card_terminal_busy" xml:space="preserve">
+    <value>Le terminal de paiement est occupé par un autre paiement.</value>
+  </data>
+  <data name="errors.card_terminal_unavailable" xml:space="preserve">
+    <value>Terminal de paiement injoignable.</value>
+  </data>
+  <data name="errors.card_timeout" xml:space="preserve">
+    <value>Le terminal de paiement n'a pas répondu à temps. Rien n'a été débité.</value>
+  </data>
   <data name="errors.payment_failed" xml:space="preserve">
     <value>Échec de l'encaissement.</value>
   </data>

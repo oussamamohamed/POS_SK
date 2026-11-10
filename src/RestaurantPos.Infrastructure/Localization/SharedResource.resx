@@ -157,6 +157,18 @@
   <data name="errors.order_not_found_for_payment" xml:space="preserve">
     <value>Order not found for this payment.</value>
   </data>
+  <data name="errors.card_declined" xml:space="preserve">
+    <value>Card declined.</value>
+  </data>
+  <data name="errors.card_terminal_busy" xml:space="preserve">
+    <value>The card terminal is busy with another payment.</value>
+  </data>
+  <data name="errors.card_terminal_unavailable" xml:space="preserve">
+    <value>The card terminal is unavailable.</value>
+  </data>
+  <data name="errors.card_timeout" xml:space="preserve">
+    <value>The card terminal did not answer in time. Nothing was charged.</value>
+  </data>
   <data name="errors.payment_failed" xml:space="preserve">
     <value>Payment failed.</value>
   </data>
