@@ -70,8 +70,9 @@ struct LocalCashRepository {
     func existingCount(session: UUID) throws -> CashCount? { try self.session(id: session)?.count }
 
     func insertCount(session: UUID, count: CashCount, operatorId: UUID) throws {
+        // Même arrondi que les reçus : un format tronqué placerait un comptage de la même milliseconde avant le début de période.
         try db.run("INSERT INTO CashCounts (Id, SessionId, ClosedAtUtc, ClosedByOperatorId, CountedCents, ExpectedCents, VarianceCents, DenominationsJson, VarianceNote) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                   [.uuid(UUID()), .uuid(session), .date(count.closedAtUtc), .uuid(operatorId), .integer(count.countedCents), .integer(count.expectedCents), .integer(count.varianceCents),
+                   [.uuid(UUID()), .uuid(session), .text(FiscalHashing.storedText(count.closedAtUtc)), .uuid(operatorId), .integer(count.countedCents), .integer(count.expectedCents), .integer(count.varianceCents),
                     .string(count.denominationsJson), .string(count.varianceNote)])
     }
 
