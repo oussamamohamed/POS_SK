@@ -146,7 +146,13 @@ struct FiscalSlip: View {
                 .accessibilityIdentifier("slip.title")
             dashed
             line(String(localized: "common.field_terminal"), report.terminalId ?? "—")
-            line(String(localized: "fiscal.slip_date_label"), (report.closedAtUtc ?? report.periodEndUtc ?? Date()).formatted(date: .abbreviated, time: .standard))
+            if let start = report.periodStartUtc {
+                line(String(localized: "fiscal.slip_period_start"), Self.dateText(start))
+            }
+            line(String(localized: "fiscal.slip_date_label"), Self.dateText(report.closedAtUtc ?? report.periodEndUtc ?? Date()))
+            if let manager = report.managerName {
+                line(String(localized: "fiscal.slip_manager"), manager)
+            }
             line(String(localized: "fiscal.slip_tickets_label"), "\(report.receiptCount)")
             dashed
             line(String(localized: "fiscal.slip_total_ttc_label"), report.totalSalesTtc.formatted, bold: true)
@@ -161,6 +167,7 @@ struct FiscalSlip: View {
             }
             dashed
             line(String(localized: "fiscal.slip_perpetual_label"), report.perpetualGrandTotal.formatted)
+            detailRows
             VStack(alignment: .leading, spacing: 4) {
                 Text("fiscal.slip_signature_label").font(.caption.monospaced())
                 Text(report.signatureHash ?? String(localized: "fiscal.slip_hash_pending")).font(.caption2.monospaced()).textSelection(.enabled)
@@ -177,6 +184,55 @@ struct FiscalSlip: View {
         .background(Theme.surface)
         .clipShape(RoundedRectangle(cornerRadius: 6))
         .shadow(color: .black.opacity(0.15), radius: 12, y: 6)
+    }
+
+    private static func dateText(_ date: Date) -> String { date.formatted(date: .abbreviated, time: .standard) }
+
+    /// Articles par catégorie, pourboires, remises et annulations, caisse : même contenu que le ticket imprimé (`ReportPrintData`).
+    @ViewBuilder private var detailRows: some View {
+        if let details = report.details {
+            if !details.categories.isEmpty {
+                dashed
+                heading("fiscal.slip_items_title")
+                if details.hasGlobalDiscount {
+                    Text("fiscal.slip_items_before_discount").font(.caption.monospaced()).foregroundStyle(Theme.inkMuted)
+                }
+                ForEach(Array(details.categories.enumerated()), id: \.offset) { _, group in
+                    Text(group.categoryName ?? String(localized: "fiscal.slip_other_category")).font(.subheadline.monospaced().bold())
+                    ForEach(Array(group.items.enumerated()), id: \.offset) { _, item in
+                        line("\(item.quantity)x \(item.productName)", Money(cents: item.totalTtcCents).formatted)
+                    }
+                    line(String(localized: "fiscal.slip_subtotal"), Money(cents: group.subtotalTtcCents).formatted)
+                }
+            }
+            if details.totalTipsCents > 0 {
+                dashed
+                heading("fiscal.slip_tips_title")
+                ForEach(Array(details.tips.enumerated()), id: \.offset) { _, tip in
+                    line(tip.serverName ?? String(localized: "fiscal.slip_unknown_server"), Money(cents: tip.tipCents).formatted)
+                }
+                line(String(localized: "fiscal.slip_tips_total"), Money(cents: details.totalTipsCents).formatted, bold: true)
+            }
+            if let a = details.activity, a.discountsCents > 0 || a.compsCents > 0 || a.voidCount > 0 {
+                dashed
+                heading("fiscal.slip_activity_title")
+                if a.discountsCents > 0 { line(String(localized: "fiscal.slip_discounts"), Money(cents: a.discountsCents).formatted) }
+                if a.compsCents > 0 { line(String(localized: "fiscal.slip_comps"), Money(cents: a.compsCents).formatted) }
+                if a.voidCount > 0 { line(String(localized: "fiscal.slip_voids \(a.voidCount)"), Money(cents: a.voidCents).formatted) }
+            }
+        }
+        if let cash = report.details?.cash.map({ CashZSummary(floatCents: $0.floatCents, countedCents: $0.countedCents, varianceCents: $0.varianceCents) }) ?? report.cash {
+            dashed
+            heading("fiscal.slip_cash_title")
+            line(String(localized: "fiscal.slip_cash_float"), Money(cents: cash.floatCents).formatted)
+            line(String(localized: "fiscal.slip_cash_expected"), Money(cents: cash.countedCents - cash.varianceCents).formatted)
+            line(String(localized: "fiscal.slip_cash_counted"), Money(cents: cash.countedCents).formatted)
+            line(String(localized: "fiscal.slip_cash_variance"), Money(cents: cash.varianceCents).formatted, bold: true)
+        }
+    }
+
+    private func heading(_ key: LocalizedStringKey) -> some View {
+        Text(key).font(.subheadline.monospaced().bold()).frame(maxWidth: .infinity)
     }
 
     private var dashed: some View {

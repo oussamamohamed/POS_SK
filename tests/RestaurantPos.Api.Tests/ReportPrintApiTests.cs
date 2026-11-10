@@ -62,6 +62,23 @@ public class ReportPrintApiTests
     }
 
     [Fact]
+    public async Task XReport_And_LatestClosure_CarryThePrintedDetail()
+    {
+        using var factory = new PosApiApplicationFactory();
+        var client = await ClientAsync(factory, "1234");
+
+        var x = await client.GetFromJsonAsync<JsonElement>("/api/fiscal/x-report?terminalId=POS_MAIN_TERM");
+        x.GetProperty("details").GetProperty("categories").ValueKind.Should().Be(JsonValueKind.Array);
+
+        (await client.PostAsJsonAsync("/api/fiscal/z-closure", new ZClosureRequest("POS_MAIN_TERM", Guid.NewGuid(), "Gérant"))).StatusCode
+            .Should().Be(HttpStatusCode.OK);
+        var latest = await client.GetFromJsonAsync<JsonElement>("/api/fiscal/latest-closure?terminalId=POS_MAIN_TERM");
+        latest.GetProperty("managerName").GetString().Should().Be("Gérant");
+        latest.GetProperty("periodStartUtc").ValueKind.Should().Be(JsonValueKind.String);
+        latest.GetProperty("details").GetProperty("tips").ValueKind.Should().Be(JsonValueKind.Array);
+    }
+
+    [Fact]
     public async Task XReportPrint_QueuesReport()
     {
         using var factory = new PosApiApplicationFactory();

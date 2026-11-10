@@ -143,44 +143,44 @@ struct TicketPeriodClosure: Codable, Equatable, Sendable {
     var sealedByUserName: String
 }
 
-struct ReportItemLine: Codable, Equatable, Sendable {
-    var productName: String
-    var quantity: Int
-    var totalTtcCents: Int
+public struct ReportItemLine: Codable, Hashable, Sendable {
+    public var productName: String
+    public var quantity: Int
+    public var totalTtcCents: Int
 }
 
-struct ReportCategoryGroup: Codable, Equatable, Sendable {
-    var categoryName: String?
-    var items: [ReportItemLine]
-    var subtotalTtcCents: Int
+public struct ReportCategoryGroup: Codable, Hashable, Sendable {
+    public var categoryName: String?
+    public var items: [ReportItemLine]
+    public var subtotalTtcCents: Int
 }
 
-struct ReportTipLine: Codable, Equatable, Sendable {
-    var serverName: String?
-    var tipCents: Int
+public struct ReportTipLine: Codable, Hashable, Sendable {
+    public var serverName: String?
+    public var tipCents: Int
 }
 
 /// Remises, offerts et annulations (avoirs) de la période ; informatif, comme le reste de `ReportPrintData`.
-struct ReportActivity: Codable, Equatable, Sendable {
-    var discountsCents: Int
-    var compsCents: Int
-    var voidCount: Int
-    var voidCents: Int
+public struct ReportActivity: Codable, Hashable, Sendable {
+    public var discountsCents: Int
+    public var compsCents: Int
+    public var voidCount: Int
+    public var voidCents: Int
 }
 
 /// Dernier comptage de caisse de la période (fond, compté, écart).
-struct ReportCash: Codable, Equatable, Sendable {
-    var floatCents: Int
-    var countedCents: Int
-    var varianceCents: Int
+public struct ReportCash: Codable, Hashable, Sendable {
+    public var floatCents: Int
+    public var countedCents: Int
+    public var varianceCents: Int
 }
 
-struct ReportPrintData: Codable, Equatable, Sendable {
-    var categories: [ReportCategoryGroup]
-    var tips: [ReportTipLine]
-    var totalTipsCents: Int
-    var hasGlobalDiscount: Bool
-    var activity: ReportActivity?
-    var cash: ReportCash?
-    static let empty = ReportPrintData(categories: [], tips: [], totalTipsCents: 0, hasGlobalDiscount: false)
+public struct ReportPrintData: Codable, Hashable, Sendable {
+    public var categories: [ReportCategoryGroup]
+    public var tips: [ReportTipLine]
+    public var totalTipsCents: Int
+    public var hasGlobalDiscount: Bool
+    public var activity: ReportActivity?
+    public var cash: ReportCash?
+    public static let empty = ReportPrintData(categories: [], tips: [], totalTipsCents: 0, hasGlobalDiscount: false)
 }

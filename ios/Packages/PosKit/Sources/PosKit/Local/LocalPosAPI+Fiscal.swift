@@ -60,7 +60,9 @@ extension LocalPosAPI {
             signatureHash: nil,
             closedAtUtc: nil,
             periodEndUtc: sum.periodEndUtc,
-            printQueued: nil
+            printQueued: nil,
+            periodStartUtc: sum.periodStartUtc,
+            details: try fiscalRepository.reportPrintData(terminalId: term, periodStart: sum.periodStartUtc, periodEnd: sum.periodEndUtc)
         )
     }
 
@@ -98,7 +100,10 @@ extension LocalPosAPI {
             closedAtUtc: closure.createdAtUtc,
             periodEndUtc: closure.periodEndUtc,
             printQueued: false,
-            cash: try cashRepository.summary(terminalId: term, from: closure.periodStartUtc, to: closure.createdAtUtc).map { CashZSummary(floatCents: $0.float, countedCents: $0.counted, varianceCents: $0.variance) }
+            cash: try cashRepository.summary(terminalId: term, from: closure.periodStartUtc, to: closure.createdAtUtc).map { CashZSummary(floatCents: $0.float, countedCents: $0.counted, varianceCents: $0.variance) },
+            periodStartUtc: closure.periodStartUtc,
+            managerName: closure.sealedByUserName,
+            details: try fiscalRepository.reportPrintData(terminalId: closure.terminalId, periodStart: closure.periodStartUtc, periodEnd: closure.periodEndUtc)
         )
     }
 
@@ -172,7 +177,10 @@ extension LocalPosAPI {
             signatureHash: closure.signatureHash,
             closedAtUtc: closure.createdAtUtc,
             periodEndUtc: closure.periodEndUtc,
-            printQueued: printQueued
+            printQueued: printQueued,
+            periodStartUtc: closure.periodStartUtc,
+            managerName: closure.sealedByUserName,
+            details: try fiscal.reportPrintData(terminalId: closure.terminalId, periodStart: closure.periodStartUtc, periodEnd: closure.periodEndUtc)
         )
     }
 

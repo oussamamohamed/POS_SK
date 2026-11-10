@@ -335,6 +335,24 @@ struct LocalPrintDispatchTests {
                                                                     duplicateNumber: 1, context: await api.testContext))
     }
 
+    /// L'écran Clôture affiche le même détail que le ticket imprimé : début de période, responsable, articles par catégorie.
+    @Test func reportsCarryTheDetailOfThePrintedTicket() async throws {
+        let clock = LocalTestClock()
+        let api = try await makeAPI(clock)
+        _ = try await counterSale(api)
+        clock.advance(60)
+
+        let x = try await api.xReport(terminalId: "T01")
+        #expect(x.periodStartUtc != nil)
+        #expect(x.details?.categories.first?.items.first?.productName == Self.burger)
+
+        let z = try await api.zClosure(terminalId: "T01", managerId: UUID(), managerName: "Marie")
+        // Comme sur le ticket imprimé, le responsable est celui qui a scellé la clôture (l'opérateur connecté).
+        #expect(z.managerName == (try await api.testLatestClosure())?.sealedByUserName && z.periodStartUtc != nil)
+        #expect(z.details == (try await api.testReportData(z.periodStartUtc, try #require(z.periodEndUtc))))
+        #expect(try await api.latestClosure(terminalId: "T01")?.details == z.details)
+    }
+
     @Test func zClosureReprintIsAReportDuplicate() async throws {
         let clock = LocalTestClock()
         let api = try await makeAPI(clock)

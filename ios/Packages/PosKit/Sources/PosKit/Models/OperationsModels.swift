@@ -147,14 +147,21 @@ public struct FiscalReport: Codable, Hashable, Sendable {
     public var cashFloat: Int?
     public var cashCounted: Int?
     public var cashVariance: Int?
+    /// Début de période, responsable de la Z et détail imprimé (articles, pourboires, remises, caisse) : absents d'un vieux serveur.
+    public var periodStartUtc: Date?
+    public var managerName: String?
+    public var details: ReportPrintData?
 
     /// Comptage de caisse de la période, s'il existe.
     public var cash: CashZSummary? {
         cashCounted.map { CashZSummary(floatCents: cashFloat ?? 0, countedCents: $0, varianceCents: cashVariance ?? 0) }
     }
 
-    public init(terminalId: String?, closureSequence: Int? = nil, totalSalesTtc: Money, totalSalesHt: Money, receiptCount: Int, vatBreakdown: [String: Money], paymentTotals: [String: Money], perpetualGrandTotal: Money, signatureHash: String? = nil, closedAtUtc: Date? = nil, periodEndUtc: Date? = nil, printQueued: Bool? = nil, cash: CashZSummary? = nil) {
+    public init(terminalId: String?, closureSequence: Int? = nil, totalSalesTtc: Money, totalSalesHt: Money, receiptCount: Int, vatBreakdown: [String: Money], paymentTotals: [String: Money], perpetualGrandTotal: Money, signatureHash: String? = nil, closedAtUtc: Date? = nil, periodEndUtc: Date? = nil, printQueued: Bool? = nil, cash: CashZSummary? = nil, periodStartUtc: Date? = nil, managerName: String? = nil, details: ReportPrintData? = nil) {
         self.terminalId = terminalId
+        self.periodStartUtc = periodStartUtc
+        self.managerName = managerName
+        self.details = details
         self.closureSequence = closureSequence
         self.totalSalesTtc = totalSalesTtc
         self.totalSalesHt = totalSalesHt
@@ -188,6 +195,9 @@ public struct FiscalReport: Codable, Hashable, Sendable {
         cashFloat = try c.decodeIfPresent(Int.self, forKey: .cashFloat)
         cashCounted = try c.decodeIfPresent(Int.self, forKey: .cashCounted)
         cashVariance = try c.decodeIfPresent(Int.self, forKey: .cashVariance)
+        periodStartUtc = try c.decodeIfPresent(Date.self, forKey: .periodStartUtc)
+        managerName = try c.decodeIfPresent(String.self, forKey: .managerName)
+        details = try c.decodeIfPresent(ReportPrintData.self, forKey: .details)
     }
 
     /// Lignes de TVA triées par taux croissant (« 5.5 », « 10.0 », « 20.0 »).

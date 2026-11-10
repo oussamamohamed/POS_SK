@@ -29,7 +29,7 @@ public static class FiscalEndpoints
             return Results.Ok(result);
         });
 
-        group.MapPost("/z-closure", async (ZClosureRequest req, INF525FiscalAuditService fiscal, PrintDispatcher printing) =>
+        group.MapPost("/z-closure", async (ZClosureRequest req, INF525FiscalAuditService fiscal, PrintDispatcher printing, ReportPrintDataService reports) =>
         {
             var terminalId = string.IsNullOrWhiteSpace(req.TerminalId) ? "POS_MAIN_TERM" : req.TerminalId;
 
@@ -52,9 +52,13 @@ public static class FiscalEndpoints
 
             var closure = await fiscal.ExecuteDailyZClosureAsync(terminalId, req.ManagerId, req.ManagerName);
             var printQueued = await printing.QueueZClosureAsync(closure);
+            var details = await reports.BuildAsync(closure.TerminalId, closure.PeriodStartUtc, closure.ClosedAtUtc);
             return Results.Ok(new
             {
                 closure.ClosureSequence,
+                closure.PeriodStartUtc,
+                ManagerName = closure.SealedByUserName,
+                Details = details,
                 TotalSalesTtc = closure.TotalSalesTtcCents / 100.0m,
                 TotalSalesHt = closure.TotalSalesHtCents / 100.0m,
                 closure.ReceiptCount,
@@ -197,7 +201,7 @@ public static class FiscalEndpoints
             }));
         });
 
-        group.MapGet("/latest-closure", async (string? terminalId, INF525FiscalAuditService fiscal, ICashSessionService cash) =>
+        group.MapGet("/latest-closure", async (string? terminalId, INF525FiscalAuditService fiscal, ICashSessionService cash, ReportPrintDataService reports) =>
         {
             var term = string.IsNullOrWhiteSpace(terminalId) ? "POS_MAIN_TERM" : terminalId;
             var closure = await fiscal.GetLatestZClosureAsync(term);
@@ -208,9 +212,13 @@ public static class FiscalEndpoints
 
             // Comptage de caisse de la période : champs facultatifs, non signés (lecture seule de CashCounts, aucune chaîne touchée).
             var cashSummary = await cash.CashForPeriodAsync(term, closure.PeriodStartUtc, closure.ClosedAtUtc);
+            var details = await reports.BuildAsync(term, closure.PeriodStartUtc, closure.ClosedAtUtc);
             return Results.Ok(new
             {
                 closure.ClosureSequence,
+                closure.PeriodStartUtc,
+                ManagerName = closure.SealedByUserName,
+                Details = details,
                 CashFloat = cashSummary?.FloatCents,
                 CashCounted = cashSummary?.CountedCents,
                 CashVariance = cashSummary?.VarianceCents,
@@ -225,13 +233,15 @@ public static class FiscalEndpoints
             });
         });
 
-        group.MapGet("/x-report", async (string? terminalId, INF525FiscalAuditService fiscal) =>
+        group.MapGet("/x-report", async (string? terminalId, INF525FiscalAuditService fiscal, ReportPrintDataService reports) =>
         {
             var term = string.IsNullOrWhiteSpace(terminalId) ? "POS_MAIN_TERM" : terminalId;
             var summary = await fiscal.GenerateXReportAsync(term);
+            var details = await reports.BuildAsync(term, summary.PeriodStartUtc, summary.PeriodEndUtc);
             return Results.Ok(new
             {
                 summary.TerminalId,
+                Details = details,
                 TotalSalesTtc = summary.TotalSalesTtcCents / 100.0m,
                 TotalSalesHt = summary.TotalSalesHtCents / 100.0m,
                 summary.ReceiptCount,
