@@ -794,6 +794,7 @@ struct NetworkSettingsView: View {
                 Button("admin.force_sync_button") { Task { await network.forceSync() } }
                     .accessibilityIdentifier("network.forceSync")
             }
+            if model.session.isManager { ServerBackupSection() }
             }
             Section("admin.terminal_section") {
                 LabeledContent("admin.identifier_label", value: model.settings.terminalId)

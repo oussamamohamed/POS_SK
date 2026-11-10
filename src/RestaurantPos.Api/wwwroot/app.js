@@ -4462,6 +4462,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     loadFinancialDashboard('today');
                 } else if (targetTab === 'tabDevices') {
                     loadAdminDevices();
+                } else if (targetTab === 'tabBackup') {
+                    loadAdminBackup();
                 } else if (targetTab === 'tabStock') {
                     loadAdminStock();
                 } else if (targetTab === 'tabAlerts') {
@@ -6501,6 +6503,54 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }));
     }
+
+    async function loadAdminBackup() {
+        const body = document.getElementById('backupStatusBody');
+        const runBtn = document.getElementById('btnBackupRun');
+        if (!body || !runBtn) return;
+        const res = await fetch('/api/backup/status');
+        if (!res.ok) {
+            body.innerHTML = `<div style="color:var(--text-muted);">${t('admin.devices_managers_only')}</div>`;
+            runBtn.style.display = 'none';
+            return;
+        }
+        const s = await res.json();
+        const when = (iso) => new Date(iso).toLocaleString(window.i18n.locale);
+        const row = (label, value) => `<div class="item-list-row"><span>${t(label)}</span><strong>${escapeHtml(value)}</strong></div>`;
+        const kb = (n) => `${Math.max(1, Math.round(n / 1024)).toLocaleString(window.i18n.locale)} ko`;
+        let html = '';
+        if (!s.configured) {
+            html += `<div style="color:var(--warning, #c0392b); margin-bottom:10px;">${t('admin.backup_not_configured')}</div>`;
+        } else {
+            html += row('admin.backup_status_label', t(s.overdue ? 'admin.backup_overdue' : 'admin.backup_up_to_date'));
+        }
+        html += row('admin.backup_last_success', s.lastSuccessUtc ? when(s.lastSuccessUtc) : t('admin.backup_never'));
+        if (s.lastFileName) html += row('admin.backup_last_file', `${s.lastFileName} (${kb(s.lastSizeBytes)})`);
+        html += row('admin.backup_copies', String(s.copies));
+        html += row('admin.backup_folder', s.folder);
+        if (s.lastError) {
+            html += `<div style="color:var(--warning, #c0392b); margin-top:8px;">${escapeHtml(t('admin.backup_last_error', { date: when(s.lastFailureUtc), error: s.lastError }))}</div>`;
+        }
+        body.innerHTML = html;
+        runBtn.style.display = '';
+        runBtn.disabled = !s.configured;
+    }
+
+    document.getElementById('btnBackupRun')?.addEventListener('click', async (e) => {
+        const btn = e.currentTarget;
+        btn.disabled = true;
+        try {
+            const r = await fetch('/api/backup/run', { method: 'POST' });
+            if (r.ok) {
+                const done = await r.json();
+                showToast(t('admin.backup_run_done', { file: done.fileName }), 'success');
+            } else {
+                showToast(t('admin.backup_run_error'), 'error');
+            }
+        } finally {
+            await loadAdminBackup();
+        }
+    });
 
     let pairingCountdown = null;
 

@@ -248,3 +248,4 @@
 "insights.takeaway_share" = "Takeaway share";
 "insights.vs_last_week" = "vs same day last week";
 "insights.threshold" = "Trend threshold (%)";
+"backup.server_done" = "Backup done: %@";

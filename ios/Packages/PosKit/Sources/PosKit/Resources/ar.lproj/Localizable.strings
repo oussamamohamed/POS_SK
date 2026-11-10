@@ -248,3 +248,4 @@
 "insights.takeaway_share" = "حصة الطلبات الخارجية";
 "insights.vs_last_week" = "مقارنة بنفس اليوم من الأسبوع الماضي";
 "insights.threshold" = "عتبة الاتجاهات (%)";
+"backup.server_done" = "اكتمل النسخ الاحتياطي : %@";

@@ -248,3 +248,4 @@
 "insights.takeaway_share" = "Part à emporter";
 "insights.vs_last_week" = "vs même jour la semaine passée";
 "insights.threshold" = "Seuil des tendances (%)";
+"backup.server_done" = "Sauvegarde terminée : %@";

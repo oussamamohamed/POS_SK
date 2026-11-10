@@ -41,6 +41,7 @@ public actor InMemoryPosAPI: PosAPI {
     private var ingredientsStore: [Ingredient] = []
     private var stockMovementsStore: [StockMovement] = []
     private var stockSettingsStore = StockSettings()
+    private var serverBackupStore = ServerBackupStatus(configured: true, folder: "backups", overdue: true)
     private var modifierConsumptionStore: [UUID: [ModifierConsumptionItem]] = [:]
     private var cashSessionsStore: [CashSession] = []
     private var alertRulesStore = [AlertRule(type: AlertRuleType.cashVariance, threshold: 1000, enabled: false), AlertRule(type: AlertRuleType.voidsCount, threshold: 3, enabled: false),
@@ -394,6 +395,22 @@ public actor InMemoryPosAPI: PosAPI {
     public func stockSettings() async throws -> StockSettings {
         try await step("stockSettings"); try requireManager()
         return stockSettingsStore
+    }
+
+    public func serverBackupStatus() async throws -> ServerBackupStatus {
+        try await step("serverBackupStatus"); try requireManager()
+        return serverBackupStore
+    }
+
+    public func runServerBackup() async throws -> ServerBackupResult {
+        try await step("runServerBackup"); try requireManager()
+        let result = ServerBackupResult(fileName: "pos-backup-demo-\(serverBackupStore.copies + 1).posbak", sizeBytes: 561_208)
+        serverBackupStore.lastSuccessUtc = Date()
+        serverBackupStore.lastFileName = result.fileName
+        serverBackupStore.lastSizeBytes = result.sizeBytes
+        serverBackupStore.copies = min(serverBackupStore.copies + 1, 14)
+        serverBackupStore.overdue = false
+        return result
     }
 
     public func saveStockSettings(_ settings: StockSettings) async throws -> StockSettings {

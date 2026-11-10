@@ -73,6 +73,10 @@ public protocol PosAPI: Sendable {
     func setModifierConsumption(optionId: UUID, items: [ModifierConsumptionItem]) async throws -> [ModifierConsumptionItem]
     func saveStockSettings(_ settings: StockSettings) async throws -> StockSettings
 
+    // Sauvegarde de la base du serveur (responsable) : état et sauvegarde immédiate. Le mode autonome a `LocalPosAPI.backupStatus()`.
+    func serverBackupStatus() async throws -> ServerBackupStatus
+    func runServerBackup() async throws -> ServerBackupResult
+
     // Caisse (sessions, mouvements, comptage) et alertes de pilotage ; les refus sont des `CashError`.
     func openCashSession(openingFloatCents: Int) async throws -> CashSession
     /// Session ouverte du poste, ou `nil` : lisible par l'opérateur qui l'a ouverte et par le responsable.

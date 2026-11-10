@@ -26,6 +26,10 @@ public static class JournalEventTypes
     public const string AlertCreated = "ALERT_CREATED";
     public const string AlertResolved = "ALERT_RESOLVED";
 
+    // Sauvegarde chiffrée de la base (serveur et iPad autonome)
+    public const string BackupCompleted = "BACKUP_COMPLETED";
+    public const string BackupFailed = "BACKUP_FAILED";
+
     // Événements existants conservés
     public const string EventHeldOrderVoided = "EVENT_HELD_ORDER_VOIDED";
     public const string EventHappyHourActivated = "EVENT_HAPPY_HOUR_OVERRIDE_ACTIVATED";

@@ -1,7 +1,7 @@
 # Implementation Plan — Restaurant POS System (Tactile & Offline-First)
 
 **Projet :** Système de Point de Vente (POS) Tactile pour Restaurant sur iPad / iOS
-**Statut :** Spécification Technique & Plan d'Exécution Complet
+**Statut :** Document de conception initial, en partie obsolète : le code fait foi (services simples au lieu de MediatR/CQRS, SQLite au lieu de PostgreSQL, SwiftUI au lieu de MAUI). Voir `CLAUDE.md`.
 **Cible Client :** iPadOS 17+ & iOS 17+ (Apple iPad 10.2", 10.9", iPad Pro 11"/13", iPad Mini)
 **Stack Frontend :** Application iPad native SwiftUI (Swift 6, iPadOS 17+) — voir `ios/README.md` (le client .NET MAUI a été abandonné)
 **Stack Backend :** .NET 10 (C#) / ASP.NET Core (Clean Architecture + CQRS + SignalR)

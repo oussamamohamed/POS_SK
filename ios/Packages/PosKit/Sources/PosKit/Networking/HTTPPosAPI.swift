@@ -341,6 +341,10 @@ public actor HTTPPosAPI: PosAPI {
 
     public func saveStockSettings(_ settings: StockSettings) async throws -> StockSettings { try await call("PUT", "stock/settings", body: settings) }
 
+    public func serverBackupStatus() async throws -> ServerBackupStatus { try await call("GET", "backup/status") }
+
+    public func runServerBackup() async throws -> ServerBackupResult { try await call("POST", "backup/run") }
+
     // MARK: - Analyse du menu et réservations
 
     public func menuAnalysis(from: Date, to: Date, categoryId: String?) async throws -> MenuAnalysisReport {

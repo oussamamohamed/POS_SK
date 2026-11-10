@@ -41,6 +41,12 @@ public partial class Program
 
     public static void Main(string[] args)
     {
+        if (args.Contains("--restore-backup"))
+        {
+            Environment.Exit(DatabaseBackup.RestoreCommand(args));
+            return;
+        }
+
         var projectDir = Path.Combine(Directory.GetCurrentDirectory(), "src", "RestaurantPos.Api");
         var contentRoot = Directory.Exists(projectDir) ? projectDir : Directory.GetCurrentDirectory();
 
@@ -124,6 +130,7 @@ public partial class Program
         builder.Services.AddScoped<IJwtTokenGeneratorService, JwtTokenGeneratorService>();
         builder.Services.AddSingleton<IPinRateLimiterService, PinRateLimiterService>();
         builder.Services.AddSingleton(TimeProvider.System);
+        builder.Services.AddSingleton<BackupService>();
         builder.Services.AddScoped<IDeviceService, DeviceService>();
         builder.Services.AddScoped<IRestaurantSettingsService, RestaurantSettingsService>();
         if (!builder.Environment.IsEnvironment("Testing"))
@@ -131,6 +138,7 @@ public partial class Program
             builder.Services.AddHostedService<BonjourAdvertiserService>();
             builder.Services.AddHostedService<PrintWorker>();
             builder.Services.AddHostedService<ReservationPurgeService>();
+            builder.Services.AddHostedService<DatabaseBackupWorker>();
         }
 
         // JWT Authentication Configuration
@@ -202,14 +210,6 @@ public partial class Program
         // Real-Time SignalR
         builder.Services.AddSignalR();
         builder.Services.AddEndpointsApiExplorer();
-
-        builder.Services.AddCors(options =>
-        {
-            options.AddDefaultPolicy(policy =>
-            {
-                policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
-            });
-        });
 
         var app = builder.Build();
 
@@ -547,7 +547,6 @@ public partial class Program
             schemaScope.ServiceProvider.GetRequiredService<IRestaurantSettingsService>().GetAsync().GetAwaiter().GetResult();
         }
 
-        app.UseCors();
         app.UseRequestLocalization();
         app.UseDefaultFiles();
         app.UseStaticFiles();
@@ -638,6 +637,7 @@ public partial class Program
         app.MapPrinterEndpoints();
         app.MapPrintJobEndpoints();
         app.MapSettingsEndpoints();
+        app.MapBackupEndpoints();
 
         // 6. Tables & Floor Plan
         app.MapTableEndpoints();

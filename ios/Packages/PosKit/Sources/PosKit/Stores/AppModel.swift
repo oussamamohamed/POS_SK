@@ -16,6 +16,7 @@ public final class AppModel {
     public let fiscal: FiscalStore
     public let catalogAdmin: CatalogAdminStore
     public let stock: StockStore
+    public let serverBackup: ServerBackupStore
     public let cash: CashStore
     public let insights: InsightsStore
     public let pilotAlerts: AlertStore
@@ -59,6 +60,7 @@ public final class AppModel {
         fiscal = FiscalStore(api: api, notifier: notifier, session: session, settings: settings)
         catalogAdmin = CatalogAdminStore(api: api, notifier: notifier, catalog: catalog)
         stock = StockStore(api: api, notifier: notifier)
+        serverBackup = ServerBackupStore(api: api, notifier: notifier)
         cash = CashStore(api: api, notifier: notifier)
         insights = InsightsStore(api: api, notifier: notifier)
         pilotAlerts = AlertStore(api: api, notifier: notifier)

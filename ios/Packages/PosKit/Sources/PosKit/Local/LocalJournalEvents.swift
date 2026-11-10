@@ -1,6 +1,6 @@
 import Foundation
 
-/// Types d'événements du JET : mêmes valeurs que `JournalEventTypes.cs`. `BACKUP_*` n'existent que sur l'iPad autonome.
+/// Types d'événements du JET : mêmes valeurs que `JournalEventTypes.cs`. `BACKUP_*` existent aussi côté .NET (`DatabaseBackupWorker`).
 enum LocalJournalEvents {
     static let receiptVoided = "RECEIPT_VOIDED"
     static let duplicatePrinted = "DUPLICATE_PRINTED"

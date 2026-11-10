@@ -324,6 +324,9 @@ try { window.applyDesign(localStorage.getItem('pos_design') === 'classic'); } ca
                     <button class="admin-tab-btn" data-admin-tab="tabDevices">
                         <span>📲</span> <span data-i18n="admin.tab_devices">Appareils</span>
                     </button>
+                    <button class="admin-tab-btn" data-admin-tab="tabBackup">
+                        <span>💾</span> <span data-i18n="admin.tab_backup">Sauvegarde</span>
+                    </button>
                     <button class="admin-tab-btn" data-admin-tab="tabDashboard">
                         <span>📊</span> <span data-i18n="admin.tab_dashboard">Tableaux de Bord & KPIs</span>
                     </button>
@@ -622,6 +625,16 @@ try { window.applyDesign(localStorage.getItem('pos_design') === 'classic'); } ca
                                     <span>⚡</span> <span data-i18n="admin.force_sync_now">Forcer la Synchronisation Immédiate</span>
                                 </button>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab: Sauvegarde de la base -->
+                    <div class="admin-tab-pane" id="tabBackup">
+                        <div class="admin-card">
+                            <h4 data-i18n="admin.backup_title">Sauvegarde de la base</h4>
+                            <div id="backupStatusBody"></div>
+                            <button type="button" class="btn-primary" id="btnBackupRun" data-i18n="admin.backup_run_btn">Sauvegarder maintenant</button>
+                            <p style="font-size:0.85rem; color:var(--text-muted); margin-top:12px;" data-i18n="admin.backup_hint"></p>
                         </div>
                     </div>
 
