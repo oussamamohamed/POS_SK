@@ -118,6 +118,8 @@ final class OperationsUITests: PosUITestCase {
         launch(section: "admin")
         tap("admin.network")
         let picker = element("admin.receiptLanguage")
+        // La liste est paresseuse : depuis la section de sauvegarde serveur, le sélecteur est sous la ligne de flottaison.
+        for _ in 0..<4 where !picker.exists { app.swipeUp() }
         XCTAssertTrue(picker.waitForExistence(timeout: 5))
         picker.tap()
         app.buttons["العربية"].firstMatch.tap()
