@@ -19,12 +19,12 @@ public class VoidOrderStateTests : IClassFixture<PosApiApplicationFactory>
         _factory = factory;
     }
 
-    private async Task<Guid> SeedOrderAsync(long totalCents)
+    private async Task<Guid> SeedOrderAsync(long totalCents, string tableNumber = "Comptoir")
     {
         var orderId = Guid.NewGuid();
         using var scope = _factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        var order = new Order { Id = orderId, TableNumber = "Comptoir", Status = OrderStatus.SentToKitchen };
+        var order = new Order { Id = orderId, TableNumber = tableNumber, Status = OrderStatus.SentToKitchen };
         order.Items.Add(new OrderItem
         {
             OrderId = orderId,
@@ -98,5 +98,59 @@ public class VoidOrderStateTests : IClassFixture<PosApiApplicationFactory>
         // Reste dû : 60 € (le second reçu de 40 € est toujours valable).
         await PayAsync(orderId, 6000);
         (await StatusAsync(orderId)).Should().Be(OrderStatus.Paid);
+    }
+
+    private async Task<DiningTable> TableAsync(string number)
+    {
+        using var scope = _factory.Services.CreateScope();
+        return await scope.ServiceProvider.GetRequiredService<AppDbContext>().DiningTables.AsNoTracking().SingleAsync(t => t.TableNumber == number);
+    }
+
+    private async Task AddTableAsync(string number, Guid? activeOrderId = null)
+    {
+        using var scope = _factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        db.DiningTables.Add(new DiningTable { TableNumber = number, ActiveOrderId = activeOrderId, Status = activeOrderId is null ? TableStatus.Free : TableStatus.Occupied });
+        await db.SaveChangesAsync();
+    }
+
+    [Fact]
+    public async Task Void_FirstOfTwoReceipts_RelinksFreeTable()
+    {
+        await AddTableAsync("V1");
+        var orderId = await SeedOrderAsync(10000, "V1");
+        var first = await PayAsync(orderId, 6000);
+        await PayAsync(orderId, 4000); // règlement soldé : la table est libérée
+        (await TableAsync("V1")).ActiveOrderId.Should().BeNull();
+
+        await VoidAsync(first);
+
+        var table = await TableAsync("V1");
+        table.ActiveOrderId.Should().Be(orderId);
+        table.Status.Should().Be(TableStatus.Occupied);
+    }
+
+    [Fact]
+    public async Task Void_PartialReceipt_LeavesTableTakenByAnotherOrder()
+    {
+        await AddTableAsync("V2");
+        var orderId = await SeedOrderAsync(10000, "V2");
+        var first = await PayAsync(orderId, 6000);
+        await PayAsync(orderId, 4000);
+        var other = await SeedOrderAsync(500, "V2");
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var t = await db.DiningTables.SingleAsync(x => x.TableNumber == "V2");
+            t.ActiveOrderId = other;
+            t.Status = TableStatus.Occupied;
+            await db.SaveChangesAsync();
+        }
+
+        await VoidAsync(first);
+
+        (await StatusAsync(orderId)).Should().Be(OrderStatus.BillRequested);
+        (await TableAsync("V2")).ActiveOrderId.Should().Be(other);
+        (await StatusAsync(other)).Should().Be(OrderStatus.SentToKitchen);
     }
 }

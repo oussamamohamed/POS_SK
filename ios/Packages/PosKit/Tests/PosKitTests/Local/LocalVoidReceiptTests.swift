@@ -68,4 +68,31 @@ struct LocalVoidReceiptTests {
         try db.run("UPDATE Orders SET Status = ? WHERE Id = ?", [.integer(LocalOrderStatus.cancelled.rawValue), .uuid(order.orderId)])
         _ = try await api.zClosure(terminalId: "T01", managerId: UUID(), managerName: "Chef")
     }
+
+    @Test func voidFirstOfTwoReceiptsRelinksTableAndBlocksZ() async throws {
+        let (api, db) = try await makeLocalAPIWithDatabase()
+        let order = try await seat(api)
+        _ = try await api.pay(localPayment(order, table: "T1", tenders: [localTender(.cash, 1000)]))
+        _ = try await api.pay(localPayment(order, table: "T1", tenders: [localTender(.cash, 950)]))
+        #expect(try await api.activeOrder(table: "T1") == nil) // règlement soldé : table libérée
+        _ = try await api.voidReceipt(receiptId: try #require(try receiptIds(db).first))
+        #expect(try await api.activeOrder(table: "T1")?.orderId == order.orderId)
+        let table = try #require(try await api.tables().first { $0.tableNumber == "T1" })
+        #expect(table.status == .occupied)
+        await #expect(throws: APIError.self) { try await api.zClosure(terminalId: "T01", managerId: UUID(), managerName: "Chef") }
+    }
+
+    @Test func voidLeavesTableTakenByAnotherOrderUntouched() async throws {
+        let (api, db) = try await makeLocalAPIWithDatabase()
+        let order = try await seat(api)
+        _ = try await api.pay(localPayment(order, table: "T1", tenders: [localTender(.cash, 1000)]))
+        _ = try await api.pay(localPayment(order, table: "T1", tenders: [localTender(.cash, 950)]))
+        let burger = try await localProduct(api, "Burger Gourmet Rossini")
+        try await seatTable(api, "T1", items: [localInput(burger)]) // autre commande sur la même table
+        let other = try #require(try await api.activeOrder(table: "T1"))
+        let result = try await api.voidReceipt(receiptId: try #require(try receiptIds(db).first))
+        #expect(result.success == true)
+        #expect(try status(db, order) == LocalOrderStatus.billRequested.rawValue)
+        #expect(try await api.activeOrder(table: "T1")?.orderId == other.orderId)
+    }
 }

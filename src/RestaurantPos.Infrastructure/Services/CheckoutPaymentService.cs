@@ -317,6 +317,18 @@ public class CheckoutPaymentService : ICheckoutPaymentService
                     order.Status = original.TotalTtcAmount.AmountInCents == order.CalculateTotalTtc().AmountInCents
                         ? OrderStatus.Cancelled
                         : OrderStatus.BillRequested;
+                    if (order.Status == OrderStatus.BillRequested)
+                    {
+                        // Réouverte : la commande retrouve sa table si elle est libre (déjà reprise par une autre commande : elle reste sans table).
+                        var table = await _dbContext.DiningTables.FindAsync([order.TableNumber], ct).ConfigureAwait(false);
+                        if (table is { ActiveOrderId: null })
+                        {
+                            table.ActiveOrderId = order.Id;
+                            table.Status = TableStatus.Occupied;
+                            table.OpenedAtUtc ??= DateTimeOffset.UtcNow;
+                            table.UpdatedAtUtc = DateTimeOffset.UtcNow;
+                        }
+                    }
                     // Le stock n'est restitué que si le responsable l'a demandé (produit non consommé).
                     if (restock) await StockConsumption.RestoreSaleAsync(_dbContext, order.Id, operatorId, ct).ConfigureAwait(false);
                 }

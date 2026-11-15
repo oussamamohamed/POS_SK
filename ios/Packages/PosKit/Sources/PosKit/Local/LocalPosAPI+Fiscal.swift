@@ -21,10 +21,19 @@ extension LocalPosAPI {
             guard let original = try fiscal.receipt(id: receiptId),
                   let voided = try fiscal.voidReceipt(originalId: receiptId, terminalId: Self.standaloneTerminalId, operatorId: manager.id, now: now)
             else { throw APIError.server(status: 400, message: "Annulation du reçu impossible.") }
-            if let order = try orders.order(id: original.orderId), decorate(order).totalTtcAmount?.cents == original.ttcCents {
+            guard let order = try orders.order(id: original.orderId), let orderTtc = decorate(order).totalTtcAmount?.cents
+            else { throw APIError.server(status: 400, message: "Annulation du reçu impossible.") }
+            if orderTtc == original.ttcCents {
                 try closeOrder(order, as: .cancelled)
             } else {
                 try orders.setStatus(orderId: original.orderId, .billRequested)
+                // Réouverte : la commande retrouve sa table si elle est libre (déjà reprise par une autre commande : elle reste sans table).
+                if let table = try floorRepository.table(order.tableNumber), table.activeOrderId == nil {
+                    try floorRepository.update(
+                        table.tableNumber, status: .occupied, covers: table.coversCount, waiterName: table.assignedWaiterName, waiterId: nil,
+                        activeOrderId: order.orderId, openedAt: table.openedAtUtc ?? now
+                    )
+                }
             }
             // Le stock n'est restitué que si le responsable l'a demandé (produit non consommé).
             if restock {
