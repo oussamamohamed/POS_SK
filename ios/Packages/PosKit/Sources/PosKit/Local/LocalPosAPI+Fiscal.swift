@@ -2,8 +2,8 @@ import Foundation
 
 extension LocalPosAPI {
     /// Annule un reçu par contre-passation (`POST /api/checkout/void/{id}`) : nouveau reçu signé en négatif, entrée JET `RECEIPT_VOIDED`,
-    /// commande annulée (comme le .NET, la table n'est pas touchée). Réservé aux responsables ; le reçu doit venir de `T01`.
-    /// Annuler un des reçus d'une commande annule toute la commande (comme le .NET) ; un reçu comprenant une facturation chambre ne peut pas être annulé.
+    /// commande annulée et table libérée si le reçu couvrait tout son TTC, sinon (part d'une note partagée) la commande redevient réglable
+    /// (`billRequested`). Réservé aux responsables ; le reçu doit venir de `T01`. Un reçu comprenant une facturation chambre ne peut pas être annulé.
     public func voidReceipt(receiptId: UUID, restock: Bool = false) async throws -> OperationResult {
         let manager = try requireManager()
         let fiscal = fiscalRepository, orders = orderRepository, database = db
@@ -21,7 +21,11 @@ extension LocalPosAPI {
             guard let original = try fiscal.receipt(id: receiptId),
                   let voided = try fiscal.voidReceipt(originalId: receiptId, terminalId: Self.standaloneTerminalId, operatorId: manager.id, now: now)
             else { throw APIError.server(status: 400, message: "Annulation du reçu impossible.") }
-            try orders.setStatus(orderId: original.orderId, .cancelled)
+            if let order = try orders.order(id: original.orderId), decorate(order).totalTtcAmount?.cents == original.ttcCents {
+                try closeOrder(order, as: .cancelled)
+            } else {
+                try orders.setStatus(orderId: original.orderId, .billRequested)
+            }
             // Le stock n'est restitué que si le responsable l'a demandé (produit non consommé).
             if restock {
                 stockRepository.restoreSale(orderId: original.orderId, operatorId: manager.id)
@@ -116,7 +120,8 @@ extension LocalPosAPI {
         let tables = try floorRepository.tables()
         var openOrders: [String] = []
         for table in tables {
-            guard let order = try activeOrder(on: table), !order.lines.isEmpty else { continue }
+            guard let order = try activeOrder(on: table), !order.lines.isEmpty,
+                  try orderRepository.status(of: order.orderId)?.isModifiable == true else { continue }
             let paid = try fiscalRepository.paidCents(orderId: order.orderId)
             let remaining = max(0, (order.totalTtcAmount?.cents ?? 0) - paid)
             if remaining > 0 {

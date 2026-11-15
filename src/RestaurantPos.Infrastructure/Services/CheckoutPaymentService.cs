@@ -310,10 +310,13 @@ public class CheckoutPaymentService : ICheckoutPaymentService
 
                 _dbContext.FiscalReceipts.Add(voidReceipt);
 
-                var order = await _dbContext.Orders.FirstOrDefaultAsync(o => o.Id == original.OrderId, ct);
+                var order = await _dbContext.Orders.Include(o => o.Items).FirstOrDefaultAsync(o => o.Id == original.OrderId, ct);
                 if (order is not null)
                 {
-                    order.Status = OrderStatus.Cancelled;
+                    // Un reçu partiel (part d'une note partagée) ne ferme pas la commande : elle redevient réglable.
+                    order.Status = original.TotalTtcAmount.AmountInCents == order.CalculateTotalTtc().AmountInCents
+                        ? OrderStatus.Cancelled
+                        : OrderStatus.BillRequested;
                     // Le stock n'est restitué que si le responsable l'a demandé (produit non consommé).
                     if (restock) await StockConsumption.RestoreSaleAsync(_dbContext, order.Id, operatorId, ct).ConfigureAwait(false);
                 }
