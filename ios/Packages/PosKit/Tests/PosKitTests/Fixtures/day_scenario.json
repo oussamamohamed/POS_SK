@@ -714,7 +714,6 @@
           }
         ]
       ],
-      "voidPaymentIndex": 1,
       "reprint": false,
       "holdAndRecall": false,
       "ref": "o14"
@@ -2405,7 +2404,6 @@
           }
         ]
       ],
-      "voidPaymentIndex": 3,
       "reprint": false,
       "holdAndRecall": false,
       "ref": "o46"
@@ -3720,38 +3718,38 @@
   ],
   "expected": {
     "A": {
-      "ttcCents": 167543,
-      "htCents": 159580,
-      "receiptCount": 47,
+      "ttcCents": 170297,
+      "htCents": 162307,
+      "receiptCount": 46,
       "vatByRate": {
         "0": 0,
-        "2.1": 861,
+        "2.1": 888,
         "5.5": 1996,
         "10": 2690,
         "20": 2416
       },
       "tenderByMethod": {
         "Cash": 44744,
-        "CreditCard": 84705,
-        "GiftCard": 31942,
+        "CreditCard": 85333,
+        "GiftCard": 34068,
         "MealVoucher": 7080
       }
     },
     "B": {
-      "ttcCents": 98608,
-      "htCents": 91381,
-      "receiptCount": 25,
+      "ttcCents": 98773,
+      "htCents": 91523,
+      "receiptCount": 24,
       "vatByRate": {
         "0": 0,
         "2.1": 134,
-        "5.5": 1516,
+        "5.5": 1517,
         "10": 1974,
-        "20": 3603
+        "20": 3625
       },
       "tenderByMethod": {
         "Cash": 13485,
         "CreditCard": 72877,
-        "GiftCard": 12147,
+        "GiftCard": 12639,
         "MealVoucher": 187
       }
     },
@@ -3775,20 +3773,20 @@
     }
   },
   "total": {
-    "ttcCents": 485224,
-    "htCents": 455767,
-    "receiptCount": 120,
+    "ttcCents": 488143,
+    "htCents": 458636,
+    "receiptCount": 118,
     "vatByRate": {
       "0": 0,
-      "2.1": 1863,
-      "5.5": 5610,
+      "2.1": 1890,
+      "5.5": 5611,
       "10": 9094,
-      "20": 12890
+      "20": 12912
     },
     "tenderByMethod": {
       "Cash": 134775,
-      "CreditCard": 236979,
-      "GiftCard": 99233,
+      "CreditCard": 237607,
+      "GiftCard": 101851,
       "MealVoucher": 15253
     }
   }

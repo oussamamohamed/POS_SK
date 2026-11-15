@@ -127,10 +127,18 @@ public static class DayScenarioGenerator
         {
             TipCents = tip,
             Payments = payments,
-            VoidPaymentIndex = rng.Next(100) < 15 ? rng.Next(payments.Count) : null,
+            // Annuler la part d'une note réglée en plusieurs fois rouvre la commande (elle doit encore le solde) : le scénario n'annule que les règlements uniques.
+            VoidPaymentIndex = VoidablePaymentIndex(rng, payments.Count),
             Reprint = rng.Next(100) < 10,
             HoldAndRecall = !table && rng.Next(100) < 10,
         };
+    }
+
+    /// <summary>Tire toujours les mêmes valeurs du générateur ; l'annulation n'est retenue que pour un règlement unique.</summary>
+    private static int? VoidablePaymentIndex(Random rng, int paymentCount)
+    {
+        int? index = rng.Next(100) < 15 ? rng.Next(paymentCount) : null;
+        return paymentCount == 1 ? index : null;
     }
 
     private static List<DayLine> MakeLines(Random rng)

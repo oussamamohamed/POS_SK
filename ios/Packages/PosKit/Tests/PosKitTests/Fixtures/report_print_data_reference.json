@@ -1551,23 +1551,23 @@
               "items": [
                 {
                   "productName": "Article 1",
-                  "quantity": 40,
-                  "totalTtcCents": 51314
+                  "quantity": 43,
+                  "totalTtcCents": 55454
                 },
                 {
                   "productName": "Article 2",
-                  "quantity": 42,
-                  "totalTtcCents": 53231
+                  "quantity": 44,
+                  "totalTtcCents": 55723
                 },
                 {
                   "productName": "Article 3",
-                  "quantity": 32,
+                  "quantity": 33,
                   "totalTtcCents": 32405
                 },
                 {
                   "productName": "Article 4",
-                  "quantity": 16,
-                  "totalTtcCents": 20403
+                  "quantity": 17,
+                  "totalTtcCents": 21759
                 },
                 {
                   "productName": "Article 5",
@@ -1585,7 +1585,7 @@
                   "totalTtcCents": 1003
                 }
               ],
-              "subtotalTtcCents": 176301
+              "subtotalTtcCents": 184289
             }
           ],
           "tips": [
@@ -1606,9 +1606,9 @@
           "hasGlobalDiscount": true,
           "activity": {
             "discountsCents": 13992,
-            "compsCents": 7395,
-            "voidCount": 4,
-            "voidCents": 24606
+            "compsCents": 9498,
+            "voidCount": 3,
+            "voidCents": 21852
           },
           "cash": null
         }
@@ -1621,28 +1621,33 @@
               "items": [
                 {
                   "productName": "Article 1",
-                  "quantity": 20,
-                  "totalTtcCents": 31539
+                  "quantity": 24,
+                  "totalTtcCents": 32803
                 },
                 {
                   "productName": "Article 2",
-                  "quantity": 20,
-                  "totalTtcCents": 26708
+                  "quantity": 23,
+                  "totalTtcCents": 28508
                 },
                 {
                   "productName": "Article 3",
-                  "quantity": 12,
-                  "totalTtcCents": 13585
+                  "quantity": 14,
+                  "totalTtcCents": 16323
                 },
                 {
                   "productName": "Article 4",
-                  "quantity": 5,
-                  "totalTtcCents": 11088
+                  "quantity": 6,
+                  "totalTtcCents": 12078
                 },
                 {
                   "productName": "Article 5",
-                  "quantity": 8,
+                  "quantity": 9,
                   "totalTtcCents": 11252
+                },
+                {
+                  "productName": "Article 6",
+                  "quantity": 2,
+                  "totalTtcCents": 3844
                 },
                 {
                   "productName": "Menu midi",
@@ -1650,22 +1655,22 @@
                   "totalTtcCents": 1500
                 }
               ],
-              "subtotalTtcCents": 95672
+              "subtotalTtcCents": 106308
             }
           ],
           "tips": [
             {
               "serverName": "waiter4",
-              "tipCents": 88
+              "tipCents": 415
             }
           ],
-          "totalTipsCents": 88,
+          "totalTipsCents": 415,
           "hasGlobalDiscount": true,
           "activity": {
-            "discountsCents": 6471,
-            "compsCents": 0,
-            "voidCount": 1,
-            "voidCents": 165
+            "discountsCents": 7535,
+            "compsCents": 2329,
+            "voidCount": 0,
+            "voidCents": 0
           },
           "cash": null
         }
