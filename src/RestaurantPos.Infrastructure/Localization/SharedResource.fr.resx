@@ -589,4 +589,16 @@
   <data xml:space="preserve" name="errors.fiscal_year_locked">
     <value>La date de début d'exercice ne peut plus être modifiée après une clôture annuelle.</value>
   </data>
+  <data name="errors.order_has_receipts" xml:space="preserve">
+    <value>Cette commande a déjà des reçus ({receipts}) : annulez-les avant de modifier ses lignes.</value>
+  </data>
+  <data name="errors.order_not_modifiable" xml:space="preserve">
+    <value>Cette commande n'est plus modifiable.</value>
+  </data>
+  <data name="errors.line_void_reason_required" xml:space="preserve">
+    <value>Le motif est obligatoire pour annuler une ligne envoyée en cuisine.</value>
+  </data>
+  <data name="errors.line_void_quantity_invalid" xml:space="preserve">
+    <value>La quantité à retirer doit être comprise entre 1 et celle de la ligne.</value>
+  </data>
 </root>

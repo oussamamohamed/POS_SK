@@ -589,4 +589,16 @@
   <data xml:space="preserve" name="errors.fiscal_year_locked">
     <value>Fiscal year start date cannot be changed after an annual closure has been executed.</value>
   </data>
+  <data name="errors.order_has_receipts" xml:space="preserve">
+    <value>This order already has receipts ({receipts}): void them before changing its lines.</value>
+  </data>
+  <data name="errors.order_not_modifiable" xml:space="preserve">
+    <value>This order can no longer be modified.</value>
+  </data>
+  <data name="errors.line_void_reason_required" xml:space="preserve">
+    <value>A reason is required to void a line sent to the kitchen.</value>
+  </data>
+  <data name="errors.line_void_quantity_invalid" xml:space="preserve">
+    <value>The quantity to remove must be between 1 and the line quantity.</value>
+  </data>
 </root>

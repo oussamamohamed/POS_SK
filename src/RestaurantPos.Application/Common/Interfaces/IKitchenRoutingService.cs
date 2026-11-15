@@ -13,7 +13,8 @@ public record KitchenTicketItemDto(
     int Quantity,
     string? ModifiersSummary,
     string? KitchenComment,
-    TicketItemStatus Status);
+    TicketItemStatus Status,
+    int CancelledQuantity = 0);
 
 public record KitchenTicketDto(
     Guid TicketId,

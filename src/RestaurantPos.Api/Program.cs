@@ -120,6 +120,7 @@ public partial class Program
         builder.Services.AddScoped<ICashSessionService, CashSessionService>();
         builder.Services.AddScoped<IInsightsService, InsightsService>();
         builder.Services.AddScoped<IOrderDiscountService, OrderDiscountService>();
+        builder.Services.AddScoped<IOrderLineVoidService, OrderLineVoidService>();
         builder.Services.AddScoped<IRoomBillingService, RoomBillingService>();
         builder.Services.AddScoped<IGridManagementService, GridManagementService>();
         builder.Services.AddScoped<IHeldOrderStorageService, HeldOrderStorageService>();
@@ -563,6 +564,28 @@ public partial class Program
             ApplySchema(dbContext, schemaLog, "ALTER TABLE FiscalReceipts ADD COLUMN HtBreakdownJson TEXT NULL;");
             ApplySchema(dbContext, schemaLog, "ALTER TABLE PrintJobs ADD COLUMN DuplicateNumber INTEGER NULL;");
             ApplySchema(dbContext, schemaLog, "CREATE INDEX IF NOT EXISTS IX_PrintJobs_DuplicateOfDocumentId ON PrintJobs (DuplicateOfDocumentId);");
+            ApplySchema(dbContext, schemaLog, "ALTER TABLE KitchenTicketItems ADD COLUMN OrderItemId TEXT NULL;");
+            ApplySchema(dbContext, schemaLog, "ALTER TABLE KitchenTicketItems ADD COLUMN CancelledQuantity INTEGER NOT NULL DEFAULT 0;");
+            ApplySchema(dbContext, schemaLog, @"CREATE TABLE IF NOT EXISTS OrderLineVoids (
+                Id TEXT PRIMARY KEY,
+                OrderId TEXT NOT NULL,
+                OrderItemId TEXT NOT NULL,
+                TicketId TEXT NULL,
+                ProductId TEXT NOT NULL,
+                ProductName TEXT NOT NULL,
+                Quantity INTEGER NOT NULL,
+                UnitPrice INTEGER NOT NULL,
+                ModifiersSummary TEXT NULL,
+                KitchenComment TEXT NULL,
+                PreparationStationId TEXT NULL,
+                Reason TEXT NOT NULL,
+                OperatorId TEXT NOT NULL,
+                OperatorName TEXT NOT NULL,
+                ServerName TEXT NOT NULL,
+                TableNumber TEXT NOT NULL,
+                VoidedAtUtc TEXT NOT NULL
+            );
+            CREATE INDEX IF NOT EXISTS IX_OrderLineVoids_OrderId ON OrderLineVoids (OrderId);");
 
             // Initialise ReceiptLanguage au démarrage plutôt qu'à la première lecture paresseuse :
             // sinon une installation EN/AR fraîche qui prend des commandes avant l'ouverture de
@@ -1029,6 +1052,7 @@ public record TransferTableRequest(string TargetTableNumber);
 public record MergeTablesRequest(string TargetTableNumber);
 public record ApplyOrderDiscountRequest(DiscountType Type, decimal Value, string Reason, Guid? OperatorId);
 public record CompOrderItemRequest(string Reason, Guid? OperatorId);
+public record VoidOrderItemRequest(int Quantity, string? Reason);
 public record RoomChargeRequest(Guid OrderId, string TableNumber, string RoomNumber, string GuestName, decimal Amount, decimal TipAmount, string? SignatureDataUrl, string? Notes);
 public record SyncBatchRequest(List<SyncMessageItemDto> Messages);
 public record SyncMessageItemDto(Guid Id, string? TerminalId, string? EventType, string? IdempotencyKey, string PayloadJson, DateTimeOffset CreatedAtUtc);

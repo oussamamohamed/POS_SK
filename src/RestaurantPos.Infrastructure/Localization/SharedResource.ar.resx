@@ -589,4 +589,16 @@
   <data xml:space="preserve" name="errors.fiscal_year_locked">
     <value>لا يمكن تعديل تاريخ بداية السنة المالية بعد تنفيذ إقفال سنوي.</value>
   </data>
+  <data name="errors.order_has_receipts" xml:space="preserve">
+    <value>هذا الطلب لديه إيصالات بالفعل ({receipts}): ألغها قبل تعديل بنوده.</value>
+  </data>
+  <data name="errors.order_not_modifiable" xml:space="preserve">
+    <value>لم يعد من الممكن تعديل هذا الطلب.</value>
+  </data>
+  <data name="errors.line_void_reason_required" xml:space="preserve">
+    <value>السبب إلزامي لإلغاء بند أُرسل إلى المطبخ.</value>
+  </data>
+  <data name="errors.line_void_quantity_invalid" xml:space="preserve">
+    <value>يجب أن تكون الكمية المراد حذفها بين واحد وكمية البند.</value>
+  </data>
 </root>

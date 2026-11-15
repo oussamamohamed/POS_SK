@@ -90,6 +90,7 @@ public class KitchenRoutingService : IKitchenRoutingService
                     Id = UuidV7.NewGuid(),
                     TicketId = ticket.Id,
                     ProductId = item.ProductId,
+                    OrderItemId = item.Id,
                     ProductName = item.ProductName,
                     Quantity = item.Quantity,
                     ModifiersSummary = string.Join(", ", item.SelectedModifiers),
@@ -171,7 +172,8 @@ public class KitchenRoutingService : IKitchenRoutingService
                 i.Quantity,
                 i.ModifiersSummary,
                 i.KitchenComment,
-                i.Status
+                i.Status,
+                i.CancelledQuantity
             )).ToList()
         );
     }
@@ -212,7 +214,8 @@ public class KitchenRoutingService : IKitchenRoutingService
                 i.Quantity,
                 i.ModifiersSummary,
                 i.KitchenComment,
-                i.Status
+                i.Status,
+                i.CancelledQuantity
             )).ToList()
         );
     }

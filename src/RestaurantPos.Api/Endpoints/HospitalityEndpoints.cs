@@ -101,6 +101,45 @@ public static class HospitalityEndpoints
             }
         }).RequireAuthorization("RequireManagerOrAdmin");
 
+        // Ligne envoyée : annulation (manager ou admin, motif, trace, JET). Ligne non envoyée : correction (tout opérateur).
+        orderGroup.MapPost("/{orderId:guid}/items/{itemId:guid}/void", async (
+            Guid orderId,
+            Guid itemId,
+            VoidOrderItemRequest req,
+            IOrderLineVoidService voidService,
+            AppDbContext db,
+            IHubContext<KitchenHub> hubContext,
+            System.Security.Claims.ClaimsPrincipal user) =>
+        {
+            var subClaim = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? user.FindFirst("sub")?.Value;
+            _ = Guid.TryParse(subClaim, out var opId);
+
+            var result = await voidService.VoidAsync(orderId, itemId, req.Quantity, req.Reason, opId);
+            switch (result.Outcome)
+            {
+                case OrderLineVoidOutcome.NotFound:
+                    return Results.NotFound(new { Success = false, Message = Texts.T("errors.order_not_found") });
+                case OrderLineVoidOutcome.Forbidden:
+                    return Results.Json(new { Success = false, Message = Texts.T("errors.authorization_insufficient") }, statusCode: StatusCodes.Status403Forbidden);
+                case OrderLineVoidOutcome.ReasonRequired:
+                    return Results.BadRequest(new { Success = false, Message = Texts.T("errors.line_void_reason_required") });
+                case OrderLineVoidOutcome.InvalidQuantity:
+                    return Results.BadRequest(new { Success = false, Message = Texts.T("errors.line_void_quantity_invalid") });
+                case OrderLineVoidOutcome.OrderHasReceipts:
+                    return Results.Conflict(new { Success = false, Code = "order_has_receipts", Message = Texts.T("errors.order_has_receipts", ("receipts", result.Detail)) });
+                case OrderLineVoidOutcome.NotModifiable:
+                    return Results.Conflict(new { Success = false, Code = "order_not_modifiable", Message = Texts.T("errors.order_not_modifiable") });
+            }
+
+            var order = await db.Orders.AsNoTracking().Include(o => o.Items).FirstAsync(o => o.Id == orderId);
+            if (result.Outcome == OrderLineVoidOutcome.Voided)
+            {
+                await hubContext.Clients.All.SendAsync("ReceiveKitchenUpdate", "ITEM_VOIDED", order.TableNumber);
+                // Tâche 3: bon d'annulation
+            }
+            return Results.Ok(new { Success = true, result.VoidId, TotalTtc = order.TotalTtc.ToDecimal() });
+        });
+
         orderGroup.MapDelete("/{orderId:guid}/discount", async (Guid orderId, IOrderDiscountService discountService) =>
         {
             var updated = await discountService.RemoveDiscountAsync(orderId);

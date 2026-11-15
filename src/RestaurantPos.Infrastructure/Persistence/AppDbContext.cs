@@ -40,6 +40,7 @@ public class AppDbContext : DbContext
     public DbSet<RoomFolioCharge> RoomFolioCharges => Set<RoomFolioCharge>();
     public DbSet<TableTransferLog> TableTransferLogs => Set<TableTransferLog>();
     public DbSet<OrderDiscountAudit> OrderDiscountAudits => Set<OrderDiscountAudit>();
+    public DbSet<OrderLineVoid> OrderLineVoids => Set<OrderLineVoid>();
     public DbSet<GridLayout> GridLayouts => Set<GridLayout>();
     public DbSet<GridSlot> GridSlots => Set<GridSlot>();
     public DbSet<HeldOrder> HeldOrders => Set<HeldOrder>();
@@ -395,6 +396,14 @@ public class AppDbContext : DbContext
             entity.Property(a => a.Reason).HasMaxLength(256).IsRequired();
             entity.Property(a => a.AmountSaved)
                   .HasConversion(m => m.AmountInCents, cents => new Money(cents, "EUR"));
+        });
+
+        modelBuilder.Entity<OrderLineVoid>(entity =>
+        {
+            entity.HasKey(v => v.Id);
+            entity.Property(v => v.UnitPrice)
+                  .HasConversion(m => m.AmountInCents, cents => new Money(cents, "EUR"));
+            entity.HasIndex(v => v.OrderId);
         });
 
         modelBuilder.Entity<HeldOrder>(entity =>

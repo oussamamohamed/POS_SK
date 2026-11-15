@@ -36,13 +36,19 @@ public static class PaymentSettlementRules
     /// <summary>Total déjà encaissé pour la commande : reçus non annulés (hors avoirs et reçus annulés).</summary>
     public static async Task<long> PaidCentsAsync(AppDbContext db, Guid orderId, CancellationToken ct = default)
     {
+        var receipts = await ActiveReceiptsAsync(db, orderId, ct).ConfigureAwait(false);
+        return receipts.SelectMany(r => r.Tenders).Sum(t => t.Amount.AmountInCents);
+    }
+
+    /// <summary>Reçus non annulés de la commande (hors avoirs et reçus annulés), avec leurs règlements.</summary>
+    public static async Task<List<FiscalReceipt>> ActiveReceiptsAsync(AppDbContext db, Guid orderId, CancellationToken ct = default)
+    {
         var voidedIds = await db.FiscalReceipts
             .Where(r => r.OrderId == orderId && r.VoidedReceiptId != null)
             .Select(r => r.VoidedReceiptId!.Value)
             .ToListAsync(ct).ConfigureAwait(false);
-        var receipts = await db.FiscalReceipts.Include(r => r.Tenders)
+        return await db.FiscalReceipts.Include(r => r.Tenders)
             .Where(r => r.OrderId == orderId && r.VoidedReceiptId == null && !voidedIds.Contains(r.Id))
             .ToListAsync(ct).ConfigureAwait(false);
-        return receipts.SelectMany(r => r.Tenders).Sum(t => t.Amount.AmountInCents);
     }
 }

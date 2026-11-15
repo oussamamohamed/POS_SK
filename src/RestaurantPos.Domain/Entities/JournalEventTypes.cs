@@ -15,6 +15,7 @@ public static class JournalEventTypes
     public const string TaxRateChanged = "TAX_RATE_CHANGED";
     public const string FiscalSettingsChanged = "FISCAL_SETTINGS_CHANGED";
     public const string ReceiptVoided = "RECEIPT_VOIDED";
+    public const string OrderLineVoided = "ORDER_LINE_VOIDED";
     public const string DuplicatePrinted = "DUPLICATE_PRINTED";
     public const string DevicePaired = "DEVICE_PAIRED";
     public const string DeviceRevoked = "DEVICE_REVOKED";
