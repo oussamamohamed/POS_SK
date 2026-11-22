@@ -130,6 +130,9 @@
   <data name="errors.hold_empty_cart" xml:space="preserve">
     <value>لا يمكن تعليق سلة فارغة.</value>
   </data>
+  <data name="errors.hold_partially_paid" xml:space="preserve">
+    <value>لا يمكن تعليق طلب مدفوع جزئيًا.</value>
+  </data>
   <data name="errors.held_order_not_found_or_recalled" xml:space="preserve">
     <value>الطلب المعلّق غير موجود أو تم استرجاعه مسبقًا.</value>
   </data>

@@ -130,6 +130,9 @@
   <data name="errors.hold_empty_cart" xml:space="preserve">
     <value>Impossible de mettre en attente un panier vide.</value>
   </data>
+  <data name="errors.hold_partially_paid" xml:space="preserve">
+    <value>Impossible de mettre en attente une commande déjà partiellement réglée.</value>
+  </data>
   <data name="errors.held_order_not_found_or_recalled" xml:space="preserve">
     <value>Commande en attente introuvable ou déjà rappelée.</value>
   </data>

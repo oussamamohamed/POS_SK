@@ -1,7 +1,11 @@
+using System.Net;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using RestaurantPos.Application.Common.Interfaces;
+using RestaurantPos.Application.DTOs;
 using RestaurantPos.Domain.Entities;
 using RestaurantPos.Domain.ValueObjects;
 using RestaurantPos.Infrastructure.Persistence;
@@ -152,6 +156,52 @@ public class VoidOrderStateTests : IClassFixture<PosApiApplicationFactory>
         (await StatusAsync(orderId)).Should().Be(OrderStatus.BillRequested);
         (await TableAsync("V2")).ActiveOrderId.Should().Be(other);
         (await StatusAsync(other)).Should().Be(OrderStatus.SentToKitchen);
+    }
+
+    [Fact]
+    public async Task Pay_ReopenedOrderWhoseTableWasTaken_LeavesTheTableToTheOtherOrder()
+    {
+        await AddTableAsync("V3");
+        var orderId = await SeedOrderAsync(10000, "V3");
+        var first = await PayAsync(orderId, 6000);
+        await PayAsync(orderId, 4000);
+        var other = await SeedOrderAsync(500, "V3");
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var t = await db.DiningTables.SingleAsync(x => x.TableNumber == "V3");
+            t.ActiveOrderId = other;
+            t.Status = TableStatus.Occupied;
+            await db.SaveChangesAsync();
+        }
+
+        await VoidAsync(first);
+        await PayAsync(orderId, 6000); // la commande rouverte (sans table) est soldée par son identifiant
+
+        (await StatusAsync(orderId)).Should().Be(OrderStatus.Paid);
+        var table = await TableAsync("V3");
+        table.ActiveOrderId.Should().Be(other); // la table reste au client installé entre-temps
+        table.Status.Should().Be(TableStatus.Occupied);
+    }
+
+    [Fact]
+    public async Task Hold_ReopenedOrderWithAnActiveReceipt_IsRefused()
+    {
+        var orderId = await SeedOrderAsync(10000, "H1");
+        var first = await PayAsync(orderId, 6000);
+        await PayAsync(orderId, 4000);
+        await VoidAsync(first); // rouverte, le reçu de 40 € reste actif
+
+        var client = _factory.CreateClient();
+        var login = await (await client.PostAsJsonAsync("/api/auth/login", new PinLoginRequest("9999"))).Content.ReadFromJsonAsync<LoginResultDto>();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", login!.Token);
+        var response = await client.PostAsJsonAsync("/api/orders/counter/hold", new HoldCounterOrderRequest(orderId, Terminal, null, "Client"));
+
+        // Comme l'iPad : une mise en attente puis son annulation laisseraient un encaissement sur une commande annulée.
+        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        (await StatusAsync(orderId)).Should().Be(OrderStatus.BillRequested);
+        using var check = _factory.Services.CreateScope();
+        (await check.ServiceProvider.GetRequiredService<AppDbContext>().HeldOrders.AsNoTracking().AnyAsync(h => h.OrderId == orderId)).Should().BeFalse();
     }
 
     [Fact]

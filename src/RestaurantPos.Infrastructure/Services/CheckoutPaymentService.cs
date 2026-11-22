@@ -190,7 +190,8 @@ public class CheckoutPaymentService : ICheckoutPaymentService
                             .ConfigureAwait(false);
                     }
 
-                    if (table is not null)
+                    // Une commande rouverte dont la table a été reprise entre-temps ne libère pas la table de l'autre client.
+                    if (table is not null && (table.ActiveOrderId is null || table.ActiveOrderId == order.Id))
                     {
                         table.Status = TableStatus.Free;
                         table.ActiveOrderId = null;

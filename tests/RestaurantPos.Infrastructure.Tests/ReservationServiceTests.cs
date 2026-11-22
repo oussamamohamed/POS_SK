@@ -102,9 +102,10 @@ public sealed class ReservationServiceTests
         var seated = await service.CreateAsync(Input(), true);
         var later = await service.CreateAsync(Input(at: T0.AddHours(5)), true);
         await service.SeatAsync(seated.Id, null, Guid.NewGuid(), "Sophie", true);
-        var order = new Order { TableNumber = "T1" };
-        order.Items.Add(new OrderItem { ProductName = "Menu", Quantity = 1, UnitPrice = Money.FromCents(2000), TaxRatePercent = 10m });
-        db.Orders.Add(order);
+        // La commande réglée est celle que l'installation a ouverte sur la table (une autre commande ne libère plus la table, ni sa réservation).
+        var tableOrderId = (await db.DiningTables.SingleAsync(t => t.TableNumber == "T1")).ActiveOrderId!.Value;
+        var order = await db.Orders.SingleAsync(o => o.Id == tableOrderId);
+        db.Add(new OrderItem { OrderId = order.Id, ProductName = "Menu", Quantity = 1, UnitPrice = Money.FromCents(2000), TaxRatePercent = 10m });
         await db.SaveChangesAsync();
 
         var checkout = new CheckoutPaymentService(db, new NF525FiscalAuditService(db));

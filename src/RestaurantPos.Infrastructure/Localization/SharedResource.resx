@@ -130,6 +130,9 @@
   <data name="errors.hold_empty_cart" xml:space="preserve">
     <value>Cannot put an empty cart on hold.</value>
   </data>
+  <data name="errors.hold_partially_paid" xml:space="preserve">
+    <value>Cannot hold an order that is already partially paid.</value>
+  </data>
   <data name="errors.held_order_not_found_or_recalled" xml:space="preserve">
     <value>Held order not found or already recalled.</value>
   </data>

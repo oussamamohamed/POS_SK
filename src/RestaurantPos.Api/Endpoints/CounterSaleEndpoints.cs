@@ -109,6 +109,13 @@ public static class CounterSaleEndpoints
                 return Results.BadRequest(new { Message = Texts.T("errors.hold_empty_cart") });
             }
 
+            // Comme l'iPad : une commande déjà en partie réglée (note partagée, ou rouverte après annulation d'une part) ne part pas en attente,
+            // son annulation au code superviseur laisserait un encaissement sur une commande annulée.
+            if (await PaymentSettlementRules.PaidCentsAsync(db, order.Id) != 0)
+            {
+                return Results.Json(new { Message = Texts.T("errors.hold_partially_paid") }, statusCode: StatusCodes.Status409Conflict);
+            }
+
             string terminalId = !string.IsNullOrWhiteSpace(req.TerminalId) ? req.TerminalId : "POS_MAIN_TERM";
             Guid staffId = req.StaffId ?? Guid.Empty;
             if (staffId == Guid.Empty && Guid.TryParse(user.FindFirstValue(ClaimTypes.NameIdentifier), out var parsedUserId))
