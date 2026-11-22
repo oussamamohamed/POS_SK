@@ -31,6 +31,28 @@ export async function pairTill(page: Page) {
   await page.addInitScript((device) => localStorage.setItem('pos_device', JSON.stringify(device)), cachedDevice);
 }
 
+/**
+ * Encaisse en espèces les commandes de table laissées ouvertes par d'autres specs :
+ * la clôture Z les refuse (409 open_orders) et aucune route ne permet de les annuler.
+ */
+export async function settleOpenTableOrders(request: APIRequestContext, headers: Record<string, string>) {
+  const tables = await (await request.get('/api/tables', { headers })).json();
+  for (const t of tables.filter((x: { status: number }) => x.status !== 0)) {
+    const res = await request.get(`/api/tables/${encodeURIComponent(t.tableNumber)}/order`, { headers });
+    if (!res.ok()) continue;
+    const order = await res.json();
+    if (!order.lines?.length) continue;
+    await request.post('/api/checkout/pay', {
+      headers,
+      data: {
+        orderId: order.orderId,
+        tableNumber: t.tableNumber,
+        tenders: [{ method: 0, amount: order.totalTtcAmount, tendered: order.totalTtcAmount, changeGiven: 0 }],
+      },
+    });
+  }
+}
+
 export async function loginWithPin(page: Page) {
   await page.goto('/?nocache=' + Date.now());
   await page.waitForLoadState('domcontentloaded');

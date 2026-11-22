@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { pairTill, managerToken } from './helpers/pairing';
+import { pairTill, managerToken, settleOpenTableOrders } from './helpers/pairing';
 
 test.describe('Résumé du jour', () => {
   test('le résumé reprend les totaux du dernier Z et se consulte depuis Encaissements', async ({ page }) => {
@@ -16,6 +16,7 @@ test.describe('Résumé du jour', () => {
     const token = await managerToken(page.request);
     const headers = { Authorization: `Bearer ${token}`, 'X-Device-Token': device.token };
     await page.request.post('/api/sync/receipt', { headers, data: { orderId: '00000000-0000-0000-0000-000000000000', tableNumber: 'RES', totalTtcCents: 4200, tenders: [{ method: 0, amountCents: 4200, tenderedCents: 4200 }] } });
+    await settleOpenTableOrders(page.request, headers);
     const z = await page.request.post('/api/fiscal/z-closure', { headers, data: { terminalId: device.terminalId, managerId: '00000000-0000-0000-0000-000000000001', managerName: 'Gérant' } });
     expect(z.ok()).toBeTruthy();
     const latest = await (await page.request.get(`/api/fiscal/latest-closure?terminalId=${device.terminalId}`, { headers })).json();
