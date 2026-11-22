@@ -42,3 +42,29 @@ Tests finaux : .NET 85 / 519 / 377 (Domain / Infrastructure / Api), PosKit 825, 
 Mineurs différés restants : tous ceux listés ci-dessus (T1 à T6), plus :
 - Échec préexistant `daily-summary` (Playwright, Z 409 `open_orders`) et `ReportAccuracyTests.FinancialDashboard_DiscountedOrders` (date).
 - Limite du bon d'annulation : en-tête « TABLE Comptoir » au lieu de « À EMPORTER » (+ numéro de retrait) pour une vente comptoir/emporter, côté .NET et autonome.
+
+## Audit des lecteurs (après annulation d'un reçu)
+
+États : (a) rouverte après annulation d'une part, non re-réglée ; (b) rouverte puis re-réglée ; (c) annulation intégrale, commande `Cancelled` ; (d) avoir sur une commande qui garde d'autres reçus actifs ; (e) double annulation ; (f) pourboire réparti sur plusieurs reçus ; (g) titres-restaurant / moyens mixtes, règlements ≠ TTC du reçu. Verdict identique .NET / Swift sauf mention.
+
+| Lecteur (.NET / Swift) | a | b | c | d | e | f | g | Test | Correctif |
+|---|---|---|---|---|---|---|---|---|---|
+| Commandes ouvertes de la Z (`FindOpenOrdersAsync` / `LocalPosAPI.zClosure`) | .NET OK ; Swift **FAUX** (par table : commande sans table ignorée) | OK | OK | = a | OK | Swift **FAUX** (reste sans pourboire) | OK | `zClosureCountsTheTipOfTheActiveShareOfAReopenedOrder`, `zClosureSeesAReopenedOrderWhoseTableWasTaken`, journée v26/v27 | Swift : par commande, reste = TTC + pourboire − règlements actifs |
+| Libération de table au règlement soldé (`CheckoutPaymentService` / `closeOrder`) | — | .NET **FAUX** (libère la table et la réservation de l'autre client) ; Swift OK | OK | OK | — | OK | OK | `Pay_ReopenedOrderWhoseTableWasTaken_LeavesTheTableToTheOtherOrder`, journée v27 | .NET : ne libère que la table vide ou liée à la commande |
+| Mise en attente (`/api/orders/counter/hold` / `holdOrder`) | .NET **FAUX** (acceptée, l'annulation de l'attente annulait une commande encaissée) ; Swift OK | — | — | = a | — | — | — | `Hold_ReopenedOrderWithAnActiveReceipt_IsRefused` | .NET : 409 `errors.hold_partially_paid` |
+| X / Z, totaux et TVA (`GenerateXReportAsync`, `ExecuteDailyZClosureAsync` / `summary`) | OK | OK | OK | OK | OK | OK | OK | journée (X/Z = grand livre) | — |
+| Articles et pourboires du ticket X/Z (`ReportPrintDataService` / `reportPrintData`) | OK (comme un règlement partiel : toutes les lignes ; Z impossible) | OK | OK | OK | — | OK | OK | `report_print_data_reference.json` (v26–v28) | — |
+| FEC (`FecExportService` / `LocalFecExporter`), compte 468600 | OK | OK | OK | OK | — | OK | OK | `TheFecTipAccountNetsToTheTipsKept`, équilibre par écriture | — |
+| Archives, clôtures de période, vérification des chaînes | OK (par reçu / par clôture) | OK | OK | OK | OK | OK | OK | `ChainsAreIntactAndTheJournalHasEveryEvent` | — |
+| Encaissements (`FinancialDashboardService` / `takings`) | OK (reçu actif compté ; familles hors commande non réglée, comme un partiel) | OK | OK | OK | — | OK | OK | journée, `TakingsDailySummaryAndMenuAnalysis_…` | — |
+| Résumé de Z (`InsightsService` / `dailySummary`), analyse du menu, alertes | OK | OK | OK | OK | — | OK | — | journée | — (99105fd) |
+| Stock (`StockConsumption` / `LocalStockRepository`) | OK (rien restitué) | OK (vente idempotente par commande) | OK (restitution si demandée) | OK | — | — | — | `StockDaySimulationTests` | — ; deux parts annulées : décision D1 |
+| Espèces attendues (`CashSessionService` / `LocalCashRepository`) | OK (avoir espèces négatif) | OK | OK | OK | — | OK | OK | `CashDaySimulationTests` | — ; décision D2 |
+| Plan de salle, total de table, montant dû du ticket (`TableManagementService`, `TicketStore`, web) | total TTC, pas le reste dû | OK | OK | = a | — | — | — | — | non corrigé (contrat DTO) : D5 |
+| Titres-restaurant (`MealVoucherPolicyService`) | sans historique : sans effet | OK | — | — | — | — | OK | — | — |
+| Double annulation | — | — | — | — | OK (refusée, 400 / erreur) | — | — | `Void_DoubleVoid_…`, v18, v25 | — |
+
+Décisions à valider : D1 deux parts annulées = commande toujours due (`BillRequested`, pas `Cancelled`), restitution du stock ignorée, la Z reste bloquée jusqu'au re-règlement ou au vidage par annulations de ligne ; D2 un avoir espèces réduit l'attendu de la session de caisse en cours, même pour une vente d'une session précédente (comme une annulation intégrale) ; D3 une commande rouverte non re-réglée compte toutes ses lignes dans les articles du X et les familles des encaissements dès qu'un reçu actif existe (comme un règlement partiel ordinaire) ; D4 une commande rouverte restée sans table n'est atteignable que par son identifiant (aucun écran ne la liste, seule la Z refusée la nomme) ; D5 après rechargement, le ticket (iPad, web) propose le TTC entier et non le reste dû (le DTO de commande ne porte pas les règlements) ; D6 table d'une commande rouverte `Occupied`, pas « addition demandée ».
+
+Journée simulée : v26 (A, pourboire 12 € > part annulée 10 €, Z refusée reste 10 €, re-règlement titre-restaurant + espèces avec rendu), v27 (B, table reprise avant l'annulation de la 2e part, Z refusée reste 14 €, table conservée après annulation et après règlement), v28 (C, deux taux, deux parts annulées dont celle du pourboire, Z refusée reste 25 €, re-règlement carte + espèces). Fixtures : `day_scenario.json` (ajouts : 3 opérations avant v19, champs `occupyTable` / `zBlocked`, section `expectedZBlocked` ; totaux A +3 000 c / 4 reçus, B +2 800 c / 4, C +2 500 c / 5), `report_print_data_reference.json` (section `day` : articles, pourboire waiter1 +1 200 c, annulations +1/+1/+2). `fiscal_reference.json` régénérée sans changement ; stock, caisse, tendances, FEC, archives, clôtures : entrées inchangées. Commits ffb7eeb, ec6d65a, 7c77ca4. Tests : .NET 85 / 522 / 508 (1 échec d'environnement `GetNetworkInfo_ReturnsServerInfo`, résolution DNS du nom d'hôte), PosKit 834, PosPrinters 41.
+
