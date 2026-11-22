@@ -96,6 +96,44 @@ struct LocalVoidReceiptTests {
         #expect(try await api.activeOrder(table: "T1")?.orderId == other.orderId)
     }
 
+    /// Reste dû d'une commande rouverte = TTC + pourboire − règlements actifs (comme `FindOpenOrdersAsync`) : le pourboire de la part restante
+    /// ne doit pas masquer la part annulée.
+    @Test func zClosureCountsTheTipOfTheActiveShareOfAReopenedOrder() async throws {
+        let (api, db) = try await makeLocalAPIWithDatabase()
+        let order = try await seat(api) // 19,50 €
+        _ = try await api.pay(localPayment(order, table: "T1", tenders: [localTender(.cash, 500)]))
+        _ = try await api.pay(localPayment(order, table: "T1", tenders: [localTender(.creditCard, 2050)], tip: 600)) // 14,50 € + 6,00 € de pourboire
+        _ = try await api.voidReceipt(receiptId: try #require(try receiptIds(db).first)) // part de 5,00 € annulée : reste 5,00 €
+        await #expect(throws: APIError.self) { try await api.zClosure(terminalId: "T01", managerId: UUID(), managerName: "Chef") }
+        let repaid = try await api.pay(localPayment(order, table: "T1", tenders: [localTender(.cash, 500)]))
+        #expect(repaid.remainingBalance == .zero)
+        _ = try await api.zClosure(terminalId: "T01", managerId: UUID(), managerName: "Chef")
+    }
+
+    /// Commande rouverte restée sans table (table reprise entre-temps) : la Z la voit comme le .NET (par commande, pas par table), et son
+    /// règlement par identifiant ne libère pas la table de l'autre client.
+    @Test func zClosureSeesAReopenedOrderWhoseTableWasTaken() async throws {
+        let (api, db) = try await makeLocalAPIWithDatabase()
+        let order = try await seat(api)
+        _ = try await api.pay(localPayment(order, table: "T1", tenders: [localTender(.cash, 1000)]))
+        _ = try await api.pay(localPayment(order, table: "T1", tenders: [localTender(.cash, 950)]))
+        try await seatTable(api, "T1") // autre client installé, rien de saisi : sa commande vide ne bloque pas la Z
+        let other = try #require(try await api.activeOrder(table: "T1"))
+        _ = try await api.voidReceipt(receiptId: try #require(try receiptIds(db).first))
+        #expect(try await api.activeOrder(table: "T1")?.orderId == other.orderId)
+        do {
+            _ = try await api.zClosure(terminalId: "T01", managerId: UUID(), managerName: "Chef")
+            Issue.record("la Z aurait dû être refusée : la commande rouverte doit encore 10,00 €")
+        } catch let APIError.server(status, message) {
+            #expect(status == 409)
+            #expect(message?.contains("T1 (10.00)") == true)
+        }
+        let repaid = try await api.pay(localPayment(order, table: "T1", tenders: [localTender(.cash, 1000)]))
+        #expect(repaid.remainingBalance == .zero)
+        #expect(try await api.activeOrder(table: "T1")?.orderId == other.orderId)
+        _ = try await api.zClosure(terminalId: "T01", managerId: UUID(), managerName: "Chef")
+    }
+
     @Test func voidAllSplitReceiptsKeepsOrderBillRequestedAndPayable() async throws {
         let (api, db) = try await makeLocalAPIWithDatabase()
         let order = try await seat(api) // 19,50 €

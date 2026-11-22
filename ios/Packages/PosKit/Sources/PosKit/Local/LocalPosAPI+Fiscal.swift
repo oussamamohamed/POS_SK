@@ -132,18 +132,28 @@ extension LocalPosAPI {
         let term = terminalId.isEmpty ? Self.standaloneTerminalId : terminalId
         let now = clock()
 
-        // 1. Vérification des commandes ouvertes en salle
-        let tables = try floorRepository.tables()
+        // 1. Vérification des commandes ouvertes, par commande comme `FindOpenOrdersAsync` : celles des tables, puis une commande rouverte
+        // restée sans table (table reprise entre-temps). Reste dû = TTC + pourboire − règlements actifs.
         var openOrders: [String] = []
-        for table in tables {
-            guard let order = try activeOrder(on: table), !order.lines.isEmpty,
-                  try orderRepository.status(of: order.orderId)?.isModifiable == true else { continue }
-            let paid = try fiscalRepository.paidCents(orderId: order.orderId)
-            let remaining = max(0, (order.totalTtcAmount?.cents ?? 0) - paid)
+        var seen = Set<UUID>()
+        func checkOpen(_ order: ActiveOrder, label: String) throws {
+            guard seen.insert(order.orderId).inserted, !order.lines.isEmpty,
+                  try orderRepository.status(of: order.orderId)?.isModifiable == true else { return }
+            let (total, tip, paid) = try balance(of: order)
+            let remaining = max(0, (total + tip - paid).cents)
             if remaining > 0 {
                 let formatted = String(format: "%d.%02d", remaining / 100, remaining % 100)
-                openOrders.append("\(table.tableNumber) (\(formatted))")
+                openOrders.append("\(label) (\(formatted))")
             }
+        }
+        for table in try floorRepository.tables() {
+            if let order = try activeOrder(on: table) { try checkOpen(order, label: table.tableNumber) }
+        }
+        let modifiable = [LocalOrderStatus.open, .sentToKitchen, .billRequested].map { SQLValue.integer($0.rawValue) }
+        for row in try db.query("SELECT Id FROM Orders WHERE Status IN (?, ?, ?) ORDER BY CreatedAtUtc", modifiable) {
+            // Un panier en attente est refusé plus bas avec son propre message.
+            guard let id = row.uuid("Id"), try !holdRepository.hasActiveHold(orderId: id), let order = try orderRepository.order(id: id) else { continue }
+            try checkOpen(decorate(order), label: order.tableNumber)
         }
         if !openOrders.isEmpty {
             throw APIError.server(
