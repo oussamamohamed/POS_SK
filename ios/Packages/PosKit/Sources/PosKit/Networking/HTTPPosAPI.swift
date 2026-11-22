@@ -467,6 +467,12 @@ public actor HTTPPosAPI: PosAPI {
         try await perform("POST", "orders/\(orderId.uuidString.lowercased())/items/\(lineId.uuidString.lowercased())/comp", body: CompBody(reason: reason, operatorId: operatorId))
     }
 
+    /// L'opérateur vient du JWT : `operatorId` n'est pas envoyé.
+    struct VoidLineBody: Encodable { let quantity: Int; let reason: String }
+    public func voidLine(orderId: UUID, lineId: UUID, quantity: Int, reason: String?, operatorId: UUID?) async throws {
+        try await perform("POST", "orders/\(orderId.uuidString.lowercased())/items/\(lineId.uuidString.lowercased())/void", body: VoidLineBody(quantity: quantity, reason: reason ?? ""))
+    }
+
     // MARK: - Encaissement
 
     public func pay(_ request: PaymentRequest) async throws -> PaymentResult { try await call("POST", "checkout/pay", body: request, timeout: Self.cardPaymentTimeout) }

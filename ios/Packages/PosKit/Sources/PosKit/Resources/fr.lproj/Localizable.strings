@@ -127,7 +127,8 @@
 "order.happy_hour_pin_required" = "Saisissez le code PIN superviseur";
 "order.happy_hour_stopped" = "Happy Hour arrêté";
 "order.item_comped" = "« %@ » offert";
-"order.line_already_sent" = "Article déjà enregistré : utilisez « Offrir » pour l'annuler.";
+"order.line_already_sent" = "Article déjà envoyé en cuisine : annulation réservée au manager.";
+"order.line_voided" = "%d × %@ annulé : %@";
 "order.load_error" = "Impossible de charger %@";
 "order.mode_eat_in" = "Mode Sur place";
 "order.mode_takeaway" = "Mode À emporter (TVA réduite)";

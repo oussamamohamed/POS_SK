@@ -238,6 +238,48 @@ struct DiscountSheet: View {
     }
 }
 
+// MARK: - Annulation d'un article envoyé
+
+/// Annulation d'une ligne déjà envoyée en cuisine (manager ou admin) : quantité et motif obligatoire.
+struct LineVoidSheet: View {
+    @Environment(AppModel.self) private var model
+    @Environment(\.dismiss) private var dismiss
+    let line: CartLine
+    @State private var quantity = 1
+    @State private var reason = ""
+    /// Posé avant l'appel réseau : un second appui ne peut pas envoyer une deuxième annulation.
+    @State private var isSending = false
+
+    private var canConfirm: Bool { !isSending && !reason.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 20) {
+            SheetHeader(title: String(localized: "order.line_void_title"), subtitle: line.name) { dismiss() }
+            Stepper(value: $quantity, in: 1...max(1, line.quantity)) {
+                Text("order.line_void_quantity \(quantity)")
+            }
+            .accessibilityIdentifier("linevoid.quantity")
+            TextField("order.line_void_reason", text: $reason, prompt: Text("order.line_void_reason_placeholder"))
+                .textFieldStyle(.roundedBorder)
+                .accessibilityIdentifier("linevoid.reason")
+            Spacer()
+            ActionButton(title: String(localized: "order.line_void_confirm"), systemImage: "xmark.circle", kind: .danger) {
+                guard canConfirm else { return }
+                isSending = true
+                Task {
+                    let ok = await model.ticket.voidLine(lineId: line.id, quantity: quantity, reason: reason)
+                    isSending = false
+                    if ok { dismiss() }
+                }
+            }
+            .disabled(!canConfirm)
+            .accessibilityIdentifier("linevoid.confirm")
+        }
+        .padding(28)
+        .presentationDetents([.medium])
+    }
+}
+
 // MARK: - Transfert / fusion
 
 struct TransferSheet: View {

@@ -876,6 +876,27 @@ public actor InMemoryPosAPI: PosAPI {
         orders[orderId]!.order.lines[j].isComp = true
     }
 
+    /// Même règles que `OrderLineVoidService` (.NET) : correction d'une ligne non envoyée (tout opérateur), sinon annulation (manager/admin, motif).
+    public func voidLine(orderId: UUID, lineId: UUID, quantity: Int, reason: String?, operatorId: UUID?) async throws {
+        try await step("voidLine"); try requireAuth()
+        guard let record = orders[orderId], let j = record.order.lines.firstIndex(where: { $0.lineId == lineId }) else { throw APIError.notFound(nil) }
+        if record.paidCents > 0 || record.fiscalTtcCents > 0 {
+            throw APIError.server(status: 409, message: "La commande a un reçu non annulé : annulez d'abord le reçu.")
+        }
+        let line = record.order.lines[j]
+        guard (1...line.quantity).contains(quantity) else { throw APIError.server(status: 400, message: "Quantité à annuler invalide.") }
+        if line.isDispatched {
+            guard currentRole()?.isManager == true else { throw APIError.forbidden(nil) }
+            guard let reason, !reason.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { throw APIError.server(status: 400, message: "Le motif d'annulation est obligatoire.") }
+            if let t = tickets.firstIndex(where: { $0.orderId == orderId && $0.items.contains { $0.productName == line.productName && $0.status != .cancelled } }),
+               let i = tickets[t].items.firstIndex(where: { $0.productName == line.productName && $0.status != .cancelled }) {
+                tickets[t].items[i].cancelledQuantity = min(tickets[t].items[i].quantity, tickets[t].items[i].cancelledQuantity + quantity)
+                if tickets[t].items[i].cancelledQuantity >= tickets[t].items[i].quantity { tickets[t].items[i].status = .cancelled }
+            }
+        }
+        if quantity == line.quantity { orders[orderId]!.order.lines.remove(at: j) } else { orders[orderId]!.order.lines[j].quantity -= quantity }
+    }
+
     // MARK: Encaissement
 
     /// Même règle que le mode autonome et le .NET : `FiscalReceiptMath.amounts` (plus fort reste par taux, pourboire exclu du reçu).

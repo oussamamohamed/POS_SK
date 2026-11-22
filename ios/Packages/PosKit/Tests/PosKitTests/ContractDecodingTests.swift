@@ -178,6 +178,16 @@ struct ContractDecodingTests {
         #expect(ticket.dispatchedAtUtc != nil)
     }
 
+    @Test func ticketItemDecodesCancelledStatusAndQuantity() throws {
+        let items = try #require(try decode([KitchenTicket].self, "kds_tickets").first?.items)
+        #expect(items[0].status == .pending)
+        #expect(items[0].cancelledQuantity == 0)
+        #expect(items[1].status == .cancelled)
+        #expect(items[1].cancelledQuantity == 3)
+        #expect(items[2].status == .pending)
+        #expect(items[2].cancelledQuantity == 1)
+    }
+
     @Test func fiscal() throws {
         let x = try decode(FiscalReport.self, "x_report")
         #expect(x.receiptCount == 3)

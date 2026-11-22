@@ -136,7 +136,7 @@ struct TicketStoreTests {
     }
 
     @Test func savedLinesCannotBeDecrementedButCanBeIncremented() async {
-        let (model, _) = await makeModel()
+        let (model, _) = await makeModel(pin: "2468")
         await model.ticket.load(table: "T4")
         model.ticket.add(product(model, "Café Gourmand"))
         _ = await model.ticket.sendToKitchen()
@@ -149,6 +149,51 @@ struct TicketStoreTests {
         #expect(model.ticket.lines[1].isDraft)
         model.ticket.clearDrafts()
         #expect(model.ticket.lines.count == 1)
+    }
+
+    @Test func voidLineRemovesSentLineAfterManagerConfirms() async {
+        let (model, api) = await makeModel()
+        await model.ticket.load(table: "T4")
+        model.ticket.add(product(model, "Café Gourmand"))
+        model.ticket.add(product(model, "Café Gourmand"))
+        _ = await model.ticket.sendToKitchen()
+        let sent = model.ticket.lines[0]
+        #expect(model.ticket.canVoid(sent))
+        model.ticket.decrement(sent.id)
+        #expect(model.ticket.voidCandidate == sent.id)
+        #expect(await model.ticket.voidLine(lineId: sent.id, quantity: 1, reason: "Erreur de saisie"))
+        #expect(model.ticket.voidCandidate == nil)
+        #expect(model.ticket.lines.first?.quantity == 1)
+        #expect(await model.ticket.voidLine(lineId: model.ticket.lines[0].id, quantity: 1, reason: "Erreur de saisie"))
+        #expect(model.ticket.lines.isEmpty)
+        #expect(await api.calls.filter { $0 == "voidLine" }.count == 2)
+    }
+
+    @Test func removeOnSavedUnsentLineCallsApiAsCorrection() async {
+        let (model, api) = await makeModel(pin: "2468")
+        await model.ticket.load(table: "T4")
+        model.ticket.add(product(model, "Café Gourmand"))
+        #expect(await model.ticket.prepareForDiscount())
+        let saved = model.ticket.lines[0]
+        #expect(!saved.isDraft && !saved.isDispatched)
+        await model.ticket.remove(saved.id)?.value
+        #expect(model.ticket.lines.isEmpty)
+        #expect(await api.calls.contains("voidLine"))
+    }
+
+    @Test func waiterCannotSeeVoidActionOnSentLine() async {
+        let (model, api) = await makeModel(pin: "2468")
+        await model.ticket.load(table: "T4")
+        model.ticket.add(product(model, "Café Gourmand"))
+        _ = await model.ticket.sendToKitchen()
+        let sent = model.ticket.lines[0]
+        #expect(!model.ticket.canVoid(sent))
+        model.ticket.decrement(sent.id)
+        model.ticket.remove(sent.id)
+        #expect(model.ticket.voidCandidate == nil)
+        #expect(model.notifier.lastMessage == L10n.string("order.line_already_sent"))
+        #expect(model.ticket.lines.count == 1)
+        #expect(await !api.calls.contains("voidLine"))
     }
 
     @Test func switchingTablesCommitsDrafts() async {

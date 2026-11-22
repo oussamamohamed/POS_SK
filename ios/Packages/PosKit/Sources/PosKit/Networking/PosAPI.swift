@@ -116,6 +116,9 @@ public protocol PosAPI: Sendable {
     func applyDiscount(orderId: UUID, type: DiscountType, value: Decimal, reason: String, operatorId: UUID?) async throws
     func removeDiscount(orderId: UUID) async throws
     func compItem(orderId: UUID, lineId: UUID, reason: String, operatorId: UUID?) async throws
+    /// Annule `quantity` unités d'une ligne envoyée (manager ou admin, `reason` obligatoire, bon d'annulation en cuisine)
+    /// ou corrige une ligne non envoyée (tout opérateur, sans motif ni trace). Refus : 409 si la commande a un reçu non annulé.
+    func voidLine(orderId: UUID, lineId: UUID, quantity: Int, reason: String?, operatorId: UUID?) async throws
 
     // Encaissement
     func pay(_ request: PaymentRequest) async throws -> PaymentResult

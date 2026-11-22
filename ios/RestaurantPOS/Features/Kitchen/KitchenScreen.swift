@@ -166,8 +166,14 @@ struct KitchenTicketCard: View {
                                 .font(Font.posMono(15, .semibold))
                                 .frame(minWidth: 28, alignment: .leading)
                             Text(item.productName).font(Font.pos(15, .semibold))
+                            if item.status == .cancelled {
+                                Badge(text: String(localized: "kitchen.cancelled_tag"), color: Theme.danger)
+                            } else if item.cancelledQuantity > 0 {
+                                Text("kitchen.cancelled_partial \(item.cancelledQuantity)").font(Font.pos(13, .bold)).foregroundStyle(Theme.danger)
+                            }
                         }
-                        .foregroundStyle(Theme.ink)
+                        .strikethrough(item.status == .cancelled)
+                        .foregroundStyle(item.status == .cancelled ? Theme.inkMuted : Theme.ink)
                         if let mods = item.modifiersSummary, !mods.isEmpty {
                             Text(mods).font(Font.pos(13, .medium)).foregroundStyle(Theme.warning).padding(.leading, 36)
                         }

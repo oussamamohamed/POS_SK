@@ -87,6 +87,22 @@ final class OrderFlowUITests: PosUITestCase {
         assertExists("line.Tartare de Saumon")
     }
 
+    func testManagerCancelsSentLine() {
+        launch()
+        openTable("T4")
+        addProduct("Tartare de Saumon")
+        tap("ticket.send")
+        tap("table.T4")
+        tap("line.minus.Tartare de Saumon")
+        XCTAssertFalse(element("linevoid.confirm").isEnabled, "Le motif est obligatoire")
+        let reason = element("linevoid.reason")
+        reason.tap()
+        reason.typeText("Erreur de saisie")
+        tap("linevoid.confirm")
+        waitToast(containing: "annulé")
+        assertNotExists("line.Tartare de Saumon")
+    }
+
     func testGlobalDiscount() {
         launch()
         openTable("T5")

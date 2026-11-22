@@ -53,6 +53,12 @@ public enum TicketStatus: Int, TolerantIntEnum {
     }
 }
 
+/// `TicketItemStatus` du serveur : `cancelled` = article annulé après envoi en cuisine.
+public enum TicketItemStatus: Int, TolerantIntEnum {
+    case pending = 0, inPrep = 1, ready = 2, cancelled = 3
+    public static let fallback = TicketItemStatus.pending
+}
+
 /// Attention : côté serveur `Takeaway = 0`, `EatIn = 1` (le client web inversait les deux).
 public enum OrderDestination: Int, TolerantIntEnum {
     case takeaway = 0, eatIn = 1, delivery = 2

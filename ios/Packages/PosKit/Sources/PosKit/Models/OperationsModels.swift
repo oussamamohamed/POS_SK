@@ -40,16 +40,21 @@ public struct KitchenTicketItem: Codable, Identifiable, Hashable, Sendable {
     public var quantity: Int
     public var modifiersSummary: String?
     public var kitchenComment: String?
+    public var status: TicketItemStatus
+    /// Unités annulées après l'envoi (l'article est `cancelled` quand elles le sont toutes).
+    public var cancelledQuantity: Int
 
-    public init(id: UUID = UUID(), productName: String, quantity: Int, modifiersSummary: String? = nil, kitchenComment: String? = nil) {
+    public init(id: UUID = UUID(), productName: String, quantity: Int, modifiersSummary: String? = nil, kitchenComment: String? = nil, status: TicketItemStatus = .pending, cancelledQuantity: Int = 0) {
         self.id = id
         self.productName = productName
         self.quantity = quantity
         self.modifiersSummary = modifiersSummary
         self.kitchenComment = kitchenComment
+        self.status = status
+        self.cancelledQuantity = cancelledQuantity
     }
 
-    enum CodingKeys: String, CodingKey { case id, itemId, productName, quantity, modifiersSummary, kitchenComment }
+    enum CodingKeys: String, CodingKey { case id, itemId, productName, quantity, modifiersSummary, kitchenComment, status, cancelledQuantity }
 
     public init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
@@ -58,6 +63,8 @@ public struct KitchenTicketItem: Codable, Identifiable, Hashable, Sendable {
         quantity = try c.decodeIfPresent(Int.self, forKey: .quantity) ?? 1
         modifiersSummary = try c.decodeIfPresent(String.self, forKey: .modifiersSummary)
         kitchenComment = try c.decodeIfPresent(String.self, forKey: .kitchenComment)
+        status = try c.decodeIfPresent(TicketItemStatus.self, forKey: .status) ?? .pending
+        cancelledQuantity = try c.decodeIfPresent(Int.self, forKey: .cancelledQuantity) ?? 0
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -67,6 +74,8 @@ public struct KitchenTicketItem: Codable, Identifiable, Hashable, Sendable {
         try c.encode(quantity, forKey: .quantity)
         try c.encodeIfPresent(modifiersSummary, forKey: .modifiersSummary)
         try c.encodeIfPresent(kitchenComment, forKey: .kitchenComment)
+        try c.encode(status, forKey: .status)
+        try c.encode(cancelledQuantity, forKey: .cancelledQuantity)
     }
 }
 

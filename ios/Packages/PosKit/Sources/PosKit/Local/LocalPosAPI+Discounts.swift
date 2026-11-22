@@ -44,6 +44,11 @@ extension LocalPosAPI {
         }
     }
 
+    /// Provisoire (remplacé par la tâche 6 : mode autonome).
+    public func voidLine(orderId: UUID, lineId: UUID, quantity: Int, reason: String?, operatorId: UUID?) async throws {
+        throw APIError.server(status: 501, message: nil)
+    }
+
     /// Offre une ligne (gratuité). L'économie journalisée est `prix unitaire × quantité`, hors options (comme `CompOrderItemAsync`).
     public func compItem(orderId: UUID, lineId: UUID, reason: String, operatorId: UUID?) async throws {
         try requireManager()

@@ -127,7 +127,8 @@
 "order.happy_hour_pin_required" = "أدخل رمز PIN المشرف";
 "order.happy_hour_stopped" = "تم إيقاف Happy Hour";
 "order.item_comped" = "«%@» مجاني";
-"order.line_already_sent" = "الصنف مُرسل مسبقًا: استخدم «مجاني» لإلغائه.";
+"order.line_already_sent" = "الصنف أُرسل إلى المطبخ: الإلغاء مخصص للمدير.";
+"order.line_voided" = "%d × %@ أُلغي: %@";
 "order.load_error" = "تعذّر تحميل %@";
 "order.mode_eat_in" = "وضع في المطعم";
 "order.mode_takeaway" = "وضع السفري (VAT مخفّضة)";

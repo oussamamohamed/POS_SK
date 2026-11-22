@@ -160,23 +160,54 @@ public final class TicketStore {
         }
     }
 
-    public func decrement(_ lineId: UUID) {
-        guard let index = lines.firstIndex(where: { $0.id == lineId }) else { return }
-        guard lines[index].isDraft else {
-            notifier.warning(L10n.string("order.line_already_sent"))
-            return
-        }
+    /// Ligne envoyée en cuisine que le manager veut annuler : la vue ouvre la feuille d'annulation.
+    public var voidCandidate: UUID?
+
+    /// Seul un manager ou un admin peut annuler une ligne déjà envoyée en cuisine.
+    public func canVoid(_ line: CartLine) -> Bool { line.isDispatched && session.isManager }
+
+    /// Retire une unité. Brouillon : local. Ligne enregistrée non envoyée : correction par l'API (la tâche renvoyée permet d'attendre).
+    /// Ligne envoyée : feuille d'annulation pour un manager, refus sinon.
+    @discardableResult
+    public func decrement(_ lineId: UUID) -> Task<Void, Never>? {
+        guard let index = lines.firstIndex(where: { $0.id == lineId }) else { return nil }
+        guard lines[index].isDraft else { return correctOrAskVoid(lines[index], quantity: 1) }
         lines[index].quantity -= 1
         if lines[index].quantity <= 0 { lines.remove(at: index) }
+        return nil
     }
 
-    public func remove(_ lineId: UUID) {
-        guard let index = lines.firstIndex(where: { $0.id == lineId }) else { return }
-        guard lines[index].isDraft else {
-            notifier.warning(L10n.string("order.line_already_sent"))
-            return
-        }
+    @discardableResult
+    public func remove(_ lineId: UUID) -> Task<Void, Never>? {
+        guard let index = lines.firstIndex(where: { $0.id == lineId }) else { return nil }
+        guard lines[index].isDraft else { return correctOrAskVoid(lines[index], quantity: lines[index].quantity) }
         lines.remove(at: index)
+        return nil
+    }
+
+    private func correctOrAskVoid(_ line: CartLine, quantity: Int) -> Task<Void, Never>? {
+        if line.isDispatched {
+            if canVoid(line) { voidCandidate = line.id } else { notifier.warning(L10n.string("order.line_already_sent")) }
+            return nil
+        }
+        return Task { _ = await voidLine(lineId: line.id, quantity: quantity, reason: nil) }
+    }
+
+    /// Annule (ligne envoyée, motif obligatoire) ou corrige (non envoyée) `quantity` unités, puis relit la commande.
+    public func voidLine(lineId: UUID, quantity: Int, reason: String?) async -> Bool {
+        guard let line = lines.first(where: { $0.id == lineId }), let serverLineId = line.serverLineId else { return false }
+        let trimmed = reason?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        if line.isDispatched, trimmed.isEmpty { return false }
+        let ok = await run {
+            guard let orderId else { throw APIError.notFound(L10n.string("order.no_active_order")) }
+            try await api.voidLine(orderId: orderId, lineId: serverLineId, quantity: quantity, reason: line.isDispatched ? trimmed : nil, operatorId: session.currentOperator?.id)
+            if let order = try await api.activeOrder(table: tableNumber) { hydrate(order) }
+        }
+        if ok {
+            voidCandidate = nil
+            if line.isDispatched { notifier.success(String(format: L10n.string("order.line_voided"), quantity, line.name, trimmed)) }
+        }
+        return ok
     }
 
     public func cycleCourse(_ lineId: UUID) {

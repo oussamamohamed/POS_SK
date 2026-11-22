@@ -127,7 +127,8 @@
 "order.happy_hour_pin_required" = "Enter the supervisor PIN";
 "order.happy_hour_stopped" = "Happy Hour stopped";
 "order.item_comped" = "“%@” comped";
-"order.line_already_sent" = "Item already sent: use “Comp” to cancel it.";
+"order.line_already_sent" = "Item already sent to the kitchen: cancelling is reserved for the manager.";
+"order.line_voided" = "%d × %@ cancelled: %@";
 "order.load_error" = "Unable to load %@";
 "order.mode_eat_in" = "Eat-in mode";
 "order.mode_takeaway" = "Takeaway mode (reduced VAT)";

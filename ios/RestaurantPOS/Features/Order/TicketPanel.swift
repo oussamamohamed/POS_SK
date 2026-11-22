@@ -28,8 +28,10 @@ struct TicketPanel: View {
                             ForEach(ticket.lines.filter { $0.course == course }) { line in
                                 TicketLineRow(line: line, destination: ticket.destination)
                                     .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                                        if line.isDraft {
+                                        if !line.isDispatched {
                                             Button(role: .destructive) { ticket.remove(line.id) } label: { Label("common.delete", systemImage: "trash") }
+                                        } else if ticket.canVoid(line) {
+                                            Button(role: .destructive) { ticket.voidCandidate = line.id } label: { Label("order.line_void_action", systemImage: "xmark.circle") }
                                         }
                                     }
                                     .listRowInsets(EdgeInsets(top: Theme.Space.s, leading: Theme.Space.l, bottom: Theme.Space.s, trailing: Theme.Space.l))
@@ -67,6 +69,12 @@ struct TicketPanel: View {
             case .held: HeldOrdersSheet()
             case .hold: HoldSheet()
             }
+        }
+        .sheet(item: Binding(
+            get: { ticket.voidCandidate.flatMap { id in ticket.lines.first { $0.id == id } } },
+            set: { if $0 == nil { ticket.voidCandidate = nil } }
+        )) { line in
+            LineVoidSheet(line: line)
         }
         .fullScreenCover(item: $counterOutcome) { outcome in
             ChangeOverlay(outcome: outcome) {
@@ -298,7 +306,6 @@ struct TicketLineRow: View {
                 Button { ticket.decrement(line.id) } label: {
                     Image(systemName: "minus").frame(width: 36, height: 40)
                 }
-                .disabled(!line.isDraft)
                 .accessibilityIdentifier("line.minus.\(line.name)")
                 Text("\(line.quantity)")
                     .font(Font.posMono(15, .semibold))
