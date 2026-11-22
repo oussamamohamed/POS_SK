@@ -126,6 +126,8 @@ public static class HospitalityEndpoints
                     return Results.Json(new { Success = false, Message = Texts.T("errors.authorization_insufficient") }, statusCode: StatusCodes.Status403Forbidden);
                 case OrderLineVoidOutcome.ReasonRequired:
                     return Results.BadRequest(new { Success = false, Message = Texts.T("errors.line_void_reason_required") });
+                case OrderLineVoidOutcome.ReasonTooLong:
+                    return Results.BadRequest(new { Success = false, Message = Texts.T("errors.line_void_reason_too_long", ("max", OrderLineVoid.MaxReasonLength)) });
                 case OrderLineVoidOutcome.InvalidQuantity:
                     return Results.BadRequest(new { Success = false, Message = Texts.T("errors.line_void_quantity_invalid") });
                 case OrderLineVoidOutcome.OrderHasReceipts:

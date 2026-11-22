@@ -610,4 +610,7 @@
   <data name="errors.line_void_quantity_invalid" xml:space="preserve">
     <value>The quantity to remove must be between 1 and the line quantity.</value>
   </data>
+  <data name="errors.line_void_reason_too_long" xml:space="preserve">
+    <value>The reason cannot exceed {max} characters.</value>
+  </data>
 </root>

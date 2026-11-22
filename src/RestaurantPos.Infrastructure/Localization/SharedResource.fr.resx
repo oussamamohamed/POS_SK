@@ -610,4 +610,7 @@
   <data name="errors.line_void_quantity_invalid" xml:space="preserve">
     <value>La quantité à retirer doit être comprise entre 1 et celle de la ligne.</value>
   </data>
+  <data name="errors.line_void_reason_too_long" xml:space="preserve">
+    <value>Le motif ne peut pas dépasser {max} caractères.</value>
+  </data>
 </root>

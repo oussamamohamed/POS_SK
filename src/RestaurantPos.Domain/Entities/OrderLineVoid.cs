@@ -7,6 +7,9 @@ namespace RestaurantPos.Domain.Entities;
 /// <summary>Trace d'une ligne envoyée en cuisine puis annulée (retirée de la commande) : copie de l'article, motif et opérateur.</summary>
 public class OrderLineVoid
 {
+    /// <summary>Longueur maximale du motif (après suppression des espaces), comme <c>OrderDiscountAudit.Reason</c> : il entre dans le JET haché.</summary>
+    public const int MaxReasonLength = 256;
+
     public Guid Id { get; init; } = UuidV7.NewGuid();
     public Guid OrderId { get; set; }
     public Guid OrderItemId { get; set; }

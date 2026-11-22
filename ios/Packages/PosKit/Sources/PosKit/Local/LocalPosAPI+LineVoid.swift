@@ -1,5 +1,12 @@
 import Foundation
 
+/// Règles partagées avec `OrderLineVoid.MaxReasonLength` (.NET) : motif limité à 256 unités UTF-16 après suppression des espaces
+/// (même compte que `string.Length` en C# et que `maxlength` du navigateur).
+public enum OrderLineVoidRules {
+    public static let maxReasonLength = 256
+    static let reasonTooLongMessage = "Le motif ne peut pas dépasser 256 caractères."
+}
+
 extension LocalPosAPI {
     private static func lineVoidError(_ status: Int, _ message: String) -> APIError { .server(status: status, message: message) }
 
@@ -32,6 +39,7 @@ extension LocalPosAPI {
             guard member.role.isManager else { throw APIError.forbidden("Autorisation insuffisante : code PIN superviseur ou gérant requis.") }
             let trimmed = (reason ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
             guard !trimmed.isEmpty else { throw Self.lineVoidError(400, "Le motif est obligatoire pour annuler une ligne envoyée en cuisine.") }
+            guard trimmed.utf16.count <= OrderLineVoidRules.maxReasonLength else { throw Self.lineVoidError(400, OrderLineVoidRules.reasonTooLongMessage) }
 
             // Article de bon encore actif pour la ligne (absent pour une ligne envoyée avant `OrderItemId`).
             let ticketItem = try db.query(

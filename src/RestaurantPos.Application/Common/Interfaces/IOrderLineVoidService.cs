@@ -11,6 +11,7 @@ public enum OrderLineVoidOutcome
     NotFound,
     Forbidden,
     ReasonRequired,
+    ReasonTooLong,
     InvalidQuantity,
     OrderHasReceipts,
     NotModifiable

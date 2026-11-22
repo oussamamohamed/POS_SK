@@ -403,6 +403,7 @@ public class AppDbContext : DbContext
             entity.HasKey(v => v.Id);
             entity.Property(v => v.UnitPrice)
                   .HasConversion(m => m.AmountInCents, cents => new Money(cents, "EUR"));
+            entity.Property(v => v.Reason).HasMaxLength(OrderLineVoid.MaxReasonLength).IsRequired();
             entity.HasIndex(v => v.OrderId);
         });
 

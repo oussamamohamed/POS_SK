@@ -49,6 +49,8 @@ public class OrderLineVoidService : IOrderLineVoidService
             var op = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == operatorId, txCt).ConfigureAwait(false);
             if (op is null || !op.CanVoidItems()) return Result(OrderLineVoidOutcome.Forbidden);
             if (string.IsNullOrWhiteSpace(reason)) return Result(OrderLineVoidOutcome.ReasonRequired);
+            reason = reason.Trim();
+            if (reason.Length > OrderLineVoid.MaxReasonLength) return Result(OrderLineVoidOutcome.ReasonTooLong);
 
             // Article de bon encore actif pour cette ligne (nul pour une ligne envoyée avant OrderItemId).
             var ticketItem = await _dbContext.KitchenTicketItems
@@ -73,7 +75,7 @@ public class OrderLineVoidService : IOrderLineVoidService
                 ModifiersSummary = item.SelectedModifiers.Count > 0 ? string.Join(", ", item.SelectedModifiers) : null,
                 KitchenComment = item.KitchenComment,
                 PreparationStationId = item.PreparationStationId,
-                Reason = reason.Trim(),
+                Reason = reason,
                 OperatorId = op.Id,
                 OperatorName = op.Name,
                 ServerName = table?.AssignedWaiterName ?? string.Empty,
