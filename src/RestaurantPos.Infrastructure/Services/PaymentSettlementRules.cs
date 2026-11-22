@@ -33,6 +33,13 @@ public static class PaymentSettlementRules
         return IsSettleable(status) && tendersValid && tenders.Sum(t => t.AmountInCents) <= remainingCents;
     }
 
+    /// <summary>
+    /// Reste dû : ce que le prochain règlement doit encaisser pour solder la commande (TTC + pourboire conservé − règlements actifs, jamais négatif).
+    /// Le pourboire d'un reçu actif est dans <see cref="Order.TipAmount"/> et dans ses règlements ; un nouveau pourboire s'ajoute au règlement final.
+    /// </summary>
+    public static long DueCents(Order order, long paidCents) =>
+        Math.Max(0, order.TotalTtc.AmountInCents + order.TipAmount.AmountInCents - paidCents);
+
     /// <summary>Total déjà encaissé pour la commande : reçus non annulés (hors avoirs et reçus annulés).</summary>
     public static async Task<long> PaidCentsAsync(AppDbContext db, Guid orderId, CancellationToken ct = default)
     {

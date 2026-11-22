@@ -35,7 +35,9 @@ public record ActiveTableOrderDto(
     string? GlobalDiscountReason = null,
     OrderDestination Destination = OrderDestination.Takeaway,
     string? PickupNumber = null,
-    string? PickupBuzzer = null
+    string? PickupBuzzer = null,
+    decimal AmountPaidTtc = 0.0m,
+    decimal AmountDueTtc = 0.0m
 );
 
 public record ActiveOrderLineDto(

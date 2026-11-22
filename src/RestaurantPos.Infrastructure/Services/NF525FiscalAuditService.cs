@@ -376,7 +376,7 @@ public class NF525FiscalAuditService : INF525FiscalAuditService
         {
             var hold = held.Where(h => h.OrderId == order.Id).OrderByDescending(h => h.HeldAtUtc).FirstOrDefault();
             if (hold is { IsVoided: true }) continue;   // panier annulé au code superviseur : la commande reste Open mais n'est plus à encaisser
-            var remaining = order.TotalTtc.AmountInCents + order.TipAmount.AmountInCents - paid.GetValueOrDefault(order.Id);
+            var remaining = PaymentSettlementRules.DueCents(order, paid.GetValueOrDefault(order.Id));
             if (remaining <= 0) continue;               // commande entièrement offerte : rien à encaisser
             var label = hold is { IsRecalled: false } && !string.IsNullOrWhiteSpace(hold.CustomerLabel) ? hold.CustomerLabel : order.TableNumber;
             result.Add(new OpenOrderDto(order.Id, label, remaining));

@@ -295,6 +295,7 @@ public class TableManagementService : ITableManagementService
         decimal totalTtc = order.TotalTtc.ToDecimal();
         decimal totalHt = order.TotalHt.ToDecimal();
         decimal totalVat = totalTtc - totalHt;
+        long paidCents = await PaymentSettlementRules.PaidCentsAsync(_dbContext, order.Id, cancellationToken).ConfigureAwait(false);
 
         return new ActiveTableOrderDto(
             order.Id,
@@ -311,7 +312,9 @@ public class TableManagementService : ITableManagementService
             order.GlobalDiscountReason,
             order.Destination,
             order.PickupNumber,
-            order.PickupBuzzer
+            order.PickupBuzzer,
+            Money.FromCents(paidCents).ToDecimal(),
+            Money.FromCents(PaymentSettlementRules.DueCents(order, paidCents)).ToDecimal()
         );
     }
 
