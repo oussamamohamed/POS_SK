@@ -8,13 +8,14 @@ private struct FixtureInputProbe: Decodable {
     var order: TicketOrder?
     var settings: TicketSettings?
     var kitchen: TicketKitchen?
+    var voidLine: TicketVoidLine?
     var summary: TicketReportSummary?
     var closure: TicketDailyClosure?
     var periodClosure: TicketPeriodClosure?
     var reportData: ReportPrintData?
 
     var decodedMembers: Int {
-        [receipt != nil, order != nil, settings != nil, kitchen != nil,
+        [receipt != nil, order != nil, settings != nil, kitchen != nil, voidLine != nil,
          summary != nil, closure != nil, periodClosure != nil, reportData != nil].filter { $0 }.count
     }
 }

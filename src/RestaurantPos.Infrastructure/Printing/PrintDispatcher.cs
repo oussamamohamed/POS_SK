@@ -119,6 +119,43 @@ public sealed class PrintDispatcher
         }
     }
 
+    /// <summary>Bon d'annulation d'une ligne envoyée : poste de la ligne (ligne, article, famille, cuisine chaude), jamais de tiroir-caisse, jamais d'exception.</summary>
+    public async Task QueueKitchenCancellationAsync(Guid voidId, CancellationToken ct = default)
+    {
+        try
+        {
+            var line = await _db.OrderLineVoids.AsNoTracking().FirstAsync(v => v.Id == voidId, ct).ConfigureAwait(false);
+            var product = await _db.Products.AsNoTracking().Where(p => p.Id == line.ProductId).Select(p => new { p.PreparationStationId, p.CategoryId }).FirstOrDefaultAsync(ct).ConfigureAwait(false);
+            var categoryStation = product is null ? null
+                : await _db.Categories.AsNoTracking().Where(c => c.Id == product.CategoryId).Select(c => c.PreparationStationId).FirstOrDefaultAsync(ct).ConfigureAwait(false);
+            var station = PreparationStations.Resolve(line.PreparationStationId, product?.PreparationStationId, categoryStation);
+            var printers = (await _db.PrinterConfigurations.AsNoTracking().Where(p => p.IsActive).ToListAsync(ct).ConfigureAwait(false))
+                .Where(p => p.AssignedStationIds.Contains(station)).ToList();
+            if (printers.Count == 0)
+            {
+                PrintLog.NoPrinter(_logger, station);
+                return;
+            }
+            var language = (await _settings.GetAsync(ct).ConfigureAwait(false)).KitchenTicketLanguage;
+            var document = TicketDocumentBuilder.KitchenCancellation(line, line.OperatorName, language);
+            foreach (var printer in printers)
+            {
+                try
+                {
+                    await _queue.EnqueueAsync(printer.Id, PrintJobKind.KitchenTicket, document, false, ct).ConfigureAwait(false);
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException)
+                {
+                    PrintLog.QueueFailed(_logger, ex);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            PrintLog.QueueFailed(_logger, ex);
+        }
+    }
+
     /// <summary>Allergènes des plats des bons, si l'option est active (désactivée par défaut) ; <c>null</c> sinon.</summary>
     private async Task<TicketDocumentBuilder.KitchenAllergens?> LoadKitchenAllergensAsync(IReadOnlyList<KitchenTicket> tickets, CancellationToken ct)
     {

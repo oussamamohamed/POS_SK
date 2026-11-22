@@ -155,6 +155,27 @@ enum TicketBuilder {
         return document(lang, lines)
     }
 
+    /// Bon d'annulation d'une ligne envoyée : miroir de `TicketDocumentBuilder.KitchenCancellation` (.NET).
+    static func kitchenCancellation(_ line: TicketVoidLine, operatorName: String, language: String, context: TicketContext) -> TicketDocument {
+        let lang = resolve(language)
+        var lines: [TicketLine] = [
+            .text(text(lang, "kitchen_ticket.cancellation_title"), align: .center, bold: true, large: true),
+            .text(text(lang, "kitchen_ticket.table", ["table": line.tableNumber]), align: .center, large: true),
+        ]
+        if !isBlank(line.serverName) { lines.append(.columns(label: text(lang, "kitchen_ticket.server"), value: line.serverName)) }
+        lines.append(.columns(label: text(lang, "kitchen_ticket.cancelled_by"), value: operatorName))
+        lines.append(.columns(label: text(lang, "kitchen_ticket.time"), value: TicketFormat.localTime(line.voidedAtUtc, in: context.timeZone)))
+        lines.append(.separator())
+        lines.append(.text("-\(line.quantity)  \(line.productName)", large: true))
+        if let modifiers = line.modifiersSummary, !isBlank(modifiers) { lines.append(.text("+ " + modifiers)) }
+        if let comment = line.kitchenComment, !isBlank(comment) {
+            lines.append(.text(text(lang, "kitchen_ticket.comment", ["comment": comment]), bold: true))
+        }
+        lines.append(.separator())
+        lines.append(.text(text(lang, "kitchen_ticket.cancellation_reason", ["reason": line.reason]), bold: true))
+        return document(lang, lines)
+    }
+
     /// « non renseignés » (≠ « aucun ») s'imprime ; un plat déclaré sans allergène n'ajoute rien.
     private static func appendKitchenAllergens(_ lines: inout [TicketLine], _ lang: String, _ productId: UUID?, _ allergens: TicketKitchenAllergens) {
         // Le .NET écrit les identifiants en minuscules ; la comparaison ne dépend pas de la casse.

@@ -153,6 +153,28 @@ public class TicketDocumentBuilderTests
         text.Should().StartWith(header).And.Contain("A-12").And.Contain(buzzer);
     }
 
+    [Theory]
+    [InlineData("en", "*** CANCELLATION ***", "Cancelled by", "Reason: Wrong dish")]
+    [InlineData("fr", "*** ANNULATION ***", "Annulé par", "Motif : Plat erroné")]
+    [InlineData("ar", "*** إلغاء ***", "ألغاه", "السبب: Plat erroné")]
+    public void KitchenCancellation_RendersTitleTableOperatorQuantityAndReason(string lang, string title, string cancelledBy, string reason)
+    {
+        var line = new OrderLineVoid
+        {
+            OrderId = Guid.NewGuid(), ProductName = "Burger Rossini", Quantity = 2, ModifiersSummary = "Saignant", KitchenComment = "Sans oignon",
+            Reason = lang == "en" ? "Wrong dish" : "Plat erroné", OperatorName = "Léa", ServerName = "Julie", TableNumber = "T05",
+            VoidedAtUtc = Dispatched
+        };
+        var doc = TicketDocumentBuilder.KitchenCancellation(line, "Léa", lang);
+
+        doc.RightToLeft.Should().Be(lang == "ar");
+        doc.Lines[0].Should().BeOfType<TicketText>().Which.Should().Match<TicketText>(t => t.Text == title && t.Bold);
+        var text = AllText(doc);
+        text.Should().Contain("T05").And.Contain("Julie").And.Contain(cancelledBy).And.Contain("Léa")
+            .And.Contain(Dispatched.ToLocalTime().ToString("HH:mm", CultureInfo.InvariantCulture))
+            .And.Contain("-2  Burger Rossini").And.Contain("+ Saignant").And.Contain("Sans oignon").And.Contain(reason);
+    }
+
     [Fact]
     public void Receipt_HasFiscalContent_WithoutPickupCoupon()
     {

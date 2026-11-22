@@ -58,6 +58,18 @@ struct TicketKitchenAllergens: Codable, Equatable, Sendable {
     var disclaimer: String?
 }
 
+/// Ligne envoyée en cuisine puis annulée (copie de l'`OrderLineVoid` du .NET utile au bon d'annulation).
+struct TicketVoidLine: Codable, Equatable, Sendable {
+    var productName: String
+    var quantity: Int
+    var modifiersSummary: String?
+    var kitchenComment: String?
+    var reason: String
+    var serverName: String
+    var tableNumber: String
+    var voidedAtUtc: Date
+}
+
 struct TicketKitchen: Codable, Equatable, Sendable {
     var serverName: String
     var coversCount: Int

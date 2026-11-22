@@ -26,6 +26,9 @@
       "kitchen_ticket.allergens": "ALLERGENS: {list}",
       "kitchen_ticket.allergens_unknown": "ALLERGENS NOT DECLARED",
       "kitchen_ticket.buzzer": "Buzzer {buzzer}",
+      "kitchen_ticket.cancellation_reason": "Reason: {reason}",
+      "kitchen_ticket.cancellation_title": "*** CANCELLATION ***",
+      "kitchen_ticket.cancelled_by": "Cancelled by",
       "kitchen_ticket.comment": "Note: {comment}",
       "kitchen_ticket.course_dessert": "Dessert",
       "kitchen_ticket.course_direct": "Now",
@@ -108,6 +111,9 @@
       "kitchen_ticket.allergens": "ALLERGÈNES : {list}",
       "kitchen_ticket.allergens_unknown": "ALLERGÈNES NON RENSEIGNÉS",
       "kitchen_ticket.buzzer": "Bipeur {buzzer}",
+      "kitchen_ticket.cancellation_reason": "Motif : {reason}",
+      "kitchen_ticket.cancellation_title": "*** ANNULATION ***",
+      "kitchen_ticket.cancelled_by": "Annulé par",
       "kitchen_ticket.comment": "Note : {comment}",
       "kitchen_ticket.course_dessert": "Dessert",
       "kitchen_ticket.course_direct": "Direct",
@@ -190,6 +196,9 @@
       "kitchen_ticket.allergens": "مسببات الحساسية: {list}",
       "kitchen_ticket.allergens_unknown": "مسببات الحساسية غير محددة",
       "kitchen_ticket.buzzer": "جهاز النداء {buzzer}",
+      "kitchen_ticket.cancellation_reason": "السبب: {reason}",
+      "kitchen_ticket.cancellation_title": "*** إلغاء ***",
+      "kitchen_ticket.cancelled_by": "ألغاه",
       "kitchen_ticket.comment": "ملاحظة: {comment}",
       "kitchen_ticket.course_dessert": "حلوى",
       "kitchen_ticket.course_direct": "فوري",
@@ -3874,6 +3883,247 @@
           {
             "type": "TicketSeparator",
             "cut": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "kitchen_cancellation_fr_full",
+      "kind": "kitchenCancellation",
+      "language": "fr",
+      "input": {
+        "voidLine": {
+          "productName": "Burger maison",
+          "quantity": 2,
+          "modifiersSummary": "Sans oignon, Bien cuit",
+          "kitchenComment": "Allergie arachides",
+          "reason": "Erreur de saisie",
+          "serverName": "Paul",
+          "tableNumber": "21",
+          "voidedAtUtc": "2025-01-15T19:45:00.000Z"
+        },
+        "operatorName": "Alexandre"
+      },
+      "expected": {
+        "language": "fr",
+        "rightToLeft": false,
+        "lines": [
+          {
+            "type": "TicketText",
+            "text": "*** ANNULATION ***",
+            "align": 1,
+            "bold": true,
+            "large": true
+          },
+          {
+            "type": "TicketText",
+            "text": "TABLE 21",
+            "align": 1,
+            "bold": false,
+            "large": true
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Serveur",
+            "value": "Paul"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Annulé par",
+            "value": "Alexandre"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Heure",
+            "value": "20:45"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "-2  Burger maison",
+            "align": 0,
+            "bold": false,
+            "large": true
+          },
+          {
+            "type": "TicketText",
+            "text": "+ Sans oignon, Bien cuit",
+            "align": 0,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Note : Allergie arachides",
+            "align": 0,
+            "bold": true,
+            "large": false
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Motif : Erreur de saisie",
+            "align": 0,
+            "bold": true,
+            "large": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "kitchen_cancellation_en_minimal",
+      "kind": "kitchenCancellation",
+      "language": "en",
+      "input": {
+        "voidLine": {
+          "productName": "Café",
+          "quantity": 1,
+          "modifiersSummary": null,
+          "kitchenComment": null,
+          "reason": "Client parti",
+          "serverName": "",
+          "tableNumber": "Comptoir",
+          "voidedAtUtc": "2025-07-15T10:30:45.000Z"
+        },
+        "operatorName": "Marie"
+      },
+      "expected": {
+        "language": "en",
+        "rightToLeft": false,
+        "lines": [
+          {
+            "type": "TicketText",
+            "text": "*** CANCELLATION ***",
+            "align": 1,
+            "bold": true,
+            "large": true
+          },
+          {
+            "type": "TicketText",
+            "text": "TABLE Comptoir",
+            "align": 1,
+            "bold": false,
+            "large": true
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Cancelled by",
+            "value": "Marie"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Time",
+            "value": "12:30"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "-1  Café",
+            "align": 0,
+            "bold": false,
+            "large": true
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Reason: Client parti",
+            "align": 0,
+            "bold": true,
+            "large": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "kitchen_cancellation_ar",
+      "kind": "kitchenCancellation",
+      "language": "ar",
+      "input": {
+        "voidLine": {
+          "productName": "Burger maison",
+          "quantity": 1,
+          "modifiersSummary": "بدون بصل",
+          "kitchenComment": null,
+          "reason": "طلب بالخطأ",
+          "serverName": "ليلى",
+          "tableNumber": "5",
+          "voidedAtUtc": "2025-07-15T20:05:00.000Z"
+        },
+        "operatorName": "ليلى"
+      },
+      "expected": {
+        "language": "ar",
+        "rightToLeft": true,
+        "lines": [
+          {
+            "type": "TicketText",
+            "text": "*** إلغاء ***",
+            "align": 1,
+            "bold": true,
+            "large": true
+          },
+          {
+            "type": "TicketText",
+            "text": "طاولة 5",
+            "align": 1,
+            "bold": false,
+            "large": true
+          },
+          {
+            "type": "TicketColumns",
+            "label": "النادل",
+            "value": "ليلى"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "ألغاه",
+            "value": "ليلى"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "الوقت",
+            "value": "22:05"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "-1  Burger maison",
+            "align": 0,
+            "bold": false,
+            "large": true
+          },
+          {
+            "type": "TicketText",
+            "text": "+ بدون بصل",
+            "align": 0,
+            "bold": false,
+            "large": false
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "السبب: طلب بالخطأ",
+            "align": 0,
+            "bold": true,
+            "large": false
           }
         ]
       }

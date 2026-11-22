@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using RestaurantPos.Api.Hubs;
 using RestaurantPos.Application.Common.Interfaces;
 using RestaurantPos.Application.DTOs;
@@ -109,6 +110,8 @@ public static class HospitalityEndpoints
             IOrderLineVoidService voidService,
             AppDbContext db,
             IHubContext<KitchenHub> hubContext,
+            PrintDispatcher printing,
+            ILogger<PrintDispatcher> logger,
             System.Security.Claims.ClaimsPrincipal user) =>
         {
             var subClaim = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? user.FindFirst("sub")?.Value;
@@ -134,8 +137,23 @@ public static class HospitalityEndpoints
             var order = await db.Orders.AsNoTracking().Include(o => o.Items).FirstAsync(o => o.Id == orderId);
             if (result.Outcome == OrderLineVoidOutcome.Voided)
             {
-                await hubContext.Clients.All.SendAsync("ReceiveKitchenUpdate", "ITEM_VOIDED", order.TableNumber);
-                // Tâche 3: bon d'annulation
+                // L'annulation est validée : ni la diffusion ni l'impression ne doivent la transformer en erreur.
+                try
+                {
+                    await hubContext.Clients.All.SendAsync("ReceiveKitchenUpdate", "ITEM_VOIDED", order.TableNumber);
+                }
+                catch (Exception ex)
+                {
+                    HospitalityLogMessages.VoidBroadcastFailed(logger, ex, orderId);
+                }
+                try
+                {
+                    await printing.QueueKitchenCancellationAsync(result.VoidId!.Value);
+                }
+                catch (Exception ex)
+                {
+                    HospitalityLogMessages.VoidSlipFailed(logger, ex, orderId);
+                }
             }
             return Results.Ok(new { Success = true, result.VoidId, TotalTtc = order.TotalTtc.ToDecimal() });
         });
@@ -254,4 +272,13 @@ public static class HospitalityEndpoints
             }
         });
     }
+}
+
+internal static partial class HospitalityLogMessages
+{
+    [LoggerMessage(EventId = 7001, Level = LogLevel.Warning, Message = "Diffusion ITEM_VOIDED impossible pour la commande {OrderId} ; l'annulation est enregistrée.")]
+    public static partial void VoidBroadcastFailed(ILogger logger, Exception exception, Guid orderId);
+
+    [LoggerMessage(EventId = 7002, Level = LogLevel.Warning, Message = "Bon d'annulation non mis en file pour la commande {OrderId} ; l'annulation est enregistrée.")]
+    public static partial void VoidSlipFailed(ILogger logger, Exception exception, Guid orderId);
 }

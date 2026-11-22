@@ -283,6 +283,9 @@ public class TicketDocumentReferenceFixtureTests
         var table = SampleOrder(OrderDestination.EatIn, "21", null, null,
             Item("Salade César", 1, 1100, Salad, CourseType.Suite), Item("Tiramisu", 1, 600, Tiramisu, CourseType.Dessert), Item("Café", 1, 250, Coffee, CourseType.OnDemand));
         var ar = SampleOrder(OrderDestination.EatIn, "5", null, null, Item("Burger maison", 1, 1450, Burger));
+        Scenario Cancellation(string name, string lang, OrderLineVoid line) =>
+            new(name, "kitchenCancellation", lang, new { voidLine = InVoid(line), operatorName = line.OperatorName },
+                TicketDocumentBuilder.KitchenCancellation(line, line.OperatorName, lang));
         return
         [
             Kitchen("kitchen_takeaway_pickup_buzzer_comment", "en", takeaway,
@@ -305,7 +308,14 @@ public class TicketDocumentReferenceFixtureTests
                 new TicketDocumentBuilder.KitchenAllergens(new Dictionary<Guid, TicketDocumentBuilder.ProductAllergens> { [Burger] = new(true, (1 << 0) | (1 << 6) | (1 << 13)) }, null)),
             Kitchen("kitchen_allergens_ar", "ar", ar,
                 SampleKitchen("ليلى", 2, "2025-07-15T20:05:00.000Z", ("Burger maison", 1, Burger, null, null)),
-                new TicketDocumentBuilder.KitchenAllergens(new Dictionary<Guid, TicketDocumentBuilder.ProductAllergens> { [Burger] = new(true, (1 << 6) | (1 << 10)) }, null))
+                new TicketDocumentBuilder.KitchenAllergens(new Dictionary<Guid, TicketDocumentBuilder.ProductAllergens> { [Burger] = new(true, (1 << 6) | (1 << 10)) }, null)),
+            // Bon d'annulation : complet (serveur, options, note), minimal (sans serveur ni option), arabe.
+            Cancellation("kitchen_cancellation_fr_full", "fr",
+                SampleVoid("Burger maison", 2, "Sans oignon, Bien cuit", "Allergie arachides", "Erreur de saisie", "Alexandre", "Paul", "21", "2025-01-15T19:45:00.000Z")),
+            Cancellation("kitchen_cancellation_en_minimal", "en",
+                SampleVoid("Café", 1, null, null, "Client parti", "Marie", "", "Comptoir", "2025-07-15T10:30:45.000Z")),
+            Cancellation("kitchen_cancellation_ar", "ar",
+                SampleVoid("Burger maison", 1, "بدون بصل", null, "طلب بالخطأ", "ليلى", "ليلى", "5", "2025-07-15T20:05:00.000Z"))
         ];
     }
 
@@ -470,6 +480,21 @@ public class TicketDocumentReferenceFixtureTests
         totalHtCents = r.TotalHtAmount.AmountInCents,
         taxBreakdownJson = r.TaxBreakdownJson,
         signatureHash = r.SignatureHash
+    };
+
+    private static OrderLineVoid SampleVoid(string product, int quantity, string? modifiers, string? comment, string reason, string operatorName, string server, string table, string voidedAt) =>
+        new() { OrderId = Guid.Empty, ProductName = product, Quantity = quantity, ModifiersSummary = modifiers, KitchenComment = comment, Reason = reason, OperatorName = operatorName, ServerName = server, TableNumber = table, VoidedAtUtc = Utc(voidedAt) };
+
+    private static object InVoid(OrderLineVoid v) => new
+    {
+        productName = v.ProductName,
+        quantity = v.Quantity,
+        modifiersSummary = v.ModifiersSummary,
+        kitchenComment = v.KitchenComment,
+        reason = v.Reason,
+        serverName = v.ServerName,
+        tableNumber = v.TableNumber,
+        voidedAtUtc = Text(v.VoidedAtUtc)
     };
 
     private static object InKitchen(KitchenTicket t) => new

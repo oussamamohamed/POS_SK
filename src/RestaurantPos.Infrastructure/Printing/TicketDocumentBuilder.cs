@@ -378,6 +378,30 @@ public static class TicketDocumentBuilder
         return new TicketDocument(lang, lang == "ar", lines);
     }
 
+    /// <summary>Bon d'annulation d'une ligne déjà envoyée en cuisine : titre, table, serveur, opérateur, heure, quantité retirée, motif.</summary>
+    public static TicketDocument KitchenCancellation(OrderLineVoid line, string operatorName, string language)
+    {
+        ArgumentNullException.ThrowIfNull(line);
+        var (lang, c) = Resolve(language);
+        var lines = new List<TicketLine>
+        {
+            new TicketText(Texts.Get(c, "kitchen_ticket.cancellation_title"), TicketAlign.Center, Bold: true, Large: true),
+            new TicketText(Texts.Get(c, "kitchen_ticket.table", ("table", line.TableNumber)), TicketAlign.Center, Large: true)
+        };
+        if (!string.IsNullOrWhiteSpace(line.ServerName))
+            lines.Add(new TicketColumns(Texts.Get(c, "kitchen_ticket.server"), line.ServerName));
+        lines.Add(new TicketColumns(Texts.Get(c, "kitchen_ticket.cancelled_by"), operatorName));
+        lines.Add(new TicketColumns(Texts.Get(c, "kitchen_ticket.time"), line.VoidedAtUtc.ToLocalTime().ToString("HH:mm", CultureInfo.InvariantCulture)));
+        lines.Add(new TicketSeparator());
+        lines.Add(new TicketText($"-{line.Quantity}  {line.ProductName}", Large: true));
+        if (!string.IsNullOrWhiteSpace(line.ModifiersSummary)) lines.Add(new TicketText("+ " + line.ModifiersSummary));
+        if (!string.IsNullOrWhiteSpace(line.KitchenComment))
+            lines.Add(new TicketText(Texts.Get(c, "kitchen_ticket.comment", ("comment", line.KitchenComment)), Bold: true));
+        lines.Add(new TicketSeparator());
+        lines.Add(new TicketText(Texts.Get(c, "kitchen_ticket.cancellation_reason", ("reason", line.Reason)), Bold: true));
+        return new TicketDocument(lang, lang == "ar", lines);
+    }
+
     /// <summary>« non renseignés » (≠ « aucun ») s'imprime ; un plat déclaré sans allergène n'ajoute rien.</summary>
     private static void AppendKitchenAllergens(List<TicketLine> lines, CultureInfo c, Guid productId, KitchenAllergens allergens)
     {

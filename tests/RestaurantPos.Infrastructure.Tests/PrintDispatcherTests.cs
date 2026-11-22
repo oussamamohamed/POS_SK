@@ -190,6 +190,62 @@ public class PrintDispatcherTests
         db.PrintJobs.Should().BeEmpty();
     }
 
+    private static OrderLineVoid Void(AppDbContext db, string? station, Guid? productId = null)
+    {
+        var v = new OrderLineVoid { OrderId = Guid.NewGuid(), ProductId = productId ?? Guid.Empty, ProductName = "Burger", Quantity = 1, Reason = "Erreur", OperatorName = "Léa", TableNumber = "T05", PreparationStationId = station };
+        db.OrderLineVoids.Add(v);
+        db.SaveChanges();
+        return v;
+    }
+
+    [Fact]
+    public async Task KitchenCancellation_QueuesOneKitchenJobOnStationPrinter_NoDrawer()
+    {
+        var (d, db) = Create();
+        var bar = Printer(db, "Bar", ["BAR"], drawer: true);
+        Printer(db, "Chaud", ["HOT_KITCHEN"]);
+        await new RestaurantSettingsService(db).UpdateAsync(new UpdateRestaurantSettingsRequest("fr", "ar"));
+        var v = Void(db, "BAR");
+
+        await d.QueueKitchenCancellationAsync(v.Id);
+
+        var job = db.PrintJobs.Single();
+        job.PrinterId.Should().Be(bar.Id);
+        job.Kind.Should().Be(PrintJobKind.KitchenTicket);
+        job.OpenCashDrawer.Should().BeFalse();
+        TicketDocumentJson.Deserialize(job.DocumentJson).Language.Should().Be("ar");
+    }
+
+    [Fact]
+    public async Task KitchenCancellation_NoStationFallsBackToProductThenCategoryThenHotKitchen()
+    {
+        var (d, db) = Create();
+        var hot = Printer(db, "Chaud", ["HOT_KITCHEN"]);
+        var dessert = Printer(db, "Dessert", ["DESSERT"]);
+        db.Categories.Add(new Category { Id = "DES", Name = "Desserts", PreparationStationId = "DESSERT" });
+        var product = new Product { Name = "Tiramisu", CategoryId = "DES", Price = Money.FromCents(600) };
+        db.Products.Add(product);
+        db.SaveChanges();
+
+        await d.QueueKitchenCancellationAsync(Void(db, null, product.Id).Id);
+        await d.QueueKitchenCancellationAsync(Void(db, null).Id);
+
+        db.PrintJobs.Select(j => j.PrinterId).Should().BeEquivalentTo([dessert.Id, hot.Id]);
+    }
+
+    [Fact]
+    public async Task QueueKitchenCancellation_NoPrinter_DoesNotThrowAndQueuesNothing()
+    {
+        var (d, db) = Create();
+        Printer(db, "Bar", ["BAR"]);
+        var v = Void(db, "DESSERT");
+
+        await d.QueueKitchenCancellationAsync(v.Id);
+        await d.QueueKitchenCancellationAsync(Guid.NewGuid()); // bon inconnu : journalisé, jamais levé
+
+        db.PrintJobs.Should().BeEmpty();
+    }
+
     [Fact]
     public async Task ZClosure_QueuesReportOnReceiptPrinter_InReceiptLanguage_NoDrawer()
     {

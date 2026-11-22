@@ -143,6 +143,51 @@ public class OrderLineVoidTests : IClassFixture<PosApiApplicationFactory>
     }
 
     [Fact]
+    public async Task Void_SentLine_QueuesCancellationSlipOnStationPrinter()
+    {
+        Guid printerId;
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var printer = new PrinterConfiguration { Name = "Chaud-LV", IpAddress = "10.0.0.9", AssignedStationIds = ["HOT_KITCHEN"] };
+            db.PrinterConfigurations.Add(printer);
+            await db.SaveChangesAsync();
+            printerId = printer.Id;
+        }
+        var s = await SeedAsync();
+
+        (await VoidAsync(Manager(), s, 1, "erreur de saisie")).StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var jobs = await ReadAsync(db => db.PrintJobs.AsNoTracking().Where(j => j.PrinterId == printerId).ToListAsync());
+        var job = jobs.Should().ContainSingle().Subject;
+        job.Kind.Should().Be(RestaurantPos.Domain.Entities.PrintJobKind.KitchenTicket);
+        job.OpenCashDrawer.Should().BeFalse();
+        var texts = RestaurantPos.Infrastructure.Printing.TicketDocumentJson.Deserialize(job.DocumentJson).Lines.OfType<RestaurantPos.Infrastructure.Printing.TicketText>().Select(t => t.Text).ToList();
+        texts.Should().Contain("-1  Entrecôte").And.Contain("Motif : erreur de saisie");
+    }
+
+    [Fact]
+    public async Task Void_SentLine_HubFailure_StillReturnsOk()
+    {
+        var factory = _factory.WithWebHostBuilder(b => b.ConfigureServices(sv =>
+            sv.AddSingleton<Microsoft.AspNetCore.SignalR.IHubContext<RestaurantPos.Api.Hubs.KitchenHub>, ThrowingHub>()));
+        var s = await SeedAsync();
+        var client = factory.CreateClient();
+        client.DefaultRequestHeaders.Add("X-Test-Role", "FloorManager");
+        client.DefaultRequestHeaders.Add("X-Test-Operator-Id", _managerId.ToString());
+
+        (await VoidAsync(client, s, 1, "erreur de saisie")).StatusCode.Should().Be(HttpStatusCode.OK);
+
+        (await VoidsAsync(s.OrderId)).Should().ContainSingle();
+    }
+
+    private sealed class ThrowingHub : Microsoft.AspNetCore.SignalR.IHubContext<RestaurantPos.Api.Hubs.KitchenHub>
+    {
+        public Microsoft.AspNetCore.SignalR.IHubClients Clients => throw new InvalidOperationException("hub down");
+        public Microsoft.AspNetCore.SignalR.IGroupManager Groups => throw new InvalidOperationException("hub down");
+    }
+
+    [Fact]
     public async Task Void_SentLine_Partial_KeepsRemainder()
     {
         var s = await SeedAsync(quantity: 3);

@@ -436,6 +436,15 @@
   <data name="kitchen_ticket.comment" xml:space="preserve">
     <value>Note : {comment}</value>
   </data>
+  <data name="kitchen_ticket.cancellation_title" xml:space="preserve">
+    <value>*** ANNULATION ***</value>
+  </data>
+  <data name="kitchen_ticket.cancelled_by" xml:space="preserve">
+    <value>Annulé par</value>
+  </data>
+  <data name="kitchen_ticket.cancellation_reason" xml:space="preserve">
+    <value>Motif : {reason}</value>
+  </data>
   <data name="kitchen_ticket.course_direct" xml:space="preserve">
     <value>Direct</value>
   </data>
