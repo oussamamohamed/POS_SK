@@ -43,7 +43,7 @@ extension LocalPosAPI {
                                           modifiersSummary: $0.modifiersSummary.isEmpty ? nil : $0.modifiersSummary.joined(separator: ", "))
                     }
                 )
-                try kitchen.insert(ticket, productIds: group.lines.map(\.productId))
+                try kitchen.insert(ticket, productIds: group.lines.map(\.productId), orderItemIds: group.lines.map(\.lineId))
                 ids.append(ticket.id)
             }
             try orders.markDispatched(orderId: orderId)

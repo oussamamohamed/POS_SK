@@ -165,6 +165,41 @@ extension LocalPosAPI {
         }
     }
 
+    /// Bon d'annulation d'une ligne envoyée (`QueueKitchenCancellationAsync` du .NET) : poste ligne → article → famille → cuisine chaude, un job par
+    /// imprimante active du poste, jamais de tiroir. À appeler après la validation ; ne lève jamais, `false` si rien n'a été mis en file.
+    @discardableResult
+    func queueKitchenCancellation(voidId: UUID) -> Bool {
+        queueing {
+            guard let row = try db.query("SELECT * FROM OrderLineVoids WHERE Id = ?", [.uuid(voidId)]).first else { return false }
+            let fallback = try catalogRepository.stationFallbacks()[row.uuid("ProductId") ?? UUID()]
+            let station = LocalStations.resolve(item: row.string("PreparationStationId"), product: fallback?.product, category: fallback?.category)
+            let targets = try printerRepository.all().filter { $0.isActive && $0.assignedStationIds.contains(station) }
+            guard !targets.isEmpty else {
+                Self.printLog.warning("Aucune imprimante active pour le poste \(station, privacy: .public)")
+                return false
+            }
+            let line = TicketVoidLine(
+                productName: row.string("ProductName") ?? "", quantity: row.int("Quantity") ?? 1, modifiersSummary: row.string("ModifiersSummary"),
+                kitchenComment: row.string("KitchenComment"), reason: row.string("Reason") ?? "", serverName: row.string("ServerName") ?? "",
+                tableNumber: row.string("TableNumber") ?? "", voidedAtUtc: row.date("VoidedAtUtc") ?? clock()
+            )
+            let doc = TicketBuilder.kitchenCancellation(line, operatorName: row.string("OperatorName") ?? "", language: try floorRepository.settings().kitchenTicketLanguage,
+                                                        context: ticketContext)
+            var queued = false
+            for printer in targets {
+                do {
+                    try printQueue.enqueue(printerId: printer.id, kind: .kitchenTicket, documentJson: try TicketDocumentJSON.serialize(doc), openCashDrawer: false,
+                                           duplicateOfDocumentId: nil, duplicateNumber: nil, now: clock())
+                    queued = true
+                } catch {
+                    Self.logQueueFailure(error)
+                }
+            }
+            if queued { notifyPrintQueue() }
+            return queued
+        }
+    }
+
     /// `summary` : le résumé du rapport X (`LocalFiscalRepository.summary`) du poste `terminalId`.
     func queueXReport(summary: LocalFiscalRepository.FiscalSummary, terminalId: String) -> Bool {
         queueReport(documentId: nil) { settings in
@@ -292,7 +327,7 @@ extension LocalPosAPI {
         }
     }
 
-    private static func logQueueFailure(_ error: any Error) {
+    static func logQueueFailure(_ error: any Error) {
         printLog.error("Mise en file d'impression impossible : \(error.localizedDescription, privacy: .public)")
     }
 }

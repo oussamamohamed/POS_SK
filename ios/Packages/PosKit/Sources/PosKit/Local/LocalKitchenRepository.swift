@@ -17,8 +17,9 @@ enum LocalStations {
 struct LocalKitchenRepository {
     let db: SQLiteDatabase
 
-    /// `productIds` : un identifiant d'article par élément de `ticket.items`, dans le même ordre.
-    func insert(_ ticket: KitchenTicket, productIds: [UUID]) throws {
+    /// `productIds` : un identifiant d'article par élément de `ticket.items`, dans le même ordre. `orderItemIds` : la ligne de commande
+    /// d'origine de chaque élément (nil pour un bon sans ligne, ex. « réclame suite »).
+    func insert(_ ticket: KitchenTicket, productIds: [UUID], orderItemIds: [UUID?]? = nil) throws {
         guard ticket.items.count == productIds.count else {
             throw SQLiteError(code: -1, message: "Bon cuisine : \(ticket.items.count) articles pour \(productIds.count) identifiants")
         }
@@ -30,14 +31,14 @@ struct LocalKitchenRepository {
             [.uuid(ticket.id), .uuid(ticket.orderId), .text(ticket.tableNumber), .text(ticket.serverName ?? ""), .integer(ticket.coversCount ?? 1),
              .text(ticket.stationId), .integer(ticket.status.rawValue), .date(ticket.dispatchedAtUtc ?? Date())]
         )
-        for (item, productId) in zip(ticket.items, productIds) {
+        for (index, (item, productId)) in zip(ticket.items, productIds).enumerated() {
             try db.run(
                 """
-                INSERT INTO KitchenTicketItems (Id, TicketId, ProductId, ProductName, Quantity, ModifiersSummary, KitchenComment, Status)
-                VALUES (?, ?, ?, ?, ?, ?, ?, 0)
+                INSERT INTO KitchenTicketItems (Id, TicketId, ProductId, ProductName, Quantity, ModifiersSummary, KitchenComment, Status, OrderItemId)
+                VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?)
                 """,
                 [.uuid(item.id), .uuid(ticket.id), .uuid(productId), .text(item.productName), .integer(item.quantity),
-                 .string(item.modifiersSummary), .string(item.kitchenComment)]
+                 .string(item.modifiersSummary), .string(item.kitchenComment), .uuid(orderItemIds?[index])]
             )
         }
     }
@@ -49,7 +50,8 @@ struct LocalKitchenRepository {
             let items = try db.query("SELECT * FROM KitchenTicketItems WHERE TicketId = ? ORDER BY rowid", [.uuid(id)]).map {
                 KitchenTicketItem(
                     id: $0.uuid("Id")!, productName: $0.string("ProductName") ?? "", quantity: $0.int("Quantity") ?? 1,
-                    modifiersSummary: $0.string("ModifiersSummary"), kitchenComment: $0.string("KitchenComment")
+                    modifiersSummary: $0.string("ModifiersSummary"), kitchenComment: $0.string("KitchenComment"),
+                    status: TicketItemStatus(rawValue: $0.int("Status") ?? 0) ?? .pending, cancelledQuantity: $0.int("CancelledQuantity") ?? 0
                 )
             }
             return KitchenTicket(
