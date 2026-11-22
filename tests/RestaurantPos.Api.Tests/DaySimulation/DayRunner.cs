@@ -77,13 +77,23 @@ public sealed record DayRunResult(
     IReadOnlyDictionary<string, List<int>> ZClosureOpIndexes,
     IReadOnlyList<DayVoidAttempt> VoidAttempts,
     IReadOnlyDictionary<string, HttpClient> Clients,
-    DayManager Manager);
+    DayManager Manager,
+    IReadOnlyList<DayLineVoidAttempt> LineVoidAttempts,
+    IReadOnlyDictionary<string, List<Guid>> LineIds);
 
 /// <summary>Le responsable connecté du rejeu (PIN 1234) : permet aux tests de rappeler X, Z et les rapports après coup.</summary>
 public sealed record DayManager(Guid Id, string Name, string Token);
 
 /// <summary>Résultat d'une opération <c>void_receipt</c> : statut HTTP et code d'erreur renvoyés par l'API (null si la réponse n'en a pas).</summary>
 public sealed record DayVoidAttempt(int OpIndex, string Key, string? Ref, int Status, string? Code);
+
+/// <summary>
+/// Résultat d'une étape <see cref="DayLineVoid"/> : statut, code et message de l'API, total TTC renvoyé (centimes, nul sur un refus),
+/// numéros des reçus actifs de la commande à cet instant, et le X du poste juste avant et juste après l'étape.
+/// </summary>
+public sealed record DayLineVoidAttempt(
+    int OpIndex, string Key, string Ref, int Step, int Status, string? Code, string? Message, long? TotalCents,
+    IReadOnlyList<string> ActiveReceipts, JsonElement XBefore, JsonElement XAfter);
 
 /// <summary>Rejoue un <see cref="DayScenario"/> par l'API HTTP réelle (jamais par la base, sauf pour relire l'identifiant d'un reçu).</summary>
 public static class DayRunner
@@ -110,6 +120,13 @@ public static class DayRunner
         }
 
         run.Manager = await LoginAsync(run.Clients.Values.First(), ManagerPin);
+        if (scenario.Operations.Any(o => o.LineVoids is { Count: > 0 }))
+        {
+            // Une imprimante du poste chaud (station par défaut des lignes) : chaque annulation doit y poser son bon d'annulation.
+            await SendAsync(run.Clients.Values.First(), HttpMethod.Post, "/api/printers",
+                new PrinterRegistrationRequest("Cuisine chaude", "10.0.0.9", 9100, 80, false, ["HOT_KITCHEN"], true), run.Manager.Token);
+        }
+
         for (int i = 0; i < scenario.Operations.Count; i++)
         {
             var op = scenario.Operations[i];
@@ -125,7 +142,7 @@ public static class DayRunner
 
         return new DayRunResult(run.TerminalIds, run.XReports, run.ZClosures, run.LatestClosures, run.Receipts,
             run.XReportOpIndexes, run.ZClosureOpIndexes, run.VoidAttempts, run.Clients,
-            new DayManager(run.Manager.Id, run.Manager.Name, run.Manager.Token));
+            new DayManager(run.Manager.Id, run.Manager.Name, run.Manager.Token), run.LineVoidAttempts, run.LineIds);
     }
 
     /// <summary>Contexte d'échec commun à tous les messages : graine, index d'opération et terminal.</summary>
@@ -184,6 +201,16 @@ public static class DayRunner
 
     private sealed record Operator(Guid Id, string Name, string Token);
 
+    /// <summary>Une ligne du scénario et sa ligne côté serveur.</summary>
+    private sealed record DayServerLine(DayLine Line, Guid ProductId, Guid LineId);
+
+    /// <summary>État d'une commande dont le scénario annule ou corrige des lignes : lignes (rajouts compris), reçus émis et reçus annulés.</summary>
+    private sealed record LineVoidContext(DayOperation Op, int OpIndex, string Key, HttpClient Client, string Table, Guid OrderId, Operator Waiter, List<DayServerLine> Lines)
+    {
+        public List<DayReceipt> Receipts { get; } = [];
+        public List<string> VoidedReceipts { get; } = [];
+    }
+
     private sealed class Run(PosApiApplicationFactory factory)
     {
         private readonly Dictionary<string, Operator> _waiters = [];
@@ -198,6 +225,8 @@ public static class DayRunner
         public Dictionary<string, List<int>> XReportOpIndexes { get; } = [];
         public Dictionary<string, List<int>> ZClosureOpIndexes { get; } = [];
         public List<DayVoidAttempt> VoidAttempts { get; } = [];
+        public List<DayLineVoidAttempt> LineVoidAttempts { get; } = [];
+        public Dictionary<string, List<Guid>> LineIds { get; } = [];
         public Operator Manager { get; set; } = null!;
 
         public async Task ExecuteAsync(DayOperation op, int index)
@@ -208,10 +237,10 @@ public static class DayRunner
             switch (op.Type)
             {
                 case "table_order":
-                    await TableOrderAsync(op, key, client);
+                    await TableOrderAsync(op, key, client, index);
                     break;
                 case "counter_order":
-                    await CounterOrderAsync(op, key, client, terminalId);
+                    await CounterOrderAsync(op, key, client, terminalId, index);
                     break;
                 case "hold_then_void":
                     await HoldThenVoidAsync(op, client, terminalId);
@@ -234,7 +263,7 @@ public static class DayRunner
             }
         }
 
-        private async Task TableOrderAsync(DayOperation op, string key, HttpClient client)
+        private async Task TableOrderAsync(DayOperation op, string key, HttpClient client, int index)
         {
             var waiter = await WaiterAsync(client, op.Waiter!);
             var table = op.Table ?? throw new InvalidOperationException("table_order : table manquante");
@@ -256,11 +285,13 @@ public static class DayRunner
                     new SwitchDestinationRequest(Enum.Parse<OrderDestination>(op.Destination)), waiter.Token);
             }
 
-            await AddLinesAsync(op, client, table, orderId, waiter);
+            var lines = await AddLinesAsync(op, client, table, orderId, waiter);
+            var voids = new LineVoidContext(op, index, key, client, table, orderId, waiter, lines);
+            await StepsAsync(voids, "draft");
             await SendAsync(client, HttpMethod.Post, $"/api/tables/{table}/dispatch", null, waiter.Token);
+            await StepsAsync(voids, "sent");
 
             var payments = op.Payments ?? [];
-            var receipts = new List<DayReceipt>();
             for (int p = 0; p < payments.Count; p++)
             {
                 bool last = p == payments.Count - 1;
@@ -269,17 +300,28 @@ public static class DayRunner
                     payments[p].Select(t => new TenderItemRequest(Enum.Parse<PaymentMethod>(t.Method), Euros(t.AmountCents),
                         Euros(t.AmountCents + t.ExtraTenderedCents), Euros(t.ExtraTenderedCents))).ToList(),
                     TipAmount: last ? Euros(op.TipCents) : 0m), waiter.Token);
-                receipts.Add(await ReceiptAsync(paid));
+                voids.Receipts.Add(await ReceiptAsync(paid));
+                await AfterPaymentAsync(voids, p);
             }
 
-            await AfterPaymentsAsync(op, key, client, receipts);
+            await StepsAsync(voids, "paid");
+            await AfterPaymentsAsync(op, key, client, voids.Receipts);
         }
 
-        private async Task CounterOrderAsync(DayOperation op, string key, HttpClient client, string terminalId)
+        private async Task CounterOrderAsync(DayOperation op, string key, HttpClient client, string terminalId, int index)
         {
             var waiter = await WaiterAsync(client, op.Waiter!);
             var destination = Enum.Parse<OrderDestination>(op.Destination ?? nameof(OrderDestination.Takeaway));
-            var orderId = await OpenCounterAsync(op, client, terminalId, destination, waiter);
+            var (orderId, lines) = await OpenCounterAsync(op, client, terminalId, destination, waiter);
+            var voids = new LineVoidContext(op, index, key, client, "Comptoir", orderId, waiter, lines);
+            await StepsAsync(voids, "draft");
+            if (op.LineVoids?.Any(v => v.Phase != "draft") == true)
+            {
+                // Une vente comptoir n'est envoyée en cuisine que si le scénario y annule une ligne envoyée.
+                await SendAsync(client, HttpMethod.Post, "/api/tables/Comptoir/dispatch", null, waiter.Token);
+                await StepsAsync(voids, "sent");
+            }
+
             if (op.HoldAndRecall)
             {
                 var held = await SendAsync(client, HttpMethod.Post, "/api/orders/counter/hold",
@@ -288,7 +330,6 @@ public static class DayRunner
             }
 
             var payments = op.Payments ?? [];
-            var receipts = new List<DayReceipt>();
             for (int p = 0; p < payments.Count; p++)
             {
                 bool last = p == payments.Count - 1;
@@ -296,33 +337,35 @@ public static class DayRunner
                     orderId, terminalId, destination, null, null, last ? Euros(op.TipCents) : 0m, false, null,
                     payments[p].Select(t => new CounterPaymentTender(Enum.Parse<PaymentMethod>(t.Method), Euros(t.AmountCents),
                         Euros(t.AmountCents + t.ExtraTenderedCents))).ToList()), waiter.Token);
-                receipts.Add(await ReceiptAsync(paid));
+                voids.Receipts.Add(await ReceiptAsync(paid));
+                await AfterPaymentAsync(voids, p);
             }
 
-            await AfterPaymentsAsync(op, key, client, receipts);
+            await StepsAsync(voids, "paid");
+            await AfterPaymentsAsync(op, key, client, voids.Receipts);
         }
 
         private async Task HoldThenVoidAsync(DayOperation op, HttpClient client, string terminalId)
         {
             var waiter = await WaiterAsync(client, op.Waiter!);
             var destination = Enum.Parse<OrderDestination>(op.Destination ?? nameof(OrderDestination.Takeaway));
-            var orderId = await OpenCounterAsync(op, client, terminalId, destination, waiter);
+            var (orderId, _) = await OpenCounterAsync(op, client, terminalId, destination, waiter);
             var held = await SendAsync(client, HttpMethod.Post, "/api/orders/counter/hold",
                 new HoldCounterOrderRequest(orderId, terminalId, waiter.Id, "Client"), waiter.Token);
             await SendAsync(client, HttpMethod.Post, $"/api/orders/counter/held/{held.GetProperty("holdId").GetGuid()}/void",
                 new VoidHeldOrderRequest(ManagerPin, "Client parti", terminalId), waiter.Token);
         }
 
-        private async Task<Guid> OpenCounterAsync(DayOperation op, HttpClient client, string terminalId, OrderDestination destination, Operator waiter)
+        private async Task<(Guid OrderId, List<DayServerLine> Lines)> OpenCounterAsync(DayOperation op, HttpClient client, string terminalId, OrderDestination destination, Operator waiter)
         {
             var opened = await SendAsync(client, HttpMethod.Post, "/api/orders/counter/direct",
                 new DirectCounterOpenRequest(terminalId, destination), waiter.Token);
             var orderId = opened.GetProperty("orderId").GetGuid();
-            await AddLinesAsync(op, client, "Comptoir", orderId, waiter);
-            return orderId;
+            return (orderId, await AddLinesAsync(op, client, "Comptoir", orderId, waiter));
         }
 
-        private async Task AddLinesAsync(DayOperation op, HttpClient client, string table, Guid orderId, Operator waiter)
+        /// <summary>Ajoute les lignes (remise et offerts compris) ; rend, pour une commande qui annule ou corrige des lignes, la ligne serveur de chacune.</summary>
+        private async Task<List<DayServerLine>> AddLinesAsync(DayOperation op, HttpClient client, string table, Guid orderId, Operator waiter)
         {
             var lines = (op.Lines ?? []).Select(l => (Line: l, ProductId: Guid.NewGuid())).ToList();
             await SendAsync(client, HttpMethod.Post, $"/api/tables/{table}/items", new AddOrderItemsRequest(lines.Select(x =>
@@ -336,17 +379,104 @@ public static class DayRunner
                     new ApplyOrderDiscountRequest(Enum.Parse<DiscountType>(discount.Type), discount.Value, "Geste commercial", Manager.Id), Manager.Token);
             }
 
-            if (lines.Any(x => x.Line.Comp))
+            if (!lines.Any(x => x.Line.Comp) && op.LineVoids is not { Count: > 0 })
             {
-                var order = await SendAsync(client, HttpMethod.Get, $"/api/tables/{table}/order", null, waiter.Token);
-                var lineIds = order.GetProperty("lines").EnumerateArray()
-                    .ToDictionary(l => l.GetProperty("productId").GetGuid(), l => l.GetProperty("lineId").GetGuid());
-                foreach (var (_, productId) in lines.Where(x => x.Line.Comp))
+                return [];
+            }
+
+            var order = await SendAsync(client, HttpMethod.Get, $"/api/tables/{table}/order", null, waiter.Token);
+            var lineIds = order.GetProperty("lines").EnumerateArray()
+                .ToDictionary(l => l.GetProperty("productId").GetGuid(), l => l.GetProperty("lineId").GetGuid());
+            foreach (var (_, productId) in lines.Where(x => x.Line.Comp))
+            {
+                await SendAsync(client, HttpMethod.Post, $"/api/orders/{orderId}/items/{lineIds[productId]}/comp",
+                    new CompOrderItemRequest("Offert", Manager.Id), Manager.Token);
+            }
+
+            return lines.Select(x => new DayServerLine(x.Line, x.ProductId, lineIds[x.ProductId])).ToList();
+        }
+
+        /// <summary>Après un règlement : le premier d'une commande rouverte voit son reçu annulé puis les étapes <c>reopened</c> ; puis les étapes <c>part_paid</c>.</summary>
+        private async Task AfterPaymentAsync(LineVoidContext ctx, int payment)
+        {
+            if (payment != 0 || ctx.Op.LineVoids is not { Count: > 0 })
+            {
+                return;
+            }
+
+            if (DayLedgerOracle.IsReopened(ctx.Op))
+            {
+                var voided = await SendAsync(ctx.Client, HttpMethod.Post, $"/api/checkout/void/{ctx.Receipts[0].Id}",
+                    new VoidReceiptRequest(TerminalIds[ctx.Key], Manager.Id), Manager.Token);
+                Receipts[ctx.Key].Add(await ReceiptAsync(voided));
+                ctx.VoidedReceipts.Add(ctx.Receipts[0].Number);
+                await StepsAsync(ctx, "reopened");
+            }
+
+            await StepsAsync(ctx, "part_paid");
+        }
+
+        /// <summary>Joue les étapes d'une phase : refus compris, la réponse est enregistrée (statut, code, total) avec le X du poste avant et après.</summary>
+        private async Task StepsAsync(LineVoidContext ctx, string phase)
+        {
+            if (ctx.Op.LineVoids is not { Count: > 0 } steps)
+            {
+                return;
+            }
+
+            for (int i = 0; i < steps.Count; i++)
+            {
+                var step = steps[i];
+                if (step.Phase != phase)
                 {
-                    await SendAsync(client, HttpMethod.Post, $"/api/orders/{orderId}/items/{lineIds[productId]}/comp",
-                        new CompOrderItemRequest("Offert", Manager.Id), Manager.Token);
+                    continue;
+                }
+
+                var line = ctx.Lines[step.Line];
+                if (step.Legacy)
+                {
+                    // Ligne envoyée avant OrderItemId : la seule écriture directe en base du rejeu (aucune route ne peut produire ce cas).
+                    using var scope = factory.Services.CreateScope();
+                    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                    foreach (var item in await db.KitchenTicketItems.Where(t => t.OrderItemId == line.LineId).ToListAsync())
+                    {
+                        item.OrderItemId = null;
+                    }
+
+                    await db.SaveChangesAsync();
+                }
+
+                string terminalId = TerminalIds[ctx.Key];
+                var xBefore = await SendAsync(ctx.Client, HttpMethod.Get, $"/api/fiscal/x-report?terminalId={terminalId}", null, Manager.Token);
+                var (status, body) = await TrySendAsync(ctx.Client, HttpMethod.Post, $"/api/orders/{ctx.OrderId}/items/{line.LineId}/void",
+                    new VoidOrderItemRequest(step.Quantity, step.Reason), step.By == "waiter" ? ctx.Waiter.Token : Manager.Token);
+                var xAfter = await SendAsync(ctx.Client, HttpMethod.Get, $"/api/fiscal/x-report?terminalId={terminalId}", null, Manager.Token);
+                bool hasBody = body.ValueKind == JsonValueKind.Object;
+                string? Text(string name) => hasBody && body.TryGetProperty(name, out var v) && v.ValueKind == JsonValueKind.String ? v.GetString() : null;
+                long? total = status == 200 ? DayAssert.Cents(body.GetProperty("totalTtc")) : null;
+                LineVoidAttempts.Add(new DayLineVoidAttempt(ctx.OpIndex, ctx.Key, ctx.Op.Ref!, i, status, Text("code"), Text("message"), total,
+                    ctx.Receipts.Select(r => r.Number).Except(ctx.VoidedReceipts).ToList(), xBefore, xAfter));
+
+                if (step.ReAdd > 0)
+                {
+                    await ReAddAsync(ctx, line, step.ReAdd);
                 }
             }
+
+            LineIds[ctx.Op.Ref!] = ctx.Lines.Select(l => l.LineId).ToList();
+        }
+
+        /// <summary>Rajoute le même produit (même identifiant : la ligne envoyée n'est pas fusionnée) et l'envoie en cuisine : second bon.</summary>
+        private static async Task ReAddAsync(LineVoidContext ctx, DayServerLine line, int quantity)
+        {
+            var l = line.Line;
+            var known = ctx.Lines.Select(x => x.LineId).ToHashSet();
+            var order = await SendAsync(ctx.Client, HttpMethod.Post, $"/api/tables/{ctx.Table}/items", new AddOrderItemsRequest(
+                [new OrderItemInputDto(line.ProductId, l.Name, quantity, Euros(l.UnitPriceCents), l.TaxRatePercent, null, null,
+                    ModifiersPriceExtra: Euros(l.ModifiersExtraCents), TaxRateTakeawayPercent: l.TaxRateTakeawayPercent)]), ctx.Waiter.Token);
+            var added = order.GetProperty("lines").EnumerateArray().Select(x => x.GetProperty("lineId").GetGuid()).Single(id => !known.Contains(id));
+            ctx.Lines.Add(new DayServerLine(l with { Quantity = quantity, Comp = false }, line.ProductId, added));
+            await SendAsync(ctx.Client, HttpMethod.Post, $"/api/tables/{ctx.Table}/dispatch", null, ctx.Waiter.Token);
         }
 
         /// <summary>Annulation tardive du reçu d'une commande déjà réglée : on enregistre la réponse de l'API, refus compris.</summary>

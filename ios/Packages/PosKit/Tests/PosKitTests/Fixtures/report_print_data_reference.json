@@ -1580,12 +1580,37 @@
                   "totalTtcCents": 11231
                 },
                 {
+                  "productName": "Côte de bœuf",
+                  "quantity": 1,
+                  "totalTtcCents": 2800
+                },
+                {
                   "productName": "Plat",
                   "quantity": 1,
                   "totalTtcCents": 1003
+                },
+                {
+                  "productName": "Salade",
+                  "quantity": 1,
+                  "totalTtcCents": 900
+                },
+                {
+                  "productName": "Thé",
+                  "quantity": 1,
+                  "totalTtcCents": 300
+                },
+                {
+                  "productName": "Verre de vin",
+                  "quantity": 1,
+                  "totalTtcCents": 600
+                },
+                {
+                  "productName": "Vin rouge",
+                  "quantity": 2,
+                  "totalTtcCents": 1300
                 }
               ],
-              "subtotalTtcCents": 184289
+              "subtotalTtcCents": 190189
             }
           ],
           "tips": [
@@ -1650,24 +1675,58 @@
                   "totalTtcCents": 3844
                 },
                 {
+                  "productName": "Café",
+                  "quantity": 2,
+                  "totalTtcCents": 500
+                },
+                {
+                  "productName": "Eau",
+                  "quantity": 1,
+                  "totalTtcCents": 350
+                },
+                {
+                  "productName": "Menu",
+                  "quantity": 2,
+                  "totalTtcCents": 3200
+                },
+                {
                   "productName": "Menu midi",
                   "quantity": 1,
                   "totalTtcCents": 1500
+                },
+                {
+                  "productName": "Pizza",
+                  "quantity": 1,
+                  "totalTtcCents": 1350
+                },
+                {
+                  "productName": "Plat du jour",
+                  "quantity": 2,
+                  "totalTtcCents": 3780
+                },
+                {
+                  "productName": "Tarte",
+                  "quantity": 1,
+                  "totalTtcCents": 650
                 }
               ],
-              "subtotalTtcCents": 106308
+              "subtotalTtcCents": 116138
             }
           ],
           "tips": [
+            {
+              "serverName": "waiter1",
+              "tipCents": 200
+            },
             {
               "serverName": "waiter4",
               "tipCents": 415
             }
           ],
-          "totalTipsCents": 415,
+          "totalTipsCents": 615,
           "hasGlobalDiscount": true,
           "activity": {
-            "discountsCents": 7535,
+            "discountsCents": 7938,
             "compsCents": 2329,
             "voidCount": 0,
             "voidCents": 0
@@ -1707,6 +1766,21 @@
                   "totalTtcCents": 31358
                 },
                 {
+                  "productName": "Boisson",
+                  "quantity": 1,
+                  "totalTtcCents": 300
+                },
+                {
+                  "productName": "Burger",
+                  "quantity": 1,
+                  "totalTtcCents": 1500
+                },
+                {
+                  "productName": "Frites",
+                  "quantity": 1,
+                  "totalTtcCents": 450
+                },
+                {
                   "productName": "Menu midi",
                   "quantity": 1,
                   "totalTtcCents": 1500
@@ -1715,9 +1789,19 @@
                   "productName": "Pain",
                   "quantity": 1,
                   "totalTtcCents": 1000
+                },
+                {
+                  "productName": "Poisson",
+                  "quantity": 1,
+                  "totalTtcCents": 2200
+                },
+                {
+                  "productName": "Sandwich",
+                  "quantity": 1,
+                  "totalTtcCents": 850
                 }
               ],
-              "subtotalTtcCents": 229998
+              "subtotalTtcCents": 235298
             }
           ],
           "tips": [],
@@ -1726,8 +1810,8 @@
           "activity": {
             "discountsCents": 10925,
             "compsCents": 8835,
-            "voidCount": 3,
-            "voidCents": 28874
+            "voidCount": 4,
+            "voidCents": 29874
           },
           "cash": null
         }

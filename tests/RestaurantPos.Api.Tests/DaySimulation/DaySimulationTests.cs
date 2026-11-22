@@ -65,7 +65,8 @@ public class DaySimulationTests(DayFixture day) : IClassFixture<DayFixture>
         foreach (var order in orders)
         {
             long total = DayLedgerOracle.OrderTotalCents(order);
-            long paid = order.Payments!.Sum(p => p.Sum(t => t.AmountCents));
+            // commande rouverte : le premier règlement est annulé, les suivants soldent le total d'après les annulations
+            long paid = order.Payments!.Skip(DayLedgerOracle.IsReopened(order) ? 1 : 0).Sum(p => p.Sum(t => t.AmountCents));
             paid.Should().Be(total + order.TipCents, $"commande {order.Ref} soldée : règlements = total + pourboire");
             order.Payments!.Should().HaveCountLessThanOrEqualTo(5);
             if (order.VoidPaymentIndex is { } index)
@@ -78,6 +79,24 @@ public class DaySimulationTests(DayFixture day) : IClassFixture<DayFixture>
         orders.Should().Contain(o => o.Discount != null && o.Discount.Type == "Percentage").And.Contain(o => o.Discount != null && o.Discount.Type == "FixedAmount");
         orders.Should().Contain(o => o.Reprint).And.Contain(o => o.VoidPaymentIndex != null).And.Contain(o => o.HoldAndRecall);
         orders.Should().Contain(o => o.TipCents > 0).And.Contain(o => o.Payments!.Count >= 3);
+
+        // annulations et corrections : phases dans l'ordre, refus sans effet, sur les trois postes et au comptoir
+        var withVoids = orders.Where(o => o.LineVoids is { Count: > 0 }).ToList();
+        withVoids.Select(o => o.Terminal).Distinct().Should().BeEquivalentTo(["A", "B", "C"]);
+        withVoids.Should().Contain(o => o.Type == "counter_order");
+        foreach (var order in withVoids)
+        {
+            order.LineVoids!.Select(v => Array.IndexOf(DayLedgerOracle.LineVoidPhases, v.Phase)).Should().BeInAscendingOrder($"{order.Ref} : phases dans l'ordre");
+            order.LineVoids!.Where(v => v.Phase == "part_paid" || v.Phase == "paid").Should().OnlyContain(v => v.Expect == 409, $"{order.Ref} : une commande réglée refuse");
+            (order.VoidPaymentIndex is null || !DayLedgerOracle.IsReopened(order)).Should().BeTrue();
+        }
+
+        var steps = withVoids.SelectMany(o => o.LineVoids!).ToList();
+        steps.Select(v => v.Phase).Distinct().Should().BeEquivalentTo(DayLedgerOracle.LineVoidPhases);
+        steps.Select(v => v.Expect).Distinct().Should().BeEquivalentTo([200, 400, 403, 409]);
+        steps.Should().Contain(v => v.ReAdd > 0).And.Contain(v => v.Legacy).And.Contain(v => v.By == "waiter" && v.Phase == "draft");
+        withVoids.Should().Contain(o => DayLedgerOracle.OrderTotalCents(o) == 0 && o.Payments!.Count == 0, "une commande vidée par les annulations");
+        a.Operations.Take(FirstZ(a)).Last(o => o.Type is "table_order" or "counter_order").LineVoids.Should().NotBeNullOrEmpty("la dernière commande avant la Z annule une ligne");
     }
 
     // ---------- X : égal au grand livre, sans effet de bord ----------
@@ -273,7 +292,7 @@ public class DaySimulationTests(DayFixture day) : IClassFixture<DayFixture>
         // rien n'a été écrit : aucun reçu d'annulation supplémentaire et les chaînes restent saines
         using var scope = day.Factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        int expectedVoids = day.Scenario.Operations.Count(o => o.Type is "table_order" or "counter_order" && o.VoidPaymentIndex != null);
+        int expectedVoids = DayLedgerOracle.ReceiptVoidCount(day.Scenario.Operations);
         (await db.FiscalReceipts.CountAsync(r => r.VoidedReceiptId != null)).Should().Be(expectedVoids, "seules les annulations d'avant la Z existent");
         await AssertChainsAreValidAsync(day.Run, day.Scenario);
     }
@@ -289,7 +308,8 @@ public class DaySimulationTests(DayFixture day) : IClassFixture<DayFixture>
         var expected = new Dictionary<string, int>
         {
             ["Z_CLOSURE"] = day.Scenario.Terminals.Count,
-            ["RECEIPT_VOIDED"] = orders.Count(o => o.VoidPaymentIndex != null),
+            ["RECEIPT_VOIDED"] = DayLedgerOracle.ReceiptVoidCount(orders),
+            ["ORDER_LINE_VOIDED"] = DayLedgerOracle.ExpectedLineVoids(orders).Count,
             ["DUPLICATE_PRINTED"] = orders.Where(o => o.Reprint).Sum(o => o.Payments!.Count),
             ["EVENT_HELD_ORDER_VOIDED"] = day.Scenario.Operations.Count(o => o.Type == "hold_then_void"),
         };
@@ -317,8 +337,7 @@ public class DaySimulationTests(DayFixture day) : IClassFixture<DayFixture>
         fec.Sum(l => l.Debit).Should().Be(fec.Sum(l => l.Credit), $"{because} : Σ débit = Σ crédit");
 
         // Le grand livre « sans annulation » donne les ventes d'origine.
-        var originals = DayLedgerOracle.Compute(
-            day.Scenario.Operations.Select(o => o with { VoidPaymentIndex = null }), day.Run.TerminalIds);
+        var originals = DayLedgerOracle.Compute(day.Scenario.Operations, day.Run.TerminalIds, withReceiptVoids: false);
         var sales = fec.Where(l => !l.IsVoid).ToList();
         sales.Where(l => l.Account.StartsWith("706", StringComparison.Ordinal)).Sum(l => l.Credit - l.Debit).Should().Be(originals.Total.HtCents, $"{because} : ventes 706 = HT des ventes d'origine");
         VatByAccount(sales).Should().BeEquivalentTo(ExpectedVatByAccount(originals), $"{because} : TVA collectée des ventes d'origine");

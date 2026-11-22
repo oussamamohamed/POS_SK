@@ -34,7 +34,8 @@ public sealed record DayOrderDiscount(string Type, decimal Value);
 /// portées par la commande (<c>VoidPaymentIndex</c>, <c>Reprint</c>). Le pourboire (<c>TipCents</c>) est encaissé avec le dernier règlement.
 /// <c>Ref</c> nomme une commande ; <c>void_receipt</c> (<c>Ref</c> + <c>VoidPaymentIndex</c>) tente d'annuler après coup le reçu d'une
 /// commande : placée après le <c>z_closure</c> du poste, elle doit être REFUSÉE (409 <c>void_after_closure</c>) et n'a aucun effet fiscal,
-/// donc aucun effet sur le grand livre. Les champs inutiles pour un type sont nuls.
+/// donc aucun effet sur le grand livre. <c>LineVoids</c> : annulations (ligne envoyée) et corrections (ligne non envoyée) de lignes de la
+/// commande, jouées à leur phase (<see cref="DayLineVoid"/>). Les champs inutiles pour un type sont nuls.
 /// </summary>
 public sealed record DayOperation(
     string Type,
@@ -50,7 +51,40 @@ public sealed record DayOperation(
     int? VoidPaymentIndex = null,
     bool Reprint = false,
     bool HoldAndRecall = false,
-    string? Ref = null);
+    string? Ref = null,
+    IReadOnlyList<DayLineVoid>? LineVoids = null);
+
+/// <summary>
+/// Annulation ou correction d'une ligne (<c>POST /api/orders/{id}/items/{ligne}/void</c>). <c>Phase</c> (dans cet ordre) :
+/// <c>draft</c> (lignes enregistrées, avant l'envoi en cuisine : correction), <c>sent</c> (après l'envoi, avant tout règlement),
+/// <c>reopened</c> (après le premier règlement puis l'annulation de son reçu : la commande redevient modifiable), <c>part_paid</c> (après le
+/// premier règlement), <c>paid</c> (après le dernier). <c>Line</c> = index dans <c>Lines</c>, puis dans les lignes rajoutées (<c>ReAdd</c>),
+/// dans l'ordre. <c>By</c> = <c>manager</c> ou <c>waiter</c> (le serveur de la commande). <c>Expect</c> = statut HTTP attendu, <c>Code</c> = code
+/// d'erreur attendu (409). <c>ReAdd</c> &gt; 0 : rajoute ensuite le même produit (même identifiant, quantité <c>ReAdd</c>) et le renvoie en
+/// cuisine (second bon). <c>Legacy</c> : l'article de bon perd son <c>OrderItemId</c> avant l'annulation (ligne envoyée avant ce champ).
+/// </summary>
+public sealed record DayLineVoid(
+    string Phase,
+    int Line,
+    int Quantity,
+    string? Reason = "Erreur de saisie",
+    string By = "manager",
+    int Expect = 200,
+    string? Code = null,
+    int ReAdd = 0,
+    bool Legacy = false);
+
+/// <summary>Annulation acceptée d'une ligne envoyée, telle que la ligne <c>OrderLineVoids</c> et le JET <c>ORDER_LINE_VOIDED</c> doivent la porter.</summary>
+public sealed record DayExpectedLineVoid(
+    string Terminal,
+    string Ref,
+    string Table,
+    string ProductName,
+    int Quantity,
+    long UnitPriceCents,
+    string Reason,
+    string ServerName,
+    bool HasTicket);
 
 /// <summary>Grand livre attendu d'un poste (ou de la salle) tel que publié dans le JSON partagé ; clés de TVA = taux invariant.</summary>
 public sealed record DayExpected(
@@ -60,13 +94,22 @@ public sealed record DayExpected(
     IReadOnlyDictionary<string, long> VatByRate,
     IReadOnlyDictionary<string, long> TenderByMethod);
 
-/// <summary>Contenu de <c>day_scenario.json</c> : le scénario et son grand livre (clés de <c>Expected</c> = clés des postes du scénario).</summary>
+/// <summary>Article de bon attendu d'une ligne envoyée (index de ligne comme <see cref="DayLineVoid.Line"/>) : quantité envoyée et quantité annulée.</summary>
+public sealed record DayExpectedTicketLine(int Line, int Sent, int Cancelled);
+
+/// <summary>
+/// Contenu de <c>day_scenario.json</c> : le scénario, son grand livre (clés de <c>Expected</c> = clés des postes du scénario), les annulations
+/// acceptées, le total TTC attendu après chaque étape (nul pour un refus) et les articles de bon attendus, par commande (<c>Ref</c>).
+/// </summary>
 public sealed record DayScenarioFile(
     int Seed,
     IReadOnlyList<DayTerminal> Terminals,
     IReadOnlyList<DayOperation> Operations,
     IReadOnlyDictionary<string, DayExpected> Expected,
-    DayExpected Total);
+    DayExpected Total,
+    IReadOnlyList<DayExpectedLineVoid> ExpectedLineVoids,
+    IReadOnlyDictionary<string, IReadOnlyList<long?>> ExpectedLineVoidTotals,
+    IReadOnlyDictionary<string, IReadOnlyList<DayExpectedTicketLine>> ExpectedTicketLines);
 
 /// <summary>Décimaux écrits en chaînes (<c>"5.5"</c>) comme dans <c>fiscal_reference.json</c> : le Swift les lit en <c>Decimal</c> sans passer par un flottant.</summary>
 internal sealed class DecimalAsStringConverter : JsonConverter<decimal>

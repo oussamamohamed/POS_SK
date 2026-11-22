@@ -7,7 +7,8 @@ namespace RestaurantPos.Api.Tests.DaySimulation;
 /// imposés par la spec (total nul, remise fixe supérieure au total, règlement de 1 centime, règlement fractionné en 5 avec reste).
 /// Toutes les commandes sont soldées (ou annulées) avant le premier <c>z_closure</c> ; les annulations de reçu des commandes sont toutes jouées
 /// avant la Z. La journée se termine par un X puis une Z par poste, un X de la nouvelle période (qui repart de zéro) et une tentative
-/// d'annulation tardive d'un reçu scellé (<c>void_receipt</c>, refusée par l'API).
+/// d'annulation tardive d'un reçu scellé (<c>void_receipt</c>, refusée par l'API). Juste avant le X final, onze commandes imposées
+/// (<c>v0</c> à <c>v10</c>, sur les trois postes) annulent et corrigent des lignes (<see cref="LineVoidCases"/>).
 /// </summary>
 public static class DayScenarioGenerator
 {
@@ -36,6 +37,7 @@ public static class DayScenarioGenerator
             }
         }
 
+        ops.AddRange(LineVoidCases()); // après les tirages aléatoires : les opérations aléatoires (index, références, valeurs) ne bougent pas
         ops.AddRange(TerminalKeys.Select(k => new DayOperation("x_report", k)));
         ops.AddRange(TerminalKeys.Select(k => new DayOperation("z_closure", k)));
         ops.AddRange(TerminalKeys.Select(k => new DayOperation("x_report", k))); // nouvelle période : repart de zéro
@@ -49,12 +51,16 @@ public static class DayScenarioGenerator
         ArgumentNullException.ThrowIfNull(scenario);
         var ids = scenario.Terminals.Select((t, i) => (t.Key, Id: $"T{i + 1:00}")).ToDictionary(x => x.Key, x => x.Id);
         var ledger = DayLedgerOracle.Compute(scenario.Operations, ids);
+        var voided = scenario.Operations.Where(o => o.LineVoids is { Count: > 0 }).ToList();
         return new DayScenarioFile(
             scenario.Seed,
             scenario.Terminals,
             scenario.Operations,
             scenario.Terminals.ToDictionary(t => t.Key, t => Expected(ledger.ByTerminal[ids[t.Key]])),
-            Expected(ledger.Total));
+            Expected(ledger.Total),
+            DayLedgerOracle.ExpectedLineVoids(scenario.Operations),
+            voided.ToDictionary(o => o.Ref!, o => (IReadOnlyList<long?>)DayLedgerOracle.TotalsAfterSteps(o)),
+            voided.ToDictionary(o => o.Ref!, o => (IReadOnlyList<DayExpectedTicketLine>)DayLedgerOracle.TicketLines(o)));
     }
 
     private static DayExpected Expected(TerminalLedger t) => new(
@@ -87,6 +93,68 @@ public static class DayScenarioGenerator
             // la même table passée explicitement à emporter : taux à emporter
             Order("m5", "C", "waiter2", "6", 2, [new("Menu midi", 1, 1500, 10m, 5.5m)], null, [[new("CreditCard", 1500)]], destination: "Takeaway"),
         ];
+    }
+
+    /// <summary>
+    /// Annulations (lignes envoyées) et corrections (lignes non envoyées) : une commande par cas, tables 21 à 30 (jamais servies par les
+    /// tirages), sur les trois postes. Les règlements soldent le total après les étapes acceptées ; une étape refusée ne change rien.
+    /// </summary>
+    private static List<DayOperation> LineVoidCases()
+    {
+        static DayLineVoid Sent(int line, int quantity, string? reason = "Erreur de saisie", string by = "manager", int expect = 200, string? code = null, int reAdd = 0, bool legacy = false) =>
+            new("sent", line, quantity, reason, by, expect, code, reAdd, legacy);
+
+        static DayOperation Table(string reference, string key, string waiter, string table, DayLine[] lines, DayLineVoid[] steps, DayOrderDiscount? discount = null) =>
+            new("table_order", key, waiter, table, 2, "EatIn", lines, discount, Ref: reference, LineVoids: steps);
+
+        static IReadOnlyList<IReadOnlyList<DayTender>> Pay(string method, long cents, long extra = 0) => [[new DayTender(method, cents, extra)]];
+
+        var cases = new List<DayOperation>
+        {
+            // annulation complète d'une ligne envoyée
+            Table("v0", "A", "waiter1", "21", [new("Entrecôte", 1, 2400, 10m), new("Vin rouge", 2, 650, 20m)], [Sent(0, 1)]),
+            // deux annulations partielles d'une ligne à suppléments (R9 : prix + suppléments), la deuxième au-delà du reste (400), puis une troisième
+            Table("v1", "B", "waiter2", "22", [new("Pizza", 3, 1200, 10m, ModifiersExtraCents: 150), new("Eau", 1, 350, 10m)],
+                [Sent(0, 1, "Trop commandé"), Sent(0, 3, "Trop commandé", expect: 400), Sent(0, 1, "Client parti")]),
+            // annulation partielle puis même produit rajouté (second bon), annulation de la ligne rajoutée : le produit est annulé sur deux bons
+            Table("v2", "C", "waiter3", "23", [new("Burger", 2, 1500, 10m), new("Frites", 1, 450, 10m)],
+                [Sent(0, 1, reAdd: 1), Sent(2, 1, "Plus faim")]),
+            // corrections par le serveur de lignes enregistrées non envoyées (sans motif, sans trace), puis envoi
+            Table("v3", "A", "waiter4", "24", [new("Salade", 2, 900, 10m), new("Soupe", 1, 700, 10m), new("Thé", 1, 300, 10m)],
+                [new("draft", 0, 1, null, "waiter"), new("draft", 1, 1, null, "waiter")]),
+            // remise de commande de 10 % et ligne offerte : annuler l'offert ne change pas le total, annuler une ligne payante le recalcule
+            Table("v4", "B", "waiter1", "25", [new("Plat du jour", 2, 1890, 10m), new("Dessert", 1, 700, 5.5m, Comp: true), new("Café", 2, 250, 20m)],
+                [Sent(1, 1, "Offert retiré"), Sent(2, 1)], new DayOrderDiscount("Percentage", 10m)),
+            // vente comptoir à emporter envoyée en cuisine
+            new("counter_order", "C", "waiter2", null, 0, "Takeaway", [new("Sandwich", 2, 850, 10m, 5.5m), new("Boisson", 1, 300, 5.5m)], Ref: "v5",
+                LineVoids: [Sent(0, 1)]),
+            // refus sans effet : serveur (403), motif absent ou blanc (400) ; puis ligne ancienne (article de bon sans OrderItemId)
+            Table("v6", "A", "waiter3", "26", [new("Côte de bœuf", 1, 2800, 10m), new("Verre de vin", 2, 600, 20m)],
+                [Sent(0, 1, by: "waiter", expect: 403), Sent(0, 1, null, expect: 400), Sent(0, 1, "   ", expect: 400), Sent(1, 1, "Ancienne ligne", legacy: true)]),
+            // note partagée : après le premier règlement 409 order_has_receipts (numéros listés), après le dernier 409 order_not_modifiable
+            Table("v7", "B", "waiter4", "27", [new("Menu", 2, 1600, 10m)],
+                [new("part_paid", 0, 1, Expect: 409, Code: "order_has_receipts"), new("paid", 0, 1, Expect: 409, Code: "order_not_modifiable")])
+                with { Payments = [[new DayTender("Cash", 1000)], [new DayTender("CreditCard", 2200)]] },
+            // premier règlement puis annulation de son reçu (paire reçu + avoir exclue) : l'annulation de ligne passe, le reste est réglé
+            Table("v8", "C", "waiter1", "28", [new("Poisson", 1, 2200, 10m), new("Vin blanc", 1, 700, 20m)],
+                [new("reopened", 1, 1, "Bouteille bouchonnée")])
+                with { Payments = [[new DayTender("Cash", 1000)], [new DayTender("CreditCard", 2200)]] },
+            // toutes les lignes annulées : commande vide à 0 (remise fixe bornée), ni réglable (aucune ligne) ni bloquante pour la Z
+            Table("v9", "A", "waiter2", "29", [new("Apéritif", 2, 450, 10m), new("Planche", 1, 1200, 10m)],
+                [Sent(0, 2, "Client parti"), Sent(1, 1, "Client parti")], new DayOrderDiscount("FixedAmount", 5m)) with { Payments = [] },
+            // dernière commande avant la Z
+            Table("v10", "B", "waiter3", "30", [new("Tarte", 2, 650, 5.5m), new("Café", 1, 250, 10m)], [Sent(0, 1)]),
+        };
+
+        // Règlement unique du total final (v4 avec un pourboire), sauf les cas qui portent déjà leurs règlements.
+        return cases.Select(op => op.Payments is not null ? op : op.Ref switch
+        {
+            "v1" => op with { Payments = Pay("Cash", DayLedgerOracle.OrderTotalCents(op), 300) },
+            "v3" => op with { Payments = Pay("MealVoucher", DayLedgerOracle.OrderTotalCents(op)) },
+            "v4" => op with { TipCents = 200, Payments = Pay("CreditCard", DayLedgerOracle.OrderTotalCents(op) + 200) },
+            "v5" or "v10" => op with { Payments = Pay("Cash", DayLedgerOracle.OrderTotalCents(op)) },
+            _ => op with { Payments = Pay("CreditCard", DayLedgerOracle.OrderTotalCents(op)) },
+        }).ToList();
     }
 
     private static DayOperation RandomOperation(Random rng, int index)
@@ -204,7 +272,7 @@ public static class DayScenarioGenerator
         foreach (string key in TerminalKeys)
         {
             var target = ops.FirstOrDefault(o => o.Terminal == key && o.Ref is not null && o.VoidPaymentIndex is null && o.Payments is { Count: > 0 }
-                && DayLedgerOracle.OrderTotalCents(o) > 0);
+                && DayLedgerOracle.OrderTotalCents(o) > 0 && !DayLedgerOracle.IsReopened(o));
             if (target is not null)
             {
                 yield return new DayOperation("void_receipt", key, VoidPaymentIndex: 0, Ref: target.Ref);

@@ -15,6 +15,40 @@ struct LocalDaySimulationTests {
         var operations: [Operation]
         var expected: [String: Expected]
         var total: Expected
+        var expectedLineVoids: [ExpectedLineVoid]
+        var expectedLineVoidTotals: [String: [Int?]]
+        var expectedTicketLines: [String: [TicketLine]]
+    }
+
+    /// Annulation ou correction d'une ligne (`DayLineVoid` du .NET) : phase, index de ligne (rajouts en fin de liste), attente.
+    private struct LineVoid: Decodable {
+        var phase: String
+        var line: Int
+        var quantity: Int
+        var reason: String?
+        var by: String
+        var expect: Int
+        var code: String?
+        var reAdd: Int
+        var legacy: Bool
+    }
+
+    private struct ExpectedLineVoid: Decodable, Hashable {
+        var terminal: String
+        var ref: String
+        var table: String
+        var productName: String
+        var quantity: Int
+        var unitPriceCents: Int
+        var reason: String
+        var serverName: String
+        var hasTicket: Bool
+    }
+
+    private struct TicketLine: Decodable {
+        var line: Int
+        var sent: Int
+        var cancelled: Int
     }
 
     private struct Terminal: Decodable { var key: String }
@@ -55,6 +89,7 @@ struct LocalDaySimulationTests {
         var reprint: Bool?
         var holdAndRecall: Bool?
         var ref: String?
+        var lineVoids: [LineVoid]?
     }
 
     private struct Expected: Decodable {
@@ -77,6 +112,40 @@ struct LocalDaySimulationTests {
         /// Articles vendus et pourboires de chaque Z, sur la période signée de la clôture (comme `ReportPrintDataReferenceFixtureTests`).
         var zReportData: [ReportPrintData] = []
         var voidRefusals: [(op: Int, status: Int?)] = []
+        var lineVoids: [LineVoidAttempt] = []
+        /// Identifiants des lignes (rajouts compris) des commandes qui annulent ou corrigent, par `ref`.
+        var lineIds: [String: [UUID]] = [:]
+        var managerName = ""
+        var printerId = UUID()
+        var api: LocalPosAPI?
+        var db: SQLiteDatabase?
+    }
+
+    /// Réponse d'une étape d'annulation : statut (200 si acceptée), message d'erreur, total TTC de la commande après une étape acceptée,
+    /// reçus actifs de la commande à cet instant, X du poste juste avant et juste après.
+    private struct LineVoidAttempt {
+        var ref: String
+        var step: Int
+        var status: Int
+        var message: String?
+        var totalCents: Int?
+        var activeReceipts: [String]
+        var xBefore: FiscalReport
+        var xAfter: FiscalReport
+    }
+
+    /// État d'une commande qui annule ou corrige : lignes (produit et ligne locale), reçus émis et reçus annulés.
+    private final class VoidContext {
+        let op: Operation
+        let table: String
+        let orderId: UUID
+        let waiter: String
+        var lines: [(line: Line, productId: UUID, lineId: UUID)]
+        var receipts: [String] = []
+        var voided: [String] = []
+        init(op: Operation, table: String, orderId: UUID, waiter: String, lines: [(line: Line, productId: UUID, lineId: UUID)]) {
+            self.op = op; self.table = table; self.orderId = orderId; self.waiter = waiter; self.lines = lines
+        }
     }
 
     private static let managerPin = "1234"
@@ -93,13 +162,22 @@ struct LocalDaySimulationTests {
     private static func replay(_ scenario: Scenario, terminal key: String) async throws -> Replay {
         let clock = LocalTestClock()
         let path = temporaryDatabasePath()
-        let api = try LocalPosAPI(path: path, clock: { clock.now }, calendar: localTestCalendar)
+        let api = try LocalPosAPI(path: path, clock: { clock.now }, calendar: localTestCalendar, transport: FakePrinterTransport())
         let db = try SQLiteDatabase(path: path)
-        let manager = try #require(try await api.login(pin: managerPin).operatorId)
+        let managerLogin = try await api.login(pin: managerPin)
+        let manager = try #require(managerLogin.operatorId)
 
         var pins: [String: String] = [:]
         var receiptsByRef: [String: [UUID]] = [:]
         var replay = Replay()
+        replay.managerName = managerLogin.operatorName ?? ""
+        replay.api = api
+        replay.db = db
+        // Comme le DayRunner : une seule imprimante active, du poste chaud (station par défaut des lignes), pour les bons d'annulation.
+        for seeded in try await api.printers() { try await api.setTestPrinterActive(seeded.id, false) }
+        let printer = Printer(name: "Cuisine chaude", ipAddress: "10.0.0.9", openCashDrawerOnReceipt: false, assignedStationIds: ["HOT_KITCHEN"], textMode: true)
+        try await api.addTestPrinter(printer)
+        replay.printerId = printer.id
 
         func login(waiter: String) async throws -> UUID {
             if pins[waiter] == nil {
@@ -116,9 +194,9 @@ struct LocalDaySimulationTests {
             return try #require(rows.first?.uuid("Id"))
         }
 
-        func input(_ line: Line) -> OrderItemInput {
+        func input(_ line: Line, productId: UUID = UUID()) -> OrderItemInput {
             OrderItemInput(
-                productId: UUID(), productName: line.name, quantity: line.quantity, unitPrice: Money(cents: line.unitPriceCents),
+                productId: productId, productName: line.name, quantity: line.quantity, unitPrice: Money(cents: line.unitPriceCents),
                 taxRatePercent: Decimal(string: line.taxRatePercent)!, preparationStationId: nil, modifiers: [], course: .direct,
                 modifiersPriceExtra: Money(cents: line.modifiersExtraCents),
                 taxRateTakeawayPercent: line.taxRateTakeawayPercent.flatMap { Decimal(string: $0) },
@@ -155,6 +233,78 @@ struct LocalDaySimulationTests {
             if let index = op.voidPaymentIndex { _ = try await api.voidReceipt(receiptId: ids[index]) }
         }
 
+        /// Ajoute les lignes avec des produits connus : l'index de chaque ligne retrouve sa ligne locale.
+        func addLines(_ op: Operation, table: String) async throws -> (ActiveOrder, [(line: Line, productId: UUID, lineId: UUID)]) {
+            let lines = (op.lines ?? []).map { ($0, UUID()) }
+            let order = try await api.addItems(table: table, items: lines.map { input($0.0, productId: $0.1) })
+            let mapped = try lines.map { line, productId in
+                (line: line, productId: productId, lineId: try #require(order.lines.first { $0.productId == productId }?.lineId))
+            }
+            return (order, mapped)
+        }
+
+        func status(of error: Error) -> (Int, String?) {
+            switch error as? APIError {
+            case .forbidden(let message)?: (403, message)
+            case .notFound(let message)?: (404, message)
+            case .server(let status, let message)?: (status, message)
+            default: (-1, "\(error)")
+            }
+        }
+
+        /// Joue les étapes d'une phase (refus compris) et note la réponse et le X avant / après ; le serveur se reconnecte ensuite.
+        func steps(_ ctx: VoidContext, _ phase: String) async throws {
+            guard let all = ctx.op.lineVoids, !all.isEmpty, let ref = ctx.op.ref else { return }
+            for (i, step) in all.enumerated() where step.phase == phase {
+                let line = ctx.lines[step.line]
+                if step.legacy {
+                    // Ligne envoyée avant `OrderItemId` : seule écriture directe en base du rejeu (aucune route ne produit ce cas).
+                    try db.run("UPDATE KitchenTicketItems SET OrderItemId = NULL WHERE OrderItemId = ?", [.uuid(line.lineId)])
+                }
+                _ = try await api.login(pin: managerPin)
+                let before = try await api.xReport(terminalId: "T01")
+                if step.by == "waiter" { _ = try await login(waiter: ctx.waiter) }
+                var result: (Int, String?) = (200, nil)
+                do {
+                    try await api.voidLine(orderId: ctx.orderId, lineId: line.lineId, quantity: step.quantity, reason: step.reason, operatorId: nil)
+                } catch {
+                    result = status(of: error)
+                }
+                let total = result.0 == 200 ? try await api.activeOrder(table: ctx.table)?.totalTtcAmount?.cents : nil
+                _ = try await api.login(pin: managerPin)
+                let after = try await api.xReport(terminalId: "T01")
+                replay.lineVoids.append(LineVoidAttempt(
+                    ref: ref, step: i, status: result.0, message: result.1, totalCents: total,
+                    activeReceipts: ctx.receipts.filter { !ctx.voided.contains($0) }, xBefore: before, xAfter: after))
+                _ = try await login(waiter: ctx.waiter)
+                if step.reAdd > 0 {
+                    // Même produit (pas de fusion avec la ligne envoyée), puis second envoi : second bon.
+                    let known = Set(ctx.lines.map(\.lineId))
+                    var readded = line.line
+                    readded.quantity = step.reAdd
+                    readded.comp = false
+                    let order = try await api.addItems(table: ctx.table, items: [input(readded, productId: line.productId)])
+                    let added = try #require(order.lines.first { !known.contains($0.lineId) }?.lineId)
+                    ctx.lines.append((line: readded, productId: line.productId, lineId: added))
+                    try await api.dispatch(table: ctx.table)
+                }
+            }
+            replay.lineIds[ref] = ctx.lines.map(\.lineId)
+        }
+
+        /// Après le premier règlement : commande rouverte (reçu annulé puis étapes `reopened`), puis étapes `part_paid`.
+        func afterPayment(_ ctx: VoidContext, _ payment: Int) async throws {
+            guard payment == 0, ctx.op.lineVoids?.isEmpty == false else { return }
+            if ctx.op.lineVoids?.contains(where: { $0.phase == "reopened" }) == true {
+                _ = try await api.login(pin: managerPin)
+                _ = try await api.voidReceipt(receiptId: try receiptId(ctx.receipts[0]))
+                ctx.voided.append(ctx.receipts[0])
+                _ = try await login(waiter: ctx.waiter)
+                try await steps(ctx, "reopened")
+            }
+            try await steps(ctx, "part_paid")
+        }
+
         for (index, op) in scenario.operations.enumerated() where op.terminal == key {
             clock.advance(5)
             switch op.type {
@@ -169,9 +319,13 @@ struct LocalDaySimulationTests {
                 } else {
                     #expect(order.destination == .eatIn, "table \(table) ouverte sans mode : sur place par défaut")
                 }
-                order = try await api.addItems(table: table, items: (op.lines ?? []).map(input))
+                let added = try await addLines(op, table: table)
+                order = added.0
                 try await discountAndComps(op, table: table, order: order, waiterName: waiterName)
-                var numbers: [String] = []
+                let ctx = VoidContext(op: op, table: table, orderId: order.orderId, waiter: waiterName, lines: added.1)
+                try await steps(ctx, "draft")
+                try await api.dispatch(table: table)
+                try await steps(ctx, "sent")
                 let payments = op.payments ?? []
                 for (p, list) in payments.enumerated() {
                     let tenders = list.map {
@@ -182,16 +336,18 @@ struct LocalDaySimulationTests {
                         orderId: order.orderId, tableNumber: table, operatorId: waiterId, terminalId: "T01", tenders: tenders,
                         requestReceiptPrint: false, tipAmount: Money(cents: p == payments.count - 1 ? (op.tipCents ?? 0) : 0)
                     )
-                    numbers.append(try #require(try await api.pay(request).receiptNumber))
+                    ctx.receipts.append(try #require(try await api.pay(request).receiptNumber))
+                    try await afterPayment(ctx, p)
                 }
-                try await afterPayments(op, numbers: numbers)
+                try await steps(ctx, "paid")
+                try await afterPayments(op, numbers: ctx.receipts)
 
             case "counter_order", "hold_then_void":
                 let waiterName = try #require(op.waiter)
                 _ = try await login(waiter: waiterName)
                 let destination: OrderDestination = op.destination == "EatIn" ? .eatIn : .takeaway
                 _ = try await api.openCounterOrder(terminalId: "T01", destination: destination)
-                let order = try await api.addItems(table: DiningTable.counterNumber, items: (op.lines ?? []).map(input))
+                let (order, lines) = try await addLines(op, table: DiningTable.counterNumber)
                 if op.type == "hold_then_void" {
                     try await api.holdOrder(orderId: order.orderId, terminalId: "T01", label: "Client")
                     let held = try #require(try await api.heldOrders(terminalId: "T01").first { $0.orderId == order.orderId })
@@ -199,12 +355,18 @@ struct LocalDaySimulationTests {
                     continue
                 }
                 try await discountAndComps(op, table: DiningTable.counterNumber, order: order, waiterName: waiterName)
+                let ctx = VoidContext(op: op, table: DiningTable.counterNumber, orderId: order.orderId, waiter: waiterName, lines: lines)
+                try await steps(ctx, "draft")
+                if op.lineVoids?.contains(where: { $0.phase != "draft" }) == true {
+                    // Une vente comptoir n'est envoyée en cuisine que si le scénario y annule une ligne envoyée (comme le DayRunner).
+                    try await api.dispatch(table: DiningTable.counterNumber)
+                    try await steps(ctx, "sent")
+                }
                 if op.holdAndRecall == true {
                     try await api.holdOrder(orderId: order.orderId, terminalId: "T01", label: "Client")
                     let held = try #require(try await api.heldOrders(terminalId: "T01").first { $0.orderId == order.orderId })
                     _ = try await api.recallHeldOrder(holdId: held.holdId)
                 }
-                var numbers: [String] = []
                 let payments = op.payments ?? []
                 for (p, list) in payments.enumerated() {
                     let request = CounterCheckoutRequest(
@@ -215,9 +377,11 @@ struct LocalDaySimulationTests {
                             CounterTender(method: payment($0.method), amount: Money(cents: $0.amountCents), tendered: Money(cents: $0.amountCents + ($0.extraTenderedCents ?? 0)))
                         }
                     )
-                    numbers.append(try #require(try await api.counterCheckout(request).receiptNumber))
+                    ctx.receipts.append(try #require(try await api.counterCheckout(request).receiptNumber))
+                    try await afterPayment(ctx, p)
                 }
-                try await afterPayments(op, numbers: numbers)
+                try await steps(ctx, "paid")
+                try await afterPayments(op, numbers: ctx.receipts)
 
             case "void_receipt":
                 // Après la Z du poste : l'annulation doit être refusée (409) et sans effet fiscal.
@@ -319,6 +483,121 @@ struct LocalDaySimulationTests {
             #expect(actual.tips == wanted.tips, context)
             #expect(actual == wanted, context)
         }
+    }
+
+    // MARK: - Annulations et corrections de ligne
+
+    private static func sameMoney(_ a: FiscalReport, _ b: FiscalReport) -> Bool {
+        a.totalSalesTtc == b.totalSalesTtc && a.totalSalesHt == b.totalSalesHt && a.receiptCount == b.receiptCount
+            && a.vatBreakdown == b.vatBreakdown && a.paymentTotals == b.paymentTotals && a.perpetualGrandTotal == b.perpetualGrandTotal
+    }
+
+    /// Une annulation telle que la ligne `OrderLineVoids` (ou le JET) la porte, sans la référence de commande (absente des deux).
+    private static func key(_ v: ExpectedLineVoid) -> String {
+        "\(v.table)|\(v.productName)|\(v.quantity)|\(v.unitPriceCents)|\(v.reason)|\(v.serverName)|\(v.hasTicket)"
+    }
+
+    @Test(arguments: ["A", "B", "C"])
+    func lesAnnulationsEtCorrectionsDeLigneSuiventLeNet(key: String) async throws {
+        let scenario = try Self.scenario()
+        let replay = try await Self.replay(scenario, terminal: key)
+        let api = try #require(replay.api)
+        let db = try #require(replay.db)
+        let context = Comment(rawValue: "graine \(scenario.seed), poste \(key)")
+        let orders = scenario.operations.filter { $0.terminal == key && $0.lineVoids?.isEmpty == false }
+        #expect(!orders.isEmpty, context)
+        #expect(replay.lineVoids.count == orders.reduce(0) { $0 + ($1.lineVoids?.count ?? 0) }, context)
+
+        // Réponse de chaque étape, total après une étape acceptée, aucun effet sur le X (ni reçu, ni montant).
+        for op in orders {
+            let ref = try #require(op.ref)
+            let steps = try #require(op.lineVoids)
+            let totals = try #require(scenario.expectedLineVoidTotals[ref])
+            let attempts = replay.lineVoids.filter { $0.ref == ref }
+            #expect(attempts.map(\.step) == Array(steps.indices), context)
+            for attempt in attempts {
+                let step = steps[attempt.step]
+                let c = Comment(rawValue: "\(context.rawValue), \(ref) étape \(attempt.step) (\(step.phase)) : \(attempt.message ?? "")")
+                #expect(attempt.status == step.expect, c)
+                #expect(attempt.totalCents == totals[attempt.step], c)
+                #expect(Self.sameMoney(attempt.xBefore, attempt.xAfter), c)
+                switch step.code {
+                case "order_has_receipts":
+                    #expect(attempt.message?.contains("a déjà des reçus") == true && !attempt.activeReceipts.isEmpty, c)
+                    for number in attempt.activeReceipts { #expect(attempt.message?.contains(number) == true, c) }
+                case "order_not_modifiable":
+                    #expect(attempt.message == "Cette commande n'est plus modifiable.", c)
+                default:
+                    break
+                }
+            }
+        }
+
+        // Une ligne OrderLineVoids et une écriture du JET par annulation acceptée (R2 serveur, R9 prix + suppléments), rien pour une correction.
+        let expected = scenario.expectedLineVoids.filter { $0.terminal == key }.map(Self.key).sorted()
+        let rows = try db.query("SELECT * FROM OrderLineVoids")
+        let actual = rows.map {
+            Self.key(ExpectedLineVoid(
+                terminal: key, ref: "", table: $0.string("TableNumber") ?? "", productName: $0.string("ProductName") ?? "", quantity: $0.int("Quantity") ?? 0,
+                unitPriceCents: $0.int("UnitPrice") ?? 0, reason: $0.string("Reason") ?? "", serverName: $0.string("ServerName") ?? "", hasTicket: $0.uuid("TicketId") != nil))
+        }.sorted()
+        #expect(actual == expected, context)
+        #expect(rows.allSatisfy { $0.string("OperatorName") == replay.managerName }, context)
+
+        let jet = try await api.journalRows(LocalJournalEvents.orderLineVoided).map { row -> String in
+            let p = (try? JSONSerialization.jsonObject(with: Data(row.payload.utf8))) as? [String: Any] ?? [:]
+            #expect(p["operatorName"] as? String == replay.managerName, context)
+            return Self.key(ExpectedLineVoid(
+                terminal: key, ref: "", table: p["tableNumber"] as? String ?? "", productName: p["productName"] as? String ?? "",
+                quantity: p["quantity"] as? Int ?? 0, unitPriceCents: p["unitPriceCents"] as? Int ?? 0, reason: p["reason"] as? String ?? "",
+                serverName: "", hasTicket: !(p["ticketId"] is NSNull)))
+        }.sorted()
+        // Le JET ne porte pas le serveur : on compare sans lui.
+        let withoutServer = scenario.expectedLineVoids.filter { $0.terminal == key }.map { v -> String in
+            var v = v
+            v.serverName = ""
+            return Self.key(v)
+        }.sorted()
+        #expect(jet == withoutServer, context)
+
+        // Articles de bon : quantité envoyée et annulée, annulé quand tout l'est ; rien pour une ligne jamais envoyée ou ancienne.
+        for op in orders {
+            let ref = try #require(op.ref)
+            let wanted = try #require(scenario.expectedTicketLines[ref])
+            for (index, lineId) in try #require(replay.lineIds[ref]).enumerated() {
+                let items = try db.query("SELECT Quantity, CancelledQuantity, Status FROM KitchenTicketItems WHERE OrderItemId = ?", [.uuid(lineId)])
+                let c = Comment(rawValue: "\(context.rawValue), \(ref) ligne \(index)")
+                guard let want = wanted.first(where: { $0.line == index }) else {
+                    #expect(items.isEmpty, c)
+                    continue
+                }
+                #expect(items.count == 1, c)
+                let item = try #require(items.first, c)
+                #expect(item.int("Quantity") == want.sent && item.int("CancelledQuantity") == want.cancelled, c)
+                let status = want.cancelled >= want.sent ? TicketItemStatus.cancelled : TicketItemStatus.pending
+                #expect(item.int("Status") == status.rawValue, c)
+            }
+        }
+
+        // Un bon d'annulation par annulation acceptée sur l'imprimante du poste chaud, aucun pour une correction ou un refus.
+        let reasons = try db.query("SELECT DocumentJson FROM PrintJobs WHERE PrinterId = ?", [.uuid(replay.printerId)]).compactMap { row -> String? in
+            let document = try TicketDocumentJSON.deserialize(row.string("DocumentJson") ?? "")
+            return document.lines.compactMap { line -> String? in
+                if case .text(let text, _, _, _) = line, text.hasPrefix("Motif : ") { return text }
+                return nil
+            }.first
+        }.sorted()
+        #expect(reasons == scenario.expectedLineVoids.filter { $0.terminal == key }.map { "Motif : \($0.reason)" }.sorted(), context)
+
+        // Commande vidée par les annulations : reste sur sa table, à 0, sans reçu ; la Z est passée quand même.
+        for op in orders where op.payments?.isEmpty == true {
+            let table = try #require(op.table, context)
+            let order = try #require(try await api.activeOrder(table: table), context)
+            #expect(order.lines.isEmpty && (order.totalTtcAmount?.cents ?? 0) == 0, context)
+            #expect(try db.query("SELECT Id FROM FiscalReceipts WHERE OrderId = ?", [.uuid(order.orderId)]).isEmpty, context)
+            #expect(replay.zClosures.count == 1, context)
+        }
+        #expect(try await api.verifyChains().isValid, context)
     }
 
     @Test func laSommeDesPostesEgaleLeTotalDuNet() async throws {
