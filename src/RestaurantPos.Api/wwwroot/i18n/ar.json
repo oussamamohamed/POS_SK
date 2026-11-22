@@ -928,6 +928,7 @@
   "payment.tip_custom_placeholder": "مبلغ البقشيش (€)",
   "payment.tip_label": "✨ بقشيش للنادل:",
   "payment.title": "الدفع والتحصيل",
+  "payment.already_paid": "مدفوع مسبقًا: {amount} €",
   "payment.total_bill_label": "إجمالي الفاتورة:",
   "payment.total_with_tip_label": "الإجمالي مع البقشيش:",
   "payment.total_with_tip_value": "{total} € (+{tip} € بقشيش)",

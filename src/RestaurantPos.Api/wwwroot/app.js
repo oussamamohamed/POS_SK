@@ -2120,6 +2120,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             reason: orderData.globalDiscountReason
         } : null;
         state.cart = (orderData.lines || []).map(mapServerLine).concat(drafts);
+        // Commande en partie réglée (note partagée, part annulée) : le serveur fait foi pour le reste dû (TTC + pourboire conservé − réglé).
+        if (typeof orderData.amountDueTtc === 'number') {
+            state.amountPaid = Math.max(0, Math.round((Number(orderData.totalTtcAmount || 0) - orderData.amountDueTtc) * 100) / 100);
+        }
     }
 
     function getCourseNameFromEnum(val) {
@@ -2837,6 +2841,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         const finalTotal = getFinalPayTotal();
 
         elements.payRemainingAmount.innerHTML = `<bdi dir="ltr">${total.toFixed(2)} €</bdi>`;
+        const alreadyPaid = document.getElementById('payAlreadyPaid');
+        if (alreadyPaid) {
+            alreadyPaid.style.display = state.amountPaid > 0 ? '' : 'none';
+            alreadyPaid.textContent = t('payment.already_paid', { amount: Number(state.amountPaid || 0).toFixed(2) });
+        }
         elements.payTotalWithTip.textContent = t('payment.total_with_tip_value', { total: finalTotal.toFixed(2), tip: tip.toFixed(2) });
     }
 

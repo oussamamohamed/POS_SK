@@ -928,6 +928,7 @@
   "payment.tip_custom_placeholder": "Montant du pourboire (€)",
   "payment.tip_label": "✨ Pourboire au serveur :",
   "payment.title": "Règlement & Encaissement",
+  "payment.already_paid": "Déjà réglé : {amount} €",
   "payment.total_bill_label": "Total Note :",
   "payment.total_with_tip_label": "Total avec pourboire :",
   "payment.total_with_tip_value": "{total} € (+{tip} € pourboire)",

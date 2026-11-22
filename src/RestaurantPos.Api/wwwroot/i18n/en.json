@@ -928,6 +928,7 @@
   "payment.tip_custom_placeholder": "Tip amount (€)",
   "payment.tip_label": "✨ Tip for the server:",
   "payment.title": "Payment & Checkout",
+  "payment.already_paid": "Already paid: {amount} €",
   "payment.total_bill_label": "Bill Total:",
   "payment.total_with_tip_label": "Total with tip:",
   "payment.total_with_tip_value": "{total} € (+{tip} € tip)",
