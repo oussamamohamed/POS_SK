@@ -42,12 +42,15 @@ export async function settleOpenTableOrders(request: APIRequestContext, headers:
     if (!res.ok()) continue;
     const order = await res.json();
     if (!order.lines?.length) continue;
+    // Commande en partie réglée (part annulée) : seul le reste dû est encaissable.
+    const due = order.amountDueTtc ?? order.totalTtcAmount;
+    if (!(due > 0)) continue;
     await request.post('/api/checkout/pay', {
       headers,
       data: {
         orderId: order.orderId,
         tableNumber: t.tableNumber,
-        tenders: [{ method: 0, amount: order.totalTtcAmount, tendered: order.totalTtcAmount, changeGiven: 0 }],
+        tenders: [{ method: 0, amount: due, tendered: due, changeGiven: 0 }],
       },
     });
   }
