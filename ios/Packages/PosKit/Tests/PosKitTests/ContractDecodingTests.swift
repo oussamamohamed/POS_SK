@@ -157,7 +157,11 @@ struct ContractDecodingTests {
         #expect(order.lines.first?.course == .suite)
         #expect(order.lines.first?.modifiersPriceExtra == Money(cents: 250))
         #expect(order.destination == .takeaway)
+        // Capture d'un serveur antérieur au reste dû : champs absents, le ticket garde le TTC.
+        #expect(order.amountPaidTtc == nil && order.amountDueTtc == nil)
         let discounted = try decode(ActiveOrder.self, "table_order_discounted")
+        #expect(discounted.amountPaidTtc == .zero)
+        #expect(discounted.amountDueTtc == discounted.totalTtcAmount)
         #expect(discounted.globalDiscount == GlobalDiscount(type: .fixedAmount, value: 2, reason: "Geste"))
         // Même calcul que le serveur : 22,00 € − 2,00 € = 20,00 €
         let totals = OrderMath.totals(lines: discounted.lines.map(CartLine.init(serverLine:)), destination: discounted.destination, discount: discounted.globalDiscount)

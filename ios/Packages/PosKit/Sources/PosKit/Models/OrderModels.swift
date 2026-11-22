@@ -125,8 +125,11 @@ public struct ActiveOrder: Codable, Hashable, Sendable {
     public var destination: OrderDestination
     public var pickupNumber: String?
     public var pickupBuzzer: String?
+    /// Règlements des reçus actifs et reste dû (TTC + pourboire conservé − réglé) ; nil pour un serveur antérieur.
+    public var amountPaidTtc: Money?
+    public var amountDueTtc: Money?
 
-    public init(orderId: UUID = UUID(), tableNumber: String, waiterName: String? = nil, coversCount: Int = 0, openedAtUtc: Date? = Date(), lines: [OrderLine] = [], totalTtcAmount: Money? = nil, globalDiscountType: DiscountType? = nil, globalDiscountValue: Decimal = 0, globalDiscountReason: String? = nil, destination: OrderDestination = .takeaway, pickupNumber: String? = nil, pickupBuzzer: String? = nil) {
+    public init(orderId: UUID = UUID(), tableNumber: String, waiterName: String? = nil, coversCount: Int = 0, openedAtUtc: Date? = Date(), lines: [OrderLine] = [], totalTtcAmount: Money? = nil, globalDiscountType: DiscountType? = nil, globalDiscountValue: Decimal = 0, globalDiscountReason: String? = nil, destination: OrderDestination = .takeaway, pickupNumber: String? = nil, pickupBuzzer: String? = nil, amountPaidTtc: Money? = nil, amountDueTtc: Money? = nil) {
         self.orderId = orderId
         self.tableNumber = tableNumber
         self.waiterName = waiterName
@@ -140,6 +143,8 @@ public struct ActiveOrder: Codable, Hashable, Sendable {
         self.destination = destination
         self.pickupNumber = pickupNumber
         self.pickupBuzzer = pickupBuzzer
+        self.amountPaidTtc = amountPaidTtc
+        self.amountDueTtc = amountDueTtc
     }
 
     public init(from decoder: Decoder) throws {
@@ -157,6 +162,8 @@ public struct ActiveOrder: Codable, Hashable, Sendable {
         destination = try c.decodeIfPresent(OrderDestination.self, forKey: .destination) ?? .takeaway
         pickupNumber = try c.decodeIfPresent(String.self, forKey: .pickupNumber)
         pickupBuzzer = try c.decodeIfPresent(String.self, forKey: .pickupBuzzer)
+        amountPaidTtc = try c.decodeIfPresent(Money.self, forKey: .amountPaidTtc)
+        amountDueTtc = try c.decodeIfPresent(Money.self, forKey: .amountDueTtc)
     }
 
     public var globalDiscount: GlobalDiscount? {

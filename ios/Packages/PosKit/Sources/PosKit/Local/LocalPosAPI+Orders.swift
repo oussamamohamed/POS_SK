@@ -22,6 +22,10 @@ extension LocalPosAPI {
         order.waiterName = table.assignedWaiterName
         order.coversCount = table.coversCount
         order.openedAtUtc = table.openedAtUtc ?? order.openedAtUtc
+        // Même reste dû que le règlement et la Z (`PaymentSettlementRules.DueCents`) : TTC + pourboire conservé − réglé.
+        let (total, tip, paid) = try balance(of: order)
+        order.amountPaidTtc = paid
+        order.amountDueTtc = (total + tip - paid).clampedAtZero()
         return decorate(order)
     }
 

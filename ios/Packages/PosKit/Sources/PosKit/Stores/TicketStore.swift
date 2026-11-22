@@ -100,6 +100,8 @@ public final class TicketStore {
         destination = order.destination
         discount = order.globalDiscount
         lines = order.lines.map(CartLine.init(serverLine:)) + drafts
+        // Commande en partie réglée (note partagée, part annulée) : le serveur fait foi pour le reste dû.
+        if let paid = order.amountPaidTtc, let due = order.amountDueTtc { remainingBalance = paid.cents > 0 ? due : nil }
     }
 
     private func reset(keepingTable: Bool) {

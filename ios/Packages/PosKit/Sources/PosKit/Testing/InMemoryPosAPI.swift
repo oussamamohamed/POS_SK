@@ -766,7 +766,13 @@ public actor InMemoryPosAPI: PosAPI {
 
     private func decorated(_ order: ActiveOrder?) -> ActiveOrder? {
         guard var order else { return nil }
-        order.totalTtcAmount = totals(of: order).totalTtc
+        let total = totals(of: order).totalTtc
+        order.totalTtcAmount = total
+        // Même reste dû que le .NET (`PaymentSettlementRules.DueCents`) : TTC + pourboire − réglé.
+        let record = orders[order.orderId]
+        let paid = record?.paidCents ?? 0
+        order.amountPaidTtc = Money(cents: paid)
+        order.amountDueTtc = Money(cents: max(0, total.cents + (record?.tipCents ?? 0) - paid))
         return order
     }
 
