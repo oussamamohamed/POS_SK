@@ -2198,6 +2198,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 </div>
                 <div class="cart-item-controls">
                     <button class="btn-qty" data-action="minus" data-idx="${index}">-</button>
+                    ${item.lineId && item.isDispatched && canVoidItems() ? `<button class="btn-qty" data-action="void" data-idx="${index}" title="${escapeHtml(t('line_void.action'))}" aria-label="${escapeHtml(t('line_void.action'))}">✕</button>` : ''}
                     <span style="font-weight:700;">${item.quantity}</span>
                     <button class="btn-qty" data-action="plus" data-idx="${index}">+</button>
                     <span class="cart-item-price" style="${item.isComp ? 'text-decoration:line-through;color:var(--text-muted);' : ''}">${lineTtc.toFixed(2)} €</span>
@@ -2236,9 +2237,18 @@ document.addEventListener('DOMContentLoaded', async () => {
                     } else {
                         item.quantity += 1;
                     }
+                } else if (action === 'void') {
+                    openLineVoidModal(item);
+                    return;
                 } else if (action === 'minus') {
                     if (item.lineId && item.isDispatched) {
-                        showToast(t('order.item_locked_warning'), 'warning');
+                        if (canVoidItems()) openLineVoidModal(item);
+                        else showToast(t('order.item_locked_warning'), 'warning');
+                        return;
+                    }
+                    if (item.lineId) {
+                        // Ligne enregistrée non envoyée : correction côté serveur (sans motif), puis on relit la commande.
+                        voidOrderItem(state.activeOrderId, item.lineId, 1, '');
                         return;
                     }
                     item.quantity -= 1;
@@ -2262,6 +2272,59 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         });
     }
+
+    function canVoidItems() {
+        return state.operator?.role === 'FloorManager' || state.operator?.role === 'Admin';
+    }
+
+    /** Annule (ligne envoyée, motif obligatoire) ou corrige (ligne non envoyée) `quantity` unités ; relit la commande. */
+    async function voidOrderItem(orderId, lineId, quantity, reason) {
+        try {
+            await ensureAuthToken();
+            const res = await fetch(`/api/orders/${orderId}/items/${lineId}/void`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ quantity, reason })
+            });
+            if (!res.ok) {
+                showToast(await readApiError(res, t('line_void.error')), 'error');
+                return false;
+            }
+            await loadActiveTableOrder(state.activeTable);
+            return true;
+        } catch {
+            showToast(t('line_void.error'), 'error');
+            return false;
+        }
+    }
+
+    let lineVoidTarget = null;
+    function openLineVoidModal(item) {
+        lineVoidTarget = item;
+        document.getElementById('lineVoidName').textContent = item.product.name;
+        const qty = document.getElementById('inputLineVoidQty');
+        qty.max = item.quantity;
+        qty.value = 1;
+        document.getElementById('inputLineVoidReason').value = '';
+        document.getElementById('lineVoidModal').classList.add('active');
+    }
+    function closeLineVoidModal() {
+        document.getElementById('lineVoidModal').classList.remove('active');
+        lineVoidTarget = null;
+    }
+    document.getElementById('btnCloseLineVoidModal').addEventListener('click', closeLineVoidModal);
+    document.getElementById('btnCancelLineVoid').addEventListener('click', closeLineVoidModal);
+    document.getElementById('formLineVoid').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const item = lineVoidTarget;
+        const reason = document.getElementById('inputLineVoidReason').value.trim();
+        const quantity = parseInt(document.getElementById('inputLineVoidQty').value, 10);
+        if (!item || !reason || !(quantity >= 1 && quantity <= item.quantity)) return;
+        if (await voidOrderItem(state.activeOrderId, item.lineId, quantity, reason)) {
+            showToast(t('line_void.done', { qty: quantity, name: item.product.name, reason }), 'success');
+            closeLineVoidModal();
+        }
+    });
 
     elements.btnClearCart.addEventListener('click', () => {
         if (state.cart.length === 0) return;
@@ -3709,7 +3772,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 </div>
                 ${open ? `<div class="ticket-bar" aria-hidden="true"><i style="width:${Math.min(100, age / target * 100).toFixed(0)}%"></i></div>` : ''}
                 <div class="ticket-items">
-                    ${ticket.items ? ticket.items.map(i => `<div>• ${i.quantity}x ${escapeHtml(i.productName)}</div>`).join('') : t('kitchen.default_dish')}
+                    ${ticket.items ? ticket.items.map(i => i.status === 3
+                        ? `<div class="kds-item-cancelled"><s>• ${i.quantity}x ${escapeHtml(i.productName)}</s> <strong>${escapeHtml(t('kitchen.cancelled_tag'))}</strong></div>`
+                        : `<div>• ${i.quantity}x ${escapeHtml(i.productName)}${i.cancelledQuantity > 0 ? ` <strong>(${escapeHtml(t('kitchen.cancelled_tag'))} ${i.cancelledQuantity})</strong>` : ''}</div>`).join('') : t('kitchen.default_dish')}
                 </div>
                 ${late ? `<span class="ticket-late">${escapeHtml(t('kitchen.late_tag'))}</span>` : ''}
             `;

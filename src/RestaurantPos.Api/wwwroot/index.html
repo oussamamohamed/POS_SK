@@ -1735,6 +1735,31 @@ try { window.applyDesign(localStorage.getItem('pos_design') === 'classic'); } ca
         </div>
     </div>
 
+    <!-- Annulation d'une ligne envoyée (manager / admin) -->
+    <div class="modal-overlay" id="lineVoidModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 data-i18n="line_void.title">Annuler un article envoyé</h3>
+                <button type="button" class="btn-close-modal" id="btnCloseLineVoidModal">✕</button>
+            </div>
+            <form id="formLineVoid" class="admin-form" style="display:flex; flex-direction:column; gap:14px;">
+                <strong id="lineVoidName"></strong>
+                <div class="form-group">
+                    <label for="inputLineVoidQty" data-i18n="line_void.quantity">Quantité à annuler</label>
+                    <input type="number" id="inputLineVoidQty" min="1" step="1" value="1" required style="width:100%; padding:10px; border-radius: 2px; background:rgb(var(--veil) / 0.05); border:1px solid var(--border-color); color: var(--text-main);" />
+                </div>
+                <div class="form-group">
+                    <label for="inputLineVoidReason" data-i18n="line_void.reason">Motif (obligatoire)</label>
+                    <input type="text" id="inputLineVoidReason" maxlength="200" required autocomplete="off" data-i18n-placeholder="line_void.reason_placeholder" placeholder="" style="width:100%; padding:10px; border-radius: 2px; background:rgb(var(--veil) / 0.05); border:1px solid var(--border-color); color: var(--text-main);" />
+                </div>
+                <div style="display:flex; justify-content:flex-end; gap:10px;">
+                    <button type="button" class="btn-archive" id="btnCancelLineVoid" data-i18n="common.cancel">Annuler</button>
+                    <button type="submit" class="btn-primary" style="padding:10px 20px; font-weight:700;" data-i18n="line_void.confirm">Annuler l'article</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Hotel Room Charge PMS Modal (US5) -->
     <div class="modal-overlay" id="roomChargeModal">
         <div class="modal-card" style="width:480px;">
