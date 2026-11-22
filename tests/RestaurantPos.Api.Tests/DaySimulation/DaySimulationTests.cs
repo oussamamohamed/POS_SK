@@ -65,13 +65,20 @@ public class DaySimulationTests(DayFixture day) : IClassFixture<DayFixture>
         foreach (var order in orders)
         {
             long total = DayLedgerOracle.OrderTotalCents(order);
-            // commande rouverte : le premier règlement est annulé, les suivants soldent le total d'après les annulations
-            long paid = order.Payments!.Skip(DayLedgerOracle.IsReopened(order) ? 1 : 0).Sum(p => p.Sum(t => t.AmountCents));
-            paid.Should().Be(total + order.TipCents, $"commande {order.Ref} soldée : règlements = total + pourboire");
-            order.Payments!.Should().HaveCountLessThanOrEqualTo(5);
+            var voidedIndexes = DayLedgerOracle.VoidedPaymentIndexes(order);
+            bool allVoided = order.Payments!.Count > 0 && voidedIndexes.Count == order.Payments.Count;
+            int tipIndex = order.TipPaymentIndex ?? (order.Payments.Count - 1);
+            long expectedTip = allVoided || !voidedIndexes.Contains(tipIndex) ? order.TipCents : 0;
+            // commande soldée puis annulée en totalité : la somme de ses règlements d'origine égale total + pourboire ;
+            // commande rouverte et re-soldée : la somme des règlements non annulés égale total + pourboire conservé.
+            long paid = allVoided
+                ? order.Payments.Sum(p => p.Sum(t => t.AmountCents))
+                : order.Payments.Where((_, i) => !voidedIndexes.Contains(i)).Sum(p => p.Sum(t => t.AmountCents));
+            paid.Should().Be(total + expectedTip, $"commande {order.Ref} soldée : règlements = total + pourboire");
+            order.Payments.Should().HaveCountLessThanOrEqualTo(5);
             if (order.VoidPaymentIndex is { } index)
             {
-                index.Should().BeInRange(0, order.Payments!.Count - 1);
+                index.Should().BeInRange(0, order.Payments.Count - 1);
             }
         }
 
@@ -87,14 +94,22 @@ public class DaySimulationTests(DayFixture day) : IClassFixture<DayFixture>
         foreach (var order in withVoids)
         {
             order.LineVoids!.Select(v => Array.IndexOf(DayLedgerOracle.LineVoidPhases, v.Phase)).Should().BeInAscendingOrder($"{order.Ref} : phases dans l'ordre");
-            order.LineVoids!.Where(v => v.Phase == "part_paid" || v.Phase == "paid").Should().OnlyContain(v => v.Expect == 409, $"{order.Ref} : une commande réglée refuse");
+            order.LineVoids!.Where(v => v.Phase is "part_paid" or "part_paid_two" or "part_voided_still_has_receipt" or "paid" or "cancelled")
+                .Should().OnlyContain(v => v.Expect == 409, $"{order.Ref} : une commande réglée ou annulée refuse");
             (order.VoidPaymentIndex is null || !DayLedgerOracle.IsReopened(order)).Should().BeTrue();
         }
 
         var steps = withVoids.SelectMany(o => o.LineVoids!).ToList();
         steps.Select(v => v.Phase).Distinct().Should().BeEquivalentTo(DayLedgerOracle.LineVoidPhases);
-        steps.Select(v => v.Expect).Distinct().Should().BeEquivalentTo([200, 400, 403, 409]);
-        steps.Should().Contain(v => v.ReAdd > 0).And.Contain(v => v.Legacy).And.Contain(v => v.By == "waiter" && v.Phase == "draft");
+        steps.Select(v => v.Expect).Distinct().Should().BeEquivalentTo([200, 400, 403, 404, 409]);
+        steps.Should().Contain(v => v.ReAdd > 0).And.Contain(v => v.Legacy)
+            .And.Contain(v => v.By == "waiter" && v.Phase == "draft")
+            .And.Contain(v => v.By == "admin" && v.Expect == 200)
+            .And.Contain(v => v.By == "kitchen" && v.Expect == 403)
+            .And.Contain(v => v.AddDraft != null);
+        var rvSteps = orders.Where(o => o.ReceiptVoids is { Count: > 0 }).SelectMany(o => o.ReceiptVoids!).ToList();
+        rvSteps.Select(v => v.Expect).Distinct().Should().BeEquivalentTo([200, 400, 403]);
+        rvSteps.Should().Contain(v => v.VoidSelf).And.Contain(v => v.FromTerminal != null);
         withVoids.Should().Contain(o => DayLedgerOracle.OrderTotalCents(o) == 0 && o.Payments!.Count == 0, "une commande vidée par les annulations");
         a.Operations.Take(FirstZ(a)).Last(o => o.Type is "table_order" or "counter_order").LineVoids.Should().NotBeNullOrEmpty("la dernière commande avant la Z annule une ligne");
     }
@@ -159,6 +174,82 @@ public class DaySimulationTests(DayFixture day) : IClassFixture<DayFixture>
         var z = await DayRunner.SendAsync(run.Clients["A"], HttpMethod.Post, "/api/fiscal/z-closure", zRequest, m.Token);
         var ledger = DayLedgerOracle.Compute(scenario.Operations, run.TerminalIds);
         DayAssert.SummaryEquals(z, ledger.ByTerminal["T01"], Ctx(11, 2, "A", "Z acceptée"));
+    }
+
+    [Fact]
+    public async Task ZIsRefusedWhenOrderReopenedByPartialReceiptVoid_ThenAcceptedOnceSettled()
+    {
+        var scenario = new DayScenario(12,
+            [new("A", "Caisse A")],
+            [new("table_order", "A", "waiter1", "51", 2, "EatIn", [new("Menu", 2, 2000, 10m)], null, 0, [[new("Cash", 1500)], [new("CreditCard", 2500)]], Ref: "r0")]);
+        using var factory = new PosApiApplicationFactory();
+        var run = await DayRunner.RunAsync(factory, scenario);
+        var m = run.Manager;
+        var client = run.Clients["A"];
+        var term = run.TerminalIds["A"];
+
+        // Annulation de la première part : la commande redevient réglable et retrouve sa table -> Z refusée (409 open_orders).
+        var firstReceipt = run.Receipts["A"][0];
+        await DayRunner.SendAsync(client, HttpMethod.Post, $"/api/checkout/void/{firstReceipt.Id}", new VoidReceiptRequest(term, m.Id), m.Token);
+        var zRequest = new ZClosureRequest(term, m.Id, m.Name);
+        var (status, body) = await DayRunner.TrySendAsync(client, HttpMethod.Post, "/api/fiscal/z-closure", zRequest, m.Token);
+        status.Should().Be(409);
+        body.GetProperty("code").GetString().Should().Be("open_orders");
+        body.GetProperty("openOrders")[0].GetProperty("tableNumber").GetString().Should().Be("51");
+        body.GetProperty("openOrders")[0].GetProperty("remainingTtc").GetDecimal().Should().Be(15m);
+
+        // Solde de la part annulée : la Z passe et les chaînes sont intactes.
+        var active = await DayRunner.SendAsync(client, HttpMethod.Get, "/api/tables/51/order", null, m.Token);
+        var orderId = active.GetProperty("orderId").GetGuid();
+        await DayRunner.SendAsync(client, HttpMethod.Post, "/api/checkout/pay", new PaymentSettlementRequest(
+            orderId, "51", m.Id, [new TenderItemRequest(PaymentMethod.CreditCard, 15m, 15m, 0m)]), m.Token);
+        var z = await DayRunner.SendAsync(client, HttpMethod.Post, "/api/fiscal/z-closure", zRequest, m.Token);
+        DayAssert.Cents(z.GetProperty("totalSalesTtc")).Should().Be(4000);
+        z.GetProperty("receiptCount").GetInt32().Should().Be(4);
+        await AssertChainsAreValidAsync(run, scenario);
+    }
+
+    [Fact]
+    public async Task TableTakenByAnotherOrder_PartialVoidReopensWithoutStealingTable_AndZPassesAfterBothSettle()
+    {
+        var scenario = new DayScenario(13,
+            [new("A", "Caisse A")],
+            [new("table_order", "A", "waiter1", "52", 2, "EatIn", [new("Menu", 2, 1500, 10m)], null, 0, [[new("Cash", 1000)], [new("CreditCard", 2000)]], Ref: "o1")]);
+        using var factory = new PosApiApplicationFactory();
+        var run = await DayRunner.RunAsync(factory, scenario);
+        var m = run.Manager;
+        var client = run.Clients["A"];
+        var term = run.TerminalIds["A"];
+        Guid order1Id;
+        using (var scope = factory.Services.CreateScope())
+        {
+            order1Id = await scope.ServiceProvider.GetRequiredService<AppDbContext>().FiscalReceipts
+                .Where(r => r.Id == run.Receipts["A"][0].Id).Select(r => r.OrderId).SingleAsync();
+        }
+
+        // Nouvelle commande sur la table 52 (libérée après o1).
+        var opened = await DayRunner.SendAsync(client, HttpMethod.Post, "/api/tables/52/open", new OpenTableRequest(m.Name, 2, m.Id), m.Token);
+        var order2Id = opened.GetProperty("activeOrderId").GetGuid();
+        await DayRunner.SendAsync(client, HttpMethod.Post, "/api/tables/52/items", new AddOrderItemsRequest(
+            [new OrderItemInputDto(Guid.NewGuid(), "Plat", 1, 12m, 10m, null, null)]), m.Token);
+
+        // Annuler la part 1 de o1 ne vole pas la table 52 à order2 ; les deux bloquent la Z tant qu'elles ne sont pas soldées.
+        await DayRunner.SendAsync(client, HttpMethod.Post, $"/api/checkout/void/{run.Receipts["A"][0].Id}", new VoidReceiptRequest(term, m.Id), m.Token);
+        var activeOn52 = await DayRunner.SendAsync(client, HttpMethod.Get, "/api/tables/52/order", null, m.Token);
+        activeOn52.GetProperty("orderId").GetGuid().Should().Be(order2Id);
+
+        var (status, body) = await DayRunner.TrySendAsync(client, HttpMethod.Post, "/api/fiscal/z-closure", new ZClosureRequest(term, m.Id, m.Name), m.Token);
+        status.Should().Be(409);
+        body.GetProperty("openOrders").GetArrayLength().Should().Be(2);
+
+        // Solde de o1 (par son orderId explicite) puis de order2 -> Z passe à 42,00 €.
+        await DayRunner.SendAsync(client, HttpMethod.Post, "/api/checkout/pay", new PaymentSettlementRequest(
+            order1Id, "52", m.Id, [new TenderItemRequest(PaymentMethod.CreditCard, 10m, 10m, 0m)]), m.Token);
+        await DayRunner.SendAsync(client, HttpMethod.Post, "/api/checkout/pay", new PaymentSettlementRequest(
+            order2Id, "52", m.Id, [new TenderItemRequest(PaymentMethod.Cash, 12m, 12m, 0m)]), m.Token);
+        var z = await DayRunner.SendAsync(client, HttpMethod.Post, "/api/fiscal/z-closure", new ZClosureRequest(term, m.Id, m.Name), m.Token);
+        DayAssert.Cents(z.GetProperty("totalSalesTtc")).Should().Be(4200);
+        await AssertChainsAreValidAsync(run, scenario);
     }
 
     // ---------- Z = grand livre, poste par poste ----------
@@ -238,11 +329,16 @@ public class DaySimulationTests(DayFixture day) : IClassFixture<DayFixture>
         var scenario = new DayScenario(21,
             [new("A", "Caisse A"), new("B", "Caisse B")],
             [
-                new("table_order", "A", "waiter1", "1", 2, "EatIn", [new("Menu", 2, 2000, 10m)], null, 0, [[new("Cash", 4000, 1000)]], Ref: "d1a"),
+                new("table_order", "A", "waiter1", "1", 2, "EatIn", [new("Menu", 2, 2000, 10m), new("Café", 1, 250, 20m)], null, 0,
+                    [[new("Cash", 4000, 1000)]], Ref: "d1a", LineVoids: [new("sent", 1, 1, "Annulé jour 1")]),
                 new("counter_order", "B", "waiter2", null, 0, "Takeaway", [new("Sandwich", 1, 1000, 10m, 5.5m)], null, 0, [[new("CreditCard", 1000)]], Ref: "d1b"),
+                new("table_order", "B", "waiter2", "3", 2, "EatIn", [new("Salade", 1, 900, 10m)], null, 0, [[new("Cash", 900)]], VoidPaymentIndex: 0, Ref: "d1c"),
                 new("z_closure", "A"), new("z_closure", "B"),
-                new("table_order", "A", "waiter1", "2", 3, "EatIn", [new("Plat", 1, 1850, 20m), new("Dessert", 2, 650, 10m)], new("Percentage", 10m), 200,
-                    [[new("CreditCard", 2000)], [new("Cash", 1035, 500)]], Ref: "d2a"),
+                // Annulation tardive d'un reçu du jour 1 pendant le jour 2 : refusée (409 void_after_closure)
+                new("void_receipt", "A", VoidPaymentIndex: 0, Ref: "d1a"),
+                new("table_order", "A", "waiter1", "2", 3, "EatIn", [new("Plat", 1, 1850, 20m), new("Dessert", 3, 650, 10m)], new("Percentage", 10m), 200,
+                    [[new("CreditCard", 2000)], [new("Cash", 1035, 500)], [new("CreditCard", 2000)]], Ref: "d2a", TipPaymentIndex: 1,
+                    LineVoids: [new("sent", 1, 1, "Un dessert en trop")], ReceiptVoids: [new DayReceiptVoid(1, 0)]),
                 new("counter_order", "B", "waiter2", null, 0, "Takeaway", [new("Café", 3, 200, 10m, 5.5m)], null, 0, [[new("Cash", 600)]], Ref: "d2b"),
                 new("x_report", "A"), new("x_report", "B"),
                 new("z_closure", "A"), new("z_closure", "B"),
@@ -250,6 +346,7 @@ public class DaySimulationTests(DayFixture day) : IClassFixture<DayFixture>
         using var factory = new PosApiApplicationFactory();
         var run = await DayRunner.RunAsync(factory, scenario);
         AssertReports(scenario, run); // X, Z et Z relue de chaque journée = grand livre de CETTE journée seulement
+        run.VoidAttempts.Should().ContainSingle().Which.Should().Match<DayVoidAttempt>(a => a.Status == 409 && a.Code == "void_after_closure");
 
         using var scope = factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -321,6 +418,45 @@ public class DaySimulationTests(DayFixture day) : IClassFixture<DayFixture>
             var page = await DayRunner.SendAsync(client, HttpMethod.Get, $"/api/fiscal/journal?eventType={eventType}&pageSize=1", null, day.Run.Manager.Token);
             page.GetProperty("totalCount").GetInt32().Should().Be(count, $"{Ctx(day.Scenario.Seed, day.Scenario.Operations.Count, "*", "journal")} : événements {eventType}");
         }
+    }
+
+    // ---------- tableaux de bord, résumé quotidien et analyse menu ----------
+
+    [Fact]
+    public async Task TakingsDailySummaryAndMenuAnalysis_AreConsistentAfterPartialAndFullVoids()
+    {
+        var client = day.Run.Clients.Values.First();
+        var token = day.Run.Manager.Token;
+
+        // 1. /api/dashboard/takings : les commandes rouvertes puis re-soldées (v8, v20-v23) restent comptées ; les annulées totales (v24) sont exclues.
+        var now = DateTimeOffset.UtcNow;
+        string from = Uri.EscapeDataString(now.AddHours(-12).ToString("O"));
+        string to = Uri.EscapeDataString(now.AddHours(12).ToString("O"));
+        var takings = await DayRunner.SendAsync(client, HttpMethod.Get,
+            $"/api/dashboard/takings?from={from}&to={to}", null, token);
+        DayAssert.Cents(takings.GetProperty("totalTtc")).Should().Be(day.Ledger.Total.TtcCents, "CA TTC de takings = grand livre");
+        DayAssert.Cents(takings.GetProperty("tipsTotalTtc")).Should().Be(DayLedgerOracle.NetTipsCents(day.Scenario.Operations),
+            "pourboires takings = pourboires nets (v22 conservé, v23 et v24 annulés exclus)");
+
+        // 2. /api/dashboard/daily-summary par poste : totaux = Z et pourboires nets (sans v24 annulé ni v23 dont la part pourboire a été annulée).
+        foreach (var (key, id) in day.Run.TerminalIds)
+        {
+            var summary = await DayRunner.SendAsync(client, HttpMethod.Get, $"/api/dashboard/daily-summary?terminalId={id}", null, token);
+            var expected = day.Ledger.ByTerminal[id];
+            summary.GetProperty("totalSalesTtcCents").GetInt64().Should().Be(expected.TtcCents, $"daily-summary {key} : TTC");
+            summary.GetProperty("totalSalesHtCents").GetInt64().Should().Be(expected.HtCents, $"daily-summary {key} : HT");
+            summary.GetProperty("receiptCount").GetInt32().Should().Be(expected.ReceiptCount, $"daily-summary {key} : reçus");
+            long summaryTips = summary.GetProperty("tipsByServer").EnumerateArray().Sum(t => t.GetProperty("tipsCents").GetInt64());
+            summaryTips.Should().Be(DayLedgerOracle.NetTipsCents(day.Scenario.Operations, key), $"daily-summary {key} : pourboires nets");
+        }
+
+        // 3. /api/menu-analysis : les plats de commandes partiellement annulées puis re-soldées (v21 Côtelette, v22 Magret, v23 Risotto) y figurent,
+        // les commandes totalement annulées (v24 Article 0, v18 Panini) en sont absentes.
+        var menu = await DayRunner.SendAsync(client, HttpMethod.Get,
+            $"/api/menu-analysis?from={from}&to={to}", null, token);
+        var names = menu.GetProperty("items").EnumerateArray().Select(i => i.GetProperty("name").GetString()).ToList();
+        names.Should().Contain(["Côtelette", "Magret", "Risotto"]);
+        names.Should().NotContain(["Article 0", "Panini"]);
     }
 
     // ---------- FEC ----------
@@ -475,10 +611,7 @@ public class DaySimulationTests(DayFixture day) : IClassFixture<DayFixture>
     }
 
     /// <summary>Pourboires encaissés et non annulés d'un poste : la part des règlements qui n'est pas du chiffre d'affaires.</summary>
-    private static long NetTipsCents(DayScenario scenario, string key) => scenario.Operations
-        .Where(o => o.Terminal == key && o.Type is "table_order" or "counter_order" && o.Payments is { Count: > 0 })
-        .Where(o => o.VoidPaymentIndex != o.Payments!.Count - 1)
-        .Sum(o => o.TipCents);
+    private static long NetTipsCents(DayScenario scenario, string key) => DayLedgerOracle.NetTipsCents(scenario.Operations, key);
 
     private static async Task AssertChainsAreValidAsync(DayRunResult run, DayScenario scenario)
     {

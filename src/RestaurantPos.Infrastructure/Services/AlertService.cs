@@ -104,6 +104,7 @@ public sealed class AlertService(AppDbContext db, IFiscalJournal? journal = null
         var orders = (await db.Orders.AsNoTracking().Include(o => o.Items).Where(o => orderIds.Contains(o.Id)).ToListAsync(ct).ConfigureAwait(false)).ToDictionary(o => o.Id);
         var created = 0;
 
+        var voidedIds = receipts.Where(r => r.VoidedReceiptId != null).Select(r => r.VoidedReceiptId!.Value).ToHashSet();
         foreach (var (terminal, periodKey, ids) in periods)
         {
             var inPeriod = receipts.Where(r => ids.Contains(r.Id)).ToList();
@@ -114,7 +115,9 @@ public sealed class AlertService(AppDbContext db, IFiscalJournal? journal = null
                     created += await RaiseAsync(AlertRuleTypes.VoidsCount, g.Key, terminal, periodKey, new { count = g.Count(), totalCents = g.Sum(r => Math.Abs(r.TotalTtcAmount.AmountInCents)), receiptIds = g.Select(r => r.Id) }, ct).ConfigureAwait(false);
             }
 
-            var sold = inPeriod.Where(r => r.VoidedReceiptId == null && orders.ContainsKey(r.OrderId)).Select(r => orders[r.OrderId]).DistinctBy(o => o.Id).ToList();
+            var sold = inPeriod
+                .Where(r => r.VoidedReceiptId == null && !voidedIds.Contains(r.Id) && orders.ContainsKey(r.OrderId) && orders[r.OrderId].Status != OrderStatus.Cancelled)
+                .Select(r => orders[r.OrderId]).DistinctBy(o => o.Id).ToList();
             if (rules.TryGetValue(AlertRuleTypes.DiscountPercent, out var discount))
             {
                 foreach (var g in sold.Select(o => (Order: o, Percent: DiscountPercentOf(o))).Where(x => x.Percent > discount.Threshold).GroupBy(x => x.Order.OperatorId))

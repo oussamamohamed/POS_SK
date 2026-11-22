@@ -23,8 +23,20 @@ extension LocalPosAPI {
             else { throw APIError.server(status: 400, message: "Annulation du reçu impossible.") }
             guard let order = try orders.order(id: original.orderId), let orderTtc = decorate(order).totalTtcAmount?.cents
             else { throw APIError.server(status: 400, message: "Annulation du reçu impossible.") }
+            // Retirer la part de pourboire portée par le reçu annulé (excédent de règlement au-delà du TTC fiscal du reçu).
+            let tenderSum = try database.query("SELECT COALESCE(SUM(Amount), 0) AS s FROM PaymentTenders WHERE FiscalReceiptId = ?", [.uuid(receiptId)]).first?.int("s") ?? 0
+            let receiptTip = max(0, tenderSum - original.ttcCents)
+            if receiptTip > 0 {
+                let currentTip = try orders.tipCents(of: original.orderId)
+                try orders.setTip(orderId: original.orderId, cents: max(0, currentTip - receiptTip))
+            }
             if orderTtc == original.ttcCents {
                 try closeOrder(order, as: .cancelled)
+                // Le stock n'est restitué que sur annulation complète (jamais sur une part de note partagée, qui rouvre la commande).
+                if restock {
+                    stockRepository.restoreSale(orderId: original.orderId, operatorId: manager.id)
+                    _ = try? stockRepository.refreshAutoAvailability()
+                }
             } else {
                 try orders.setStatus(orderId: original.orderId, .billRequested)
                 // Réouverte : la commande retrouve sa table si elle est libre (déjà reprise par une autre commande : elle reste sans table).
@@ -34,11 +46,6 @@ extension LocalPosAPI {
                         activeOrderId: order.orderId, openedAt: table.openedAtUtc ?? now
                     )
                 }
-            }
-            // Le stock n'est restitué que si le responsable l'a demandé (produit non consommé).
-            if restock {
-                stockRepository.restoreSale(orderId: original.orderId, operatorId: manager.id)
-                _ = try? stockRepository.refreshAutoAvailability()
             }
             _ = try? alertRepository.evaluate(now: now) // annulations : seuil d'alerte, sans jamais bloquer l'avoir
             return OperationResult(success: true, message: "Reçu \(original.receiptNumber) annulé (\(voided.receiptNumber)).")

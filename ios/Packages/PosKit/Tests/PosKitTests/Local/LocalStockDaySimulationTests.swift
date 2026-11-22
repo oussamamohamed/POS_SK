@@ -14,6 +14,7 @@ struct LocalStockDaySimulationTests {
         let product: String?, ingredient: String?
         let quantity: Int?, quantityMilli: Int64?, unitCostMilliCents: Int64?, saleIndex: Int?
         let restock: Bool?
+        let voidQuantity: Int?
     }
     struct Expected: Decodable { let stockMilli: [String: Int64], unitCostMilli: [String: Int64], productCostCents: [String: Int] }
     struct Day: Decodable { let ingredients: [IngredientSpec], products: [ProductSpec], operations: [Op], expected: Expected }
@@ -56,6 +57,33 @@ struct LocalStockDaySimulationTests {
                 let order = try #require(try await api.activeOrder(table: table))
                 let cents = product.price.cents * op.quantity!
                 _ = try await api.pay(localPayment(order, table: table, tenders: [localTender(.cash, cents)]))
+                sales.append(try lastReceipt())
+            case "sale_with_line_void":
+                let table = "J\(sales.count)"
+                let product = products[op.product!]!
+                try await seatTable(api, table, items: [localInput(product, quantity: op.quantity!)])
+                try await api.dispatch(table: table)
+                let order = try #require(try await api.activeOrder(table: table))
+                let line = try #require(order.lines.first)
+                let voidQty = op.voidQuantity ?? 0
+                try await api.voidLine(orderId: order.orderId, lineId: line.lineId, quantity: voidQty, reason: "Erreur", operatorId: nil)
+                let cents = product.price.cents * (op.quantity! - voidQty)
+                _ = try await api.pay(localPayment(order, table: table, tenders: [localTender(.cash, cents)]))
+                sales.append(try lastReceipt())
+            case "split_void_repay":
+                let table = "J\(sales.count)"
+                let product = products[op.product!]!
+                try await seatTable(api, table, items: [localInput(product, quantity: op.quantity!)])
+                let order = try #require(try await api.activeOrder(table: table))
+                let total = product.price.cents * op.quantity!
+                let part1 = total / 2
+                let part2 = total - part1
+                _ = try await api.pay(localPayment(order, table: table, tenders: [localTender(.cash, part1)]))
+                let r1 = try lastReceipt()
+                _ = try await api.pay(localPayment(order, table: table, tenders: [localTender(.creditCard, part2)]))
+                // Annulation partielle même avec restock: true : la commande n'est pas annulée, le stock ne doit pas être restitué.
+                _ = try await api.voidReceipt(receiptId: r1, restock: true)
+                _ = try await api.pay(localPayment(order, table: table, tenders: [localTender(.creditCard, part1)]))
                 sales.append(try lastReceipt())
             case "void": _ = try await api.voidReceipt(receiptId: sales[op.saleIndex!], restock: op.restock ?? false)
             default: Issue.record("opération inconnue : \(op.type)")

@@ -142,8 +142,127 @@ public static class DayScenarioGenerator
             // toutes les lignes annulées : commande vide à 0 (remise fixe bornée), ni réglable (aucune ligne) ni bloquante pour la Z
             Table("v9", "A", "waiter2", "29", [new("Apéritif", 2, 450, 10m), new("Planche", 1, 1200, 10m)],
                 [Sent(0, 2, "Client parti"), Sent(1, 1, "Client parti")], new DayOrderDiscount("FixedAmount", 5m)) with { Payments = [] },
-            // dernière commande avant la Z
+            // commande table avec annulation avant les cas combinés étendus
             Table("v10", "B", "waiter3", "30", [new("Tarte", 2, 650, 5.5m), new("Café", 1, 250, 10m)], [Sent(0, 1)]),
+
+            // --- Combinaisons étendues et cas limites (v11 à v25) ---
+
+            // v11 : rôles (Admin 200, Kitchen 200 brouillon / 403 envoyé), quantités limites (0, -1, > reste -> 400),
+            // ligne inconnue / commande inconnue / ligne déjà retirée (404), motif avec espaces, accents et guillemets
+            Table("v11", "A", "waiter1", "31", [new("Entrecôte", 2, 2400, 10m), new("Soupe", 2, 700, 10m), new("Café", 1, 250, 20m)],
+            [
+                new("draft", 1, 1, null, "kitchen"),
+                Sent(0, 1, "Test", by: "kitchen", expect: 403),
+                Sent(0, 0, "Quantité nulle", expect: 400),
+                Sent(0, -1, "Quantité négative", expect: 400),
+                Sent(0, 5, "Au-delà", expect: 400),
+                new("sent", 0, 1, "Inconnue", Expect: 404, UnknownLine: true),
+                new("sent", 0, 1, "Commande inconnue", Expect: 404, UnknownOrder: true),
+                Sent(0, 2, "  Plat froid — retour \"client\"  ", by: "admin"),
+                Sent(0, 1, "Déjà retirée", expect: 404),
+            ]),
+
+            // v12 : commande mixte (lignes envoyées + ligne brouillon ajoutée après envoi) : serveur corrige brouillon (200, 0 JET), refusé sur envoyée (403)
+            Table("v12", "B", "waiter2", "32", [new("Steak", 2, 1900, 10m), new("Frites", 1, 500, 10m)],
+            [
+                new("sent", 0, 1, "Changement d'avis", AddDraft: new DayLine("Dessert du jour", 3, 650, 5.5m)),
+                new("sent", 2, 1, null, "waiter"),
+                Sent(0, 1, "Non", by: "waiter", expect: 403),
+            ]),
+
+            // v13 : multi-bons entrelacés sur le même produit (qty 3 -> -1 -> reAdd 2 -> -1 #1 -> -1 #2 -> -1 #1 -> -1 #2 : deux bons Cancelled)
+            Table("v13", "C", "waiter3", "33", [new("Brochette", 3, 1400, 10m), new("Salade verte", 1, 500, 10m)],
+            [
+                Sent(0, 1, "Annul 1", reAdd: 2),
+                Sent(0, 1, "Annul 2"),
+                Sent(2, 1, "Annul 3"),
+                Sent(0, 1, "Annul 4"),
+                Sent(2, 1, "Annul 5"),
+            ]),
+
+            // v14 : remise % 33.33 % (arrondi délicat) + 4 taux de TVA (0 %, 5.5 %, 10 %, 20 %) + suppléments + annulations partielle et totale
+            Table("v14", "A", "waiter4", "34",
+                [new("Presse", 1, 300, 0m), new("Eau minérale", 2, 450, 5.5m), new("Plat chef", 2, 1850, 10m, ModifiersExtraCents: 150), new("Champagne", 2, 1200, 20m)],
+                [Sent(1, 2, "Annulé avant service"), Sent(3, 1, "Un verre en trop")],
+                new DayOrderDiscount("Percentage", 33.33m)),
+
+            // v15 : remise fixe > sous-total APRÈS annulation d'une ligne -> total borné à 0 €, soldé sans règlement ([])
+            Table("v15", "B", "waiter1", "35", [new("Plat du jour", 1, 1000, 10m), new("Salade", 1, 800, 10m)],
+                [Sent(0, 1, "Trop d'attente")], new DayOrderDiscount("FixedAmount", 10m)) with { Payments = [[]] },
+
+            // v16 : annulation de la seule ligne payante laissant uniquement une ligne offerte -> total 0 €, soldé sans règlement ([])
+            Table("v16", "C", "waiter2", "36", [new("Assiette", 1, 1200, 10m), new("Café gourmand", 1, 700, 5.5m, Comp: true)],
+                [Sent(0, 1, "Erreur table")]) with { Payments = [[]] },
+
+            // v17 : comptoir à emporter — correction brouillon + envoi + annulation ligne + HoldAndRecall + paiement + annulation reçu + voidLine sur Cancelled (409)
+            new("counter_order", "A", "waiter3", null, 0, "Takeaway",
+                [new("Wrap", 2, 850, 10m, 5.5m), new("Jus", 2, 400, 5.5m)],
+                HoldAndRecall: true, Ref: "v17",
+                LineVoids: [new("draft", 1, 1, null, "waiter"), Sent(0, 1, "Client change"), new("cancelled", 0, 1, "Après annulation", Expect: 409, Code: "order_not_modifiable")],
+                Payments: [[new DayTender("CreditCard", 1250)]],
+                ReceiptVoids: [new DayReceiptVoid(null, 0)]),
+
+            // v18 : refus d'annulation de reçu — serveur (403), autre poste (400 .NET), annulation valide (200), double annulation (400), annulation du -VOID- (400)
+            new("counter_order", "C", "waiter4", null, 0, "Takeaway",
+                [new("Panini", 1, 950, 10m, 5.5m), new("Eau", 1, 250, 5.5m)],
+                Ref: "v18",
+                Payments: [[new DayTender("Cash", 1200, 800)]],
+                ReceiptVoids:
+                [
+                    new DayReceiptVoid(null, 0, By: "waiter", Expect: 403),
+                    new DayReceiptVoid(null, 0, FromTerminal: "B", Expect: 400),
+                    new DayReceiptVoid(null, 0, By: "manager", Expect: 200),
+                    new DayReceiptVoid(null, 0, By: "manager", Expect: 400),
+                    new DayReceiptVoid(null, 0, By: "manager", Expect: 400, VoidSelf: true),
+                ]),
+
+            // v20 : note partagée + cycle complet du verrou order_has_receipts (1 reçu -> 2 reçus -> 1 reçu annulé/1 actif -> 2 reçus annulés -> voidLine 200 -> re-solde en 2 parts)
+            Table("v20", "A", "waiter1", "37", [new("Menu dégustation", 2, 2000, 10m), new("Bouteille vin", 1, 1000, 20m)],
+            [
+                new("part_paid", 1, 1, Expect: 409, Code: "order_has_receipts"),
+                new("part_paid_two", 1, 1, Expect: 409, Code: "order_has_receipts"),
+                new("part_voided_still_has_receipt", 1, 1, Expect: 409, Code: "order_has_receipts"),
+                new("all_voided_reopened", 1, 1, "Bouteille retirée"),
+                new("paid", 0, 1, Expect: 409, Code: "order_not_modifiable"),
+            ]) with
+            {
+                Payments = [[new DayTender("Cash", 1000)], [new DayTender("CreditCard", 1000)], [new DayTender("Cash", 1500, 500)], [new DayTender("CreditCard", 2500)]],
+                ReceiptVoids = [new DayReceiptVoid(1, 0, Stage: 0), new DayReceiptVoid(1, 1, Stage: 1)],
+            },
+
+            // v21 : note partagée soldée (2 parts) -> annulation 1re part (Cash avec rendu) -> table reliée -> re-règlement 1re part en Carte (M2, E14, R8)
+            new("table_order", "B", "waiter2", "38", 2, "EatIn", [new("Côtelette", 2, 1500, 10m)], null, 0,
+                [[new DayTender("Cash", 1200, 300)], [new DayTender("CreditCard", 1800)], [new DayTender("CreditCard", 1200)]],
+                Ref: "v21", ReceiptVoids: [new DayReceiptVoid(1, 0)]),
+
+            // v22 : note partagée soldée AVEC POURBOIRE sur la 2e part -> annulation 1re part (hors pourboire) -> re-règlement 1re part (pourboire conservé)
+            new("table_order", "C", "waiter3", "39", 2, "EatIn", [new("Magret", 1, 2000, 10m)], null, 300,
+                [[new DayTender("Cash", 1000)], [new DayTender("CreditCard", 1300)], [new DayTender("CreditCard", 1000)]],
+                Ref: "v22", TipPaymentIndex: 1, ReceiptVoids: [new DayReceiptVoid(1, 0)]),
+
+            // v23 : note partagée soldée AVEC POURBOIRE sur la 2e part -> annulation 2e part (celle du pourboire, qui remet TipAmount à 0) -> re-règlement du solde 10 € sans pourboire
+            new("table_order", "A", "waiter4", "40", 2, "EatIn", [new("Risotto", 1, 2000, 10m)], null, 250,
+                [[new DayTender("Cash", 1000)], [new DayTender("CreditCard", 1250)], [new DayTender("Cash", 1000, 500)]],
+                Ref: "v23", TipPaymentIndex: 1, ReceiptVoids: [new DayReceiptVoid(1, 1)]),
+
+            // v24 : 4 moyens (Cash+rendu, Card, MealVoucher, GiftCard) + 5 taux TVA (0 %, 2.1 %, 5.5 %, 10 %, 20 %) + remise 10 % + pourboire -> annulation totale + voidLine 409
+            Table("v24", "B", "waiter1", "41",
+                [new("Article 0", 1, 500, 0m), new("Presse", 1, 500, 2.1m), new("Jus", 1, 500, 5.5m), new("Plat", 1, 1500, 10m), new("Vin", 1, 1000, 20m)],
+                [new("cancelled", 0, 1, "Après annulation totale", Expect: 409, Code: "order_not_modifiable")],
+                new DayOrderDiscount("Percentage", 10m)) with
+            {
+                TipCents = 400,
+                Payments = [[new DayTender("Cash", 500, 500), new DayTender("CreditCard", 1500), new DayTender("MealVoucher", 500), new DayTender("GiftCard", 1500)]],
+                ReceiptVoids = [new DayReceiptVoid(null, 0)],
+            },
+
+            // v25 : reçu à 0 € (100 % offert) annulé + tentative de double annulation (400)
+            new("table_order", "C", "waiter2", "42", 1, "EatIn", [new("Dégustation offerte", 1, 1500, 10m, Comp: true)], null, 0,
+                [[]], Ref: "v25", ReceiptVoids: [new DayReceiptVoid(null, 0), new DayReceiptVoid(null, 0, Expect: 400)]),
+
+            // v19 : dernière commande comptoir (EatIn) vidée entièrement par annulations de ligne -> reste à 0 € sans reçu et ne bloque pas la Z
+            new("counter_order", "B", "waiter3", null, 0, "EatIn", [new("Croque", 1, 750, 10m), new("Café", 1, 250, 20m)],
+                Ref: "v19", LineVoids: [Sent(0, 1, "Abandon comptoir"), Sent(1, 1, "Abandon comptoir")], Payments: []),
         };
 
         // Règlement unique du total final (v4 avec un pourboire), sauf les cas qui portent déjà leurs règlements.
@@ -152,7 +271,7 @@ public static class DayScenarioGenerator
             "v1" => op with { Payments = Pay("Cash", DayLedgerOracle.OrderTotalCents(op), 300) },
             "v3" => op with { Payments = Pay("MealVoucher", DayLedgerOracle.OrderTotalCents(op)) },
             "v4" => op with { TipCents = 200, Payments = Pay("CreditCard", DayLedgerOracle.OrderTotalCents(op) + 200) },
-            "v5" or "v10" => op with { Payments = Pay("Cash", DayLedgerOracle.OrderTotalCents(op)) },
+            "v5" or "v10" or "v13" => op with { Payments = Pay("Cash", DayLedgerOracle.OrderTotalCents(op)) },
             _ => op with { Payments = Pay("CreditCard", DayLedgerOracle.OrderTotalCents(op)) },
         }).ToList();
     }

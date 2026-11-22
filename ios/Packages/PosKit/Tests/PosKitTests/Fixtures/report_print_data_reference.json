@@ -1580,9 +1580,24 @@
                   "totalTtcCents": 11231
                 },
                 {
+                  "productName": "Café",
+                  "quantity": 1,
+                  "totalTtcCents": 250
+                },
+                {
+                  "productName": "Champagne",
+                  "quantity": 1,
+                  "totalTtcCents": 1200
+                },
+                {
                   "productName": "Côte de bœuf",
                   "quantity": 1,
                   "totalTtcCents": 2800
+                },
+                {
+                  "productName": "Menu dégustation",
+                  "quantity": 2,
+                  "totalTtcCents": 4000
                 },
                 {
                   "productName": "Plat",
@@ -1590,9 +1605,29 @@
                   "totalTtcCents": 1003
                 },
                 {
+                  "productName": "Plat chef",
+                  "quantity": 2,
+                  "totalTtcCents": 4000
+                },
+                {
+                  "productName": "Presse",
+                  "quantity": 1,
+                  "totalTtcCents": 300
+                },
+                {
+                  "productName": "Risotto",
+                  "quantity": 1,
+                  "totalTtcCents": 2000
+                },
+                {
                   "productName": "Salade",
                   "quantity": 1,
                   "totalTtcCents": 900
+                },
+                {
+                  "productName": "Soupe",
+                  "quantity": 1,
+                  "totalTtcCents": 700
                 },
                 {
                   "productName": "Thé",
@@ -1610,7 +1645,7 @@
                   "totalTtcCents": 1300
                 }
               ],
-              "subtotalTtcCents": 190189
+              "subtotalTtcCents": 202639
             }
           ],
           "tips": [
@@ -1630,10 +1665,10 @@
           "totalTipsCents": 928,
           "hasGlobalDiscount": true,
           "activity": {
-            "discountsCents": 13992,
+            "discountsCents": 15825,
             "compsCents": 9498,
-            "voidCount": 3,
-            "voidCents": 21852
+            "voidCount": 7,
+            "voidCents": 26102
           },
           "cash": null
         }
@@ -1680,9 +1715,24 @@
                   "totalTtcCents": 500
                 },
                 {
+                  "productName": "Côtelette",
+                  "quantity": 2,
+                  "totalTtcCents": 3000
+                },
+                {
+                  "productName": "Dessert du jour",
+                  "quantity": 2,
+                  "totalTtcCents": 1300
+                },
+                {
                   "productName": "Eau",
                   "quantity": 1,
                   "totalTtcCents": 350
+                },
+                {
+                  "productName": "Frites",
+                  "quantity": 1,
+                  "totalTtcCents": 500
                 },
                 {
                   "productName": "Menu",
@@ -1705,12 +1755,17 @@
                   "totalTtcCents": 3780
                 },
                 {
+                  "productName": "Steak",
+                  "quantity": 1,
+                  "totalTtcCents": 1900
+                },
+                {
                   "productName": "Tarte",
                   "quantity": 1,
                   "totalTtcCents": 650
                 }
               ],
-              "subtotalTtcCents": 116138
+              "subtotalTtcCents": 122838
             }
           ],
           "tips": [
@@ -1728,8 +1783,8 @@
           "activity": {
             "discountsCents": 7938,
             "compsCents": 2329,
-            "voidCount": 0,
-            "voidCents": 0
+            "voidCount": 2,
+            "voidCents": 4800
           },
           "cash": null
         }
@@ -1781,6 +1836,11 @@
                   "totalTtcCents": 450
                 },
                 {
+                  "productName": "Magret",
+                  "quantity": 1,
+                  "totalTtcCents": 2000
+                },
+                {
                   "productName": "Menu midi",
                   "quantity": 1,
                   "totalTtcCents": 1500
@@ -1796,22 +1856,32 @@
                   "totalTtcCents": 2200
                 },
                 {
+                  "productName": "Salade verte",
+                  "quantity": 1,
+                  "totalTtcCents": 500
+                },
+                {
                   "productName": "Sandwich",
                   "quantity": 1,
                   "totalTtcCents": 850
                 }
               ],
-              "subtotalTtcCents": 235298
+              "subtotalTtcCents": 237798
             }
           ],
-          "tips": [],
-          "totalTipsCents": 0,
+          "tips": [
+            {
+              "serverName": "waiter3",
+              "tipCents": 300
+            }
+          ],
+          "totalTipsCents": 300,
           "hasGlobalDiscount": true,
           "activity": {
             "discountsCents": 10925,
             "compsCents": 8835,
-            "voidCount": 4,
-            "voidCents": 29874
+            "voidCount": 7,
+            "voidCents": 32074
           },
           "cash": null
         }

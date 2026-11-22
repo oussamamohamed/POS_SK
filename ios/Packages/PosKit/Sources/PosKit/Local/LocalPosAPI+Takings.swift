@@ -60,10 +60,11 @@ extension LocalPosAPI {
         let total = todays.reduce(0) { $0 + $1.cents }
         let todayIds = Set(todays.map(\.id))
 
-        // Commandes réglées de la période, hors commandes annulées par un avoir.
-        let voidedOrderIds = Set(rows.compactMap { row -> UUID? in
-            guard let id = row.uuid("Id"), voidedIds.contains(id) else { return nil }
-            return row.uuid("OrderId")
+        // Commandes réglées de la période : on n'exclut que celles annulées en totalité (sans aucun reçu actif).
+        let activeOrderIds = Set(valid.map(\.orderId))
+        let fullyVoidedOrderIds = Set(rows.compactMap { row -> UUID? in
+            guard let id = row.uuid("Id"), voidedIds.contains(id), let orderId = row.uuid("OrderId"), !activeOrderIds.contains(orderId) else { return nil }
+            return orderId
         })
         let products = Dictionary(uniqueKeysWithValues: try db.query("SELECT Id, CategoryId FROM Products").compactMap { row in row.uuid("Id").map { ($0, row.string("CategoryId") ?? "") } })
         let categoryNames = Dictionary(uniqueKeysWithValues: try db.query("SELECT Id, Name FROM Categories").map { ($0.string("Id") ?? "", $0.string("Name") ?? "") })
@@ -75,7 +76,7 @@ extension LocalPosAPI {
         func serverName(_ id: UUID?) -> String { id.flatMap { try? staffRepository.member(id: $0)?.name } ?? "Serveur Inconnu" }
 
         for row in orderRows {
-            guard let orderId = row.uuid("Id"), let created = row.date("CreatedAtUtc"), created >= from, created < to, !voidedOrderIds.contains(orderId),
+            guard let orderId = row.uuid("Id"), let created = row.date("CreatedAtUtc"), created >= from, created < to, !fullyVoidedOrderIds.contains(orderId),
                   let order = try orderRepository.order(id: orderId) else { continue }
             let lines = order.lines.map(CartLine.init(serverLine:))
             let totals = OrderMath.totals(lines: lines, destination: order.destination, discount: order.globalDiscount)

@@ -79,10 +79,12 @@ public sealed class InsightsService(AppDbContext db, IFinancialDashboardService 
         var from = closure.PeriodStartUtc;
         var to = closure.ClosedAtUtc;
         var takings = await dashboard.GetTakingsAsync(from, to.AddTicks(1), tzOffsetMinutes, to, null, ct).ConfigureAwait(false);
-        // Pourboires des commandes réglées dans la période du Z (reçus de la période, hors avoirs), par serveur.
-        var periodReceipts = (await db.FiscalReceipts.AsNoTracking().Where(r => r.TerminalId == terminalId).ToListAsync(ct).ConfigureAwait(false))
-            .Where(r => r.VoidedReceiptId == null && r.CreatedAtUtc >= from && r.CreatedAtUtc <= to).Select(r => r.OrderId).Distinct().ToList();
-        var orderRows = await db.Orders.AsNoTracking().Where(o => periodReceipts.Contains(o.Id)).Select(o => new { o.OperatorId, o.TipAmount }).ToListAsync(ct).ConfigureAwait(false);
+        // Pourboires des commandes réglées dans la période du Z (reçus actifs seulement : ni avoirs, ni reçus annulés, ni commandes annulées).
+        var terminalReceipts = await db.FiscalReceipts.AsNoTracking().Where(r => r.TerminalId == terminalId).ToListAsync(ct).ConfigureAwait(false);
+        var voidedIds = terminalReceipts.Where(r => r.VoidedReceiptId != null).Select(r => r.VoidedReceiptId!.Value).ToHashSet();
+        var periodReceipts = terminalReceipts
+            .Where(r => r.VoidedReceiptId == null && !voidedIds.Contains(r.Id) && r.CreatedAtUtc >= from && r.CreatedAtUtc <= to).Select(r => r.OrderId).Distinct().ToList();
+        var orderRows = await db.Orders.AsNoTracking().Where(o => periodReceipts.Contains(o.Id) && o.Status != OrderStatus.Cancelled).Select(o => new { o.OperatorId, o.TipAmount }).ToListAsync(ct).ConfigureAwait(false);
         var operatorIds = orderRows.Select(o => o.OperatorId).Distinct().ToList();
         var names = await db.Users.AsNoTracking().Where(u => operatorIds.Contains(u.Id)).ToDictionaryAsync(u => u.Id, u => u.Name, ct).ConfigureAwait(false);
         var tips = orderRows.GroupBy(o => o.OperatorId).Select(g => new ServerTipSummary(names.GetValueOrDefault(g.Key) ?? "—", g.Sum(o => o.TipAmount.AmountInCents))).Where(t => t.TipsCents > 0).OrderBy(t => t.ServerName, StringComparer.CurrentCultureIgnoreCase).ToList();

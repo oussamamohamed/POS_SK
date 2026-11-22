@@ -86,16 +86,21 @@ extension LocalPosAPI {
     public func menuAnalysis(from: Date, to: Date, categoryId: String?) async throws -> MenuAnalysisReport {
         try requireManager()
         let (start, end) = from <= to ? (from, to) : (to, from)
-        let voidedReceiptIds = Set(try db.query("SELECT VoidedReceiptId FROM FiscalReceipts WHERE VoidedReceiptId IS NOT NULL").compactMap { $0.uuid("VoidedReceiptId") })
-        let voidedOrderIds = Set(try db.query("SELECT Id, OrderId FROM FiscalReceipts").compactMap { row -> UUID? in
-            guard let id = row.uuid("Id"), voidedReceiptIds.contains(id) else { return nil }
+        let allReceipts = try db.query("SELECT Id, OrderId, VoidedReceiptId FROM FiscalReceipts")
+        let voidedReceiptIds = Set(allReceipts.compactMap { $0.uuid("VoidedReceiptId") })
+        let activeOrderIds = Set(allReceipts.compactMap { row -> UUID? in
+            guard row.uuid("VoidedReceiptId") == nil, let id = row.uuid("Id"), !voidedReceiptIds.contains(id) else { return nil }
             return row.uuid("OrderId")
+        })
+        let fullyVoidedOrderIds = Set(allReceipts.compactMap { row -> UUID? in
+            guard let id = row.uuid("Id"), voidedReceiptIds.contains(id), let orderId = row.uuid("OrderId"), !activeOrderIds.contains(orderId) else { return nil }
+            return orderId
         })
 
         var sold: [UUID: (name: String, quantity: Int, revenueHtCents: Decimal)] = [:]
         for row in try db.query("SELECT Id, CreatedAtUtc FROM Orders WHERE Status = ?", [.integer(LocalOrderStatus.paid.rawValue)]) {
             guard let orderId = row.uuid("Id"), let created = row.date("CreatedAtUtc"), created >= start, created <= end,
-                  !voidedOrderIds.contains(orderId), let order = try orderRepository.order(id: orderId),
+                  !fullyVoidedOrderIds.contains(orderId), let order = try orderRepository.order(id: orderId),
                   order.globalDiscountType != .comp else { continue }
             let lines = order.lines.map(CartLine.init(serverLine:))
             let totals = OrderMath.totals(lines: lines, destination: order.destination, discount: order.globalDiscount)

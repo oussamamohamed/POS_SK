@@ -59,15 +59,17 @@ extension LocalPosAPI {
         let from = closure.periodStartUtc
         let report = try await takings(from: from, to: closedAt.addingTimeInterval(0.001), tzOffsetMinutes: tzOffsetMinutes, compare: nil)
 
-        let receipts = try db.query("SELECT OrderId, VoidedReceiptId, CreatedAtUtc FROM FiscalReceipts WHERE TerminalId = ?", [.text(term)])
+        let receipts = try db.query("SELECT Id, OrderId, VoidedReceiptId, CreatedAtUtc FROM FiscalReceipts WHERE TerminalId = ?", [.text(term)])
+        let voidedIds = Set(receipts.compactMap { $0.uuid("VoidedReceiptId") })
         let orderIds = Set(receipts.compactMap { r -> UUID? in
-            guard r.uuid("VoidedReceiptId") == nil, let at = r.date("CreatedAtUtc"), at >= from, at <= closedAt else { return nil }
+            guard r.uuid("VoidedReceiptId") == nil, let id = r.uuid("Id"), !voidedIds.contains(id), let at = r.date("CreatedAtUtc"), at >= from, at <= closedAt else { return nil }
             return r.uuid("OrderId")
         })
         let names = Dictionary(uniqueKeysWithValues: try db.query("SELECT Id, Name FROM Users").compactMap { r in r.uuid("Id").map { ($0, r.string("Name") ?? "") } })
         var tips: [UUID: Int] = [:]
         for id in orderIds {
-            guard let row = try db.query("SELECT OperatorId, TipAmount FROM Orders WHERE Id = ?", [.uuid(id)]).first, let op = row.uuid("OperatorId") else { continue }
+            guard let row = try db.query("SELECT OperatorId, TipAmount, Status FROM Orders WHERE Id = ?", [.uuid(id)]).first,
+                  row.int("Status") != LocalOrderStatus.cancelled.rawValue, let op = row.uuid("OperatorId") else { continue }
             tips[op, default: 0] += row.int("TipAmount") ?? 0
         }
         let tipList = tips.filter { $0.value > 0 }.map { TipSummary(serverName: names[$0.key] ?? "—", tipsCents: $0.value) }.sorted { $0.serverName.localizedCaseInsensitiveCompare($1.serverName) == .orderedAscending }

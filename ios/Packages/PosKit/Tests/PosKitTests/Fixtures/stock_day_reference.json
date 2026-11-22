@@ -118,7 +118,8 @@
       "quantityMilli": 27000000,
       "unitCostMilliCents": 1800,
       "restock": false,
-      "saleIndex": null
+      "saleIndex": null,
+      "voidQuantity": 0
     },
     {
       "type": "receipt",
@@ -128,7 +129,8 @@
       "quantityMilli": 25000000,
       "unitCostMilliCents": 300,
       "restock": false,
-      "saleIndex": null
+      "saleIndex": null,
+      "voidQuantity": 0
     },
     {
       "type": "receipt",
@@ -138,7 +140,8 @@
       "quantityMilli": 10000000,
       "unitCostMilliCents": 125,
       "restock": false,
-      "saleIndex": null
+      "saleIndex": null,
+      "voidQuantity": 0
     },
     {
       "type": "receipt",
@@ -148,7 +151,8 @@
       "quantityMilli": 20000000,
       "unitCostMilliCents": 1900,
       "restock": false,
-      "saleIndex": null
+      "saleIndex": null,
+      "voidQuantity": 0
     },
     {
       "type": "receipt",
@@ -158,7 +162,8 @@
       "quantityMilli": 7000000,
       "unitCostMilliCents": 450,
       "restock": false,
-      "saleIndex": null
+      "saleIndex": null,
+      "voidQuantity": 0
     },
     {
       "type": "receipt",
@@ -168,7 +173,8 @@
       "quantityMilli": 18000000,
       "unitCostMilliCents": 20,
       "restock": false,
-      "saleIndex": null
+      "saleIndex": null,
+      "voidQuantity": 0
     },
     {
       "type": "sale",
@@ -178,7 +184,8 @@
       "quantityMilli": 0,
       "unitCostMilliCents": 0,
       "restock": false,
-      "saleIndex": null
+      "saleIndex": null,
+      "voidQuantity": 0
     },
     {
       "type": "sale",
@@ -188,7 +195,8 @@
       "quantityMilli": 0,
       "unitCostMilliCents": 0,
       "restock": false,
-      "saleIndex": null
+      "saleIndex": null,
+      "voidQuantity": 0
     },
     {
       "type": "loss",
@@ -198,7 +206,8 @@
       "quantityMilli": 425000,
       "unitCostMilliCents": 0,
       "restock": false,
-      "saleIndex": null
+      "saleIndex": null,
+      "voidQuantity": 0
     },
     {
       "type": "sale",
@@ -208,7 +217,8 @@
       "quantityMilli": 0,
       "unitCostMilliCents": 0,
       "restock": false,
-      "saleIndex": null
+      "saleIndex": null,
+      "voidQuantity": 0
     },
     {
       "type": "sale",
@@ -218,7 +228,8 @@
       "quantityMilli": 0,
       "unitCostMilliCents": 0,
       "restock": false,
-      "saleIndex": null
+      "saleIndex": null,
+      "voidQuantity": 0
     },
     {
       "type": "sale",
@@ -228,7 +239,8 @@
       "quantityMilli": 0,
       "unitCostMilliCents": 0,
       "restock": false,
-      "saleIndex": null
+      "saleIndex": null,
+      "voidQuantity": 0
     },
     {
       "type": "sale",
@@ -238,7 +250,8 @@
       "quantityMilli": 0,
       "unitCostMilliCents": 0,
       "restock": false,
-      "saleIndex": null
+      "saleIndex": null,
+      "voidQuantity": 0
     },
     {
       "type": "sale",
@@ -248,7 +261,8 @@
       "quantityMilli": 0,
       "unitCostMilliCents": 0,
       "restock": false,
-      "saleIndex": null
+      "saleIndex": null,
+      "voidQuantity": 0
     },
     {
       "type": "sale",
@@ -258,7 +272,8 @@
       "quantityMilli": 0,
       "unitCostMilliCents": 0,
       "restock": false,
-      "saleIndex": null
+      "saleIndex": null,
+      "voidQuantity": 0
     },
     {
       "type": "sale",
@@ -268,7 +283,8 @@
       "quantityMilli": 0,
       "unitCostMilliCents": 0,
       "restock": false,
-      "saleIndex": null
+      "saleIndex": null,
+      "voidQuantity": 0
     },
     {
       "type": "sale",
@@ -278,7 +294,8 @@
       "quantityMilli": 0,
       "unitCostMilliCents": 0,
       "restock": false,
-      "saleIndex": null
+      "saleIndex": null,
+      "voidQuantity": 0
     },
     {
       "type": "sale",
@@ -288,7 +305,8 @@
       "quantityMilli": 0,
       "unitCostMilliCents": 0,
       "restock": false,
-      "saleIndex": null
+      "saleIndex": null,
+      "voidQuantity": 0
     },
     {
       "type": "sale",
@@ -298,7 +316,8 @@
       "quantityMilli": 0,
       "unitCostMilliCents": 0,
       "restock": false,
-      "saleIndex": null
+      "saleIndex": null,
+      "voidQuantity": 0
     },
     {
       "type": "sale",
@@ -308,7 +327,8 @@
       "quantityMilli": 0,
       "unitCostMilliCents": 0,
       "restock": false,
-      "saleIndex": null
+      "saleIndex": null,
+      "voidQuantity": 0
     },
     {
       "type": "sale",
@@ -318,7 +338,8 @@
       "quantityMilli": 0,
       "unitCostMilliCents": 0,
       "restock": false,
-      "saleIndex": null
+      "saleIndex": null,
+      "voidQuantity": 0
     },
     {
       "type": "sale",
@@ -328,7 +349,8 @@
       "quantityMilli": 0,
       "unitCostMilliCents": 0,
       "restock": false,
-      "saleIndex": null
+      "saleIndex": null,
+      "voidQuantity": 0
     },
     {
       "type": "sale",
@@ -338,7 +360,8 @@
       "quantityMilli": 0,
       "unitCostMilliCents": 0,
       "restock": false,
-      "saleIndex": null
+      "saleIndex": null,
+      "voidQuantity": 0
     },
     {
       "type": "sale",
@@ -348,7 +371,8 @@
       "quantityMilli": 0,
       "unitCostMilliCents": 0,
       "restock": false,
-      "saleIndex": null
+      "saleIndex": null,
+      "voidQuantity": 0
     },
     {
       "type": "sale",
@@ -358,7 +382,8 @@
       "quantityMilli": 0,
       "unitCostMilliCents": 0,
       "restock": false,
-      "saleIndex": null
+      "saleIndex": null,
+      "voidQuantity": 0
     },
     {
       "type": "sale",
@@ -368,7 +393,8 @@
       "quantityMilli": 0,
       "unitCostMilliCents": 0,
       "restock": false,
-      "saleIndex": null
+      "saleIndex": null,
+      "voidQuantity": 0
     },
     {
       "type": "sale",
@@ -378,7 +404,8 @@
       "quantityMilli": 0,
       "unitCostMilliCents": 0,
       "restock": false,
-      "saleIndex": null
+      "saleIndex": null,
+      "voidQuantity": 0
     },
     {
       "type": "sale",
@@ -388,7 +415,8 @@
       "quantityMilli": 0,
       "unitCostMilliCents": 0,
       "restock": false,
-      "saleIndex": null
+      "saleIndex": null,
+      "voidQuantity": 0
     },
     {
       "type": "loss",
@@ -398,7 +426,8 @@
       "quantityMilli": 333000,
       "unitCostMilliCents": 0,
       "restock": false,
-      "saleIndex": null
+      "saleIndex": null,
+      "voidQuantity": 0
     },
     {
       "type": "sale",
@@ -408,7 +437,8 @@
       "quantityMilli": 0,
       "unitCostMilliCents": 0,
       "restock": false,
-      "saleIndex": null
+      "saleIndex": null,
+      "voidQuantity": 0
     },
     {
       "type": "sale",
@@ -418,7 +448,8 @@
       "quantityMilli": 0,
       "unitCostMilliCents": 0,
       "restock": false,
-      "saleIndex": null
+      "saleIndex": null,
+      "voidQuantity": 0
     },
     {
       "type": "receipt",
@@ -428,7 +459,8 @@
       "quantityMilli": 5000000,
       "unitCostMilliCents": 1867,
       "restock": false,
-      "saleIndex": null
+      "saleIndex": null,
+      "voidQuantity": 0
     },
     {
       "type": "receipt",
@@ -438,7 +470,8 @@
       "quantityMilli": 6000000,
       "unitCostMilliCents": 1508,
       "restock": false,
-      "saleIndex": null
+      "saleIndex": null,
+      "voidQuantity": 0
     },
     {
       "type": "loss",
@@ -448,7 +481,8 @@
       "quantityMilli": 497000,
       "unitCostMilliCents": 0,
       "restock": false,
-      "saleIndex": null
+      "saleIndex": null,
+      "voidQuantity": 0
     },
     {
       "type": "count",
@@ -458,7 +492,8 @@
       "quantityMilli": 4000000,
       "unitCostMilliCents": 0,
       "restock": false,
-      "saleIndex": null
+      "saleIndex": null,
+      "voidQuantity": 0
     },
     {
       "type": "sale",
@@ -468,7 +503,8 @@
       "quantityMilli": 0,
       "unitCostMilliCents": 0,
       "restock": false,
-      "saleIndex": null
+      "saleIndex": null,
+      "voidQuantity": 0
     },
     {
       "type": "sale",
@@ -478,7 +514,8 @@
       "quantityMilli": 0,
       "unitCostMilliCents": 0,
       "restock": false,
-      "saleIndex": null
+      "saleIndex": null,
+      "voidQuantity": 0
     },
     {
       "type": "sale",
@@ -488,7 +525,8 @@
       "quantityMilli": 0,
       "unitCostMilliCents": 0,
       "restock": false,
-      "saleIndex": null
+      "saleIndex": null,
+      "voidQuantity": 0
     },
     {
       "type": "count",
@@ -498,7 +536,8 @@
       "quantityMilli": 14000000,
       "unitCostMilliCents": 0,
       "restock": false,
-      "saleIndex": null
+      "saleIndex": null,
+      "voidQuantity": 0
     },
     {
       "type": "sale",
@@ -508,7 +547,8 @@
       "quantityMilli": 0,
       "unitCostMilliCents": 0,
       "restock": false,
-      "saleIndex": null
+      "saleIndex": null,
+      "voidQuantity": 0
     },
     {
       "type": "sale",
@@ -518,7 +558,8 @@
       "quantityMilli": 0,
       "unitCostMilliCents": 0,
       "restock": false,
-      "saleIndex": null
+      "saleIndex": null,
+      "voidQuantity": 0
     },
     {
       "type": "sale",
@@ -528,7 +569,8 @@
       "quantityMilli": 0,
       "unitCostMilliCents": 0,
       "restock": false,
-      "saleIndex": null
+      "saleIndex": null,
+      "voidQuantity": 0
     },
     {
       "type": "sale",
@@ -538,7 +580,8 @@
       "quantityMilli": 0,
       "unitCostMilliCents": 0,
       "restock": false,
-      "saleIndex": null
+      "saleIndex": null,
+      "voidQuantity": 0
     },
     {
       "type": "sale",
@@ -548,7 +591,8 @@
       "quantityMilli": 0,
       "unitCostMilliCents": 0,
       "restock": false,
-      "saleIndex": null
+      "saleIndex": null,
+      "voidQuantity": 0
     },
     {
       "type": "sale",
@@ -558,7 +602,8 @@
       "quantityMilli": 0,
       "unitCostMilliCents": 0,
       "restock": false,
-      "saleIndex": null
+      "saleIndex": null,
+      "voidQuantity": 0
     },
     {
       "type": "sale",
@@ -568,7 +613,8 @@
       "quantityMilli": 0,
       "unitCostMilliCents": 0,
       "restock": false,
-      "saleIndex": null
+      "saleIndex": null,
+      "voidQuantity": 0
     },
     {
       "type": "sale",
@@ -578,7 +624,8 @@
       "quantityMilli": 0,
       "unitCostMilliCents": 0,
       "restock": false,
-      "saleIndex": null
+      "saleIndex": null,
+      "voidQuantity": 0
     },
     {
       "type": "loss",
@@ -588,7 +635,8 @@
       "quantityMilli": 217000,
       "unitCostMilliCents": 0,
       "restock": false,
-      "saleIndex": null
+      "saleIndex": null,
+      "voidQuantity": 0
     },
     {
       "type": "sale",
@@ -598,7 +646,8 @@
       "quantityMilli": 0,
       "unitCostMilliCents": 0,
       "restock": false,
-      "saleIndex": null
+      "saleIndex": null,
+      "voidQuantity": 0
     },
     {
       "type": "receipt",
@@ -608,7 +657,8 @@
       "quantityMilli": 1000000,
       "unitCostMilliCents": 669,
       "restock": false,
-      "saleIndex": null
+      "saleIndex": null,
+      "voidQuantity": 0
     },
     {
       "type": "sale",
@@ -618,17 +668,84 @@
       "quantityMilli": 0,
       "unitCostMilliCents": 0,
       "restock": false,
-      "saleIndex": null
+      "saleIndex": null,
+      "voidQuantity": 0
+    },
+    {
+      "type": "sale_with_line_void",
+      "product": "Steak",
+      "quantity": 3,
+      "ingredient": null,
+      "quantityMilli": 0,
+      "unitCostMilliCents": 0,
+      "restock": false,
+      "saleIndex": null,
+      "voidQuantity": 1
+    },
+    {
+      "type": "sale",
+      "product": "Pizza",
+      "quantity": 2,
+      "ingredient": null,
+      "quantityMilli": 0,
+      "unitCostMilliCents": 0,
+      "restock": false,
+      "saleIndex": null,
+      "voidQuantity": 0
+    },
+    {
+      "type": "void",
+      "product": null,
+      "quantity": 0,
+      "ingredient": null,
+      "quantityMilli": 0,
+      "unitCostMilliCents": 0,
+      "restock": true,
+      "saleIndex": 37,
+      "voidQuantity": 0
+    },
+    {
+      "type": "sale",
+      "product": "Pizza",
+      "quantity": 1,
+      "ingredient": null,
+      "quantityMilli": 0,
+      "unitCostMilliCents": 0,
+      "restock": false,
+      "saleIndex": null,
+      "voidQuantity": 0
+    },
+    {
+      "type": "void",
+      "product": null,
+      "quantity": 0,
+      "ingredient": null,
+      "quantityMilli": 0,
+      "unitCostMilliCents": 0,
+      "restock": false,
+      "saleIndex": 38,
+      "voidQuantity": 0
+    },
+    {
+      "type": "split_void_repay",
+      "product": "Steak",
+      "quantity": 2,
+      "ingredient": null,
+      "quantityMilli": 0,
+      "unitCostMilliCents": 0,
+      "restock": false,
+      "saleIndex": null,
+      "voidQuantity": 0
     }
   ],
   "expected": {
     "stockMilli": {
-      "Boeuf": 27575000,
-      "Tomate": 22440000,
-      "Farine": 7000000,
-      "Mozzarella": 24000000,
+      "Boeuf": 26775000,
+      "Tomate": 22280000,
+      "Farine": 6750000,
+      "Mozzarella": 23875000,
       "Creme": 3460000,
-      "Sel": 13765000
+      "Sel": 13756200
     },
     "unitCostMilli": {
       "Boeuf": 1811,

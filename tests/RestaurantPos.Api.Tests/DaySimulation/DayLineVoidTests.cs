@@ -63,7 +63,7 @@ public class DayLineVoidTests(DayFixture day) : IClassFixture<DayFixture>
     {
         var expected = DayLedgerOracle.ExpectedLineVoids(day.Scenario.Operations);
         expected.Should().NotBeEmpty();
-        string manager = day.Run.Manager.Name;
+        string ActorName(string by) => by == "admin" ? day.Run.Admin.Name : day.Run.Manager.Name;
 
         var page = await DayRunner.SendAsync(day.Run.Clients.Values.First(), HttpMethod.Get,
             $"/api/fiscal/journal?eventType={JournalEventTypes.OrderLineVoided}&pageSize=200", null, day.Run.Manager.Token);
@@ -76,7 +76,7 @@ public class DayLineVoidTests(DayFixture day) : IClassFixture<DayFixture>
                 HasTicket: p.GetProperty("ticketId").ValueKind != JsonValueKind.Null);
         }).ToList();
         jet.Should().BeEquivalentTo(expected.Select(e => (Table: (string?)e.Table, Product: (string?)e.ProductName, Qty: e.Quantity, Price: e.UnitPriceCents,
-            Reason: (string?)e.Reason, Operator: (string?)manager, HasTicket: e.HasTicket)), "une écriture du JET par annulation acceptée, aucune pour une correction ou un refus");
+            Reason: (string?)e.Reason, Operator: (string?)ActorName(e.By), HasTicket: e.HasTicket)), "une écriture du JET par annulation acceptée, aucune pour une correction ou un refus");
 
         using var scope = day.Factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -84,7 +84,31 @@ public class DayLineVoidTests(DayFixture day) : IClassFixture<DayFixture>
             .Select(r => (r.TableNumber, r.ProductName, r.Quantity, Price: r.UnitPrice.AmountInCents, r.Reason, r.ServerName, r.OperatorName, HasTicket: r.TicketId != null))
             .ToList();
         rows.Should().BeEquivalentTo(expected.Select(e => (TableNumber: e.Table, e.ProductName, e.Quantity, Price: e.UnitPriceCents, e.Reason, e.ServerName,
-            OperatorName: manager, e.HasTicket)), "une ligne OrderLineVoids par annulation acceptée (R2 serveur, R9 prix + suppléments)");
+            OperatorName: ActorName(e.By), e.HasTicket)), "une ligne OrderLineVoids par annulation acceptée (R2 serveur, R9 prix + suppléments)");
+    }
+
+    [Fact]
+    public void EveryReceiptVoidStepGetsTheExpectedAnswer_AndRefusalsLeaveXUnchanged()
+    {
+        var withReceiptVoids = day.Scenario.Operations.Where(o => o.ReceiptVoids is { Count: > 0 }).ToList();
+        withReceiptVoids.Should().NotBeEmpty();
+        day.Run.ReceiptVoidAttempts.Should().HaveCount(withReceiptVoids.Sum(o => o.ReceiptVoids!.Count));
+        foreach (var op in withReceiptVoids)
+        {
+            var attempts = day.Run.ReceiptVoidAttempts.Where(a => a.Ref == op.Ref).OrderBy(a => a.Step).ToList();
+            attempts.Select(a => a.Step).Should().Equal(Enumerable.Range(0, op.ReceiptVoids!.Count), Ctx(op, "étapes d'annulation de reçu"));
+            foreach (var attempt in attempts)
+            {
+                var step = op.ReceiptVoids![attempt.Step];
+                string because = Ctx(op, $"annulation reçu étape {attempt.Step} (payment {step.PaymentIndex}, by {step.By}, voidSelf={step.VoidSelf}, from={step.FromTerminal})");
+                attempt.Status.Should().Be(step.Expect, because);
+                attempt.Code.Should().Be(step.Code, because);
+                if (step.Expect != 200)
+                {
+                    DayAssert.SummariesEqual(attempt.XAfter, attempt.XBefore, $"{because} : un refus ne change pas le X");
+                }
+            }
+        }
     }
 
     [Fact]
@@ -142,16 +166,24 @@ public class DayLineVoidTests(DayFixture day) : IClassFixture<DayFixture>
     }
 
     [Fact]
-    public async Task TheEmptiedOrderStaysOnItsTable_AtZero_WithoutReceipt_AndDoesNotBlockTheZ()
+    public async Task TheEmptiedOrdersStayOnTheirTable_AtZero_WithoutReceipt_AndDoNotBlockTheZ()
     {
-        var emptied = VoidOrders.Single(o => DayLedgerOracle.OrderTotalCents(o) == 0 && o.Payments!.Count == 0);
+        var emptiedOrders = VoidOrders.Where(o => DayLedgerOracle.OrderTotalCents(o) == 0 && o.Payments!.Count == 0).ToList();
+        emptiedOrders.Should().HaveCountGreaterThanOrEqualTo(2, "une commande de salle (v9) et une commande comptoir (v19) vidées");
         using var scope = day.Factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        var order = await db.Orders.AsNoTracking().Include(o => o.Items).SingleAsync(o => o.TableNumber == emptied.Table && o.Items.Count == 0);
-        string because = Ctx(emptied, "commande vidée");
-        order.TotalTtc.AmountInCents.Should().Be(0, because);
-        PaymentSettlementRules.IsSettleable(order.Status).Should().BeTrue($"{because} : la commande reste ouverte (aucune règle ne la clôt)");
-        (await db.FiscalReceipts.CountAsync(r => r.OrderId == order.Id)).Should().Be(0, because);
-        day.Run.ZClosures[emptied.Terminal!].Should().ContainSingle($"{because} : une commande sans ligne ne bloque pas la Z");
+        foreach (var emptied in emptiedOrders)
+        {
+            string table = emptied.Table ?? "Comptoir";
+            var order = await db.Orders.AsNoTracking().Include(o => o.Items)
+                .Where(o => o.TableNumber == table && o.Items.Count == 0)
+                .OrderByDescending(o => o.CreatedAtUtc)
+                .FirstAsync();
+            string because = Ctx(emptied, "commande vidée");
+            order.TotalTtc.AmountInCents.Should().Be(0, because);
+            PaymentSettlementRules.IsSettleable(order.Status).Should().BeTrue($"{because} : la commande reste ouverte (aucune règle ne la clôt)");
+            (await db.FiscalReceipts.CountAsync(r => r.OrderId == order.Id)).Should().Be(0, because);
+            day.Run.ZClosures[emptied.Terminal!].Should().ContainSingle($"{because} : une commande sans ligne ne bloque pas la Z");
+        }
     }
 }

@@ -46,13 +46,14 @@ public sealed class MenuAnalysisService : IMenuAnalysisService
             .ToListAsync(cancellationToken).ConfigureAwait(false);
 
         var voidedReceiptIds = receipts.Where(r => r.VoidedReceiptId != null).Select(r => r.VoidedReceiptId!.Value).ToHashSet();
-        var voidedOrderIds = receipts.Where(r => voidedReceiptIds.Contains(r.Id)).Select(r => r.OrderId).ToHashSet();
+        var activeOrderIds = receipts.Where(r => r.VoidedReceiptId == null && !voidedReceiptIds.Contains(r.Id)).Select(r => r.OrderId).ToHashSet();
+        var fullyVoidedOrderIds = receipts.Where(r => voidedReceiptIds.Contains(r.Id)).Select(r => r.OrderId).Where(id => !activeOrderIds.Contains(id)).ToHashSet();
 
         var orders = (await _dbContext.Orders.AsNoTracking().Include(o => o.Items)
                 .Where(o => o.Status == OrderStatus.Paid)
                 .ToListAsync(cancellationToken).ConfigureAwait(false))
             .Where(o => o.CreatedAtUtc >= start && o.CreatedAtUtc <= end
-                        && !voidedOrderIds.Contains(o.Id)
+                        && !fullyVoidedOrderIds.Contains(o.Id)
                         && o.GlobalDiscountType != DiscountType.Comp)
             .ToList();
 

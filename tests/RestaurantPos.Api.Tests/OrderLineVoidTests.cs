@@ -351,6 +351,25 @@ public class OrderLineVoidTests : IClassFixture<PosApiApplicationFactory>
     }
 
     [Fact]
+    public async Task Void_SentLine_ByAdmin_Succeeds_AndByKitchenStaff_Returns403()
+    {
+        var adminId = Guid.NewGuid();
+        var kitchenId = Guid.NewGuid();
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            db.Users.Add(new User { Id = adminId, Name = "Administrateur", Role = UserRole.Admin, PinHash = "x", PinSalt = "x" });
+            db.Users.Add(new User { Id = kitchenId, Name = "Cuisinier", Role = UserRole.KitchenStaff, PinHash = "x", PinSalt = "x" });
+            await db.SaveChangesAsync();
+        }
+        var s = await SeedAsync(quantity: 2);
+
+        (await VoidAsync(Client(kitchenId, "KitchenStaff"), s, 1, "erreur")).StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        (await VoidAsync(Client(adminId, "Admin"), s, 1, "erreur admin")).StatusCode.Should().Be(HttpStatusCode.OK);
+        (await VoidsAsync(s.OrderId)).Should().ContainSingle().Which.OperatorName.Should().Be("Administrateur");
+    }
+
+    [Fact]
     public async Task Void_ConcurrentDispatchAndCorrection_ReadsIsDispatchedInTransaction()
     {
         // Approximation séquentielle (InMemory, sans transaction réelle) : la ligne part en cuisine entre l'affichage

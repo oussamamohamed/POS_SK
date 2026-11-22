@@ -80,10 +80,11 @@ public static class DayLedgerOracle
     }
 
     /// <summary>Total TTC final de la commande après remise (borné à zéro) et après toutes ses annulations et corrections acceptées, avant tout règlement ni pourboire.</summary>
-    public static long OrderTotalCents(DayOperation op) => TotalCents(op, LinesAfter(op, "paid"));
+    public static long OrderTotalCents(DayOperation op) => TotalCents(op, LinesAfter(op, "cancelled"));
 
     /// <summary>Ordre des phases d'annulation et de correction de ligne (<see cref="DayLineVoid.Phase"/>).</summary>
-    public static readonly string[] LineVoidPhases = ["draft", "sent", "reopened", "part_paid", "paid"];
+    public static readonly string[] LineVoidPhases =
+        ["draft", "sent", "reopened", "part_paid", "part_paid_two", "part_voided_still_has_receipt", "all_voided_reopened", "paid", "cancelled"];
 
     /// <summary>
     /// Lignes de la commande après les annulations et corrections acceptées (<c>Expect</c> = 200) des phases jusqu'à <paramref name="phase"/>
@@ -96,7 +97,7 @@ public static class DayLedgerOracle
         var lines = (op.Lines ?? []).ToList();
         foreach (var step in (op.LineVoids ?? []).Where(v => Array.IndexOf(LineVoidPhases, v.Phase) <= rank))
         {
-            if (step.Expect == 200)
+            if (step.Expect == 200 && !step.UnknownLine && !step.UnknownOrder)
             {
                 lines[step.Line] = lines[step.Line] with { Quantity = lines[step.Line].Quantity - step.Quantity };
             }
@@ -104,6 +105,11 @@ public static class DayLedgerOracle
             if (step.ReAdd > 0)
             {
                 lines.Add(lines[step.Line] with { Quantity = step.ReAdd, Comp = false }); // même produit, ligne neuve : jamais offerte
+            }
+
+            if (step.AddDraft is not null)
+            {
+                lines.Add(step.AddDraft);
             }
         }
 
@@ -123,42 +129,83 @@ public static class DayLedgerOracle
     {
         ArgumentNullException.ThrowIfNull(op);
         var steps = op.LineVoids ?? [];
-        // la réponse précède le rajout éventuel de l'étape (ReAdd)
+        // la réponse précède le rajout éventuel de l'étape (ReAdd / AddDraft)
         return steps.Select((s, i) => s.Expect == 200
-            ? TotalCents(op, LinesAfter(op with { LineVoids = [.. steps.Take(i), s with { ReAdd = 0 }] }, "paid"))
+            ? TotalCents(op, LinesAfter(op with { LineVoids = [.. steps.Take(i), s with { ReAdd = 0, AddDraft = null }] }, "cancelled"))
             : (long?)null).ToList();
     }
 
-    /// <summary>Une commande rouverte (étape <c>reopened</c>) : son premier règlement est annulé avant les autres.</summary>
-    public static bool IsReopened(DayOperation op) => op?.LineVoids?.Any(v => v.Phase == "reopened") == true;
+    /// <summary>Une commande rouverte (étape <c>reopened</c> historique, sans <c>ReceiptVoids</c> explicite) : son premier règlement est annulé avant les autres.</summary>
+    public static bool IsReopened(DayOperation op) => op?.ReceiptVoids is null && op?.LineVoids?.Any(v => v.Phase == "reopened") == true;
 
-    /// <summary>Reçus d'annulation de la journée : <c>VoidPaymentIndex</c> et premier reçu d'une commande rouverte.</summary>
+    /// <summary>Reçus d'annulation acceptés de la journée : <c>VoidPaymentIndex</c>, <c>ReceiptVoids</c> acceptés et premier reçu d'une commande rouverte.</summary>
     public static int ReceiptVoidCount(IEnumerable<DayOperation> operations) =>
-        operations.Count(o => o.Type is "table_order" or "counter_order" && (o.VoidPaymentIndex != null || IsReopened(o)));
+        operations.Where(o => o.Type is "table_order" or "counter_order").Sum(o =>
+            (o.VoidPaymentIndex != null ? 1 : 0)
+            + (IsReopened(o) ? 1 : 0)
+            + (o.ReceiptVoids?.Count(v => v.Expect == 200) ?? 0));
+
+    /// <summary>Index des règlements dont le reçu est annulé avant la Z (en cours de commande ou juste après).</summary>
+    public static HashSet<int> VoidedPaymentIndexes(DayOperation op)
+    {
+        var set = new HashSet<int>();
+        if (op.VoidPaymentIndex is { } idx)
+        {
+            set.Add(idx);
+        }
+
+        if (IsReopened(op))
+        {
+            set.Add(0);
+        }
+
+        foreach (var v in (op.ReceiptVoids ?? []).Where(v => v.Expect == 200))
+        {
+            set.Add(v.PaymentIndex);
+        }
+
+        return set;
+    }
 
     /// <summary>
-    /// Annulations acceptées de lignes envoyées (phases <c>sent</c> et <c>reopened</c>) : prix unitaire = prix + suppléments (R9, offert
-    /// compris), serveur = celui de la table (R2) ; une vente comptoir n'a pas de serveur assigné. Les corrections (<c>draft</c>) n'en font pas.
+    /// Annulations acceptées de lignes envoyées (lignes marquées envoyées au moment de l'étape) : prix unitaire = prix + suppléments (R9,
+    /// offert compris), serveur = celui de la table (R2) ; une vente comptoir n'a pas de serveur assigné. Les corrections de lignes non
+    /// envoyées (<c>draft</c> ou ajoutées par <c>AddDraft</c>) n'en font pas.
     /// </summary>
     public static List<DayExpectedLineVoid> ExpectedLineVoids(IEnumerable<DayOperation> operations)
     {
         var result = new List<DayExpectedLineVoid>();
         foreach (var op in operations.Where(o => o.LineVoids is { Count: > 0 }))
         {
-            var lines = (op.Lines ?? []).ToList();
+            var lines = (op.Lines ?? []).Select(l => (Line: l, Dispatched: false)).ToList();
+            bool dispatchedInitial = false;
             foreach (var step in op.LineVoids!)
             {
-                if (step.Expect == 200 && step.Phase is "sent" or "reopened")
+                if (!dispatchedInitial && step.Phase != "draft")
                 {
-                    var line = lines[step.Line];
+                    dispatchedInitial = true;
+                    for (int k = 0; k < lines.Count; k++)
+                    {
+                        lines[k] = (lines[k].Line, true);
+                    }
+                }
+
+                if (step.Expect == 200 && !step.UnknownLine && !step.UnknownOrder && lines[step.Line].Dispatched)
+                {
+                    var line = lines[step.Line].Line;
                     bool counter = op.Type == "counter_order";
                     result.Add(new DayExpectedLineVoid(op.Terminal!, op.Ref!, counter ? "Comptoir" : op.Table!, line.Name, step.Quantity,
-                        line.UnitPriceCents + line.ModifiersExtraCents, step.Reason!.Trim(), counter ? "" : op.Waiter!, !step.Legacy));
+                        line.UnitPriceCents + line.ModifiersExtraCents, step.Reason!.Trim(), counter ? "" : op.Waiter!, !step.Legacy, step.By));
                 }
 
                 if (step.ReAdd > 0)
                 {
-                    lines.Add(lines[step.Line] with { Quantity = step.ReAdd, Comp = false });
+                    lines.Add((lines[step.Line].Line with { Quantity = step.ReAdd, Comp = false }, true));
+                }
+
+                if (step.AddDraft is not null)
+                {
+                    lines.Add((step.AddDraft, false));
                 }
             }
         }
@@ -166,13 +213,13 @@ public static class DayLedgerOracle
         return result;
     }
 
-    /// <summary>Articles de bon attendus des lignes envoyées ; aucun pour une ligne jamais envoyée ou ancienne (sans <c>OrderItemId</c>).</summary>
+    /// <summary>Articles de bon attendus des lignes envoyées ; aucun pour une ligne jamais envoyée (<c>AddDraft</c> compris) ou ancienne (sans <c>OrderItemId</c>).</summary>
     public static List<DayExpectedTicketLine> TicketLines(DayOperation op)
     {
         ArgumentNullException.ThrowIfNull(op);
         var steps = op.LineVoids ?? [];
         var quantities = (op.Lines ?? []).Select(l => l.Quantity).ToList();
-        foreach (var step in steps.Where(s => s.Phase == "draft" && s.Expect == 200))
+        foreach (var step in steps.Where(s => s.Phase == "draft" && s.Expect == 200 && !s.UnknownLine && !s.UnknownOrder))
         {
             quantities[step.Line] -= step.Quantity;
         }
@@ -188,7 +235,7 @@ public static class DayLedgerOracle
                 legacy.Add(step.Line);
             }
 
-            if (step.Expect == 200)
+            if (step.Expect == 200 && !step.UnknownLine && !step.UnknownOrder && sent[step.Line] > 0)
             {
                 cancelled[step.Line] += step.Quantity;
             }
@@ -196,6 +243,12 @@ public static class DayLedgerOracle
             if (step.ReAdd > 0)
             {
                 sent.Add(step.ReAdd);
+                cancelled.Add(0);
+            }
+
+            if (step.AddDraft is not null)
+            {
+                sent.Add(0);
                 cancelled.Add(0);
             }
         }
@@ -213,25 +266,45 @@ public static class DayLedgerOracle
             .ToList();
     }
 
-    private sealed record Sale(decimal[] Rates, long Ttc, long Ht, long[] Vat, long[] HtByGroup);
+    /// <summary>Pourboires nets encaissés et non annulés (par poste si <paramref name="terminalKey"/> est renseigné, sinon toute la salle).</summary>
+    public static long NetTipsCents(IEnumerable<DayOperation> operations, string? terminalKey = null) => operations
+        .Where(o => (terminalKey is null || o.Terminal == terminalKey) && o.Type is "table_order" or "counter_order" && o.Payments is { Count: > 0 } && o.TipCents > 0)
+        .Where(o => !VoidedPaymentIndexes(o).Contains(o.TipPaymentIndex ?? (o.Payments!.Count - 1)))
+        .Sum(o => o.TipCents);
+
+    private sealed record Sale(decimal[] Rates, long Ttc, long Ht, long[] Vat, long[] HtByGroup, long TipCents);
 
     private static void Apply(DayOperation op, TerminalLedger t, bool withReceiptVoids)
     {
         bool reopened = IsReopened(op);
         var payments = op.Payments ?? [];
+        int tipIndex = op.TipPaymentIndex ?? (payments.Count - 1);
         long fiscalPaidSoFar = 0;
+        long activeTipCents = 0;
         var sales = new List<Sale>();
         for (int p = 0; p < payments.Count; p++)
         {
-            // Commande rouverte : le premier règlement porte sur la commande d'avant les annulations « reopened », les suivants sur celle d'après.
-            var groups = Groups(op, LinesAfter(op, reopened && p > 0 ? "reopened" : "sent"));
+            // Lignes en vigueur au moment du règlement p : après `reopened` si p > 0 sur commande rouverte, après `all_voided_reopened` si p > 1.
+            string phaseAtPayment = p switch
+            {
+                0 => "sent",
+                1 => reopened ? "reopened" : "part_paid",
+                _ => "all_voided_reopened",
+            };
+            var groups = Groups(op, LinesAfter(op, phaseAtPayment));
             decimal[] rates = groups.Select(g => g.Rate).ToArray();
             long total = Math.Max(0, groups.Sum(g => g.Ttc) - DiscountCents(op.Discount, groups.Sum(g => g.Ttc)));
             long[] orderShares = Allocate(total, groups.Select(g => g.Ttc).ToArray());
 
+            if (op.TipCents > 0 && p == tipIndex)
+            {
+                activeTipCents += op.TipCents;
+            }
+
             long paid = payments[p].Sum(x => x.AmountCents);
-            bool carriesTip = op.TipCents > 0 && p == payments.Count - 1;
-            long fiscal = Math.Clamp(carriesTip ? Math.Min(paid, total - fiscalPaidSoFar) : paid, 0, total);
+            bool hasTip = activeTipCents > 0;
+            long fiscal = Math.Clamp(hasTip ? Math.Min(paid, Math.Max(0, total - fiscalPaidSoFar)) : paid, 0, total);
+            long receiptTip = Math.Max(0, paid - fiscal);
             fiscalPaidSoFar += fiscal;
             long[] shares = Allocate(fiscal, orderShares); // fiscal == total rend orderShares tel quel
             long ht = 0;
@@ -245,7 +318,7 @@ public static class DayLedgerOracle
                 htByGroup[g] = baseHt;
             }
 
-            var sale = new Sale(rates, fiscal, ht, vat, htByGroup);
+            var sale = new Sale(rates, fiscal, ht, vat, htByGroup, receiptTip);
             sales.Add(sale);
             AddReceipt(t, sale, +1);
             foreach (var tender in payments[p])
@@ -260,13 +333,33 @@ public static class DayLedgerOracle
                     Mirror(t, sale, payments[0]);
                 }
 
-                fiscalPaidSoFar = 0; // le reçu annulé ne compte plus dans le restant dû
+                fiscalPaidSoFar -= sale.Ttc;
+                activeTipCents = Math.Max(0, activeTipCents - sale.TipCents);
+            }
+
+            foreach (var rv in (op.ReceiptVoids ?? []).Where(v => v.AfterPayment == p && v.Expect == 200))
+            {
+                if (withReceiptVoids)
+                {
+                    Mirror(t, sales[rv.PaymentIndex], payments[rv.PaymentIndex]);
+                }
+
+                fiscalPaidSoFar -= sales[rv.PaymentIndex].Ttc;
+                activeTipCents = Math.Max(0, activeTipCents - sales[rv.PaymentIndex].TipCents);
             }
         }
 
         if (withReceiptVoids && op.VoidPaymentIndex is { } index)
         {
             Mirror(t, sales[index], payments[index]);
+        }
+
+        if (withReceiptVoids)
+        {
+            foreach (var rv in (op.ReceiptVoids ?? []).Where(v => v.AfterPayment is null && v.Expect == 200))
+            {
+                Mirror(t, sales[rv.PaymentIndex], payments[rv.PaymentIndex]);
+            }
         }
     }
 

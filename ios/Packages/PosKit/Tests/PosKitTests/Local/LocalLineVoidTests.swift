@@ -62,6 +62,40 @@ struct LocalLineVoidTests {
         #expect(try await api.testJetCount(Self.voided) == 0)
     }
 
+    @Test func adminCanVoidSentLineAndKitchenIsForbidden() async throws {
+        let api = try await makeLocalAPI(pin: "5678")
+        let (order, line) = try await sentLine(api, quantity: 2)
+        await #expect(throws: APIError.forbidden("Autorisation insuffisante : code PIN superviseur ou gérant requis.")) {
+            try await api.voidLine(orderId: order.orderId, lineId: line.lineId, quantity: 1, reason: "Test", operatorId: nil)
+        }
+        _ = try await api.login(pin: "9999")
+        try await api.voidLine(orderId: order.orderId, lineId: line.lineId, quantity: 1, reason: "Admin", operatorId: nil)
+        #expect(try await api.testVoidRows().count == 1)
+    }
+
+    @Test func voidOnPaidOrCancelledOrderReturns409NotModifiable() async throws {
+        let (api, db) = try await makeLocalAPIWithDatabase()
+        let (paidOrder, paidLine) = try await sentLine(api, table: "T3")
+        _ = try await api.pay(localPayment(paidOrder, table: "T3", tenders: [localTender(.cash, 1950)]))
+        await #expect {
+            try await api.voidLine(orderId: paidOrder.orderId, lineId: paidLine.lineId, quantity: 1, reason: "Tardif", operatorId: nil)
+        } throws: { error in
+            guard case .server(let status, _) = error as? APIError else { return false }
+            return status == 409
+        }
+
+        let (cancelledOrder, cancelledLine) = try await sentLine(api, table: "T4")
+        _ = try await api.pay(localPayment(cancelledOrder, table: "T4", tenders: [localTender(.cash, 1950)]))
+        let rid = try #require(try db.query("SELECT Id FROM FiscalReceipts WHERE OrderId = ?", [.uuid(cancelledOrder.orderId)]).first?.uuid("Id"))
+        _ = try await api.voidReceipt(receiptId: rid)
+        await #expect {
+            try await api.voidLine(orderId: cancelledOrder.orderId, lineId: cancelledLine.lineId, quantity: 1, reason: "Après annul", operatorId: nil)
+        } throws: { error in
+            guard case .server(let status, _) = error as? APIError else { return false }
+            return status == 409
+        }
+    }
+
     @Test func voidWithReceiptIsRefused() async throws {
         let api = try await makeLocalAPI()
         let (order, line) = try await sentLine(api)

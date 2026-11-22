@@ -3660,7 +3660,9 @@
           "by": "manager",
           "expect": 200,
           "reAdd": 0,
-          "legacy": false
+          "legacy": false,
+          "unknownLine": false,
+          "unknownOrder": false
         }
       ]
     },
@@ -3711,7 +3713,9 @@
           "by": "manager",
           "expect": 200,
           "reAdd": 0,
-          "legacy": false
+          "legacy": false,
+          "unknownLine": false,
+          "unknownOrder": false
         },
         {
           "phase": "sent",
@@ -3721,7 +3725,9 @@
           "by": "manager",
           "expect": 400,
           "reAdd": 0,
-          "legacy": false
+          "legacy": false,
+          "unknownLine": false,
+          "unknownOrder": false
         },
         {
           "phase": "sent",
@@ -3731,7 +3737,9 @@
           "by": "manager",
           "expect": 200,
           "reAdd": 0,
-          "legacy": false
+          "legacy": false,
+          "unknownLine": false,
+          "unknownOrder": false
         }
       ]
     },
@@ -3782,7 +3790,9 @@
           "by": "manager",
           "expect": 200,
           "reAdd": 1,
-          "legacy": false
+          "legacy": false,
+          "unknownLine": false,
+          "unknownOrder": false
         },
         {
           "phase": "sent",
@@ -3792,7 +3802,9 @@
           "by": "manager",
           "expect": 200,
           "reAdd": 0,
-          "legacy": false
+          "legacy": false,
+          "unknownLine": false,
+          "unknownOrder": false
         }
       ]
     },
@@ -3850,7 +3862,9 @@
           "by": "waiter",
           "expect": 200,
           "reAdd": 0,
-          "legacy": false
+          "legacy": false,
+          "unknownLine": false,
+          "unknownOrder": false
         },
         {
           "phase": "draft",
@@ -3859,7 +3873,9 @@
           "by": "waiter",
           "expect": 200,
           "reAdd": 0,
-          "legacy": false
+          "legacy": false,
+          "unknownLine": false,
+          "unknownOrder": false
         }
       ]
     },
@@ -3922,7 +3938,9 @@
           "by": "manager",
           "expect": 200,
           "reAdd": 0,
-          "legacy": false
+          "legacy": false,
+          "unknownLine": false,
+          "unknownOrder": false
         },
         {
           "phase": "sent",
@@ -3932,7 +3950,9 @@
           "by": "manager",
           "expect": 200,
           "reAdd": 0,
-          "legacy": false
+          "legacy": false,
+          "unknownLine": false,
+          "unknownOrder": false
         }
       ]
     },
@@ -3983,7 +4003,9 @@
           "by": "manager",
           "expect": 200,
           "reAdd": 0,
-          "legacy": false
+          "legacy": false,
+          "unknownLine": false,
+          "unknownOrder": false
         }
       ]
     },
@@ -4034,7 +4056,9 @@
           "by": "waiter",
           "expect": 403,
           "reAdd": 0,
-          "legacy": false
+          "legacy": false,
+          "unknownLine": false,
+          "unknownOrder": false
         },
         {
           "phase": "sent",
@@ -4043,7 +4067,9 @@
           "by": "manager",
           "expect": 400,
           "reAdd": 0,
-          "legacy": false
+          "legacy": false,
+          "unknownLine": false,
+          "unknownOrder": false
         },
         {
           "phase": "sent",
@@ -4053,7 +4079,9 @@
           "by": "manager",
           "expect": 400,
           "reAdd": 0,
-          "legacy": false
+          "legacy": false,
+          "unknownLine": false,
+          "unknownOrder": false
         },
         {
           "phase": "sent",
@@ -4063,7 +4091,9 @@
           "by": "manager",
           "expect": 200,
           "reAdd": 0,
-          "legacy": true
+          "legacy": true,
+          "unknownLine": false,
+          "unknownOrder": false
         }
       ]
     },
@@ -4114,7 +4144,9 @@
           "expect": 409,
           "code": "order_has_receipts",
           "reAdd": 0,
-          "legacy": false
+          "legacy": false,
+          "unknownLine": false,
+          "unknownOrder": false
         },
         {
           "phase": "paid",
@@ -4125,7 +4157,9 @@
           "expect": 409,
           "code": "order_not_modifiable",
           "reAdd": 0,
-          "legacy": false
+          "legacy": false,
+          "unknownLine": false,
+          "unknownOrder": false
         }
       ]
     },
@@ -4183,7 +4217,9 @@
           "by": "manager",
           "expect": 200,
           "reAdd": 0,
-          "legacy": false
+          "legacy": false,
+          "unknownLine": false,
+          "unknownOrder": false
         }
       ]
     },
@@ -4230,7 +4266,9 @@
           "by": "manager",
           "expect": 200,
           "reAdd": 0,
-          "legacy": false
+          "legacy": false,
+          "unknownLine": false,
+          "unknownOrder": false
         },
         {
           "phase": "sent",
@@ -4240,7 +4278,9 @@
           "by": "manager",
           "expect": 200,
           "reAdd": 0,
-          "legacy": false
+          "legacy": false,
+          "unknownLine": false,
+          "unknownOrder": false
         }
       ]
     },
@@ -4291,7 +4331,1210 @@
           "by": "manager",
           "expect": 200,
           "reAdd": 0,
-          "legacy": false
+          "legacy": false,
+          "unknownLine": false,
+          "unknownOrder": false
+        }
+      ]
+    },
+    {
+      "type": "table_order",
+      "terminal": "A",
+      "waiter": "waiter1",
+      "table": "31",
+      "covers": 2,
+      "destination": "EatIn",
+      "lines": [
+        {
+          "name": "Entrec\u00F4te",
+          "quantity": 2,
+          "unitPriceCents": 2400,
+          "taxRatePercent": "10",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Soupe",
+          "quantity": 2,
+          "unitPriceCents": 700,
+          "taxRatePercent": "10",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Caf\u00E9",
+          "quantity": 1,
+          "unitPriceCents": 250,
+          "taxRatePercent": "20",
+          "modifiersExtraCents": 0,
+          "comp": false
+        }
+      ],
+      "tipCents": 0,
+      "payments": [
+        [
+          {
+            "method": "CreditCard",
+            "amountCents": 950,
+            "extraTenderedCents": 0
+          }
+        ]
+      ],
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "v11",
+      "lineVoids": [
+        {
+          "phase": "draft",
+          "line": 1,
+          "quantity": 1,
+          "by": "kitchen",
+          "expect": 200,
+          "reAdd": 0,
+          "legacy": false,
+          "unknownLine": false,
+          "unknownOrder": false
+        },
+        {
+          "phase": "sent",
+          "line": 0,
+          "quantity": 1,
+          "reason": "Test",
+          "by": "kitchen",
+          "expect": 403,
+          "reAdd": 0,
+          "legacy": false,
+          "unknownLine": false,
+          "unknownOrder": false
+        },
+        {
+          "phase": "sent",
+          "line": 0,
+          "quantity": 0,
+          "reason": "Quantit\u00E9 nulle",
+          "by": "manager",
+          "expect": 400,
+          "reAdd": 0,
+          "legacy": false,
+          "unknownLine": false,
+          "unknownOrder": false
+        },
+        {
+          "phase": "sent",
+          "line": 0,
+          "quantity": -1,
+          "reason": "Quantit\u00E9 n\u00E9gative",
+          "by": "manager",
+          "expect": 400,
+          "reAdd": 0,
+          "legacy": false,
+          "unknownLine": false,
+          "unknownOrder": false
+        },
+        {
+          "phase": "sent",
+          "line": 0,
+          "quantity": 5,
+          "reason": "Au-del\u00E0",
+          "by": "manager",
+          "expect": 400,
+          "reAdd": 0,
+          "legacy": false,
+          "unknownLine": false,
+          "unknownOrder": false
+        },
+        {
+          "phase": "sent",
+          "line": 0,
+          "quantity": 1,
+          "reason": "Inconnue",
+          "by": "manager",
+          "expect": 404,
+          "reAdd": 0,
+          "legacy": false,
+          "unknownLine": true,
+          "unknownOrder": false
+        },
+        {
+          "phase": "sent",
+          "line": 0,
+          "quantity": 1,
+          "reason": "Commande inconnue",
+          "by": "manager",
+          "expect": 404,
+          "reAdd": 0,
+          "legacy": false,
+          "unknownLine": false,
+          "unknownOrder": true
+        },
+        {
+          "phase": "sent",
+          "line": 0,
+          "quantity": 2,
+          "reason": "  Plat froid \u2014 retour \u0022client\u0022  ",
+          "by": "admin",
+          "expect": 200,
+          "reAdd": 0,
+          "legacy": false,
+          "unknownLine": false,
+          "unknownOrder": false
+        },
+        {
+          "phase": "sent",
+          "line": 0,
+          "quantity": 1,
+          "reason": "D\u00E9j\u00E0 retir\u00E9e",
+          "by": "manager",
+          "expect": 404,
+          "reAdd": 0,
+          "legacy": false,
+          "unknownLine": false,
+          "unknownOrder": false
+        }
+      ]
+    },
+    {
+      "type": "table_order",
+      "terminal": "B",
+      "waiter": "waiter2",
+      "table": "32",
+      "covers": 2,
+      "destination": "EatIn",
+      "lines": [
+        {
+          "name": "Steak",
+          "quantity": 2,
+          "unitPriceCents": 1900,
+          "taxRatePercent": "10",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Frites",
+          "quantity": 1,
+          "unitPriceCents": 500,
+          "taxRatePercent": "10",
+          "modifiersExtraCents": 0,
+          "comp": false
+        }
+      ],
+      "tipCents": 0,
+      "payments": [
+        [
+          {
+            "method": "CreditCard",
+            "amountCents": 3700,
+            "extraTenderedCents": 0
+          }
+        ]
+      ],
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "v12",
+      "lineVoids": [
+        {
+          "phase": "sent",
+          "line": 0,
+          "quantity": 1,
+          "reason": "Changement d\u0027avis",
+          "by": "manager",
+          "expect": 200,
+          "reAdd": 0,
+          "legacy": false,
+          "unknownLine": false,
+          "unknownOrder": false,
+          "addDraft": {
+            "name": "Dessert du jour",
+            "quantity": 3,
+            "unitPriceCents": 650,
+            "taxRatePercent": "5.5",
+            "modifiersExtraCents": 0,
+            "comp": false
+          }
+        },
+        {
+          "phase": "sent",
+          "line": 2,
+          "quantity": 1,
+          "by": "waiter",
+          "expect": 200,
+          "reAdd": 0,
+          "legacy": false,
+          "unknownLine": false,
+          "unknownOrder": false
+        },
+        {
+          "phase": "sent",
+          "line": 0,
+          "quantity": 1,
+          "reason": "Non",
+          "by": "waiter",
+          "expect": 403,
+          "reAdd": 0,
+          "legacy": false,
+          "unknownLine": false,
+          "unknownOrder": false
+        }
+      ]
+    },
+    {
+      "type": "table_order",
+      "terminal": "C",
+      "waiter": "waiter3",
+      "table": "33",
+      "covers": 2,
+      "destination": "EatIn",
+      "lines": [
+        {
+          "name": "Brochette",
+          "quantity": 3,
+          "unitPriceCents": 1400,
+          "taxRatePercent": "10",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Salade verte",
+          "quantity": 1,
+          "unitPriceCents": 500,
+          "taxRatePercent": "10",
+          "modifiersExtraCents": 0,
+          "comp": false
+        }
+      ],
+      "tipCents": 0,
+      "payments": [
+        [
+          {
+            "method": "Cash",
+            "amountCents": 500,
+            "extraTenderedCents": 0
+          }
+        ]
+      ],
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "v13",
+      "lineVoids": [
+        {
+          "phase": "sent",
+          "line": 0,
+          "quantity": 1,
+          "reason": "Annul 1",
+          "by": "manager",
+          "expect": 200,
+          "reAdd": 2,
+          "legacy": false,
+          "unknownLine": false,
+          "unknownOrder": false
+        },
+        {
+          "phase": "sent",
+          "line": 0,
+          "quantity": 1,
+          "reason": "Annul 2",
+          "by": "manager",
+          "expect": 200,
+          "reAdd": 0,
+          "legacy": false,
+          "unknownLine": false,
+          "unknownOrder": false
+        },
+        {
+          "phase": "sent",
+          "line": 2,
+          "quantity": 1,
+          "reason": "Annul 3",
+          "by": "manager",
+          "expect": 200,
+          "reAdd": 0,
+          "legacy": false,
+          "unknownLine": false,
+          "unknownOrder": false
+        },
+        {
+          "phase": "sent",
+          "line": 0,
+          "quantity": 1,
+          "reason": "Annul 4",
+          "by": "manager",
+          "expect": 200,
+          "reAdd": 0,
+          "legacy": false,
+          "unknownLine": false,
+          "unknownOrder": false
+        },
+        {
+          "phase": "sent",
+          "line": 2,
+          "quantity": 1,
+          "reason": "Annul 5",
+          "by": "manager",
+          "expect": 200,
+          "reAdd": 0,
+          "legacy": false,
+          "unknownLine": false,
+          "unknownOrder": false
+        }
+      ]
+    },
+    {
+      "type": "table_order",
+      "terminal": "A",
+      "waiter": "waiter4",
+      "table": "34",
+      "covers": 2,
+      "destination": "EatIn",
+      "lines": [
+        {
+          "name": "Presse",
+          "quantity": 1,
+          "unitPriceCents": 300,
+          "taxRatePercent": "0",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Eau min\u00E9rale",
+          "quantity": 2,
+          "unitPriceCents": 450,
+          "taxRatePercent": "5.5",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Plat chef",
+          "quantity": 2,
+          "unitPriceCents": 1850,
+          "taxRatePercent": "10",
+          "modifiersExtraCents": 150,
+          "comp": false
+        },
+        {
+          "name": "Champagne",
+          "quantity": 2,
+          "unitPriceCents": 1200,
+          "taxRatePercent": "20",
+          "modifiersExtraCents": 0,
+          "comp": false
+        }
+      ],
+      "discount": {
+        "type": "Percentage",
+        "value": "33.33"
+      },
+      "tipCents": 0,
+      "payments": [
+        [
+          {
+            "method": "CreditCard",
+            "amountCents": 3667,
+            "extraTenderedCents": 0
+          }
+        ]
+      ],
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "v14",
+      "lineVoids": [
+        {
+          "phase": "sent",
+          "line": 1,
+          "quantity": 2,
+          "reason": "Annul\u00E9 avant service",
+          "by": "manager",
+          "expect": 200,
+          "reAdd": 0,
+          "legacy": false,
+          "unknownLine": false,
+          "unknownOrder": false
+        },
+        {
+          "phase": "sent",
+          "line": 3,
+          "quantity": 1,
+          "reason": "Un verre en trop",
+          "by": "manager",
+          "expect": 200,
+          "reAdd": 0,
+          "legacy": false,
+          "unknownLine": false,
+          "unknownOrder": false
+        }
+      ]
+    },
+    {
+      "type": "table_order",
+      "terminal": "B",
+      "waiter": "waiter1",
+      "table": "35",
+      "covers": 2,
+      "destination": "EatIn",
+      "lines": [
+        {
+          "name": "Plat du jour",
+          "quantity": 1,
+          "unitPriceCents": 1000,
+          "taxRatePercent": "10",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Salade",
+          "quantity": 1,
+          "unitPriceCents": 800,
+          "taxRatePercent": "10",
+          "modifiersExtraCents": 0,
+          "comp": false
+        }
+      ],
+      "discount": {
+        "type": "FixedAmount",
+        "value": "10"
+      },
+      "tipCents": 0,
+      "payments": [
+        []
+      ],
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "v15",
+      "lineVoids": [
+        {
+          "phase": "sent",
+          "line": 0,
+          "quantity": 1,
+          "reason": "Trop d\u0027attente",
+          "by": "manager",
+          "expect": 200,
+          "reAdd": 0,
+          "legacy": false,
+          "unknownLine": false,
+          "unknownOrder": false
+        }
+      ]
+    },
+    {
+      "type": "table_order",
+      "terminal": "C",
+      "waiter": "waiter2",
+      "table": "36",
+      "covers": 2,
+      "destination": "EatIn",
+      "lines": [
+        {
+          "name": "Assiette",
+          "quantity": 1,
+          "unitPriceCents": 1200,
+          "taxRatePercent": "10",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Caf\u00E9 gourmand",
+          "quantity": 1,
+          "unitPriceCents": 700,
+          "taxRatePercent": "5.5",
+          "modifiersExtraCents": 0,
+          "comp": true
+        }
+      ],
+      "tipCents": 0,
+      "payments": [
+        []
+      ],
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "v16",
+      "lineVoids": [
+        {
+          "phase": "sent",
+          "line": 0,
+          "quantity": 1,
+          "reason": "Erreur table",
+          "by": "manager",
+          "expect": 200,
+          "reAdd": 0,
+          "legacy": false,
+          "unknownLine": false,
+          "unknownOrder": false
+        }
+      ]
+    },
+    {
+      "type": "counter_order",
+      "terminal": "A",
+      "waiter": "waiter3",
+      "covers": 0,
+      "destination": "Takeaway",
+      "lines": [
+        {
+          "name": "Wrap",
+          "quantity": 2,
+          "unitPriceCents": 850,
+          "taxRatePercent": "10",
+          "taxRateTakeawayPercent": "5.5",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Jus",
+          "quantity": 2,
+          "unitPriceCents": 400,
+          "taxRatePercent": "5.5",
+          "modifiersExtraCents": 0,
+          "comp": false
+        }
+      ],
+      "tipCents": 0,
+      "payments": [
+        [
+          {
+            "method": "CreditCard",
+            "amountCents": 1250,
+            "extraTenderedCents": 0
+          }
+        ]
+      ],
+      "reprint": false,
+      "holdAndRecall": true,
+      "ref": "v17",
+      "lineVoids": [
+        {
+          "phase": "draft",
+          "line": 1,
+          "quantity": 1,
+          "by": "waiter",
+          "expect": 200,
+          "reAdd": 0,
+          "legacy": false,
+          "unknownLine": false,
+          "unknownOrder": false
+        },
+        {
+          "phase": "sent",
+          "line": 0,
+          "quantity": 1,
+          "reason": "Client change",
+          "by": "manager",
+          "expect": 200,
+          "reAdd": 0,
+          "legacy": false,
+          "unknownLine": false,
+          "unknownOrder": false
+        },
+        {
+          "phase": "cancelled",
+          "line": 0,
+          "quantity": 1,
+          "reason": "Apr\u00E8s annulation",
+          "by": "manager",
+          "expect": 409,
+          "code": "order_not_modifiable",
+          "reAdd": 0,
+          "legacy": false,
+          "unknownLine": false,
+          "unknownOrder": false
+        }
+      ],
+      "receiptVoids": [
+        {
+          "paymentIndex": 0,
+          "by": "manager",
+          "expect": 200,
+          "stage": 0,
+          "voidSelf": false
+        }
+      ]
+    },
+    {
+      "type": "counter_order",
+      "terminal": "C",
+      "waiter": "waiter4",
+      "covers": 0,
+      "destination": "Takeaway",
+      "lines": [
+        {
+          "name": "Panini",
+          "quantity": 1,
+          "unitPriceCents": 950,
+          "taxRatePercent": "10",
+          "taxRateTakeawayPercent": "5.5",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Eau",
+          "quantity": 1,
+          "unitPriceCents": 250,
+          "taxRatePercent": "5.5",
+          "modifiersExtraCents": 0,
+          "comp": false
+        }
+      ],
+      "tipCents": 0,
+      "payments": [
+        [
+          {
+            "method": "Cash",
+            "amountCents": 1200,
+            "extraTenderedCents": 800
+          }
+        ]
+      ],
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "v18",
+      "receiptVoids": [
+        {
+          "paymentIndex": 0,
+          "by": "waiter",
+          "expect": 403,
+          "stage": 0,
+          "voidSelf": false
+        },
+        {
+          "paymentIndex": 0,
+          "by": "manager",
+          "expect": 400,
+          "stage": 0,
+          "voidSelf": false,
+          "fromTerminal": "B"
+        },
+        {
+          "paymentIndex": 0,
+          "by": "manager",
+          "expect": 200,
+          "stage": 0,
+          "voidSelf": false
+        },
+        {
+          "paymentIndex": 0,
+          "by": "manager",
+          "expect": 400,
+          "stage": 0,
+          "voidSelf": false
+        },
+        {
+          "paymentIndex": 0,
+          "by": "manager",
+          "expect": 400,
+          "stage": 0,
+          "voidSelf": true
+        }
+      ]
+    },
+    {
+      "type": "table_order",
+      "terminal": "A",
+      "waiter": "waiter1",
+      "table": "37",
+      "covers": 2,
+      "destination": "EatIn",
+      "lines": [
+        {
+          "name": "Menu d\u00E9gustation",
+          "quantity": 2,
+          "unitPriceCents": 2000,
+          "taxRatePercent": "10",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Bouteille vin",
+          "quantity": 1,
+          "unitPriceCents": 1000,
+          "taxRatePercent": "20",
+          "modifiersExtraCents": 0,
+          "comp": false
+        }
+      ],
+      "tipCents": 0,
+      "payments": [
+        [
+          {
+            "method": "Cash",
+            "amountCents": 1000,
+            "extraTenderedCents": 0
+          }
+        ],
+        [
+          {
+            "method": "CreditCard",
+            "amountCents": 1000,
+            "extraTenderedCents": 0
+          }
+        ],
+        [
+          {
+            "method": "Cash",
+            "amountCents": 1500,
+            "extraTenderedCents": 500
+          }
+        ],
+        [
+          {
+            "method": "CreditCard",
+            "amountCents": 2500,
+            "extraTenderedCents": 0
+          }
+        ]
+      ],
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "v20",
+      "lineVoids": [
+        {
+          "phase": "part_paid",
+          "line": 1,
+          "quantity": 1,
+          "reason": "Erreur de saisie",
+          "by": "manager",
+          "expect": 409,
+          "code": "order_has_receipts",
+          "reAdd": 0,
+          "legacy": false,
+          "unknownLine": false,
+          "unknownOrder": false
+        },
+        {
+          "phase": "part_paid_two",
+          "line": 1,
+          "quantity": 1,
+          "reason": "Erreur de saisie",
+          "by": "manager",
+          "expect": 409,
+          "code": "order_has_receipts",
+          "reAdd": 0,
+          "legacy": false,
+          "unknownLine": false,
+          "unknownOrder": false
+        },
+        {
+          "phase": "part_voided_still_has_receipt",
+          "line": 1,
+          "quantity": 1,
+          "reason": "Erreur de saisie",
+          "by": "manager",
+          "expect": 409,
+          "code": "order_has_receipts",
+          "reAdd": 0,
+          "legacy": false,
+          "unknownLine": false,
+          "unknownOrder": false
+        },
+        {
+          "phase": "all_voided_reopened",
+          "line": 1,
+          "quantity": 1,
+          "reason": "Bouteille retir\u00E9e",
+          "by": "manager",
+          "expect": 200,
+          "reAdd": 0,
+          "legacy": false,
+          "unknownLine": false,
+          "unknownOrder": false
+        },
+        {
+          "phase": "paid",
+          "line": 0,
+          "quantity": 1,
+          "reason": "Erreur de saisie",
+          "by": "manager",
+          "expect": 409,
+          "code": "order_not_modifiable",
+          "reAdd": 0,
+          "legacy": false,
+          "unknownLine": false,
+          "unknownOrder": false
+        }
+      ],
+      "receiptVoids": [
+        {
+          "afterPayment": 1,
+          "paymentIndex": 0,
+          "by": "manager",
+          "expect": 200,
+          "stage": 0,
+          "voidSelf": false
+        },
+        {
+          "afterPayment": 1,
+          "paymentIndex": 1,
+          "by": "manager",
+          "expect": 200,
+          "stage": 1,
+          "voidSelf": false
+        }
+      ]
+    },
+    {
+      "type": "table_order",
+      "terminal": "B",
+      "waiter": "waiter2",
+      "table": "38",
+      "covers": 2,
+      "destination": "EatIn",
+      "lines": [
+        {
+          "name": "C\u00F4telette",
+          "quantity": 2,
+          "unitPriceCents": 1500,
+          "taxRatePercent": "10",
+          "modifiersExtraCents": 0,
+          "comp": false
+        }
+      ],
+      "tipCents": 0,
+      "payments": [
+        [
+          {
+            "method": "Cash",
+            "amountCents": 1200,
+            "extraTenderedCents": 300
+          }
+        ],
+        [
+          {
+            "method": "CreditCard",
+            "amountCents": 1800,
+            "extraTenderedCents": 0
+          }
+        ],
+        [
+          {
+            "method": "CreditCard",
+            "amountCents": 1200,
+            "extraTenderedCents": 0
+          }
+        ]
+      ],
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "v21",
+      "receiptVoids": [
+        {
+          "afterPayment": 1,
+          "paymentIndex": 0,
+          "by": "manager",
+          "expect": 200,
+          "stage": 0,
+          "voidSelf": false
+        }
+      ]
+    },
+    {
+      "type": "table_order",
+      "terminal": "C",
+      "waiter": "waiter3",
+      "table": "39",
+      "covers": 2,
+      "destination": "EatIn",
+      "lines": [
+        {
+          "name": "Magret",
+          "quantity": 1,
+          "unitPriceCents": 2000,
+          "taxRatePercent": "10",
+          "modifiersExtraCents": 0,
+          "comp": false
+        }
+      ],
+      "tipCents": 300,
+      "payments": [
+        [
+          {
+            "method": "Cash",
+            "amountCents": 1000,
+            "extraTenderedCents": 0
+          }
+        ],
+        [
+          {
+            "method": "CreditCard",
+            "amountCents": 1300,
+            "extraTenderedCents": 0
+          }
+        ],
+        [
+          {
+            "method": "CreditCard",
+            "amountCents": 1000,
+            "extraTenderedCents": 0
+          }
+        ]
+      ],
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "v22",
+      "tipPaymentIndex": 1,
+      "receiptVoids": [
+        {
+          "afterPayment": 1,
+          "paymentIndex": 0,
+          "by": "manager",
+          "expect": 200,
+          "stage": 0,
+          "voidSelf": false
+        }
+      ]
+    },
+    {
+      "type": "table_order",
+      "terminal": "A",
+      "waiter": "waiter4",
+      "table": "40",
+      "covers": 2,
+      "destination": "EatIn",
+      "lines": [
+        {
+          "name": "Risotto",
+          "quantity": 1,
+          "unitPriceCents": 2000,
+          "taxRatePercent": "10",
+          "modifiersExtraCents": 0,
+          "comp": false
+        }
+      ],
+      "tipCents": 250,
+      "payments": [
+        [
+          {
+            "method": "Cash",
+            "amountCents": 1000,
+            "extraTenderedCents": 0
+          }
+        ],
+        [
+          {
+            "method": "CreditCard",
+            "amountCents": 1250,
+            "extraTenderedCents": 0
+          }
+        ],
+        [
+          {
+            "method": "Cash",
+            "amountCents": 1000,
+            "extraTenderedCents": 500
+          }
+        ]
+      ],
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "v23",
+      "tipPaymentIndex": 1,
+      "receiptVoids": [
+        {
+          "afterPayment": 1,
+          "paymentIndex": 1,
+          "by": "manager",
+          "expect": 200,
+          "stage": 0,
+          "voidSelf": false
+        }
+      ]
+    },
+    {
+      "type": "table_order",
+      "terminal": "B",
+      "waiter": "waiter1",
+      "table": "41",
+      "covers": 2,
+      "destination": "EatIn",
+      "lines": [
+        {
+          "name": "Article 0",
+          "quantity": 1,
+          "unitPriceCents": 500,
+          "taxRatePercent": "0",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Presse",
+          "quantity": 1,
+          "unitPriceCents": 500,
+          "taxRatePercent": "2.1",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Jus",
+          "quantity": 1,
+          "unitPriceCents": 500,
+          "taxRatePercent": "5.5",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Plat",
+          "quantity": 1,
+          "unitPriceCents": 1500,
+          "taxRatePercent": "10",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Vin",
+          "quantity": 1,
+          "unitPriceCents": 1000,
+          "taxRatePercent": "20",
+          "modifiersExtraCents": 0,
+          "comp": false
+        }
+      ],
+      "discount": {
+        "type": "Percentage",
+        "value": "10"
+      },
+      "tipCents": 400,
+      "payments": [
+        [
+          {
+            "method": "Cash",
+            "amountCents": 500,
+            "extraTenderedCents": 500
+          },
+          {
+            "method": "CreditCard",
+            "amountCents": 1500,
+            "extraTenderedCents": 0
+          },
+          {
+            "method": "MealVoucher",
+            "amountCents": 500,
+            "extraTenderedCents": 0
+          },
+          {
+            "method": "GiftCard",
+            "amountCents": 1500,
+            "extraTenderedCents": 0
+          }
+        ]
+      ],
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "v24",
+      "lineVoids": [
+        {
+          "phase": "cancelled",
+          "line": 0,
+          "quantity": 1,
+          "reason": "Apr\u00E8s annulation totale",
+          "by": "manager",
+          "expect": 409,
+          "code": "order_not_modifiable",
+          "reAdd": 0,
+          "legacy": false,
+          "unknownLine": false,
+          "unknownOrder": false
+        }
+      ],
+      "receiptVoids": [
+        {
+          "paymentIndex": 0,
+          "by": "manager",
+          "expect": 200,
+          "stage": 0,
+          "voidSelf": false
+        }
+      ]
+    },
+    {
+      "type": "table_order",
+      "terminal": "C",
+      "waiter": "waiter2",
+      "table": "42",
+      "covers": 1,
+      "destination": "EatIn",
+      "lines": [
+        {
+          "name": "D\u00E9gustation offerte",
+          "quantity": 1,
+          "unitPriceCents": 1500,
+          "taxRatePercent": "10",
+          "modifiersExtraCents": 0,
+          "comp": true
+        }
+      ],
+      "tipCents": 0,
+      "payments": [
+        []
+      ],
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "v25",
+      "receiptVoids": [
+        {
+          "paymentIndex": 0,
+          "by": "manager",
+          "expect": 200,
+          "stage": 0,
+          "voidSelf": false
+        },
+        {
+          "paymentIndex": 0,
+          "by": "manager",
+          "expect": 400,
+          "stage": 0,
+          "voidSelf": false
+        }
+      ]
+    },
+    {
+      "type": "counter_order",
+      "terminal": "B",
+      "waiter": "waiter3",
+      "covers": 0,
+      "destination": "EatIn",
+      "lines": [
+        {
+          "name": "Croque",
+          "quantity": 1,
+          "unitPriceCents": 750,
+          "taxRatePercent": "10",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Caf\u00E9",
+          "quantity": 1,
+          "unitPriceCents": 250,
+          "taxRatePercent": "20",
+          "modifiersExtraCents": 0,
+          "comp": false
+        }
+      ],
+      "tipCents": 0,
+      "payments": [],
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "v19",
+      "lineVoids": [
+        {
+          "phase": "sent",
+          "line": 0,
+          "quantity": 1,
+          "reason": "Abandon comptoir",
+          "by": "manager",
+          "expect": 200,
+          "reAdd": 0,
+          "legacy": false,
+          "unknownLine": false,
+          "unknownOrder": false
+        },
+        {
+          "phase": "sent",
+          "line": 1,
+          "quantity": 1,
+          "reason": "Abandon comptoir",
+          "by": "manager",
+          "expect": 200,
+          "reAdd": 0,
+          "legacy": false,
+          "unknownLine": false,
+          "unknownOrder": false
         }
       ]
     },
@@ -4400,74 +5643,74 @@
   ],
   "expected": {
     "A": {
-      "ttcCents": 176197,
-      "htCents": 167526,
-      "receiptCount": 49,
+      "ttcCents": 186814,
+      "htCents": 177117,
+      "receiptCount": 63,
       "vatByRate": {
         "0": 0,
         "2.1": 888,
         "5.5": 1996,
-        "10": 3054,
-        "20": 2733
+        "10": 3905,
+        "20": 2908
       },
       "tenderByMethod": {
-        "Cash": 44744,
-        "CreditCard": 90033,
+        "Cash": 48244,
+        "CreditCard": 97150,
         "GiftCard": 34068,
         "MealVoucher": 8280
       }
     },
     "B": {
-      "ttcCents": 108200,
-      "htCents": 100101,
-      "receiptCount": 29,
+      "ttcCents": 114900,
+      "htCents": 106242,
+      "receiptCount": 37,
       "vatByRate": {
         "0": 0,
         "2.1": 134,
-        "5.5": 1551,
-        "10": 2752,
+        "5.5": 1619,
+        "10": 3243,
         "20": 3662
       },
       "tenderByMethod": {
         "Cash": 17085,
-        "CreditCard": 78904,
+        "CreditCard": 85604,
         "GiftCard": 12639,
         "MealVoucher": 187
       }
     },
     "C": {
-      "ttcCents": 224373,
-      "htCents": 209669,
-      "receiptCount": 53,
+      "ttcCents": 226873,
+      "htCents": 211942,
+      "receiptCount": 63,
       "vatByRate": {
         "0": 0,
         "2.1": 868,
         "5.5": 2158,
-        "10": 4807,
+        "10": 5034,
         "20": 6871
       },
       "tenderByMethod": {
-        "Cash": 77696,
-        "CreditCard": 83547,
+        "Cash": 78196,
+        "CreditCard": 85847,
         "GiftCard": 55144,
         "MealVoucher": 7986
       }
     }
   },
   "total": {
-    "ttcCents": 508770,
-    "htCents": 477296,
-    "receiptCount": 131,
+    "ttcCents": 528587,
+    "htCents": 495301,
+    "receiptCount": 163,
     "vatByRate": {
       "0": 0,
       "2.1": 1890,
-      "5.5": 5705,
-      "10": 10613,
-      "20": 13266
+      "5.5": 5773,
+      "10": 12182,
+      "20": 13441
     },
     "tenderByMethod": {
-      "Cash": 139525,
-      "CreditCard": 252484,
+      "Cash": 143525,
+      "CreditCard": 268601,
       "GiftCard": 101851,
       "MealVoucher": 16453
     }
@@ -4482,7 +5725,8 @@
       "unitPriceCents": 2400,
       "reason": "Erreur de saisie",
       "serverName": "waiter1",
-      "hasTicket": true
+      "hasTicket": true,
+      "by": "manager"
     },
     {
       "terminal": "B",
@@ -4493,7 +5737,8 @@
       "unitPriceCents": 1350,
       "reason": "Trop command\u00E9",
       "serverName": "waiter2",
-      "hasTicket": true
+      "hasTicket": true,
+      "by": "manager"
     },
     {
       "terminal": "B",
@@ -4504,7 +5749,8 @@
       "unitPriceCents": 1350,
       "reason": "Client parti",
       "serverName": "waiter2",
-      "hasTicket": true
+      "hasTicket": true,
+      "by": "manager"
     },
     {
       "terminal": "C",
@@ -4515,7 +5761,8 @@
       "unitPriceCents": 1500,
       "reason": "Erreur de saisie",
       "serverName": "waiter3",
-      "hasTicket": true
+      "hasTicket": true,
+      "by": "manager"
     },
     {
       "terminal": "C",
@@ -4526,7 +5773,8 @@
       "unitPriceCents": 1500,
       "reason": "Plus faim",
       "serverName": "waiter3",
-      "hasTicket": true
+      "hasTicket": true,
+      "by": "manager"
     },
     {
       "terminal": "B",
@@ -4537,7 +5785,8 @@
       "unitPriceCents": 700,
       "reason": "Offert retir\u00E9",
       "serverName": "waiter1",
-      "hasTicket": true
+      "hasTicket": true,
+      "by": "manager"
     },
     {
       "terminal": "B",
@@ -4548,7 +5797,8 @@
       "unitPriceCents": 250,
       "reason": "Erreur de saisie",
       "serverName": "waiter1",
-      "hasTicket": true
+      "hasTicket": true,
+      "by": "manager"
     },
     {
       "terminal": "C",
@@ -4559,7 +5809,8 @@
       "unitPriceCents": 850,
       "reason": "Erreur de saisie",
       "serverName": "",
-      "hasTicket": true
+      "hasTicket": true,
+      "by": "manager"
     },
     {
       "terminal": "A",
@@ -4570,7 +5821,8 @@
       "unitPriceCents": 600,
       "reason": "Ancienne ligne",
       "serverName": "waiter3",
-      "hasTicket": false
+      "hasTicket": false,
+      "by": "manager"
     },
     {
       "terminal": "C",
@@ -4581,7 +5833,8 @@
       "unitPriceCents": 700,
       "reason": "Bouteille bouchonn\u00E9e",
       "serverName": "waiter1",
-      "hasTicket": true
+      "hasTicket": true,
+      "by": "manager"
     },
     {
       "terminal": "A",
@@ -4592,7 +5845,8 @@
       "unitPriceCents": 450,
       "reason": "Client parti",
       "serverName": "waiter2",
-      "hasTicket": true
+      "hasTicket": true,
+      "by": "manager"
     },
     {
       "terminal": "A",
@@ -4603,7 +5857,8 @@
       "unitPriceCents": 1200,
       "reason": "Client parti",
       "serverName": "waiter2",
-      "hasTicket": true
+      "hasTicket": true,
+      "by": "manager"
     },
     {
       "terminal": "B",
@@ -4614,7 +5869,188 @@
       "unitPriceCents": 650,
       "reason": "Erreur de saisie",
       "serverName": "waiter3",
-      "hasTicket": true
+      "hasTicket": true,
+      "by": "manager"
+    },
+    {
+      "terminal": "A",
+      "ref": "v11",
+      "table": "31",
+      "productName": "Entrec\u00F4te",
+      "quantity": 2,
+      "unitPriceCents": 2400,
+      "reason": "Plat froid \u2014 retour \u0022client\u0022",
+      "serverName": "waiter1",
+      "hasTicket": true,
+      "by": "admin"
+    },
+    {
+      "terminal": "B",
+      "ref": "v12",
+      "table": "32",
+      "productName": "Steak",
+      "quantity": 1,
+      "unitPriceCents": 1900,
+      "reason": "Changement d\u0027avis",
+      "serverName": "waiter2",
+      "hasTicket": true,
+      "by": "manager"
+    },
+    {
+      "terminal": "C",
+      "ref": "v13",
+      "table": "33",
+      "productName": "Brochette",
+      "quantity": 1,
+      "unitPriceCents": 1400,
+      "reason": "Annul 1",
+      "serverName": "waiter3",
+      "hasTicket": true,
+      "by": "manager"
+    },
+    {
+      "terminal": "C",
+      "ref": "v13",
+      "table": "33",
+      "productName": "Brochette",
+      "quantity": 1,
+      "unitPriceCents": 1400,
+      "reason": "Annul 2",
+      "serverName": "waiter3",
+      "hasTicket": true,
+      "by": "manager"
+    },
+    {
+      "terminal": "C",
+      "ref": "v13",
+      "table": "33",
+      "productName": "Brochette",
+      "quantity": 1,
+      "unitPriceCents": 1400,
+      "reason": "Annul 3",
+      "serverName": "waiter3",
+      "hasTicket": true,
+      "by": "manager"
+    },
+    {
+      "terminal": "C",
+      "ref": "v13",
+      "table": "33",
+      "productName": "Brochette",
+      "quantity": 1,
+      "unitPriceCents": 1400,
+      "reason": "Annul 4",
+      "serverName": "waiter3",
+      "hasTicket": true,
+      "by": "manager"
+    },
+    {
+      "terminal": "C",
+      "ref": "v13",
+      "table": "33",
+      "productName": "Brochette",
+      "quantity": 1,
+      "unitPriceCents": 1400,
+      "reason": "Annul 5",
+      "serverName": "waiter3",
+      "hasTicket": true,
+      "by": "manager"
+    },
+    {
+      "terminal": "A",
+      "ref": "v14",
+      "table": "34",
+      "productName": "Eau min\u00E9rale",
+      "quantity": 2,
+      "unitPriceCents": 450,
+      "reason": "Annul\u00E9 avant service",
+      "serverName": "waiter4",
+      "hasTicket": true,
+      "by": "manager"
+    },
+    {
+      "terminal": "A",
+      "ref": "v14",
+      "table": "34",
+      "productName": "Champagne",
+      "quantity": 1,
+      "unitPriceCents": 1200,
+      "reason": "Un verre en trop",
+      "serverName": "waiter4",
+      "hasTicket": true,
+      "by": "manager"
+    },
+    {
+      "terminal": "B",
+      "ref": "v15",
+      "table": "35",
+      "productName": "Plat du jour",
+      "quantity": 1,
+      "unitPriceCents": 1000,
+      "reason": "Trop d\u0027attente",
+      "serverName": "waiter1",
+      "hasTicket": true,
+      "by": "manager"
+    },
+    {
+      "terminal": "C",
+      "ref": "v16",
+      "table": "36",
+      "productName": "Assiette",
+      "quantity": 1,
+      "unitPriceCents": 1200,
+      "reason": "Erreur table",
+      "serverName": "waiter2",
+      "hasTicket": true,
+      "by": "manager"
+    },
+    {
+      "terminal": "A",
+      "ref": "v17",
+      "table": "Comptoir",
+      "productName": "Wrap",
+      "quantity": 1,
+      "unitPriceCents": 850,
+      "reason": "Client change",
+      "serverName": "",
+      "hasTicket": true,
+      "by": "manager"
+    },
+    {
+      "terminal": "A",
+      "ref": "v20",
+      "table": "37",
+      "productName": "Bouteille vin",
+      "quantity": 1,
+      "unitPriceCents": 1000,
+      "reason": "Bouteille retir\u00E9e",
+      "serverName": "waiter1",
+      "hasTicket": true,
+      "by": "manager"
+    },
+    {
+      "terminal": "B",
+      "ref": "v19",
+      "table": "Comptoir",
+      "productName": "Croque",
+      "quantity": 1,
+      "unitPriceCents": 750,
+      "reason": "Abandon comptoir",
+      "serverName": "",
+      "hasTicket": true,
+      "by": "manager"
+    },
+    {
+      "terminal": "B",
+      "ref": "v19",
+      "table": "Comptoir",
+      "productName": "Caf\u00E9",
+      "quantity": 1,
+      "unitPriceCents": 250,
+      "reason": "Abandon comptoir",
+      "serverName": "",
+      "hasTicket": true,
+      "by": "manager"
     }
   ],
   "expectedLineVoidTotals": {
@@ -4660,6 +6096,58 @@
     ],
     "v10": [
       900
+    ],
+    "v11": [
+      5750,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      950,
+      null
+    ],
+    "v12": [
+      2400,
+      3700,
+      null
+    ],
+    "v13": [
+      3300,
+      4700,
+      3300,
+      1900,
+      500
+    ],
+    "v14": [
+      4467,
+      3667
+    ],
+    "v15": [
+      0
+    ],
+    "v16": [
+      0
+    ],
+    "v17": [
+      2100,
+      1250,
+      null
+    ],
+    "v20": [
+      null,
+      null,
+      null,
+      4000,
+      null
+    ],
+    "v24": [
+      null
+    ],
+    "v19": [
+      250,
+      0
     ]
   },
   "expectedTicketLines": {
@@ -4793,6 +6281,161 @@
         "line": 1,
         "sent": 1,
         "cancelled": 0
+      }
+    ],
+    "v11": [
+      {
+        "line": 0,
+        "sent": 2,
+        "cancelled": 2
+      },
+      {
+        "line": 1,
+        "sent": 1,
+        "cancelled": 0
+      },
+      {
+        "line": 2,
+        "sent": 1,
+        "cancelled": 0
+      }
+    ],
+    "v12": [
+      {
+        "line": 0,
+        "sent": 2,
+        "cancelled": 1
+      },
+      {
+        "line": 1,
+        "sent": 1,
+        "cancelled": 0
+      }
+    ],
+    "v13": [
+      {
+        "line": 0,
+        "sent": 3,
+        "cancelled": 3
+      },
+      {
+        "line": 1,
+        "sent": 1,
+        "cancelled": 0
+      },
+      {
+        "line": 2,
+        "sent": 2,
+        "cancelled": 2
+      }
+    ],
+    "v14": [
+      {
+        "line": 0,
+        "sent": 1,
+        "cancelled": 0
+      },
+      {
+        "line": 1,
+        "sent": 2,
+        "cancelled": 2
+      },
+      {
+        "line": 2,
+        "sent": 2,
+        "cancelled": 0
+      },
+      {
+        "line": 3,
+        "sent": 2,
+        "cancelled": 1
+      }
+    ],
+    "v15": [
+      {
+        "line": 0,
+        "sent": 1,
+        "cancelled": 1
+      },
+      {
+        "line": 1,
+        "sent": 1,
+        "cancelled": 0
+      }
+    ],
+    "v16": [
+      {
+        "line": 0,
+        "sent": 1,
+        "cancelled": 1
+      },
+      {
+        "line": 1,
+        "sent": 1,
+        "cancelled": 0
+      }
+    ],
+    "v17": [
+      {
+        "line": 0,
+        "sent": 2,
+        "cancelled": 1
+      },
+      {
+        "line": 1,
+        "sent": 1,
+        "cancelled": 0
+      }
+    ],
+    "v20": [
+      {
+        "line": 0,
+        "sent": 2,
+        "cancelled": 0
+      },
+      {
+        "line": 1,
+        "sent": 1,
+        "cancelled": 1
+      }
+    ],
+    "v24": [
+      {
+        "line": 0,
+        "sent": 1,
+        "cancelled": 0
+      },
+      {
+        "line": 1,
+        "sent": 1,
+        "cancelled": 0
+      },
+      {
+        "line": 2,
+        "sent": 1,
+        "cancelled": 0
+      },
+      {
+        "line": 3,
+        "sent": 1,
+        "cancelled": 0
+      },
+      {
+        "line": 4,
+        "sent": 1,
+        "cancelled": 0
+      }
+    ],
+    "v19": [
+      {
+        "line": 0,
+        "sent": 1,
+        "cancelled": 1
+      },
+      {
+        "line": 1,
+        "sent": 1,
+        "cancelled": 1
       }
     ]
   }

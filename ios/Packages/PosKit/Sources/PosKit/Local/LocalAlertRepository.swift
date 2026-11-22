@@ -62,23 +62,24 @@ struct LocalAlertRepository {
         let enabled = Dictionary(uniqueKeysWithValues: try rules().filter(\.enabled).map { ($0.type, $0) })
         guard enabled.keys.contains(where: { $0 != AlertRuleType.cashVariance }) else { return 0 }
 
-        struct Receipt { let id: UUID, terminal: String, orderId: UUID, voided: Bool, totalCents: Int, at: Date }
+        struct Receipt { let id: UUID, terminal: String, orderId: UUID, voidedReceiptId: UUID?, totalCents: Int, at: Date }
         let receipts = try db.query("SELECT Id, TerminalId, OrderId, VoidedReceiptId, TotalTtcAmount, CreatedAtUtc FROM FiscalReceipts").compactMap { r -> Receipt? in
             guard let id = r.uuid("Id"), let order = r.uuid("OrderId"), let at = r.date("CreatedAtUtc") else { return nil }
-            return Receipt(id: id, terminal: r.string("TerminalId") ?? "", orderId: order, voided: r.uuid("VoidedReceiptId") != nil, totalCents: r.int("TotalTtcAmount") ?? 0, at: at)
+            return Receipt(id: id, terminal: r.string("TerminalId") ?? "", orderId: order, voidedReceiptId: r.uuid("VoidedReceiptId"), totalCents: r.int("TotalTtcAmount") ?? 0, at: at)
         }
+        let voidedOriginalIds = Set(receipts.compactMap(\.voidedReceiptId))
         // Commandes (et leurs lignes) : seulement celles de la période en cours de chaque poste, jamais tout l'historique.
         var periods: [String: (key: String, start: Date)] = [:]
         for terminal in Set(receipts.map(\.terminal)) { periods[terminal] = try period(terminal) }
         let neededOrders = Set(receipts.filter { r in periods[r.terminal].map { r.at >= $0.start } ?? false }.map(\.orderId))
 
-        struct OrderRow { let operatorId: UUID, discountType: DiscountType?, discountValue: Decimal, lines: [(unitPrice: Int, modifiersExtra: Int, quantity: Int, isComp: Bool, discountPercent: Decimal)] }
+        struct OrderRow { let operatorId: UUID, status: Int, discountType: DiscountType?, discountValue: Decimal, lines: [(unitPrice: Int, modifiersExtra: Int, quantity: Int, isComp: Bool, discountPercent: Decimal)] }
         var orders: [UUID: OrderRow] = [:]
         for id in neededOrders {
-            guard let row = try db.query("SELECT OperatorId, GlobalDiscountType, GlobalDiscountValue FROM Orders WHERE Id = ?", [.uuid(id)]).first, let op = row.uuid("OperatorId") else { continue }
+            guard let row = try db.query("SELECT OperatorId, Status, GlobalDiscountType, GlobalDiscountValue FROM Orders WHERE Id = ?", [.uuid(id)]).first, let op = row.uuid("OperatorId") else { continue }
             let lines = try db.query("SELECT UnitPrice, ModifiersPriceExtra, Quantity, IsComp, DiscountPercent FROM OrderItems WHERE OrderId = ?", [.uuid(id)])
                 .map { (unitPrice: $0.int("UnitPrice") ?? 0, modifiersExtra: $0.int("ModifiersPriceExtra") ?? 0, quantity: $0.int("Quantity") ?? 0, isComp: $0.bool("IsComp"), discountPercent: $0.decimal("DiscountPercent") ?? 0) }
-            orders[id] = OrderRow(operatorId: op, discountType: row.int("GlobalDiscountType").flatMap(DiscountType.init(rawValue:)), discountValue: row.decimal("GlobalDiscountValue") ?? 0, lines: lines)
+            orders[id] = OrderRow(operatorId: op, status: row.int("Status") ?? 0, discountType: row.int("GlobalDiscountType").flatMap(DiscountType.init(rawValue:)), discountValue: row.decimal("GlobalDiscountValue") ?? 0, lines: lines)
         }
 
         var created = 0
@@ -87,14 +88,16 @@ struct LocalAlertRepository {
             let inPeriod = receipts.filter { $0.terminal == terminal && $0.at >= start }
 
             if let rule = enabled[AlertRuleType.voidsCount] {
-                let groups = Dictionary(grouping: inPeriod.filter { $0.voided && orders[$0.orderId] != nil }, by: { orders[$0.orderId]!.operatorId })
+                let groups = Dictionary(grouping: inPeriod.filter { $0.voidedReceiptId != nil && orders[$0.orderId] != nil }, by: { orders[$0.orderId]!.operatorId })
                 for (op, rs) in groups.sorted(by: { $0.key.uuidString < $1.key.uuidString }) where rs.count > rule.threshold {
                     created += try raise(AlertRuleType.voidsCount, op, terminal, periodKey, now: now,
                                          detail: ["count": rs.count, "totalCents": rs.reduce(0) { $0 + abs($1.totalCents) }, "receiptIds": rs.map { $0.id.uuidString.lowercased() }])
                 }
             }
             var seen = Set<UUID>()
-            let sold = inPeriod.filter { !$0.voided && orders[$0.orderId] != nil && seen.insert($0.orderId).inserted }.map { r -> (id: UUID, order: OrderRow) in (r.orderId, orders[r.orderId]!) }
+            let sold = inPeriod.filter {
+                $0.voidedReceiptId == nil && !voidedOriginalIds.contains($0.id) && orders[$0.orderId]?.status != LocalOrderStatus.cancelled.rawValue && seen.insert($0.orderId).inserted
+            }.map { r -> (id: UUID, order: OrderRow) in (r.orderId, orders[r.orderId]!) }
             if let rule = enabled[AlertRuleType.discountPercent] {
                 let flagged = sold.map { (id: $0.id, op: $0.order.operatorId, percent: AlertRules.discountPercent(type: $0.order.discountType, value: $0.order.discountValue, subtotalCents: $0.order.lines.reduce(0) { $0 + ($1.unitPrice + $1.modifiersExtra) * $1.quantity }, maxLinePercent: $0.order.lines.filter { !$0.isComp }.map(\.discountPercent).max() ?? 0)) }
                     .filter { $0.percent > rule.threshold }

@@ -95,4 +95,66 @@ struct LocalVoidReceiptTests {
         #expect(try status(db, order) == LocalOrderStatus.billRequested.rawValue)
         #expect(try await api.activeOrder(table: "T1")?.orderId == other.orderId)
     }
+
+    @Test func voidAllSplitReceiptsKeepsOrderBillRequestedAndPayable() async throws {
+        let (api, db) = try await makeLocalAPIWithDatabase()
+        let order = try await seat(api) // 19,50 €
+        _ = try await api.pay(localPayment(order, table: "T1", tenders: [localTender(.cash, 650)]))
+        _ = try await api.pay(localPayment(order, table: "T1", tenders: [localTender(.creditCard, 650)]))
+        _ = try await api.pay(localPayment(order, table: "T1", tenders: [localTender(.creditCard, 650)]))
+        let ids = try receiptIds(db)
+        #expect(ids.count == 3)
+        for id in ids { _ = try await api.voidReceipt(receiptId: id) }
+        #expect(try status(db, order) == LocalOrderStatus.billRequested.rawValue)
+        let resettled = try await api.pay(localPayment(order, table: "T1", tenders: [localTender(.creditCard, 1950)]))
+        #expect(resettled.remainingBalance == .zero)
+        #expect(try status(db, order) == LocalOrderStatus.paid.rawValue)
+        #expect(try await api.verifyChains().isValid)
+    }
+
+    @Test func voidWithGlobalDiscountAndTipHandlesFullAndPartial() async throws {
+        let (api, db) = try await makeLocalAPIWithDatabase()
+        let burger = try await localProduct(api, "Burger Gourmet Rossini") // 19,50 €
+        let managerId = try #require(try await api.login(pin: "1234").operatorId)
+
+        // 1. Reçu intégral avec remise 20 % (15,60 €) + pourboire 2,00 € = 17,60 € -> Cancelled
+        try await seatTable(api, "D1", items: [localInput(burger)])
+        let o1 = try #require(try await api.activeOrder(table: "D1"))
+        try await api.applyDiscount(orderId: o1.orderId, type: .percentage, value: 20, reason: "Geste", operatorId: managerId)
+        _ = try await api.pay(PaymentRequest(
+            orderId: o1.orderId, tableNumber: "D1", operatorId: managerId, terminalId: "T01",
+            tenders: [localTender(.creditCard, 1760)], requestReceiptPrint: false, tipAmount: Money(cents: 200)))
+        _ = try await api.voidReceipt(receiptId: try #require(try receiptIds(db).last))
+        #expect(try status(db, o1) == LocalOrderStatus.cancelled.rawValue)
+
+        // 2. Note partagée avec remise 20 % (15,60 €) + pourboire 2,00 € -> annuler la part pourboire rouvre et remet TipAmount à 0 : re-solde sans pourboire (10,00 €)
+        try await seatTable(api, "D2", items: [localInput(burger)])
+        let o2 = try #require(try await api.activeOrder(table: "D2"))
+        try await api.applyDiscount(orderId: o2.orderId, type: .percentage, value: 20, reason: "Geste", operatorId: managerId)
+        _ = try await api.pay(localPayment(o2, table: "D2", tenders: [localTender(.cash, 560)]))
+        let r2 = try #require(try await api.pay(PaymentRequest(
+            orderId: o2.orderId, tableNumber: "D2", operatorId: managerId, terminalId: "T01",
+            tenders: [localTender(.creditCard, 1200)], requestReceiptPrint: false, tipAmount: Money(cents: 200))).receiptNumber)
+        let r2Id = try #require(try db.query("SELECT Id FROM FiscalReceipts WHERE ReceiptNumber = ?", [.text(r2)]).first?.uuid("Id"))
+        _ = try await api.voidReceipt(receiptId: r2Id)
+        #expect(try status(db, o2) == LocalOrderStatus.billRequested.rawValue)
+        #expect(try db.query("SELECT TipAmount FROM Orders WHERE Id = ?", [.uuid(o2.orderId)]).first?.int("TipAmount") == 0)
+        let repaid = try await api.pay(localPayment(o2, table: "D2", tenders: [localTender(.cash, 1000)]))
+        #expect(repaid.remainingBalance == .zero)
+        #expect(try status(db, o2) == LocalOrderStatus.paid.rawValue)
+        #expect(try await api.verifyChains().isValid)
+    }
+
+    @Test func doubleVoidAndVoidOfVoidReceiptAreRefused() async throws {
+        let (api, db) = try await makeLocalAPIWithDatabase()
+        let order = try await seat(api)
+        _ = try await api.pay(localPayment(order, table: "T1", tenders: [localTender(.cash, 1950)]))
+        let id = try #require(try receiptIds(db).first)
+        _ = try await api.voidReceipt(receiptId: id)
+        let voidId = try #require(try db.query("SELECT Id FROM FiscalReceipts WHERE VoidedReceiptId = ?", [.uuid(id)]).first?.uuid("Id"))
+
+        await #expect(throws: APIError.self) { _ = try await api.voidReceipt(receiptId: id) }
+        await #expect(throws: APIError.self) { _ = try await api.voidReceipt(receiptId: voidId) }
+        #expect(try await api.verifyChains().isValid)
+    }
 }

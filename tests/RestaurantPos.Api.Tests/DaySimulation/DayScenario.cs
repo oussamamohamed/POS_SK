@@ -52,16 +52,34 @@ public sealed record DayOperation(
     bool Reprint = false,
     bool HoldAndRecall = false,
     string? Ref = null,
-    IReadOnlyList<DayLineVoid>? LineVoids = null);
+    IReadOnlyList<DayLineVoid>? LineVoids = null,
+    int? TipPaymentIndex = null,
+    IReadOnlyList<DayReceiptVoid>? ReceiptVoids = null);
+
+/// <summary>
+/// Annulation (ou tentative d'annulation) d'un reçu fiscal (<c>POST /api/checkout/void/{id}</c>) pendant ou après les règlements d'une
+/// commande. <c>AfterPayment</c> = index du règlement après lequel l'appel est joué (<c>null</c> = après tous les règlements) ;
+/// <c>Stage</c> = 0 (avant <c>part_voided_still_has_receipt</c>) ou 1 (après, avant <c>all_voided_reopened</c>) ;
+/// <c>VoidSelf</c> = tente d'annuler le reçu <c>-VOID-</c> issu de <c>PaymentIndex</c> ; <c>FromTerminal</c> = autre poste (refus inter-poste, .NET seul).
+/// </summary>
+public sealed record DayReceiptVoid(
+    int? AfterPayment,
+    int PaymentIndex,
+    string By = "manager",
+    int Expect = 200,
+    string? Code = null,
+    int Stage = 0,
+    bool VoidSelf = false,
+    string? FromTerminal = null);
 
 /// <summary>
 /// Annulation ou correction d'une ligne (<c>POST /api/orders/{id}/items/{ligne}/void</c>). <c>Phase</c> (dans cet ordre) :
 /// <c>draft</c> (lignes enregistrées, avant l'envoi en cuisine : correction), <c>sent</c> (après l'envoi, avant tout règlement),
 /// <c>reopened</c> (après le premier règlement puis l'annulation de son reçu : la commande redevient modifiable), <c>part_paid</c> (après le
-/// premier règlement), <c>paid</c> (après le dernier). <c>Line</c> = index dans <c>Lines</c>, puis dans les lignes rajoutées (<c>ReAdd</c>),
-/// dans l'ordre. <c>By</c> = <c>manager</c> ou <c>waiter</c> (le serveur de la commande). <c>Expect</c> = statut HTTP attendu, <c>Code</c> = code
-/// d'erreur attendu (409). <c>ReAdd</c> &gt; 0 : rajoute ensuite le même produit (même identifiant, quantité <c>ReAdd</c>) et le renvoie en
-/// cuisine (second bon). <c>Legacy</c> : l'article de bon perd son <c>OrderItemId</c> avant l'annulation (ligne envoyée avant ce champ).
+/// premier règlement), <c>part_paid_two</c> (après le deuxième règlement), <c>part_voided_still_has_receipt</c> (après annulation du premier
+/// reçu alors que le deuxième reste actif), <c>all_voided_reopened</c> (après annulation de tous les reçus), <c>paid</c> (après le dernier),
+/// <c>cancelled</c> (après annulation complète de la commande). <c>Line</c> = index dans <c>Lines</c>, puis dans les lignes rajoutées
+/// (<c>ReAdd</c> ou <c>AddDraft</c>), dans l'ordre. <c>By</c> = <c>manager</c>, <c>admin</c>, <c>waiter</c> ou <c>kitchen</c>.
 /// </summary>
 public sealed record DayLineVoid(
     string Phase,
@@ -72,7 +90,10 @@ public sealed record DayLineVoid(
     int Expect = 200,
     string? Code = null,
     int ReAdd = 0,
-    bool Legacy = false);
+    bool Legacy = false,
+    bool UnknownLine = false,
+    bool UnknownOrder = false,
+    DayLine? AddDraft = null);
 
 /// <summary>Annulation acceptée d'une ligne envoyée, telle que la ligne <c>OrderLineVoids</c> et le JET <c>ORDER_LINE_VOIDED</c> doivent la porter.</summary>
 public sealed record DayExpectedLineVoid(
@@ -84,7 +105,8 @@ public sealed record DayExpectedLineVoid(
     long UnitPriceCents,
     string Reason,
     string ServerName,
-    bool HasTicket);
+    bool HasTicket,
+    string By = "manager");
 
 /// <summary>Grand livre attendu d'un poste (ou de la salle) tel que publié dans le JSON partagé ; clés de TVA = taux invariant.</summary>
 public sealed record DayExpected(

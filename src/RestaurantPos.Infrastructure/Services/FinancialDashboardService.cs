@@ -65,11 +65,12 @@ public sealed class FinancialDashboardService : IFinancialDashboardService
             byHour ? i.ToString(System.Globalization.CultureInfo.InvariantCulture) : (fromUtc + offset + (day * i)).ToString("MM-dd", System.Globalization.CultureInfo.InvariantCulture),
             current[i], reference[i])).ToList();
 
-        // Commandes réglées de la période, hors commandes annulées par avoir.
-        var voidedOrderIds = receipts.Where(r => voidedIds.Contains(r.Id)).Select(r => r.OrderId).ToHashSet();
+        // Commandes réglées de la période : on n'exclut que celles annulées en totalité (sans aucun reçu actif).
+        var activeOrderIds = valid.Select(r => r.OrderId).ToHashSet();
+        var fullyVoidedOrderIds = receipts.Where(r => voidedIds.Contains(r.Id)).Select(r => r.OrderId).Where(id => !activeOrderIds.Contains(id)).ToHashSet();
         var orders = (await _dbContext.Orders.AsNoTracking().Include(o => o.Items)
                 .Where(o => o.Status == OrderStatus.Paid).ToListAsync(cancellationToken).ConfigureAwait(false))
-            .Where(o => o.CreatedAtUtc >= fromUtc && o.CreatedAtUtc < toUtc && !voidedOrderIds.Contains(o.Id))
+            .Where(o => o.CreatedAtUtc >= fromUtc && o.CreatedAtUtc < toUtc && !fullyVoidedOrderIds.Contains(o.Id))
             .ToList();
         var products = await _dbContext.Products.AsNoTracking().ToDictionaryAsync(p => p.Id, cancellationToken).ConfigureAwait(false);
         var categoryNames = await _dbContext.Categories.AsNoTracking().ToDictionaryAsync(c => c.Id, c => c.Name, cancellationToken).ConfigureAwait(false);

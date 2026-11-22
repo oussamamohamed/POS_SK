@@ -31,6 +31,21 @@ struct LocalDaySimulationTests {
         var code: String?
         var reAdd: Int
         var legacy: Bool
+        var unknownLine: Bool?
+        var unknownOrder: Bool?
+        var addDraft: Line?
+    }
+
+    /// Annulation (ou tentative) d'un reçu fiscal pendant ou après les règlements (`DayReceiptVoid` du .NET).
+    private struct ReceiptVoidStep: Decodable {
+        var afterPayment: Int?
+        var paymentIndex: Int
+        var by: String
+        var expect: Int
+        var code: String?
+        var stage: Int?
+        var voidSelf: Bool?
+        var fromTerminal: String?
     }
 
     private struct ExpectedLineVoid: Decodable, Hashable {
@@ -43,6 +58,7 @@ struct LocalDaySimulationTests {
         var reason: String
         var serverName: String
         var hasTicket: Bool
+        var by: String?
     }
 
     private struct TicketLine: Decodable {
@@ -90,6 +106,8 @@ struct LocalDaySimulationTests {
         var holdAndRecall: Bool?
         var ref: String?
         var lineVoids: [LineVoid]?
+        var tipPaymentIndex: Int?
+        var receiptVoids: [ReceiptVoidStep]?
     }
 
     private struct Expected: Decodable {
@@ -113,12 +131,22 @@ struct LocalDaySimulationTests {
         var zReportData: [ReportPrintData] = []
         var voidRefusals: [(op: Int, status: Int?)] = []
         var lineVoids: [LineVoidAttempt] = []
+        var receiptVoidAttempts: [ReceiptVoidAttempt] = []
         /// Identifiants des lignes (rajouts compris) des commandes qui annulent ou corrigent, par `ref`.
         var lineIds: [String: [UUID]] = [:]
         var managerName = ""
+        var adminName = ""
         var printerId = UUID()
         var api: LocalPosAPI?
         var db: SQLiteDatabase?
+    }
+
+    private struct ReceiptVoidAttempt {
+        var ref: String
+        var step: Int
+        var status: Int
+        var xBefore: FiscalReport
+        var xAfter: FiscalReport
     }
 
     /// Réponse d'une étape d'annulation : statut (200 si acceptée), message d'erreur, total TTC de la commande après une étape acceptée,
@@ -143,12 +171,15 @@ struct LocalDaySimulationTests {
         var lines: [(line: Line, productId: UUID, lineId: UUID)]
         var receipts: [String] = []
         var voided: [String] = []
+        var voidReceiptIdsByPayment: [Int: UUID] = [:]
         init(op: Operation, table: String, orderId: UUID, waiter: String, lines: [(line: Line, productId: UUID, lineId: UUID)]) {
             self.op = op; self.table = table; self.orderId = orderId; self.waiter = waiter; self.lines = lines
         }
     }
 
     private static let managerPin = "1234"
+    private static let adminPin = "9999"
+    private static let kitchenPin = "5678"
 
     private static func payment(_ method: String) -> PaymentMethod {
         switch method {
@@ -164,6 +195,7 @@ struct LocalDaySimulationTests {
         let path = temporaryDatabasePath()
         let api = try LocalPosAPI(path: path, clock: { clock.now }, calendar: localTestCalendar, transport: FakePrinterTransport())
         let db = try SQLiteDatabase(path: path)
+        let adminLogin = try await api.login(pin: adminPin)
         let managerLogin = try await api.login(pin: managerPin)
         let manager = try #require(managerLogin.operatorId)
 
@@ -171,6 +203,7 @@ struct LocalDaySimulationTests {
         var receiptsByRef: [String: [UUID]] = [:]
         var replay = Replay()
         replay.managerName = managerLogin.operatorName ?? ""
+        replay.adminName = adminLogin.operatorName ?? ""
         replay.api = api
         replay.db = db
         // Comme le DayRunner : une seule imprimante active, du poste chaud (station par défaut des lignes), pour les bons d'annulation.
@@ -223,14 +256,59 @@ struct LocalDaySimulationTests {
             _ = try await login(waiter: waiterName)
         }
 
-        func afterPayments(_ op: Operation, numbers: [String]) async throws {
-            let ids = try numbers.map(receiptId)
+        func loginActor(_ by: String, waiter: String) async throws {
+            switch by {
+            case "waiter": _ = try await login(waiter: waiter)
+            case "admin": _ = try await api.login(pin: adminPin)
+            case "kitchen": _ = try await api.login(pin: kitchenPin)
+            default: _ = try await api.login(pin: managerPin)
+            }
+        }
+
+        func receiptVoidSteps(_ ctx: VoidContext, afterPayment: Int?, stage: Int?) async throws {
+            guard let all = ctx.op.receiptVoids, !all.isEmpty, let ref = ctx.op.ref else { return }
+            for (i, step) in all.enumerated() where step.afterPayment == afterPayment && (stage == nil || (step.stage ?? 0) == stage) {
+                // Un poste autonome ne possède que T01 : un refus inter-poste (.NET seul) n'existe pas ici.
+                if step.fromTerminal != nil { continue }
+                let targetId: UUID = try step.voidSelf == true
+                    ? #require(ctx.voidReceiptIdsByPayment[step.paymentIndex])
+                    : receiptId(ctx.receipts[step.paymentIndex])
+                _ = try await api.login(pin: managerPin)
+                let before = try await api.xReport(terminalId: "T01")
+                try await loginActor(step.by, waiter: ctx.waiter)
+                var code = 200
+                do {
+                    _ = try await api.voidReceipt(receiptId: targetId)
+                } catch {
+                    code = status(of: error).0
+                }
+                _ = try await api.login(pin: managerPin)
+                let after = try await api.xReport(terminalId: "T01")
+                replay.receiptVoidAttempts.append(ReceiptVoidAttempt(ref: ref, step: i, status: code, xBefore: before, xAfter: after))
+                if code == 200 {
+                    ctx.voided.append(ctx.receipts[step.paymentIndex])
+                    let voidRow = try db.query("SELECT Id FROM FiscalReceipts WHERE VoidedReceiptId = ? ORDER BY rowid DESC LIMIT 1", [.uuid(targetId)]).first
+                    if let voidId = voidRow?.uuid("Id") { ctx.voidReceiptIdsByPayment[step.paymentIndex] = voidId }
+                }
+                _ = try await login(waiter: ctx.waiter)
+            }
+        }
+
+        func afterPayments(_ ctx: VoidContext) async throws {
+            let op = ctx.op
+            let ids = try ctx.receipts.map(receiptId)
             if let ref = op.ref { receiptsByRef[ref] = ids }
             _ = try await api.login(pin: managerPin)
             if op.reprint == true {
-                for number in numbers { _ = try await api.reprintReceipt(receiptIdentifier: number) }
+                for number in ctx.receipts { _ = try await api.reprintReceipt(receiptIdentifier: number) }
             }
-            if let index = op.voidPaymentIndex { _ = try await api.voidReceipt(receiptId: ids[index]) }
+            if let index = op.voidPaymentIndex {
+                _ = try await api.voidReceipt(receiptId: ids[index])
+                ctx.voided.append(ctx.receipts[index])
+                let voidRow = try db.query("SELECT Id FROM FiscalReceipts WHERE VoidedReceiptId = ? ORDER BY rowid DESC LIMIT 1", [.uuid(ids[index])]).first
+                if let voidId = voidRow?.uuid("Id") { ctx.voidReceiptIdsByPayment[index] = voidId }
+            }
+            try await receiptVoidSteps(ctx, afterPayment: nil, stage: nil)
         }
 
         /// Ajoute les lignes avec des produits connus : l'index de chaque ligne retrouve sa ligne locale.
@@ -261,12 +339,14 @@ struct LocalDaySimulationTests {
                     // Ligne envoyée avant `OrderItemId` : seule écriture directe en base du rejeu (aucune route ne produit ce cas).
                     try db.run("UPDATE KitchenTicketItems SET OrderItemId = NULL WHERE OrderItemId = ?", [.uuid(line.lineId)])
                 }
+                let targetOrderId = step.unknownOrder == true ? UUID() : ctx.orderId
+                let targetLineId = step.unknownLine == true ? UUID() : line.lineId
                 _ = try await api.login(pin: managerPin)
                 let before = try await api.xReport(terminalId: "T01")
-                if step.by == "waiter" { _ = try await login(waiter: ctx.waiter) }
+                try await loginActor(step.by, waiter: ctx.waiter)
                 var result: (Int, String?) = (200, nil)
                 do {
-                    try await api.voidLine(orderId: ctx.orderId, lineId: line.lineId, quantity: step.quantity, reason: step.reason, operatorId: nil)
+                    try await api.voidLine(orderId: targetOrderId, lineId: targetLineId, quantity: step.quantity, reason: step.reason, operatorId: nil)
                 } catch {
                     result = status(of: error)
                 }
@@ -288,21 +368,42 @@ struct LocalDaySimulationTests {
                     ctx.lines.append((line: readded, productId: line.productId, lineId: added))
                     try await api.dispatch(table: ctx.table)
                 }
+                if let draft = step.addDraft {
+                    // Nouvelle ligne brouillon (non envoyée, sans dispatch).
+                    let known = Set(ctx.lines.map(\.lineId))
+                    let pid = UUID()
+                    let order = try await api.addItems(table: ctx.table, items: [input(draft, productId: pid)])
+                    let added = try #require(order.lines.first { !known.contains($0.lineId) }?.lineId)
+                    ctx.lines.append((line: draft, productId: pid, lineId: added))
+                }
             }
             replay.lineIds[ref] = ctx.lines.map(\.lineId)
         }
 
-        /// Après le premier règlement : commande rouverte (reçu annulé puis étapes `reopened`), puis étapes `part_paid`.
+        /// Après un règlement : réouverture historique (`v8`), étapes de phase et annulations de reçu (`receiptVoids`) à ce rang.
         func afterPayment(_ ctx: VoidContext, _ payment: Int) async throws {
-            guard payment == 0, ctx.op.lineVoids?.isEmpty == false else { return }
-            if ctx.op.lineVoids?.contains(where: { $0.phase == "reopened" }) == true {
+            let isLegacyReopened = ctx.op.receiptVoids == nil && ctx.op.lineVoids?.contains(where: { $0.phase == "reopened" }) == true
+            if payment == 0 && isLegacyReopened {
                 _ = try await api.login(pin: managerPin)
-                _ = try await api.voidReceipt(receiptId: try receiptId(ctx.receipts[0]))
+                let rid = try receiptId(ctx.receipts[0])
+                _ = try await api.voidReceipt(receiptId: rid)
                 ctx.voided.append(ctx.receipts[0])
                 _ = try await login(waiter: ctx.waiter)
                 try await steps(ctx, "reopened")
             }
-            try await steps(ctx, "part_paid")
+            if payment == 0 {
+                try await steps(ctx, "part_paid")
+            } else if payment == 1 {
+                try await steps(ctx, "part_paid_two")
+            }
+            try await receiptVoidSteps(ctx, afterPayment: payment, stage: 0)
+            if payment == 1 {
+                try await steps(ctx, "part_voided_still_has_receipt")
+            }
+            try await receiptVoidSteps(ctx, afterPayment: payment, stage: 1)
+            if payment == 1 {
+                try await steps(ctx, "all_voided_reopened")
+            }
         }
 
         for (index, op) in scenario.operations.enumerated() where op.terminal == key {
@@ -327,6 +428,7 @@ struct LocalDaySimulationTests {
                 try await api.dispatch(table: table)
                 try await steps(ctx, "sent")
                 let payments = op.payments ?? []
+                let tipIndex = op.tipPaymentIndex ?? (payments.count - 1)
                 for (p, list) in payments.enumerated() {
                     let tenders = list.map {
                         let extra = $0.extraTenderedCents ?? 0
@@ -334,13 +436,14 @@ struct LocalDaySimulationTests {
                     }
                     let request = PaymentRequest(
                         orderId: order.orderId, tableNumber: table, operatorId: waiterId, terminalId: "T01", tenders: tenders,
-                        requestReceiptPrint: false, tipAmount: Money(cents: p == payments.count - 1 ? (op.tipCents ?? 0) : 0)
+                        requestReceiptPrint: false, tipAmount: Money(cents: p == tipIndex ? (op.tipCents ?? 0) : 0)
                     )
                     ctx.receipts.append(try #require(try await api.pay(request).receiptNumber))
                     try await afterPayment(ctx, p)
                 }
                 try await steps(ctx, "paid")
-                try await afterPayments(op, numbers: ctx.receipts)
+                try await afterPayments(ctx)
+                try await steps(ctx, "cancelled")
 
             case "counter_order", "hold_then_void":
                 let waiterName = try #require(op.waiter)
@@ -368,10 +471,11 @@ struct LocalDaySimulationTests {
                     _ = try await api.recallHeldOrder(holdId: held.holdId)
                 }
                 let payments = op.payments ?? []
+                let tipIndex = op.tipPaymentIndex ?? (payments.count - 1)
                 for (p, list) in payments.enumerated() {
                     let request = CounterCheckoutRequest(
                         orderId: order.orderId, terminalId: "T01", destination: destination, pickupBuzzer: nil,
-                        tipAmount: Money(cents: p == payments.count - 1 ? (op.tipCents ?? 0) : 0), requestFiscalReceiptPrint: false,
+                        tipAmount: Money(cents: p == tipIndex ? (op.tipCents ?? 0) : 0), requestFiscalReceiptPrint: false,
                         mealVoucherPolicy: .capAtBalance,
                         tenders: list.map {
                             CounterTender(method: payment($0.method), amount: Money(cents: $0.amountCents), tendered: Money(cents: $0.amountCents + ($0.extraTenderedCents ?? 0)))
@@ -381,7 +485,8 @@ struct LocalDaySimulationTests {
                     try await afterPayment(ctx, p)
                 }
                 try await steps(ctx, "paid")
-                try await afterPayments(op, numbers: ctx.receipts)
+                try await afterPayments(ctx)
+                try await steps(ctx, "cancelled")
 
             case "void_receipt":
                 // Après la Z du poste : l'annulation doit être refusée (409) et sans effet fiscal.
@@ -449,6 +554,31 @@ struct LocalDaySimulationTests {
         for x in replay.xReports {
             #expect(x.report.totalSalesTtc.cents - x.report.totalSalesHt.cents == Self.vatSum(x.report), context)
         }
+
+        // Résumé quotidien (pourboires nets sans v23/v24 annulés, avec v22 conservé) et analyse menu (re-soldées présentes, annulées absentes).
+        let api = try #require(replay.api)
+        _ = try await api.login(pin: Self.managerPin)
+        let expectedNetTips = scenario.operations.filter { $0.terminal == key && ($0.type == "table_order" || $0.type == "counter_order") && ($0.tipCents ?? 0) > 0 }.reduce(0) { acc, op in
+            let count = op.payments?.count ?? 0
+            let tipIdx = op.tipPaymentIndex ?? (count - 1)
+            var voided = Set<Int>()
+            if let v = op.voidPaymentIndex { voided.insert(v) }
+            if op.receiptVoids == nil, op.lineVoids?.contains(where: { $0.phase == "reopened" }) == true { voided.insert(0) }
+            for rv in op.receiptVoids ?? [] where rv.expect == 200 { voided.insert(rv.paymentIndex) }
+            return acc + (voided.contains(tipIdx) ? 0 : (op.tipCents ?? 0))
+        }
+        let summary = try #require(try await api.dailySummary(terminalId: "T01", tzOffsetMinutes: 0), context)
+        #expect(summary.totalSalesTtcCents == expected.ttcCents, context)
+        #expect(summary.totalSalesHtCents == expected.htCents, context)
+        #expect(summary.receiptCount == expected.receiptCount, context)
+        #expect(summary.tipsByServer.reduce(0) { $0 + $1.tipsCents } == expectedNetTips, context)
+
+        let now = Date()
+        let menu = try await api.menuAnalysis(from: now.addingTimeInterval(-3600), to: now.addingTimeInterval(3600), categoryId: nil)
+        let menuNames = Set(menu.items.map(\.name))
+        if key == "A" { #expect(menuNames.contains("Risotto"), context) }
+        if key == "B" { #expect(menuNames.contains("Côtelette") && !menuNames.contains("Article 0"), context) }
+        if key == "C" { #expect(menuNames.contains("Magret") && !menuNames.contains("Panini"), context) }
     }
 
     @Test(arguments: ["A", "B", "C"])
@@ -533,30 +663,44 @@ struct LocalDaySimulationTests {
             }
         }
 
+        // Étapes d'annulation de reçu : statut attendu, X inchangé sur un refus.
+        let withRV = scenario.operations.filter { $0.terminal == key && $0.receiptVoids?.isEmpty == false }
+        for op in withRV {
+            let ref = try #require(op.ref)
+            let steps = try #require(op.receiptVoids)
+            for (i, step) in steps.enumerated() where step.fromTerminal == nil {
+                let attempt = try #require(replay.receiptVoidAttempts.first { $0.ref == ref && $0.step == i }, context)
+                #expect(attempt.status == step.expect, "\(context.rawValue), \(ref) receiptVoid #\(i)")
+                if step.expect != 200 { #expect(Self.sameMoney(attempt.xBefore, attempt.xAfter), context) }
+            }
+        }
+
         // Une ligne OrderLineVoids et une écriture du JET par annulation acceptée (R2 serveur, R9 prix + suppléments), rien pour une correction.
-        let expected = scenario.expectedLineVoids.filter { $0.terminal == key }.map(Self.key).sorted()
+        func actorName(_ by: String?) -> String { by == "admin" ? replay.adminName : replay.managerName }
+        let expectedVoids = scenario.expectedLineVoids.filter { $0.terminal == key }
+        let expected = expectedVoids.map { "\(Self.key($0))|\(actorName($0.by))" }.sorted()
         let rows = try db.query("SELECT * FROM OrderLineVoids")
         let actual = rows.map {
-            Self.key(ExpectedLineVoid(
+            let k = Self.key(ExpectedLineVoid(
                 terminal: key, ref: "", table: $0.string("TableNumber") ?? "", productName: $0.string("ProductName") ?? "", quantity: $0.int("Quantity") ?? 0,
                 unitPriceCents: $0.int("UnitPrice") ?? 0, reason: $0.string("Reason") ?? "", serverName: $0.string("ServerName") ?? "", hasTicket: $0.uuid("TicketId") != nil))
+            return "\(k)|\($0.string("OperatorName") ?? "")"
         }.sorted()
         #expect(actual == expected, context)
-        #expect(rows.allSatisfy { $0.string("OperatorName") == replay.managerName }, context)
 
         let jet = try await api.journalRows(LocalJournalEvents.orderLineVoided).map { row -> String in
             let p = (try? JSONSerialization.jsonObject(with: Data(row.payload.utf8))) as? [String: Any] ?? [:]
-            #expect(p["operatorName"] as? String == replay.managerName, context)
-            return Self.key(ExpectedLineVoid(
+            let k = Self.key(ExpectedLineVoid(
                 terminal: key, ref: "", table: p["tableNumber"] as? String ?? "", productName: p["productName"] as? String ?? "",
                 quantity: p["quantity"] as? Int ?? 0, unitPriceCents: p["unitPriceCents"] as? Int ?? 0, reason: p["reason"] as? String ?? "",
                 serverName: "", hasTicket: !(p["ticketId"] is NSNull)))
+            return "\(k)|\(p["operatorName"] as? String ?? "")"
         }.sorted()
         // Le JET ne porte pas le serveur : on compare sans lui.
-        let withoutServer = scenario.expectedLineVoids.filter { $0.terminal == key }.map { v -> String in
-            var v = v
-            v.serverName = ""
-            return Self.key(v)
+        let withoutServer = expectedVoids.map { v -> String in
+            var copy = v
+            copy.serverName = ""
+            return "\(Self.key(copy))|\(actorName(v.by))"
         }.sorted()
         #expect(jet == withoutServer, context)
 
@@ -589,9 +733,9 @@ struct LocalDaySimulationTests {
         }.sorted()
         #expect(reasons == scenario.expectedLineVoids.filter { $0.terminal == key }.map { "Motif : \($0.reason)" }.sorted(), context)
 
-        // Commande vidée par les annulations : reste sur sa table, à 0, sans reçu ; la Z est passée quand même.
+        // Commandes vidées par les annulations (salle et comptoir) : restent sur leur table, à 0, sans reçu ; la Z est passée quand même.
         for op in orders where op.payments?.isEmpty == true {
-            let table = try #require(op.table, context)
+            let table = op.table ?? DiningTable.counterNumber
             let order = try #require(try await api.activeOrder(table: table), context)
             #expect(order.lines.isEmpty && (order.totalTtcAmount?.cents ?? 0) == 0, context)
             #expect(try db.query("SELECT Id FROM FiscalReceipts WHERE OrderId = ?", [.uuid(order.orderId)]).isEmpty, context)

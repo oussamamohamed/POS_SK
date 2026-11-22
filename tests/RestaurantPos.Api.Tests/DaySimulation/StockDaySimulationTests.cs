@@ -63,6 +63,8 @@ public class StockDaySimulationTests : IClassFixture<PosApiApplicationFactory>
         }
 
         var receipts = new List<Guid>();
+        var lineVoid = sp.GetRequiredService<IOrderLineVoidService>();
+        var manager = await db.Users.FirstAsync(u => u.Role == UserRole.FloorManager || u.Role == UserRole.Admin);
         foreach (var op in day.Operations)
         {
             switch (op.Type)
@@ -82,8 +84,43 @@ public class StockDaySimulationTests : IClassFixture<PosApiApplicationFactory>
                         receipts.Add(db.FiscalReceipts.Single(r => r.OrderId == order.Id).Id);
                         break;
                     }
+                case "sale_with_line_void":
+                    {
+                        var spec = day.Products.First(p => p.Name == op.Product);
+                        var order = new Order { TableNumber = "J" + receipts.Count, Status = OrderStatus.SentToKitchen };
+                        var item = new OrderItem { OrderId = order.Id, ProductId = productIds[spec.Name], ProductName = spec.Name, Quantity = op.Quantity, UnitPrice = Money.FromCents(spec.PriceCents), TaxRatePercent = 10m, IsDispatched = true };
+                        order.Items.Add(item);
+                        db.Orders.Add(order);
+                        await db.SaveChangesAsync();
+                        (await lineVoid.VoidAsync(order.Id, item.Id, op.VoidQuantity, "Erreur", manager.Id)).Outcome.Should().Be(OrderLineVoidOutcome.Voided);
+                        var cents = spec.PriceCents * (op.Quantity - op.VoidQuantity);
+                        (await checkout.ProcessPaymentTendersAsync(order.Id, "T01", [new PaymentTenderRequest(PaymentMethod.Cash, cents, cents)])).IsSuccess.Should().BeTrue();
+                        receipts.Add(db.FiscalReceipts.Single(r => r.OrderId == order.Id && r.VoidedReceiptId == null).Id);
+                        break;
+                    }
+                case "split_void_repay":
+                    {
+                        var spec = day.Products.First(p => p.Name == op.Product);
+                        var order = new Order { TableNumber = "J" + receipts.Count, Status = OrderStatus.Open };
+                        order.Items.Add(new OrderItem { OrderId = order.Id, ProductId = productIds[spec.Name], ProductName = spec.Name, Quantity = op.Quantity, UnitPrice = Money.FromCents(spec.PriceCents), TaxRatePercent = 10m });
+                        db.Orders.Add(order);
+                        await db.SaveChangesAsync();
+                        var total = spec.PriceCents * op.Quantity;
+                        var part1 = total / 2;
+                        var part2 = total - part1;
+                        var p1 = await checkout.ProcessPaymentTendersAsync(order.Id, "T01", [new PaymentTenderRequest(PaymentMethod.Cash, part1, part1)]);
+                        p1.IsSuccess.Should().BeTrue();
+                        (await checkout.ProcessPaymentTendersAsync(order.Id, "T01", [new PaymentTenderRequest(PaymentMethod.CreditCard, part2, part2)])).IsSuccess.Should().BeTrue();
+                        var r1 = db.FiscalReceipts.Single(r => r.ReceiptNumber == p1.ReceiptNumber).Id;
+                        // Annulation partielle même avec restock: true : la commande n'est pas annulée, le stock ne doit pas être restitué.
+                        (await checkout.VoidReceiptAsync(r1, "T01", manager.Id, restock: true)).IsSuccess.Should().BeTrue();
+                        var p3 = await checkout.ProcessPaymentTendersAsync(order.Id, "T01", [new PaymentTenderRequest(PaymentMethod.CreditCard, part1, part1)]);
+                        p3.IsSuccess.Should().BeTrue();
+                        receipts.Add(db.FiscalReceipts.Single(r => r.ReceiptNumber == p3.ReceiptNumber).Id);
+                        break;
+                    }
                 case "void":
-                    (await checkout.VoidReceiptAsync(receipts[op.SaleIndex!.Value], "T01", Guid.NewGuid(), op.Restock)).IsSuccess.Should().BeTrue();
+                    (await checkout.VoidReceiptAsync(receipts[op.SaleIndex!.Value], "T01", manager.Id, op.Restock)).IsSuccess.Should().BeTrue();
                     break;
             }
             await stock.RefreshAutoAvailabilityAsync();

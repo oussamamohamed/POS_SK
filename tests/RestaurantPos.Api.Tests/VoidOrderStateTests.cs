@@ -153,4 +153,80 @@ public class VoidOrderStateTests : IClassFixture<PosApiApplicationFactory>
         (await TableAsync("V2")).ActiveOrderId.Should().Be(other);
         (await StatusAsync(other)).Should().Be(OrderStatus.SentToKitchen);
     }
+
+    [Fact]
+    public async Task Void_AllSplitReceipts_KeepsOrderBillRequestedAndPayableFromZero()
+    {
+        var orderId = await SeedOrderAsync(10_000);
+        var r1 = await PayAsync(orderId, 4_000);
+        var r2 = await PayAsync(orderId, 3_000);
+        var r3 = await PayAsync(orderId, 3_000);
+
+        await VoidAsync(r1);
+        await VoidAsync(r2);
+        await VoidAsync(r3);
+
+        (await StatusAsync(orderId)).Should().Be(OrderStatus.BillRequested);
+        await PayAsync(orderId, 10_000);
+        (await StatusAsync(orderId)).Should().Be(OrderStatus.Paid);
+    }
+
+    [Fact]
+    public async Task Void_OrderWithGlobalDiscountAndTip_CancelsOnFullAndReopensOnPartial()
+    {
+        var fullId = await SeedOrderAsync(10_000);
+        var partialId = await SeedOrderAsync(10_000);
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            foreach (var id in new[] { fullId, partialId })
+            {
+                var o = await db.Orders.SingleAsync(x => x.Id == id);
+                o.GlobalDiscountType = DiscountType.Percentage;
+                o.GlobalDiscountValue = 20m; // TTC après remise = 8 000 c
+                o.TipAmount = Money.FromCents(500);
+            }
+            await db.SaveChangesAsync();
+        }
+
+        // Reçu intégral (8 000 c fiscal + 500 c pourboire = 8 500 c réglés) -> Cancelled
+        var fullReceipt = await PayAsync(fullId, 8_500);
+        await VoidAsync(fullReceipt);
+        (await StatusAsync(fullId)).Should().Be(OrderStatus.Cancelled);
+
+        // Note partagée avec remise + pourboire -> annuler la part pourboire rouvre et remet TipAmount à 0 : on peut re-solder juste le TTC (5 000 c) sans pourboire
+        await PayAsync(partialId, 3_000);
+        var second = await PayAsync(partialId, 5_500);
+        await VoidAsync(second);
+        (await StatusAsync(partialId)).Should().Be(OrderStatus.BillRequested);
+        using (var scope = _factory.Services.CreateScope())
+        {
+            (await scope.ServiceProvider.GetRequiredService<AppDbContext>().Orders.AsNoTracking().SingleAsync(o => o.Id == partialId)).TipAmount.AmountInCents.Should().Be(0);
+        }
+        await PayAsync(partialId, 5_000);
+        (await StatusAsync(partialId)).Should().Be(OrderStatus.Paid);
+    }
+
+    [Fact]
+    public async Task Void_DoubleVoid_VoidOfVoidReceipt_AndWrongTerminal_AreAllRefused()
+    {
+        var orderId = await SeedOrderAsync(5_000);
+        var receiptId = await PayAsync(orderId, 5_000);
+
+        using var scope = _factory.Services.CreateScope();
+        var checkout = scope.ServiceProvider.GetRequiredService<ICheckoutPaymentService>();
+
+        // Autre poste -> refusé
+        (await checkout.VoidReceiptAsync(receiptId, "T02", Guid.NewGuid())).IsSuccess.Should().BeFalse();
+
+        // Première annulation -> acceptée
+        var first = await checkout.VoidReceiptAsync(receiptId, Terminal, Guid.NewGuid());
+        first.IsSuccess.Should().BeTrue();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var voidReceiptId = (await db.FiscalReceipts.AsNoTracking().SingleAsync(r => r.ReceiptNumber == first.ReceiptNumber)).Id;
+
+        // Double annulation -> refusée ; annulation du reçu -VOID- -> refusée
+        (await checkout.VoidReceiptAsync(receiptId, Terminal, Guid.NewGuid())).IsSuccess.Should().BeFalse();
+        (await checkout.VoidReceiptAsync(voidReceiptId, Terminal, Guid.NewGuid())).IsSuccess.Should().BeFalse();
+    }
 }

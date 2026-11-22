@@ -313,6 +313,13 @@ public class CheckoutPaymentService : ICheckoutPaymentService
                 var order = await _dbContext.Orders.Include(o => o.Items).FirstOrDefaultAsync(o => o.Id == original.OrderId, ct);
                 if (order is not null)
                 {
+                    // Retirer la part de pourboire portée par le reçu annulé (excédent de règlement au-delà du TTC fiscal du reçu).
+                    long receiptTipCents = Math.Max(0, original.Tenders.Sum(t => t.Amount.AmountInCents) - original.TotalTtcAmount.AmountInCents);
+                    if (receiptTipCents > 0)
+                    {
+                        order.TipAmount = Money.FromCents(Math.Max(0, order.TipAmount.AmountInCents - receiptTipCents));
+                    }
+
                     // Un reçu partiel (part d'une note partagée) ne ferme pas la commande : elle redevient réglable.
                     order.Status = original.TotalTtcAmount.AmountInCents == order.CalculateTotalTtc().AmountInCents
                         ? OrderStatus.Cancelled
@@ -329,8 +336,8 @@ public class CheckoutPaymentService : ICheckoutPaymentService
                             table.UpdatedAtUtc = DateTimeOffset.UtcNow;
                         }
                     }
-                    // Le stock n'est restitué que si le responsable l'a demandé (produit non consommé).
-                    if (restock) await StockConsumption.RestoreSaleAsync(_dbContext, order.Id, operatorId, ct).ConfigureAwait(false);
+                    // Le stock n'est restitué que sur annulation complète de la commande (jamais sur une part de note partagée, qui rouvre la commande).
+                    if (restock && order.Status == OrderStatus.Cancelled) await StockConsumption.RestoreSaleAsync(_dbContext, order.Id, operatorId, ct).ConfigureAwait(false);
                 }
 
                 await _dbContext.SaveChangesAsync(ct).ConfigureAwait(false);

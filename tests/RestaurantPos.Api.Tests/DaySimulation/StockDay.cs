@@ -11,10 +11,12 @@ public sealed record StockProductSpec(string Name, long PriceCents, IReadOnlyLis
 
 /// <summary>
 /// <c>receipt</c> (Ingredient, QuantityMilli, UnitCostMilliCents), <c>sale</c> (Product, Quantity), <c>void</c> (SaleIndex = rang de la vente, Restock),
-/// <c>loss</c> (Ingredient, QuantityMilli), <c>count</c> (Ingredient, QuantityMilli = quantité comptée).
+/// <c>loss</c> (Ingredient, QuantityMilli), <c>count</c> (Ingredient, QuantityMilli = quantité comptée),
+/// <c>sale_with_line_void</c> (Product, Quantity envoyée, VoidQuantity annulée avant règlement -> seule la différence est consommée),
+/// <c>split_void_repay</c> (Product, Quantity réglée en 2 parts -> part 1 annulée sans restock puis re-soldée -> consommée une seule fois).
 /// </summary>
 public sealed record StockOp(string Type, string? Product = null, int Quantity = 0, string? Ingredient = null, long QuantityMilli = 0,
-    long UnitCostMilliCents = 0, bool Restock = false, int? SaleIndex = null);
+    long UnitCostMilliCents = 0, bool Restock = false, int? SaleIndex = null, int VoidQuantity = 0);
 
 public sealed record StockDayExpected(IReadOnlyDictionary<string, long> StockMilli, IReadOnlyDictionary<string, long> UnitCostMilli, IReadOnlyDictionary<string, long> ProductCostCents);
 
@@ -72,6 +74,20 @@ public static class StockDay
         var voided = new HashSet<int>();
         var deduped = ops.Where(o => o.Type != "void" || voided.Add(o.SaleIndex!.Value)).ToList();
 
+        // Cas limites déterministes d'annulation (après les tirages aléatoires) :
+        // 1. Annulation partielle de ligne avant règlement (3 Steaks -> 1 annulé -> 2 consommés seulement)
+        deduped.Add(new("sale_with_line_void", Product: "Steak", Quantity: 3, VoidQuantity: 1));
+        // 2. Sous-recette (Pizza -> Sauce tomate -> Tomate + Sel) vendue puis annulée AVEC restitution
+        int pizzaRestockIndex = deduped.Count(o => o.Type is "sale" or "sale_with_line_void" or "split_void_repay");
+        deduped.Add(new("sale", Product: "Pizza", Quantity: 2));
+        deduped.Add(new("void", SaleIndex: pizzaRestockIndex, Restock: true));
+        // 3. Sous-recette vendue puis annulée SANS restitution
+        int pizzaNoRestockIndex = deduped.Count(o => o.Type is "sale" or "sale_with_line_void" or "split_void_repay");
+        deduped.Add(new("sale", Product: "Pizza", Quantity: 1));
+        deduped.Add(new("void", SaleIndex: pizzaNoRestockIndex, Restock: false));
+        // 4. Note partagée soldée -> part 1 annulée (sans restock) -> re-soldée : la consommation de stock reste idempotente (une seule fois)
+        deduped.Add(new("split_void_repay", Product: "Steak", Quantity: 2));
+
         return new StockDayFile(Seed, ingredients, products, deduped, Oracle(ingredients, products, deduped));
     }
 
@@ -110,9 +126,18 @@ public static class StockDay
                 case "loss": stock[op.Ingredient!] -= op.QuantityMilli; break;
                 case "count": stock[op.Ingredient!] = op.QuantityMilli; break;
                 case "sale":
+                case "split_void_repay":
                     {
                         var used = new Dictionary<string, long>();
                         Flatten(products.First(p => p.Name == op.Product).Recipe, op.Quantity, specs, used);
+                        foreach (var (n, q) in used) stock[n] -= q;
+                        salesConsumption.Add(used);
+                        break;
+                    }
+                case "sale_with_line_void":
+                    {
+                        var used = new Dictionary<string, long>();
+                        Flatten(products.First(p => p.Name == op.Product).Recipe, op.Quantity - op.VoidQuantity, specs, used);
                         foreach (var (n, q) in used) stock[n] -= q;
                         salesConsumption.Add(used);
                         break;
