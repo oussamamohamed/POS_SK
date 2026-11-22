@@ -54,7 +54,9 @@ struct LocalLineVoidTests {
     @Test func waiterCannotVoidSentLine() async throws {
         let api = try await makeLocalAPI(pin: "2468")
         let (order, line) = try await sentLine(api)
-        await #expect(throws: APIError.self) { try await api.voidLine(orderId: order.orderId, lineId: line.lineId, quantity: 1, reason: "Test", operatorId: nil) }
+        await #expect(throws: APIError.forbidden("Autorisation insuffisante : code PIN superviseur ou gérant requis.")) {
+            try await api.voidLine(orderId: order.orderId, lineId: line.lineId, quantity: 1, reason: "Test", operatorId: nil)
+        }
         #expect(try await api.activeOrder(table: "T1")?.lines.count == 1)
         #expect(try await api.testVoidRows().isEmpty)
         #expect(try await api.testJetCount(Self.voided) == 0)
@@ -64,9 +66,25 @@ struct LocalLineVoidTests {
         let api = try await makeLocalAPI()
         let (order, line) = try await sentLine(api)
         _ = try await api.pay(localPayment(order, table: "T1", tenders: [localTender(.cash, 500)]))
-        await #expect(throws: APIError.self) { try await api.voidLine(orderId: order.orderId, lineId: line.lineId, quantity: 1, reason: "Test", operatorId: nil) }
+        await #expect {
+            try await api.voidLine(orderId: order.orderId, lineId: line.lineId, quantity: 1, reason: "Test", operatorId: nil)
+        } throws: { error in
+            guard case .server(let status, let message?) = error as? APIError else { return false }
+            return status == 409 && message.contains("a déjà des reçus (") && message.contains("annulez-les")
+        }
         #expect(try await api.activeOrder(table: "T1")?.lines.count == 1)
         #expect(try await api.testVoidRows().isEmpty)
+    }
+
+    @Test func voidedReceiptPairDoesNotBlockVoidAndChainsStayValid() async throws {
+        let (api, db) = try await makeLocalAPIWithDatabase()
+        let (order, line) = try await sentLine(api)
+        _ = try await api.pay(localPayment(order, table: "T1", tenders: [localTender(.cash, 500)]))
+        let receiptId = try #require(try db.query("SELECT Id FROM FiscalReceipts WHERE VoidedReceiptId IS NULL").first?.uuid("Id"))
+        _ = try await api.voidReceipt(receiptId: receiptId)
+        try await api.voidLine(orderId: order.orderId, lineId: line.lineId, quantity: 1, reason: "Après annulation du reçu", operatorId: nil)
+        #expect(try await api.testVoidRows().count == 1)
+        #expect(try await api.verifyChains().isValid)
     }
 
     @Test func unsentLineCorrectionWritesNoJet() async throws {

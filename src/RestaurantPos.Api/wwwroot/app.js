@@ -2248,7 +2248,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                     }
                     if (item.lineId) {
                         // Ligne enregistrée non envoyée : correction côté serveur (sans motif), puis on relit la commande.
-                        voidOrderItem(state.activeOrderId, item.lineId, 1, '');
+                        if (lineCorrectionsInFlight.has(item.lineId)) return; // double tap : une seule correction à la fois
+                        lineCorrectionsInFlight.add(item.lineId);
+                        voidOrderItem(state.activeOrderId, item.lineId, 1, '').finally(() => lineCorrectionsInFlight.delete(item.lineId));
                         return;
                     }
                     item.quantity -= 1;
@@ -2278,6 +2280,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     /** Annule (ligne envoyée, motif obligatoire) ou corrige (ligne non envoyée) `quantity` unités ; relit la commande. */
+    const lineCorrectionsInFlight = new Set();
     async function voidOrderItem(orderId, lineId, quantity, reason) {
         try {
             await ensureAuthToken();
@@ -2320,9 +2323,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         const reason = document.getElementById('inputLineVoidReason').value.trim();
         const quantity = parseInt(document.getElementById('inputLineVoidQty').value, 10);
         if (!item || !reason || !(quantity >= 1 && quantity <= item.quantity)) return;
-        if (await voidOrderItem(state.activeOrderId, item.lineId, quantity, reason)) {
-            showToast(t('line_void.done', { qty: quantity, name: item.product.name, reason }), 'success');
-            closeLineVoidModal();
+        const submit = e.submitter || e.target.querySelector('[type=submit]');
+        submit.disabled = true; // double tap : une seule annulation par envoi
+        try {
+            if (await voidOrderItem(state.activeOrderId, item.lineId, quantity, reason)) {
+                showToast(t('line_void.done', { qty: quantity, name: item.product.name, reason }), 'success');
+                closeLineVoidModal();
+            }
+        } finally {
+            submit.disabled = false;
         }
     });
 

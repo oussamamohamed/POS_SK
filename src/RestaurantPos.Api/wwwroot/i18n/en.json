@@ -684,7 +684,6 @@
   "line_void.reason_placeholder": "E.g. entry error, guest changed their mind",
   "line_void.confirm": "Cancel item",
   "line_void.done": "{qty} × {name} cancelled: {reason}",
-  "line_void.corrected": "Item corrected.",
   "line_void.error": "Cancellation failed",
   "menu.axis_margin": "Unit margin excl. tax →",
   "menu.axis_popularity": "Popularity (sales share) →",

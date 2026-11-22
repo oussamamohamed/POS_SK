@@ -684,7 +684,6 @@
   "line_void.reason_placeholder": "مثال: خطأ في الإدخال، غيّر الزبون رأيه",
   "line_void.confirm": "إلغاء الصنف",
   "line_void.done": "{qty} × {name} أُلغي: {reason}",
-  "line_void.corrected": "تم تصحيح الصنف.",
   "line_void.error": "تعذّر الإلغاء",
   "menu.axis_margin": "هامش الوحدة دون ضريبة ←",
   "menu.axis_popularity": "الشعبية (حصة المبيعات) ←",

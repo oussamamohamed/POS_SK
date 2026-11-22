@@ -83,7 +83,7 @@ test.describe('Annulation et correction de ligne', () => {
 
     await expect(page.locator('#cartItemsList [data-action="void"]')).toHaveCount(0);
     await page.locator('#cartItemsList [data-action="minus"]').click();
-    await expect(page.locator('.toast.warning').last()).toContainText('réservé au manager');
+    await expect(page.locator('.toast.warning').last()).toContainText('réservée au manager');
     await expect(page.locator('#lineVoidModal')).not.toHaveClass(/active/);
     await expect(page.locator('#cartItemsList .cart-item-row')).toHaveCount(1);
   });
