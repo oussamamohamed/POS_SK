@@ -109,7 +109,7 @@ public class DaySimulationTests(DayFixture day) : IClassFixture<DayFixture>
             .And.Contain(v => v.AddDraft != null);
         var rvSteps = orders.Where(o => o.ReceiptVoids is { Count: > 0 }).SelectMany(o => o.ReceiptVoids!).ToList();
         rvSteps.Select(v => v.Expect).Distinct().Should().BeEquivalentTo([200, 400, 403]);
-        rvSteps.Should().Contain(v => v.VoidSelf).And.Contain(v => v.FromTerminal != null);
+        rvSteps.Should().Contain(v => v.VoidSelf).And.Contain(v => v.FromTerminal != null).And.Contain(v => v.OccupyTable).And.Contain(v => v.ZBlocked);
         withVoids.Should().Contain(o => DayLedgerOracle.OrderTotalCents(o) == 0 && o.Payments!.Count == 0, "une commande vidée par les annulations");
         a.Operations.Take(FirstZ(a)).Last(o => o.Type is "table_order" or "counter_order").LineVoids.Should().NotBeNullOrEmpty("la dernière commande avant la Z annule une ligne");
     }
@@ -487,6 +487,19 @@ public class DaySimulationTests(DayFixture day) : IClassFixture<DayFixture>
         var actualHt = Net706ByAccount(fec);
         var expectedHt = ExpectedHtByAccount(day.Ledger);
         actualHt.Should().BeEquivalentTo(expectedHt, $"{because} : HT 706 net exact par compte");
+    }
+
+    /// <summary>
+    /// Compte 468600 net = pourboires conservés de l'oracle : un pourboire d'une part annulée (v23, v28) est contrepassé avec son reçu, celui
+    /// d'une part restée active alors qu'une autre part est annulée puis re-réglée (v22, v26) reste, une seule fois.
+    /// </summary>
+    [Fact]
+    public async Task TheFecTipAccountNetsToTheTipsKept()
+    {
+        var fec = await ReadFecAsync();
+        fec.Where(l => l.Account == "468600").Sum(l => l.Credit - l.Debit).Should().Be(
+            DayLedgerOracle.NetTipsCents(day.Scenario.Operations),
+            $"{Ctx(day.Scenario.Seed, day.Scenario.Operations.Count, "*", "FEC")} : 468600 net = pourboires non annulés");
     }
 
     /// <summary>Un reçu d'annulation (montants négatifs) écrit son HT 706 en débit : le FEC net retombe sur le HT du grand livre.</summary>

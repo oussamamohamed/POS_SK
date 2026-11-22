@@ -266,6 +266,39 @@ public static class DayLedgerOracle
             .ToList();
     }
 
+    /// <summary>
+    /// Reste dû (centimes) de chaque commande rouverte qui doit bloquer une Z (<see cref="DayReceiptVoid.ZBlocked"/>), clé <c>ref:étape</c> :
+    /// TTC des lignes en vigueur + pourboire encore porté par un règlement non annulé − montants des règlements non annulés à cet instant.
+    /// </summary>
+    public static Dictionary<string, long> ExpectedZBlocked(IEnumerable<DayOperation> operations)
+    {
+        var result = new Dictionary<string, long>();
+        foreach (var op in operations.Where(o => o.ReceiptVoids is { Count: > 0 }))
+        {
+            var payments = op.Payments ?? [];
+            int tipIndex = op.TipPaymentIndex ?? (payments.Count - 1);
+            for (int i = 0; i < op.ReceiptVoids!.Count; i++)
+            {
+                var rv = op.ReceiptVoids[i];
+                if (!rv.ZBlocked)
+                {
+                    continue;
+                }
+
+                // shortcut: les annulations antérieures sont celles qui précèdent dans la liste (vrai pour les cas du générateur, qui les rangent dans l'ordre joué).
+                int p = rv.AfterPayment ?? (payments.Count - 1);
+                var voided = op.ReceiptVoids.Take(i + 1).Where(v => v.Expect == 200 && !v.VoidSelf).Select(v => v.PaymentIndex).ToHashSet();
+                string phase = p == 0 ? "part_paid" : rv.Stage == 0 ? "part_paid_two" : "part_voided_still_has_receipt";
+                long total = TotalCents(op, LinesAfter(op, phase));
+                long tip = tipIndex <= p && !voided.Contains(tipIndex) ? op.TipCents : 0;
+                long paid = Enumerable.Range(0, p + 1).Where(q => !voided.Contains(q)).Sum(q => payments[q].Sum(t => t.AmountCents));
+                result[$"{op.Ref}:{i}"] = total + tip - paid;
+            }
+        }
+
+        return result;
+    }
+
     /// <summary>Pourboires nets encaissés et non annulés (par poste si <paramref name="terminalKey"/> est renseigné, sinon toute la salle).</summary>
     public static long NetTipsCents(IEnumerable<DayOperation> operations, string? terminalKey = null) => operations
         .Where(o => (terminalKey is null || o.Terminal == terminalKey) && o.Type is "table_order" or "counter_order" && o.Payments is { Count: > 0 } && o.TipCents > 0)

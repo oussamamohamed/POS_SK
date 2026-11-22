@@ -4943,7 +4943,9 @@
           "by": "manager",
           "expect": 200,
           "stage": 0,
-          "voidSelf": false
+          "voidSelf": false,
+          "occupyTable": false,
+          "zBlocked": false
         }
       ]
     },
@@ -4991,7 +4993,9 @@
           "by": "waiter",
           "expect": 403,
           "stage": 0,
-          "voidSelf": false
+          "voidSelf": false,
+          "occupyTable": false,
+          "zBlocked": false
         },
         {
           "paymentIndex": 0,
@@ -4999,28 +5003,36 @@
           "expect": 400,
           "stage": 0,
           "voidSelf": false,
-          "fromTerminal": "B"
+          "fromTerminal": "B",
+          "occupyTable": false,
+          "zBlocked": false
         },
         {
           "paymentIndex": 0,
           "by": "manager",
           "expect": 200,
           "stage": 0,
-          "voidSelf": false
+          "voidSelf": false,
+          "occupyTable": false,
+          "zBlocked": false
         },
         {
           "paymentIndex": 0,
           "by": "manager",
           "expect": 400,
           "stage": 0,
-          "voidSelf": false
+          "voidSelf": false,
+          "occupyTable": false,
+          "zBlocked": false
         },
         {
           "paymentIndex": 0,
           "by": "manager",
           "expect": 400,
           "stage": 0,
-          "voidSelf": true
+          "voidSelf": true,
+          "occupyTable": false,
+          "zBlocked": false
         }
       ]
     },
@@ -5156,7 +5168,9 @@
           "by": "manager",
           "expect": 200,
           "stage": 0,
-          "voidSelf": false
+          "voidSelf": false,
+          "occupyTable": false,
+          "zBlocked": false
         },
         {
           "afterPayment": 1,
@@ -5164,7 +5178,9 @@
           "by": "manager",
           "expect": 200,
           "stage": 1,
-          "voidSelf": false
+          "voidSelf": false,
+          "occupyTable": false,
+          "zBlocked": false
         }
       ]
     },
@@ -5219,7 +5235,9 @@
           "by": "manager",
           "expect": 200,
           "stage": 0,
-          "voidSelf": false
+          "voidSelf": false,
+          "occupyTable": false,
+          "zBlocked": false
         }
       ]
     },
@@ -5275,7 +5293,9 @@
           "by": "manager",
           "expect": 200,
           "stage": 0,
-          "voidSelf": false
+          "voidSelf": false,
+          "occupyTable": false,
+          "zBlocked": false
         }
       ]
     },
@@ -5331,7 +5351,9 @@
           "by": "manager",
           "expect": 200,
           "stage": 0,
-          "voidSelf": false
+          "voidSelf": false,
+          "occupyTable": false,
+          "zBlocked": false
         }
       ]
     },
@@ -5437,7 +5459,9 @@
           "by": "manager",
           "expect": 200,
           "stage": 0,
-          "voidSelf": false
+          "voidSelf": false,
+          "occupyTable": false,
+          "zBlocked": false
         }
       ]
     },
@@ -5471,14 +5495,219 @@
           "by": "manager",
           "expect": 200,
           "stage": 0,
-          "voidSelf": false
+          "voidSelf": false,
+          "occupyTable": false,
+          "zBlocked": false
         },
         {
           "paymentIndex": 0,
           "by": "manager",
           "expect": 400,
           "stage": 0,
-          "voidSelf": false
+          "voidSelf": false,
+          "occupyTable": false,
+          "zBlocked": false
+        }
+      ]
+    },
+    {
+      "type": "table_order",
+      "terminal": "A",
+      "waiter": "waiter1",
+      "table": "43",
+      "covers": 2,
+      "destination": "EatIn",
+      "lines": [
+        {
+          "name": "Plat signature",
+          "quantity": 1,
+          "unitPriceCents": 3000,
+          "taxRatePercent": "10",
+          "modifiersExtraCents": 0,
+          "comp": false
+        }
+      ],
+      "tipCents": 1200,
+      "payments": [
+        [
+          {
+            "method": "Cash",
+            "amountCents": 1000,
+            "extraTenderedCents": 0
+          }
+        ],
+        [
+          {
+            "method": "CreditCard",
+            "amountCents": 3200,
+            "extraTenderedCents": 0
+          }
+        ],
+        [
+          {
+            "method": "MealVoucher",
+            "amountCents": 600,
+            "extraTenderedCents": 0
+          },
+          {
+            "method": "Cash",
+            "amountCents": 400,
+            "extraTenderedCents": 600
+          }
+        ]
+      ],
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "v26",
+      "tipPaymentIndex": 1,
+      "receiptVoids": [
+        {
+          "afterPayment": 1,
+          "paymentIndex": 0,
+          "by": "manager",
+          "expect": 200,
+          "stage": 0,
+          "voidSelf": false,
+          "occupyTable": false,
+          "zBlocked": true
+        }
+      ]
+    },
+    {
+      "type": "table_order",
+      "terminal": "B",
+      "waiter": "waiter2",
+      "table": "44",
+      "covers": 2,
+      "destination": "EatIn",
+      "lines": [
+        {
+          "name": "Menu enfant",
+          "quantity": 2,
+          "unitPriceCents": 1400,
+          "taxRatePercent": "10",
+          "modifiersExtraCents": 0,
+          "comp": false
+        }
+      ],
+      "tipCents": 0,
+      "payments": [
+        [
+          {
+            "method": "CreditCard",
+            "amountCents": 1400,
+            "extraTenderedCents": 0
+          }
+        ],
+        [
+          {
+            "method": "Cash",
+            "amountCents": 1400,
+            "extraTenderedCents": 100
+          }
+        ],
+        [
+          {
+            "method": "GiftCard",
+            "amountCents": 1400,
+            "extraTenderedCents": 0
+          }
+        ]
+      ],
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "v27",
+      "receiptVoids": [
+        {
+          "afterPayment": 1,
+          "paymentIndex": 1,
+          "by": "manager",
+          "expect": 200,
+          "stage": 0,
+          "voidSelf": false,
+          "occupyTable": true,
+          "zBlocked": true
+        }
+      ]
+    },
+    {
+      "type": "table_order",
+      "terminal": "C",
+      "waiter": "waiter3",
+      "table": "45",
+      "covers": 2,
+      "destination": "EatIn",
+      "lines": [
+        {
+          "name": "Assiette",
+          "quantity": 1,
+          "unitPriceCents": 1800,
+          "taxRatePercent": "10",
+          "modifiersExtraCents": 0,
+          "comp": false
+        },
+        {
+          "name": "Verre",
+          "quantity": 1,
+          "unitPriceCents": 700,
+          "taxRatePercent": "20",
+          "modifiersExtraCents": 0,
+          "comp": false
+        }
+      ],
+      "tipCents": 300,
+      "payments": [
+        [
+          {
+            "method": "Cash",
+            "amountCents": 1000,
+            "extraTenderedCents": 0
+          }
+        ],
+        [
+          {
+            "method": "CreditCard",
+            "amountCents": 1800,
+            "extraTenderedCents": 0
+          }
+        ],
+        [
+          {
+            "method": "CreditCard",
+            "amountCents": 1500,
+            "extraTenderedCents": 0
+          },
+          {
+            "method": "Cash",
+            "amountCents": 1000,
+            "extraTenderedCents": 0
+          }
+        ]
+      ],
+      "reprint": false,
+      "holdAndRecall": false,
+      "ref": "v28",
+      "tipPaymentIndex": 1,
+      "receiptVoids": [
+        {
+          "afterPayment": 1,
+          "paymentIndex": 0,
+          "by": "manager",
+          "expect": 200,
+          "stage": 0,
+          "voidSelf": false,
+          "occupyTable": false,
+          "zBlocked": false
+        },
+        {
+          "afterPayment": 1,
+          "paymentIndex": 1,
+          "by": "manager",
+          "expect": 200,
+          "stage": 1,
+          "voidSelf": false,
+          "occupyTable": false,
+          "zBlocked": true
         }
       ]
     },
@@ -5643,76 +5872,76 @@
   ],
   "expected": {
     "A": {
-      "ttcCents": 186814,
-      "htCents": 177117,
-      "receiptCount": 63,
+      "ttcCents": 189814,
+      "htCents": 179844,
+      "receiptCount": 67,
       "vatByRate": {
         "0": 0,
         "2.1": 888,
         "5.5": 1996,
-        "10": 3905,
+        "10": 4178,
         "20": 2908
       },
       "tenderByMethod": {
-        "Cash": 48244,
-        "CreditCard": 97150,
+        "Cash": 48644,
+        "CreditCard": 100350,
         "GiftCard": 34068,
-        "MealVoucher": 8280
+        "MealVoucher": 8880
       }
     },
     "B": {
-      "ttcCents": 114900,
-      "htCents": 106242,
-      "receiptCount": 37,
+      "ttcCents": 117700,
+      "htCents": 108788,
+      "receiptCount": 41,
       "vatByRate": {
         "0": 0,
         "2.1": 134,
         "5.5": 1619,
-        "10": 3243,
+        "10": 3497,
         "20": 3662
       },
       "tenderByMethod": {
         "Cash": 17085,
-        "CreditCard": 85604,
-        "GiftCard": 12639,
+        "CreditCard": 87004,
+        "GiftCard": 14039,
         "MealVoucher": 187
       }
     },
     "C": {
-      "ttcCents": 226873,
-      "htCents": 211942,
-      "receiptCount": 63,
+      "ttcCents": 229373,
+      "htCents": 214161,
+      "receiptCount": 68,
       "vatByRate": {
         "0": 0,
         "2.1": 868,
         "5.5": 2158,
-        "10": 5034,
-        "20": 6871
+        "10": 5198,
+        "20": 6988
       },
       "tenderByMethod": {
-        "Cash": 78196,
-        "CreditCard": 85847,
+        "Cash": 79196,
+        "CreditCard": 87347,
         "GiftCard": 55144,
         "MealVoucher": 7986
       }
     }
   },
   "total": {
-    "ttcCents": 528587,
-    "htCents": 495301,
-    "receiptCount": 163,
+    "ttcCents": 536887,
+    "htCents": 502793,
+    "receiptCount": 176,
     "vatByRate": {
       "0": 0,
       "2.1": 1890,
       "5.5": 5773,
-      "10": 12182,
-      "20": 13441
+      "10": 12873,
+      "20": 13558
     },
     "tenderByMethod": {
-      "Cash": 143525,
-      "CreditCard": 268601,
-      "GiftCard": 101851,
-      "MealVoucher": 16453
+      "Cash": 144925,
+      "CreditCard": 274701,
+      "GiftCard": 103251,
+      "MealVoucher": 17053
     }
   },
   "expectedLineVoids": [
@@ -6438,5 +6667,10 @@
         "cancelled": 1
       }
     ]
+  },
+  "expectedZBlocked": {
+    "v26:0": 1000,
+    "v27:0": 1400,
+    "v28:1": 2500
   }
 }

@@ -81,7 +81,15 @@ public sealed record DayRunResult(
     IReadOnlyList<DayLineVoidAttempt> LineVoidAttempts,
     IReadOnlyDictionary<string, List<Guid>> LineIds,
     DayManager Admin,
-    IReadOnlyList<DayReceiptVoidAttempt> ReceiptVoidAttempts);
+    IReadOnlyList<DayReceiptVoidAttempt> ReceiptVoidAttempts,
+    IReadOnlyList<DayZBlockedAttempt> ZBlockedAttempts,
+    IReadOnlyList<DayTableCheck> TableChecks);
+
+/// <summary>Z tentée juste après une annulation <see cref="DayReceiptVoid.ZBlocked"/> : statut et corps de la réponse (refus attendu).</summary>
+public sealed record DayZBlockedAttempt(string Key, string Ref, int Step, int Status, JsonElement Body);
+
+/// <summary>Commande active de la table d'une commande rouverte (<see cref="DayReceiptVoid.OccupyTable"/>), après l'annulation puis après le règlement.</summary>
+public sealed record DayTableCheck(string Ref, string Stage, Guid OrderId, Guid Occupant, Guid? ActiveOrderId);
 
 /// <summary>Le responsable connecté du rejeu (PIN 1234) : permet aux tests de rappeler X, Z et les rapports après coup.</summary>
 public sealed record DayManager(Guid Id, string Name, string Token);
@@ -154,7 +162,7 @@ public static class DayRunner
         return new DayRunResult(run.TerminalIds, run.XReports, run.ZClosures, run.LatestClosures, run.Receipts,
             run.XReportOpIndexes, run.ZClosureOpIndexes, run.VoidAttempts, run.Clients,
             new DayManager(run.Manager.Id, run.Manager.Name, run.Manager.Token), run.LineVoidAttempts, run.LineIds,
-            new DayManager(run.Admin.Id, run.Admin.Name, run.Admin.Token), run.ReceiptVoidAttempts);
+            new DayManager(run.Admin.Id, run.Admin.Name, run.Admin.Token), run.ReceiptVoidAttempts, run.ZBlockedAttempts, run.TableChecks);
     }
 
     /// <summary>Contexte d'échec commun à tous les messages : graine, index d'opération et terminal.</summary>
@@ -222,6 +230,7 @@ public static class DayRunner
         public List<DayReceipt> Receipts { get; } = [];
         public List<string> VoidedReceipts { get; } = [];
         public Dictionary<int, DayReceipt> VoidReceiptsByPayment { get; } = [];
+        public Guid? Occupant { get; set; }
     }
 
     private sealed class Run(PosApiApplicationFactory factory)
@@ -240,6 +249,8 @@ public static class DayRunner
         public List<DayVoidAttempt> VoidAttempts { get; } = [];
         public List<DayLineVoidAttempt> LineVoidAttempts { get; } = [];
         public List<DayReceiptVoidAttempt> ReceiptVoidAttempts { get; } = [];
+        public List<DayZBlockedAttempt> ZBlockedAttempts { get; } = [];
+        public List<DayTableCheck> TableChecks { get; } = [];
         public Dictionary<string, List<Guid>> LineIds { get; } = [];
         public Operator Manager { get; set; } = null!;
         public Operator Admin { get; set; } = null!;
@@ -321,6 +332,11 @@ public static class DayRunner
             }
 
             await StepsAsync(voids, "paid");
+            if (voids.Occupant is not null)
+            {
+                await TableCheckAsync(voids, "after_paid");
+            }
+
             await AfterPaymentsAsync(voids);
             await StepsAsync(voids, "cancelled");
         }
@@ -471,6 +487,14 @@ public static class DayRunner
                 var opActor = ResolveActor(step.By, ctx.Waiter);
                 var target = step.VoidSelf ? ctx.VoidReceiptsByPayment[step.PaymentIndex] : ctx.Receipts[step.PaymentIndex];
                 string ownTerminalId = TerminalIds[ctx.Key];
+                if (step.OccupyTable)
+                {
+                    // Un autre client s'installe sur la table libérée (rien de saisi) avant l'annulation.
+                    var opened = await SendAsync(ctx.Client, HttpMethod.Post, $"/api/tables/{ctx.Table}/open",
+                        new OpenTableRequest(ctx.Waiter.Name, 2, ctx.Waiter.Id), ctx.Waiter.Token);
+                    ctx.Occupant = opened.GetProperty("activeOrderId").GetGuid();
+                }
+
                 var xBefore = await SendAsync(ctx.Client, HttpMethod.Get, $"/api/fiscal/x-report?terminalId={ownTerminalId}", null, Manager.Token);
                 var (status, body) = await TrySendAsync(callerClient, HttpMethod.Post, $"/api/checkout/void/{target.Id}",
                     new VoidReceiptRequest(callerTerminalId, opActor.Id), opActor.Token);
@@ -483,8 +507,28 @@ public static class DayRunner
                     Receipts[ctx.Key].Add(voidReceipt);
                     ctx.VoidedReceipts.Add(target.Number);
                     ctx.VoidReceiptsByPayment[step.PaymentIndex] = voidReceipt;
+                    if (step.OccupyTable)
+                    {
+                        await TableCheckAsync(ctx, "after_void");
+                    }
+
+                    if (step.ZBlocked)
+                    {
+                        var (zStatus, zBody) = await TrySendAsync(ctx.Client, HttpMethod.Post, "/api/fiscal/z-closure",
+                            new ZClosureRequest(ownTerminalId, Manager.Id, Manager.Name), Manager.Token);
+                        ZBlockedAttempts.Add(new DayZBlockedAttempt(ctx.Key, ctx.Op.Ref!, i, zStatus, zBody));
+                    }
                 }
             }
+        }
+
+        private async Task TableCheckAsync(LineVoidContext ctx, string stage)
+        {
+            // Plan de salle (GET /api/tables) : la commande active de la table telle que les clients la voient.
+            var tables = await SendAsync(ctx.Client, HttpMethod.Get, "/api/tables", null, Manager.Token);
+            var table = tables.EnumerateArray().Single(t => t.GetProperty("tableNumber").GetString() == ctx.Table).GetProperty("activeOrderId");
+            Guid? active = table.ValueKind == JsonValueKind.Null ? null : table.GetGuid();
+            TableChecks.Add(new DayTableCheck(ctx.Op.Ref!, stage, ctx.OrderId, ctx.Occupant!.Value, active));
         }
 
         private Operator ResolveActor(string by, Operator waiter) => by switch

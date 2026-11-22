@@ -18,6 +18,7 @@ struct LocalDaySimulationTests {
         var expectedLineVoids: [ExpectedLineVoid]
         var expectedLineVoidTotals: [String: [Int?]]
         var expectedTicketLines: [String: [TicketLine]]
+        var expectedZBlocked: [String: Int]
     }
 
     /// Annulation ou correction d'une ligne (`DayLineVoid` du .NET) : phase, index de ligne (rajouts en fin de liste), attente.
@@ -46,6 +47,8 @@ struct LocalDaySimulationTests {
         var stage: Int?
         var voidSelf: Bool?
         var fromTerminal: String?
+        var occupyTable: Bool?
+        var zBlocked: Bool?
     }
 
     private struct ExpectedLineVoid: Decodable, Hashable {
@@ -132,6 +135,10 @@ struct LocalDaySimulationTests {
         var voidRefusals: [(op: Int, status: Int?)] = []
         var lineVoids: [LineVoidAttempt] = []
         var receiptVoidAttempts: [ReceiptVoidAttempt] = []
+        /// Z tentées juste après une annulation `zBlocked` (`ref:étape`) : statut et message (refus attendu).
+        var zBlocked: [String: (status: Int, message: String?)] = [:]
+        /// Commande active de la table d'une commande rouverte `occupyTable` (`ref:after_void` / `ref:after_paid`) : celle du client suivant ?
+        var tableKeptByOccupant: [String: Bool] = [:]
         /// Identifiants des lignes (rajouts compris) des commandes qui annulent ou corrigent, par `ref`.
         var lineIds: [String: [UUID]] = [:]
         var managerName = ""
@@ -172,6 +179,7 @@ struct LocalDaySimulationTests {
         var receipts: [String] = []
         var voided: [String] = []
         var voidReceiptIdsByPayment: [Int: UUID] = [:]
+        var occupant: UUID?
         init(op: Operation, table: String, orderId: UUID, waiter: String, lines: [(line: Line, productId: UUID, lineId: UUID)]) {
             self.op = op; self.table = table; self.orderId = orderId; self.waiter = waiter; self.lines = lines
         }
@@ -273,6 +281,12 @@ struct LocalDaySimulationTests {
                 let targetId: UUID = try step.voidSelf == true
                     ? #require(ctx.voidReceiptIdsByPayment[step.paymentIndex])
                     : receiptId(ctx.receipts[step.paymentIndex])
+                if step.occupyTable == true {
+                    // Un autre client s'installe sur la table libérée (rien de saisi) avant l'annulation, comme le DayRunner.
+                    let waiterId = try await login(waiter: ctx.waiter)
+                    try await api.openTable(number: ctx.table, covers: 2, operatorId: waiterId, waiterName: ctx.waiter)
+                    ctx.occupant = try await api.activeOrder(table: ctx.table)?.orderId
+                }
                 _ = try await api.login(pin: managerPin)
                 let before = try await api.xReport(terminalId: "T01")
                 try await loginActor(step.by, waiter: ctx.waiter)
@@ -289,6 +303,18 @@ struct LocalDaySimulationTests {
                     ctx.voided.append(ctx.receipts[step.paymentIndex])
                     let voidRow = try db.query("SELECT Id FROM FiscalReceipts WHERE VoidedReceiptId = ? ORDER BY rowid DESC LIMIT 1", [.uuid(targetId)]).first
                     if let voidId = voidRow?.uuid("Id") { ctx.voidReceiptIdsByPayment[step.paymentIndex] = voidId }
+                    if step.occupyTable == true {
+                        replay.tableKeptByOccupant["\(ref):after_void"] = try await api.activeOrder(table: ctx.table)?.orderId == ctx.occupant
+                    }
+                    if step.zBlocked == true {
+                        _ = try await api.login(pin: managerPin)
+                        do {
+                            _ = try await api.zClosure(terminalId: "T01", managerId: UUID(), managerName: "Responsable")
+                            replay.zBlocked["\(ref):\(i)"] = (200, nil)
+                        } catch {
+                            replay.zBlocked["\(ref):\(i)"] = status(of: error)
+                        }
+                    }
                 }
                 _ = try await login(waiter: ctx.waiter)
             }
@@ -442,6 +468,9 @@ struct LocalDaySimulationTests {
                     try await afterPayment(ctx, p)
                 }
                 try await steps(ctx, "paid")
+                if let occupant = ctx.occupant, let ref = op.ref {
+                    replay.tableKeptByOccupant["\(ref):after_paid"] = try await api.activeOrder(table: table)?.orderId == occupant
+                }
                 try await afterPayments(ctx)
                 try await steps(ctx, "cancelled")
 
@@ -613,6 +642,29 @@ struct LocalDaySimulationTests {
             #expect(actual.tips == wanted.tips, context)
             #expect(actual == wanted, context)
         }
+    }
+
+    /// Commandes rouvertes par l'annulation d'une part (v26 à v28) : la Z est refusée avec le reste dû de l'oracle .NET (pourboire actif compris,
+    /// commande restée sans table comprise), la table reprise par un autre client lui reste, et la commande re-soldée est réglée.
+    @Test(arguments: ["A", "B", "C"])
+    func lesCommandesRouvertesBloquentLaZEtLaissentLaTableAuClientSuivant(key: String) async throws {
+        let scenario = try Self.scenario()
+        let replay = try await Self.replay(scenario, terminal: key)
+        let context = Comment(rawValue: "graine \(scenario.seed), poste \(key)")
+        let refs = Set(scenario.operations.filter { $0.terminal == key }.compactMap(\.ref))
+        let expected = scenario.expectedZBlocked.filter { refs.contains(String($0.key.split(separator: ":")[0])) }
+        #expect(expected.count == 1, context)
+        #expect(replay.zBlocked.count == expected.count, context)
+        for (step, remaining) in expected {
+            let ref = String(step.split(separator: ":")[0])
+            let table = try #require(scenario.operations.first { $0.ref == ref }?.table)
+            let attempt = try #require(replay.zBlocked[step], context)
+            #expect(attempt.status == 409, context)
+            #expect(attempt.message?.contains("\(table) (\(String(format: "%d.%02d", remaining / 100, remaining % 100)))") == true, "\(context) \(ref) : \(attempt.message ?? "")")
+        }
+        let occupied = scenario.operations.filter { $0.terminal == key && $0.receiptVoids?.contains { $0.occupyTable == true } == true }.compactMap(\.ref)
+        #expect(replay.tableKeptByOccupant.count == occupied.count * 2, context)
+        for (check, kept) in replay.tableKeptByOccupant { #expect(kept, "\(context) \(check)") }
     }
 
     // MARK: - Annulations et corrections de ligne

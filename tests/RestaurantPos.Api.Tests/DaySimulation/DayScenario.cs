@@ -60,7 +60,10 @@ public sealed record DayOperation(
 /// Annulation (ou tentative d'annulation) d'un reçu fiscal (<c>POST /api/checkout/void/{id}</c>) pendant ou après les règlements d'une
 /// commande. <c>AfterPayment</c> = index du règlement après lequel l'appel est joué (<c>null</c> = après tous les règlements) ;
 /// <c>Stage</c> = 0 (avant <c>part_voided_still_has_receipt</c>) ou 1 (après, avant <c>all_voided_reopened</c>) ;
-/// <c>VoidSelf</c> = tente d'annuler le reçu <c>-VOID-</c> issu de <c>PaymentIndex</c> ; <c>FromTerminal</c> = autre poste (refus inter-poste, .NET seul).
+/// <c>VoidSelf</c> = tente d'annuler le reçu <c>-VOID-</c> issu de <c>PaymentIndex</c> ; <c>FromTerminal</c> = autre poste (refus inter-poste, .NET seul) ;
+/// <c>OccupyTable</c> = un autre client s'installe sur la table (ouverte, rien de saisi) juste avant l'annulation : la commande rouverte reste
+/// sans table et son règlement ne doit pas libérer la table de l'autre client ; <c>ZBlocked</c> = juste après l'annulation acceptée, une Z du
+/// poste est tentée et doit être refusée (409 <c>open_orders</c>, la commande rouverte seule, reste dû publié dans <c>ExpectedZBlocked</c>).
 /// </summary>
 public sealed record DayReceiptVoid(
     int? AfterPayment,
@@ -70,7 +73,9 @@ public sealed record DayReceiptVoid(
     string? Code = null,
     int Stage = 0,
     bool VoidSelf = false,
-    string? FromTerminal = null);
+    string? FromTerminal = null,
+    bool OccupyTable = false,
+    bool ZBlocked = false);
 
 /// <summary>
 /// Annulation ou correction d'une ligne (<c>POST /api/orders/{id}/items/{ligne}/void</c>). <c>Phase</c> (dans cet ordre) :
@@ -121,7 +126,8 @@ public sealed record DayExpectedTicketLine(int Line, int Sent, int Cancelled);
 
 /// <summary>
 /// Contenu de <c>day_scenario.json</c> : le scénario, son grand livre (clés de <c>Expected</c> = clés des postes du scénario), les annulations
-/// acceptées, le total TTC attendu après chaque étape (nul pour un refus) et les articles de bon attendus, par commande (<c>Ref</c>).
+/// acceptées, le total TTC attendu après chaque étape (nul pour un refus), les articles de bon attendus, par commande (<c>Ref</c>), et le
+/// reste dû (centimes) de chaque commande rouverte qui doit bloquer une Z (<see cref="DayReceiptVoid.ZBlocked"/>), par commande.
 /// </summary>
 public sealed record DayScenarioFile(
     int Seed,
@@ -131,7 +137,8 @@ public sealed record DayScenarioFile(
     DayExpected Total,
     IReadOnlyList<DayExpectedLineVoid> ExpectedLineVoids,
     IReadOnlyDictionary<string, IReadOnlyList<long?>> ExpectedLineVoidTotals,
-    IReadOnlyDictionary<string, IReadOnlyList<DayExpectedTicketLine>> ExpectedTicketLines);
+    IReadOnlyDictionary<string, IReadOnlyList<DayExpectedTicketLine>> ExpectedTicketLines,
+    IReadOnlyDictionary<string, long> ExpectedZBlocked);
 
 /// <summary>Décimaux écrits en chaînes (<c>"5.5"</c>) comme dans <c>fiscal_reference.json</c> : le Swift les lit en <c>Decimal</c> sans passer par un flottant.</summary>
 internal sealed class DecimalAsStringConverter : JsonConverter<decimal>

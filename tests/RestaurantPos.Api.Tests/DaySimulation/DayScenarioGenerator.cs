@@ -60,7 +60,8 @@ public static class DayScenarioGenerator
             Expected(ledger.Total),
             DayLedgerOracle.ExpectedLineVoids(scenario.Operations),
             voided.ToDictionary(o => o.Ref!, o => (IReadOnlyList<long?>)DayLedgerOracle.TotalsAfterSteps(o)),
-            voided.ToDictionary(o => o.Ref!, o => (IReadOnlyList<DayExpectedTicketLine>)DayLedgerOracle.TicketLines(o)));
+            voided.ToDictionary(o => o.Ref!, o => (IReadOnlyList<DayExpectedTicketLine>)DayLedgerOracle.TicketLines(o)),
+            DayLedgerOracle.ExpectedZBlocked(scenario.Operations));
     }
 
     private static DayExpected Expected(TerminalLedger t) => new(
@@ -259,6 +260,26 @@ public static class DayScenarioGenerator
             // v25 : reçu à 0 € (100 % offert) annulé + tentative de double annulation (400)
             new("table_order", "C", "waiter2", "42", 1, "EatIn", [new("Dégustation offerte", 1, 1500, 10m, Comp: true)], null, 0,
                 [[]], Ref: "v25", ReceiptVoids: [new DayReceiptVoid(null, 0), new DayReceiptVoid(null, 0, Expect: 400)]),
+
+            // --- Lecteurs après annulation d'une part (audit des lecteurs, v26 à v28) ---
+
+            // v26 : pourboire de la 2e part (12 €) plus grand que la 1re part annulée (10 €) -> Z refusée (reste 10 € = 30 + 12 − 32),
+            // puis re-règlement mixte titre-restaurant + espèces avec rendu ; la Z de fin de journée passe
+            new("table_order", "A", "waiter1", "43", 2, "EatIn", [new("Plat signature", 1, 3000, 10m)], null, 1200,
+                [[new DayTender("Cash", 1000)], [new DayTender("CreditCard", 3200)], [new DayTender("MealVoucher", 600), new DayTender("Cash", 400, 600)]],
+                Ref: "v26", TipPaymentIndex: 1, ReceiptVoids: [new DayReceiptVoid(1, 0, ZBlocked: true)]),
+
+            // v27 : un autre client s'installe sur la table libérée, puis la 2e part est annulée : la commande rouverte reste sans table, bloque la Z
+            // (reste 14 €) et son règlement par identifiant laisse la table à l'autre client
+            new("table_order", "B", "waiter2", "44", 2, "EatIn", [new("Menu enfant", 2, 1400, 10m)], null, 0,
+                [[new DayTender("CreditCard", 1400)], [new DayTender("Cash", 1400, 100)], [new DayTender("GiftCard", 1400)]],
+                Ref: "v27", ReceiptVoids: [new DayReceiptVoid(1, 1, OccupyTable: true, ZBlocked: true)]),
+
+            // v28 : deux taux, pourboire sur la 2e part, les deux parts annulées (pourboire retiré, commande toujours due) -> Z refusée (reste 25 €),
+            // puis re-règlement en une fois carte + espèces sans pourboire
+            new("table_order", "C", "waiter3", "45", 2, "EatIn", [new("Assiette", 1, 1800, 10m), new("Verre", 1, 700, 20m)], null, 300,
+                [[new DayTender("Cash", 1000)], [new DayTender("CreditCard", 1800)], [new DayTender("CreditCard", 1500), new DayTender("Cash", 1000)]],
+                Ref: "v28", TipPaymentIndex: 1, ReceiptVoids: [new DayReceiptVoid(1, 0, Stage: 0), new DayReceiptVoid(1, 1, Stage: 1, ZBlocked: true)]),
 
             // v19 : dernière commande comptoir (EatIn) vidée entièrement par annulations de ligne -> reste à 0 € sans reçu et ne bloque pas la Z
             new("counter_order", "B", "waiter3", null, 0, "EatIn", [new("Croque", 1, 750, 10m), new("Café", 1, 250, 20m)],

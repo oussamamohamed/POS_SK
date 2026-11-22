@@ -1610,6 +1610,11 @@
                   "totalTtcCents": 4000
                 },
                 {
+                  "productName": "Plat signature",
+                  "quantity": 1,
+                  "totalTtcCents": 3000
+                },
+                {
                   "productName": "Presse",
                   "quantity": 1,
                   "totalTtcCents": 300
@@ -1645,13 +1650,13 @@
                   "totalTtcCents": 1300
                 }
               ],
-              "subtotalTtcCents": 202639
+              "subtotalTtcCents": 205639
             }
           ],
           "tips": [
             {
               "serverName": "waiter1",
-              "tipCents": 373
+              "tipCents": 1573
             },
             {
               "serverName": "waiter2",
@@ -1662,13 +1667,13 @@
               "tipCents": 349
             }
           ],
-          "totalTipsCents": 928,
+          "totalTipsCents": 2128,
           "hasGlobalDiscount": true,
           "activity": {
             "discountsCents": 15825,
             "compsCents": 9498,
-            "voidCount": 7,
-            "voidCents": 26102
+            "voidCount": 8,
+            "voidCents": 27102
           },
           "cash": null
         }
@@ -1740,6 +1745,11 @@
                   "totalTtcCents": 3200
                 },
                 {
+                  "productName": "Menu enfant",
+                  "quantity": 2,
+                  "totalTtcCents": 2800
+                },
+                {
                   "productName": "Menu midi",
                   "quantity": 1,
                   "totalTtcCents": 1500
@@ -1765,7 +1775,7 @@
                   "totalTtcCents": 650
                 }
               ],
-              "subtotalTtcCents": 122838
+              "subtotalTtcCents": 125638
             }
           ],
           "tips": [
@@ -1783,8 +1793,8 @@
           "activity": {
             "discountsCents": 7938,
             "compsCents": 2329,
-            "voidCount": 2,
-            "voidCents": 4800
+            "voidCount": 3,
+            "voidCents": 6200
           },
           "cash": null
         }
@@ -1819,6 +1829,11 @@
                   "productName": "Article 5",
                   "quantity": 22,
                   "totalTtcCents": 31358
+                },
+                {
+                  "productName": "Assiette",
+                  "quantity": 1,
+                  "totalTtcCents": 1800
                 },
                 {
                   "productName": "Boisson",
@@ -1864,9 +1879,14 @@
                   "productName": "Sandwich",
                   "quantity": 1,
                   "totalTtcCents": 850
+                },
+                {
+                  "productName": "Verre",
+                  "quantity": 1,
+                  "totalTtcCents": 700
                 }
               ],
-              "subtotalTtcCents": 237798
+              "subtotalTtcCents": 240298
             }
           ],
           "tips": [
@@ -1880,8 +1900,8 @@
           "activity": {
             "discountsCents": 10925,
             "compsCents": 8835,
-            "voidCount": 7,
-            "voidCents": 32074
+            "voidCount": 9,
+            "voidCents": 34574
           },
           "cash": null
         }
