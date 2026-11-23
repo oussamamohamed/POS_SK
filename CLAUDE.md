@@ -79,6 +79,8 @@ Le mode autonome de l'iPad (`LocalPosAPI`, SQLite, `ios/Packages/PosKit/Sources/
 - Fixtures `reservations_*`, `menu_analysis`, `products_with_cost`, `takings*` sont capturées sur l'API .NET : à recapturer si les DTO changent.
 - Les migrations de `Local/` vont jusqu'à V17 (annulation d'une ligne envoyée : `OrderLineVoids`, `KitchenTicketItems.OrderItemId` / `CancelledQuantity` ; V16 : caisse et alertes, spec 024). Le poste autonome est le terminal `T01`.
 
+Line void (`POST /api/orders/{orderId}/items/{itemId}/void`) takes an optional `Idempotency-Key` header (one UUID per user intent, reused on retry; successes kept 7 days in `OrderLineVoidRequests`); reuse that convention for any other mutation that needs deduplication.
+
 Receipt-writing routes (`POST /api/checkout/pay`, `/api/checkout/void/{id}`, `/api/orders/counter/checkout`, `/api/sync/receipt`) require a paired device: header `X-Device-Token`, obtained from `POST /api/devices/pair` with a code generated in the back-office (Gestion → Appareils). The server takes `terminalId` from the device (`T01`, `T02`…) and ignores the body's. A missing, unknown or revoked token returns `401 {"code":"device_not_paired"}`; both clients then show their pairing UI. The server announces itself over Bonjour as `_restaurantpos._tcp` (name = `Discovery:ServerName`). A receipt can only be voided from the device that issued it (the void is written into that device's chain); receipts issued before pairing (`POS_A`, `POS_MAIN_TERM`…) cannot be voided through the API.
 
 ## iOS architecture (summary)
