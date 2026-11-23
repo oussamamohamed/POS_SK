@@ -47,7 +47,7 @@ public class OrderLineVoidService : IOrderLineVoidService
             }
 
             var op = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == operatorId, txCt).ConfigureAwait(false);
-            if (op is null || !op.CanVoidItems()) return Result(OrderLineVoidOutcome.Forbidden);
+            if (op is null || !op.IsActive || !op.CanVoidItems()) return Result(OrderLineVoidOutcome.Forbidden);
             if (string.IsNullOrWhiteSpace(reason)) return Result(OrderLineVoidOutcome.ReasonRequired);
             reason = reason.Trim();
             if (reason.Length > OrderLineVoid.MaxReasonLength) return Result(OrderLineVoidOutcome.ReasonTooLong);

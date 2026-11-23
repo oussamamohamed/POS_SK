@@ -276,9 +276,9 @@ public class OrderLineVoidMatrixTests : IClassFixture<PosApiApplicationFactory>
         var l = await SeedAsync(new LineSpec { Dispatched = dispatched });
         await AssertVoidAsync(l, Client("deleted"), 1, "erreur", expected);
 
-        // Compte désactivé : le service ne lit que le rôle (IsActive n'est pas contrôlé), comme les autres actions manager.
+        // Compte désactivé : un manager désactivé ne peut plus annuler une ligne envoyée ; la correction reste ouverte à tout opérateur.
         var l2 = await SeedAsync(new LineSpec { Dispatched = dispatched });
-        await AssertVoidAsync(l2, Client("inactive"), 1, "erreur", dispatched ? OrderLineVoidOutcome.Voided : OrderLineVoidOutcome.Corrected);
+        await AssertVoidAsync(l2, Client("inactive"), 1, "erreur", expected);
     }
 
     // ---------- Quantités ----------

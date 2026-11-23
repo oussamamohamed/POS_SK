@@ -139,7 +139,7 @@ public actor InMemoryPosAPI: PosAPI {
 
     private func currentRole() -> UserRole? {
         guard let token, let id = UUID(uuidString: token.replacingOccurrences(of: "mock-", with: "")) else { return nil }
-        return staffRecords.first { $0.member.id == id }?.member.role
+        return staffRecords.first { $0.member.id == id && $0.member.isActive }?.member.role
     }
 
     private func requireManager() throws {

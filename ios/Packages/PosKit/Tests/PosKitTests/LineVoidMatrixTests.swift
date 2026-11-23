@@ -406,7 +406,7 @@ struct LineVoidMatrixTests {
         #expect(try await snapshot(s) == before)
     }
 
-    /// Compte désactivé après la connexion. DIVERGENCE : le .NET (et le double en mémoire) ne lisent que le rôle et annulent ;
+    /// Compte désactivé après la connexion : aucune annulation. Le .NET et le double en mémoire refusent (403) ;
     /// l'autonome refuse toute session d'un compte inactif (`requireAuth`, règle commune à toutes ses routes) : 401.
     @Test(arguments: VoidBackend.allCases)
     func managerDeactivatedAfterLogin(_ backend: VoidBackend) async throws {
@@ -421,8 +421,8 @@ struct LineVoidMatrixTests {
             await #expect(throws: APIError.unauthorized) { try await s.api.voidLine(orderId: s.orderId, lineId: s.lineId, quantity: 1, reason: "Erreur", operatorId: nil) }
             #expect(try await snapshot(s) == before)
         case .memory:
-            try await s.api.voidLine(orderId: s.orderId, lineId: s.lineId, quantity: 1, reason: "Erreur", operatorId: nil)
-            #expect(try await snapshot(s).lines[s.lineId] == VoidCase.lineQuantity - 1)
+            await #expect(throws: APIError.forbidden("Autorisation insuffisante : code PIN superviseur ou gérant requis.")) { try await s.api.voidLine(orderId: s.orderId, lineId: s.lineId, quantity: 1, reason: "Erreur", operatorId: nil) }
+            #expect(try await snapshot(s) == before)
         }
     }
 
