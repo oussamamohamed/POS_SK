@@ -239,4 +239,59 @@ public class PaymentIdempotencyTests : IClassFixture<PosApiApplicationFactory>
 
         (await PostAsync(client, "/api/orders/counter/checkout", Counter(orderId, 4m), key)).StatusCode.Should().Be(HttpStatusCode.Conflict);
     }
+
+    [Fact]
+    public async Task Pay_WhitespaceKeyHeader_IsTreatedAsAbsent()
+    {
+        var client = await PairedClientAsync();
+        var orderId = await SeedOrderAsync(1000);
+        var body = Pay(orderId, 4m);
+
+        (await PostAsync(client, "/api/checkout/pay", body, "   ")).StatusCode.Should().Be(HttpStatusCode.OK);
+        (await PostAsync(client, "/api/checkout/pay", body, "   ")).StatusCode.Should().Be(HttpStatusCode.OK);
+
+        (await ReceiptCountAsync(orderId)).Should().Be(2);
+    }
+
+    [Fact]
+    public async Task Pay_SameKeyOtherTenderMethod_Returns409()
+    {
+        var client = await PairedClientAsync();
+        var orderId = await SeedOrderAsync(1000);
+        var key = Guid.NewGuid().ToString();
+        (await PostAsync(client, "/api/checkout/pay", Pay(orderId, 4m), key)).StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var byCard = new PaymentSettlementRequest(orderId, null, Guid.NewGuid(), [new TenderItemRequest(PaymentMethod.CreditCard, 4m, 4m, 0m)]);
+        (await PostAsync(client, "/api/checkout/pay", byCard, key)).StatusCode.Should().Be(HttpStatusCode.Conflict);
+        (await ReceiptCountAsync(orderId)).Should().Be(1);
+    }
+
+    [Fact]
+    public async Task Pay_UnpairedDeviceWithKey_Returns401_AndStoresNothing()
+    {
+        var client = await PairedClientAsync();
+        client.DefaultRequestHeaders.Remove("X-Device-Token");
+        var orderId = await SeedOrderAsync(1000);
+        var key = Guid.NewGuid();
+
+        var response = await PostAsync(client, "/api/checkout/pay", Pay(orderId, 4m), key.ToString());
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        (await CodeAsync(response)).Should().Be("device_not_paired");
+        (await ReadAsync(db => db.IdempotentRequests.AnyAsync(r => r.IdempotencyKey == key))).Should().BeFalse();
+        (await ReceiptCountAsync(orderId)).Should().Be(0);
+    }
+
+    [Fact]
+    public async Task CounterCheckout_InvalidKey_Returns400_WithoutReceipt()
+    {
+        var client = await PairedClientAsync();
+        var orderId = await SeedOrderAsync(900);
+
+        var response = await PostAsync(client, "/api/orders/counter/checkout", Counter(orderId, 9m), "not-a-uuid");
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        (await CodeAsync(response)).Should().Be("idempotency_key_invalid");
+        (await ReceiptCountAsync(orderId)).Should().Be(0);
+    }
 }
