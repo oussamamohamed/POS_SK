@@ -1,5 +1,7 @@
 using System;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -20,9 +22,23 @@ public class OrderLineVoidService : IOrderLineVoidService
         _journal = journal;
     }
 
-    public Task<OrderLineVoidResult> VoidAsync(Guid orderId, Guid orderItemId, int quantity, string? reason, Guid operatorId, CancellationToken ct = default) =>
+    public Task<OrderLineVoidResult> VoidAsync(Guid orderId, Guid orderItemId, int quantity, string? reason, Guid operatorId, Guid? idempotencyKey = null, CancellationToken ct = default) =>
         _dbContext.ExecuteInTransactionAsync(async txCt =>
         {
+            // Lue dans la transaction Serializable (BEGIN IMMEDIATE sous SQLite) : deux requêtes de même clé ne peuvent pas appliquer toutes deux.
+            var reasonHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(reason?.Trim() ?? string.Empty)));
+            if (idempotencyKey is { } key)
+            {
+                var done = await _dbContext.OrderLineVoidRequests.AsNoTracking()
+                    .FirstOrDefaultAsync(r => r.IdempotencyKey == key, txCt).ConfigureAwait(false);
+                if (done is not null)
+                {
+                    return done.OrderId == orderId && done.OrderItemId == orderItemId && done.Quantity == quantity && done.ReasonHash == reasonHash
+                        ? new OrderLineVoidResult(done.VoidId is null ? OrderLineVoidOutcome.Corrected : OrderLineVoidOutcome.Voided, done.VoidId, null, done.TotalTtcCents, Replayed: true)
+                        : Result(OrderLineVoidOutcome.IdempotencyKeyReuse);
+                }
+            }
+
             var order = await _dbContext.Orders.Include(o => o.Items)
                 .FirstOrDefaultAsync(o => o.Id == orderId, txCt).ConfigureAwait(false);
             // IsDispatched est relu ici, dans la transaction : un envoi en cuisine concurrent fait passer la demande en annulation.
@@ -43,7 +59,7 @@ public class OrderLineVoidService : IOrderLineVoidService
             {
                 RemoveQuantity(item, quantity);
                 await _dbContext.SaveChangesAsync(txCt).ConfigureAwait(false);
-                return Result(OrderLineVoidOutcome.Corrected);
+                return await AppliedAsync(order, OrderLineVoidOutcome.Corrected, null).ConfigureAwait(false);
             }
 
             var op = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == operatorId, txCt).ConfigureAwait(false);
@@ -103,7 +119,26 @@ public class OrderLineVoidService : IOrderLineVoidService
                 operatorId: op.Id,
                 cancellationToken: txCt).ConfigureAwait(false);
 
-            return new OrderLineVoidResult(OrderLineVoidOutcome.Voided, line.Id, null);
+            return await AppliedAsync(order, OrderLineVoidOutcome.Voided, line.Id).ConfigureAwait(false);
+
+            // Succès : avec une clé, on la garde (même transaction) et on purge les clés de plus de RetentionDays jours.
+            async Task<OrderLineVoidResult> AppliedAsync(Order applied, OrderLineVoidOutcome outcome, Guid? voidId)
+            {
+                var total = applied.TotalTtc.AmountInCents;
+                if (idempotencyKey is { } k)
+                {
+                    var cutoff = DateTime.UtcNow.AddDays(-OrderLineVoidRequest.RetentionDays);
+                    _dbContext.OrderLineVoidRequests.RemoveRange(await _dbContext.OrderLineVoidRequests
+                        .Where(r => r.CreatedAtUtc < cutoff).ToListAsync(txCt).ConfigureAwait(false));
+                    _dbContext.OrderLineVoidRequests.Add(new OrderLineVoidRequest
+                    {
+                        IdempotencyKey = k, OrderId = orderId, OrderItemId = orderItemId, Quantity = quantity,
+                        ReasonHash = reasonHash, VoidId = voidId, TotalTtcCents = total,
+                    });
+                    await _dbContext.SaveChangesAsync(txCt).ConfigureAwait(false);
+                }
+                return new OrderLineVoidResult(outcome, voidId, null, total);
+            }
         }, System.Data.IsolationLevel.Serializable, ct);
 
     private void RemoveQuantity(OrderItem item, int quantity)

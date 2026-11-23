@@ -616,4 +616,10 @@
   <data name="errors.line_void_reason_too_long" xml:space="preserve">
     <value>The reason cannot exceed {max} characters.</value>
   </data>
+  <data name="errors.idempotency_key_reuse" xml:space="preserve">
+    <value>This request was already sent with different details: start the void again.</value>
+  </data>
+  <data name="errors.idempotency_key_invalid" xml:space="preserve">
+    <value>The request identifier (Idempotency-Key) must be a UUID.</value>
+  </data>
 </root>

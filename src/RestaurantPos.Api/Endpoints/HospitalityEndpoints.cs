@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
@@ -112,12 +113,21 @@ public static class HospitalityEndpoints
             IHubContext<KitchenHub> hubContext,
             PrintDispatcher printing,
             ILogger<PrintDispatcher> logger,
-            System.Security.Claims.ClaimsPrincipal user) =>
+            System.Security.Claims.ClaimsPrincipal user,
+            [FromHeader(Name = "Idempotency-Key")] string? idempotencyKey) =>
         {
             var subClaim = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? user.FindFirst("sub")?.Value;
             _ = Guid.TryParse(subClaim, out var opId);
+            // Clé facultative (anciens clients) : un UUID par intention de l'utilisateur, renvoyé tel quel sur une nouvelle tentative.
+            Guid? key = null;
+            if (idempotencyKey is not null)
+            {
+                if (!Guid.TryParse(idempotencyKey, out var parsed))
+                    return Results.BadRequest(new { Success = false, Code = "idempotency_key_invalid", Message = Texts.T("errors.idempotency_key_invalid") });
+                key = parsed;
+            }
 
-            var result = await voidService.VoidAsync(orderId, itemId, req.Quantity, req.Reason, opId);
+            var result = await voidService.VoidAsync(orderId, itemId, req.Quantity, req.Reason, opId, key);
             switch (result.Outcome)
             {
                 case OrderLineVoidOutcome.NotFound:
@@ -134,7 +144,12 @@ public static class HospitalityEndpoints
                     return Results.Conflict(new { Success = false, Code = "order_has_receipts", Message = Texts.T("errors.order_has_receipts", ("receipts", result.Detail)) });
                 case OrderLineVoidOutcome.NotModifiable:
                     return Results.Conflict(new { Success = false, Code = "order_not_modifiable", Message = Texts.T("errors.order_not_modifiable") });
+                case OrderLineVoidOutcome.IdempotencyKeyReuse:
+                    return Results.Conflict(new { Success = false, Code = "idempotency_key_reuse", Message = Texts.T("errors.idempotency_key_reuse") });
             }
+            // Rejeu : même réponse que la première fois, sans diffusion ni bon d'annulation.
+            if (result.Replayed)
+                return Results.Ok(new { Success = true, result.VoidId, TotalTtc = Money.FromCents(result.TotalTtcCents).ToDecimal() });
 
             var order = await db.Orders.AsNoTracking().Include(o => o.Items).FirstAsync(o => o.Id == orderId);
             if (result.Outcome == OrderLineVoidOutcome.Voided)

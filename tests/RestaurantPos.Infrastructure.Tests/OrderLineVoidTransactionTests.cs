@@ -90,6 +90,50 @@ public sealed class OrderLineVoidTransactionTests : IDisposable
     }
 
     [Fact]
+    public async Task SameIdempotencyKey_ConcurrentRequestsOnSqliteFile_ApplyOnce()
+    {
+        // Fichier (et non :memory:) : deux connexions, donc deux vraies transactions Serializable (BEGIN IMMEDIATE) en concurrence.
+        var path = Path.Combine(Path.GetTempPath(), $"linevoid-{Guid.NewGuid():N}.db");
+        DbContextOptions<AppDbContext> Options() => new DbContextOptionsBuilder<AppDbContext>().UseSqlite($"Data Source={path};Pooling=False").Options;
+        try
+        {
+            Guid orderId, itemId;
+            await using (var db = new AppDbContext(Options()))
+            {
+                await db.Database.EnsureCreatedAsync();
+                db.Users.Add(new User { Id = _managerId, Name = "Alexandre", Role = UserRole.FloorManager, PinHash = "x", PinSalt = "x" });
+                var order = new Order { TableNumber = "12", Status = OrderStatus.SentToKitchen };
+                var item = new OrderItem { OrderId = order.Id, ProductId = Guid.NewGuid(), ProductName = "Entrecôte", Quantity = 3, UnitPrice = Money.FromCents(1500), TaxRatePercent = 10, IsDispatched = true };
+                order.Items.Add(item);
+                db.Orders.Add(order);
+                await db.SaveChangesAsync();
+                (orderId, itemId) = (order.Id, item.Id);
+            }
+
+            var key = Guid.NewGuid();
+            async Task<OrderLineVoidResult> VoidOnce()
+            {
+                await using var db = new AppDbContext(Options());
+                return await new OrderLineVoidService(db, new FiscalJournalService(db)).VoidAsync(orderId, itemId, 1, "erreur", _managerId, key);
+            }
+            var results = await Task.WhenAll(Enumerable.Range(0, 4).Select(_ => Task.Run(VoidOnce)));
+
+            results.Should().OnlyContain(r => r.Outcome == OrderLineVoidOutcome.Voided && r.TotalTtcCents == 3000);
+            results.Count(r => !r.Replayed).Should().Be(1);
+            results.Select(r => r.VoidId).Distinct().Should().ContainSingle();
+            await using var check = new AppDbContext(Options());
+            (await check.OrderItems.AsNoTracking().SingleAsync(i => i.Id == itemId)).Quantity.Should().Be(2);
+            (await check.OrderLineVoids.AsNoTracking().CountAsync()).Should().Be(1);
+            (await check.JournalEntries.AsNoTracking().CountAsync(j => j.EventType == JournalEventTypes.OrderLineVoided)).Should().Be(1);
+            (await check.OrderLineVoidRequests.AsNoTracking().SingleAsync()).IdempotencyKey.Should().Be(key);
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
+
+    [Fact]
     public async Task Schema_ReasonIsNotNull()
     {
         await SeedAsync();

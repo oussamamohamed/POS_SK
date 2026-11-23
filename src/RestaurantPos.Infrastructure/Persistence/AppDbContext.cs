@@ -41,6 +41,7 @@ public class AppDbContext : DbContext
     public DbSet<TableTransferLog> TableTransferLogs => Set<TableTransferLog>();
     public DbSet<OrderDiscountAudit> OrderDiscountAudits => Set<OrderDiscountAudit>();
     public DbSet<OrderLineVoid> OrderLineVoids => Set<OrderLineVoid>();
+    public DbSet<OrderLineVoidRequest> OrderLineVoidRequests => Set<OrderLineVoidRequest>();
     public DbSet<GridLayout> GridLayouts => Set<GridLayout>();
     public DbSet<GridSlot> GridSlots => Set<GridSlot>();
     public DbSet<HeldOrder> HeldOrders => Set<HeldOrder>();
@@ -405,6 +406,13 @@ public class AppDbContext : DbContext
                   .HasConversion(m => m.AmountInCents, cents => new Money(cents, "EUR"));
             entity.Property(v => v.Reason).HasMaxLength(OrderLineVoid.MaxReasonLength).IsRequired();
             entity.HasIndex(v => v.OrderId);
+        });
+
+        modelBuilder.Entity<OrderLineVoidRequest>(entity =>
+        {
+            entity.HasKey(r => r.IdempotencyKey);
+            entity.Property(r => r.ReasonHash).HasMaxLength(64).IsRequired();
+            entity.HasIndex(r => r.CreatedAtUtc);
         });
 
         modelBuilder.Entity<HeldOrder>(entity =>

@@ -616,4 +616,10 @@
   <data name="errors.line_void_reason_too_long" xml:space="preserve">
     <value>Le motif ne peut pas dépasser {max} caractères.</value>
   </data>
+  <data name="errors.idempotency_key_reuse" xml:space="preserve">
+    <value>Cette demande a déjà été envoyée avec d'autres informations : recommencez l'annulation.</value>
+  </data>
+  <data name="errors.idempotency_key_invalid" xml:space="preserve">
+    <value>L'identifiant de la demande (Idempotency-Key) doit être un UUID.</value>
+  </data>
 </root>

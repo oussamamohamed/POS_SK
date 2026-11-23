@@ -586,6 +586,17 @@ public partial class Program
                 VoidedAtUtc TEXT NOT NULL
             );
             CREATE INDEX IF NOT EXISTS IX_OrderLineVoids_OrderId ON OrderLineVoids (OrderId);");
+            ApplySchema(dbContext, schemaLog, @"CREATE TABLE IF NOT EXISTS OrderLineVoidRequests (
+                IdempotencyKey TEXT PRIMARY KEY,
+                OrderId TEXT NOT NULL,
+                OrderItemId TEXT NOT NULL,
+                Quantity INTEGER NOT NULL,
+                ReasonHash TEXT NOT NULL,
+                VoidId TEXT NULL,
+                TotalTtcCents INTEGER NOT NULL,
+                CreatedAtUtc TEXT NOT NULL
+            );
+            CREATE INDEX IF NOT EXISTS IX_OrderLineVoidRequests_CreatedAtUtc ON OrderLineVoidRequests (CreatedAtUtc);");
 
             // Initialise ReceiptLanguage au démarrage plutôt qu'à la première lecture paresseuse :
             // sinon une installation EN/AR fraîche qui prend des commandes avant l'ouverture de

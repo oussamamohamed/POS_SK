@@ -32,3 +32,27 @@ public class OrderLineVoid
     public required string TableNumber { get; set; }
     public DateTimeOffset VoidedAtUtc { get; init; } = DateTimeOffset.UtcNow;
 }
+
+/// <summary>
+/// Demande d'annulation / correction de ligne déjà appliquée, par clé d'idempotence (en-tête <c>Idempotency-Key</c>) : la même clé
+/// rejoue ce résultat sans nouvel effet. Seuls les succès sont gardés ; purge après <see cref="RetentionDays"/> jours.
+/// </summary>
+public class OrderLineVoidRequest
+{
+    public const int RetentionDays = 7;
+
+    public Guid IdempotencyKey { get; init; }
+    public Guid OrderId { get; init; }
+    public Guid OrderItemId { get; init; }
+    public int Quantity { get; init; }
+
+    /// <summary>SHA-256 (hex) du motif sans espaces de bord (vide si absent).</summary>
+    public required string ReasonHash { get; init; }
+
+    /// <summary>Trace écrite : non nulle pour une annulation, nulle pour une correction.</summary>
+    public Guid? VoidId { get; init; }
+    public long TotalTtcCents { get; init; }
+
+    /// <summary>DateTime UTC (et non DateTimeOffset) : SQLite sait le comparer côté base pour la purge.</summary>
+    public DateTime CreatedAtUtc { get; init; } = DateTime.UtcNow;
+}

@@ -129,10 +129,14 @@ public class OrderLineVoidMatrixTests : IClassFixture<PosApiApplicationFactory>
         _ => "FloorManager", // manager, unknown
     };
 
-    private static Task<HttpResponseMessage> PostVoidAsync(HttpClient client, Guid orderId, Guid itemId, int quantity, string? reason) =>
-        client.PostAsJsonAsync($"/api/orders/{orderId}/items/{itemId}/void", new { quantity, reason });
+    private static async Task<HttpResponseMessage> PostVoidAsync(HttpClient client, Guid orderId, Guid itemId, int quantity, string? reason, string? key = null)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Post, $"/api/orders/{orderId}/items/{itemId}/void") { Content = JsonContent.Create(new { quantity, reason }) };
+        if (key is not null) request.Headers.Add("Idempotency-Key", key);
+        return await client.SendAsync(request);
+    }
 
-    private static Task<HttpResponseMessage> PostVoidAsync(HttpClient client, Line l, int quantity, string? reason) => PostVoidAsync(client, l.OrderId, l.ItemId, quantity, reason);
+    private static Task<HttpResponseMessage> PostVoidAsync(HttpClient client, Line l, int quantity, string? reason, string? key = null) => PostVoidAsync(client, l.OrderId, l.ItemId, quantity, reason, key);
 
     private async Task<T> ReadAsync<T>(Func<AppDbContext, Task<T>> read)
     {
@@ -652,12 +656,177 @@ public class OrderLineVoidMatrixTests : IClassFixture<PosApiApplicationFactory>
     }
 
     [Fact]
-    public async Task Sequence_RepeatedIdenticalRequest_IsNotIdempotent_EachCallVoidsAgain()
+    public async Task Sequence_RepeatedIdenticalRequest_WithoutKey_EachCallVoidsAgain()
     {
-        // Pas de clé d'idempotence : deux requêtes identiques (double tap côté client) annulent deux fois ; la garde est côté clients.
+        // Sans en-tête Idempotency-Key (anciens clients) : deux requêtes identiques annulent deux fois, comme avant la clé.
         var l = await SeedAsync(new LineSpec { Quantity = 2 });
         await AssertVoidAsync(l, Client("manager"), 1, "erreur", OrderLineVoidOutcome.Voided);
         await AssertVoidAsync(l, Client("manager"), 1, "erreur", OrderLineVoidOutcome.Voided);
+        (await StateAsync(l)).Voids.Should().Be(2);
+    }
+
+    // ---------- Clé d'idempotence ----------
+
+    private static async Task<(Guid? VoidId, decimal Total)> OkBodyAsync(HttpResponseMessage resp)
+    {
+        resp.StatusCode.Should().Be(HttpStatusCode.OK, await resp.Content.ReadAsStringAsync());
+        using var body = JsonDocument.Parse(await resp.Content.ReadAsStringAsync());
+        var voidId = body.RootElement.GetProperty("voidId");
+        return (voidId.ValueKind == JsonValueKind.Null ? null : voidId.GetGuid(), body.RootElement.GetProperty("totalTtc").GetDecimal());
+    }
+
+    [Fact]
+    public async Task Sequence_RepeatedIdenticalRequest_WithSameKey_HasOneEffect_AndSameResponse()
+    {
+        var l = await SeedAsync(new LineSpec { Quantity = 2, OtherLineCents = 100 });
+        var key = Guid.NewGuid().ToString();
+        var first = await OkBodyAsync(await PostVoidAsync(Client("manager"), l, 1, "erreur", key));
+        var after = await StateAsync(l);
+        after.Should().Be(new State(1, 2, 1600, 1, 1, 1, TicketItemStatus.Pending, 1));
+
+        // Nouvelle tentative (délai dépassé, double tap) : même clé, même motif aux espaces près, même par un autre opérateur.
+        (await OkBodyAsync(await PostVoidAsync(Client("manager"), l, 1, "erreur", key))).Should().Be(first);
+        (await OkBodyAsync(await PostVoidAsync(Client("admin"), l, 1, "  erreur ", key))).Should().Be(first);
+
+        (await StateAsync(l)).Should().Be(after, "un rejeu n'écrit ni trace, ni JET, ni bon d'annulation, ni retrait");
+        first.VoidId.Should().Be((await VoidRowsAsync(l)).Single().Id);
+        // Une nouvelle intention (nouvelle clé) annule bien.
+        await AssertVoidAsync(l, Client("manager"), 1, "erreur", OrderLineVoidOutcome.Voided);
+    }
+
+    [Fact]
+    public async Task Idempotency_ReplayAfterTheLineWasRemoved_ReturnsTheStoredSuccess()
+    {
+        var l = await SeedAsync(new LineSpec { Quantity = 1, OtherLineCents = 100 });
+        var key = Guid.NewGuid().ToString();
+        var first = await OkBodyAsync(await PostVoidAsync(Client("manager"), l, 1, "erreur", key));
+        first.Total.Should().Be(1m);
+        var after = await StateAsync(l);
+        after.LineQuantity.Should().BeNull();
+
+        (await OkBodyAsync(await PostVoidAsync(Client("manager"), l, 1, "erreur", key))).Should().Be(first, "pas de 404 : le premier envoi a réussi");
+        (await StateAsync(l)).Should().Be(after);
+        (await PostVoidAsync(Client("manager"), l, 1, "erreur")).StatusCode.Should().Be(HttpStatusCode.NotFound, "sans clé, la ligne est absente");
+    }
+
+    [Fact]
+    public async Task Idempotency_CorrectionReplay_RemovesOnce()
+    {
+        var l = await SeedAsync(new LineSpec { Quantity = 3, Dispatched = false, Status = OrderStatus.Open });
+        var key = Guid.NewGuid().ToString();
+        var first = await OkBodyAsync(await PostVoidAsync(Client("waiter"), l, 1, null, key));
+        first.VoidId.Should().BeNull();
+        first.Total.Should().Be(30m);
+        (await OkBodyAsync(await PostVoidAsync(Client("waiter"), l, 1, null, key))).Should().Be(first);
+        var s = await StateAsync(l);
+        s.LineQuantity.Should().Be(2);
+        s.Voids.Should().Be(0);
+        s.Jet.Should().Be(0);
+    }
+
+    [Theory]
+    [InlineData("quantity")]
+    [InlineData("reason")]
+    [InlineData("item")]
+    public async Task Idempotency_SameKeyDifferentRequest_Returns409_WithoutEffect(string change)
+    {
+        var l = await SeedAsync(new LineSpec { Quantity = 3 });
+        var other = await SeedAsync(new LineSpec { Quantity = 3 });
+        var key = Guid.NewGuid().ToString();
+        await OkBodyAsync(await PostVoidAsync(Client("manager"), l, 1, "erreur", key));
+        var before = (await StateAsync(l), await StateAsync(other));
+
+        var resp = change switch
+        {
+            "quantity" => await PostVoidAsync(Client("manager"), l, 2, "erreur", key),
+            "reason" => await PostVoidAsync(Client("manager"), l, 1, "autre", key),
+            _ => await PostVoidAsync(Client("manager"), other, 1, "erreur", key),
+        };
+
+        resp.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        using var body = JsonDocument.Parse(await resp.Content.ReadAsStringAsync());
+        body.RootElement.GetProperty("code").GetString().Should().Be("idempotency_key_reuse");
+        (await StateAsync(l), await StateAsync(other)).Should().Be(before);
+    }
+
+    [Fact]
+    public async Task Idempotency_RefusalDoesNotConsumeTheKey()
+    {
+        // Seuls les succès sont gardés : la même intention, corrigée (motif ajouté), passe avec la même clé.
+        var l = await SeedAsync(new LineSpec { Quantity = 2 });
+        var key = Guid.NewGuid().ToString();
+        (await PostVoidAsync(Client("manager"), l, 1, null, key)).StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        (await PostVoidAsync(Client("waiter"), l, 1, "erreur", key)).StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        (await StateAsync(l)).Voids.Should().Be(0);
+        await OkBodyAsync(await PostVoidAsync(Client("manager"), l, 1, "erreur", key));
+        (await StateAsync(l)).Voids.Should().Be(1);
+    }
+
+    [Theory]
+    [InlineData("pas-un-uuid")]
+    [InlineData("12345")]
+    public async Task Idempotency_InvalidKey_Returns400_WithoutEffect(string key)
+    {
+        var l = await SeedAsync();
+        var before = await StateAsync(l);
+        var resp = await PostVoidAsync(Client("manager", language: "fr"), l, 1, "erreur", key);
+        resp.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        using var body = JsonDocument.Parse(await resp.Content.ReadAsStringAsync());
+        body.RootElement.GetProperty("code").GetString().Should().Be("idempotency_key_invalid");
+        body.RootElement.GetProperty("message").GetString().Should().Be("L'identifiant de la demande (Idempotency-Key) doit être un UUID.");
+        (await StateAsync(l)).Should().Be(before);
+    }
+
+    [Fact]
+    public async Task Idempotency_Replay_DoesNotPushToTheKitchenHub()
+    {
+        var hub = new CountingHub();
+        var client = _factory.WithWebHostBuilder(b => b.ConfigureServices(sv =>
+            sv.AddSingleton<Microsoft.AspNetCore.SignalR.IHubContext<RestaurantPos.Api.Hubs.KitchenHub>>(hub))).CreateClient();
+        client.DefaultRequestHeaders.Add("X-Test-Role", "FloorManager");
+        client.DefaultRequestHeaders.Add("X-Test-Operator-Id", _users["manager"].ToString());
+        var l = await SeedAsync(new LineSpec { Quantity = 2 });
+        var key = Guid.NewGuid().ToString();
+
+        await OkBodyAsync(await PostVoidAsync(client, l, 1, "erreur", key));
+        await OkBodyAsync(await PostVoidAsync(client, l, 1, "erreur", key));
+
+        hub.Calls.Should().Be(1);
+        (await StateAsync(l)).Voids.Should().Be(1);
+    }
+
+    /// <summary>Compte les diffusions (l'accès à <c>Clients</c>) puis échoue : la route ignore l'échec de diffusion.</summary>
+    private sealed class CountingHub : Microsoft.AspNetCore.SignalR.IHubContext<RestaurantPos.Api.Hubs.KitchenHub>
+    {
+        private int _calls;
+        public int Calls => _calls;
+        public Microsoft.AspNetCore.SignalR.IHubClients Clients
+        {
+            get { Interlocked.Increment(ref _calls); throw new InvalidOperationException("hub compté"); }
+        }
+        public Microsoft.AspNetCore.SignalR.IGroupManager Groups => throw new InvalidOperationException("hub compté");
+    }
+
+    [Fact]
+    public async Task Idempotency_KeysOlderThanSevenDays_ArePurgedOnTheNextKeyedWrite()
+    {
+        var l = await SeedAsync(new LineSpec { Quantity = 3 });
+        var old = Guid.NewGuid();
+        var recent = Guid.NewGuid();
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            db.OrderLineVoidRequests.Add(new OrderLineVoidRequest { IdempotencyKey = old, OrderId = l.OrderId, OrderItemId = l.ItemId, Quantity = 1, ReasonHash = "x", TotalTtcCents = 1, CreatedAtUtc = DateTime.UtcNow.AddDays(-8) });
+            db.OrderLineVoidRequests.Add(new OrderLineVoidRequest { IdempotencyKey = recent, OrderId = l.OrderId, OrderItemId = l.ItemId, Quantity = 1, ReasonHash = "x", TotalTtcCents = 1, CreatedAtUtc = DateTime.UtcNow.AddDays(-6) });
+            await db.SaveChangesAsync();
+        }
+
+        await OkBodyAsync(await PostVoidAsync(Client("manager"), l, 1, "erreur", Guid.NewGuid().ToString()));
+
+        var keys = await ReadAsync(db => db.OrderLineVoidRequests.AsNoTracking().Select(r => r.IdempotencyKey).ToListAsync());
+        keys.Should().NotContain(old).And.Contain(recent);
+        // Une clé purgée n'est plus connue : elle s'applique à nouveau.
+        await OkBodyAsync(await PostVoidAsync(Client("manager"), l, 1, "erreur", old.ToString()));
         (await StateAsync(l)).Voids.Should().Be(2);
     }
 
@@ -732,7 +901,7 @@ public class OrderLineVoidMatrixTests : IClassFixture<PosApiApplicationFactory>
     public static TheoryData<string, string> LocalizedRefusals()
     {
         var data = new TheoryData<string, string>();
-        foreach (var code in new[] { "not_found", "forbidden", "reason_required", "reason_too_long", "quantity", "receipts", "not_modifiable" })
+        foreach (var code in new[] { "not_found", "forbidden", "reason_required", "reason_too_long", "quantity", "receipts", "not_modifiable", "key_reuse" })
             foreach (var lang in new[] { "fr", "en", "ar" })
                 data.Add(code, lang);
         return data;
@@ -744,6 +913,12 @@ public class OrderLineVoidMatrixTests : IClassFixture<PosApiApplicationFactory>
     {
         var l = await SeedAsync(new LineSpec { Quantity = 2, Status = code == "not_modifiable" ? OrderStatus.Paid : OrderStatus.SentToKitchen });
         string? receipt = code == "receipts" ? (await PayAsync(l.OrderId, 1000)).Number : null;
+        string? idempotencyKey = null;
+        if (code == "key_reuse")
+        {
+            idempotencyKey = Guid.NewGuid().ToString();
+            (await PostVoidAsync(Client("manager"), l, 1, "x", idempotencyKey)).StatusCode.Should().Be(HttpStatusCode.OK);
+        }
         var (user, quantity, reason, itemId, key) = code switch
         {
             "not_found" => ("manager", 1, "x", Guid.NewGuid(), "errors.order_not_found"),
@@ -752,11 +927,12 @@ public class OrderLineVoidMatrixTests : IClassFixture<PosApiApplicationFactory>
             "reason_too_long" => ("manager", 1, new string('r', 257), l.ItemId, "errors.line_void_reason_too_long"),
             "quantity" => ("manager", 3, "x", l.ItemId, "errors.line_void_quantity_invalid"),
             "receipts" => ("manager", 1, "x", l.ItemId, "errors.order_has_receipts"),
+            "key_reuse" => ("manager", 1, "autre motif", l.ItemId, "errors.idempotency_key_reuse"),
             _ => ("manager", 1, "x", l.ItemId, "errors.order_not_modifiable"),
         };
         var before = await StateAsync(l);
 
-        var resp = await PostVoidAsync(Client(user, language: lang), l.OrderId, itemId, quantity, reason);
+        var resp = await PostVoidAsync(Client(user, language: lang), l.OrderId, itemId, quantity, reason, idempotencyKey);
 
         using var body = JsonDocument.Parse(await resp.Content.ReadAsStringAsync());
         var message = body.RootElement.GetProperty("message").GetString();
