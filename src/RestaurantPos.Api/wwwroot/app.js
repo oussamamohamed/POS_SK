@@ -2301,6 +2301,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     /**
+     * Clé d'idempotence d'un encaissement : la même tant que la même demande repart sans réponse (réseau coupé),
+     * oubliée dès qu'une réponse arrive (deux parts identiques d'un partage sont deux encaissements).
+     */
+    let paymentAttempt = null; // { body, key }
+    function paymentKey(payload) {
+        const body = JSON.stringify(payload);
+        if (paymentAttempt?.body !== body) paymentAttempt = { body, key: newIdempotencyKey() };
+        return paymentAttempt.key;
+    }
+
+    /**
      * Annule (ligne envoyée, motif obligatoire) ou corrige (ligne non envoyée) `quantity` unités ; relit la commande.
      * `key` : en-tête Idempotency-Key, le même pour toutes les tentatives d'une même intention.
      * Renvoie true (fait), false (refusé) ou null (pas de réponse : l'effet est inconnu, on garde la clé).
@@ -3059,6 +3070,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 requestReceiptPrint: document.getElementById('paymentPrintReceipt')?.checked === true
             };
 
+            headers['Idempotency-Key'] = paymentKey(payload);
             const res = await fetch('/api/checkout/pay', {
                 method: 'POST',
                 headers: headers,
@@ -3067,6 +3079,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (res.ok) {
                 const resData = await res.json();
+                paymentAttempt = null;
                 if (payload.requestReceiptPrint && !(resData.remainingBalance > 0.001)) warnIfNotQueued(resData);
                 const printBox = document.getElementById('paymentPrintReceipt');
                 if (printBox) printBox.checked = false;
@@ -3100,6 +3113,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     switchView('floorPlanView');
                 }
             } else {
+                paymentAttempt = null;
                 let errMsg = t('payment.pay_error_generic');
                 try {
                     const errData = await res.json();
@@ -3429,11 +3443,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             await ensureAuthToken();
             const res = await fetch('/api/orders/counter/checkout', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', 'Idempotency-Key': paymentKey(payload) },
                 body: JSON.stringify(payload)
             });
 
             const data = await res.json();
+            paymentAttempt = null;
             if (res.ok) {
                 warnIfNotQueued(data);
                 // Success: Close payment modal

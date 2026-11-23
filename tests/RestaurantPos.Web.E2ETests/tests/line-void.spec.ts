@@ -308,6 +308,39 @@ test.describe('Annulation et correction de ligne', () => {
     await expect(page.locator('#cartItemsList .cart-item-row .cart-item-controls span').first()).toHaveText('1');
   });
 
+  test('Idempotency-Key: minus on an unsent line keeps its key after a network failure, then renews it', async ({ page, request }) => {
+    const { number, auth } = await setupTable(request, 3, false);
+    await loginWithPin(page, '2468');
+    await openTable(page, number);
+    const quantityOnServer = async () => (await (await request.get(`/api/tables/${number}/order`, { headers: auth })).json()).lines[0].quantity;
+
+    const keys: string[] = [];
+    await page.route(VOID_URL, route => {
+      keys.push(route.request().headers()['idempotency-key']);
+      return keys.length === 1 ? route.abort('failed') : route.continue();
+    });
+    const minus = page.locator('#cartItemsList [data-action="minus"]');
+    await minus.click();
+    await expect(page.locator('.toast.error').last()).toBeVisible();
+    expect(await quantityOnServer()).toBe(3);
+
+    // Tap suivant : même clé (même intention, la première n'a pas eu de réponse).
+    const second = page.waitForResponse(r => VOID_URL.test(r.url()) && r.request().method() === 'POST');
+    await minus.click();
+    expect((await second).status()).toBe(200);
+    expect(keys).toHaveLength(2);
+    expect(keys[1]).toBe(keys[0]);
+    expect(await quantityOnServer()).toBe(2);
+
+    // Réponse reçue : la clé est oubliée, la correction suivante est une nouvelle intention.
+    const third = page.waitForResponse(r => VOID_URL.test(r.url()) && r.request().method() === 'POST');
+    await minus.click();
+    expect((await third).status()).toBe(200);
+    expect(keys).toHaveLength(3);
+    expect(keys[2]).not.toBe(keys[0]);
+    expect(await quantityOnServer()).toBe(1);
+  });
+
   test('reason with <img onerror> is escaped', async ({ page, request }) => {
     const { number } = await setupTable(request, 2, true);
     await loginWithPin(page, '1234');
