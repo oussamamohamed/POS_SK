@@ -109,10 +109,11 @@ public actor HTTPPosAPI: PosAPI {
         return try decode(data)
     }
 
-    private func call<Body: Encodable, Response: Decodable>(_ method: String, _ path: String, body: Body, query: [String: String] = [:], timeout: TimeInterval? = nil, as type: Response.Type = Response.self) async throws -> Response {
+    private func call<Body: Encodable, Response: Decodable>(_ method: String, _ path: String, body: Body, query: [String: String] = [:], timeout: TimeInterval? = nil, idempotencyKey: UUID? = nil, as type: Response.Type = Response.self) async throws -> Response {
         let payload = try encoder.encode(body)
         var request = try makeRequest(method, path, query: query, body: payload)
         if let timeout { request.timeoutInterval = timeout }
+        if let idempotencyKey { request.setValue(idempotencyKey.uuidString.lowercased(), forHTTPHeaderField: "Idempotency-Key") }
         let (data, _) = try await send(request)
         return try decode(data)
     }
@@ -478,7 +479,9 @@ public actor HTTPPosAPI: PosAPI {
 
     // MARK: - Encaissement
 
-    public func pay(_ request: PaymentRequest) async throws -> PaymentResult { try await call("POST", "checkout/pay", body: request, timeout: Self.cardPaymentTimeout) }
+    public func pay(_ request: PaymentRequest, idempotencyKey: UUID?) async throws -> PaymentResult {
+        try await call("POST", "checkout/pay", body: request, timeout: Self.cardPaymentTimeout, idempotencyKey: idempotencyKey)
+    }
     public func hotelRooms() async throws -> [HotelRoom] { try await call("GET", "hotel/rooms") }
     public func chargeRoom(_ request: RoomChargeRequest) async throws -> OperationResult { try await call("POST", "hotel/room-charge", body: request) }
 
@@ -507,8 +510,8 @@ public actor HTTPPosAPI: PosAPI {
         try await perform("POST", "orders/counter/held/\(holdId.uuidString.lowercased())/void", body: VoidBody(supervisorPin: supervisorPin, voidReason: reason, terminalId: terminalId))
     }
 
-    public func counterCheckout(_ request: CounterCheckoutRequest) async throws -> CounterCheckoutResult {
-        try await call("POST", "orders/counter/checkout", body: request, timeout: Self.cardPaymentTimeout)
+    public func counterCheckout(_ request: CounterCheckoutRequest, idempotencyKey: UUID?) async throws -> CounterCheckoutResult {
+        try await call("POST", "orders/counter/checkout", body: request, timeout: Self.cardPaymentTimeout, idempotencyKey: idempotencyKey)
     }
 
     // MARK: - Cuisine

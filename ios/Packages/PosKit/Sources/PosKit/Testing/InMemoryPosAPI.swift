@@ -30,6 +30,13 @@ public actor InMemoryPosAPI: PosAPI {
     public private(set) var voidLineKeys: [UUID?] = []
     /// Si vrai, le prochain `voidLine` applique son effet puis échoue comme une réponse perdue (délai dépassé).
     public var loseNextVoidLineResponse = false
+    /// Succès d'encaissement par clé d'idempotence (comme `IdempotentRequests` côté .NET) : demande et réponse gardée.
+    private var appliedPaymentKeys: [UUID: (request: String, result: Any)] = [:]
+    /// Clés reçues par `pay` et `counterCheckout`, dans l'ordre (tests).
+    public private(set) var payKeys: [UUID?] = []
+    public private(set) var counterCheckoutKeys: [UUID?] = []
+    /// Si vrai, le prochain encaissement s'applique puis échoue comme une réponse perdue (délai dépassé).
+    public var loseNextPaymentResponse = false
     private var held: [HeldOrder] = []
     private var rooms: [HotelRoom]
     private var printersStore: [Printer]
@@ -109,6 +116,7 @@ public actor InMemoryPosAPI: PosAPI {
     public func setFailure(_ error: APIError?) { failure = error }
     public func setLatency(_ value: Duration) { latency = value }
     public func setLoseNextVoidLineResponse(_ value: Bool) { loseNextVoidLineResponse = value }
+    public func setLoseNextPaymentResponse(_ value: Bool) { loseNextPaymentResponse = value }
     public func forceHappyHour(minutes: Int) { overrideUntil = Date().addingTimeInterval(TimeInterval(minutes * 60)) }
 
     private func step(_ name: String) async throws {
@@ -899,7 +907,7 @@ public actor InMemoryPosAPI: PosAPI {
         try await step("voidLine"); try requireAuth()
         let request = "\(orderId)|\(lineId)|\(quantity)|\((reason ?? "").trimmingCharacters(in: .whitespacesAndNewlines))"
         if let idempotencyKey, let applied = appliedVoidKeys[idempotencyKey] {
-            guard applied == request else { throw APIError.server(status: 409, message: "Cette demande a déjà été envoyée avec d'autres informations : recommencez l'annulation.") }
+            guard applied == request else { throw APIError.server(status: 409, message: "Cette demande a déjà été envoyée avec d'autres informations : recommencez l'opération.") }
             return
         }
         // Mêmes messages et même ordre de contrôles que `LocalPosAPI.voidLine` et le .NET (textes FR du serveur).
@@ -971,15 +979,37 @@ public actor InMemoryPosAPI: PosAPI {
         return (receipt.number, paid, change, remaining)
     }
 
-    public func pay(_ request: PaymentRequest) async throws -> PaymentResult {
+    /// Rejoue le succès gardé pour `key` (même demande), 409 si la clé porte une autre demande ; nil si la clé est nouvelle.
+    private func replayedPayment<R>(_ key: UUID?, _ fingerprint: String, as type: R.Type) throws -> R? {
+        guard let key, let applied = appliedPaymentKeys[key] else { return nil }
+        guard applied.request == fingerprint, let result = applied.result as? R else {
+            throw APIError.server(status: 409, message: "Cette demande a déjà été envoyée avec d'autres informations : recommencez l'opération.")
+        }
+        return result
+    }
+
+    private func rememberPayment(_ key: UUID?, _ fingerprint: String, _ result: Any) throws {
+        if let key { appliedPaymentKeys[key] = (fingerprint, result) }
+        if loseNextPaymentResponse {
+            loseNextPaymentResponse = false
+            throw APIError.transport("The request timed out.")
+        }
+    }
+
+    public func pay(_ request: PaymentRequest, idempotencyKey: UUID?) async throws -> PaymentResult {
+        payKeys.append(idempotencyKey) // avant `step` : une clé envoyée compte même si l'appel échoue
         try await step("pay"); try requireAuth()
+        let fingerprint = "pay|\(request)"
+        if let replay = try replayedPayment(idempotencyKey, fingerprint, as: PaymentResult.self) { return replay }
         lastPaymentRequest = request
         var id = request.orderId
         if id == nil || orders[id!] == nil, let i = tableIndex(request.tableNumber) { id = tablesStore[i].activeOrderId }
         guard let orderId = id else { throw APIError.server(status: 400, message: "Commande introuvable pour ce règlement.") }
         orders[orderId]?.tipCents += request.tipAmount.cents
         let result = try settle(orderId: orderId, terminal: request.terminalId, tenders: request.tenders.map { ($0.method, $0.amount.cents, $0.tendered.cents) })
-        return PaymentResult(receiptNumber: result.receipt, totalPaid: Money(cents: result.paid), changeGiven: Money(cents: result.change), remainingBalance: Money(cents: result.remaining), fiscalSignature: String(repeating: "A", count: 64), printQueued: request.requestReceiptPrint && result.remaining == 0 && hasReceiptPrinter)
+        let paid = PaymentResult(receiptNumber: result.receipt, totalPaid: Money(cents: result.paid), changeGiven: Money(cents: result.change), remainingBalance: Money(cents: result.remaining), fiscalSignature: String(repeating: "A", count: 64), printQueued: request.requestReceiptPrint && result.remaining == 0 && hasReceiptPrinter)
+        try rememberPayment(idempotencyKey, fingerprint, paid)
+        return paid
     }
 
     public func hotelRooms() async throws -> [HotelRoom] { try await step("hotelRooms"); return rooms }
@@ -1044,8 +1074,11 @@ public actor InMemoryPosAPI: PosAPI {
         held.remove(at: h)
     }
 
-    public func counterCheckout(_ request: CounterCheckoutRequest) async throws -> CounterCheckoutResult {
+    public func counterCheckout(_ request: CounterCheckoutRequest, idempotencyKey: UUID?) async throws -> CounterCheckoutResult {
+        counterCheckoutKeys.append(idempotencyKey)
         try await step("counterCheckout"); try requireAuth()
+        let fingerprint = "counter|\(request)"
+        if let replay = try replayedPayment(idempotencyKey, fingerprint, as: CounterCheckoutResult.self) { return replay }
         guard var record = orders[request.orderId], !record.order.lines.isEmpty else { throw APIError.server(status: 400, message: "Commande introuvable ou panier vide.") }
         pickupCounter += 1
         let pickup = String(format: "#A-%02d", pickupCounter)
@@ -1065,7 +1098,9 @@ public actor InMemoryPosAPI: PosAPI {
             }
         }
         let result = try settle(orderId: request.orderId, terminal: request.terminalId, tenders: request.tenders.map { ($0.method, $0.amount.cents, $0.method == .mealVoucher ? $0.amount.cents : $0.tendered.cents) })
-        return CounterCheckoutResult(orderId: request.orderId, pickupNumber: pickup, totalPaid: Money(cents: result.paid), changeGiven: Money(cents: result.change), remainingBalance: Money(cents: result.remaining), receiptNumber: result.receipt, fiscalSignature: String(repeating: "B", count: 64), issuedCreditVoucher: voucher, openCashDrawer: request.tenders.contains { $0.method == .cash }, printQueued: request.requestFiscalReceiptPrint && result.remaining == 0 && hasReceiptPrinter)
+        let sale = CounterCheckoutResult(orderId: request.orderId, pickupNumber: pickup, totalPaid: Money(cents: result.paid), changeGiven: Money(cents: result.change), remainingBalance: Money(cents: result.remaining), receiptNumber: result.receipt, fiscalSignature: String(repeating: "B", count: 64), issuedCreditVoucher: voucher, openCashDrawer: request.tenders.contains { $0.method == .cash }, printQueued: request.requestFiscalReceiptPrint && result.remaining == 0 && hasReceiptPrinter)
+        try rememberPayment(idempotencyKey, fingerprint, sale)
+        return sale
     }
 
     // MARK: Cuisine

@@ -117,10 +117,21 @@ struct HTTPPosAPITests {
     }
 
     @Test func voidLineKeyReuseIsA409WithTheServerMessage() async throws {
-        let api = makeAPI { _ in .init(status: 409, body: #"{"success":false,"code":"idempotency_key_reuse","message":"Cette demande a déjà été envoyée avec d'autres informations : recommencez l'annulation."}"#) }
-        await #expect(throws: APIError.server(status: 409, message: "Cette demande a déjà été envoyée avec d'autres informations : recommencez l'annulation.")) {
+        let api = makeAPI { _ in .init(status: 409, body: #"{"success":false,"code":"idempotency_key_reuse","message":"Cette demande a déjà été envoyée avec d'autres informations : recommencez l'opération."}"#) }
+        await #expect(throws: APIError.server(status: 409, message: "Cette demande a déjà été envoyée avec d'autres informations : recommencez l'opération.")) {
             try await api.voidLine(orderId: UUID(), lineId: UUID(), quantity: 1, reason: "x", operatorId: nil, idempotencyKey: UUID())
         }
+    }
+
+    @Test func payAndCounterCheckoutSendTheIdempotencyKeyHeaderOnlyWhenGiven() async throws {
+        let api = makeAPI { _ in .init(status: 200, body: #"{"receiptNumber":"R1","totalPaid":1,"changeGiven":0,"remainingBalance":0}"#) }
+        let key = UUID()
+        let request = PaymentRequest(orderId: UUID(), tableNumber: "T1", operatorId: nil, terminalId: "T01", tenders: [TenderInput(method: .cash, amount: Money(cents: 100), tendered: Money(cents: 100), changeGiven: .zero)])
+        _ = try await api.pay(request, idempotencyKey: key)
+        #expect(last.url?.path == "/api/checkout/pay")
+        #expect(last.value(forHTTPHeaderField: "Idempotency-Key") == key.uuidString.lowercased())
+        _ = try await api.pay(request)
+        #expect(last.value(forHTTPHeaderField: "Idempotency-Key") == nil)
     }
 
     @Test func destinationUsesServerEnumValues() async throws {

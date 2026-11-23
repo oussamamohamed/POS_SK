@@ -71,7 +71,8 @@ extension LocalPosAPI {
     }
 
     /// Règlement d'une table, en une ou plusieurs fois (note partagée). Le pourboire n'est accepté qu'au paiement qui solde la note.
-    public func pay(_ request: PaymentRequest) async throws -> PaymentResult {
+    /// `idempotencyKey` est ignorée : appel en processus, sans réseau ni nouvelle tentative ; `TicketStore` arrête le double tap.
+    public func pay(_ request: PaymentRequest, idempotencyKey: UUID?) async throws -> PaymentResult {
         try requireAuth()
         guard request.tipAmount >= .zero else { throw APIError.server(status: 400, message: "Montant de pourboire invalide.") }
         // TPE : le montant part au terminal avant toute écriture ; refus ou délai = rien n'est soldé, l'opérateur relance.

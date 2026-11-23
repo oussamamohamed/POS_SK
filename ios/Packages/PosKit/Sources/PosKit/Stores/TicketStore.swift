@@ -166,6 +166,15 @@ public final class TicketStore {
     public var voidCandidate: UUID?
     /// Demande d'annulation / correction pas encore réussie et sa clé d'idempotence.
     @ObservationIgnored private var pendingLineVoid: (request: String, key: UUID)?
+    /// Encaissement pas encore réussi et sa clé d'idempotence : la même tant que la même demande échoue (réponse perdue, refus),
+    /// renouvelée après un succès (deux parts identiques d'un partage sont deux encaissements) ou quand la demande change.
+    @ObservationIgnored private var pendingPayment: (request: String, key: UUID)?
+
+    private func paymentKey(for request: Any) -> UUID {
+        let fingerprint = String(describing: request)
+        if pendingPayment?.request != fingerprint { pendingPayment = (fingerprint, UUID()) }
+        return pendingPayment!.key
+    }
 
     /// Seul un manager ou un admin peut annuler une ligne déjà envoyée en cuisine.
     public func canVoid(_ line: CartLine) -> Bool { line.isDispatched && session.isManager }
@@ -412,13 +421,15 @@ public final class TicketStore {
         let ok = await run {
             try await commitDrafts()
             let change = OrderMath.change(tendered: tendered, due: amount)
-            let result = try await api.pay(PaymentRequest(
+            let request = PaymentRequest(
                 orderId: orderId, tableNumber: tableNumber, operatorId: session.currentOperator?.id,
                 terminalId: terminalId(),
                 tenders: [TenderInput(method: method, amount: amount, tendered: max(tendered, amount), changeGiven: change)],
                 requestReceiptPrint: printReceipt,
                 tipAmount: tip
-            ))
+            )
+            let result = try await api.pay(request, idempotencyKey: paymentKey(for: request))
+            pendingPayment = nil
             lastPrintQueued = result.printQueued
             outcome = CheckoutOutcome(receiptNumber: result.receiptNumber, change: change, remaining: result.remainingBalance)
         }
@@ -445,12 +456,14 @@ public final class TicketStore {
         let ok = await run {
             guard let id = try await commitDrafts() else { throw APIError.notFound(L10n.string("order.counter_order_not_found")) }
             let trimmedBuzzer = buzzer?.trimmingCharacters(in: .whitespaces)
-            let result = try await api.counterCheckout(CounterCheckoutRequest(
+            let request = CounterCheckoutRequest(
                 orderId: id, terminalId: terminalId(), destination: destination,
                 pickupBuzzer: (trimmedBuzzer?.isEmpty ?? true) ? nil : trimmedBuzzer,
                 tipAmount: tip, requestFiscalReceiptPrint: printReceipt, mealVoucherPolicy: policy,
                 tenders: [CounterTender(method: method, amount: min(tendered, amount), tendered: tendered, facialValue: method == .mealVoucher ? tendered : nil)]
-            ))
+            )
+            let result = try await api.counterCheckout(request, idempotencyKey: paymentKey(for: request))
+            pendingPayment = nil
             lastPrintQueued = result.printQueued
             outcome = CheckoutOutcome(
                 receiptNumber: result.receiptNumber, change: result.changeGiven, remaining: result.remainingBalance,

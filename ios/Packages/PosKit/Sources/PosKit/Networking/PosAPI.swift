@@ -123,7 +123,9 @@ public protocol PosAPI: Sendable {
     func voidLine(orderId: UUID, lineId: UUID, quantity: Int, reason: String?, operatorId: UUID?, idempotencyKey: UUID?) async throws
 
     // Encaissement
-    func pay(_ request: PaymentRequest) async throws -> PaymentResult
+    /// `idempotencyKey` (en-tête `Idempotency-Key`) : une par encaissement voulu, réutilisée telle quelle sur une nouvelle tentative ; le serveur
+    /// rend alors le premier succès sans nouveau reçu ni débit TPE (409 si la même clé porte une autre demande). Ignorée en mode autonome.
+    func pay(_ request: PaymentRequest, idempotencyKey: UUID?) async throws -> PaymentResult
     func hotelRooms() async throws -> [HotelRoom]
     func chargeRoom(_ request: RoomChargeRequest) async throws -> OperationResult
 
@@ -133,7 +135,8 @@ public protocol PosAPI: Sendable {
     func heldOrders(terminalId: String) async throws -> [HeldOrder]
     func recallHeldOrder(holdId: UUID) async throws -> ActiveOrder
     func voidHeldOrder(holdId: UUID, supervisorPin: String, reason: String, terminalId: String) async throws
-    func counterCheckout(_ request: CounterCheckoutRequest) async throws -> CounterCheckoutResult
+    /// Même clé d'idempotence que `pay`.
+    func counterCheckout(_ request: CounterCheckoutRequest, idempotencyKey: UUID?) async throws -> CounterCheckoutResult
 
     // Cuisine
     func kitchenTickets() async throws -> [KitchenTicket]
@@ -271,6 +274,15 @@ public extension PosAPI {
     /// Sans clé d'idempotence (comportement d'avant la clé).
     func voidLine(orderId: UUID, lineId: UUID, quantity: Int, reason: String?, operatorId: UUID?) async throws {
         try await voidLine(orderId: orderId, lineId: lineId, quantity: quantity, reason: reason, operatorId: operatorId, idempotencyKey: nil)
+    }
+
+    /// Sans clé d'idempotence (comportement d'avant la clé).
+    func pay(_ request: PaymentRequest) async throws -> PaymentResult {
+        try await pay(request, idempotencyKey: nil)
+    }
+
+    func counterCheckout(_ request: CounterCheckoutRequest) async throws -> CounterCheckoutResult {
+        try await counterCheckout(request, idempotencyKey: nil)
     }
 
     /// Export FEC sans société.

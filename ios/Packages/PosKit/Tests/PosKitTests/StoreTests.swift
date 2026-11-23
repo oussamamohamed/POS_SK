@@ -248,6 +248,39 @@ struct TicketStoreTests {
         #expect(keys[2] != keys[1])
     }
 
+    /// Réponse perdue après un encaissement appliqué : la nouvelle tentative reprend la clé (rejeu, pas de second encaissement) ;
+    /// la même demande après un succès (part identique d'un partage) prend une nouvelle clé.
+    @Test func payRetryAfterALostResponseReusesTheKeyAndPaysOnce() async {
+        let (model, api) = await makeModel()
+        await model.ticket.load(table: "T2")
+        model.ticket.add(product(model, "Entrecôte 300g"))
+        model.ticket.add(product(model, "Pizza Margherita AOP"))
+        let due = model.ticket.amountDue
+        let part = Money(cents: 500)
+        await api.setLoseNextPaymentResponse(true)
+        #expect(await model.ticket.pay(method: .creditCard, amount: part, tendered: part) == nil)
+        let retried = await model.ticket.pay(method: .creditCard, amount: part, tendered: part)
+        #expect(retried?.remaining == due - part, "le rejeu n'encaisse pas une seconde fois")
+        let again = await model.ticket.pay(method: .creditCard, amount: part, tendered: part)
+        #expect(again?.remaining == due - part - part)
+        let keys = await api.payKeys
+        #expect(keys.count == 3 && keys.allSatisfy { $0 != nil })
+        #expect(keys[0] == keys[1])
+        #expect(keys[2] != keys[1])
+    }
+
+    @Test func counterCheckoutRetryAfterALostResponseReusesTheKey() async {
+        let (model, api) = await makeModel()
+        await model.ticket.openCounter()
+        model.ticket.add(product(model, "Pizza Margherita AOP"))
+        await api.setLoseNextPaymentResponse(true)
+        #expect(await model.ticket.counterCheckout(method: .cash, amount: Money(cents: 1250), tendered: Money(cents: 2000), tip: .zero, buzzer: nil, printReceipt: false, policy: .capAtBalance) == nil)
+        let outcome = await model.ticket.counterCheckout(method: .cash, amount: Money(cents: 1250), tendered: Money(cents: 2000), tip: .zero, buzzer: nil, printReceipt: false, policy: .capAtBalance)
+        #expect(outcome?.pickupNumber == "#A-01", "le rejeu rend la vente enregistrée, sans second numéro de retrait")
+        let keys = await api.counterCheckoutKeys
+        #expect(keys.count == 2 && keys[0] != nil && keys[0] == keys[1])
+    }
+
     /// `InMemoryPosAPI` suit le serveur : même clé et même demande = rejeu sans effet ; même clé, autre demande = 409 ; sans clé = deux effets.
     @Test func inMemoryApiReplaysAKeyedVoidAndRefusesAReusedKey() async throws {
         let (model, api) = await makeModel()
@@ -261,7 +294,7 @@ struct TicketStoreTests {
         try await api.voidLine(orderId: order.orderId, lineId: lineId, quantity: 1, reason: "Erreur", operatorId: nil, idempotencyKey: key)
         try await api.voidLine(orderId: order.orderId, lineId: lineId, quantity: 1, reason: " Erreur ", operatorId: nil, idempotencyKey: key)
         #expect(try await quantity() == 3)
-        await #expect(throws: APIError.server(status: 409, message: "Cette demande a déjà été envoyée avec d'autres informations : recommencez l'annulation.")) {
+        await #expect(throws: APIError.server(status: 409, message: "Cette demande a déjà été envoyée avec d'autres informations : recommencez l'opération.")) {
             try await api.voidLine(orderId: order.orderId, lineId: lineId, quantity: 2, reason: "Erreur", operatorId: nil, idempotencyKey: key)
         }
         #expect(try await quantity() == 3)

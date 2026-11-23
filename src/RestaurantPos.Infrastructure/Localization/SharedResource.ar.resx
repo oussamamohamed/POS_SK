@@ -617,7 +617,7 @@
     <value>لا يمكن أن يتجاوز السبب {max} حرفًا.</value>
   </data>
   <data name="errors.idempotency_key_reuse" xml:space="preserve">
-    <value>أُرسل هذا الطلب سابقًا ببيانات مختلفة: أعد عملية الإلغاء.</value>
+    <value>أُرسل هذا الطلب سابقًا ببيانات مختلفة: أعد العملية.</value>
   </data>
   <data name="errors.idempotency_key_invalid" xml:space="preserve">
     <value>يجب أن يكون معرّف الطلب (Idempotency-Key) بصيغة UUID.</value>

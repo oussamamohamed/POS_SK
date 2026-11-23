@@ -38,7 +38,8 @@ enum LocalMealVoucher {
 extension LocalPosAPI {
     /// Encaisse une vente au comptoir ou à emporter. Tous les refus (panier vide, titre-restaurant hors règle) précèdent la première
     /// écriture : un refus ne consomme ni numéro de retrait ni avoir (le .NET attribue d'abord le numéro).
-    public func counterCheckout(_ request: CounterCheckoutRequest) async throws -> CounterCheckoutResult {
+    /// `idempotencyKey` est ignorée (voir `pay`).
+    public func counterCheckout(_ request: CounterCheckoutRequest, idempotencyKey: UUID?) async throws -> CounterCheckoutResult {
         try requireAuth()
         guard request.tipAmount >= .zero else { throw APIError.server(status: 400, message: "Montant de pourboire invalide.") }
         // TPE : le montant part au terminal avant la moindre écriture ; refus ou délai = commande intacte, l'opérateur relance.
