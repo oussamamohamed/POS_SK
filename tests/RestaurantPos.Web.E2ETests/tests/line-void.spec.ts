@@ -203,6 +203,56 @@ test.describe('Annulation et correction de ligne', () => {
     expect(padded.status()).toBe(200);
   });
 
+  test('Idempotency-Key: a replay has one effect; a retry after a network failure reuses the key', async ({ page, request }) => {
+    const { number, auth } = await setupTable(request, 3, true);
+    await loginWithPin(page, '1234');
+    await openTable(page, number);
+    const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    const quantityOnServer = async () => (await (await request.get(`/api/tables/${number}/order`, { headers: auth })).json()).lines[0].quantity;
+
+    await page.locator('#cartItemsList [data-action="void"]').click();
+    await page.fill('#inputLineVoidReason', 'Erreur');
+    const sent = page.waitForResponse(r => VOID_URL.test(r.url()) && r.request().method() === 'POST');
+    await page.click('#lineVoidModal button[type="submit"]');
+    const res = await sent;
+    expect(res.status()).toBe(200);
+    const key = res.request().headers()['idempotency-key'];
+    expect(key).toMatch(UUID);
+    const first = await res.json();
+    expect(await quantityOnServer()).toBe(2);
+
+    // Même requête, même clé (nouvelle tentative après un délai dépassé) : même réponse, aucune nouvelle annulation.
+    const replay = await request.post(res.url(), { headers: { ...auth, 'Idempotency-Key': key }, data: { quantity: 1, reason: 'Erreur' } });
+    expect(replay.status()).toBe(200);
+    expect(await replay.json()).toMatchObject({ voidId: first.voidId, totalTtc: first.totalTtc });
+    expect(await quantityOnServer()).toBe(2);
+    // Même clé, autre demande : 409.
+    const reuse = await request.post(res.url(), { headers: { ...auth, 'Idempotency-Key': key }, data: { quantity: 2, reason: 'Erreur' } });
+    expect(reuse.status()).toBe(409);
+    expect((await reuse.json()).code).toBe('idempotency_key_reuse');
+
+    // Nouvelle intention : nouvelle clé. Le premier envoi échoue (réseau) ; le second renvoie la même clé.
+    const keys: string[] = [];
+    await page.route(VOID_URL, route => {
+      keys.push(route.request().headers()['idempotency-key']);
+      return keys.length === 1 ? route.abort('failed') : route.continue();
+    });
+    await page.locator('#cartItemsList [data-action="void"]').click();
+    await page.fill('#inputLineVoidReason', 'Client parti');
+    await page.click('#lineVoidModal button[type="submit"]');
+    await expect(page.locator('.toast.error').last()).toBeVisible();
+    await expect(page.locator('#lineVoidModal')).toHaveClass(/active/);
+    const retried = page.waitForResponse(r => VOID_URL.test(r.url()) && r.request().method() === 'POST');
+    await page.click('#lineVoidModal button[type="submit"]');
+    expect((await retried).status()).toBe(200);
+    await page.unroute(VOID_URL);
+    expect(keys).toHaveLength(2);
+    expect(keys[0]).toMatch(UUID);
+    expect(keys[1]).toBe(keys[0]);
+    expect(keys[0]).not.toBe(key);
+    expect(await quantityOnServer()).toBe(1);
+  });
+
   test('409 order_has_receipts: toast names the receipt, line kept', async ({ page, request }) => {
     await pairTill(page);
     const { number } = await setupTable(request, 2, true);

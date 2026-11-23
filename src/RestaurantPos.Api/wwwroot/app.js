@@ -2254,7 +2254,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                         // Ligne enregistrée non envoyée : correction côté serveur (sans motif), puis on relit la commande.
                         if (lineCorrectionsInFlight.has(item.lineId)) return; // double tap : une seule correction à la fois
                         lineCorrectionsInFlight.add(item.lineId);
-                        voidOrderItem(state.activeOrderId, item.lineId, 1, '').finally(() => lineCorrectionsInFlight.delete(item.lineId));
+                        // Sans réponse (réseau), la clé est gardée : le tap suivant rejoue la même correction au lieu d'en ajouter une.
+                        const lineId = item.lineId;
+                        const key = lineCorrectionKeys.get(lineId) ?? newIdempotencyKey();
+                        lineCorrectionKeys.set(lineId, key);
+                        voidOrderItem(state.activeOrderId, lineId, 1, '', key)
+                            .then(answered => { if (answered !== null) lineCorrectionKeys.delete(lineId); })
+                            .finally(() => lineCorrectionsInFlight.delete(lineId));
                         return;
                     }
                     item.quantity -= 1;
@@ -2283,14 +2289,30 @@ document.addEventListener('DOMContentLoaded', async () => {
         return state.operator?.role === 'FloorManager' || state.operator?.role === 'Admin';
     }
 
-    /** Annule (ligne envoyée, motif obligatoire) ou corrige (ligne non envoyée) `quantity` unités ; relit la commande. */
+    /** Clé d'idempotence (UUID v4) d'une intention de l'utilisateur. */
+    function newIdempotencyKey() {
+        if (crypto.randomUUID) return crypto.randomUUID();
+        // randomUUID n'existe qu'en contexte sécurisé (HTTPS, localhost) ; le client est souvent servi en HTTP sur le réseau local.
+        const b = crypto.getRandomValues(new Uint8Array(16));
+        b[6] = (b[6] & 0x0f) | 0x40;
+        b[8] = (b[8] & 0x3f) | 0x80;
+        const h = [...b].map(x => x.toString(16).padStart(2, '0')).join('');
+        return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`;
+    }
+
+    /**
+     * Annule (ligne envoyée, motif obligatoire) ou corrige (ligne non envoyée) `quantity` unités ; relit la commande.
+     * `key` : en-tête Idempotency-Key, le même pour toutes les tentatives d'une même intention.
+     * Renvoie true (fait), false (refusé) ou null (pas de réponse : l'effet est inconnu, on garde la clé).
+     */
     const lineCorrectionsInFlight = new Set();
-    async function voidOrderItem(orderId, lineId, quantity, reason) {
+    const lineCorrectionKeys = new Map();
+    async function voidOrderItem(orderId, lineId, quantity, reason, key) {
         try {
             await ensureAuthToken();
             const res = await fetch(`/api/orders/${orderId}/items/${lineId}/void`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', 'Idempotency-Key': key },
                 body: JSON.stringify({ quantity, reason })
             });
             if (!res.ok) {
@@ -2301,13 +2323,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             return true;
         } catch {
             showToast(t('line_void.error'), 'error');
-            return false;
+            return null;
         }
     }
 
     let lineVoidTarget = null;
+    let lineVoidAttempt = null; // { payload, key } : la même clé tant que l'utilisateur renvoie la même demande
     function openLineVoidModal(item) {
         lineVoidTarget = item;
+        lineVoidAttempt = null;
         document.getElementById('lineVoidName').textContent = item.product.name;
         const qty = document.getElementById('inputLineVoidQty');
         qty.max = item.quantity;
@@ -2329,8 +2353,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!item || !reason || !(quantity >= 1 && quantity <= item.quantity)) return;
         const submit = e.submitter || e.target.querySelector('[type=submit]');
         submit.disabled = true; // double tap : une seule annulation par envoi
+        const payload = `${item.lineId}|${quantity}|${reason}`;
+        if (lineVoidAttempt?.payload !== payload) lineVoidAttempt = { payload, key: newIdempotencyKey() };
         try {
-            if (await voidOrderItem(state.activeOrderId, item.lineId, quantity, reason)) {
+            if (await voidOrderItem(state.activeOrderId, item.lineId, quantity, reason, lineVoidAttempt.key)) {
                 showToast(t('line_void.done', { qty: quantity, name: item.product.name, reason }), 'success');
                 closeLineVoidModal();
             }
