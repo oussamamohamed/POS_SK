@@ -4367,6 +4367,86 @@
       }
     },
     {
+      "name": "kitchen_cancellation_edge_fr",
+      "kind": "kitchenCancellation",
+      "language": "fr",
+      "input": {
+        "voidLine": {
+          "productName": "Entrecôte grillée sauce béarnaise maison, frites fraîches et salade verte",
+          "quantity": 12,
+          "modifiersSummary": "  ",
+          "kitchenComment": " ",
+          "reason": "",
+          "serverName": "",
+          "tableNumber": "",
+          "voidedAtUtc": "2025-07-15T23:59:00.000Z"
+        },
+        "operatorName": "Léa",
+        "destination": 0,
+        "pickupNumber": "Z-999",
+        "buzzer": "  "
+      },
+      "expected": {
+        "language": "fr",
+        "rightToLeft": false,
+        "lines": [
+          {
+            "type": "TicketText",
+            "text": "*** ANNULATION ***",
+            "align": 1,
+            "bold": true,
+            "large": true
+          },
+          {
+            "type": "TicketText",
+            "text": "À EMPORTER",
+            "align": 1,
+            "bold": false,
+            "large": true
+          },
+          {
+            "type": "TicketText",
+            "text": "Retrait n° Z-999",
+            "align": 1,
+            "bold": false,
+            "large": true
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Annulé par",
+            "value": "Léa"
+          },
+          {
+            "type": "TicketColumns",
+            "label": "Heure",
+            "value": "01:59"
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "-12  Entrecôte grillée sauce béarnaise maison, frites fraîches et salade verte",
+            "align": 0,
+            "bold": false,
+            "large": true
+          },
+          {
+            "type": "TicketSeparator",
+            "cut": false
+          },
+          {
+            "type": "TicketText",
+            "text": "Motif : ",
+            "align": 0,
+            "bold": true,
+            "large": false
+          }
+        ]
+      }
+    },
+    {
       "name": "x_first_report",
       "kind": "xReport",
       "language": "fr",

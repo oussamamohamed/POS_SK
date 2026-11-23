@@ -20,8 +20,10 @@ public actor InMemoryPosAPI: PosAPI {
     private var categoriesStore: [MenuCategory]
     private var productsStore: [Product]
     private var tablesStore: [DiningTable]
-    private var orders: [UUID: OrderRecord] = [:]
+    private(set) var orders: [UUID: OrderRecord] = [:]
     private var tickets: [KitchenTicket] = []
+    /// Ligne de commande de chaque article de bon (`KitchenTicketItem.OrderItemId` du .NET, absent du modèle client).
+    private var ticketItemLines: [UUID: UUID] = [:]
     private var held: [HeldOrder] = []
     private var rooms: [HotelRoom]
     private var printersStore: [Printer]
@@ -814,9 +816,11 @@ public actor InMemoryPosAPI: PosAPI {
         let pending = record.order.lines.filter { !$0.isDispatched }
         let prefix = record.order.destination == .takeaway ? "[À EMPORTER] " : ""
         for (station, lines) in Dictionary(grouping: pending, by: { $0.preparationStationId ?? "HOT_KITCHEN" }) {
-            tickets.append(KitchenTicket(orderId: id, tableNumber: prefix + table, serverName: record.order.waiterName, coversCount: record.order.coversCount, stationId: station, items: lines.map {
+            let items = lines.map {
                 KitchenTicketItem(productName: $0.productName, quantity: $0.quantity, modifiersSummary: $0.modifiersSummary.isEmpty ? nil : $0.modifiersSummary.joined(separator: ", "))
-            }))
+            }
+            for (item, line) in zip(items, lines) { ticketItemLines[item.id] = line.lineId }
+            tickets.append(KitchenTicket(orderId: id, tableNumber: prefix + table, serverName: record.order.waiterName, coversCount: record.order.coversCount, stationId: station, items: items))
         }
         for j in record.order.lines.indices { record.order.lines[j].isDispatched = true }
         orders[id] = record
@@ -901,8 +905,9 @@ public actor InMemoryPosAPI: PosAPI {
             let trimmed = (reason ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
             guard !trimmed.isEmpty else { throw APIError.server(status: 400, message: "Le motif est obligatoire pour annuler une ligne envoyée en cuisine.") }
             guard trimmed.utf16.count <= OrderLineVoidRules.maxReasonLength else { throw APIError.server(status: 400, message: OrderLineVoidRules.reasonTooLongMessage) }
-            if let t = tickets.firstIndex(where: { $0.orderId == orderId && $0.items.contains { $0.productName == line.productName && $0.status != .cancelled } }),
-               let i = tickets[t].items.firstIndex(where: { $0.productName == line.productName && $0.status != .cancelled }) {
+            // Article de bon de CETTE ligne (pas le premier du même nom : un plat renvoyé sur un second bon est une autre ligne).
+            func isTarget(_ item: KitchenTicketItem) -> Bool { ticketItemLines[item.id] == lineId && item.status != .cancelled }
+            if let t = tickets.firstIndex(where: { $0.items.contains(where: isTarget) }), let i = tickets[t].items.firstIndex(where: isTarget) {
                 tickets[t].items[i].cancelledQuantity = min(tickets[t].items[i].quantity, tickets[t].items[i].cancelledQuantity + quantity)
                 if tickets[t].items[i].cancelledQuantity >= tickets[t].items[i].quantity { tickets[t].items[i].status = .cancelled }
             }

@@ -322,7 +322,11 @@ public class TicketDocumentReferenceFixtureTests
             CancellationWithHeader("kitchen_cancellation_takeaway_ar", "ar",
                 SampleVoid("Burger maison", 1, null, null, "طلب بالخطأ", "ليلى", "", "Comptoir", "2025-07-15T20:05:00.000Z"), OrderDestination.Takeaway, null, null),
             CancellationWithHeader("kitchen_cancellation_eat_in_en", "en",
-                SampleVoid("Café", 1, null, null, "Client parti", "Marie", "Paul", "21", "2025-01-15T19:45:00.000Z"), OrderDestination.EatIn, null, null)
+                SampleVoid("Café", 1, null, null, "Client parti", "Marie", "Paul", "21", "2025-01-15T19:45:00.000Z"), OrderDestination.EatIn, null, null),
+            // Cas limites : nom long accentué, options et note blanches (omises), motif et serveur vides, buzzer blanc (omis).
+            CancellationWithHeader("kitchen_cancellation_edge_fr", "fr",
+                SampleVoid("Entrecôte grillée sauce béarnaise maison, frites fraîches et salade verte", 12, "  ", " ", "", "Léa", "", "", "2025-07-15T23:59:00.000Z"),
+                OrderDestination.Takeaway, "Z-999", "  ")
         ];
 
         Scenario CancellationWithHeader(string name, string lang, OrderLineVoid line, OrderDestination destination, string? pickupNumber, string? pickupBuzzer) =>

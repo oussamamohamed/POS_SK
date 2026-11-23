@@ -196,6 +196,60 @@ struct TicketStoreTests {
         #expect(await !api.calls.contains("voidLine"))
     }
 
+    @Test func draftLineDecrementStaysLocal() async {
+        let (model, api) = await makeModel(pin: "2468")
+        await model.ticket.load(table: "T4")
+        model.ticket.add(product(model, "Café Gourmand"))
+        model.ticket.add(product(model, "Café Gourmand"))
+        let draft = model.ticket.lines[0]
+        #expect(draft.isDraft && draft.quantity == 2)
+        #expect(model.ticket.decrement(draft.id) == nil)
+        #expect(model.ticket.lines.first?.quantity == 1)
+        #expect(model.ticket.remove(draft.id) == nil)
+        #expect(model.ticket.lines.isEmpty)
+        #expect(await !api.calls.contains("voidLine"))
+    }
+
+    /// Double tap sur « Annuler » : le second appel est ignoré tant que le premier est en vol (une seule annulation).
+    @Test func secondVoidWhileTheFirstIsInFlightIsDropped() async {
+        let (model, api) = await makeModel()
+        await model.ticket.load(table: "T4")
+        model.ticket.add(product(model, "Café Gourmand"))
+        model.ticket.add(product(model, "Café Gourmand"))
+        _ = await model.ticket.sendToKitchen()
+        let sent = model.ticket.lines[0]
+        await api.setLatency(.milliseconds(200))
+        async let first = model.ticket.voidLine(lineId: sent.id, quantity: 1, reason: "Erreur")
+        async let second = model.ticket.voidLine(lineId: sent.id, quantity: 1, reason: "Erreur")
+        let results = await [first, second]
+        #expect(results.filter { $0 }.count == 1)
+        #expect(await api.calls.filter { $0 == "voidLine" }.count == 1)
+        #expect(model.ticket.lines.first?.quantity == 1)
+    }
+
+    /// Refus du serveur (ex. 409 reçus) : le ticket local ne bouge pas, la feuille reste ouverte, le message s'affiche.
+    @Test func failedVoidKeepsTheLocalTicketIntact() async {
+        let (model, api) = await makeModel()
+        await model.ticket.load(table: "T4")
+        model.ticket.add(product(model, "Café Gourmand"))
+        _ = await model.ticket.sendToKitchen()
+        model.ticket.add(product(model, "Café Gourmand"))
+        let before = model.ticket.lines
+        let sent = before[0]
+        model.ticket.decrement(sent.id)
+        #expect(model.ticket.voidCandidate == sent.id)
+        let message = "Cette commande a déjà des reçus (T01-000001) : annulez-les avant de modifier ses lignes."
+        await api.setFailure(.server(status: 409, message: message))
+        #expect(await !model.ticket.voidLine(lineId: sent.id, quantity: 1, reason: "Erreur"))
+        await api.setFailure(nil)
+        #expect(model.ticket.lines == before)
+        #expect(model.ticket.voidCandidate == sent.id)
+        #expect(model.notifier.lastMessage?.contains("T01-000001") == true)
+        // Motif vide : rien n'est envoyé (la feuille garde le bouton désactivé).
+        #expect(await !model.ticket.voidLine(lineId: sent.id, quantity: 1, reason: "   "))
+        #expect(await api.calls.filter { $0 == "voidLine" }.count == 1)
+    }
+
     @Test func switchingTablesCommitsDrafts() async {
         let (model, _) = await makeModel()
         await model.ticket.load(table: "T5")

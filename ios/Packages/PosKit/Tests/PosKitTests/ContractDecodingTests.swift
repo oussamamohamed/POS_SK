@@ -192,6 +192,13 @@ struct ContractDecodingTests {
         #expect(items[2].cancelledQuantity == 1)
     }
 
+    /// Serveur antérieur à l'annulation de ligne : ni `cancelledQuantity` ni statut 3 ; l'article reste actif, rien d'annulé.
+    @Test func ticketItemFromAnOlderServerDecodesWithNothingCancelled() throws {
+        let old = #"[{"id":"01a0d512-7507-787a-a14d-41d91888944d","tableNumber":"T1","stationId":"HOT_KITCHEN","status":1,"items":[{"id":"01a0d512-7507-7a58-9c9c-1011de681c54","productName":"Burger","quantity":2,"modifiersSummary":"À Point","kitchenComment":null,"status":0}]}]"#
+        let item = try #require(try PosJSON.makeDecoder().decode([KitchenTicket].self, from: Data(old.utf8)).first?.items.first)
+        #expect(item.status == .pending && item.cancelledQuantity == 0 && item.quantity == 2)
+    }
+
     @Test func fiscal() throws {
         let x = try decode(FiscalReport.self, "x_report")
         #expect(x.receiptCount == 3)

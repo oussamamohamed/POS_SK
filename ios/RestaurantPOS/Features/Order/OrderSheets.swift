@@ -262,6 +262,8 @@ struct LineVoidSheet: View {
             TextField("order.line_void_reason", text: $reason, prompt: Text("order.line_void_reason_placeholder"))
                 .textFieldStyle(.roundedBorder)
                 .accessibilityIdentifier("linevoid.reason")
+                // Même borne que le serveur et `maxlength` du web : 256 unités UTF-16 (caractère entier retiré, jamais une moitié d'emoji).
+                .onChange(of: reason) { while reason.utf16.count > OrderLineVoidRules.maxReasonLength { reason.removeLast() } }
             Spacer()
             ActionButton(title: String(localized: "order.line_void_confirm"), systemImage: "xmark.circle", kind: .danger) {
                 guard canConfirm else { return }
