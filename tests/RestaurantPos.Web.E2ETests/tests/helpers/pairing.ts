@@ -56,13 +56,13 @@ export async function settleOpenTableOrders(request: APIRequestContext, headers:
   }
 }
 
-export async function loginWithPin(page: Page) {
+export async function loginWithPin(page: Page, pin = '1234') {
   await page.goto('/?nocache=' + Date.now());
   await page.waitForLoadState('domcontentloaded');
   const pinModal = page.locator('#pinLockModal');
   if (await pinModal.evaluate((el: HTMLElement) => el.classList.contains('active'))) {
     await page.click('#btnPinClear');
-    for (const d of '1234') await page.click(`.pin-keypad button[data-val="${d}"]`);
+    for (const d of pin) await page.click(`.pin-keypad button[data-val="${d}"]`);
     await expect(pinModal).not.toHaveClass(/active/);
   }
 }
