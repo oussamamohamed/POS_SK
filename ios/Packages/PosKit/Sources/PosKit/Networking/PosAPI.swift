@@ -118,7 +118,9 @@ public protocol PosAPI: Sendable {
     func compItem(orderId: UUID, lineId: UUID, reason: String, operatorId: UUID?) async throws
     /// Annule `quantity` unités d'une ligne envoyée (manager ou admin, `reason` obligatoire, bon d'annulation en cuisine)
     /// ou corrige une ligne non envoyée (tout opérateur, sans motif ni trace). Refus : 409 si la commande a un reçu non annulé.
-    func voidLine(orderId: UUID, lineId: UUID, quantity: Int, reason: String?, operatorId: UUID?) async throws
+    /// `idempotencyKey` (en-tête `Idempotency-Key`) : une par intention, réutilisée telle quelle sur une nouvelle tentative ; le serveur
+    /// rejoue alors le premier succès sans nouvel effet (409 si la même clé porte une autre demande). Ignorée en mode autonome.
+    func voidLine(orderId: UUID, lineId: UUID, quantity: Int, reason: String?, operatorId: UUID?, idempotencyKey: UUID?) async throws
 
     // Encaissement
     func pay(_ request: PaymentRequest) async throws -> PaymentResult
@@ -264,6 +266,11 @@ public extension PosAPI {
 
     func menuAnalysis(from: Date, to: Date) async throws -> MenuAnalysisReport {
         try await menuAnalysis(from: from, to: to, categoryId: nil)
+    }
+
+    /// Sans clé d'idempotence (comportement d'avant la clé).
+    func voidLine(orderId: UUID, lineId: UUID, quantity: Int, reason: String?, operatorId: UUID?) async throws {
+        try await voidLine(orderId: orderId, lineId: lineId, quantity: quantity, reason: reason, operatorId: operatorId, idempotencyKey: nil)
     }
 
     /// Export FEC sans société.

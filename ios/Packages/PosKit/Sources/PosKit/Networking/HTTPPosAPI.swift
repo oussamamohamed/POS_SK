@@ -469,8 +469,11 @@ public actor HTTPPosAPI: PosAPI {
 
     /// L'opérateur vient du JWT : `operatorId` n'est pas envoyé.
     struct VoidLineBody: Encodable { let quantity: Int; let reason: String }
-    public func voidLine(orderId: UUID, lineId: UUID, quantity: Int, reason: String?, operatorId: UUID?) async throws {
-        try await perform("POST", "orders/\(orderId.uuidString.lowercased())/items/\(lineId.uuidString.lowercased())/void", body: VoidLineBody(quantity: quantity, reason: reason ?? ""))
+    public func voidLine(orderId: UUID, lineId: UUID, quantity: Int, reason: String?, operatorId: UUID?, idempotencyKey: UUID?) async throws {
+        var request = try makeRequest("POST", "orders/\(orderId.uuidString.lowercased())/items/\(lineId.uuidString.lowercased())/void",
+                                      body: try encoder.encode(VoidLineBody(quantity: quantity, reason: reason ?? "")))
+        if let idempotencyKey { request.setValue(idempotencyKey.uuidString.lowercased(), forHTTPHeaderField: "Idempotency-Key") }
+        _ = try await send(request)
     }
 
     // MARK: - Encaissement

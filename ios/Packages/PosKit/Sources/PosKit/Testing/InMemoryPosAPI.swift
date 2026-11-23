@@ -24,6 +24,12 @@ public actor InMemoryPosAPI: PosAPI {
     private var tickets: [KitchenTicket] = []
     /// Ligne de commande de chaque article de bon (`KitchenTicketItem.OrderItemId` du .NET, absent du modèle client).
     private var ticketItemLines: [UUID: UUID] = [:]
+    /// Succès d'annulation / correction par clé d'idempotence (comme `OrderLineVoidRequests` côté .NET).
+    private var appliedVoidKeys: [UUID: String] = [:]
+    /// Clés reçues par `voidLine`, dans l'ordre (tests).
+    public private(set) var voidLineKeys: [UUID?] = []
+    /// Si vrai, le prochain `voidLine` applique son effet puis échoue comme une réponse perdue (délai dépassé).
+    public var loseNextVoidLineResponse = false
     private var held: [HeldOrder] = []
     private var rooms: [HotelRoom]
     private var printersStore: [Printer]
@@ -102,6 +108,7 @@ public actor InMemoryPosAPI: PosAPI {
 
     public func setFailure(_ error: APIError?) { failure = error }
     public func setLatency(_ value: Duration) { latency = value }
+    public func setLoseNextVoidLineResponse(_ value: Bool) { loseNextVoidLineResponse = value }
     public func forceHappyHour(minutes: Int) { overrideUntil = Date().addingTimeInterval(TimeInterval(minutes * 60)) }
 
     private func step(_ name: String) async throws {
@@ -887,8 +894,14 @@ public actor InMemoryPosAPI: PosAPI {
     }
 
     /// Même règles que `OrderLineVoidService` (.NET) : correction d'une ligne non envoyée (tout opérateur), sinon annulation (manager/admin, motif).
-    public func voidLine(orderId: UUID, lineId: UUID, quantity: Int, reason: String?, operatorId: UUID?) async throws {
+    public func voidLine(orderId: UUID, lineId: UUID, quantity: Int, reason: String?, operatorId: UUID?, idempotencyKey: UUID?) async throws {
+        voidLineKeys.append(idempotencyKey) // avant `step` : une clé envoyée compte même si l'appel échoue
         try await step("voidLine"); try requireAuth()
+        let request = "\(orderId)|\(lineId)|\(quantity)|\((reason ?? "").trimmingCharacters(in: .whitespacesAndNewlines))"
+        if let idempotencyKey, let applied = appliedVoidKeys[idempotencyKey] {
+            guard applied == request else { throw APIError.server(status: 409, message: "Cette demande a déjà été envoyée avec d'autres informations : recommencez l'annulation.") }
+            return
+        }
         // Mêmes messages et même ordre de contrôles que `LocalPosAPI.voidLine` et le .NET (textes FR du serveur).
         guard let record = orders[orderId], let j = record.order.lines.firstIndex(where: { $0.lineId == lineId }) else { throw APIError.notFound("Commande introuvable.") }
         // Soldée (pas de suivi des statuts ici) : non modifiable, comme une commande réglée côté serveur.
@@ -913,6 +926,11 @@ public actor InMemoryPosAPI: PosAPI {
             }
         }
         if quantity == line.quantity { orders[orderId]!.order.lines.remove(at: j) } else { orders[orderId]!.order.lines[j].quantity -= quantity }
+        if let idempotencyKey { appliedVoidKeys[idempotencyKey] = request }
+        if loseNextVoidLineResponse {
+            loseNextVoidLineResponse = false
+            throw APIError.transport("The request timed out.")
+        }
     }
 
     // MARK: Encaissement

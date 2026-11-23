@@ -13,7 +13,8 @@ extension LocalPosAPI {
     /// Miroir de `OrderLineVoidService.VoidAsync` (.NET) : correction d'une ligne non envoyée (tout opérateur, sans trace) ou annulation
     /// d'une ligne envoyée (responsable, motif obligatoire : retrait, ligne `OrderLineVoids`, JET et article de bon dans UNE transaction).
     /// Le bon d'annulation n'est mis en file qu'après la validation et ne peut pas faire échouer l'opération.
-    public func voidLine(orderId: UUID, lineId: UUID, quantity: Int, reason: String?, operatorId: UUID?) async throws {
+    /// `idempotencyKey` est ignorée : appel en processus, sans réseau ni nouvelle tentative ; le double tap est arrêté par `TicketStore`.
+    public func voidLine(orderId: UUID, lineId: UUID, quantity: Int, reason: String?, operatorId: UUID?, idempotencyKey: UUID?) async throws {
         let member = try requireAuth()
         let orders = orderRepository, fiscal = fiscalRepository, floor = floorRepository
         let now = clock()

@@ -103,6 +103,26 @@ struct HTTPPosAPITests {
         #expect(items[0]["modifiers"] as? [String] == ["À Point"])
     }
 
+    @Test func voidLineSendsTheIdempotencyKeyHeaderOnlyWhenGiven() async throws {
+        let api = makeAPI { _ in .init(status: 200, body: #"{"success":true,"voidId":null,"totalTtc":0}"#) }
+        let (orderId, lineId, key) = (UUID(), UUID(), UUID())
+        try await api.voidLine(orderId: orderId, lineId: lineId, quantity: 2, reason: "Erreur", operatorId: nil, idempotencyKey: key)
+        #expect(last.httpMethod == "POST")
+        #expect(last.url?.path == "/api/orders/\(orderId.uuidString.lowercased())/items/\(lineId.uuidString.lowercased())/void")
+        #expect(last.value(forHTTPHeaderField: "Idempotency-Key") == key.uuidString.lowercased())
+        #expect(try body(last)["quantity"] as? Int == 2)
+        #expect(try body(last)["reason"] as? String == "Erreur")
+        try await api.voidLine(orderId: orderId, lineId: lineId, quantity: 1, reason: nil, operatorId: nil)
+        #expect(last.value(forHTTPHeaderField: "Idempotency-Key") == nil)
+    }
+
+    @Test func voidLineKeyReuseIsA409WithTheServerMessage() async throws {
+        let api = makeAPI { _ in .init(status: 409, body: #"{"success":false,"code":"idempotency_key_reuse","message":"Cette demande a déjà été envoyée avec d'autres informations : recommencez l'annulation."}"#) }
+        await #expect(throws: APIError.server(status: 409, message: "Cette demande a déjà été envoyée avec d'autres informations : recommencez l'annulation.")) {
+            try await api.voidLine(orderId: UUID(), lineId: UUID(), quantity: 1, reason: "x", operatorId: nil, idempotencyKey: UUID())
+        }
+    }
+
     @Test func destinationUsesServerEnumValues() async throws {
         let api = makeAPI { _ in .init(status: 200, body: "{}") }
         try await api.setDestination(orderId: UUID(), destination: .eatIn)

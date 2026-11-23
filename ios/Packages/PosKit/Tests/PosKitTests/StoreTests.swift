@@ -227,6 +227,75 @@ struct TicketStoreTests {
         #expect(model.ticket.lines.first?.quantity == 1)
     }
 
+    /// Réponse perdue après une annulation appliquée : la nouvelle tentative de la même demande renvoie la même clé (rejeu, pas de
+    /// seconde annulation) ; une nouvelle intention prend une nouvelle clé.
+    @Test func retryAfterALostResponseReusesTheKeyAndVoidsOnce() async {
+        let (model, api) = await makeModel()
+        await model.ticket.load(table: "T4")
+        for _ in 0..<3 { model.ticket.add(product(model, "Café Gourmand")) }
+        _ = await model.ticket.sendToKitchen()
+        let sent = model.ticket.lines[0]
+        await api.setLoseNextVoidLineResponse(true)
+        #expect(await !model.ticket.voidLine(lineId: sent.id, quantity: 1, reason: "Erreur"))
+        #expect(model.ticket.voidCandidate == nil || model.ticket.voidCandidate == sent.id)
+        #expect(await model.ticket.voidLine(lineId: sent.id, quantity: 1, reason: "  Erreur "))
+        #expect(model.ticket.lines.first?.quantity == 2, "le rejeu n'annule pas une seconde fois")
+        #expect(await model.ticket.voidLine(lineId: model.ticket.lines[0].id, quantity: 1, reason: "Erreur"))
+        #expect(model.ticket.lines.first?.quantity == 1)
+        let keys = await api.voidLineKeys
+        #expect(keys.count == 3 && keys.allSatisfy { $0 != nil })
+        #expect(keys[0] == keys[1])
+        #expect(keys[2] != keys[1])
+    }
+
+    /// `InMemoryPosAPI` suit le serveur : même clé et même demande = rejeu sans effet ; même clé, autre demande = 409 ; sans clé = deux effets.
+    @Test func inMemoryApiReplaysAKeyedVoidAndRefusesAReusedKey() async throws {
+        let (model, api) = await makeModel()
+        await model.ticket.load(table: "T4")
+        for _ in 0..<4 { model.ticket.add(product(model, "Café Gourmand")) }
+        _ = await model.ticket.sendToKitchen()
+        let order = try #require(try await api.activeOrder(table: "T4"))
+        let lineId = order.lines[0].lineId
+        func quantity() async throws -> Int? { try await api.activeOrder(table: "T4")?.lines.first?.quantity }
+        let key = UUID()
+        try await api.voidLine(orderId: order.orderId, lineId: lineId, quantity: 1, reason: "Erreur", operatorId: nil, idempotencyKey: key)
+        try await api.voidLine(orderId: order.orderId, lineId: lineId, quantity: 1, reason: " Erreur ", operatorId: nil, idempotencyKey: key)
+        #expect(try await quantity() == 3)
+        await #expect(throws: APIError.server(status: 409, message: "Cette demande a déjà été envoyée avec d'autres informations : recommencez l'annulation.")) {
+            try await api.voidLine(orderId: order.orderId, lineId: lineId, quantity: 2, reason: "Erreur", operatorId: nil, idempotencyKey: key)
+        }
+        #expect(try await quantity() == 3)
+        try await api.voidLine(orderId: order.orderId, lineId: lineId, quantity: 1, reason: "Erreur", operatorId: nil)
+        try await api.voidLine(orderId: order.orderId, lineId: lineId, quantity: 1, reason: "Erreur", operatorId: nil)
+        #expect(try await quantity() == 1)
+    }
+
+    /// La demande change (quantité ou motif) après un échec : nouvelle clé ; une correction (« − ») garde la sienne après un échec.
+    @Test func changingTheRequestRenewsTheKeyAndCorrectionKeepsItAcrossAFailure() async {
+        let (model, api) = await makeModel()
+        await model.ticket.load(table: "T4")
+        for _ in 0..<3 { model.ticket.add(product(model, "Café Gourmand")) }
+        _ = await model.ticket.sendToKitchen()
+        let sent = model.ticket.lines[0]
+        await api.setFailure(.transport("hors ligne"))
+        #expect(await !model.ticket.voidLine(lineId: sent.id, quantity: 1, reason: "Erreur"))
+        #expect(await !model.ticket.voidLine(lineId: sent.id, quantity: 2, reason: "Erreur"))
+        #expect(await !model.ticket.voidLine(lineId: sent.id, quantity: 2, reason: "Client parti"))
+        await api.setFailure(nil)
+        var keys = await api.voidLineKeys
+        #expect(Set(keys.compactMap { $0 }).count == 3)
+
+        model.ticket.add(product(model, "Tiramisu Maison"))
+        #expect(await model.ticket.prepareForDiscount())
+        let saved = model.ticket.lines.first { !$0.isDispatched }!
+        await api.setLoseNextVoidLineResponse(true)
+        await model.ticket.decrement(saved.id)?.value
+        await model.ticket.decrement(saved.id)?.value
+        keys = await api.voidLineKeys
+        #expect(keys[keys.count - 1] == keys[keys.count - 2])
+        #expect(!model.ticket.lines.contains { $0.serverLineId == saved.serverLineId }, "une seule correction appliquée, la ligne d'une unité est retirée")
+    }
+
     /// Refus du serveur (ex. 409 reçus) : le ticket local ne bouge pas, la feuille reste ouverte, le message s'affiche.
     @Test func failedVoidKeepsTheLocalTicketIntact() async {
         let (model, api) = await makeModel()

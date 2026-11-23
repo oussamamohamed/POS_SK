@@ -164,6 +164,8 @@ public final class TicketStore {
 
     /// Ligne envoyée en cuisine que le manager veut annuler : la vue ouvre la feuille d'annulation.
     public var voidCandidate: UUID?
+    /// Demande d'annulation / correction pas encore réussie et sa clé d'idempotence.
+    @ObservationIgnored private var pendingLineVoid: (request: String, key: UUID)?
 
     /// Seul un manager ou un admin peut annuler une ligne déjà envoyée en cuisine.
     public func canVoid(_ line: CartLine) -> Bool { line.isDispatched && session.isManager }
@@ -196,16 +198,24 @@ public final class TicketStore {
     }
 
     /// Annule (ligne envoyée, motif obligatoire) ou corrige (non envoyée) `quantity` unités, puis relit la commande.
+    /// Une clé d'idempotence par intention : gardée tant que la même demande échoue (réponse perdue, refus), renouvelée après un succès
+    /// ou quand la ligne, la quantité ou le motif changent. Une nouvelle tentative ne peut donc pas annuler deux fois.
     public func voidLine(lineId: UUID, quantity: Int, reason: String?) async -> Bool {
         guard let line = lines.first(where: { $0.id == lineId }), let serverLineId = line.serverLineId else { return false }
         let trimmed = reason?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         if line.isDispatched, trimmed.isEmpty { return false }
+        guard !isBusy else { return false } // double tap : ne pas toucher à la clé de la demande en vol
+        let request = "\(serverLineId)|\(quantity)|\(line.isDispatched ? trimmed : "")"
+        if pendingLineVoid?.request != request { pendingLineVoid = (request, UUID()) }
+        let key = pendingLineVoid?.key
         let ok = await run {
             guard let orderId else { throw APIError.notFound(L10n.string("order.no_active_order")) }
-            try await api.voidLine(orderId: orderId, lineId: serverLineId, quantity: quantity, reason: line.isDispatched ? trimmed : nil, operatorId: session.currentOperator?.id)
+            try await api.voidLine(orderId: orderId, lineId: serverLineId, quantity: quantity, reason: line.isDispatched ? trimmed : nil,
+                                   operatorId: session.currentOperator?.id, idempotencyKey: key)
             if let order = try await api.activeOrder(table: tableNumber) { hydrate(order) }
         }
         if ok {
+            pendingLineVoid = nil
             voidCandidate = nil
             if line.isDispatched { notifier.success(String(format: L10n.string("order.line_voided"), quantity, line.name, trimmed)) }
         }
