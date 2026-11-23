@@ -597,6 +597,13 @@ public partial class Program
                 CreatedAtUtc TEXT NOT NULL
             );
             CREATE INDEX IF NOT EXISTS IX_OrderLineVoidRequests_CreatedAtUtc ON OrderLineVoidRequests (CreatedAtUtc);");
+            ApplySchema(dbContext, schemaLog, @"CREATE TABLE IF NOT EXISTS IdempotentRequests (
+                IdempotencyKey TEXT PRIMARY KEY,
+                RequestHash TEXT NOT NULL,
+                ResponseJson TEXT NOT NULL,
+                CreatedAtUtc TEXT NOT NULL
+            );
+            CREATE INDEX IF NOT EXISTS IX_IdempotentRequests_CreatedAtUtc ON IdempotentRequests (CreatedAtUtc);");
 
             // Initialise ReceiptLanguage au démarrage plutôt qu'à la première lecture paresseuse :
             // sinon une installation EN/AR fraîche qui prend des commandes avant l'ouverture de

@@ -42,6 +42,7 @@ public class AppDbContext : DbContext
     public DbSet<OrderDiscountAudit> OrderDiscountAudits => Set<OrderDiscountAudit>();
     public DbSet<OrderLineVoid> OrderLineVoids => Set<OrderLineVoid>();
     public DbSet<OrderLineVoidRequest> OrderLineVoidRequests => Set<OrderLineVoidRequest>();
+    public DbSet<IdempotentRequest> IdempotentRequests => Set<IdempotentRequest>();
     public DbSet<GridLayout> GridLayouts => Set<GridLayout>();
     public DbSet<GridSlot> GridSlots => Set<GridSlot>();
     public DbSet<HeldOrder> HeldOrders => Set<HeldOrder>();
@@ -412,6 +413,13 @@ public class AppDbContext : DbContext
         {
             entity.HasKey(r => r.IdempotencyKey);
             entity.Property(r => r.ReasonHash).HasMaxLength(64).IsRequired();
+            entity.HasIndex(r => r.CreatedAtUtc);
+        });
+
+        modelBuilder.Entity<IdempotentRequest>(entity =>
+        {
+            entity.HasKey(r => r.IdempotencyKey);
+            entity.Property(r => r.RequestHash).HasMaxLength(64).IsRequired();
             entity.HasIndex(r => r.CreatedAtUtc);
         });
 

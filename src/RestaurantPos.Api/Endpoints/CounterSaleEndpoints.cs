@@ -359,7 +359,7 @@ public static class CounterSaleEndpoints
                 hasCash,
                 printQueued
             ));
-        }).RequirePairedDevice();
+        }).RequirePairedDevice().AddEndpointFilter<IdempotencyFilter<CounterCheckoutRequest>>();
 
         // 8. Lookup and Redeem Customer Credit Vouchers
         group.MapGet("/vouchers/{code}", async (string code, AppDbContext db) =>

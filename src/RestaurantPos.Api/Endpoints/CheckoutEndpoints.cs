@@ -200,7 +200,7 @@ public static class CheckoutEndpoints
                 FiscalTimestampUtc = DateTimeOffset.UtcNow,
                 PrintQueued = printQueued
             });
-        }).RequirePairedDevice();
+        }).RequirePairedDevice().AddEndpointFilter<IdempotencyFilter<PaymentSettlementRequest>>();
 
         // Void receipt endpoint
         group.MapPost("/void/{receiptId:guid}", async (Guid receiptId, VoidReceiptRequest req, ICheckoutPaymentService checkout, AppDbContext db, INF525FiscalAuditService fiscal, HttpContext http, ClaimsPrincipal user) =>
