@@ -524,10 +524,16 @@ public final class TakingsStore {
         } catch { notifier.error(error) }
     }
 
+    /// Même annulation tant qu'elle reste sans réponse (réseau coupé) : même clé, le nouvel essai rend le succès au lieu de « déjà annulé ».
+    @ObservationIgnored private var pendingVoid: (request: String, key: UUID)?
+
     /// Annule un reçu par avoir ; `restock` remet les ingrédients en stock (produit non consommé).
     public func void(_ receipt: TakingsReceipt, restock: Bool) async -> Bool {
+        let fingerprint = "\(receipt.id)|\(restock)"
+        if pendingVoid?.request != fingerprint { pendingVoid = (fingerprint, UUID()) }
         do {
-            _ = try await api.voidReceipt(receiptId: receipt.id, restock: restock)
+            _ = try await api.voidReceipt(receiptId: receipt.id, restock: restock, idempotencyKey: pendingVoid?.key)
+            pendingVoid = nil
             notifier.success(String(format: L10n.string("takings.void_done"), receipt.receiptNumber))
             await load()
             return true

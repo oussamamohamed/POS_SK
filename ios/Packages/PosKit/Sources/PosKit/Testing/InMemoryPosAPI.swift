@@ -35,8 +35,13 @@ public actor InMemoryPosAPI: PosAPI {
     /// Clés reçues par `pay` et `counterCheckout`, dans l'ordre (tests).
     public private(set) var payKeys: [UUID?] = []
     public private(set) var counterCheckoutKeys: [UUID?] = []
+    /// Clés reçues par `addItems` et `voidReceipt`, dans l'ordre (tests).
+    public private(set) var addItemsKeys: [UUID?] = []
+    public private(set) var voidReceiptKeys: [UUID?] = []
     /// Si vrai, le prochain encaissement s'applique puis échoue comme une réponse perdue (délai dépassé).
     public var loseNextPaymentResponse = false
+    /// Idem pour le prochain ajout de lignes ou la prochaine annulation de reçu (séparé : un encaissement envoie d'abord le brouillon).
+    public var loseNextWriteResponse = false
     private var held: [HeldOrder] = []
     private var rooms: [HotelRoom]
     private var printersStore: [Printer]
@@ -117,6 +122,7 @@ public actor InMemoryPosAPI: PosAPI {
     public func setLatency(_ value: Duration) { latency = value }
     public func setLoseNextVoidLineResponse(_ value: Bool) { loseNextVoidLineResponse = value }
     public func setLoseNextPaymentResponse(_ value: Bool) { loseNextPaymentResponse = value }
+    public func setLoseNextWriteResponse(_ value: Bool) { loseNextWriteResponse = value }
     public func forceHappyHour(minutes: Int) { overrideUntil = Date().addingTimeInterval(TimeInterval(minutes * 60)) }
 
     private func step(_ name: String) async throws {
@@ -807,8 +813,11 @@ public actor InMemoryPosAPI: PosAPI {
         return order.orderId
     }
 
-    public func addItems(table: String, items: [OrderItemInput]) async throws -> ActiveOrder {
+    public func addItems(table: String, items: [OrderItemInput], idempotencyKey: UUID?) async throws -> ActiveOrder {
+        addItemsKeys.append(idempotencyKey) // avant `step` : une clé envoyée compte même si l'appel échoue
         try await step("addItems"); try requireAuth()
+        let fingerprint = "items|\(table)|\(items)"
+        if let replay = try replayedPayment(idempotencyKey, fingerprint, as: ActiveOrder.self) { return replay }
         if items.contains(where: { input in productsStore.first { $0.id == input.productId }?.isOutOfStock == true }) {
             throw APIError.server(status: 409, message: "Produit en rupture : il ne peut pas être ajouté à la commande.")
         }
@@ -822,7 +831,9 @@ public actor InMemoryPosAPI: PosAPI {
             }
         }
         orders[id]!.order = order
-        return decorated(order)!
+        let result = decorated(order)!
+        try rememberPayment(idempotencyKey, fingerprint, result, isPayment: false)
+        return result
     }
 
     public func dispatch(table: String) async throws {
@@ -988,10 +999,11 @@ public actor InMemoryPosAPI: PosAPI {
         return result
     }
 
-    private func rememberPayment(_ key: UUID?, _ fingerprint: String, _ result: Any) throws {
+    private func rememberPayment(_ key: UUID?, _ fingerprint: String, _ result: Any, isPayment: Bool = true) throws {
         if let key { appliedPaymentKeys[key] = (fingerprint, result) }
-        if loseNextPaymentResponse {
-            loseNextPaymentResponse = false
+        let lost = isPayment ? loseNextPaymentResponse : loseNextWriteResponse
+        if lost {
+            if isPayment { loseNextPaymentResponse = false } else { loseNextWriteResponse = false }
             throw APIError.transport("The request timed out.")
         }
     }
@@ -1252,11 +1264,16 @@ public actor InMemoryPosAPI: PosAPI {
         return rows
     }
 
-    public func voidReceipt(receiptId: UUID, restock: Bool) async throws -> OperationResult {
+    public func voidReceipt(receiptId: UUID, restock: Bool, idempotencyKey: UUID?) async throws -> OperationResult {
+        voidReceiptKeys.append(idempotencyKey) // avant `step` : une clé envoyée compte même si l'appel échoue
         try await step("voidReceipt"); try requireManager()
+        let fingerprint = "voidReceipt|\(receiptId)|\(restock)"
+        if let replay = try replayedPayment(idempotencyKey, fingerprint, as: OperationResult.self) { return replay }
         guard receiptId == Self.voidableReceiptId, !voidCalls.contains(where: { $0.receiptId == receiptId }) else { throw APIError.server(status: 400, message: "Annulation du reçu impossible.") }
         voidCalls.append((receiptId, restock))
-        return OperationResult(success: true, message: "T01-000003")
+        let result = OperationResult(success: true, message: "T01-000003")
+        try rememberPayment(idempotencyKey, fingerprint, result, isPayment: false)
+        return result
     }
 
     public func journalToday(tzOffsetMinutes: Int) async throws -> [JournalEntry] {

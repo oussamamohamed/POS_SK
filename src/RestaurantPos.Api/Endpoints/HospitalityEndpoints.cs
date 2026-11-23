@@ -287,7 +287,7 @@ public static class HospitalityEndpoints
             {
                 return Results.BadRequest(new { Success = false, Message = Texts.T("errors.room_charge_failed") });
             }
-        });
+        }).AddEndpointFilter<IdempotencyFilter<RoomChargeRequest>>();
     }
 }
 

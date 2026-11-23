@@ -85,7 +85,9 @@ test.describe('Facturation sur Chambre d Hôtel (PMS & Signature Tactile)', () =
     }
 
     // Submit room charge
+    const chargeRequest = page.waitForRequest(r => r.url().endsWith('/api/hotel/room-charge'));
     await page.click('#formRoomCharge button[type="submit"]');
+    expect((await chargeRequest).headers()['idempotency-key']).toMatch(/^[0-9a-f-]{36}$/);
 
     // Modal should close
     await expect(roomModal).not.toHaveClass(/active/);

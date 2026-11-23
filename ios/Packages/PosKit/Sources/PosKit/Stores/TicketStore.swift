@@ -169,6 +169,8 @@ public final class TicketStore {
     /// Encaissement pas encore réussi et sa clé d'idempotence : la même tant que la même demande échoue (réponse perdue, refus),
     /// renouvelée après un succès (deux parts identiques d'un partage sont deux encaissements) ou quand la demande change.
     @ObservationIgnored private var pendingPayment: (request: String, key: UUID)?
+    /// Idem pour l'envoi des brouillons au serveur (`commitDrafts`) : oubliée dès que le serveur a répondu par un succès.
+    @ObservationIgnored private var pendingItems: (request: String, key: UUID)?
 
     private func paymentKey(for request: Any) -> UUID {
         let fingerprint = String(describing: request)
@@ -257,7 +259,12 @@ public final class TicketStore {
         // Le serveur crée les commandes « à emporter » par défaut : une table est servie sur place,
         // le comptoir garde le mode choisi par le caissier.
         let wanted: OrderDestination = isCounter ? destination : .eatIn
-        let order = try await api.addItems(table: tableNumber, items: drafts.map(\.asInput))
+        // Même envoi tant qu'il reste sans réponse (réseau coupé) : même clé, le serveur n'ajoute pas les lignes deux fois.
+        let inputs = drafts.map(\.asInput)
+        let fingerprint = "\(tableNumber)|\(inputs)"
+        if pendingItems?.request != fingerprint { pendingItems = (fingerprint, UUID()) }
+        let order = try await api.addItems(table: tableNumber, items: inputs, idempotencyKey: pendingItems?.key)
+        pendingItems = nil
         lines.removeAll(where: \.isDraft)
         hydrate(order)
         if order.destination != wanted {

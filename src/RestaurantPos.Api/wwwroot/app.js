@@ -1983,12 +1983,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         try {
             await ensureAuthToken();
+            const itemsBody = { items: itemsPayload };
             const res = await fetch(`/api/tables/${encodeURIComponent(table)}/items`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ items: itemsPayload }),
+                headers: { 'Content-Type': 'application/json', 'Idempotency-Key': intentKey(`items:${table}`, itemsBody) },
+                body: JSON.stringify(itemsBody),
                 keepalive: !!options.keepalive
             });
+            intentAttempts.delete(`items:${table}`); // réponse reçue : l'intention suivante aura sa clé
             if (!res.ok) {
                 if (!options.keepalive) showToast(t('order.save_ticket_error', { status: res.status }), 'error');
                 return false;
@@ -2309,6 +2311,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         const body = JSON.stringify(payload);
         if (paymentAttempt?.body !== body) paymentAttempt = { body, key: newIdempotencyKey() };
         return paymentAttempt.key;
+    }
+
+    /** Même règle pour les autres écritures rejouables (ajout de lignes, facturation chambre, annulation de reçu) : une clé par nom d'intention. */
+    const intentAttempts = new Map(); // nom -> { body, key }
+    function intentKey(name, payload) {
+        const body = JSON.stringify(payload);
+        if (intentAttempts.get(name)?.body !== body) intentAttempts.set(name, { body, key: newIdempotencyKey() });
+        return intentAttempts.get(name).key;
     }
 
     /**
@@ -2742,20 +2752,22 @@ document.addEventListener('DOMContentLoaded', async () => {
             const sigData = elements.signatureCanvas.toDataURL('image/png');
 
             try {
+                const chargeBody = {
+                    orderId: state.activeOrderId || '00000000-0000-0000-0000-000000000000',
+                    tableNumber: state.activeTable,
+                    roomNumber: roomNum,
+                    guestName: room.guestName,
+                    amount: baseAmount,
+                    tipAmount: tipAmount,
+                    signatureDataUrl: sigData,
+                    notes: `Facturation chambre ${roomNum}` // nf525-texte-fixe : note stockée telle quelle côté serveur
+                };
                 const res = await fetch('/api/hotel/room-charge', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        orderId: state.activeOrderId || '00000000-0000-0000-0000-000000000000',
-                        tableNumber: state.activeTable,
-                        roomNumber: roomNum,
-                        guestName: room.guestName,
-                        amount: baseAmount,
-                        tipAmount: tipAmount,
-                        signatureDataUrl: sigData,
-                        notes: `Facturation chambre ${roomNum}` // nf525-texte-fixe : note stockée telle quelle côté serveur
-                    })
+                    headers: { 'Content-Type': 'application/json', 'Idempotency-Key': intentKey('room-charge', chargeBody) },
+                    body: JSON.stringify(chargeBody)
                 });
+                intentAttempts.delete('room-charge');
 
                 const data = await res.json();
                 if (res.ok && data.success) {
@@ -3982,10 +3994,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             const act = e.target.closest('[data-act]')?.dataset.act;
             if (act === 'cancel') { overlay.remove(); return; }
             if (act !== 'ok') return;
+            const voidBody = { terminalId: '', operatorId: '00000000-0000-0000-0000-000000000000', restock: overlay.querySelector('#voidRestock').checked };
             const res = await fetch(`/api/checkout/void/${encodeURIComponent(receiptId)}`, {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ terminalId: '', operatorId: '00000000-0000-0000-0000-000000000000', restock: overlay.querySelector('#voidRestock').checked })
+                method: 'POST', headers: { 'Content-Type': 'application/json', 'Idempotency-Key': intentKey(`void:${receiptId}`, voidBody) },
+                body: JSON.stringify(voidBody)
             });
+            intentAttempts.delete(`void:${receiptId}`);
             if (!res.ok) { showToast(await readApiError(res, t('takings.void_error')), 'error'); return; }
             overlay.remove();
             showToast(t('takings.void_done', { number }), 'success');

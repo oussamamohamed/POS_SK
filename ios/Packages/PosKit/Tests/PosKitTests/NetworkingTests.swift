@@ -123,6 +123,25 @@ struct HTTPPosAPITests {
         }
     }
 
+    @Test func addItemsAndVoidReceiptSendTheIdempotencyKeyHeaderOnlyWhenGiven() async throws {
+        let key = UUID()
+        let items = makeAPI { _ in .init(status: 200, body: #"{"orderId":"01a0d512-74a3-755d-acbf-42fa8a59abce","tableNumber":"T1","lines":[],"destination":0}"#) }
+        let line = CartLine(productId: UUID(), name: "Café", unitPrice: Money(cents: 250), taxRatePercent: 10)
+        _ = try await items.addItems(table: "T1", items: [line.asInput], idempotencyKey: key)
+        #expect(last.url?.path == "/api/tables/T1/items")
+        #expect(last.value(forHTTPHeaderField: "Idempotency-Key") == key.uuidString.lowercased())
+        _ = try await items.addItems(table: "T1", items: [line.asInput])
+        #expect(last.value(forHTTPHeaderField: "Idempotency-Key") == nil)
+
+        let void = makeAPI { _ in .init(status: 200, body: #"{"receiptNumber":"T01-VOID-000002"}"#) }
+        let receiptId = UUID()
+        _ = try await void.voidReceipt(receiptId: receiptId, restock: false, idempotencyKey: key)
+        #expect(last.url?.path == "/api/checkout/void/\(receiptId.uuidString.lowercased())")
+        #expect(last.value(forHTTPHeaderField: "Idempotency-Key") == key.uuidString.lowercased())
+        _ = try await void.voidReceipt(receiptId: receiptId)
+        #expect(last.value(forHTTPHeaderField: "Idempotency-Key") == nil)
+    }
+
     @Test func payAndCounterCheckoutSendTheIdempotencyKeyHeaderOnlyWhenGiven() async throws {
         let api = makeAPI { _ in .init(status: 200, body: #"{"receiptNumber":"R1","totalPaid":1,"changeGiven":0,"remainingBalance":0}"#) }
         let key = UUID()

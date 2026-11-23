@@ -102,4 +102,16 @@ Clients : web = `paymentKey(payload)` (même clé tant que la même demande repa
 
 Tests : `PaymentIdempotencyTests` (14 cas : rejeu, sans clé, clé vide, 409 montant / commande / poste, clé invalide, refus non consommé, 4 requêtes concurrentes, purge, comptoir, deux routes), Playwright `payment-idempotency.spec.ts` (réponse perdue après encaissement réel, même clé, un seul reçu, part suivante = nouvelle clé), PosKit `StoreTests` / `NetworkingTests`. Contrôles par mutation : sans la relecture de clé 8 tests .NET échouent ; sans l'en-tête web le test Playwright voit un reçu de trop.
 
-Limites : l'encaissement TPE déjà débité mais non enregistré (`LogApprovedButNotRecorded`) n'est pas couvert ; rejeu non lié à l'opérateur ; routes restantes sans clé : ajout de lignes, remise / offert, annulation de reçu, chambre.
+Limites : l'encaissement TPE déjà débité mais non enregistré (`LogApprovedButNotRecorded`) n'est pas couvert ; rejeu non lié à l'opérateur ; routes restantes sans clé : remise / offert (idempotents par nature : ils posent une valeur).
+
+## Clé d'idempotence : ajout de lignes, chambre, annulation de reçu
+
+Même filtre `IdempotencyFilter<TRequest>` sur `POST /api/tables/{n}/items` (`AddOrderItemsRequest`), `POST /api/hotel/room-charge` (`RoomChargeRequest`) et `POST /api/checkout/void/{id}` (`VoidReceiptRequest`). Les deux premières routes n'exigent pas d'appairage : le poste de l'empreinte est vide sans appareil (`RequireDeviceFilter.PairedDeviceOrNull`). Le chemin fait partie de l'empreinte (table, reçu).
+
+Pourquoi : l'ajout de lignes et la chambre doublaient les lignes / la charge sur la note de l'hôtel au nouvel essai ; l'annulation de reçu n'écrivait pas deux fois mais le nouvel essai affichait « échec » alors que l'annulation avait eu lieu. Remise globale et offert posent une valeur : rejouer ne change rien, pas de clé.
+
+Clients : web = `intentKey(nom, charge)` (une clé par intention, oubliée à toute réponse) pour l'envoi du ticket, la chambre et l'annulation de reçu ; iPad serveur = `TicketStore.pendingItems` (envoi des brouillons) et `TakingsStore.pendingVoid` (annulation de reçu), oubliées après succès. La chambre n'existe pas côté iPad ; mode autonome : clé ignorée.
+
+Tests : `RouteIdempotencyTests` (10 cas), Playwright `items-idempotency.spec.ts` (réponse perdue puis rejeu) et assertions d'en-tête dans `hotel-room-charge.spec.ts` et `stock.spec.ts`, PosKit (reprise de clé du brouillon et de l'annulation de reçu, en-têtes HTTP). `InMemoryPosAPI.loseNextWriteResponse` simule la réponse perdue de ces deux écritures (drapeau séparé de celui des paiements : un encaissement envoie d'abord le brouillon).
+
+Limite : si le brouillon change entre l'échec et le nouvel essai (ligne ajoutée), la demande diffère, la clé est neuve et les lignes déjà reçues par le serveur sont renvoyées une seconde fois.

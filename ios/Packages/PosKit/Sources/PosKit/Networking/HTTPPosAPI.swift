@@ -437,8 +437,8 @@ public actor HTTPPosAPI: PosAPI {
     }
 
     struct ItemsBody: Encodable { let items: [OrderItemInput] }
-    public func addItems(table: String, items: [OrderItemInput]) async throws -> ActiveOrder {
-        try await call("POST", "tables/\(table)/items", body: ItemsBody(items: items))
+    public func addItems(table: String, items: [OrderItemInput], idempotencyKey: UUID?) async throws -> ActiveOrder {
+        try await call("POST", "tables/\(table)/items", body: ItemsBody(items: items), idempotencyKey: idempotencyKey)
     }
 
     public func dispatch(table: String) async throws { try await perform("POST", "tables/\(table)/dispatch") }
@@ -555,9 +555,9 @@ public actor HTTPPosAPI: PosAPI {
     struct VoidReceiptBody: Encodable { let terminalId: String, operatorId: UUID, restock: Bool }
     struct VoidResponse: Decodable { let receiptNumber: String? }
 
-    public func voidReceipt(receiptId: UUID, restock: Bool) async throws -> OperationResult {
+    public func voidReceipt(receiptId: UUID, restock: Bool, idempotencyKey: UUID?) async throws -> OperationResult {
         // Le serveur prend l'opérateur du jeton et le poste de l'appareil appairé.
-        let r: VoidResponse = try await call("POST", "checkout/void/\(receiptId.uuidString.lowercased())", body: VoidReceiptBody(terminalId: "", operatorId: UUID(uuid: (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)), restock: restock))
+        let r: VoidResponse = try await call("POST", "checkout/void/\(receiptId.uuidString.lowercased())", body: VoidReceiptBody(terminalId: "", operatorId: UUID(uuid: (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)), restock: restock), idempotencyKey: idempotencyKey)
         return OperationResult(success: true, message: r.receiptNumber)
     }
 

@@ -68,7 +68,7 @@ public static class TableEndpoints
             {
                 return Results.Conflict(new { code = "product_unavailable", productId = ex.ProductId, Message = Texts.T("errors.product_unavailable") });
             }
-        });
+        }).AddEndpointFilter<IdempotencyFilter<AddOrderItemsRequest>>();
 
         group.MapPost("/{tableNumber}/dispatch", async (string tableNumber, ITableManagementService tableService, IKitchenRoutingService kds, AppDbContext db, PrintDispatcher printing) =>
         {

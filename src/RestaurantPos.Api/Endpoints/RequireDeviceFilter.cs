@@ -34,6 +34,9 @@ public sealed class RequireDeviceFilter : IEndpointFilter
     }
 
     public static Device PairedDevice(HttpContext http) => (Device)http.Items[ItemKey]!;
+
+    // Routes qui n'exigent pas d'appairage : null quand le filtre n'a pas tourné.
+    public static Device? PairedDeviceOrNull(HttpContext http) => http.Items[ItemKey] as Device;
 }
 
 public static class RequireDeviceFilterExtensions

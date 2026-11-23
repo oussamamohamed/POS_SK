@@ -247,7 +247,7 @@ public static class CheckoutEndpoints
                 result.FiscalSignature,
                 FiscalTimestampUtc = DateTimeOffset.UtcNow
             });
-        }).RequireAuthorization("RequireManagerOrAdmin").RequirePairedDevice();
+        }).RequireAuthorization("RequireManagerOrAdmin").RequirePairedDevice().AddEndpointFilter<IdempotencyFilter<VoidReceiptRequest>>();
 
         group.MapPost("/receipts/{receiptId}/reprint", async (
             string receiptId,

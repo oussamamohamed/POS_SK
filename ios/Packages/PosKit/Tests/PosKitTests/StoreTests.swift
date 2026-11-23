@@ -281,6 +281,36 @@ struct TicketStoreTests {
         #expect(keys.count == 2 && keys[0] != nil && keys[0] == keys[1])
     }
 
+    /// Réponse perdue après l'envoi du brouillon : la nouvelle tentative reprend la clé (les lignes ne sont ajoutées qu'une fois) ;
+    /// un nouveau brouillon prend une nouvelle clé.
+    @Test func commitDraftsRetryAfterALostResponseReusesTheKeyAndAddsOnce() async throws {
+        let (model, api) = await makeModel()
+        await model.ticket.load(table: "T5")
+        model.ticket.add(product(model, "Café Gourmand"))
+        await api.setLoseNextWriteResponse(true)
+        var failed = false
+        do { try await model.ticket.commitDrafts() } catch { failed = true }
+        #expect(failed)
+        try await model.ticket.commitDrafts()
+        #expect(try await api.activeOrder(table: "T5")?.lines.reduce(0) { $0 + $1.quantity } == 1, "le rejeu n'ajoute pas la ligne une seconde fois")
+        model.ticket.add(product(model, "Pizza Margherita AOP"))
+        try await model.ticket.commitDrafts()
+        let keys = await api.addItemsKeys
+        #expect(keys.count == 3 && keys.allSatisfy { $0 != nil })
+        #expect(keys[0] == keys[1])
+        #expect(keys[2] != keys[1])
+    }
+
+    @Test func takingsVoidRetryAfterALostResponseReusesTheKey() async {
+        let (model, api) = await makeModel()
+        let receipt = TakingsReceipt(id: InMemoryPosAPI.voidableReceiptId, receiptNumber: "T01-000003", atUtc: Date(), serverName: "Sophie", totalTtc: Money(cents: 4_650))
+        await api.setLoseNextWriteResponse(true)
+        #expect(await model.takings.void(receipt, restock: false) == false)
+        #expect(await model.takings.void(receipt, restock: false), "le rejeu rend le succès au lieu de « déjà annulé »")
+        let keys = await api.voidReceiptKeys
+        #expect(keys.count == 2 && keys[0] != nil && keys[0] == keys[1])
+    }
+
     /// `InMemoryPosAPI` suit le serveur : même clé et même demande = rejeu sans effet ; même clé, autre demande = 409 ; sans clé = deux effets.
     @Test func inMemoryApiReplaysAKeyedVoidAndRefusesAReusedKey() async throws {
         let (model, api) = await makeModel()

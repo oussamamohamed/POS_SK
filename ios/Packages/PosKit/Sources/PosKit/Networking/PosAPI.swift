@@ -108,7 +108,9 @@ public protocol PosAPI: Sendable {
     func createTable(number: String, capacity: Int) async throws
     func openTable(number: String, covers: Int, operatorId: UUID?, waiterName: String?) async throws
     func activeOrder(table: String) async throws -> ActiveOrder?
-    func addItems(table: String, items: [OrderItemInput]) async throws -> ActiveOrder
+    /// `idempotencyKey` : une par envoi voulu du brouillon, réutilisée telle quelle sur une nouvelle tentative ; le serveur rend alors le
+    /// premier succès sans ajouter les lignes une seconde fois (409 si la même clé porte une autre demande). Ignorée en mode autonome.
+    func addItems(table: String, items: [OrderItemInput], idempotencyKey: UUID?) async throws -> ActiveOrder
     func dispatch(table: String) async throws
     func fireSuite(table: String) async throws
     func transfer(from: String, to: String, merge: Bool) async throws -> OperationResult
@@ -153,7 +155,8 @@ public protocol PosAPI: Sendable {
     /// Réimprime un reçu fiscal ; retourne le résultat avec duplicateNumber.
     func reprintReceipt(receiptIdentifier: String) async throws -> ReprintResult
     /// Annule un reçu par avoir (responsable, poste émetteur). `restock` remet les ingrédients en stock (produit non consommé) ; faux par défaut.
-    func voidReceipt(receiptId: UUID, restock: Bool) async throws -> OperationResult
+    /// `idempotencyKey` : même règle que `addItems` ; un nouvel essai après une réponse perdue rend le succès au lieu d'un refus « déjà annulé ».
+    func voidReceipt(receiptId: UUID, restock: Bool, idempotencyKey: UUID?) async throws -> OperationResult
     /// Export FEC ; `company` (facultatif) n'est que journalisé (`FEC_EXPORTED`), comme le paramètre `company` du .NET.
     func exportFec(from: Date, to: Date, siren: String, company: String?) async throws -> (fileName: String, data: Data)
     func dashboard(from: Date, to: Date) async throws -> FinancialDashboard
@@ -283,6 +286,14 @@ public extension PosAPI {
 
     func counterCheckout(_ request: CounterCheckoutRequest) async throws -> CounterCheckoutResult {
         try await counterCheckout(request, idempotencyKey: nil)
+    }
+
+    func addItems(table: String, items: [OrderItemInput]) async throws -> ActiveOrder {
+        try await addItems(table: table, items: items, idempotencyKey: nil)
+    }
+
+    func voidReceipt(receiptId: UUID, restock: Bool = false) async throws -> OperationResult {
+        try await voidReceipt(receiptId: receiptId, restock: restock, idempotencyKey: nil)
     }
 
     /// Export FEC sans société.

@@ -102,7 +102,9 @@ test.describe('Stock : réception, inventaire, pertes, alerte', () => {
     const voidBtn = page.locator('[data-void]').first();
     await voidBtn.click();
     await page.locator('#voidRestock').check();
+    const voidRequest = page.waitForRequest(r => /\/api\/checkout\/void\//.test(r.url()));
     await page.click('#voidReceiptModal [data-act="ok"]');
+    expect((await voidRequest).headers()['idempotency-key']).toMatch(/^[0-9a-f-]{36}$/);
     await expect(page.locator('#voidReceiptModal')).toHaveCount(0);
   });
 });
