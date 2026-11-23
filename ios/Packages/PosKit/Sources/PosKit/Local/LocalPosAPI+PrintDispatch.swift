@@ -183,8 +183,12 @@ extension LocalPosAPI {
                 kitchenComment: row.string("KitchenComment"), reason: row.string("Reason") ?? "", serverName: row.string("ServerName") ?? "",
                 tableNumber: row.string("TableNumber") ?? "", voidedAtUtc: row.date("VoidedAtUtc") ?? clock()
             )
+            // Même en-tête que le bon cuisine : une vente à emporter imprime « À EMPORTER » et son n° de retrait, pas « TABLE Comptoir ».
+            let order = try db.query("SELECT Destination, PickupNumber, PickupBuzzer FROM Orders WHERE Id = ?", [.uuid(row.uuid("OrderId"))]).first
             let doc = TicketBuilder.kitchenCancellation(line, operatorName: row.string("OperatorName") ?? "", language: try floorRepository.settings().kitchenTicketLanguage,
-                                                        context: ticketContext)
+                                                        context: ticketContext,
+                                                        destination: order.flatMap { $0.int("Destination") }.flatMap(OrderDestination.init(rawValue:)) ?? .eatIn,
+                                                        pickupNumber: order?.string("PickupNumber"), pickupBuzzer: order?.string("PickupBuzzer"))
             var queued = false
             for printer in targets {
                 do {

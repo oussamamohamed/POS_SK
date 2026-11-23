@@ -162,6 +162,21 @@ struct LocalLineVoidTests {
         #expect(fake.sent.count == 1 && payload(fake.sent[0].payload, contains: "Burger") && payload(fake.sent[0].payload, contains: "Ancienne"))
     }
 
+    /// Comme le .NET (`PrintDispatcher.QueueKitchenCancellationAsync`) : l'en-tête suit la destination et le retrait de la commande.
+    @Test(arguments: [(OrderDestination.takeaway, "C03" as String?, true), (.takeaway, nil, true), (.eatIn, nil, false)])
+    func cancellationSlipHeaderFollowsTheOrder(destination: OrderDestination, pickup: String?, takeaway: Bool) async throws {
+        let (api, fake, _) = try await rig()
+        let (order, line) = try await sentLine(api, table: DiningTable.counterNumber)
+        try await api.testExec("UPDATE Orders SET Destination = \(destination.rawValue), PickupNumber = \(pickup.map { "'\($0)'" } ?? "NULL"), PickupBuzzer = \(pickup == nil ? "NULL" : "'Z9'")")
+        try await api.deleteTestJobs()
+        try await api.voidLine(orderId: order.orderId, lineId: line.lineId, quantity: 1, reason: "Erreur", operatorId: nil)
+        await api.runPrintCycle()
+        let bytes = try #require(fake.sent.first?.payload)
+        #expect(payload(bytes, contains: "EMPORTER") == takeaway)
+        #expect(payload(bytes, contains: "TABLE \(DiningTable.counterNumber)") == !takeaway)
+        #expect(payload(bytes, contains: "C03") == (pickup != nil) && payload(bytes, contains: "Z9") == (pickup != nil))
+    }
+
     @Test func voidQueuesCancellationJobAfterCommit() async throws {
         let (api, fake, hot) = try await rig()
         let (order, line) = try await sentLine(api, quantity: 2)

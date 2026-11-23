@@ -378,16 +378,26 @@ public static class TicketDocumentBuilder
         return new TicketDocument(lang, lang == "ar", lines);
     }
 
-    /// <summary>Bon d'annulation d'une ligne déjà envoyée en cuisine : titre, table, serveur, opérateur, heure, quantité retirée, motif.</summary>
-    public static TicketDocument KitchenCancellation(OrderLineVoid line, string operatorName, string language)
+    /// <summary>
+    /// Bon d'annulation d'une ligne déjà envoyée en cuisine : titre, en-tête du bon cuisine (table, ou « à emporter » + n° de retrait et buzzer),
+    /// serveur, opérateur, heure, quantité retirée, motif. La destination et le retrait viennent de la commande (absents de <see cref="OrderLineVoid"/>).
+    /// </summary>
+    public static TicketDocument KitchenCancellation(OrderLineVoid line, string operatorName, string language,
+        OrderDestination destination = OrderDestination.EatIn, string? pickupNumber = null, string? pickupBuzzer = null)
     {
         ArgumentNullException.ThrowIfNull(line);
         var (lang, c) = Resolve(language);
         var lines = new List<TicketLine>
         {
             new TicketText(Texts.Get(c, "kitchen_ticket.cancellation_title"), TicketAlign.Center, Bold: true, Large: true),
-            new TicketText(Texts.Get(c, "kitchen_ticket.table", ("table", line.TableNumber)), TicketAlign.Center, Large: true)
+            new TicketText(destination == OrderDestination.Takeaway
+                ? Texts.Get(c, "kitchen_ticket.takeaway")
+                : Texts.Get(c, "kitchen_ticket.table", ("table", line.TableNumber)), TicketAlign.Center, Large: true)
         };
+        if (!string.IsNullOrWhiteSpace(pickupNumber))
+            lines.Add(new TicketText(Texts.Get(c, "kitchen_ticket.pickup", ("number", pickupNumber)), TicketAlign.Center, Large: true));
+        if (!string.IsNullOrWhiteSpace(pickupBuzzer))
+            lines.Add(new TicketText(Texts.Get(c, "kitchen_ticket.buzzer", ("buzzer", pickupBuzzer)), TicketAlign.Center, Bold: true));
         if (!string.IsNullOrWhiteSpace(line.ServerName))
             lines.Add(new TicketColumns(Texts.Get(c, "kitchen_ticket.server"), line.ServerName));
         lines.Add(new TicketColumns(Texts.Get(c, "kitchen_ticket.cancelled_by"), operatorName));

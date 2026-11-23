@@ -155,13 +155,23 @@ enum TicketBuilder {
         return document(lang, lines)
     }
 
-    /// Bon d'annulation d'une ligne envoyée : miroir de `TicketDocumentBuilder.KitchenCancellation` (.NET).
-    static func kitchenCancellation(_ line: TicketVoidLine, operatorName: String, language: String, context: TicketContext) -> TicketDocument {
+    /// Bon d'annulation d'une ligne envoyée : miroir de `TicketDocumentBuilder.KitchenCancellation` (.NET). Même en-tête que le bon cuisine
+    /// (table, ou « à emporter » + n° de retrait et buzzer de la commande).
+    static func kitchenCancellation(_ line: TicketVoidLine, operatorName: String, language: String, context: TicketContext,
+                                    destination: OrderDestination = .eatIn, pickupNumber: String? = nil, pickupBuzzer: String? = nil) -> TicketDocument {
         let lang = resolve(language)
         var lines: [TicketLine] = [
             .text(text(lang, "kitchen_ticket.cancellation_title"), align: .center, bold: true, large: true),
-            .text(text(lang, "kitchen_ticket.table", ["table": line.tableNumber]), align: .center, large: true),
+            .text(destination == .takeaway
+                  ? text(lang, "kitchen_ticket.takeaway")
+                  : text(lang, "kitchen_ticket.table", ["table": line.tableNumber]), align: .center, large: true),
         ]
+        if let number = pickupNumber, !isBlank(number) {
+            lines.append(.text(text(lang, "kitchen_ticket.pickup", ["number": number]), align: .center, large: true))
+        }
+        if let buzzer = pickupBuzzer, !isBlank(buzzer) {
+            lines.append(.text(text(lang, "kitchen_ticket.buzzer", ["buzzer": buzzer]), align: .center, bold: true))
+        }
         if !isBlank(line.serverName) { lines.append(.columns(label: text(lang, "kitchen_ticket.server"), value: line.serverName)) }
         lines.append(.columns(label: text(lang, "kitchen_ticket.cancelled_by"), value: operatorName))
         lines.append(.columns(label: text(lang, "kitchen_ticket.time"), value: TicketFormat.localTime(line.voidedAtUtc, in: context.timeZone)))

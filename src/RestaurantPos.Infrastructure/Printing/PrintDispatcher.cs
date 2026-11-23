@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using RestaurantPos.Application.Common.Interfaces;
 using RestaurantPos.Domain.Common;
 using RestaurantPos.Domain.Entities;
+using RestaurantPos.Domain.Enums;
 using RestaurantPos.Infrastructure.Persistence;
 
 namespace RestaurantPos.Infrastructure.Printing;
@@ -137,7 +138,11 @@ public sealed class PrintDispatcher
                 return;
             }
             var language = (await _settings.GetAsync(ct).ConfigureAwait(false)).KitchenTicketLanguage;
-            var document = TicketDocumentBuilder.KitchenCancellation(line, line.OperatorName, language);
+            // Même en-tête que le bon cuisine : une vente à emporter imprime « À EMPORTER » et son n° de retrait, pas « TABLE Comptoir ».
+            var order = await _db.Orders.AsNoTracking().Where(o => o.Id == line.OrderId)
+                .Select(o => new { o.Destination, o.PickupNumber, o.PickupBuzzer }).FirstOrDefaultAsync(ct).ConfigureAwait(false);
+            var document = TicketDocumentBuilder.KitchenCancellation(line, line.OperatorName, language,
+                order?.Destination ?? OrderDestination.EatIn, order?.PickupNumber, order?.PickupBuzzer);
             foreach (var printer in printers)
             {
                 try

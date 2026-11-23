@@ -175,6 +175,29 @@ public class TicketDocumentBuilderTests
             .And.Contain("-2  Burger Rossini").And.Contain("+ Saignant").And.Contain("Sans oignon").And.Contain(reason);
     }
 
+    [Theory]
+    [InlineData("en")]
+    [InlineData("fr")]
+    [InlineData("ar")]
+    public void KitchenCancellation_UsesTheKitchenTicketHeader_TakeawayWithPickupAndEatInUnchanged(string lang)
+    {
+        var line = new OrderLineVoid { OrderId = Guid.NewGuid(), ProductName = "Burger", Quantity = 1, Reason = "Erreur", OperatorName = "Léa", TableNumber = "Comptoir", VoidedAtUtc = Dispatched };
+        var takeaway = new Order { TableNumber = "Comptoir", Destination = OrderDestination.Takeaway, PickupNumber = "A-12", PickupBuzzer = "7" };
+        // En-tête du bon cuisine = lignes avant « Serveur » ; le bon d'annulation le reprend tel quel sous son titre.
+        static List<TicketLine> Header(TicketDocument d, int skip) => d.Lines.Skip(skip).TakeWhile(l => l is TicketText).ToList();
+        var kitchen = TicketDocumentBuilder.KitchenTicket(SampleKitchenTicket(Guid.NewGuid()), takeaway, lang);
+
+        var slip = TicketDocumentBuilder.KitchenCancellation(line, "Léa", lang, OrderDestination.Takeaway, "A-12", "7");
+
+        Header(slip, 1).Should().Equal(Header(kitchen, 0));
+        Header(slip, 1).Should().HaveCount(3);
+        AllText(slip).Should().NotContain("Comptoir");
+        // Sur place (valeurs par défaut) : sortie inchangée, « TABLE <n> » sans retrait.
+        TicketDocumentBuilder.KitchenCancellation(line, "Léa", lang, OrderDestination.EatIn, null, null).Lines
+            .Should().Equal(TicketDocumentBuilder.KitchenCancellation(line, "Léa", lang).Lines);
+        AllText(TicketDocumentBuilder.KitchenCancellation(line, "Léa", lang)).Should().Contain("Comptoir").And.NotContain("A-12");
+    }
+
     [Fact]
     public void Receipt_HasFiscalContent_WithoutPickupCoupon()
     {

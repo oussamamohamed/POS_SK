@@ -233,6 +233,29 @@ public class PrintDispatcherTests
         db.PrintJobs.Select(j => j.PrinterId).Should().BeEquivalentTo([dessert.Id, hot.Id]);
     }
 
+    [Theory]
+    [InlineData(OrderDestination.Takeaway, "À EMPORTER", "Retrait n° A-07")]
+    [InlineData(OrderDestination.EatIn, "TABLE Comptoir", null)]
+    public async Task KitchenCancellation_HeaderFollowsTheOrderDestinationAndPickupNumber(OrderDestination destination, string header, string? pickup)
+    {
+        var (d, db) = Create();
+        Printer(db, "Chaud", ["HOT_KITCHEN"]);
+        await new RestaurantSettingsService(db).UpdateAsync(new UpdateRestaurantSettingsRequest("fr", "fr"));
+        var order = new Order { TableNumber = "Comptoir", Destination = destination, PickupNumber = pickup is null ? null : "A-07" };
+        db.Orders.Add(order);
+        var v = Void(db, "HOT_KITCHEN");
+        v.OrderId = order.Id;
+        v.TableNumber = "Comptoir";
+        db.SaveChanges();
+
+        await d.QueueKitchenCancellationAsync(v.Id);
+
+        var lines = TicketDocumentJson.Deserialize(db.PrintJobs.Single().DocumentJson).Lines.OfType<TicketText>().Select(t => t.Text).ToList();
+        lines[1].Should().Be(header);
+        if (pickup is null) lines.Should().NotContain(t => t.StartsWith("Retrait", StringComparison.Ordinal));
+        else lines[2].Should().Be(pickup);
+    }
+
     [Fact]
     public async Task QueueKitchenCancellation_NoPrinter_DoesNotThrowAndQueuesNothing()
     {

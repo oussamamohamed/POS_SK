@@ -315,8 +315,20 @@ public class TicketDocumentReferenceFixtureTests
             Cancellation("kitchen_cancellation_en_minimal", "en",
                 SampleVoid("Café", 1, null, null, "Client parti", "Marie", "", "Comptoir", "2025-07-15T10:30:45.000Z")),
             Cancellation("kitchen_cancellation_ar", "ar",
-                SampleVoid("Burger maison", 1, "بدون بصل", null, "طلب بالخطأ", "ليلى", "ليلى", "5", "2025-07-15T20:05:00.000Z"))
+                SampleVoid("Burger maison", 1, "بدون بصل", null, "طلب بالخطأ", "ليلى", "ليلى", "5", "2025-07-15T20:05:00.000Z")),
+            // En-tête du bon cuisine selon la commande : à emporter avec retrait et buzzer, à emporter sans retrait, sur place explicite.
+            CancellationWithHeader("kitchen_cancellation_takeaway_pickup_fr", "fr",
+                SampleVoid("Burger maison", 1, null, null, "Erreur de saisie", "Alexandre", "", "Comptoir", "2025-07-15T10:30:45.000Z"), OrderDestination.Takeaway, "C03", "12"),
+            CancellationWithHeader("kitchen_cancellation_takeaway_ar", "ar",
+                SampleVoid("Burger maison", 1, null, null, "طلب بالخطأ", "ليلى", "", "Comptoir", "2025-07-15T20:05:00.000Z"), OrderDestination.Takeaway, null, null),
+            CancellationWithHeader("kitchen_cancellation_eat_in_en", "en",
+                SampleVoid("Café", 1, null, null, "Client parti", "Marie", "Paul", "21", "2025-01-15T19:45:00.000Z"), OrderDestination.EatIn, null, null)
         ];
+
+        Scenario CancellationWithHeader(string name, string lang, OrderLineVoid line, OrderDestination destination, string? pickupNumber, string? pickupBuzzer) =>
+            new(name, "kitchenCancellation", lang,
+                new { voidLine = InVoid(line), operatorName = line.OperatorName, destination = (int)destination, pickupNumber, buzzer = pickupBuzzer },
+                TicketDocumentBuilder.KitchenCancellation(line, line.OperatorName, lang, destination, pickupNumber, pickupBuzzer));
     }
 
     private static List<Scenario> ReportScenarios()
